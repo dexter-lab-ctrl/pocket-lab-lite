@@ -118,7 +118,7 @@ The four lifetimes are intentionally independent:
 | Bootstrap grant | 5 minutes, exactly one use | Ephemeral; consumed or expired grants cannot be reused |
 | Synthetic principal | 12 hours, bounded to 1–24 hours | Natural expiry blocks new sessions/runs; explicit revocation cancels active assurance work |
 | Authentication session | 20 minutes, bounded to 1–60 minutes | Expiry immediately removes request authority; it does not terminate an admitted run |
-| Assurance run | Suite registry maximum: Smoke 600s, Standard 1800s, Deep 7200s, Adversarial 600s | Durable run lease is independent of the authenticating session |
+| Assurance run | Suite registry maximum: Smoke 900s, Standard 1800s, Deep 7200s, Adversarial 600s | Durable run lease is independent of the authenticating session |
 
 The client renews by issuing a new signed challenge/session before the current
 session expires. It never extends or persists a raw token. A local continuity
@@ -216,13 +216,14 @@ source/toolchain evidence and live Android/Termux evidence:
 | Area | Current status | Evidence boundary |
 | --- | --- | --- |
 | Schema 35/36 rollback | `RUNTIME-VALIDATED` — `VERIFIED SAFE` | Disposable local-port Android/Termux-class sandbox only; no live database or Recovery API was touched |
-| Key-bound bootstrap, session renewal, and reattachment | `RUNTIME-VALIDATED` — `PASS` | Disposable principal, signed sessions, same run ID, 8 final-run renewals, and sanitized worker correlation |
-| Smoke | `RUNTIME-VALIDATED` — `PASS` | Final run `assurance-6a0fe6b1960f488fb83cfdba95ad57e4` at `a0937b30…`: FastAPI → NATS/JetStream → pocket-worker → Security path |
-| Standard | `BLOCKED` | OPA correctly held the active policy revision at `policy_source_update_pending`; Owner-confirmed source synchronization is required |
-| Safe Adversarial | `NOT_RUN` as a suite | Standard admission gate remained blocked; unit coverage and safe Smoke boundary probes remain separate evidence |
-| Worker restart/resume | `UNVALIDATED` on the phone | Durable heartbeat/checkpoint behavior is covered by focused tests; no supported bounded phone fault procedure was available |
-| NATS interruption/recovery | `UNVALIDATED` on the phone | No supported bounded outage procedure was available without inventing infrastructure mutation |
-| OPA interruption/fail-closed | `UNVALIDATED` on the phone | Healthy OPA posture was observed; no supported bounded outage procedure was available |
+| Key-bound bootstrap, session renewal, and reattachment | `RUNTIME-VALIDATED` — `PASS` | Disposable principal, signed sessions, same run ID, 5 current-run renewals, and sanitized worker correlation |
+| Smoke | `RUNTIME-VALIDATED` — `PASS` | Run `assurance-332d5d5f5c1c41caa502abb0e55e297d` at `0cfe3978…`: FastAPI → NATS/JetStream → pocket-worker → Security path |
+| Standard | `RUNTIME-VALIDATED` — `PASS` | Fixed qualification policy sync reached `current`; run `assurance-4feba106906246fcbdfa66811d59c2de` completed all 11 registered scenarios |
+| Safe Adversarial | `RUNTIME-VALIDATED` — `PASS` | Run `assurance-2fc46c0dbc6e4277a96d31825f480d79` completed 6 registered scenarios and 10 fixed negative probes |
+| Worker restart/resume | `RUNTIME-VALIDATED` — `PASS` | Fixed `worker_restart_once` recovered the same run/operation and advanced durable checkpoints without duplicate admission |
+| NATS restart/recovery | `RUNTIME-VALIDATED` — `PASS` | Fixed `nats_restart_once` recovered NATS/JetStream/worker state; no stream or consumer mutation |
+| OPA restart/recovery | `RUNTIME-VALIDATED` — `PASS` | Fixed `opa_restart_once` recovered OPA readiness and the same run correlation |
+| Direct outage-window fail-closed probes | `PARTIAL` / `UNVALIDATED` | Fixed controls prove restart/recovery, not a caller-controlled outage interval; source/unit tests retain fail-closed coverage |
 
 The detailed command/output ledger, sanitized tool results, exact runtime
 identities, coverage matrices, and cleanup evidence are maintained in
@@ -230,20 +231,18 @@ identities, coverage matrices, and cleanup evidence are maintained in
 
 ## OPA revision gate
 
-The Standard blocker is an intentional policy-integrity gate, not a scanner
-failure. The durable active and known-good policy revision on the Server Phone
-was `plr-57572c06b39bbecb75cd9dddeee620c7`, while the published feature source
-prepared a different candidate revision. The active stage also did not contain
-the feature’s `harness_test.rego`. OPA was healthy and served the active
-revision, but the policy consistency check therefore returned
-`policy_source_update_pending` and blocked Standard.
+The historical Standard blocker was an intentional policy-integrity gate, not a
+scanner failure: the active OPA revision did not match the repository
+candidate, so `policy_source_update_pending` was returned.
 
-The supported source-sync path requires the existing human/Owner assurance
-operation and supervisor reconciliation. No Owner credential was available
-for this qualification, so no policy state was bypassed or rewritten and no
-test-auth or qualification-owner gate was enabled. Standard remains
-`BLOCKED` until an operator performs that approved synchronization and the
-active revision is reverified.
+The current qualification used the fixed, qualification-only
+`security.assurance.policy_sync` operation. It accepts no policy text, path,
+revision, role, target, or activation option. The supervisor reconciled the
+repository Safety Rules; the sanitized source state became
+`source_update_required=false` with active and known-good revision
+`plr-5cd9702f5cea80ae1813013f9c169169`, and Standard preflight became
+`ready`. No policy file was manually rewritten, and no Owner, test-auth, or
+destructive gate was enabled (`RUNTIME-VALIDATED`).
 
 ## Non-destructive schema rollback rehearsal
 
@@ -480,15 +479,16 @@ Assurance run. Explicit principal revocation is stronger: it marks active runs
 for safe cancellation and prevents new sessions/runs.
 
 The current safe increment intentionally does not automatically execute
-Recovery replacement/restore mutation, OPA outage injection, worker-kill
-fault injection, Tailnet/LAN scans, browser WebAuthn ceremonies, Enterprise
+Recovery replacement/restore mutation, direct OPA/NATS outage-window
+injection, Tailnet/LAN scans, browser WebAuthn ceremonies, Enterprise
 membership/final-Owner scenarios, arbitrary API fuzzing, ZAP, Nuclei,
 testssl.sh, or history-wide Gitleaks. Fixed DEV-PC/CI captures now execute
 Bandit, Gitleaks, pip-audit, npm audit, Semgrep CE, OSV-Scanner, Syft, Grype,
 OPA checks/tests, and release provenance checks where the required artifact
 exists. Those captures do not prove native phone execution. Phone runtime
-qualification remains limited to the installed worker-owned Security,
-Trivy/Lynis, OPA posture, and fixed harness boundary checks; the remaining
+qualification executes the installed worker-owned Security, Trivy/Lynis, OPA
+posture, fixed harness boundary checks, and the three bounded service-restart
+controls; the remaining
 items are `DEFERRED`, `STATIC_EVIDENCE_ONLY`, `UNSUPPORTED`, or
 `HUMAN_REVIEW_REQUIRED` until a reviewed fixed target/parser/resource/cleanup
 contract and supported runtime procedure exist.

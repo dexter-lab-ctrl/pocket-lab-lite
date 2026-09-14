@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "1879f928a5ed4364a7bd8a67c565d545c244f4cb0668e864e3f405ec6d32276b",
+    "aggregate_fingerprint": "19414f6ec22ce70da43cda6d4439751e11083b4a0b879e558b3162bc3084db4c",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -16,7 +16,7 @@
       "scripts/dev/lite/redaction_check.py": "e063173dfbedaf3e57680ee70c7518c4f07a77c885cd41c504691d6fc954f980",
       "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4",
       "tests/backend/test_lite_api.py": "86d24ed63c95b5623460ab7f2de54f595c5e0c1ef4b5f26e95ed5c34355954a1",
-      "tests/backend/test_lite_security.py": "f66b27a99b325e596937a3ba5b489341f88f88dbbdbfc1cc9c0562b6b0eb3af4"
+      "tests/backend/test_lite_security.py": "c9a654fc742ec4b8e5d67b4da407f51b534defa632796454c8ad0d346bd281d2"
     },
     "validation_state": "generated"
   },

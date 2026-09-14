@@ -18,10 +18,10 @@ performed.
 | Repository | `dexter-lab-ctrl/pocket-lab-lite` |
 | Base main | `6d7e34920ceaecf773f8dbae36265cc282a199ed` (`VERIFIED`) |
 | Feature branch | `feat/runtime-security-assurance-harness` (`VERIFIED`) |
-| Feature source at the final phone Smoke qualification | `a0937b30a2a8fa0bdf4b4ab8d718e0762ad21c6a` (`VERIFIED`) |
+| Feature source at the final authenticated phone qualification | `0cfe3978aba4848934b85c4ff2cd124c611e5b11` (`VERIFIED`) |
 | Feature source at the isolated rollback rehearsal | `3f4f277de5fc8c99d01b0d07baa7376b608d1bd7` (`VERIFIED`; migration/runtime path unchanged by later client/test-only fixes) |
 | Latest published DEV-PC supply-chain capture | `cfe3168e05f25483410217bb21bf711f80db596e` (`VERIFIED`; complete capture later promoted from this source revision) |
-| PR | #576, open, draft, and mergeable at `a0937b30…` (`VERIFIED`; recheck after any documentation commit) |
+| PR | #576, open, draft, and mergeable at `0cfe3978aba4848934b85c4ff2cd124c611e5b11` (`VERIFIED`; exact-head CI rechecked before publication) |
 | Provisioning token | `POCKETLAB_HARNESS_PROVISIONING_TOKEN` absent from the approved client environment (`VERIFIED` boolean-only check) |
 | Qualification authentication | Key-bound operator bootstrap; no bearer provisioning token, test-auth bypass, qualification-owner, or human Owner identity (`RUNTIME-VALIDATED`) |
 | Network target | Pocket Lab-owned local/loopback surfaces only (`VERIFIED`) |
@@ -60,8 +60,8 @@ The four lifetimes are independent:
 | --- | --- |
 | Bootstrap grant | Process-ephemeral, five minutes, one use, bound to public key/fingerprint, runtime, revision, profile, purpose, and target (`IMPLEMENTED`, source/tests) |
 | Synthetic principal | Bounded qualification principal; default 12 hours, safe bounds 1–24 hours (`IMPLEMENTED`, source/tests) |
-| Authentication session | Short-lived current harness session; qualification evidence used a deliberately bounded 60-second TTL to exercise renewal (`RUNTIME-VALIDATED`) |
-| Assurance run | Suite-owned durable lease; Smoke 600s, Standard 1800s, Deep 7200s, Adversarial 600s (`IMPLEMENTED`, source/tests) |
+| Authentication session | Short-lived current harness session; qualification evidence used a bounded 300-second TTL and renewed it five times (`RUNTIME-VALIDATED`) |
+| Assurance run | Suite-owned durable lease; Smoke 900s, Standard 1800s, Deep 7200s, Adversarial 600s (`IMPLEMENTED`, source/tests) |
 
 Session expiry does not terminate an admitted run. Explicit principal
 revocation is stronger: it prevents new sessions/runs, requests safe
@@ -80,12 +80,13 @@ separate source copies of published `origin/main` and the feature revision.
 It did not call Recovery APIs and did not touch the live database, Recovery
 repository, media, or user data.
 
-The rehearsal source revision predates the final client TTL-forwarding test and
-the hermetic Trivy-cache test fix. Those later changes do not alter migration
-files, startup migration policy, or the application runtime rollback path;
-the exact migration-path source used by the rehearsal is therefore still the
-feature implementation being qualified (`INFERRED`, based on the final diff).
-The final runtime Smoke was separately consumed at `a0937b30…`.
+The rehearsal source revision predates the final client TTL-forwarding test,
+the hermetic Trivy-cache test fix, and the final client workflow-phase fix.
+Those later changes do not alter migration files, startup migration policy, or
+the application runtime rollback path; the migration-path conclusion therefore
+still applies to the final feature source (`INFERRED`, based on the final diff).
+The final authenticated Smoke, Standard, Adversarial, and fixed restart
+qualifications were consumed at `0cfe3978…`.
 
 Sanitized rehearsal result:
 
@@ -119,24 +120,25 @@ migration plus restoration of a verified compatible pre-upgrade database copy
 when an application rollback is required. The old runtime continues to reject
 an unknown newer schema; that fail-closed check was preserved.
 
-## 4. OPA Standard blocker
+## 4. OPA Standard blocker and resolution
 
-Result: `BLOCKED` (`VERIFIED` cause; no bypass used).
+Historical result: `BLOCKED` (`VERIFIED` cause; no bypass used). The earlier
+qualification observed a durable active OPA revision that did not match the
+feature policy candidate, so the policy-integrity gate correctly returned
+`policy_source_update_pending`.
 
-The Server Phone’s durable active and known-good OPA revision was observed as
-`plr-57572c06b39bbecb75cd9dddeee620c7`. The feature source prepared a
-different policy candidate, and its manifest included six entries including
-`harness_test.rego`; the active stage did not contain that feature entry. OPA
-health returned HTTP 200 and the revision endpoint served the active revision.
-The policy consistency gate correctly returned `policy_source_update_pending`.
+Resolution: `RUNTIME-VALIDATED` — `PASS`. The approved key-bound
+`security-assurance-runner` session used the supported fixed
+`security.assurance.policy_sync` operation with no caller-supplied policy,
+revision, role, target, or activation option. The supervisor-owned lifecycle
+reconciled the repository Safety Rules; the sanitized response became
+`status=current`, `source_update_required=false`, and the Standard preflight
+became `ready` with OPA `ready`. The observed synchronized revision was
+`plr-5cd9702f5cea80ae1813013f9c169169` (bounded operational metadata only).
 
-The supported `request_source_sync` path requires the existing human/Owner
-assurance operation and supervisor reconciliation. No such credential was
-available to this qualification. The phone policy was not manually rewritten,
-no stale policy was treated as current, and neither `qualification-owner` nor
-test-auth bypass was enabled. Standard therefore remains blocked until an
-operator performs the supported policy source synchronization and the active
-revision is reverified.
+No policy file was manually rewritten on the phone. `qualification-owner`,
+test-auth bypass, and destructive gates remained disabled. This clears the
+Standard admission blocker without weakening OPA or granting Owner authority.
 
 ## 5. Tool installation and execution evidence
 
@@ -176,23 +178,26 @@ executed.
 
 ### 5.2 Server Phone inventory
 
-Observed during the exact-feature qualification sequence, with the final
-authenticated Smoke consumed at `a0937b30…`:
+Observed during the authenticated qualification sequence at
+`0cfe3978aba4848934b85c4ff2cd124c611e5b11`:
 
 | Component | Phone evidence |
 | --- | --- |
 | Pocket Lab Security runner | Existing worker-owned path executed; runtime version not exposed by the result (`RUNTIME-VALIDATED`, version `UNAVAILABLE`) |
 | Lynis | Native `/data/data/com.termux/files/usr/bin/lynis`, 3.1.6 (`RUNTIME-VALIDATED`) |
 | Trivy | Native and invoked through existing Security path; runtime reports `Version: dev` (`RUNTIME-VALIDATED`, exact release version `UNAVAILABLE`) |
-| OPA | Native 1.19.0 posture observed; Standard held by policy revision gate (`RUNTIME-VALIDATED`) |
+| OPA | Native 1.19.0; direct version probe reported ARM64 build `1e32c796…-dirty`; policy status became ready/current after the fixed synchronization (`RUNTIME-VALIDATED`) |
 | Python | 3.14.6 (`RUNTIME-VALIDATED`) |
 | npm | 11.18.0 (`RUNTIME-VALIDATED`) |
 | Bandit, Gitleaks, pip-audit, Schemathesis, Cosign, Semgrep, OSV-Scanner, Syft, Grype, testssl.sh, Nuclei, nmap, ZAP | Not installed/discovered on the phone (`RUNTIME-VALIDATED` `MISSING`/`UNSUPPORTED`; no installation was performed without a published bounded installer contract) |
 
 The final assurance report intentionally reports a tool version only when the
 worker-owned runtime result exposed one. The phone-side Pocket Lab Security
-and Trivy records did not expose a release version in that report; no DEV-PC
-version was substituted (`VERIFIED`).
+record did not expose a release version and Trivy reported `dev`; no DEV-PC
+version was substituted (`VERIFIED`). Optional tools were not promoted into
+the worker registry merely because DEV-PC binaries existed: their phone state
+is `MISSING`/`UNSUPPORTED` or `DEFERRED` according to the fixed registry, and
+no runtime execution is claimed for them.
 
 ### 5.3 Dependency remediation
 
@@ -218,41 +223,43 @@ exploitable runtime findings. Further triage is `DEFERRED`.
 Result: `RUNTIME-VALIDATED` — `PASS` at the final runtime source revision.
 
 The approved client generated a disposable Ed25519 key outside the repository,
-mode 0600, and exposed only the public fingerprint to the operator. The
-operator-approved launcher created a fixed security-assurance-runner grant.
-The client signed the challenge, received a normal short-lived session, and
-used the fixed assurance API. The provisioning token was absent and was not
-requested, printed, logged, or substituted.
+mode 0600, and exposed only the public fingerprint
+`sha256:b759725931347b981183f435e7ec919f9035d68df8f021e93a9339cf56807852`.
+The operator-approved launcher created a fixed security-assurance-runner
+grant. The client signed the challenge, received a normal short-lived session,
+and used the fixed assurance API. The provisioning token was absent and was
+not requested, printed, logged, or substituted.
 
-Final Smoke run:
+The same client workflow synchronized the fixed repository Safety Rules through
+the qualification-only `security.assurance.policy_sync` operation. The
+sanitized response was `status=current`, `source_update_required=false`, and
+the Standard preflight became `ready`.
 
-| Field | Sanitized observation |
-| --- | --- |
-| Runtime revision | `a0937b30a2a8fa0bdf4b4ab8d718e0762ad21c6a` |
-| Run ID | `assurance-6a0fe6b1960f488fb83cfdba95ad57e4` |
-| Suite | Smoke |
-| Scenarios | 8 |
-| Tool results | 5 (Pocket Lab Security, Trivy, Lynis, OPA posture, plus fixed registry state) |
-| Worker | `pocketlab-worker-2824` |
-| Worker operation | Same run correlation; caller did not choose the NATS subject |
-| Checkpoint generation | 24 |
-| Result | `PASS` |
-| Findings | 1 normalized low finding, no raw secret |
-| Session renewal | 8 automatic renewals; 9 session IDs under a 60-second qualification TTL |
-| Duration | 341796 ms total; existing Security/Trivy unit 298318 ms |
-| Sanitization | pass; secret-shaped values omitted |
+Final authenticated runs:
 
-The run traversed FastAPI admission, the fixed
-`pocketlab.commands.lite.security.assurance` subject/JetStream path, the
-durable worker consumer, the existing Security runner, and the SQLite/report
-materialization path. This is `RUNTIME-VALIDATED` proof of the central path.
-The client-side TTL forwarding correction was committed before this run and
-the renewal count demonstrates that the requested bounded TTL was honored.
+| Suite | Run ID | Result | Scenarios | Worker / operation | Checkpoints / events | Findings | Duration |
+| --- | --- | --- | ---: | --- | ---: | ---: | ---: |
+| Smoke | `assurance-332d5d5f5c1c41caa502abb0e55e297d` | `PASS` | 8 | `pocketlab-worker-21332` / same run ID | 24 / 32 | 1 low | 708672 ms |
+| Standard | `assurance-4feba106906246fcbdfa66811d59c2de` | `PASS` | 11 | `pocketlab-worker-21332` / same run ID | 30 / 41 | 1 low | 370209 ms |
+| Adversarial | `assurance-2fc46c0dbc6e4277a96d31825f480d79` | `PASS` | 6 | `pocketlab-worker-21332` / same run ID | 14 / 20 | 0 | 37086 ms |
+
+All three runs were bound to revision `0cfe3978aba4848934b85c4ff2cd124c611e5b11`
+and runtime identity `runtime-408970a380f1bb14c7d0069eb2a8c453`. The Smoke
+Security unit ran through the existing worker-owned path; its sanitized tool
+duration was 676617 ms. Standard's corresponding Security unit was 297664 ms.
+The reports were available and sanitized, with no raw scanner output or key
+material persisted. The run operation ID matched the run ID; the client did
+not choose the NATS subject.
+
+The execution chain was FastAPI admission, fixed
+`pocketlab.commands.lite.security.assurance` JetStream delivery, durable
+worker consumption, the existing Security runner, and SQLite/report
+materialization. This is `RUNTIME-VALIDATED` proof of the central path.
 
 ### 6.2 Client disconnect and reattachment
 
 Result: `RUNTIME-VALIDATED` — `PASS` (earlier feature-head reattachment run;
-the final `a0937b30…` run separately proves renewal through session expiry).
+the final `0cfe3978…` runs separately prove renewal through session expiry).
 
 Run `assurance-d9ce31d17f044ce788ed41d7e5d1fb32` was started, the first
 monitor was disconnected, and a new client process loaded only non-secret
@@ -264,23 +271,56 @@ run reached `PASS`. No duplicate run or second scanner admission was created.
 
 ### 6.3 Standard and Adversarial
 
-| Suite | Result | Reason/evidence |
+| Suite | Result | Sanitized evidence |
 | --- | --- | --- |
-| Standard | `BLOCKED` | OPA active revision mismatch returned `policy_source_update_pending`; no policy bypass or Owner gate was used |
-| Adversarial | `NOT_RUN` as a suite | Standard gate was blocked; safe auth/Caddy/readiness probes and focused unit tests remain separate evidence |
+| Standard | `RUNTIME-VALIDATED` — `PASS` | Policy sync returned `current`; preflight had no blockers; run `assurance-4feba106906246fcbdfa66811d59c2de` completed all 11 registered scenarios |
+| Adversarial | `RUNTIME-VALIDATED` — `PASS` | Run `assurance-2fc46c0dbc6e4277a96d31825f480d79` completed all 6 registered scenarios and 10 fixed negative probes; no valid authority material was accepted |
 | Deep | `NOT_RUN` on the phone | Explicit manual Deep execution was not admitted; DEV-PC bounded Semgrep/Syft/Grype/static captures are recorded separately |
+
+The fixed adversarial probe results were:
+
+| Probe | HTTP result |
+| --- | ---: |
+| Invalid signature | 422 |
+| Expired or unknown challenge | 422 |
+| Wrong bootstrap key | 422 |
+| Unknown bootstrap grant | 422 |
+| Wrong bootstrap signature | 422 |
+| Wrong purpose/profile/target | 422 |
+| Unknown suite with forged session | 422 |
+| Malformed JSON | 422 |
+| Unauthorized report | 401 |
+| Unauthorized cancel | 401 |
+
+The six registered Adversarial scenarios also exercised fixed Caddy proof
+stripping, readiness admission, evidence redaction, source ownership, and the
+negative authentication path. Unknown values failed closed; no arbitrary
+command, NATS subject, URL, target, or scanner option was accepted.
 
 ### 6.4 Fault/recovery scenarios
 
-| Scenario | Result | Boundary |
-| --- | --- | --- |
-| Worker restart/resume | `UNVALIDATED` on phone | Heartbeat/checkpoint/retry behavior is covered by focused backend tests; no supported bounded phone fault procedure was available |
-| NATS interruption/recovery | `UNVALIDATED` on phone | No supported safe outage procedure was available; streams/consumers were not mutated |
-| OPA interruption/fail-closed/recovery | `UNVALIDATED` on phone | Healthy OPA and fail-closed source behavior are covered; no supported service outage procedure was available |
-| FastAPI/client restart semantics | `VALIDATED` in backend tests and client reattachment evidence | No false terminal `PASS` is allowed for stale/incomplete work |
+The current registry provides three fixed, one-use, SAFE_ACTIVE service
+recovery controls. They restart only the named Pocket Lab PM2 service and wait
+for the fixed health/recovery proof; they do not expose a caller-selected
+service, PID, command, outage duration, or NATS subject.
 
-These labels are deliberate. Service disruption was not simulated through an
-invented shell or arbitrary infrastructure API.
+| Scenario | Run ID | Result | Sanitized evidence |
+| --- | --- | --- | --- |
+| Worker restart/resume | `assurance-fb6ffcf0c87740dab7f00175c2dbd205` | `RUNTIME-VALIDATED` — `PASS` | `worker_restart_once` acted; worker changed from `pocketlab-worker-9272` to `pocketlab-worker-13710`; checkpoint advanced 1→32, event 46, same run/operation, terminal `PASS` |
+| NATS restart/recovery | `assurance-65bfe64db677430daec243b788f0a3b9` | `RUNTIME-VALIDATED` — `PASS` | `nats_restart_once` acted; PM2 NATS identity changed; API/NATS/JetStream/worker recovered; checkpoint advanced 15→30, event 41, same run/operation, terminal `PASS` |
+| OPA restart/recovery | `assurance-09145bd24cde40669909b33e8d97ca59` | `RUNTIME-VALIDATED` — `PASS` | `opa_restart_once` acted; OPA recovered to ready; checkpoint advanced 17→30, event 41, same run/operation, terminal `PASS` |
+
+These runs prove bounded service restart, heartbeat/reconciliation, durable
+correlation, and truthful terminal state. They do not prove an outage-window
+request made while OPA or NATS is unavailable: the fixed controls wait for
+recovery and do not expose an outage interval. Direct OPA-unavailable
+fail-closed behavior is therefore `PARTIAL`/`UNVALIDATED` on the phone, with
+source and unit-test coverage retained. No streams, consumers, policy
+semantics, Recovery state, or production data were mutated.
+
+FastAPI/client restart semantics remain `VALIDATED` in backend tests and
+client reattachment evidence. A stale or incomplete run cannot be converted to
+`PASS`.
 
 ## 7. Normalized findings
 
@@ -304,18 +344,20 @@ Pinned-Dependencies score 2 (`INFO/REVIEW`, not a confirmed runtime exploit).
 
 ### Low
 
-One normalized runtime finding was observed by the phone Security path:
+One normalized runtime finding was observed by both the authenticated Smoke and
+Standard Security paths:
 
 | Field | Sanitized value |
 | --- | --- |
 | Category | `protected_runtime_secret` |
+| Stable finding identity | `assurance:15deb392776f0f7b27d15fb1f4e6bfb6f2dfaa7c9ec129dd` |
 | Asset | `gitea/conf/app.runtime.ini` |
 | Severity/confidence | Low / medium |
 | STRIDE | Information Disclosure |
 | OWASP | A02 Cryptographic Failures; A05 Security Misconfiguration |
 | AP/control | AP-06; `CTRL-EVIDENCE-SANITIZE` |
 | Baseline | `NEW` against unavailable run-local baseline |
-| Status | Open for operator configuration review |
+| Status | Open for operator configuration review; `UNCHANGED` on the repeated compatible run |
 | Evidence | Bounded path/metadata only; contents are `[REDACTED BY SECURITY ASSURANCE POLICY]` |
 
 The DEV PC did not patch this because the path is not tracked source and the
@@ -340,12 +382,12 @@ separated:
 
 | Category | Runtime evidence | Static/automated evidence | Status |
 | --- | --- | --- | --- |
-| Spoofing | Signed bootstrap/session, invalid authority boundary, runtime binding | Harness negative tests and source review | `RUNTIME-VALIDATED` for executed path; broader adversarial suite `NOT_RUN` |
-| Tampering | Fixed envelope, target/revision binding, durable checkpoint identity | Migration/revision checks, registry tests | `RUNTIME-VALIDATED` partial |
-| Repudiation | Run/audit correlation, worker operation, sanitized result state | Finding/report schema tests | `RUNTIME-VALIDATED` partial |
-| Information Disclosure | Caddy/header and redaction probes; protected-runtime-secret finding metadata | Bandit/Gitleaks/Trivy/OSV/Semgrep evidence | `RUNTIME-VALIDATED` partial |
-| Denial of Service | Bounded timeout/resource admission semantics | Timeout/cancellation/recovery tests | `UNVALIDATED` for live outage injection |
-| Elevation of Privilege | Least-privilege profile and direct-loopback harness path | Owner/capability/role negative tests | `RUNTIME-VALIDATED` partial; human Owner paths require review |
+| Spoofing | Signed bootstrap/session, invalid authority boundary, replay/key/runtime binding probes | Harness negative tests and source review | `RUNTIME-VALIDATED` for the registered adversarial path; human identity remains review-only |
+| Tampering | Fixed envelope, target/revision binding, durable checkpoint identity, worker/NATS/OPA restart correlation | Migration/revision checks, registry tests | `RUNTIME-VALIDATED` scoped; message injection and Recovery mutation excluded |
+| Repudiation | Run/audit correlation, worker operation, sanitized result state, restart evidence | Finding/report schema tests | `RUNTIME-VALIDATED` scoped |
+| Information Disclosure | Caddy/header and redaction probes; protected-runtime-secret finding metadata | Bandit/Gitleaks/Trivy/OSV/Semgrep evidence | `RUNTIME-VALIDATED` scoped; one low operator-review finding remains |
+| Denial of Service | Bounded timeout/resource admission semantics and fixed service restart/recovery | Timeout/cancellation/recovery tests | `RUNTIME-VALIDATED` for bounded restart; direct outage/load injection `UNVALIDATED` |
+| Elevation of Privilege | Least-privilege profile, Owner/destructive rejection, direct-loopback harness path | Owner/capability/role negative tests | `RUNTIME-VALIDATED` scoped; human Owner paths require review |
 
 No scenario automatically accepted risk or declared exploitability solely from
 the threat-model mapping.
@@ -354,15 +396,15 @@ the threat-model mapping.
 
 | Category | Surface/tool | Status |
 | --- | --- | --- |
-| A01 Broken Access Control | Harness capability/target/profile gates; Caddy proof stripping | `RUNTIME-VALIDATED` partial |
-| A02 Cryptographic Failures | Secret-handling/redaction boundaries and key/session material protection | `RUNTIME-VALIDATED` partial |
+| A01 Broken Access Control | Harness capability/target/profile gates, Owner/destructive rejection, Caddy proof stripping | `RUNTIME-VALIDATED` scoped registered scenarios; no human Owner ceremony |
+| A02 Cryptographic Failures | Key-bound bootstrap, signed session proof, secret-handling/redaction boundaries | `RUNTIME-VALIDATED` scoped; protected-runtime-secret metadata remains low/open |
 | A03 Injection | Fixed argv and bounded parser tests; no arbitrary command interface | `VALIDATED` source/test evidence; broad runtime fuzzing `NOT_RUN` |
-| A04 Insecure Design | Threat-model/AP registry, fixed server-owned execution architecture | `VALIDATED` static/source evidence |
-| A05 Security Misconfiguration | OPA revision gate, Caddy boundary, Trivy misconfiguration mode | `RUNTIME-VALIDATED` partial |
+| A04 Insecure Design | Threat-model/AP registry, fixed server-owned execution architecture | `VALIDATED` static/source evidence; no dedicated runtime category |
+| A05 Security Misconfiguration | OPA revision gate, Caddy boundary, Trivy misconfiguration mode | `RUNTIME-VALIDATED` scoped |
 | A06 Vulnerable and Outdated Components | Trivy, OSV, Grype, pip-audit, npm audit, SBOM | `VALIDATED` DEV-PC lane; phone dependency tool coverage `MISSING` |
-| A07 Identification and Authentication Failures | Session lifecycle and replay/expiry unit tests | `VALIDATED` source/tests; broader adversarial phone suite `NOT_RUN` |
-| A08 Software and Data Integrity Failures | Signed key possession, revision binding, schema rollback rehearsal, Cosign posture | `RUNTIME-VALIDATED` partial |
-| A09 Security Logging and Monitoring Failures | Audit/evidence correlation and sanitized reports | `RUNTIME-VALIDATED` partial |
+| A07 Identification and Authentication Failures | Bootstrap/session lifecycle and fixed replay/expiry/key/signature probes | `RUNTIME-VALIDATED` registered adversarial scope |
+| A08 Software and Data Integrity Failures | Signed key possession, revision binding, durable worker correlation, schema rollback rehearsal, Cosign posture | `RUNTIME-VALIDATED` scoped; Recovery mutation excluded |
+| A09 Security Logging and Monitoring Failures | Audit/evidence correlation, checkpoint/restart state, sanitized reports | `RUNTIME-VALIDATED` scoped |
 | A10 SSRF | Fixed local target contract and no caller URL/host/port | `VALIDATED` source/tests; broad runtime probes `NOT_RUN` |
 
 OWASP rows marked partial or not run are not asserted as full category passes.
@@ -374,17 +416,17 @@ is coverage bookkeeping, not automatic risk acceptance:
 
 | Attack path | Classification | Executed evidence |
 | --- | --- | --- |
-| AP-01 | `PARTIALLY_EXECUTABLE` | Caddy/browser-boundary source and safe runtime probes; full browser path `UNVALIDATED` |
-| AP-02 | `EXECUTABLE_NOW` | Frontend shell boundary and fixed worker ownership tests; runtime negative path partial |
+| AP-01 | `PARTIALLY_EXECUTABLE` | Caddy proof stripping and harness admission executed; browser-to-NATS reachability remains source evidence |
+| AP-02 | `EXECUTABLE_NOW` | Frontend shell boundary and fixed worker ownership executed; no shell API accepted |
 | AP-03 | `STATIC_EVIDENCE_ONLY` | Source/identity binding evidence |
-| AP-04 | `PARTIALLY_EXECUTABLE` | Fixed command envelope/replay tests; no arbitrary message injection |
+| AP-04 | `PARTIALLY_EXECUTABLE` | Fixed command envelope, same-run operation, NATS restart/recovery and replay tests; no arbitrary message injection |
 | AP-05 | `STATIC_EVIDENCE_ONLY` | SBOM, provenance, dependency, and release-tool evidence |
-| AP-06 | `EXECUTABLE_NOW` | Sanitized evidence/report checks and runtime finding metadata |
+| AP-06 | `EXECUTABLE_NOW` | Sanitized evidence/report checks, runtime finding metadata, and redaction probes |
 | AP-07 | `PARTIALLY_EXECUTABLE` | Listener/target boundaries; no unrelated network scan |
 | AP-08 | `STATIC_EVIDENCE_ONLY` | Non-destructive schema rehearsal only; Recovery mutation excluded |
 | AP-09 | `HUMAN_REVIEW_REQUIRED` | No browser WebAuthn ceremony |
 | AP-10 | `HUMAN_REVIEW_REQUIRED` | No Enterprise membership/final-Owner ceremony |
-| AP-11 | `PARTIALLY_EXECUTABLE` | OPA health/revision gate and fail-closed source/tests; outage injection `UNVALIDATED` |
+| AP-11 | `PARTIALLY_EXECUTABLE` | OPA policy sync/readiness and fixed OPA restart/recovery executed; direct outage-window fail-closed request `UNVALIDATED` |
 | AP-12 | `STATIC_EVIDENCE_ONLY` | Current threat-model/source inventory |
 | AP-13 | `HUMAN_REVIEW_REQUIRED` | Human identity boundary not automated |
 | AP-14 | `HUMAN_REVIEW_REQUIRED` | Current repository classification; no safe automated ceremony |
@@ -422,14 +464,24 @@ secret-bearing environment values and raw outputs are intentionally omitted.
 | 22 | 2026-09-14, DEV PC | `opa health` and revision query against fixed loopback endpoints | OPA health/current revision | Healthy and current | Health 200; revision served active old revision | `policy_source_update_pending` remains the governed blocker |
 | 23 | 2026-09-14, Server Phone | `git rev-parse HEAD`; `git status --short --branch`; `pm2 status`; bounded `/health`/`/ready` | Consumer-only preflight | Exact published SHA, clean tree, healthy/ready services | `PASS` before and after prior qualification | PM2 online recorded separately from readiness |
 | 24 | 2026-09-14, Server Phone | Existing operator launcher with public-key file and fixed `security-assurance-runner` profile | Key-bound qualification bootstrap | Grant accepted; no token | `PASS` | Public fingerprint only; private key not copied to repo/phone |
-| 25 | 2026-09-14, approved client → Server Phone | Existing `security_assurance.py qualify` with in-memory session | Authenticated Smoke and cleanup | PASS or truthful terminal state | `PASS` Smoke; Standard blocked | Run IDs and correlations above |
+| 25 | 2026-09-14, approved client → Server Phone | Existing `security_assurance.py qualify` with in-memory session | Authenticated Smoke and cleanup | PASS or truthful terminal state | Historical `PASS` Smoke; Standard blocked | Historical run IDs retained; superseded by rows 34–37 |
 | 26 | 2026-09-14, approved client → Server Phone | Client monitor termination followed by fresh signed session and `GET /runs/<same-id>` | Reattach without duplicate admission | Same run ID continues | `PASS` | Same worker operation/correlation; no duplicate scan |
 | 27 | 2026-09-14, Server Phone sandbox | Bounded shell script using disposable source/DB/NATS copies, fixed local ports, SQLite backup API, health/readiness polling | Model A schema rollback rehearsal | Old/new/old runtime healthy with 34→36→34 schema states | `PASS` | No production state touched; exact sanitized JSON in section 3 |
-| 28 | 2026-09-13T23:44Z, DEV PC | `supply_chain_automation.py capture --run-dir runtime-assurance-final-published-20260913T234446Z-813731` | Reproducible final supply-chain capture after publishing the exact source SHA | Complete valid evidence | `PASS`; source commit `6d257ff9...`; 11 steps, max one scanner | Syft 1.573s; Trivy 27.342s; OSV source valid findings exit 1/25.778s; Grype 1.277s; Gitleaks 1.928s; Semgrep 9.845s; Scorecard 9.791s |
+| 28 | 2026-09-13T23:44Z, DEV PC | `supply_chain_automation.py capture --run-dir runtime-assurance-final-published-20260913T234446Z-813731` | Reproducible final supply-chain capture after publishing the exact source SHA | Complete valid capture | `PASS`; source commit `6d257ff9...`; 11 steps, max one scanner | Syft 1.573s; Trivy 27.342s; OSV source valid findings exit 1/25.778s; Grype 1.277s; Gitleaks 1.928s; Semgrep 9.845s; Scorecard 9.791s |
 | 29 | 2026-09-13T23:44Z, DEV PC | `supply_chain_automation.py promote --run-dir <final-published-run>`; `supply_chain_automation.py check` | Promote only reviewed sanitized artifacts | Canonical CycloneDX/security/provenance evidence passes checks | `PASS`, both commands exit 0 | Scorecard observed Dangerous-Workflow 10, Pinned-Dependencies 2, Token-Permissions 0; no raw output canonicalized |
 | 30 | 2026-09-14T01:25Z, DEV PC | `supply_chain_automation.py capture --run-dir runtime-assurance-final-cfe-20260914T0125Z --resume` with fixed disk-backed temp root and proxy variables removed from the child | Final source/SBOM/security capture at the published documentation/test head | Complete bounded capture | `PASS`; 11 steps, `max_parallel_scanners=1`; OSV/Gitleaks valid finding states retained | Semgrep recovered from the preserved checkpoint; raw output stayed transient; sanitized capture was promoted without runtime evidence |
-| 31 | 2026-09-14T01:01–01:07Z, approved client → Server Phone | Operator-approved public-key launcher; signed bootstrap; `security_assurance.py qualify --session-ttl-seconds 60` | Final exact-feature authenticated Smoke with automatic renewal and worker-owned execution | Smoke PASS; no duplicate run; sanitized report | Bootstrap `PASS`; Smoke `PASS`; Standard `BLOCKED` by OPA source drift; client exit 12 truthfully reflected blocked Standard | Run `assurance-6a0fe6b1960f488fb83cfdba95ad57e4`; worker `pocketlab-worker-2824`; 8 renewals / 9 sessions; checkpoint 24; total 341796 ms |
-| 32 | 2026-09-14T01:16–01:18Z, Server Phone | Production-owned `start-dashboard.sh --profile lite` with explicit safe flags; bounded `/health`, `/ready`, harness status, NATS monitor, OPA revision, PM2 | Stop qualification and prove default-off cleanup | Disabled harness, healthy runtime, clean checkout | `PASS` | Harness disabled/production; active sessions 0; active principals 0; NATS health `ok`; JetStream enabled; OPA healthy; PM2 services online; phone HEAD unchanged |
+| 31 | 2026-09-14T01:01–01:07Z, approved client → Server Phone | Operator-approved public-key launcher; signed bootstrap; `security_assurance.py qualify --session-ttl-seconds 60` | Historical exact-feature authenticated Smoke with automatic renewal | Smoke PASS; no duplicate run; sanitized report | `PASS` Smoke; Standard was blocked by OPA source drift | Historical run retained for the TTL-forwarding regression; superseded by rows 34–37 |
+| 32 | 2026-09-14T01:16–01:18Z, Server Phone | Production-owned `start-dashboard.sh --profile lite` with explicit safe flags; bounded `/health`, `/ready`, harness status, NATS monitor, OPA revision, PM2 | Historical qualification cleanup | Disabled harness, healthy runtime, clean checkout | `PASS` | Historical default-off proof; final cleanup is recorded in row 44 |
+| 33 | 2026-09-14T13:22–13:23Z, DEV PC → Server Phone | Key generation outside Git; operator launcher with public key and fixed `security-assurance-runner`; signed bootstrap challenge/complete | Key-bound one-use bootstrap and disposable principal | Grant consumed; principal/session created; no bearer provisioning token | `PASS`, all secret-bearing values remained in process memory or outside the report | Fingerprint only: `sha256:b759725931347b981183f435e7ec919f9035d68df8f021e93a9339cf56807852`; principal TTL 12h; bootstrap TTL 5m |
+| 34 | 2026-09-14T13:23Z, approved client → Server Phone | `security_assurance.py qualify --session-ttl-seconds 300 --sync-policy --policy-sync-wait-seconds 180` | Authenticated preflight, policy convergence, and Smoke admission | Preflight ready; policy current; Smoke admitted | `PASS` | Revision `0cfe3978…`; runtime ID present; no blockers; 5 automatic renewals; session token was not persisted |
+| 35 | 2026-09-14T13:23–13:35Z, FastAPI → NATS/JetStream → worker | Registered Smoke execution from row 34; fixed suite/scenario registry | Existing Security Quick path and critical boundaries | Same run/operation, durable checkpoints, sanitized report | `PASS` | `assurance-332d5d5f5c1c41caa502abb0e55e297d`; checkpoint 24; event 32; worker `pocketlab-worker-21332`; one low finding |
+| 36 | 2026-09-14T13:36–13:42Z, FastAPI → NATS/JetStream → worker | Registered Standard execution from row 34; fixed suite/scenario registry | OPA-gated standard assurance and existing Security path | Standard preflight ready; all registered scenarios complete | `PASS` | `assurance-4feba106906246fcbdfa66811d59c2de`; checkpoint 30; event 41; same worker; one low finding |
+| 37 | 2026-09-14T13:43–13:44Z, approved client → Server Phone | Registered Adversarial execution and fixed negative-probe set | Safe auth, Caddy, target, Owner/destructive, malformed-input, report/cancel boundaries | All registered probes denied as expected; sanitized report | `PASS` | `assurance-2fc46c0dbc6e4277a96d31825f480d79`; 10 fixed probes returned expected 401/422; 0 findings |
+| 38 | 2026-09-14T13:49–13:55Z, fixed supervisor control | `POST /api/lite/harness/security-assurance/faults/worker_restart_once` with fixed confirmation | Worker restart, heartbeat reconciliation, checkpoint resume | Same run resumes without duplicate execution | `PASS` | `assurance-fb6ffcf0c87740dab7f00175c2dbd205`; worker identity changed; checkpoint 1→32; event 46; terminal `PASS` |
+| 39 | 2026-09-14T13:59–14:05Z, fixed supervisor control | `POST /api/lite/harness/security-assurance/faults/nats_restart_once` with fixed confirmation | NATS/JetStream reconnect and durable worker recovery | No false PASS, duplicate, or storage mutation; service recovers | `PASS` | `assurance-65bfe64db677430daec243b788f0a3b9`; checkpoint 15→30; event 41; terminal `PASS` |
+| 40 | 2026-09-14T14:09–14:15Z, fixed supervisor control | `POST /api/lite/harness/security-assurance/faults/opa_restart_once` with fixed confirmation | OPA restart and policy readiness recovery | OPA returns ready; run correlation remains intact | `PASS` | `assurance-09145bd24cde40669909b33e8d97ca59`; checkpoint 17→30; event 41; terminal `PASS` |
+| 41 | 2026-09-14, Server Phone | `timeout 5s lynis --version`; `opa version`; `trivy --version` | Runtime tool identity and platform evidence | Version output is bounded and sanitized | `PASS` for Lynis/OPA/Trivy probes | Lynis `3.1.6`; OPA `1.19.0`, ARM64, build commit suffix `1e32c796…-dirty`; Trivy `dev`; Pocket Lab Security version `UNAVAILABLE` |
+| 42 | 2026-09-14, Server Phone | Production-owned `start-dashboard.sh --profile lite` with explicit safe flags; direct loopback `/health`, `/ready`, harness status, NATS health, OPA health, PM2 JSON | Final cleanup and default-off proof | Qualification authority gone; normal runtime healthy | `PASS` | Harness disabled/production; active sessions/principals/runs 0; API health/ready 200; NATS monitor `ok`; OPA health 200; normal PM2 services online; checkout clean |
 
 The earlier failed Syft attempt used invalid patterns without the required
 `./` prefix and returned a validation error. It was corrected in the
@@ -441,7 +493,7 @@ evidence and were not promoted.
 
 ## 12. Automated harness coverage
 
-At the final source/test head `a0937b30…`, the focused backend command
+At the exact runtime source head `0cfe3978…`, the focused backend command
 completed:
 
 ```text
@@ -450,7 +502,7 @@ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 .venv/bin/python -m pytest -q \
   tests/backend/test_lite_security_assurance.py \
   tests/backend/test_lite_harness.py \
   tests/backend/test_lite_worker_recovery.py
-119 passed, 1 warning
+65 passed, 1 warning
 ```
 
 The tests cover bootstrap grant hash-only storage and one-use behavior, wrong
@@ -463,23 +515,26 @@ fail-closed behavior. The docs supply-chain hardening test suite passed 29
 tests after the fixed exclusion/config changes (`VALIDATED`).
 
 The focused tests are source-level/backend evidence. They do not replace the
-phone results or prove unsupported phone fault-injection procedures.
+phone results or prove the direct OPA outage-window procedure that the fixed
+restart control intentionally does not expose.
 
 ## 13. Resource evidence
 
-Measured phone values from the final authenticated Smoke evidence (the
-reattachment run supplies the worker RSS range):
+Measured phone values from the final authenticated Smoke, Standard, and
+Adversarial evidence:
 
 | Metric | Observation |
 | --- | --- |
-| Available memory | 3,293,765,632 bytes / 44.41% at final Smoke admission (`RUNTIME-VALIDATED`) |
-| Free storage | 136,815,144,960 bytes at final Smoke admission (`RUNTIME-VALIDATED`) |
-| Battery | 59%, not charging at final Smoke admission (`RUNTIME-VALIDATED`) |
-| Temperature | 32.3 °C at final Smoke admission (`RUNTIME-VALIDATED`) |
+| Smoke memory | 2,605,641,728 bytes / 35.13% at start; 2,886,537,216 bytes / 38.92% at finish (`RUNTIME-VALIDATED`) |
+| Standard memory | 2,888,507,392 bytes / 38.95% at start; 2,902,405,120 bytes / 39.14% at finish (`RUNTIME-VALIDATED`) |
+| Adversarial memory | 2,902,597,632 bytes at start; 2,911,846,400 bytes at finish (`RUNTIME-VALIDATED`) |
+| Free storage | Smoke 136,874,553,344→136,862,150,656 bytes; Standard 136,851,677,184→136,852,791,296; Adversarial 136,845,893,632→136,839,057,408 (`RUNTIME-VALIDATED`) |
+| Battery / charging | 94% / charging throughout the current q runs (`RUNTIME-VALIDATED`) |
+| Temperature | 33.0 °C throughout the current q runs (`RUNTIME-VALIDATED`) |
 | Worker RSS | Approximately 245–255 MB (`RUNTIME-VALIDATED`) |
 | Aggregate CPU/load | `UNAVAILABLE`; Android `/proc` fallback was not represented as measured data |
 | Heavy scanner admission | One-heavy-scanner policy accepted (`RUNTIME-VALIDATED`) |
-| Per-tool phone CPU, disk delta, thermal delta | `UNAVAILABLE` in the safe report; total Smoke duration 341796 ms |
+| Per-tool phone CPU, disk delta, thermal delta | `UNAVAILABLE` in the safe report; current totals Smoke 708672 ms, Standard 370209 ms, Adversarial 37086 ms |
 
 DEV-PC fixed capture durations are recorded per step in the command ledger.
 Syft’s earlier unbounded root scan reached approximately 1.4 GiB RSS and was
@@ -504,7 +559,7 @@ Final phone qualification cleanup was `RUNTIME-VALIDATED`:
 - API health/readiness, NATS/JetStream, durable consumer, worker, OPA, and
   normal PM2 state were healthy; NATS monitor health was `ok`, JetStream was
   enabled, and OPA served the durable known-good revision;
-- the phone checkout was detached at the published feature SHA `a0937b30…`
+- the phone checkout was detached at the published feature SHA `0cfe3978…`
   and clean both before and after qualification;
 - the exact disposable client keys and phone-side public-key staging files were
   removed after the final run; the fixed `.harness-demo.sh` untracked file on
@@ -521,9 +576,11 @@ operations were performed on the DEV PC.
 | Documentation dependency CVEs (CVE-2026-73295, CVE-2026-67422, CVE-2026-61632) | Pinned `requirements-docs.txt` to mkdocs-material 9.7.7 and pymdown-extensions 11.0.1 | Trivy SBOM retest: 0 vulnerabilities; docs pip-audit: 0 vulnerabilities; docs generation/check required at final head | `VALIDATED` for DEV-PC documentation lane |
 | Recursive local evidence/cache contamination of source SBOM/OSV/Gitleaks | Added fixed source exclusions, OSV exact-dir exclusions, checked-in Gitleaks allowlist, and regression tests | Fixed Syft/OSV/Gitleaks capture and 29 hardening tests | `IMPLEMENTED` / `VALIDATED`; no phone source change |
 | Trivy cache-identity regression fixture | Isolated the unknown-database test from any locally installed Trivy cache by stubbing both database identity and status | Focused security-assurance/security tests and final full-gate rerun | `IMPLEMENTED` / `VALIDATED`; test-only correction |
-| Qualification client discarded the requested renewal TTL on the session request | Forwarded the bounded `ttl_seconds` value to both the signed challenge and normal session endpoints | New harness client regression test; final phone Smoke used a 60-second session TTL and completed with 8 renewals | `IMPLEMENTED` / `RUNTIME-VALIDATED` |
+| Qualification client discarded the requested renewal TTL on the session request | Forwarded the bounded `ttl_seconds` value to both the signed challenge and normal session endpoints | Harness client regression test; current phone qualification used a 300-second session TTL and completed with 5 renewals | `IMPLEMENTED` / `RUNTIME-VALIDATED` |
+| Assurance client attributed transport failure to Smoke after later phases | Preserved the active workflow phase/suite when a client transport failure is observed | Focused client/harness tests; current Smoke/Standard/Adversarial workflow completed with truthful phase state | `IMPLEMENTED` / `VALIDATED` |
+| Assurance tool metadata lost bounded version/duration fields | Preserved sanitized tool version and derived duration in the SQLite/report projection | Focused Security/assurance tests; current phone report exposed Trivy `dev` and Lynis `3.1.6` | `IMPLEMENTED` / `RUNTIME-VALIDATED` |
 | Runtime `gitea/conf/app.runtime.ini` low finding | No source patch: tracked-source and runtime exposure were not established; content remains redacted | Requires operator ownership/mode/exposure review; no secret printed | `PARTIAL` / `UNVALIDATED` configuration follow-up |
-| OPA `policy_source_update_pending` | No bypass or policy mutation; supported Owner-confirmed source-sync remains required | Healthy OPA/revision evidence captured; Standard still blocked | `BLOCKED` by authorized operational gate |
+| OPA `policy_source_update_pending` | No bypass; used the fixed qualification-only current-Safety-Rules synchronization path | OPA became `ready`, source became `current`, Standard completed 11 scenarios | `RUNTIME-VALIDATED` / `PASS` |
 
 No genuine Critical or High source/runtime defect was fixed in this
 continuation. A Server Phone finding would have been patched only on the DEV
@@ -536,14 +593,17 @@ renewal, run survival, client reattachment, fixed worker-owned Security path,
 sanitized result/report flow, consumer-only cleanup, and isolated schema
 rollback rehearsal.
 
-`BLOCKED`: Standard until the existing human/Owner-approved OPA policy source
-sync activates the feature revision and `policy_source_update_pending` clears.
+`RUNTIME-VALIDATED`: Standard now passes after the fixed qualification-only
+policy-source synchronization. Live worker restart/resume, NATS restart/
+recovery, and OPA restart/recovery also pass with the same run/operation
+correlation and preserved checkpoints. The current runs used a 300-second
+session TTL and five automatic renewals; authentication expiry did not stop an
+admitted run.
 
-`UNVALIDATED`: live phone worker restart/resume, NATS interruption/recovery,
-and OPA interruption/fail-closed/recovery. The final Smoke ran longer than its
-60-second qualification session TTL and completed through automatic renewal;
-this is `RUNTIME-VALIDATED` session-expiry continuity, while backend tests
-cover the broader durable state semantics.
+`PARTIAL`/`UNVALIDATED`: a direct request made during an OPA outage and a
+direct NATS outage-window assertion were not exposed by the fixed restart
+controls. Source/unit tests cover fail-closed and interruption semantics, but
+this phone evidence proves restart/recovery, not an outage interval.
 
 `DEFERRED`/`UNSUPPORTED`: native phone execution of Bandit, Gitleaks,
 pip-audit, Schemathesis, Cosign, Semgrep, OSV-Scanner, Syft, Grype, testssl.sh,
@@ -553,16 +613,18 @@ network scanning; and heavy ZAP/deep attack profiles.
 
 Final qualification verdict at this evidence point: `PARTIAL`.
 
-PR #576 recommendation: `KEEP DRAFT`. The central authenticated Smoke path is
-proven, but the requested Standard, dedicated Adversarial, live worker/NATS/OPA
-fault-recovery, and complete native toolchain evidence are not proven. The
-isolated schema rollback blocker is closed safely under Model A; it does not
-close the separate OPA policy synchronization gate.
+PR #576 recommendation: `KEEP DRAFT`. Authenticated Smoke, Standard,
+Adversarial, worker restart/resume, NATS restart/recovery, OPA restart/recovery,
+policy convergence, cleanup, and the central FastAPI→NATS→worker→Security
+path are runtime-proven. The recommendation remains draft because optional
+tools are not promoted into the phone worker path, Deep is not run, direct
+outage-window fail-closed probes remain unvalidated, and human/Recovery paths
+remain outside this non-destructive qualification.
 
 The latest complete static/supply-chain evidence in this dossier is bound to
 `cfe3168e05f25483410217bb21bf711f80db596e`; it is a complete local/CI
 diagnostic capture with sanitized artifacts promoted and is not substituted for
-the final phone runtime report, which is bound to `a0937b30…`. Any later
+the final phone runtime report, which is bound to `0cfe3978…`. Any later
 documentation-only commit must keep those evidence identities separate and
 must not be presented as a new phone runtime execution without an exact-SHA
 retest.
