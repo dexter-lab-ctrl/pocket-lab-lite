@@ -6,7 +6,12 @@ profiles:
   smoke:
     purpose: Fast bounded runtime assurance using existing low-power Security and critical control-boundary checks.
     target_seconds: 180
-    maximum_seconds: 600
+    # The target stays fast, but the Android/Termux ARM64 Security Quick path
+    # is a real worker-owned scan.  The observed qualification envelope has
+    # reached just over ten minutes on a resource-constrained phone, so keep a
+    # bounded margin rather than turning a late, complete scanner result into a
+    # false PARTIAL run.
+    maximum_seconds: 900
     explicit_only: false
     qualification_only: false
     existing_security_profile: quick

@@ -147,7 +147,7 @@ the tested vocabulary revision-bound and reproducible.
 
 | Profile | Intended use | Default policy |
 | --- | --- | --- |
-| `smoke` | Fast critical boundary and readiness checks plus existing Quick Security | Normal bounded run; target 180 seconds, maximum 600 seconds |
+| `smoke` | Fast critical boundary and readiness checks plus existing Quick Security | Normal bounded run; target 180 seconds, maximum 900 seconds on the ARM64 qualification target |
 | `standard` | Normal runtime qualification and coverage | Normal bounded run; target 900 seconds, maximum 1800 seconds |
 | `deep` | Extended manual qualification | Explicit-only; target 3600 seconds, maximum 7200 seconds |
 | `adversarial` | Reviewed fixed local adversarial cases | Explicit qualification-only; no destructive operation |
