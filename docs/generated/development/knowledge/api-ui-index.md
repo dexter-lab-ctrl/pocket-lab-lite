@@ -75,6 +75,8 @@ generator_version: 3
 | `GET /api/lite/fleet/invites/latest` | devices | — | get_latest_lite_fleet_invite_api_lite_fleet_invites_latest_get | contract-derived |
 | `GET /api/lite/harness/capabilities` | harness | — | capabilities_api_lite_harness_capabilities_get | contract-derived |
 | `GET /api/lite/harness/security-assurance/capabilities` | harness | — | capabilities_api_lite_harness_security_assurance_capabilities_get | contract-derived |
+| `GET /api/lite/harness/security-assurance/faults` | harness | — | faults_api_lite_harness_security_assurance_faults_get | contract-derived |
+| `GET /api/lite/harness/security-assurance/policy-sync/status` | harness | — | policy_sync_status_api_lite_harness_security_assurance_policy_sync_status_get | contract-derived |
 | `GET /api/lite/harness/security-assurance/preflight` | harness | — | preflight_api_lite_harness_security_assurance_preflight_get | contract-derived |
 | `GET /api/lite/harness/security-assurance/runs` | harness | — | runs_api_lite_harness_security_assurance_runs_get | contract-derived |
 | `GET /api/lite/harness/security-assurance/runs/{run_id}` | harness | — | run_status_api_lite_harness_security_assurance_runs__run_id__get | contract-derived |
@@ -181,6 +183,8 @@ generator_version: 3
 | `POST /api/lite/harness/principal/revoke` | harness | — | revoke_authenticated_principal_api_lite_harness_principal_revoke_post | contract-derived |
 | `POST /api/lite/harness/principals` | harness | — | register_principal_api_lite_harness_principals_post | contract-derived |
 | `POST /api/lite/harness/principals/{principal_id}/revoke` | harness | — | revoke_principal_api_lite_harness_principals__principal_id__revoke_post | contract-derived |
+| `POST /api/lite/harness/security-assurance/faults/{fault_id}` | harness | — | execute_fault_api_lite_harness_security_assurance_faults__fault_id__post | contract-derived |
+| `POST /api/lite/harness/security-assurance/policy-sync` | harness | — | policy_sync_api_lite_harness_security_assurance_policy_sync_post | contract-derived |
 | `POST /api/lite/harness/security-assurance/runs` | harness | — | create_run_api_lite_harness_security_assurance_runs_post | contract-derived |
 | `POST /api/lite/harness/security-assurance/runs/{run_id}/cancel` | harness | — | cancel_api_lite_harness_security_assurance_runs__run_id__cancel_post | contract-derived |
 | `POST /api/lite/harness/security-assurance/runs/{run_id}/resume` | harness | — | resume_api_lite_harness_security_assurance_runs__run_id__resume_post | contract-derived |

@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: d6f130b3bb537e3a1fcb19e211af4a575ad9370ae3b117e9e189cb8f9d0806d8
+source_fingerprint: bbfb055eca0bbab0ac52bb10bcfff8ac3d476d57d55ad27558baf66ec06ee012
 schema_revision: 1
 validation_status: generated
 ---
@@ -146,6 +146,7 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_HARNESS_CONTINUITY_FILE`
 - `POCKETLAB_HARNESS_DESTRUCTIVE`
 - `POCKETLAB_HARNESS_ENABLED`
+- `POCKETLAB_HARNESS_FAULT_CONTROL`
 - `POCKETLAB_HARNESS_PROVISIONING_TOKEN`
 - `POCKETLAB_HARNESS_SESSION`
 - `POCKETLAB_K6_VERSION`
@@ -272,7 +273,6 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_QUALIFICATION_OWNER`
 - `POCKETLAB_READY_ATTEMPTS`
 - `POCKETLAB_READY_CONNECT_TIMEOUT`
-- `POCKETLAB_READY_MAX_TIME`
 
 ## Process roles
 

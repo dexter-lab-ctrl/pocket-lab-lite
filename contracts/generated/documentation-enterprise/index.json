@@ -8661,6 +8661,7 @@
           "tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py",
           "tests/backend/test_lite_harness.py",
           "tests/backend/test_lite_security_assurance.py",
+          "tests/backend/test_lite_security_assurance_controls.py",
           "tests/pocket_lab_test_utils.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -9166,9 +9167,9 @@
           ".harness-demo.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
           "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
-          "scripts/dev/lite/start-qualification.sh",
-          "tests/backend/test_lite_harness.py"
+          "scripts/dev/lite/start-qualification.sh"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -11073,10 +11074,10 @@
         "source": [
           ".harness-demo.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py",
-          "scripts/dev/lite/start-qualification.sh",
-          "tests/backend/test_lite_harness.py"
+          "scripts/dev/lite/start-qualification.sh"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -11104,9 +11105,35 @@
           ".harness-demo.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
           "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
+          "scripts/dev/lite/start-qualification.sh"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_HARNESS_FAULT_CONTROL",
+        "owner": "FastAPI/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
           "scripts/dev/lite/start-qualification.sh",
-          "tests/backend/test_lite_harness.py"
+          "tests/backend/test_lite_security_assurance_controls.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -11184,7 +11211,8 @@
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
           "tests/backend/test_lite_harness.py",
-          "tests/backend/test_lite_security_assurance.py"
+          "tests/backend/test_lite_security_assurance.py",
+          "tests/backend/test_lite_security_assurance_controls.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -20626,9 +20654,9 @@
           ".harness-demo.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
           "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py",
-          "scripts/dev/lite/start-qualification.sh"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -24506,9 +24534,9 @@
           ".harness-demo.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
           "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -27798,7 +27826,7 @@
         "security_classification": "internal metadata",
         "source_owner": [
           "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:134",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2557",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2728",
           "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:29",
           "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:562",
           "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:665",
@@ -29138,7 +29166,7 @@
         "security_classification": "internal metadata",
         "source_owner": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1601",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:54",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:55",
           "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:370",
           "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:568",
           "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:646"
@@ -35816,13 +35844,13 @@
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
           "assurance_deadline_exceeded",
+          "assurance_policy_sync_denied",
+          "assurance_policy_sync_disabled",
           "assurance_session_binding_mismatch",
           "battery_policy_threshold",
           "bootstrap_transport_rejected",
           "checkpoint_ineligible",
-          "configured_target_budget",
-          "connection_failed",
-          "deferred_resource_pressure"
+          "configured_target_budget"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -36219,13 +36247,13 @@
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
           "assurance_deadline_exceeded",
+          "assurance_policy_sync_denied",
+          "assurance_policy_sync_disabled",
           "assurance_session_binding_mismatch",
           "bootstrap_transport_rejected",
           "connection_failed",
           "enterprise_connect_links_retired",
-          "git_unavailable",
-          "harness_session_invalid",
-          "harness_session_not_found"
+          "fault_already_used"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -36485,13 +36513,13 @@
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
           "policy_unavailable",
+          "assurance_policy_sync_denied",
+          "assurance_policy_sync_disabled",
           "battery_policy_threshold",
           "generic_policy_toggle_retired",
           "identity_unavailable",
           "opa_status_unknown",
-          "owner_approval_policy_inconsistent",
-          "policy_action_not_registered",
-          "policy_activation_in_progress"
+          "owner_approval_policy_inconsistent"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -36518,14 +36546,14 @@
         "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
+          "assurance_policy_sync_denied",
+          "assurance_policy_sync_disabled",
           "battery_policy_threshold",
           "generic_policy_toggle_retired",
           "human_session_required",
           "identity_unavailable",
           "owner_approval_policy_inconsistent",
-          "policy_action_not_registered",
-          "policy_activation_in_progress",
-          "policy_activation_not_uncertain"
+          "policy_action_not_registered"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -44622,10 +44650,10 @@
       "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
-        "asyncapi": "c11f6d596f5ac3988e9109d921f85db7d147970e941b6f9d83f9ce220530e016",
-        "documentation": "a5cb6165e442f3d53c3b5f48a10fbc7f0c6c60363c1cfaed279ed2565a362740",
-        "openapi": "29fe89e306d944e35445019dadaca666e129a76386a9b20e1d148bb6f40ef771",
-        "operational_health": "713eb51a197ca51307428efa585736a19600ba3bdd8c891f0be5bd764aa65857"
+        "asyncapi": "f65bc1358fda421adcfd6e559b238a25fbd682e0b26e6ea9242ecd3170a0c1f0",
+        "documentation": "59aaa8415fbec94f4277ecb70de9062ae502569ea44364bb7780f68a77f0a755",
+        "openapi": "130d79dd5e50f26db37a2ef9dbdc4417c367d22199cc7decae15c168cd440313",
+        "operational_health": "d77eeedb689de8d1f31eb08f738105a60c399d5c55ced5370d5d5fdfafa3c8f6"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -86849,6 +86877,8 @@
         "lite:security:assurance:check",
         "lite:security:assurance:compare",
         "lite:security:assurance:deep",
+        "lite:security:assurance:fault",
+        "lite:security:assurance:policy-sync",
         "lite:security:assurance:preflight",
         "lite:security:assurance:qualify",
         "lite:security:assurance:report",
@@ -91971,6 +92001,46 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
+          "bash scripts/dev/lite/start-qualification.sh --bootstrap-principal-id \"{{.PRINCIPAL_ID}}\" --bootstrap-public-key-file \"{{.PUBLIC_KEY_FILE}}\" --bootstrap-profile security-assurance-runner --enable-fault-control"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:qualification:start:key-bound:faults",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/start-qualification.sh"
+        ],
+        "name": "lite:qualification:start:key-bound:faults",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Explicitly start key-bound qualification with the fixed non-destructive service-fault controls enabled",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": true,
+        "safe_local": false,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": true
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Security-analysis loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
           "{{.PYTHON}} scripts/dev/lite/security_assurance.py run adversarial"
         ],
         "dependencies": [],
@@ -92131,6 +92201,86 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
+          "{{.PYTHON}} scripts/dev/lite/security_assurance.py fault \"{{.FAULT_ID}}\""
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:security:assurance:fault",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/security_assurance.py"
+        ],
+        "name": "lite:security:assurance:fault",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Execute one registered non-destructive qualification service-fault control",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Security-analysis loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/dev/lite/security_assurance.py policy-sync --wait-seconds \"{{.WAIT_SECONDS}}\""
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:security:assurance:policy-sync",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/security_assurance.py"
+        ],
+        "name": "lite:security:assurance:policy-sync",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Queue the current repository Safety Rules through the qualification-only supervisor lifecycle",
+        "related_tasks": [],
+        "repository_mutation": true,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": true,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Security-analysis loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
           "{{.PYTHON}} scripts/dev/lite/security_assurance.py preflight \"{{.SUITE}}\""
         ],
         "dependencies": [],
@@ -92171,7 +92321,7 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
-          "{{.PYTHON}} scripts/dev/lite/security_assurance.py qualify --principal-id \"{{.PRINCIPAL_ID}}\" --key-file \"{{.KEY_FILE}}\""
+          "{{.PYTHON}} scripts/dev/lite/security_assurance.py qualify --principal-id \"{{.PRINCIPAL_ID}}\" --key-file \"{{.KEY_FILE}}\" --sync-policy --policy-sync-wait-seconds \"{{.POLICY_SYNC_WAIT_SECONDS}}\""
         ],
         "dependencies": [],
         "environment": [],
@@ -92192,14 +92342,14 @@
         "promotes_evidence": false,
         "purpose": "Run the bounded key-bound qualification workflow with renewal, reattach, and cleanup",
         "related_tasks": [],
-        "repository_mutation": false,
+        "repository_mutation": true,
         "requires_termux": false,
         "requires_wsl2": false,
         "runtime_mutation": false,
         "safe_local": true,
         "side_effects": {
           "network_or_external_tools": false,
-          "repository_mutation": false,
+          "repository_mutation": true,
           "runtime_mutation": false
         },
         "source": "tasks/Taskfile.lite.yml",
@@ -114003,5 +114153,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "fb441524025bd4000bb07ede44a372b6208d32f36144c8073251ecebc72a5820"
+  "source_fingerprint": "6ba2b2014313be6df1f3031a96e59f768796d1771496128f1e66e69a51be2cdb"
 }

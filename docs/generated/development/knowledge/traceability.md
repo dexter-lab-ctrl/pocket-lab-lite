@@ -73,6 +73,8 @@ generator_version: 3
 | GET /api/lite/fleet/invites/latest | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/harness/capabilities | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/harness/security-assurance/capabilities | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/harness/security-assurance/faults | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/harness/security-assurance/policy-sync/status | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/harness/security-assurance/preflight | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/harness/security-assurance/runs | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/harness/security-assurance/runs/{run_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
@@ -179,6 +181,8 @@ generator_version: 3
 | POST /api/lite/harness/principal/revoke | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/harness/principals | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/harness/principals/{principal_id}/revoke | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/harness/security-assurance/faults/{fault_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/harness/security-assurance/policy-sync | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/harness/security-assurance/runs | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/harness/security-assurance/runs/{run_id}/cancel | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/harness/security-assurance/runs/{run_id}/resume | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
@@ -328,7 +332,7 @@ generator_version: 3
 | Telemetry | domain | — | unvalidated |
 | Testing | domain | — | unvalidated |
 | Unknown | domain | — | unvalidated |
-| Validation | domain | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/backend/test_lite_recovery.py, test:tests/backend/test_lite_security_assurance.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_documentation_presentation_polish.py, test:tests/docs/test_enterprise_completion.py, test:tests/docs/test_living_knowledgebase.py, test:tests/e2e/lite-device-facts.spec.ts, test:tests/parity/test_intelligent_runtime_parity.py | test-linked |
+| Validation | domain | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/backend/test_lite_recovery.py, test:tests/backend/test_lite_security_assurance.py, test:tests/backend/test_lite_security_assurance_controls.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_documentation_presentation_polish.py, test:tests/docs/test_enterprise_completion.py, test:tests/docs/test_living_knowledgebase.py, test:tests/e2e/lite-device-facts.spec.ts, test:tests/parity/test_intelligent_runtime_parity.py | test-linked |
 | Vault | domain | — | unvalidated |
 | Vocabulary | domain | — | unvalidated |
 | Websocket | domain | — | unvalidated |

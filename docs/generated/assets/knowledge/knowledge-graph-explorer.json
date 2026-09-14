@@ -728,6 +728,28 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Faults",
+      "domain": "harness",
+      "id": "api:get:/api/lite/harness/security-assurance/faults",
+      "name": "GET /api/lite/harness/security-assurance/faults",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Policy Sync Status",
+      "domain": "harness",
+      "id": "api:get:/api/lite/harness/security-assurance/policy-sync/status",
+      "name": "GET /api/lite/harness/security-assurance/policy-sync/status",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Preflight",
       "domain": "harness",
       "id": "api:get:/api/lite/harness/security-assurance/preflight",
@@ -1887,6 +1909,28 @@
       "domain": "harness",
       "id": "api:post:/api/lite/harness/principals/{principal_id}/revoke",
       "name": "POST /api/lite/harness/principals/{principal_id}/revoke",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Execute Fault",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
+      "name": "POST /api/lite/harness/security-assurance/faults/{fault_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Policy Sync",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/security-assurance/policy-sync",
+      "name": "POST /api/lite/harness/security-assurance/policy-sync",
       "source_refs": [
         "contracts/generated/lite-openapi.json"
       ],
@@ -4760,6 +4804,30 @@
       "confidence": "source-derived",
       "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
       "domain": "validation",
+      "id": "reason:assurance_policy_sync_denied",
+      "name": "assurance_policy_sync_denied",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "id": "reason:assurance_policy_sync_disabled",
+      "name": "assurance_policy_sync_disabled",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
       "id": "reason:assurance_session_binding_mismatch",
       "name": "assurance_session_binding_mismatch",
       "source_refs": [
@@ -5206,6 +5274,150 @@
       "domain": "rules",
       "id": "reason:exception_unusable",
       "name": "exception_unusable",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "id": "reason:fault_already_used",
+      "name": "fault_already_used",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "id": "reason:fault_confirmation_required",
+      "name": "fault_confirmation_required",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "id": "reason:fault_control_denied",
+      "name": "fault_control_denied",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "id": "reason:fault_control_disabled",
+      "name": "fault_control_disabled",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "id": "reason:fault_control_execution_failed",
+      "name": "fault_control_execution_failed",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "id": "reason:fault_recovery_observation_failed",
+      "name": "fault_recovery_observation_failed",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "id": "reason:fault_recovery_timeout",
+      "name": "fault_recovery_timeout",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "id": "reason:fault_registry_invalid",
+      "name": "fault_registry_invalid",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "id": "reason:fault_registry_unavailable",
+      "name": "fault_registry_unavailable",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "id": "reason:fault_restart_not_acted",
+      "name": "fault_restart_not_acted",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "id": "reason:fault_restarted",
+      "name": "fault_restarted",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "id": "reason:fault_unknown",
+      "name": "fault_unknown",
       "source_refs": [
         "contracts/generated/reason-codes.json",
         "contracts/metadata/documentation-platform.json"
@@ -7475,7 +7687,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:134",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2557",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2728",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:29",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:562",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:665",
@@ -7936,7 +8148,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1601",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:54",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:55",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:370",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:568",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:646"
@@ -12183,6 +12395,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_assurance_controls.py",
+      "name": "tests/backend/test_lite_security_assurance_controls.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_security_f11_events_contract.py",
       "name": "tests/backend/test_lite_security_f11_events_contract.py",
       "source_refs": [
@@ -15676,6 +15899,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:05d6d732dcd01598",
+      "source": "reason:fault_control_denied",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:05d7945f3449feef",
@@ -16881,6 +17118,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:0c8130b82e6990e4",
+      "source": "reason:fault_confirmation_required",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:0ca6eb296a8872be",
@@ -17040,6 +17291,20 @@
       "id": "rel:0d06a7799be25eac",
       "source": "reason:policy_recovery_unproved",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:0d1c0b3c015e8f1e",
+      "source": "reason:harness_session_invalid",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
       "type": "verified_by"
     },
     {
@@ -17801,6 +18066,20 @@
       "source": "domain:node",
       "target": "subject:pocketlab.commands.node",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:10e759bd8996c0a4",
+      "source": "reason:fault_already_used",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -18929,6 +19208,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:15607eddaefb1eae",
+      "source": "reason:assurance_policy_sync_denied",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:157401bb837dc32b",
@@ -18961,6 +19254,20 @@
       ],
       "id": "rel:15a3781bf34a5b8c",
       "source": "reason:identity_mismatch",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:15b90f57918a3377",
+      "source": "reason:fault_unknown",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
@@ -20573,6 +20880,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:1db783b8d64273be",
+      "source": "reason:fault_recovery_timeout",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:1dc23d3f7500e949",
@@ -20783,12 +21104,40 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:1eca18d4100bf1a0",
+      "source": "reason:fault_restarted",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:830"
       ],
       "id": "rel:1ed844dea0b9bd13",
       "source": "component:workflow-execution",
       "target": "subject:pocketlab.commands",
       "type": "publishes"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:1ed8cbb65ddc08a7",
+      "source": "domain:validation",
+      "target": "reason:fault_registry_invalid",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -21772,6 +22121,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:247f58c6f86177e4",
+      "source": "reason:fault_control_denied",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "src/lite/LiteDevices.jsx"
       ],
       "id": "rel:24980873978134b9",
@@ -22594,6 +22957,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:28528edcb2bdc9b9",
+      "source": "reason:fault_recovery_observation_failed",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:2863fb96044eca52",
@@ -22754,6 +23131,20 @@
       "source": "domain:validation",
       "target": "reason:security_scan_conflict",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:29430c1376adfa90",
+      "source": "reason:fault_confirmation_required",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -24095,12 +24486,40 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:30757d0d4f3f97cb",
+      "source": "domain:harness",
+      "target": "api:get:/api/lite/harness/security-assurance/faults",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "src/lite/LiteCatalog.jsx"
       ],
       "id": "rel:307b7d5d8f355d72",
       "source": "journey:app-installation",
       "target": "api:post:/api/lite/catalog/install",
       "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:30b9b76e9850b7c2",
+      "source": "api:get:/api/lite/harness/security-assurance/faults",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -25217,6 +25636,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:3664c193f0c039e5",
+      "source": "domain:validation",
+      "target": "reason:fault_restarted",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:3671da39a025f972",
@@ -26069,6 +26502,20 @@
       "source": "domain:harness",
       "target": "api:get:/api/lite/harness/security-assurance/runs/{run_id}",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:3996629c161a969f",
+      "source": "reason:fault_restart_not_acted",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -27596,6 +28043,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:4108610aa3b9ed8e",
+      "source": "domain:harness",
+      "target": "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
         "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py"
       ],
@@ -27723,6 +28184,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:41946a0423c898e4",
+      "source": "domain:validation",
+      "target": "reason:fault_control_disabled",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:419654cf86fd37e2",
@@ -27793,6 +28268,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:41cbddeea8fc3ae4",
+      "source": "api:get:/api/lite/harness/security-assurance/policy-sync/status",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:41cd580330ed5b9c",
@@ -27812,6 +28301,20 @@
       "id": "rel:41dd5c58c18822c7",
       "source": "api:post:/api/lite/recovery/database/backups/{backup_id}/preview",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:41e1fcae24d23286",
+      "source": "api:post:/api/lite/harness/security-assurance/policy-sync",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -28264,6 +28767,20 @@
       "source": "domain:control_plane",
       "target": "table:policy_temporary_exceptions",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:43db05f301eb332e",
+      "source": "reason:fault_restart_not_acted",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -28843,6 +29360,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:473d71832fb23857",
+      "source": "reason:fault_confirmation_required",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:473f46458853991f",
@@ -29212,6 +29743,20 @@
       "id": "rel:493f136dfe7c5401",
       "source": "component:caddy",
       "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:494b40f8d6a9ee0f",
+      "source": "reason:fault_recovery_observation_failed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -30117,6 +30662,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:4de0934a5dbfe8e1",
+      "source": "reason:fault_control_disabled",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:4de5e7ad232474fa",
@@ -30473,6 +31032,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:4f64046d366fb09e",
+      "source": "reason:fault_registry_unavailable",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:4f77cd0eef50b9c9",
@@ -30703,6 +31276,20 @@
       "source": "component:prepared-state",
       "target": "troubleshooting:stale-evidence",
       "type": "recovers_with"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:503c30707b0069df",
+      "source": "reason:assurance_policy_sync_disabled",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -31082,6 +31669,20 @@
       "source": "api:post:/api/lite/enterprise/rules/rollbacks",
       "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:5327c9971e0b2d25",
+      "source": "domain:validation",
+      "target": "reason:assurance_policy_sync_denied",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -32005,6 +32606,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:5821e5f5d116c462",
+      "source": "api:post:/api/lite/harness/security-assurance/policy-sync",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:584ecbf3600f7ff2",
@@ -32299,6 +32914,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:594ceced3b3a3ddf",
+      "source": "reason:fault_control_execution_failed",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:596a3051c5818dcf",
@@ -32388,6 +33017,20 @@
       "id": "rel:59b7fb99288ca57f",
       "source": "reason:approval_read_forbidden",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:59c0f7f103140c4a",
+      "source": "reason:fault_unknown",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
       "type": "verified_by"
     },
     {
@@ -32585,6 +33228,20 @@
       "source": "domain:devices",
       "target": "reason:command_undeliverable",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:5aa39032a2c3cc0d",
+      "source": "reason:fault_control_denied",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -33306,6 +33963,20 @@
       "source": "component:post-switch-health",
       "target": "component:last-known-good",
       "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:5f292bc8630994e7",
+      "source": "reason:fault_registry_invalid",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -34579,6 +35250,34 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:6678e6abc468daa5",
+      "source": "reason:assurance_policy_sync_denied",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:6688def3e3b0db4b",
+      "source": "api:get:/api/lite/harness/security-assurance/policy-sync/status",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_identity_passkeys_rules_p1.py"
       ],
       "id": "rel:669264bd6b0eacec",
@@ -35148,6 +35847,20 @@
       "id": "rel:698fb2ed2c3c9a35",
       "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:6997a849428aeb82",
+      "source": "reason:fault_registry_unavailable",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -35826,6 +36539,20 @@
       "source": "domain:identity",
       "target": "api:get:/api/lite/identity",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:6c742fc03f8fd9e1",
+      "source": "domain:validation",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -36541,6 +37268,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:6fecf8ee9e0f33dd",
+      "source": "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_documentation_ia.py"
       ],
       "id": "rel:6ffb9ecd128ad457",
@@ -36980,6 +37721,20 @@
       "id": "rel:71f8884aa70bf657",
       "source": "reason:approval_required",
       "target": "test:tests/backend/test_policy_source_reconciliation.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:72073336273df528",
+      "source": "reason:fault_recovery_observation_failed",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -37479,6 +38234,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:744a265810b83637",
+      "source": "reason:fault_recovery_timeout",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:746de92c367e48c7",
@@ -37567,6 +38336,20 @@
       ],
       "id": "rel:74a2626a0594630c",
       "source": "reason:release_projection_unavailable",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:74aebd92a62cfaf8",
+      "source": "reason:assurance_policy_sync_disabled",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
@@ -37829,11 +38612,39 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:768578dd312705d1",
+      "source": "reason:fault_control_execution_failed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:76905e3c0869e955",
       "source": "reason:authenticated_app_install_exception_scoped",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:76934edae0b6cbdc",
+      "source": "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -37974,6 +38785,20 @@
       "id": "rel:774078a870b6ef85",
       "source": "component:retirement-database-recovery",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:7740e886b293f6b6",
+      "source": "reason:fault_restarted",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -38263,6 +39088,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:78c7956800c63cdb",
+      "source": "domain:validation",
+      "target": "reason:fault_restart_not_acted",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "src/lite/LiteCatalog.jsx"
       ],
       "id": "rel:78d9a00bb28f0836",
@@ -38325,6 +39164,20 @@
       "source": "domain:identity",
       "target": "reason:owner_claim_authority_expired",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:798aee37ed8550f6",
+      "source": "reason:fault_control_disabled",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -40513,6 +41366,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:859376ed70a206a0",
+      "source": "domain:validation",
+      "target": "reason:fault_unknown",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:85a2c7251f725892",
@@ -40990,6 +41857,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:87fcc9bda6d808e9",
+      "source": "reason:assurance_policy_sync_denied",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:88061e0ec0bc95ab",
@@ -41387,6 +42268,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:89f0b22d4f124cc9",
+      "source": "reason:fault_registry_unavailable",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:8a14da413069c3cb",
@@ -41660,6 +42555,20 @@
       "source": "domain:identity",
       "target": "reason:local_owner_required",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:8b3f43c9a6f00575",
+      "source": "api:get:/api/lite/harness/security-assurance/faults",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -42095,6 +43004,20 @@
       "source": "ui:liteidentity",
       "target": "api:put:/api/lite/identity/passkeys/{credential_id}",
       "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:8ddd24cc1159b50f",
+      "source": "reason:assurance_policy_sync_disabled",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -45180,6 +46103,20 @@
       "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
+      "id": "rel:9e3340af4cb3e092",
+      "source": "reason:fault_restart_not_acted",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
       "id": "rel:9e78418fdb0f4bee",
       "source": "component:sqlite",
       "target": "test:tests/docs/test_living_knowledgebase.py",
@@ -45402,6 +46339,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:9f7242ae25004adb",
+      "source": "domain:harness",
+      "target": "api:post:/api/lite/harness/security-assurance/policy-sync",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:9f906c31f2c10a5a",
@@ -45421,6 +46372,20 @@
       "id": "rel:9f92cabd91db488e",
       "source": "api:get:/api/lite/devices/{device_id}/health",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:9f9325bfe5bc7626",
+      "source": "reason:disabled",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
       "type": "verified_by"
     },
     {
@@ -45547,6 +46512,20 @@
       "id": "rel:a056dd7f6ba45880",
       "source": "reason:identity_login_throttled",
       "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:a092b90eee55e35e",
+      "source": "reason:fault_confirmation_required",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -45884,6 +46863,20 @@
       "source": "domain:harness",
       "target": "api:post:/api/lite/harness/principals",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:a26f5a6da77bb473",
+      "source": "reason:assurance_policy_sync_denied",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -47713,6 +48706,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:ab756c03ab775de1",
+      "source": "domain:validation",
+      "target": "reason:fault_control_denied",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:ab84adbe3119e4e1",
@@ -48456,6 +49463,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:af0bc252e00902c3",
+      "source": "reason:fault_already_used",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_security_f7_split_read_contract.py"
       ],
       "id": "rel:af10eef6f80cd0c3",
@@ -48658,6 +49679,20 @@
       "source": "journey:app-installation",
       "target": "component:caddy",
       "type": "uses"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:b0a862cef3ffce96",
+      "source": "domain:validation",
+      "target": "reason:fault_already_used",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -49014,6 +50049,20 @@
       "id": "rel:b27a20cd06f4bd30",
       "source": "reason:command_undeliverable",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:b29a9af0820189bc",
+      "source": "reason:fault_control_execution_failed",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -50989,6 +52038,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:bd7d8c8e2354cfa0",
+      "source": "reason:fault_unknown",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:bd883f60fef5f00a",
@@ -51120,6 +52183,20 @@
       "id": "rel:be28bff52abd5863",
       "source": "reason:identity_session_invalid",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:be2a289cf9d66204",
+      "source": "reason:fault_already_used",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -52214,6 +53291,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:c43b44d77eea1f8f",
+      "source": "domain:validation",
+      "target": "reason:fault_control_execution_failed",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
@@ -52602,6 +53693,20 @@
       "id": "rel:c71cf8b7febf6d5b",
       "source": "component:invite-state",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:c7481d1b414dd632",
+      "source": "reason:fault_already_used",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -53501,6 +54606,20 @@
       "source": "domain:identity",
       "target": "test:tests/e2e/lite-test-helpers.ts",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:cbc83520c9ad5d43",
+      "source": "domain:validation",
+      "target": "reason:fault_confirmation_required",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -55671,6 +56790,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:d5eea0cc9cc49be8",
+      "source": "reason:fault_control_disabled",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:d61f8b9163984320",
@@ -57801,6 +58934,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:e03fd42055791ea8",
+      "source": "reason:fault_registry_invalid",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:e04a3b584073ea72",
@@ -58393,6 +59540,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:e3bdc2aa93601a82",
+      "source": "domain:harness",
+      "target": "api:get:/api/lite/harness/security-assurance/policy-sync/status",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:e3e042085b814f9a",
@@ -58483,6 +59644,20 @@
       "id": "rel:e44096e20241eac2",
       "source": "component:release-artifacts",
       "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:e441e6d4e2815c87",
+      "source": "reason:fault_unknown",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -58863,6 +60038,20 @@
       "source": "component:worker",
       "target": "subject:pocketlab.events.operation.worker_claimed",
       "type": "publishes"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:e5cf31845e75bbb6",
+      "source": "domain:validation",
+      "target": "reason:fault_recovery_timeout",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -59650,6 +60839,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:e923275021dac5df",
+      "source": "domain:validation",
+      "target": "reason:fault_recovery_observation_failed",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_policy_uncertain_resolution.py"
       ],
       "id": "rel:e975cc883b2334be",
@@ -59990,6 +61193,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:eb93b1a0378341cb",
+      "source": "reason:fault_recovery_timeout",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:eb9e64abeafadc8d",
@@ -60149,6 +61366,20 @@
       "id": "rel:ec24eafc57bc75eb",
       "source": "api:post:/api/lite/enterprise/rules/rollbacks",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:ec2b7b764f22c02c",
+      "source": "reason:assurance_policy_sync_disabled",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -60420,6 +61651,20 @@
       "id": "rel:ed9341324734f6de",
       "source": "reason:shutdown",
       "target": "test:tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:eda5e1afe4401668",
+      "source": "reason:fault_registry_invalid",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -60822,6 +62067,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:efb95a2585632f79",
+      "source": "domain:validation",
+      "target": "reason:fault_registry_unavailable",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:efd3826354384e9e",
@@ -60940,6 +62199,20 @@
       "source": "component:node-agent",
       "target": "subject:pocketlab.events.fleet.node_telemetry",
       "type": "publishes"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:f0aeefecea507fe4",
+      "source": "domain:validation",
+      "target": "reason:assurance_policy_sync_disabled",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -61093,6 +62366,20 @@
       "id": "rel:f107803ec3897bd0",
       "source": "api:get:/api/lite/system/telemetry-thresholds",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:f1081fa218c4d833",
+      "source": "reason:fault_control_disabled",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -62113,6 +63400,20 @@
       "source": "component:post-switch-health",
       "target": "api:get:/health",
       "type": "uses"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:f5decc2e50b82b01",
+      "source": "reason:fault_restarted",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {

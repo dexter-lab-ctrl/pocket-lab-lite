@@ -250,6 +250,18 @@
         "title": "EnterpriseModeRequest",
         "type": "object"
       },
+      "FaultControlRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "confirm": {
+            "default": false,
+            "title": "Confirm",
+            "type": "boolean"
+          }
+        },
+        "title": "FaultControlRequest",
+        "type": "object"
+      },
       "GovernanceSettingsRequest": {
         "properties": {
           "enterpriseModeEnabled": {
@@ -1554,6 +1566,13 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "PolicySyncRequest": {
+        "additionalProperties": false,
+        "description": "The qualification policy-sync request intentionally has no inputs.",
+        "properties": {},
+        "title": "PolicySyncRequest",
         "type": "object"
       },
       "PrincipalRegistrationRequest": {
@@ -8997,6 +9016,249 @@
           }
         },
         "summary": "Capabilities",
+        "tags": [
+          "lite-security-assurance"
+        ]
+      }
+    },
+    "/api/lite/harness/security-assurance/faults": {
+      "get": {
+        "operationId": "faults_api_lite_harness_security_assurance_faults_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Faults Api Lite Harness Security Assurance Faults Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Faults",
+        "tags": [
+          "lite-security-assurance"
+        ]
+      }
+    },
+    "/api/lite/harness/security-assurance/faults/{fault_id}": {
+      "post": {
+        "operationId": "execute_fault_api_lite_harness_security_assurance_faults__fault_id__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "fault_id",
+            "required": true,
+            "schema": {
+              "title": "Fault Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FaultControlRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Execute Fault Api Lite Harness Security Assurance Faults  Fault Id  Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Execute Fault",
+        "tags": [
+          "lite-security-assurance"
+        ]
+      }
+    },
+    "/api/lite/harness/security-assurance/policy-sync": {
+      "post": {
+        "operationId": "policy_sync_api_lite_harness_security_assurance_policy_sync_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicySyncRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Policy Sync Api Lite Harness Security Assurance Policy Sync Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Policy Sync",
+        "tags": [
+          "lite-security-assurance"
+        ]
+      }
+    },
+    "/api/lite/harness/security-assurance/policy-sync/status": {
+      "get": {
+        "operationId": "policy_sync_status_api_lite_harness_security_assurance_policy_sync_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Policy Sync Status Api Lite Harness Security Assurance Policy Sync Status Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Policy Sync Status",
         "tags": [
           "lite-security-assurance"
         ]

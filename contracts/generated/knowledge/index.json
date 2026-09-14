@@ -1951,6 +1951,48 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Faults",
+      "domain": "harness",
+      "id": "api:get:/api/lite/harness/security-assurance/faults",
+      "method": "GET",
+      "name": "GET /api/lite/harness/security-assurance/faults",
+      "operation_id": "faults_api_lite_harness_security_assurance_faults_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/harness/security-assurance/faults",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-security-assurance"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Policy Sync Status",
+      "domain": "harness",
+      "id": "api:get:/api/lite/harness/security-assurance/policy-sync/status",
+      "method": "GET",
+      "name": "GET /api/lite/harness/security-assurance/policy-sync/status",
+      "operation_id": "policy_sync_status_api_lite_harness_security_assurance_policy_sync_status_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/harness/security-assurance/policy-sync/status",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-security-assurance"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Preflight",
       "domain": "harness",
       "id": "api:get:/api/lite/harness/security-assurance/preflight",
@@ -4947,6 +4989,52 @@
       ],
       "tags": [
         "lite-harness"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Execute Fault",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
+      "method": "POST",
+      "name": "POST /api/lite/harness/security-assurance/faults/{fault_id}",
+      "operation_id": "execute_fault_api_lite_harness_security_assurance_faults__fault_id__post",
+      "response_statuses": [
+        "202",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/harness/security-assurance/faults/{fault_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-security-assurance"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Policy Sync",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/security-assurance/policy-sync",
+      "method": "POST",
+      "name": "POST /api/lite/harness/security-assurance/policy-sync",
+      "operation_id": "policy_sync_api_lite_harness_security_assurance_policy_sync_post",
+      "response_statuses": [
+        "202",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/harness/security-assurance/policy-sync",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-security-assurance"
       ],
       "type": "api"
     },
@@ -13410,6 +13498,46 @@
       "domain": "validation",
       "event_mapping": [],
       "http_status": 409,
+      "id": "reason:assurance_policy_sync_denied",
+      "name": "assurance_policy_sync_denied",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:assurance_policy_sync_disabled",
+      "name": "assurance_policy_sync_disabled",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
       "id": "reason:assurance_session_binding_mismatch",
       "name": "assurance_session_binding_mismatch",
       "projection_mapping": [],
@@ -14163,6 +14291,246 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_already_used",
+      "name": "fault_already_used",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_confirmation_required",
+      "name": "fault_confirmation_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_control_denied",
+      "name": "fault_control_denied",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_control_disabled",
+      "name": "fault_control_disabled",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_control_execution_failed",
+      "name": "fault_control_execution_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_recovery_observation_failed",
+      "name": "fault_recovery_observation_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_recovery_timeout",
+      "name": "fault_recovery_timeout",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_registry_invalid",
+      "name": "fault_registry_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_registry_unavailable",
+      "name": "fault_registry_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_restart_not_acted",
+      "name": "fault_restart_not_acted",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_restarted",
+      "name": "fault_restarted",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_unknown",
+      "name": "fault_unknown",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
     },
     {
       "confidence": "source-derived",
@@ -18719,7 +19087,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:134",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2557",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2728",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:29",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:562",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:665",
@@ -19431,7 +19799,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1601",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:54",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:55",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:370",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:568",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:646"
@@ -26420,6 +26788,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_assurance_controls.py",
+      "name": "tests/backend/test_lite_security_assurance_controls.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_security_f11_events_contract.py",
       "name": "tests/backend/test_lite_security_f11_events_contract.py",
       "source_refs": [
@@ -29887,6 +30265,8 @@
         "api:delete:/api/lite/harness/session/{session_id}",
         "api:get:/api/lite/harness/capabilities",
         "api:get:/api/lite/harness/security-assurance/capabilities",
+        "api:get:/api/lite/harness/security-assurance/faults",
+        "api:get:/api/lite/harness/security-assurance/policy-sync/status",
         "api:get:/api/lite/harness/security-assurance/preflight",
         "api:get:/api/lite/harness/security-assurance/runs",
         "api:get:/api/lite/harness/security-assurance/runs/{run_id}",
@@ -29903,6 +30283,8 @@
         "api:post:/api/lite/harness/principal/revoke",
         "api:post:/api/lite/harness/principals",
         "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+        "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
+        "api:post:/api/lite/harness/security-assurance/policy-sync",
         "api:post:/api/lite/harness/security-assurance/runs",
         "api:post:/api/lite/harness/security-assurance/runs/{run_id}/cancel",
         "api:post:/api/lite/harness/security-assurance/runs/{run_id}/resume",
@@ -30630,6 +31012,7 @@
         "test:tests/backend/test_lite_security.py",
         "test:tests/backend/test_lite_security_advanced_optimization.py",
         "test:tests/backend/test_lite_security_assurance.py",
+        "test:tests/backend/test_lite_security_assurance_controls.py",
         "test:tests/backend/test_lite_security_f11_events_contract.py",
         "test:tests/backend/test_lite_security_f12_f14_stability_contract.py",
         "test:tests/backend/test_lite_security_f3_summary_contract.py",
@@ -30770,11 +31153,25 @@
         "journey:runtime-promotion",
         "reason:already_tuned",
         "reason:assurance_deadline_exceeded",
+        "reason:assurance_policy_sync_denied",
+        "reason:assurance_policy_sync_disabled",
         "reason:assurance_session_binding_mismatch",
         "reason:bootstrap_transport_rejected",
         "reason:cold_start_validation",
         "reason:connection_failed",
         "reason:diagnostics_not_active",
+        "reason:fault_already_used",
+        "reason:fault_confirmation_required",
+        "reason:fault_control_denied",
+        "reason:fault_control_disabled",
+        "reason:fault_control_execution_failed",
+        "reason:fault_recovery_observation_failed",
+        "reason:fault_recovery_timeout",
+        "reason:fault_registry_invalid",
+        "reason:fault_registry_unavailable",
+        "reason:fault_restart_not_acted",
+        "reason:fault_restarted",
+        "reason:fault_unknown",
         "reason:git_unavailable",
         "reason:harness_session_invalid",
         "reason:harness_session_not_found",
@@ -30941,6 +31338,8 @@
         "api:get:/api/lite/fleet/invites/latest",
         "api:get:/api/lite/harness/capabilities",
         "api:get:/api/lite/harness/security-assurance/capabilities",
+        "api:get:/api/lite/harness/security-assurance/faults",
+        "api:get:/api/lite/harness/security-assurance/policy-sync/status",
         "api:get:/api/lite/harness/security-assurance/preflight",
         "api:get:/api/lite/harness/security-assurance/runs",
         "api:get:/api/lite/harness/security-assurance/runs/{run_id}",
@@ -31047,6 +31446,8 @@
         "api:post:/api/lite/harness/principal/revoke",
         "api:post:/api/lite/harness/principals",
         "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+        "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
+        "api:post:/api/lite/harness/security-assurance/policy-sync",
         "api:post:/api/lite/harness/security-assurance/runs",
         "api:post:/api/lite/harness/security-assurance/runs/{run_id}/cancel",
         "api:post:/api/lite/harness/security-assurance/runs/{run_id}/resume",
@@ -31295,6 +31696,8 @@
         "reason:approval_transition_invalid",
         "reason:approval_unusable",
         "reason:assurance_deadline_exceeded",
+        "reason:assurance_policy_sync_denied",
+        "reason:assurance_policy_sync_disabled",
         "reason:assurance_session_binding_mismatch",
         "reason:authenticated_app_install",
         "reason:authenticated_app_install_exception_scoped",
@@ -31333,6 +31736,18 @@
         "reason:exception_not_found",
         "reason:exception_scope_invalid",
         "reason:exception_unusable",
+        "reason:fault_already_used",
+        "reason:fault_confirmation_required",
+        "reason:fault_control_denied",
+        "reason:fault_control_disabled",
+        "reason:fault_control_execution_failed",
+        "reason:fault_recovery_observation_failed",
+        "reason:fault_recovery_timeout",
+        "reason:fault_registry_invalid",
+        "reason:fault_registry_unavailable",
+        "reason:fault_restart_not_acted",
+        "reason:fault_restarted",
+        "reason:fault_unknown",
         "reason:generation_changed",
         "reason:generic_policy_toggle_retired",
         "reason:git_unavailable",
@@ -31923,6 +32338,7 @@
         "test:tests/backend/test_lite_security.py",
         "test:tests/backend/test_lite_security_advanced_optimization.py",
         "test:tests/backend/test_lite_security_assurance.py",
+        "test:tests/backend/test_lite_security_assurance_controls.py",
         "test:tests/backend/test_lite_security_f11_events_contract.py",
         "test:tests/backend/test_lite_security_f12_f14_stability_contract.py",
         "test:tests/backend/test_lite_security_f3_summary_contract.py",
@@ -32695,6 +33111,18 @@
         }
       ],
       "api:get:/api/lite/harness/security-assurance/capabilities": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/harness/security-assurance/faults": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/harness/security-assurance/policy-sync/status": [
         {
           "source": "domain:harness",
           "type": "owns"
@@ -33563,6 +33991,18 @@
         }
       ],
       "api:post:/api/lite/harness/principals/{principal_id}/revoke": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/harness/security-assurance/faults/{fault_id}": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/harness/security-assurance/policy-sync": [
         {
           "source": "domain:harness",
           "type": "owns"
@@ -35580,6 +36020,18 @@
           "type": "owns"
         }
       ],
+      "reason:assurance_policy_sync_denied": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:assurance_policy_sync_disabled": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
       "reason:assurance_session_binding_mismatch": [
         {
           "source": "domain:validation",
@@ -35805,6 +36257,78 @@
       "reason:exception_unusable": [
         {
           "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:fault_already_used": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:fault_confirmation_required": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:fault_control_denied": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:fault_control_disabled": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:fault_control_execution_failed": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:fault_recovery_observation_failed": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:fault_recovery_timeout": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:fault_registry_invalid": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:fault_registry_unavailable": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:fault_restart_not_acted": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:fault_restarted": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:fault_unknown": [
+        {
+          "source": "domain:validation",
           "type": "owns"
         }
       ],
@@ -40016,6 +40540,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:assurance_policy_sync_denied",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:assurance_policy_sync_disabled",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:assurance_session_binding_mismatch",
           "type": "verified_by"
         },
@@ -40165,6 +40697,54 @@
         },
         {
           "source": "reason:exception_unusable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_already_used",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_confirmation_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_control_denied",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_control_disabled",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_control_execution_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_recovery_observation_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_recovery_timeout",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_registry_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_registry_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_restart_not_acted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_restarted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_unknown",
           "type": "verified_by"
         },
         {
@@ -41130,6 +41710,14 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/harness/security-assurance/faults",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/harness/security-assurance/policy-sync/status",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/harness/security-assurance/preflight",
           "type": "verified_by"
         },
@@ -41551,6 +42139,14 @@
         },
         {
           "source": "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/security-assurance/policy-sync",
           "type": "verified_by"
         },
         {
@@ -42735,6 +43331,44 @@
         },
         {
           "source": "reason:interrupted",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_security_assurance_controls.py": [
+        {
+          "source": "domain:validation",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:assurance_policy_sync_denied",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:assurance_policy_sync_disabled",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_already_used",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_confirmation_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_control_disabled",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_unknown",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:harness_session_invalid",
           "type": "verified_by"
         }
       ],
@@ -44694,6 +45328,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:assurance_policy_sync_denied",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:assurance_policy_sync_disabled",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:assurance_session_binding_mismatch",
           "type": "verified_by"
         },
@@ -44843,6 +45485,54 @@
         },
         {
           "source": "reason:exception_unusable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_already_used",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_confirmation_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_control_denied",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_control_disabled",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_control_execution_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_recovery_observation_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_recovery_timeout",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_registry_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_registry_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_restart_not_acted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_restarted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_unknown",
           "type": "verified_by"
         },
         {
@@ -45644,6 +46334,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:assurance_policy_sync_denied",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:assurance_policy_sync_disabled",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:assurance_session_binding_mismatch",
           "type": "verified_by"
         },
@@ -45793,6 +46491,54 @@
         },
         {
           "source": "reason:exception_unusable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_already_used",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_confirmation_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_control_denied",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_control_disabled",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_control_execution_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_recovery_observation_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_recovery_timeout",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_registry_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_registry_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_restart_not_acted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_restarted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:fault_unknown",
           "type": "verified_by"
         },
         {
@@ -46874,6 +47620,14 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/harness/security-assurance/faults",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/harness/security-assurance/policy-sync/status",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/harness/security-assurance/preflight",
           "type": "verified_by"
         },
@@ -47295,6 +48049,14 @@
         },
         {
           "source": "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/security-assurance/policy-sync",
           "type": "verified_by"
         },
         {
@@ -48918,6 +49680,26 @@
           "type": "verified_by"
         }
       ],
+      "api:get:/api/lite/harness/security-assurance/faults": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/harness/security-assurance/policy-sync/status": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:get:/api/lite/harness/security-assurance/preflight": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -50129,6 +50911,26 @@
         }
       ],
       "api:post:/api/lite/harness/principals/{principal_id}/revoke": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/harness/security-assurance/faults/{fault_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/harness/security-assurance/policy-sync": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -55456,6 +56258,14 @@
           "type": "owns"
         },
         {
+          "target": "api:get:/api/lite/harness/security-assurance/faults",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/harness/security-assurance/policy-sync/status",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/harness/security-assurance/preflight",
           "type": "owns"
         },
@@ -55517,6 +56327,14 @@
         },
         {
           "target": "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/harness/security-assurance/policy-sync",
           "type": "owns"
         },
         {
@@ -57934,6 +58752,14 @@
           "type": "owns"
         },
         {
+          "target": "reason:assurance_policy_sync_denied",
+          "type": "owns"
+        },
+        {
+          "target": "reason:assurance_policy_sync_disabled",
+          "type": "owns"
+        },
+        {
           "target": "reason:assurance_session_binding_mismatch",
           "type": "owns"
         },
@@ -57951,6 +58777,54 @@
         },
         {
           "target": "reason:diagnostics_not_active",
+          "type": "owns"
+        },
+        {
+          "target": "reason:fault_already_used",
+          "type": "owns"
+        },
+        {
+          "target": "reason:fault_confirmation_required",
+          "type": "owns"
+        },
+        {
+          "target": "reason:fault_control_denied",
+          "type": "owns"
+        },
+        {
+          "target": "reason:fault_control_disabled",
+          "type": "owns"
+        },
+        {
+          "target": "reason:fault_control_execution_failed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:fault_recovery_observation_failed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:fault_recovery_timeout",
+          "type": "owns"
+        },
+        {
+          "target": "reason:fault_registry_invalid",
+          "type": "owns"
+        },
+        {
+          "target": "reason:fault_registry_unavailable",
+          "type": "owns"
+        },
+        {
+          "target": "reason:fault_restart_not_acted",
+          "type": "owns"
+        },
+        {
+          "target": "reason:fault_restarted",
+          "type": "owns"
+        },
+        {
+          "target": "reason:fault_unknown",
           "type": "owns"
         },
         {
@@ -58059,6 +58933,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_security_assurance.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_assurance_controls.py",
           "type": "verified_by"
         },
         {
@@ -59518,6 +60396,42 @@
           "type": "verified_by"
         }
       ],
+      "reason:assurance_policy_sync_denied": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:assurance_policy_sync_disabled": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:assurance_session_binding_mismatch": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -59817,6 +60731,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_qualification_owner.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_assurance_controls.py",
           "type": "verified_by"
         },
         {
@@ -60182,6 +61100,190 @@
           "type": "verified_by"
         }
       ],
+      "reason:fault_already_used": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:fault_confirmation_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:fault_control_denied": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:fault_control_disabled": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:fault_control_execution_failed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:fault_recovery_observation_failed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:fault_recovery_timeout": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:fault_registry_invalid": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:fault_registry_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:fault_restart_not_acted": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:fault_restarted": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:fault_unknown": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:generation_changed": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -60231,6 +61333,10 @@
       "reason:harness_session_invalid": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_assurance_controls.py",
           "type": "verified_by"
         },
         {
@@ -64113,6 +65219,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:05d6d732dcd01598",
+      "source": "reason:fault_control_denied",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:05d7945f3449feef",
@@ -64888,6 +66003,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:0c8130b82e6990e4",
+      "source": "reason:fault_confirmation_required",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:0ca6eb296a8872be",
@@ -64992,6 +66116,15 @@
       "id": "rel:0d06a7799be25eac",
       "source": "reason:policy_recovery_unproved",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:0d1c0b3c015e8f1e",
+      "source": "reason:harness_session_invalid",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
       "type": "verified_by"
     },
     {
@@ -65483,6 +66616,15 @@
       "source": "domain:node",
       "target": "subject:pocketlab.commands.node",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:10e759bd8996c0a4",
+      "source": "reason:fault_already_used",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -66206,6 +67348,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:15607eddaefb1eae",
+      "source": "reason:assurance_policy_sync_denied",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:157401bb837dc32b",
@@ -66228,6 +67379,15 @@
       ],
       "id": "rel:15a3781bf34a5b8c",
       "source": "reason:identity_mismatch",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:15b90f57918a3377",
+      "source": "reason:fault_unknown",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
@@ -67270,6 +68430,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:1db783b8d64273be",
+      "source": "reason:fault_recovery_timeout",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:1dc23d3f7500e949",
@@ -67405,12 +68574,30 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:1eca18d4100bf1a0",
+      "source": "reason:fault_restarted",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:830"
       ],
       "id": "rel:1ed844dea0b9bd13",
       "source": "component:workflow-execution",
       "target": "subject:pocketlab.commands",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:1ed8cbb65ddc08a7",
+      "source": "domain:validation",
+      "target": "reason:fault_registry_invalid",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -68044,6 +69231,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:247f58c6f86177e4",
+      "source": "reason:fault_control_denied",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "src/lite/LiteDevices.jsx"
       ],
       "id": "rel:24980873978134b9",
@@ -68576,6 +69772,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:28528edcb2bdc9b9",
+      "source": "reason:fault_recovery_observation_failed",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:2863fb96044eca52",
@@ -68681,6 +69886,15 @@
       "source": "domain:validation",
       "target": "reason:security_scan_conflict",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:29430c1376adfa90",
+      "source": "reason:fault_confirmation_required",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -69542,12 +70756,30 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:30757d0d4f3f97cb",
+      "source": "domain:harness",
+      "target": "api:get:/api/lite/harness/security-assurance/faults",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "src/lite/LiteCatalog.jsx"
       ],
       "id": "rel:307b7d5d8f355d72",
       "source": "journey:app-installation",
       "target": "api:post:/api/lite/catalog/install",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:30b9b76e9850b7c2",
+      "source": "api:get:/api/lite/harness/security-assurance/faults",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -70264,6 +71496,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:3664c193f0c039e5",
+      "source": "domain:validation",
+      "target": "reason:fault_restarted",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:3671da39a025f972",
@@ -70816,6 +72057,15 @@
       "source": "domain:harness",
       "target": "api:get:/api/lite/harness/security-assurance/runs/{run_id}",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:3996629c161a969f",
+      "source": "reason:fault_restart_not_acted",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -71798,6 +73048,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:4108610aa3b9ed8e",
+      "source": "domain:harness",
+      "target": "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
         "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py"
       ],
@@ -71880,6 +73139,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:41946a0423c898e4",
+      "source": "domain:validation",
+      "target": "reason:fault_control_disabled",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:419654cf86fd37e2",
@@ -71925,6 +73193,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:41cbddeea8fc3ae4",
+      "source": "api:get:/api/lite/harness/security-assurance/policy-sync/status",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:41cd580330ed5b9c",
@@ -71939,6 +73216,15 @@
       "id": "rel:41dd5c58c18822c7",
       "source": "api:post:/api/lite/recovery/database/backups/{backup_id}/preview",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:41e1fcae24d23286",
+      "source": "api:post:/api/lite/harness/security-assurance/policy-sync",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -72231,6 +73517,15 @@
       "source": "domain:control_plane",
       "target": "table:policy_temporary_exceptions",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:43db05f301eb332e",
+      "source": "reason:fault_restart_not_acted",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -72605,6 +73900,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:473d71832fb23857",
+      "source": "reason:fault_confirmation_required",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:473f46458853991f",
@@ -72844,6 +74148,15 @@
       "id": "rel:493f136dfe7c5401",
       "source": "component:caddy",
       "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:494b40f8d6a9ee0f",
+      "source": "reason:fault_recovery_observation_failed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -73424,6 +74737,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:4de0934a5dbfe8e1",
+      "source": "reason:fault_control_disabled",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:4de5e7ad232474fa",
@@ -73655,6 +74977,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:4f64046d366fb09e",
+      "source": "reason:fault_registry_unavailable",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:4f77cd0eef50b9c9",
@@ -73805,6 +75136,15 @@
       "source": "component:prepared-state",
       "target": "troubleshooting:stale-evidence",
       "type": "recovers_with"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:503c30707b0069df",
+      "source": "reason:assurance_policy_sync_disabled",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -74049,6 +75389,15 @@
       "source": "api:post:/api/lite/enterprise/rules/rollbacks",
       "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:5327c9971e0b2d25",
+      "source": "domain:validation",
+      "target": "reason:assurance_policy_sync_denied",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -74642,6 +75991,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:5821e5f5d116c462",
+      "source": "api:post:/api/lite/harness/security-assurance/policy-sync",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:584ecbf3600f7ff2",
@@ -74831,6 +76189,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:594ceced3b3a3ddf",
+      "source": "reason:fault_control_execution_failed",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:596a3051c5818dcf",
@@ -74890,6 +76257,15 @@
       "id": "rel:59b7fb99288ca57f",
       "source": "reason:approval_read_forbidden",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:59c0f7f103140c4a",
+      "source": "reason:fault_unknown",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
       "type": "verified_by"
     },
     {
@@ -75017,6 +76393,15 @@
       "source": "domain:devices",
       "target": "reason:command_undeliverable",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:5aa39032a2c3cc0d",
+      "source": "reason:fault_control_denied",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -75483,6 +76868,15 @@
       "source": "component:post-switch-health",
       "target": "component:last-known-good",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:5f292bc8630994e7",
+      "source": "reason:fault_registry_invalid",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -76301,6 +77695,24 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:6678e6abc468daa5",
+      "source": "reason:assurance_policy_sync_denied",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:6688def3e3b0db4b",
+      "source": "api:get:/api/lite/harness/security-assurance/policy-sync/status",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_identity_passkeys_rules_p1.py"
       ],
       "id": "rel:669264bd6b0eacec",
@@ -76670,6 +78082,15 @@
       "id": "rel:698fb2ed2c3c9a35",
       "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/verify",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:6997a849428aeb82",
+      "source": "reason:fault_registry_unavailable",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -77108,6 +78529,15 @@
       "source": "domain:identity",
       "target": "api:get:/api/lite/identity",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:6c742fc03f8fd9e1",
+      "source": "domain:validation",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -77568,6 +78998,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:6fecf8ee9e0f33dd",
+      "source": "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_documentation_ia.py"
       ],
       "id": "rel:6ffb9ecd128ad457",
@@ -77852,6 +79291,15 @@
       "id": "rel:71f8884aa70bf657",
       "source": "reason:approval_required",
       "target": "test:tests/backend/test_policy_source_reconciliation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:72073336273df528",
+      "source": "reason:fault_recovery_observation_failed",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -78171,6 +79619,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:744a265810b83637",
+      "source": "reason:fault_recovery_timeout",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:746de92c367e48c7",
@@ -78229,6 +79686,15 @@
       ],
       "id": "rel:74a2626a0594630c",
       "source": "reason:release_projection_unavailable",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:74aebd92a62cfaf8",
+      "source": "reason:assurance_policy_sync_disabled",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
@@ -78396,11 +79862,29 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:768578dd312705d1",
+      "source": "reason:fault_control_execution_failed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:76905e3c0869e955",
       "source": "reason:authenticated_app_install_exception_scoped",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:76934edae0b6cbdc",
+      "source": "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -78491,6 +79975,15 @@
       "id": "rel:774078a870b6ef85",
       "source": "component:retirement-database-recovery",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:7740e886b293f6b6",
+      "source": "reason:fault_restarted",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -78675,6 +80168,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:78c7956800c63cdb",
+      "source": "domain:validation",
+      "target": "reason:fault_restart_not_acted",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "src/lite/LiteCatalog.jsx"
       ],
       "id": "rel:78d9a00bb28f0836",
@@ -78717,6 +80219,15 @@
       "source": "domain:identity",
       "target": "reason:owner_claim_authority_expired",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:798aee37ed8550f6",
+      "source": "reason:fault_control_disabled",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -80125,6 +81636,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:859376ed70a206a0",
+      "source": "domain:validation",
+      "target": "reason:fault_unknown",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:85a2c7251f725892",
@@ -80432,6 +81952,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:87fcc9bda6d808e9",
+      "source": "reason:assurance_policy_sync_denied",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:88061e0ec0bc95ab",
@@ -80689,6 +82218,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:89f0b22d4f124cc9",
+      "source": "reason:fault_registry_unavailable",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:8a14da413069c3cb",
@@ -80867,6 +82405,15 @@
       "source": "domain:identity",
       "target": "reason:local_owner_required",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:8b3f43c9a6f00575",
+      "source": "api:get:/api/lite/harness/security-assurance/faults",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -81147,6 +82694,15 @@
       "source": "ui:liteidentity",
       "target": "api:put:/api/lite/identity/passkeys/{credential_id}",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:8ddd24cc1159b50f",
+      "source": "reason:assurance_policy_sync_disabled",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -83137,6 +84693,15 @@
       "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
+      "id": "rel:9e3340af4cb3e092",
+      "source": "reason:fault_restart_not_acted",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
       "id": "rel:9e78418fdb0f4bee",
       "source": "component:sqlite",
       "target": "test:tests/docs/test_living_knowledgebase.py",
@@ -83279,6 +84844,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:9f7242ae25004adb",
+      "source": "domain:harness",
+      "target": "api:post:/api/lite/harness/security-assurance/policy-sync",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:9f906c31f2c10a5a",
@@ -83293,6 +84867,15 @@
       "id": "rel:9f92cabd91db488e",
       "source": "api:get:/api/lite/devices/{device_id}/health",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:9f9325bfe5bc7626",
+      "source": "reason:disabled",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
       "type": "verified_by"
     },
     {
@@ -83374,6 +84957,15 @@
       "id": "rel:a056dd7f6ba45880",
       "source": "reason:identity_login_throttled",
       "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:a092b90eee55e35e",
+      "source": "reason:fault_confirmation_required",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -83591,6 +85183,15 @@
       "source": "domain:harness",
       "target": "api:post:/api/lite/harness/principals",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:a26f5a6da77bb473",
+      "source": "reason:assurance_policy_sync_denied",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -84770,6 +86371,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:ab756c03ab775de1",
+      "source": "domain:validation",
+      "target": "reason:fault_control_denied",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:ab84adbe3119e4e1",
@@ -85248,6 +86858,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:af0bc252e00902c3",
+      "source": "reason:fault_already_used",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_security_f7_split_read_contract.py"
       ],
       "id": "rel:af10eef6f80cd0c3",
@@ -85380,6 +86999,15 @@
       "source": "journey:app-installation",
       "target": "component:caddy",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:b0a862cef3ffce96",
+      "source": "domain:validation",
+      "target": "reason:fault_already_used",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -85611,6 +87239,15 @@
       "id": "rel:b27a20cd06f4bd30",
       "source": "reason:command_undeliverable",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:b29a9af0820189bc",
+      "source": "reason:fault_control_execution_failed",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -86881,6 +88518,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:bd7d8c8e2354cfa0",
+      "source": "reason:fault_unknown",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:bd883f60fef5f00a",
@@ -86967,6 +88613,15 @@
       "id": "rel:be28bff52abd5863",
       "source": "reason:identity_session_invalid",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:be2a289cf9d66204",
+      "source": "reason:fault_already_used",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -87671,6 +89326,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:c43b44d77eea1f8f",
+      "source": "domain:validation",
+      "target": "reason:fault_control_execution_failed",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
@@ -87924,6 +89588,15 @@
       "id": "rel:c71cf8b7febf6d5b",
       "source": "component:invite-state",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:c7481d1b414dd632",
+      "source": "reason:fault_already_used",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -88503,6 +90176,15 @@
       "source": "domain:identity",
       "target": "test:tests/e2e/lite-test-helpers.ts",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:cbc83520c9ad5d43",
+      "source": "domain:validation",
+      "target": "reason:fault_confirmation_required",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -89898,6 +91580,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:d5eea0cc9cc49be8",
+      "source": "reason:fault_control_disabled",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:d61f8b9163984320",
@@ -91273,6 +92964,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:e03fd42055791ea8",
+      "source": "reason:fault_registry_invalid",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:e04a3b584073ea72",
@@ -91655,6 +93355,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:e3bdc2aa93601a82",
+      "source": "domain:harness",
+      "target": "api:get:/api/lite/harness/security-assurance/policy-sync/status",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:e3e042085b814f9a",
@@ -91715,6 +93424,15 @@
       "id": "rel:e44096e20241eac2",
       "source": "component:release-artifacts",
       "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:e441e6d4e2815c87",
+      "source": "reason:fault_unknown",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -91960,6 +93678,15 @@
       "source": "component:worker",
       "target": "subject:pocketlab.events.operation.worker_claimed",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:e5cf31845e75bbb6",
+      "source": "domain:validation",
+      "target": "reason:fault_recovery_timeout",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -92467,6 +94194,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:e923275021dac5df",
+      "source": "domain:validation",
+      "target": "reason:fault_recovery_observation_failed",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_policy_uncertain_resolution.py"
       ],
       "id": "rel:e975cc883b2334be",
@@ -92687,6 +94423,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:eb93b1a0378341cb",
+      "source": "reason:fault_recovery_timeout",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:eb9e64abeafadc8d",
@@ -92791,6 +94536,15 @@
       "id": "rel:ec24eafc57bc75eb",
       "source": "api:post:/api/lite/enterprise/rules/rollbacks",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:ec2b7b764f22c02c",
+      "source": "reason:assurance_policy_sync_disabled",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -92967,6 +94721,15 @@
       "id": "rel:ed9341324734f6de",
       "source": "reason:shutdown",
       "target": "test:tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:eda5e1afe4401668",
+      "source": "reason:fault_registry_invalid",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -93224,6 +94987,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:efb95a2585632f79",
+      "source": "domain:validation",
+      "target": "reason:fault_registry_unavailable",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:efd3826354384e9e",
@@ -93302,6 +95074,15 @@
       "source": "component:node-agent",
       "target": "subject:pocketlab.events.fleet.node_telemetry",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:f0aeefecea507fe4",
+      "source": "domain:validation",
+      "target": "reason:assurance_policy_sync_disabled",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -93400,6 +95181,15 @@
       "id": "rel:f107803ec3897bd0",
       "source": "api:get:/api/lite/system/telemetry-thresholds",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:f1081fa218c4d833",
+      "source": "reason:fault_control_disabled",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -94060,6 +95850,15 @@
       "source": "component:post-switch-health",
       "target": "api:get:/health",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:f5decc2e50b82b01",
+      "source": "reason:fault_restarted",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -95170,33 +96969,33 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "103782bab72314a9220646dbd1556ada0e5d21b5efef8a0414a8949fe31a16ba",
+  "source_fingerprint": "8273cbda10309fb17aab308f729a3736bd3a47e27d069ff88d7227f6749345dd",
   "statistics": {
-    "entity_count": 1237,
+    "entity_count": 1256,
     "entity_type_counts": {
       "adr": 6,
-      "api": 214,
+      "api": 218,
       "capability": 5,
       "component": 58,
       "domain": 48,
       "glossary": 16,
       "journey": 24,
       "limitation": 18,
-      "reason-code": 217,
+      "reason-code": 231,
       "release": 3,
       "requirement": 10,
       "runbook": 5,
       "runtime-topology": 9,
       "subject": 210,
       "table": 78,
-      "test": 222,
+      "test": 223,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3504,
-    "source_count": 259
+    "relation_count": 3581,
+    "source_count": 260
   }
 }

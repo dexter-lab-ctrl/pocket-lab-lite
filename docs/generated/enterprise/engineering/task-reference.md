@@ -19,7 +19,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 | Documentation loop | 55 |
 | API-validation loop | 12 |
 | Runtime-evidence loop | 24 |
-| Security-analysis loop | 19 |
+| Security-analysis loop | 22 |
 | Release loop | 19 |
 | Recovery-diagnostics loop | 6 |
 
@@ -4286,6 +4286,40 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Example:** `task lite:qualification:start:key-bound`
 
+## `lite:qualification:start:key-bound:faults`
+
+**Purpose:** Explicitly start key-bound qualification with the fixed non-destructive service-fault controls enabled
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `bash scripts/dev/lite/start-qualification.sh --bootstrap-principal-id "{{.PRINCIPAL_ID}}" --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}" --bootstrap-profile security-assurance-runner --enable-fault-control`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/start-qualification.sh
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=True; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=False; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:qualification:start:key-bound:faults`
+
 ## `lite:security:assurance:adversarial`
 
 **Purpose:** Run the qualification-only fixed adversarial assurance suite
@@ -4422,6 +4456,74 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Example:** `task lite:security:assurance:deep`
 
+## `lite:security:assurance:fault`
+
+**Purpose:** Execute one registered non-destructive qualification service-fault control
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance.py fault "{{.FAULT_ID}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:fault`
+
+## `lite:security:assurance:policy-sync`
+
+**Purpose:** Queue the current repository Safety Rules through the qualification-only supervisor lifecycle
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance.py policy-sync --wait-seconds "{{.WAIT_SECONDS}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=True; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:policy-sync`
+
 ## `lite:security:assurance:preflight`
 
 **Purpose:** Run fixed local admission checks for one registered assurance suite
@@ -4468,7 +4570,7 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Commands:**
 
-- `{{.PYTHON}} scripts/dev/lite/security_assurance.py qualify --principal-id "{{.PRINCIPAL_ID}}" --key-file "{{.KEY_FILE}}"`
+- `{{.PYTHON}} scripts/dev/lite/security_assurance.py qualify --principal-id "{{.PRINCIPAL_ID}}" --key-file "{{.KEY_FILE}}" --sync-policy --policy-sync-wait-seconds "{{.POLICY_SYNC_WAIT_SECONDS}}"`
 
 **Environment:** None source-discovered
 
@@ -4478,7 +4580,7 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Generated artifacts:** None discovered
 
-**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+**Side effects:** repository mutation=True; runtime mutation=False; captures runtime=False; promotes evidence=False
 
 **Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
 
