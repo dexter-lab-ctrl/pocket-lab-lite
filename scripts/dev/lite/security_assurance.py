@@ -704,8 +704,11 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
         "adversarial": {"status": "NOT_RUN", "sanitized": True},
     }
     workflow_error: str | None = None
+    workflow_phase: str | None = None
+    active_suite: str | None = None
     policy_sync_result: dict = {"status": "NOT_RUN", "sanitized": True}
     try:
+        workflow_phase = "policy_sync" if args.sync_policy else "preflight"
         if args.sync_policy:
             _ensure_lease(
                 lease,
@@ -727,6 +730,8 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
             session_token=lease["session_token"],
         )
         if str(preflight.get("status") or "").casefold() == "ready":
+            workflow_phase = "smoke"
+            active_suite = "smoke"
             runs["smoke"] = _run_qualified_suite(
                 suite_id="smoke",
                 lease=lease,
@@ -738,6 +743,8 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
                 max_poll_seconds=args.max_poll_seconds,
             )
             if runs["smoke"]["status"] == "PASS" and not args.skip_standard:
+                workflow_phase = "standard"
+                active_suite = "standard"
                 runs["standard"] = _run_qualified_suite(
                     suite_id="standard",
                     lease=lease,
@@ -756,6 +763,8 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
             # boundary probes, so do not suppress those probes merely because
             # Standard did not run.
             if _safe_adversarial_admitted(runs, skipped=args.skip_adversarial):
+                workflow_phase = "adversarial"
+                active_suite = "adversarial"
                 runs["adversarial"] = _run_qualified_suite(
                     suite_id="adversarial",
                     lease=lease,
@@ -772,7 +781,8 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
             runs["smoke"] = {"status": "BLOCKED", "preflight": preflight, "sanitized": True}
     except (OSError, RuntimeError, ValueError) as exc:
         workflow_error = str(exc)[:240]
-        runs["smoke"] = {"status": "PARTIAL", "reason": "qualification client lost a bounded workflow step", "error": workflow_error, "sanitized": True}
+        if active_suite:
+            runs[active_suite] = {"status": "PARTIAL", "reason": "qualification client lost a bounded workflow step", "error": workflow_error, "sanitized": True}
 
     active_run = bool(state.get("active_run_id"))
     cleanup = _cleanup_lease(
@@ -796,6 +806,8 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
         overall = "FAIL"
     elif "BLOCKED" in statuses:
         overall = "BLOCKED"
+    elif workflow_error:
+        overall = "PARTIAL"
     elif "PARTIAL" in statuses or cleanup.get("status") not in {"PASS", "DEFERRED"}:
         overall = "PARTIAL"
     else:
@@ -806,6 +818,8 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
         "bootstrap": {"completed": bootstrap_completed, "sanitized": True},
         "preflight": preflight,
         "policy_sync": policy_sync_result,
+        "workflow_phase": workflow_phase,
+        "workflow_error": workflow_error,
         "runs": runs,
         "cleanup": cleanup,
         "session": {
