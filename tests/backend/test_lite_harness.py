@@ -442,6 +442,37 @@ def test_assurance_client_continuity_is_bounded_and_does_not_persist_tokens(harn
     assert client._should_reauthenticate(RuntimeError("run_not_found: rejected")) is False
 
 
+def test_assurance_client_ensure_lease_renews_with_keyword_arguments(tmp_path, monkeypatch):
+    script = Path("scripts/dev/lite/security_assurance.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_ensure_lease", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+    lease = {
+        "session_token": "memory-only-token",
+        "session": {
+            "started_at": "2026-09-14T12:00:00Z",
+            "expires_at": "2026-09-14T12:00:10Z",
+        },
+        "session_ids": ["hs-old"],
+        "renewal_count": 0,
+    }
+    calls = []
+
+    def fake_renew(current, *, principal_id, key_file, ttl_seconds):
+        calls.append((current, principal_id, key_file, ttl_seconds))
+
+    monkeypatch.setattr(client, "_renew_lease", fake_renew)
+    client._ensure_lease(
+        lease,
+        principal_id="assurance-runner",
+        key_file=str(tmp_path / "runner.key"),
+        ttl_seconds=60,
+    )
+    assert len(calls) == 1
+    assert calls[0][1:] == ("assurance-runner", str(tmp_path / "runner.key"), 60)
+
+
 def test_harness_client_forwards_bounded_session_ttl_without_persisting_token(tmp_path, monkeypatch):
     script = Path("scripts/dev/lite/harness.py").resolve()
     spec = importlib.util.spec_from_file_location("pocketlab_harness_client_ttl", script)

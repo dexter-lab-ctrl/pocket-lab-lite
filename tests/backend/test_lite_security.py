@@ -34,6 +34,47 @@ def test_lite_security_default_state_is_stable():
     assert payload["guidance"] == []
 
 
+def test_sqlite_security_tool_projection_preserves_only_bounded_version_metadata():
+    from api_fastapi.services import lite_security
+
+    class Repository:
+        def list_tool_runs(self, _run_id, *, limit):
+            assert limit == 20
+            return [
+                {
+                    "tool_name": "lynis",
+                    "status": "completed",
+                    "finding_count": 0,
+                    "started_at": "2026-09-14T12:00:00Z",
+                    "completed_at": "2026-09-14T12:00:01.250Z",
+                    "duration_ms": None,
+                    "metadata": {
+                        "tool_version": "3.1.6",
+                        "raw_stdout": "must not be projected",
+                    },
+                },
+                {
+                    "tool_name": "trivy",
+                    "status": "reused",
+                    "finding_count": 1,
+                    "duration_ms": 12,
+                    "metadata": {
+                        "scanner_version": "dev",
+                        "raw_secret": "must not be projected",
+                    },
+                },
+            ]
+
+    projected = lite_security._sqlite_tool_results(Repository(), "security-test")
+    assert projected["lynis"]["tool_version"] == "3.1.6"
+    assert projected["lynis"]["duration_ms"] == 1250
+    assert projected["trivy"]["tool_version"] == "dev"
+    assert projected["trivy"]["duration_ms"] == 12
+    dumped = json.dumps(projected)
+    assert "raw_stdout" not in dumped
+    assert "raw_secret" not in dumped
+
+
 def test_lite_security_check_queues_worker_command(monkeypatch):
     from api_fastapi.services import lite_security
     from api_fastapi.services.nats_bus import BUS

@@ -1648,6 +1648,20 @@ def _sqlite_tool_results(repository: Any, run_id: str) -> dict[str, Any]:
     tools: dict[str, Any] = {}
     for item in repository.list_tool_runs(run_id, limit=20):
         name = str(item.get("tool_name") or "tool")[:80]
+        metadata = item.get("metadata") if isinstance(item.get("metadata"), dict) else {}
+        started_at = _parse_iso_timestamp(item.get("started_at"))
+        completed_at = _parse_iso_timestamp(item.get("completed_at"))
+        stored_duration = item.get("duration_ms")
+        duration_ms = max(0, int(stored_duration or 0)) or None
+        if duration_ms is None and started_at is not None and completed_at is not None:
+            duration_ms = max(0, int((completed_at - started_at).total_seconds() * 1000)) or None
+        # The assurance projection needs the scanner identity recorded by the
+        # worker, but must not expose the rest of the raw Security metadata.
+        tool_version = str(
+            metadata.get("tool_version")
+            or metadata.get("scanner_version")
+            or ""
+        ).strip()[:120] or None
         tools[name] = policy.redact_value({
             "status": item.get("status") or "unknown",
             "finding_count": int(item.get("finding_count") or 0),
@@ -1655,7 +1669,8 @@ def _sqlite_tool_results(repository: Any, run_id: str) -> dict[str, Any]:
             "timeout_reason": item.get("timeout_reason"),
             "started_at": item.get("started_at"),
             "completed_at": item.get("completed_at"),
-            "duration_ms": item.get("duration_ms"),
+            "duration_ms": duration_ms,
+            **({"tool_version": policy.redact_text(tool_version)} if tool_version else {}),
         })
     return tools
 
