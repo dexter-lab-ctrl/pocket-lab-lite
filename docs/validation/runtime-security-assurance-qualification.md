@@ -20,7 +20,7 @@ performed.
 | Feature branch | `feat/runtime-security-assurance-harness` (`VERIFIED`) |
 | Feature source at the final phone Smoke qualification | `a0937b30a2a8fa0bdf4b4ab8d718e0762ad21c6a` (`VERIFIED`) |
 | Feature source at the isolated rollback rehearsal | `3f4f277de5fc8c99d01b0d07baa7376b608d1bd7` (`VERIFIED`; migration/runtime path unchanged by later client/test-only fixes) |
-| Latest published DEV-PC supply-chain capture | `6d257ff9fceef8069d9c83a23b7725321a18399b` (`VERIFIED`) |
+| Latest published DEV-PC supply-chain capture | `cfe3168e05f25483410217bb21bf711f80db596e` (`VERIFIED`; complete capture later promoted from this source revision) |
 | PR | #576, open, draft, and mergeable at `a0937b30…` (`VERIFIED`; recheck after any documentation commit) |
 | Provisioning token | `POCKETLAB_HARNESS_PROVISIONING_TOKEN` absent from the approved client environment (`VERIFIED` boolean-only check) |
 | Qualification authentication | Key-bound operator bootstrap; no bearer provisioning token, test-auth bypass, qualification-owner, or human Owner identity (`RUNTIME-VALIDATED`) |
@@ -427,8 +427,9 @@ secret-bearing environment values and raw outputs are intentionally omitted.
 | 27 | 2026-09-14, Server Phone sandbox | Bounded shell script using disposable source/DB/NATS copies, fixed local ports, SQLite backup API, health/readiness polling | Model A schema rollback rehearsal | Old/new/old runtime healthy with 34→36→34 schema states | `PASS` | No production state touched; exact sanitized JSON in section 3 |
 | 28 | 2026-09-13T23:44Z, DEV PC | `supply_chain_automation.py capture --run-dir runtime-assurance-final-published-20260913T234446Z-813731` | Reproducible final supply-chain capture after publishing the exact source SHA | Complete valid evidence | `PASS`; source commit `6d257ff9...`; 11 steps, max one scanner | Syft 1.573s; Trivy 27.342s; OSV source valid findings exit 1/25.778s; Grype 1.277s; Gitleaks 1.928s; Semgrep 9.845s; Scorecard 9.791s |
 | 29 | 2026-09-13T23:44Z, DEV PC | `supply_chain_automation.py promote --run-dir <final-published-run>`; `supply_chain_automation.py check` | Promote only reviewed sanitized artifacts | Canonical CycloneDX/security/provenance evidence passes checks | `PASS`, both commands exit 0 | Scorecard observed Dangerous-Workflow 10, Pinned-Dependencies 2, Token-Permissions 0; no raw output canonicalized |
-| 30 | 2026-09-14T01:01–01:07Z, approved client → Server Phone | Operator-approved public-key launcher; signed bootstrap; `security_assurance.py qualify --session-ttl-seconds 60` | Final exact-feature authenticated Smoke with automatic renewal and worker-owned execution | Smoke PASS; no duplicate run; sanitized report | Bootstrap `PASS`; Smoke `PASS`; Standard `BLOCKED` by OPA source drift; client exit 12 truthfully reflected blocked Standard | Run `assurance-6a0fe6b1960f488fb83cfdba95ad57e4`; worker `pocketlab-worker-2824`; 8 renewals / 9 sessions; checkpoint 24; total 341796 ms |
-| 31 | 2026-09-14T01:16–01:18Z, Server Phone | Production-owned `start-dashboard.sh --profile lite` with explicit safe flags; bounded `/health`, `/ready`, harness status, NATS monitor, OPA revision, PM2 | Stop qualification and prove default-off cleanup | Disabled harness, healthy runtime, clean checkout | `PASS` | Harness disabled/production; active sessions 0; active principals 0; NATS health `ok`; JetStream enabled; OPA healthy; PM2 services online; phone HEAD unchanged |
+| 30 | 2026-09-14T01:25Z, DEV PC | `supply_chain_automation.py capture --run-dir runtime-assurance-final-cfe-20260914T0125Z --resume` with fixed disk-backed temp root and proxy variables removed from the child | Final source/SBOM/security capture at the published documentation/test head | Complete bounded capture | `PASS`; 11 steps, `max_parallel_scanners=1`; OSV/Gitleaks valid finding states retained | Semgrep recovered from the preserved checkpoint; raw output stayed transient; sanitized capture was promoted without runtime evidence |
+| 31 | 2026-09-14T01:01–01:07Z, approved client → Server Phone | Operator-approved public-key launcher; signed bootstrap; `security_assurance.py qualify --session-ttl-seconds 60` | Final exact-feature authenticated Smoke with automatic renewal and worker-owned execution | Smoke PASS; no duplicate run; sanitized report | Bootstrap `PASS`; Smoke `PASS`; Standard `BLOCKED` by OPA source drift; client exit 12 truthfully reflected blocked Standard | Run `assurance-6a0fe6b1960f488fb83cfdba95ad57e4`; worker `pocketlab-worker-2824`; 8 renewals / 9 sessions; checkpoint 24; total 341796 ms |
+| 32 | 2026-09-14T01:16–01:18Z, Server Phone | Production-owned `start-dashboard.sh --profile lite` with explicit safe flags; bounded `/health`, `/ready`, harness status, NATS monitor, OPA revision, PM2 | Stop qualification and prove default-off cleanup | Disabled harness, healthy runtime, clean checkout | `PASS` | Harness disabled/production; active sessions 0; active principals 0; NATS health `ok`; JetStream enabled; OPA healthy; PM2 services online; phone HEAD unchanged |
 
 The earlier failed Syft attempt used invalid patterns without the required
 `./` prefix and returned a validation error. It was corrected in the
@@ -559,8 +560,9 @@ isolated schema rollback blocker is closed safely under Model A; it does not
 close the separate OPA policy synchronization gate.
 
 The latest complete static/supply-chain evidence in this dossier is bound to
-`6d257ff9fceef8069d9c83a23b7725321a18399b`; it is a prior published source
-capture and is not substituted for the final client/test head. The final phone
-runtime report is bound to `a0937b30…`. Any later documentation-only commit
-must keep those evidence identities separate and must not be presented as a
-new phone runtime execution without an exact-SHA retest.
+`cfe3168e05f25483410217bb21bf711f80db596e`; it is a complete local/CI
+diagnostic capture with sanitized artifacts promoted and is not substituted for
+the final phone runtime report, which is bound to `a0937b30…`. Any later
+documentation-only commit must keep those evidence identities separate and
+must not be presented as a new phone runtime execution without an exact-SHA
+retest.
