@@ -1273,6 +1273,18 @@
       "user_message": "Runtime Security Assurance could not continue safely."
     },
     {
+      "code": "owned_security_run_missing",
+      "domain": "validation",
+      "http_status": 409,
+      "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Runtime Security Assurance could not continue safely."
+    },
+    {
       "code": "owner_approval_policy_inconsistent",
       "domain": "rules",
       "http_status": 503,
@@ -2778,5 +2790,5 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "abe0f39fd81b1afded76173f48f9ac52d44ae6e5d6ee8f527df41e7cc2f10297"
+  "source_fingerprint": "f1db86b9832ba0d3e2c7b7bcd2800502ecc92d31eb2ddb721f6d5216b7aab035"
 }

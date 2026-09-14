@@ -5,8 +5,8 @@
   ],
   "baseline": "contracts/parity/openapi-baseline.json",
   "contract": "contracts/generated/lite-openapi.json",
-  "previous_sha256": "29fe89e306d944e35445019dadaca666e129a76386a9b20e1d148bb6f40ef771",
-  "promoted_sha256": "130d79dd5e50f26db37a2ef9dbdc4417c367d22199cc7decae15c168cd440313",
+  "previous_sha256": "130d79dd5e50f26db37a2ef9dbdc4417c367d22199cc7decae15c168cd440313",
+  "promoted_sha256": "73df089dcb595eacedd99de1797a42e2eedbe4df044eebb8a6fc323fd9c2d1c4",
   "sanitized": true,
   "schema_version": "1.0.0",
   "security_review": {
@@ -17,5 +17,5 @@
   },
   "source_revision": "feat/runtime-security-assurance-harness",
   "status": "promoted",
-  "validation_status": "dev-pc-validated-runtime-security-assurance-harness-contract-with-policy-sync-and-fault-controls"
+  "validation_status": "dev-pc-validated-runtime-security-assurance-harness-contract-with-policy-sync-fault-controls-and-owned-security-recovery"
 }

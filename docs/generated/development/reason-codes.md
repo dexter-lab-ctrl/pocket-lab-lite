@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: dc2a38dc57f3d1e9e0f35fe25bcfae903421e0af9a0833f8899958525a5b8fde
+source_fingerprint: b6aec40387ebd49e567819aa1c90f88e11bf2ed7cedbd33101bda6b3f3b12b77
 schema_revision: 1
 validation_status: generated
 ---
@@ -128,6 +128,7 @@ validation_status: generated
 | `no_active_generation` | projections | There is no active generation. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `not_found_in_restored_snapshot` | system | The record is not present in the restored snapshot. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `opa_status_unknown` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |
+| `owned_security_run_missing` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |
 | `owner_approval_policy_inconsistent` | rules | Safety Rules returned an independent device-removal approval requirement for the root Owner, which contradicts the Owner authority contract. Pocket Lab fails closed and refuses to create or continue that impossible peer-approval workflow until Safety Rules are synchronized. | yes | no | 503 | error | pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py |
 | `owner_claim_authority_expired` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `owner_claim_authority_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |

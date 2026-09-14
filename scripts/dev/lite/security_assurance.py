@@ -627,6 +627,11 @@ def _establish_lease(
     return _session_lease(session), True
 
 
+def _safe_adversarial_admitted(runs: dict[str, dict], *, skipped: bool) -> bool:
+    """Keep non-destructive adversarial checks independent of Standard."""
+    return str(runs.get("smoke", {}).get("status") or "").upper() == "PASS" and not skipped
+
+
 def cmd_qualify(args: argparse.Namespace) -> dict:
     continuity_path = _continuity_path()
     state = _load_continuity(continuity_path)
@@ -745,7 +750,12 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
                 )
             else:
                 runs["standard"] = {"status": "NOT_RUN", "reason": "Smoke did not pass or Standard was skipped", "sanitized": True}
-            if runs["smoke"]["status"] == "PASS" and runs["standard"]["status"] in {"PASS", "NOT_RUN", "BLOCKED"} and not args.skip_adversarial:
+            # Safe adversarial probes are an independent qualification lane.
+            # A Standard result may be BLOCKED by an infrastructure or policy
+            # precondition that does not affect the fixed negative-auth and
+            # boundary probes, so do not suppress those probes merely because
+            # Standard did not run.
+            if _safe_adversarial_admitted(runs, skipped=args.skip_adversarial):
                 runs["adversarial"] = _run_qualified_suite(
                     suite_id="adversarial",
                     lease=lease,

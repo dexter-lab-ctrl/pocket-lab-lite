@@ -5882,6 +5882,18 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "id": "reason:owned_security_run_missing",
+      "name": "owned_security_run_missing",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
       "description": "Safety Rules returned an independent device-removal approval requirement for the root Owner, which contradicts the Owner authority contract. Pocket Lab fails closed and refuses to create or continue that impossible peer-approval workflow until Safety Rules are synchronized.",
       "domain": "rules",
       "id": "reason:owner_approval_policy_inconsistent",
@@ -17920,6 +17932,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_security_assurance.py"
+      ],
+      "id": "rel:10071e102f0457a9",
+      "source": "domain:security",
+      "target": "test:tests/backend/test_lite_security_assurance.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:1026ff0db916d8a7",
@@ -18542,6 +18568,20 @@
       "source": "reason:webauthn_client_data_invalid",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:12ca3c4e2492f04e",
+      "source": "domain:validation",
+      "target": "reason:owned_security_run_missing",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -20305,6 +20345,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:1ad0208cbcbacdd0",
+      "source": "reason:owned_security_run_missing",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_documentation_presentation_polish.py"
       ],
       "id": "rel:1af19febab69a27b",
@@ -21138,6 +21192,20 @@
       "source": "domain:validation",
       "target": "reason:fault_registry_invalid",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_security_store.py"
+      ],
+      "id": "rel:1efeee3cc42faad7",
+      "source": "reason:interrupted",
+      "target": "test:tests/backend/test_lite_security_store.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -36679,6 +36747,20 @@
       "source": "domain:enterprise",
       "target": "api:get:/api/lite/enterprise/identity/people/{human_id}",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:6cfecd1949e66ac1",
+      "source": "reason:owned_security_run_missing",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -61638,6 +61720,20 @@
       "source": "journey:change-password",
       "target": "api:post:/api/lite/identity/step-up/options",
       "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:ed90df8a00c170e7",
+      "source": "reason:owned_security_run_missing",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {

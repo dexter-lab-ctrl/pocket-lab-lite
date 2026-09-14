@@ -2128,6 +2128,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:owned_security_run_missing",
+      "name": "owned_security_run_missing",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Safety Rules returned an independent device-removal approval requirement for the root Owner, which contradicts the Owner authority contract. Pocket Lab fails closed and refuses to create or continue that impossible peer-approval workflow until Safety Rules are synchronized.",
       "domain": "rules",
       "event_mapping": [],
@@ -4639,6 +4659,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "0d988025827ad91337c451b35ad49c9e33ae1f35265d20f157d0b5acb4844065"
+    "source_fingerprint": "bae6925e0ba4ed36226223088b9e6eca5ccc97a8da88fc9dd5f3138664a6582f"
   }
 }

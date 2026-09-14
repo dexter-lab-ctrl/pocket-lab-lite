@@ -15300,6 +15300,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:owned_security_run_missing",
+      "name": "owned_security_run_missing",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Safety Rules returned an independent device-removal approval requirement for the root Owner, which contradicts the Owner authority contract. Pocket Lab fails closed and refuses to create or continue that impossible peer-approval workflow until Safety Rules are synchronized.",
       "domain": "rules",
       "event_mapping": [],
@@ -31179,6 +31199,7 @@
         "reason:harness_transport_rejected",
         "reason:metadata_only",
         "reason:opa_status_unknown",
+        "reason:owned_security_run_missing",
         "reason:ownership_source_unavailable",
         "reason:payload_too_large",
         "reason:pm2_inventory_failed",
@@ -31786,6 +31807,7 @@
         "reason:no_active_generation",
         "reason:not_found_in_restored_snapshot",
         "reason:opa_status_unknown",
+        "reason:owned_security_run_missing",
         "reason:owner_approval_policy_inconsistent",
         "reason:owner_claim_authority_expired",
         "reason:owner_claim_authority_invalid",
@@ -36560,6 +36582,12 @@
           "type": "owns"
         }
       ],
+      "reason:owned_security_run_missing": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
       "reason:owner_approval_policy_inconsistent": [
         {
           "source": "domain:rules",
@@ -40900,6 +40928,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:owned_security_run_missing",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:owner_approval_policy_inconsistent",
           "type": "verified_by"
         },
@@ -43326,6 +43358,10 @@
           "type": "verified_by"
         },
         {
+          "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
           "source": "domain:validation",
           "type": "verified_by"
         },
@@ -43735,6 +43771,10 @@
       "test:tests/backend/test_lite_security_store.py": [
         {
           "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:interrupted",
           "type": "verified_by"
         }
       ],
@@ -45688,6 +45728,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:owned_security_run_missing",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:owner_approval_policy_inconsistent",
           "type": "verified_by"
         },
@@ -46691,6 +46735,10 @@
         },
         {
           "source": "reason:opa_status_unknown",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:owned_security_run_missing",
           "type": "verified_by"
         },
         {
@@ -58436,6 +58484,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_security_assurance.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_f11_events_contract.py",
           "type": "verified_by"
         },
@@ -58853,6 +58905,10 @@
         },
         {
           "target": "reason:opa_status_unknown",
+          "type": "owns"
+        },
+        {
+          "target": "reason:owned_security_run_missing",
           "type": "owns"
         },
         {
@@ -61700,6 +61756,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_security_store.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_store_migration.py",
           "type": "verified_by"
         },
@@ -61915,6 +61975,20 @@
         }
       ],
       "reason:opa_status_unknown": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:owned_security_run_missing": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -66520,6 +66594,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_security_assurance.py"
+      ],
+      "id": "rel:10071e102f0457a9",
+      "source": "domain:security",
+      "target": "test:tests/backend/test_lite_security_assurance.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:1026ff0db916d8a7",
@@ -66922,6 +67005,15 @@
       "source": "reason:webauthn_client_data_invalid",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:12ca3c4e2492f04e",
+      "source": "domain:validation",
+      "target": "reason:owned_security_run_missing",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -68060,6 +68152,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:1ad0208cbcbacdd0",
+      "source": "reason:owned_security_run_missing",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_documentation_presentation_polish.py"
       ],
       "id": "rel:1af19febab69a27b",
@@ -68598,6 +68699,15 @@
       "source": "domain:validation",
       "target": "reason:fault_registry_invalid",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_security_store.py"
+      ],
+      "id": "rel:1efeee3cc42faad7",
+      "source": "reason:interrupted",
+      "target": "test:tests/backend/test_lite_security_store.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -78619,6 +78729,15 @@
       "source": "domain:enterprise",
       "target": "api:get:/api/lite/enterprise/identity/people/{human_id}",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:6cfecd1949e66ac1",
+      "source": "reason:owned_security_run_missing",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -94716,6 +94835,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:ed90df8a00c170e7",
+      "source": "reason:owned_security_run_missing",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py"
       ],
       "id": "rel:ed9341324734f6de",
@@ -96969,9 +97097,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "0d988025827ad91337c451b35ad49c9e33ae1f35265d20f157d0b5acb4844065",
+  "source_fingerprint": "bae6925e0ba4ed36226223088b9e6eca5ccc97a8da88fc9dd5f3138664a6582f",
   "statistics": {
-    "entity_count": 1256,
+    "entity_count": 1257,
     "entity_type_counts": {
       "adr": 6,
       "api": 218,
@@ -96981,7 +97109,7 @@
       "glossary": 16,
       "journey": 24,
       "limitation": 18,
-      "reason-code": 231,
+      "reason-code": 232,
       "release": 3,
       "requirement": 10,
       "runbook": 5,
@@ -96995,7 +97123,7 @@
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3581,
+    "relation_count": 3587,
     "source_count": 260
   }
 }

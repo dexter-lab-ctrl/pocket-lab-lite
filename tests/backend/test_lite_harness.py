@@ -476,6 +476,31 @@ def test_harness_client_forwards_bounded_session_ttl_without_persisting_token(tm
     assert requests[1][2]["ttl_seconds"] == 60
 
 
+def test_qualification_keeps_safe_adversarial_lane_independent_of_standard(tmp_path):
+    script = Path("scripts/dev/lite/security_assurance.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_adversarial_gate", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+
+    assert client._safe_adversarial_admitted(
+        {"smoke": {"status": "PASS"}, "standard": {"status": "BLOCKED"}},
+        skipped=False,
+    ) is True
+    assert client._safe_adversarial_admitted(
+        {"smoke": {"status": "PASS"}, "standard": {"status": "FAIL"}},
+        skipped=False,
+    ) is True
+    assert client._safe_adversarial_admitted(
+        {"smoke": {"status": "PARTIAL"}, "standard": {"status": "PASS"}},
+        skipped=False,
+    ) is False
+    assert client._safe_adversarial_admitted(
+        {"smoke": {"status": "PASS"}},
+        skipped=True,
+    ) is False
+
+
 def test_harness_client_forwards_bounded_bootstrap_session_ttl(tmp_path, monkeypatch):
     script = Path("scripts/dev/lite/harness.py").resolve()
     spec = importlib.util.spec_from_file_location("pocketlab_harness_client_bootstrap_ttl", script)

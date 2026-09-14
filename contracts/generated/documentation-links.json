@@ -2213,6 +2213,10 @@
         "title": "opa_status_unknown",
         "url": "../../docs/generated/development/reason-codes.md#opa-status-unknown"
       },
+      "reason:owned_security_run_missing": {
+        "title": "owned_security_run_missing",
+        "url": "../../docs/generated/development/reason-codes.md#owned-security-run-missing"
+      },
       "reason:owner_approval_policy_inconsistent": {
         "title": "owner_approval_policy_inconsistent",
         "url": "../../docs/generated/development/reason-codes.md#owner-approval-policy-inconsistent"
@@ -3134,7 +3138,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "2be275b71143a3447861ea50cfda423cc9dbd11c65d81184e5494c7d02cb87e6",
+    "aggregate_fingerprint": "7d224707d281358f418afb0afc0a555f6f3d34c64f5c955e95dd57c9e727235b",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3145,7 +3149,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/generated/lite-openapi.json": "73df089dcb595eacedd99de1797a42e2eedbe4df044eebb8a6fc323fd9c2d1c4",
-      "contracts/metadata/documentation-platform.json": "d0f932612fb9be154f3e95afb92409f85e71fcc402def1d8d606650bd8ec9a83",
+      "contracts/metadata/documentation-platform.json": "49e37fa944c2d59f64af334e43de16299e178e0ec1056fcd3ee62bb7267655d8",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",

@@ -3991,6 +3991,12 @@
           "type": "owns"
         }
       ],
+      "reason:owned_security_run_missing": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
       "reason:owner_approval_policy_inconsistent": [
         {
           "source": "domain:rules",
@@ -8331,6 +8337,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:owned_security_run_missing",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:owner_approval_policy_inconsistent",
           "type": "verified_by"
         },
@@ -10757,6 +10767,10 @@
           "type": "verified_by"
         },
         {
+          "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
           "source": "domain:validation",
           "type": "verified_by"
         },
@@ -11166,6 +11180,10 @@
       "test:tests/backend/test_lite_security_store.py": [
         {
           "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:interrupted",
           "type": "verified_by"
         }
       ],
@@ -13119,6 +13137,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:owned_security_run_missing",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:owner_approval_policy_inconsistent",
           "type": "verified_by"
         },
@@ -14122,6 +14144,10 @@
         },
         {
           "source": "reason:opa_status_unknown",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:owned_security_run_missing",
           "type": "verified_by"
         },
         {
@@ -25867,6 +25893,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_security_assurance.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_f11_events_contract.py",
           "type": "verified_by"
         },
@@ -26284,6 +26314,10 @@
         },
         {
           "target": "reason:opa_status_unknown",
+          "type": "owns"
+        },
+        {
+          "target": "reason:owned_security_run_missing",
           "type": "owns"
         },
         {
@@ -29131,6 +29165,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_security_store.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_store_migration.py",
           "type": "verified_by"
         },
@@ -29346,6 +29384,20 @@
         }
       ],
       "reason:opa_status_unknown": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:owned_security_run_missing": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -31897,6 +31949,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "0d988025827ad91337c451b35ad49c9e33ae1f35265d20f157d0b5acb4844065"
+    "source_fingerprint": "bae6925e0ba4ed36226223088b9e6eca5ccc97a8da88fc9dd5f3138664a6582f"
   }
 }
