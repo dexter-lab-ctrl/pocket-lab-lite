@@ -400,6 +400,40 @@ def test_assurance_client_continuity_is_bounded_and_does_not_persist_tokens(harn
     assert client._should_reauthenticate(RuntimeError("run_not_found: rejected")) is False
 
 
+def test_harness_client_forwards_bounded_session_ttl_without_persisting_token(tmp_path, monkeypatch):
+    script = Path("scripts/dev/lite/harness.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_harness_client_ttl", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+
+    class FakeKey:
+        def sign(self, payload):
+            assert payload == b"canonical-challenge"
+            return b"s" * 64
+
+    requests = []
+
+    def fake_request(method, path, payload=None, headers=None):
+        requests.append((method, path, payload, headers))
+        if path.endswith("/challenge"):
+            return {"challenge_id": "hch-" + "a" * 32, "signing_payload": "canonical-challenge"}
+        return {"session_token": "memory-only-test-token", "session": {"harness_session_id": "hs-test"}}
+
+    monkeypatch.setattr(client, "_request", fake_request)
+    monkeypatch.setattr(client, "_private_key", lambda _path: FakeKey())
+    client.start_session(
+        principal_id="ttl-runner",
+        profile="security-assurance-runner",
+        purpose="security.assurance",
+        key_file=str(tmp_path / "machine.key"),
+        ttl_seconds=60,
+    )
+
+    assert requests[0][2]["ttl_seconds"] == 60
+    assert requests[1][2]["ttl_seconds"] == 60
+
+
 def test_bootstrap_configuration_cannot_be_enabled_in_production(harness_runtime, monkeypatch):
     from api_fastapi.services import lite_harness
 

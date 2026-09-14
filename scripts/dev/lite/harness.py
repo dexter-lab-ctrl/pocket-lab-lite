@@ -230,16 +230,19 @@ def start_session(
     )
     key = _private_key(key_file)
     signature = _b64u(key.sign(str(challenge["signing_payload"]).encode("utf-8")))
+    session_payload = {
+        "challenge_id": challenge["challenge_id"],
+        "signing_payload": challenge["signing_payload"],
+        "signature": signature,
+        "principal_id": principal_id,
+        "profile": profile,
+    }
+    if ttl_seconds is not None:
+        session_payload["ttl_seconds"] = ttl_seconds
     return _request(
         "POST",
         "/api/lite/harness/session",
-        {
-            "challenge_id": challenge["challenge_id"],
-            "signing_payload": challenge["signing_payload"],
-            "signature": signature,
-            "principal_id": principal_id,
-            "profile": profile,
-        },
+        session_payload,
     )
 
 
