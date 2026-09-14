@@ -116,6 +116,73 @@ def cmd_preflight(args: argparse.Namespace) -> dict:
     return _request("GET", f"/api/lite/harness/security-assurance/preflight?suite_id={suite}", authenticated=True)
 
 
+def _sync_policy(
+    lease: dict,
+    *,
+    wait_seconds: float = 120.0,
+    principal_id: str | None = None,
+    key_file: str | None = None,
+    session_ttl_seconds: int | None = None,
+) -> dict:
+    """Request the fixed qualification policy sync and wait for OPA proof."""
+    queued = _request(
+        "POST",
+        "/api/lite/harness/security-assurance/policy-sync",
+        {},
+        authenticated=True,
+        session_token=lease.get("session_token"),
+    )
+    bounded_wait = max(0.0, min(float(wait_seconds), 600.0))
+    deadline = time.monotonic() + bounded_wait
+    last = _request(
+        "GET",
+        "/api/lite/harness/security-assurance/preflight?suite_id=standard",
+        authenticated=True,
+        session_token=lease.get("session_token"),
+    )
+    while str(last.get("status") or "").casefold() != "ready" and time.monotonic() < deadline:
+        if _session_needs_renewal(lease) and principal_id and key_file:
+            _renew_lease(
+                lease,
+                principal_id=principal_id,
+                key_file=key_file,
+                ttl_seconds=session_ttl_seconds,
+            )
+        time.sleep(min(2.0, max(0.1, deadline - time.monotonic())))
+        last = _request(
+            "GET",
+            "/api/lite/harness/security-assurance/preflight?suite_id=standard",
+            authenticated=True,
+            session_token=lease.get("session_token"),
+        )
+    return {
+        "status": "PASS" if str(last.get("status") or "").casefold() == "ready" else "BLOCKED",
+        "request": queued,
+        "preflight": last,
+        "sanitized": True,
+    }
+
+
+def cmd_policy_sync(args: argparse.Namespace) -> dict:
+    token = os.environ.get(SESSION_ENV, "").strip()
+    if not token:
+        raise ValueError(f"{SESSION_ENV} is required")
+    return _sync_policy({"session_token": token}, wait_seconds=args.wait_seconds)
+
+
+def cmd_fault(args: argparse.Namespace) -> dict:
+    token = os.environ.get(SESSION_ENV, "").strip()
+    if not token:
+        raise ValueError(f"{SESSION_ENV} is required")
+    return _request(
+        "POST",
+        f"/api/lite/harness/security-assurance/faults/{args.fault_id}",
+        {"confirm": True},
+        authenticated=True,
+        session_token=token,
+    )
+
+
 def _terminal_status(result: dict) -> str:
     return str(result.get("status") or "").upper()
 
@@ -628,7 +695,22 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
         "adversarial": {"status": "NOT_RUN", "sanitized": True},
     }
     workflow_error: str | None = None
+    policy_sync_result: dict = {"status": "NOT_RUN", "sanitized": True}
     try:
+        if args.sync_policy:
+            _ensure_lease(
+                lease,
+                principal_id=principal_id,
+                key_file=str(key_path),
+                ttl_seconds=args.session_ttl_seconds,
+            )
+            policy_sync_result = _sync_policy(
+                lease,
+                wait_seconds=args.policy_sync_wait_seconds,
+                principal_id=principal_id,
+                key_file=str(key_path),
+                session_ttl_seconds=args.session_ttl_seconds,
+            )
         preflight = _request(
             "GET",
             "/api/lite/harness/security-assurance/preflight?suite_id=smoke",
@@ -659,7 +741,7 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
                 )
             else:
                 runs["standard"] = {"status": "NOT_RUN", "reason": "Smoke did not pass or Standard was skipped", "sanitized": True}
-            if runs["smoke"]["status"] == "PASS" and runs["standard"]["status"] in {"PASS", "NOT_RUN"} and not args.skip_adversarial:
+            if runs["smoke"]["status"] == "PASS" and runs["standard"]["status"] in {"PASS", "NOT_RUN", "BLOCKED"} and not args.skip_adversarial:
                 runs["adversarial"] = _run_qualified_suite(
                     suite_id="adversarial",
                     lease=lease,
@@ -671,7 +753,7 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
                     max_poll_seconds=args.max_poll_seconds,
                 )
             else:
-                runs["adversarial"] = {"status": "NOT_RUN", "reason": "prior suite did not pass or adversarial checks were skipped", "sanitized": True}
+                runs["adversarial"] = {"status": "NOT_RUN", "reason": "Smoke did not pass or adversarial checks were skipped", "sanitized": True}
         else:
             runs["smoke"] = {"status": "BLOCKED", "preflight": preflight, "sanitized": True}
     except (OSError, RuntimeError, ValueError) as exc:
@@ -709,6 +791,7 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
         "identity": {"principal_id": principal_id, "public_key_fingerprint": fingerprint, "private_key_path": str(key_path)},
         "bootstrap": {"completed": bootstrap_completed, "sanitized": True},
         "preflight": preflight,
+        "policy_sync": policy_sync_result,
         "runs": runs,
         "cleanup": cleanup,
         "session": {
@@ -742,6 +825,26 @@ def _parser() -> argparse.ArgumentParser:
     preflight.add_argument("suite_id", choices=("smoke", "standard", "deep", "adversarial"))
     preflight.set_defaults(handler=cmd_preflight, success_status=False)
 
+    policy_sync = commands.add_parser(
+        "policy-sync",
+        help="queue the current repository Safety Rules through the qualification-only supervisor lifecycle",
+    )
+    policy_sync.add_argument("--wait-seconds", type=float, default=120.0)
+    policy_sync.set_defaults(
+        handler=cmd_policy_sync,
+        success_status=False,
+    )
+
+    fault = commands.add_parser(
+        "fault",
+        help="execute one fixed, one-use, non-destructive qualification service recovery control",
+    )
+    fault.add_argument(
+        "fault_id",
+        choices=("worker_restart_once", "nats_restart_once", "opa_restart_once"),
+    )
+    fault.set_defaults(handler=cmd_fault, success_status=False)
+
     run = commands.add_parser("run", help="run one registered assurance suite")
     run.add_argument("suite_id", choices=("smoke", "standard", "deep", "adversarial"))
     run.add_argument("--scenario-id", dest="scenario_id")
@@ -766,6 +869,8 @@ def _parser() -> argparse.ArgumentParser:
     qualify.add_argument("--max-poll-seconds", type=float, default=MAX_POLL_SECONDS)
     qualify.add_argument("--skip-standard", action="store_true")
     qualify.add_argument("--skip-adversarial", action="store_true")
+    qualify.add_argument("--sync-policy", action="store_true", help="request the fixed qualification policy-source sync before suites")
+    qualify.add_argument("--policy-sync-wait-seconds", type=float, default=120.0)
     qualify.set_defaults(handler=cmd_qualify, success_status=False)
 
     report = commands.add_parser("report", help="read a sanitized report")

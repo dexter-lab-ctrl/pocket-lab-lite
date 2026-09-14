@@ -285,6 +285,14 @@
         "title": "GET /api/lite/harness/security-assurance/capabilities",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-harness-security-assurance-capabilities"
       },
+      "endpoint:GET:/api/lite/harness/security-assurance/faults": {
+        "title": "GET /api/lite/harness/security-assurance/faults",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-harness-security-assurance-faults"
+      },
+      "endpoint:GET:/api/lite/harness/security-assurance/policy-sync/status": {
+        "title": "GET /api/lite/harness/security-assurance/policy-sync/status",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-harness-security-assurance-policy-sync-status"
+      },
       "endpoint:GET:/api/lite/harness/security-assurance/preflight": {
         "title": "GET /api/lite/harness/security-assurance/preflight",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-harness-security-assurance-preflight"
@@ -708,6 +716,14 @@
       "endpoint:POST:/api/lite/harness/principals/{principal_id}/revoke": {
         "title": "POST /api/lite/harness/principals/{principal_id}/revoke",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-principals-principal-id-revoke"
+      },
+      "endpoint:POST:/api/lite/harness/security-assurance/faults/{fault_id}": {
+        "title": "POST /api/lite/harness/security-assurance/faults/{fault_id}",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-security-assurance-faults-fault-id"
+      },
+      "endpoint:POST:/api/lite/harness/security-assurance/policy-sync": {
+        "title": "POST /api/lite/harness/security-assurance/policy-sync",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-security-assurance-policy-sync"
       },
       "endpoint:POST:/api/lite/harness/security-assurance/runs": {
         "title": "POST /api/lite/harness/security-assurance/runs",
@@ -1837,6 +1853,14 @@
         "title": "assurance_deadline_exceeded",
         "url": "../../docs/generated/development/reason-codes.md#assurance-deadline-exceeded"
       },
+      "reason:assurance_policy_sync_denied": {
+        "title": "assurance_policy_sync_denied",
+        "url": "../../docs/generated/development/reason-codes.md#assurance-policy-sync-denied"
+      },
+      "reason:assurance_policy_sync_disabled": {
+        "title": "assurance_policy_sync_disabled",
+        "url": "../../docs/generated/development/reason-codes.md#assurance-policy-sync-disabled"
+      },
       "reason:assurance_session_binding_mismatch": {
         "title": "assurance_session_binding_mismatch",
         "url": "../../docs/generated/development/reason-codes.md#assurance-session-binding-mismatch"
@@ -1988,6 +2012,54 @@
       "reason:exception_unusable": {
         "title": "exception_unusable",
         "url": "../../docs/generated/development/reason-codes.md#exception-unusable"
+      },
+      "reason:fault_already_used": {
+        "title": "fault_already_used",
+        "url": "../../docs/generated/development/reason-codes.md#fault-already-used"
+      },
+      "reason:fault_confirmation_required": {
+        "title": "fault_confirmation_required",
+        "url": "../../docs/generated/development/reason-codes.md#fault-confirmation-required"
+      },
+      "reason:fault_control_denied": {
+        "title": "fault_control_denied",
+        "url": "../../docs/generated/development/reason-codes.md#fault-control-denied"
+      },
+      "reason:fault_control_disabled": {
+        "title": "fault_control_disabled",
+        "url": "../../docs/generated/development/reason-codes.md#fault-control-disabled"
+      },
+      "reason:fault_control_execution_failed": {
+        "title": "fault_control_execution_failed",
+        "url": "../../docs/generated/development/reason-codes.md#fault-control-execution-failed"
+      },
+      "reason:fault_recovery_observation_failed": {
+        "title": "fault_recovery_observation_failed",
+        "url": "../../docs/generated/development/reason-codes.md#fault-recovery-observation-failed"
+      },
+      "reason:fault_recovery_timeout": {
+        "title": "fault_recovery_timeout",
+        "url": "../../docs/generated/development/reason-codes.md#fault-recovery-timeout"
+      },
+      "reason:fault_registry_invalid": {
+        "title": "fault_registry_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#fault-registry-invalid"
+      },
+      "reason:fault_registry_unavailable": {
+        "title": "fault_registry_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#fault-registry-unavailable"
+      },
+      "reason:fault_restart_not_acted": {
+        "title": "fault_restart_not_acted",
+        "url": "../../docs/generated/development/reason-codes.md#fault-restart-not-acted"
+      },
+      "reason:fault_restarted": {
+        "title": "fault_restarted",
+        "url": "../../docs/generated/development/reason-codes.md#fault-restarted"
+      },
+      "reason:fault_unknown": {
+        "title": "fault_unknown",
+        "url": "../../docs/generated/development/reason-codes.md#fault-unknown"
       },
       "reason:generation_changed": {
         "title": "generation_changed",
@@ -3062,7 +3134,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "cb994e8064a913e0da4e904e51e3c9fbcdb1467a8bb93b0e073020fa52e168d2",
+    "aggregate_fingerprint": "ea8445ec77c14526fee85887eed688b09877ad0f6b21add1a45f447a528635ff",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3072,8 +3144,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "29fe89e306d944e35445019dadaca666e129a76386a9b20e1d148bb6f40ef771",
-      "contracts/metadata/documentation-platform.json": "991048190b92998a077dcc91ce474c95c1802d7a31841d5f3d7e7c26a74c3418",
+      "contracts/generated/lite-openapi.json": "130d79dd5e50f26db37a2ef9dbdc4417c367d22199cc7decae15c168cd440313",
+      "contracts/metadata/documentation-platform.json": "d0f932612fb9be154f3e95afb92409f85e71fcc402def1d8d606650bd8ec9a83",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",

@@ -40,6 +40,7 @@ from .. import deps
 from ..db.connection import begin_immediate, connection, read_connection
 from ..db.migrations import apply_migrations
 from . import lite_harness
+from . import lite_assurance_faults
 from . import lite_policy_opa
 from . import lite_security
 from . import lite_security_evidence as evidence
@@ -291,6 +292,7 @@ def _raw_registries() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], d
 def validate_registries() -> dict[str, Any]:
     """Validate all server-owned registries and current AP coverage."""
     tools, suites, scenarios, threat = _raw_registries()
+    fault_registry = lite_assurance_faults.validate_registry()
     tool_items = tools.get("toolchain")
     suite_items = suites.get("profiles")
     scenario_items = scenarios.get("scenarios")
@@ -444,11 +446,13 @@ def validate_registries() -> dict[str, Any]:
         "suites": sorted(suite_map),
         "scenarios": sorted(scenario_map),
         "attack_paths": sorted(current_ap_ids),
+        "faults": [str(item.get("id") or "") for item in fault_registry["faults"]],
         "registry_hashes": {
             "tools": _registry_hash(TOOLS_REGISTRY_PATH),
             "suites": _registry_hash(SUITES_REGISTRY_PATH),
             "scenarios": _registry_hash(SCENARIOS_REGISTRY_PATH),
             "threat_model": _registry_hash(THREAT_MODEL_PATH),
+            "faults": _registry_hash(lite_assurance_faults.FAULTS_REGISTRY_PATH),
         },
         "retry_policy": {
             str(identifier): {
@@ -538,6 +542,7 @@ def list_capabilities() -> dict[str, Any]:
         "arbitrary_nats": False,
         "arbitrary_network_targets": False,
         "browser_surface": False,
+        "fault_controls": [str(item.get("id") or "") for item in lite_assurance_faults.list_faults().get("faults", [])],
         "sanitized": True,
     })
     # The negative capability declarations are intentionally safe booleans.
@@ -2415,12 +2420,27 @@ def _caddy_probe() -> dict[str, Any]:
         "/docs",
         "/redoc",
     )
+    harness_paths = (
+        "/api/lite/harness",
+        "/api/lite/harness/bootstrap/grants",
+        "/api/lite/harness/bootstrap/challenge",
+        "/api/lite/harness/bootstrap/complete",
+        "/api/lite/harness/challenge",
+        "/api/lite/harness/session",
+        "/api/lite/harness/security-assurance/runs",
+    )
     route_results = []
-    for path in paths:
+    for path in paths + harness_paths:
         probe = (
             _stream_probe(port=_caddy_port(), path=path, headers=forged_headers)
             if path == "/api/lite/security/events"
-            else _http_probe(port=_caddy_port(), path=path, headers=forged_headers)
+            else _http_probe(
+                port=_caddy_port(),
+                path=path,
+                method="POST" if path.endswith(("/grants", "/challenge", "/complete", "/session", "/runs")) else "GET",
+                body=(b"{}" if path.endswith(("/grants", "/challenge", "/complete", "/session", "/runs")) else None),
+                headers={**forged_headers, **({"Content-Type": "application/json"} if path.endswith(("/grants", "/challenge", "/complete", "/session", "/runs")) else {})},
+            )
         )
         route_results.append({
             "path": path,
@@ -2452,16 +2472,25 @@ def _caddy_probe() -> dict[str, Any]:
     assurance_body = assurance.get("body") if isinstance(assurance.get("body"), Mapping) else {}
     reason = str(assurance_body.get("reason_code") or "")
     assurance_status = assurance.get("status_code")
-    authority_not_accepted = assurance_status in {401, 403, 422}
-    route_registered = assurance_status not in {None, 404, 405}
-    marker_not_authorized = reason not in {"harness_session_invalid", "harness_proof_fields_rejected", "harness_role_field_rejected"}
+    authority_not_accepted = assurance_status in {401, 403, 404, 405, 422}
+    route_registered = assurance_status in {401, 403, 404, 405, 422}
+    marker_not_authorized = (
+        not bool(assurance.get("response_harness_marker_echoed"))
+        and reason not in {"harness_session_accepted", "harness_authority_accepted"}
+    )
     route_failures = [item for item in route_results if item.get("status_code") is None or int(item.get("status_code") or 0) >= 500]
     stream_result = next((item for item in route_results if item.get("path") == "/api/lite/security/events"), {})
+    harness_route_results = [item for item in route_results if str(item.get("path") or "").startswith("/api/lite/harness")]
+    harness_not_proxyable = bool(harness_route_results) and all(
+        item.get("status_code") in {401, 403, 404, 405} and not item.get("response_harness_marker_echoed")
+        for item in harness_route_results
+    )
     passed = (
         authority_not_accepted
         and route_registered
         and marker_not_authorized
         and not route_failures
+        and harness_not_proxyable
         and stream_result.get("status_code") == 200
         and stream_result.get("response_harness_marker_echoed") is False
         and websocket.get("handshake_accepted") is True
@@ -2470,8 +2499,9 @@ def _caddy_probe() -> dict[str, Any]:
     return _redact({
         "status": "PASS" if passed else "FAIL",
         "target_scope": ASSURANCE_TARGET_SCOPE,
-        "routes_tested": [item["path"] for item in route_results] + ["/ws/events (websocket upgrade)", "/api/lite/harness/security-assurance/runs"],
+        "routes_tested": [item["path"] for item in route_results] + ["/ws/events (websocket upgrade)"],
         "route_results": route_results,
+        "harness_namespace_denied": harness_not_proxyable,
         "websocket_result": websocket,
         "assurance_request": {
             "status_code": assurance.get("status_code"),
@@ -2482,6 +2512,147 @@ def _caddy_probe() -> dict[str, Any]:
         },
         "proof_header_injection": "not_accepted",
         "source_strip_contract": CADDY_SOURCE_PATH.exists(),
+        "sanitized": True,
+    })
+
+
+def _negative_auth_probes() -> dict[str, Any]:
+    """Run only fixed malformed requests against the direct loopback API.
+
+    These probes intentionally never contain a valid key, signature, session,
+    grant, or registered command.  They exercise the rejection boundary and
+    bounded input handling; cryptographic success and destructive operations
+    remain covered by the harness test suite and are not synthesized here.
+    """
+    fake_id = "0" * 32
+    fixed_cases: tuple[dict[str, Any], ...] = (
+        {
+            "id": "invalid-signature",
+            "method": "POST",
+            "path": "/api/lite/harness/session",
+            "body": {
+                "challenge_id": "hch-" + fake_id,
+                "signing_payload": "x" * 100,
+                "signature": "x" * 88,
+            },
+        },
+        {
+            "id": "expired-or-unknown-challenge",
+            "method": "POST",
+            "path": "/api/lite/harness/session",
+            "body": {
+                "challenge_id": "hch-" + fake_id,
+                "signing_payload": "x" * 100,
+                "signature": "x" * 88,
+                "principal_id": "unknown-assurance-principal",
+                "profile": ASSURANCE_PROFILE,
+            },
+        },
+        {
+            "id": "wrong-bootstrap-key",
+            "method": "POST",
+            "path": "/api/lite/harness/bootstrap/grants",
+            "body": {"principal_id": "negative-bootstrap", "public_key": "!" * 40},
+        },
+        {
+            "id": "unknown-bootstrap-grant",
+            "method": "POST",
+            "path": "/api/lite/harness/bootstrap/challenge",
+            "body": {"grant_id": "hbg-" + fake_id},
+        },
+        {
+            "id": "wrong-bootstrap-signature",
+            "method": "POST",
+            "path": "/api/lite/harness/bootstrap/complete",
+            "body": {
+                "challenge_id": "hbc-" + fake_id,
+                "grant_id": "hbg-" + fake_id,
+                "principal_id": "negative-bootstrap",
+                "public_key": "!" * 40,
+                "signature": "x" * 88,
+            },
+        },
+        {
+            "id": "wrong-purpose-profile-target",
+            "method": "POST",
+            "path": "/api/lite/harness/challenge",
+            "body": {
+                "principal_id": "unknown-assurance-principal",
+                "purpose": "not-a-registered-purpose",
+                "profile": "not-a-registered-profile",
+                "target_scope": "not-a-registered-target",
+            },
+        },
+        {
+            "id": "unknown-suite-and-forged-session",
+            "method": "POST",
+            "path": "/api/lite/harness/security-assurance/runs",
+            "body": {"suite_id": "not-a-registered-suite"},
+            "headers": {lite_harness.HARNESS_SESSION_HEADER: "forged"},
+        },
+        {
+            "id": "malformed-json",
+            "method": "POST",
+            "path": "/api/lite/harness/security-assurance/runs",
+            "raw_body": b"{",
+            "headers": {
+                "Content-Type": "application/json",
+                lite_harness.HARNESS_SESSION_HEADER: "forged",
+            },
+        },
+        {
+            "id": "unauthorized-report",
+            "method": "GET",
+            "path": "/api/lite/harness/security-assurance/runs/assurance-" + fake_id + "/report",
+            "headers": {lite_harness.HARNESS_SESSION_HEADER: "forged"},
+        },
+        {
+            "id": "unauthorized-cancel",
+            "method": "POST",
+            "path": "/api/lite/harness/security-assurance/runs/assurance-" + fake_id + "/cancel",
+            "body": {},
+            "headers": {lite_harness.HARNESS_SESSION_HEADER: "forged"},
+        },
+    )
+    results: list[dict[str, Any]] = []
+    accepted_statuses = {200, 201, 202, 204}
+    for case in fixed_cases:
+        body = case.get("raw_body")
+        if body is None and "body" in case:
+            body = _canonical(case["body"]).encode("utf-8")
+        probe = _http_probe(
+            port=_api_port(),
+            path=str(case["path"]),
+            method=str(case["method"]),
+            body=body,
+            headers=case.get("headers") if isinstance(case.get("headers"), Mapping) else None,
+        )
+        response_body = probe.get("body") if isinstance(probe.get("body"), Mapping) else {}
+        status_code = probe.get("status_code")
+        accepted = bool(status_code in accepted_statuses) and (
+            bool(response_body.get("accepted"))
+            or "session_token" in set(response_body.get("keys") or [])
+            or "grant_token" in set(response_body.get("keys") or [])
+        )
+        rejected = isinstance(status_code, int) and 400 <= status_code <= 499 and not accepted
+        results.append(_redact({
+            "probe_id": str(case["id"]),
+            "method": str(case["method"]),
+            "path": str(case["path"]),
+            "status_code": status_code,
+            "rejected": rejected,
+            "response": response_body,
+            "duration_ms": probe.get("duration_ms"),
+            "failure_code": probe.get("failure_code"),
+        }))
+    passed = bool(results) and all(bool(item.get("rejected")) for item in results)
+    return _redact({
+        "status": "PASS" if passed else "FAIL",
+        "probe_count": len(results),
+        "rejected_count": sum(1 for item in results if item.get("rejected")),
+        "results": results,
+        "valid_authority_material_sent": False,
+        "persistent_state_intentionally_mutated": False,
         "sanitized": True,
     })
 
@@ -2555,7 +2726,12 @@ def _source_boundaries() -> dict[str, Any]:
     markers = {
         "action_queue": ("submit_domain_command", "BUS.publish"),
         "worker": ("execute_domain_command", "pocketlab.commands.>"),
-        "caddy": ("header_up -X-Pocket-Lab-Harness-Session", "handle /api/*"),
+        "caddy": (
+            "header_up -X-Pocket-Lab-Harness-Session",
+            "handle /api/*",
+            "@pocketlab_harness_routes",
+            "respond 404",
+        ),
         "evidence_policy": ("def redact_value", "Photo library/media", "Android shared storage"),
     }
     marker_results: dict[str, bool] = {}
@@ -3533,6 +3709,17 @@ def execute_run(
                         status=caddy_result["status"],
                         observed="Forged qualification markers were not accepted through the Caddy proxy.",
                         details=caddy_result,
+                        started_at=scenario_started,
+                    )
+                )
+            elif scenario_id == "adversarial-negative-auth-probes":
+                negative_result = _negative_auth_probes()
+                scenario_results.append(
+                    _scenario_result(
+                        definition,
+                        status=negative_result["status"],
+                        observed="Fixed malformed authentication, bootstrap, input, report, and cancellation requests remained rejected.",
+                        details=negative_result,
                         started_at=scenario_started,
                     )
                 )

@@ -9,6 +9,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .. import deps
 from ..services import lite_harness
+from ..services import lite_assurance_faults
+from ..services import lite_policy_source_sync
 from ..services import lite_security_assurance as assurance
 from ..services.action_queue import submit_domain_command
 
@@ -30,6 +32,18 @@ class AssuranceRunRequest(BaseModel):
     baseline_run_id: str | None = Field(default=None, min_length=42, max_length=42, pattern=RUN_ID_PATTERN)
 
 
+class FaultControlRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    confirm: bool = Field(default=False)
+
+
+class PolicySyncRequest(BaseModel):
+    """The qualification policy-sync request intentionally has no inputs."""
+
+    model_config = ConfigDict(extra="forbid")
+
+
 def _direct(request: Request) -> None:
     if not lite_harness.is_direct_local_request(request):
         raise HTTPException(
@@ -44,6 +58,30 @@ def _direct(request: Request) -> None:
 
 
 def _raise(exc: assurance.AssuranceError) -> None:
+    raise HTTPException(
+        status_code=exc.status_code,
+        headers={"Cache-Control": "no-store"},
+        detail={
+            "reason_code": exc.reason_code,
+            "message": exc.message,
+            "sanitized": True,
+        },
+    ) from exc
+
+
+def _raise_policy(exc: lite_policy_source_sync.PolicySourceSyncError) -> None:
+    raise HTTPException(
+        status_code=exc.status_code,
+        headers={"Cache-Control": "no-store"},
+        detail={
+            "reason_code": exc.reason_code,
+            "message": exc.message,
+            "sanitized": True,
+        },
+    ) from exc
+
+
+def _raise_fault(exc: lite_assurance_faults.FaultControlError) -> None:
     raise HTTPException(
         status_code=exc.status_code,
         headers={"Cache-Control": "no-store"},
@@ -205,6 +243,63 @@ async def preflight(
     except assurance.AssuranceError as exc:
         _raise(exc)
     return result
+
+
+@router.get("/policy-sync/status")
+def policy_sync_status(request: Request, response: Response) -> dict[str, Any]:
+    _assurance_auth(request, "security.assurance.read", write=False)
+    _no_store(response)
+    try:
+        return {"source": lite_policy_source_sync.public_state(), "sanitized": True}
+    except lite_policy_source_sync.PolicySourceSyncError as exc:
+        _raise_policy(exc)
+    raise AssertionError("unreachable")
+
+
+@router.post("/policy-sync", status_code=status.HTTP_202_ACCEPTED)
+def policy_sync(payload: PolicySyncRequest, request: Request, response: Response) -> dict[str, Any]:
+    auth = _assurance_auth(request, "security.assurance.policy_sync", write=True)
+    _no_store(response)
+    harness = auth.get("harness") or {}
+    try:
+        return lite_policy_source_sync.request_assurance_source_sync(
+            auth_context=auth,
+            correlation_id=str(harness.get("session_id") or "")[:100] or None,
+        )
+    except lite_policy_source_sync.PolicySourceSyncError as exc:
+        _raise_policy(exc)
+    raise AssertionError("unreachable")
+
+
+@router.get("/faults")
+def faults(request: Request, response: Response) -> dict[str, Any]:
+    _direct(request)
+    _no_store(response)
+    try:
+        return lite_assurance_faults.list_faults()
+    except lite_assurance_faults.FaultControlError as exc:
+        _raise_fault(exc)
+    raise AssertionError("unreachable")
+
+
+@router.post("/faults/{fault_id}", status_code=status.HTTP_202_ACCEPTED)
+def execute_fault(
+    fault_id: str,
+    payload: FaultControlRequest,
+    request: Request,
+    response: Response,
+) -> dict[str, Any]:
+    auth = _assurance_auth(request, "security.assurance.fault_control", write=True)
+    _no_store(response)
+    try:
+        return lite_assurance_faults.execute_fault(
+            fault_id=fault_id,
+            auth_context=auth,
+            confirm=payload.confirm,
+        )
+    except lite_assurance_faults.FaultControlError as exc:
+        _raise_fault(exc)
+    raise AssertionError("unreachable")
 
 
 @router.get("/runs")

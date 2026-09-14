@@ -42,4 +42,4 @@ profiles:
     existing_security_profile: null
     allowed_safety_classes: [SAFE_ACTIVE]
     required_capabilities: [security.assurance.read, security.assurance.api, security.assurance.runtime, security.assurance.threat_scenario, security.assurance.report]
-    scenarios: [harness-auth-boundary, caddy-proof-strip, runtime-readiness, evidence-redaction, source-boundaries]
+    scenarios: [harness-auth-boundary, caddy-proof-strip, runtime-readiness, evidence-redaction, source-boundaries, adversarial-negative-auth-probes]

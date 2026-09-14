@@ -93,6 +93,16 @@ scenarios:
     owasp: [A01, A02, A05, A08]
     controls: [CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS, CTRL-EVIDENCE-SANITIZE]
     attack_paths: [AP-01, AP-02, AP-04, AP-05, AP-07]
+  - id: adversarial-negative-auth-probes
+    title: Fixed malformed authentication and input probes remain denied
+    execution: fixed_negative_auth_probes
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.api
+    suites: [adversarial]
+    stride: [Spoofing, Tampering, Elevation of Privilege]
+    owasp: [A01, A03, A07]
+    controls: [CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS]
+    attack_paths: [AP-01, AP-02, AP-03, AP-04, AP-09, AP-10]
   - id: threat-model-integrity
     title: Current canonical threat model is complete and executable statuses are explicit
     execution: canonical_threat_model_check

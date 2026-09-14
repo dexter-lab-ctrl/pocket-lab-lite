@@ -1,0 +1,32 @@
+schema_version: "1.0.0"
+name: pocketlab-runtime-security-assurance-faults
+description: >-
+  Qualification-only, one-use service recovery controls.  These entries are
+  identifiers for fixed supervisor actions, not command or process selectors.
+target_scope: local_server_host_only
+required_capability: security.assurance.fault_control
+faults:
+  - id: worker_restart_once
+    service_role: worker
+    service_name: pocket-worker
+    operation: restart
+    safety_class: SAFE_ACTIVE
+    recovery_timeout_seconds: 90
+    max_uses: 1
+    probe: worker_online_and_api_nats
+  - id: nats_restart_once
+    service_role: nats
+    service_name: pocket-nats
+    operation: restart
+    safety_class: SAFE_ACTIVE
+    recovery_timeout_seconds: 90
+    max_uses: 1
+    probe: nats_tcp_jetstream_worker
+  - id: opa_restart_once
+    service_role: policy
+    service_name: pocket-opa
+    operation: restart
+    safety_class: SAFE_ACTIVE
+    recovery_timeout_seconds: 90
+    max_uses: 1
+    probe: opa_health_and_revision

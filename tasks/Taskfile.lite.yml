@@ -140,6 +140,18 @@ tasks:
         --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}"
         --bootstrap-profile security-assurance-runner
 
+  lite:qualification:start:key-bound:faults:
+    desc: Explicitly start key-bound qualification with the fixed non-destructive service-fault controls enabled
+    requires:
+      vars: [PRINCIPAL_ID, PUBLIC_KEY_FILE]
+    cmds:
+      - >-
+        bash scripts/dev/lite/start-qualification.sh
+        --bootstrap-principal-id "{{.PRINCIPAL_ID}}"
+        --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}"
+        --bootstrap-profile security-assurance-runner
+        --enable-fault-control
+
   lite:security:assurance:check:
     desc: Show the server-owned Runtime Security Assurance registry without starting a run
     cmds:
@@ -151,6 +163,13 @@ tasks:
       SUITE: '{{default "smoke" .SUITE}}'
     cmds:
       - '{{.PYTHON}} scripts/dev/lite/security_assurance.py preflight "{{.SUITE}}"'
+
+  lite:security:assurance:policy-sync:
+    desc: Queue the current repository Safety Rules through the qualification-only supervisor lifecycle
+    vars:
+      WAIT_SECONDS: '{{default "120" .WAIT_SECONDS}}'
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py policy-sync --wait-seconds "{{.WAIT_SECONDS}}"'
 
   lite:security:assurance:smoke:
     desc: Run the bounded Smoke runtime security assurance suite
@@ -171,6 +190,13 @@ tasks:
     desc: Run the qualification-only fixed adversarial assurance suite
     cmds:
       - '{{.PYTHON}} scripts/dev/lite/security_assurance.py run adversarial'
+
+  lite:security:assurance:fault:
+    desc: Execute one registered non-destructive qualification service-fault control
+    requires:
+      vars: [FAULT_ID]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py fault "{{.FAULT_ID}}"'
 
   lite:security:assurance:scenario:
     desc: Run one registered scenario through the Standard assurance profile
@@ -198,11 +224,14 @@ tasks:
     vars:
       PRINCIPAL_ID: '{{default "codex-security-assurance" .PRINCIPAL_ID}}'
       KEY_FILE: '{{default "~/.pocketlab-qualification/codex-security-assurance.key" .KEY_FILE}}'
+      POLICY_SYNC_WAIT_SECONDS: '{{default "120" .POLICY_SYNC_WAIT_SECONDS}}'
     cmds:
       - >-
         {{.PYTHON}} scripts/dev/lite/security_assurance.py qualify
         --principal-id "{{.PRINCIPAL_ID}}"
         --key-file "{{.KEY_FILE}}"
+        --sync-policy
+        --policy-sync-wait-seconds "{{.POLICY_SYNC_WAIT_SECONDS}}"
 
   lite:check:quick:
     desc: 'Fast developer gate: compile, shell syntax, focused tests, contracts, PWA build, and cheap doc drift'

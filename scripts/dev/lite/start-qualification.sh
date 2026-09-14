@@ -8,6 +8,7 @@ bootstrap_principal_id=""
 bootstrap_public_key_file=""
 bootstrap_profile=""
 bootstrap_requested=0
+fault_control_requested=0
 forward_args=()
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
@@ -28,6 +29,10 @@ while [[ "$#" -gt 0 ]]; do
       bootstrap_profile="$2"
       bootstrap_requested=1
       shift 2
+      ;;
+    --enable-fault-control)
+      fault_control_requested=1
+      shift
       ;;
     --profile|--profile=*)
       echo "ERROR qualification startup owns the --profile lite selection" >&2
@@ -96,6 +101,10 @@ PYKEY
     exit 2
   fi
 else
+  if [[ "$fault_control_requested" -eq 1 ]]; then
+    echo "ERROR --enable-fault-control requires key-bound assurance bootstrap" >&2
+    exit 2
+  fi
   if [[ -z "${POCKETLAB_HARNESS_PROVISIONING_TOKEN:-}" ]]; then
     echo "ERROR POCKETLAB_HARNESS_PROVISIONING_TOKEN is required for explicit qualification startup" >&2
     exit 2
@@ -114,10 +123,12 @@ if [[ "$bootstrap_requested" -eq 1 ]]; then
   export POCKETLAB_HARNESS_BOOTSTRAP_PRINCIPAL_ID="$bootstrap_principal_id"
   export POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT="$bootstrap_fingerprint"
   export POCKETLAB_HARNESS_BOOTSTRAP_PROFILE="$bootstrap_profile"
+  export POCKETLAB_HARNESS_FAULT_CONTROL="$fault_control_requested"
 else
   export POCKETLAB_HARNESS_DESTRUCTIVE="${POCKETLAB_HARNESS_DESTRUCTIVE:-0}"
   export POCKETLAB_QUALIFICATION_OWNER="${POCKETLAB_QUALIFICATION_OWNER:-0}"
   export POCKETLAB_TEST_AUTH_BYPASS="${POCKETLAB_TEST_AUTH_BYPASS:-0}"
+  export POCKETLAB_HARNESS_FAULT_CONTROL=0
 fi
 
 exec bash "$SCRIPT_DIR/../../../pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh" --profile lite "${forward_args[@]}"

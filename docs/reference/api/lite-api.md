@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 8f03b5165a97db8a4d1aab9192025f9a48fd56af6aa3e57d9b254948394c82c4
+source_fingerprint: a88b737f92fe3e3dbac0c8aa8be8ce68e90fb4f53a4f29f64c49192a658ff378
 schema_revision: 1
 validation_status: generated
 ---
@@ -2209,6 +2209,88 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 
 - Operation ID: `capabilities_api_lite_harness_security_assurance_capabilities_get`
 - Summary: Capabilities
+- Deprecated: no
+- Tags: `lite-security-assurance`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-harness-security-assurance-faults"></a>
+## GET `/api/lite/harness/security-assurance/faults`
+
+- Operation ID: `faults_api_lite_harness_security_assurance_faults_get`
+- Summary: Faults
+- Deprecated: no
+- Tags: `lite-security-assurance`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-harness-security-assurance-faults-fault-id"></a>
+## POST `/api/lite/harness/security-assurance/faults/{fault_id}`
+
+- Operation ID: `execute_fault_api_lite_harness_security_assurance_faults__fault_id__post`
+- Summary: Execute Fault
+- Deprecated: no
+- Tags: `lite-security-assurance`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| fault_id | path | yes | `string` |
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `FaultControlRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-harness-security-assurance-policy-sync"></a>
+## POST `/api/lite/harness/security-assurance/policy-sync`
+
+- Operation ID: `policy_sync_api_lite_harness_security_assurance_policy_sync_post`
+- Summary: Policy Sync
+- Deprecated: no
+- Tags: `lite-security-assurance`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `PolicySyncRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-harness-security-assurance-policy-sync-status"></a>
+## GET `/api/lite/harness/security-assurance/policy-sync/status`
+
+- Operation ID: `policy_sync_status_api_lite_harness_security_assurance_policy_sync_status_get`
+- Summary: Policy Sync Status
 - Deprecated: no
 - Tags: `lite-security-assurance`
 

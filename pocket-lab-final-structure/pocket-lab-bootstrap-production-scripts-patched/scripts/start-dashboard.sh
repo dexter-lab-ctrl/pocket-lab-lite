@@ -448,6 +448,16 @@ write_caddy_site() {
   header @pocketlab_non_app_routes X-Frame-Options "DENY"
   header Referrer-Policy "no-referrer"
 
+  # The harness is a direct-loopback qualification surface.  Deny its whole
+  # namespace before the generic API proxy so Caddy cannot become an authority
+  # bridge even when a caller supplies no recognized proof headers.
+  @pocketlab_harness_routes {
+    path /api/lite/harness /api/lite/harness/*
+  }
+  handle @pocketlab_harness_routes {
+    respond 404
+  }
+
   handle /health {
     reverse_proxy 127.0.0.1:${API_PORT} {
       header_up -X-Pocket-Lab-Test
