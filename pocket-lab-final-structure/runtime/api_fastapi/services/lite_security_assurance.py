@@ -2945,6 +2945,22 @@ def _tool_retry_policy(tool_id: str) -> dict[str, Any]:
     return {"retry_safe": False, "resume_supported": False, "checkpoint_supported": False, "max_attempts": 1}
 
 
+def _security_tool_version(raw_tools: Mapping[str, Any], tool_id: str) -> str | None:
+    """Extract only a scanner version already emitted by the Security path."""
+    candidates = [raw_tools.get(tool_id)]
+    if tool_id == "trivy":
+        candidates.append(raw_tools.get("trivy_source"))
+    for value in candidates:
+        if not isinstance(value, Mapping):
+            continue
+        direct = str(value.get("tool_version") or value.get("version") or "").strip()
+        cache = value.get("cache") if isinstance(value.get("cache"), Mapping) else {}
+        candidate = direct or str(cache.get("scanner_version") or "").strip()
+        if candidate:
+            return policy.redact_text(candidate)[:120]
+    return None
+
+
 def _existing_security_run_result(
     run: Mapping[str, Any] | None,
     *,
@@ -2964,6 +2980,8 @@ def _existing_security_run_result(
     tool_records: dict[str, dict[str, Any]] = {}
     for tool_id in ("lynis", "trivy"):
         raw_value = raw_tools.get(tool_id)
+        if tool_id == "trivy" and not isinstance(raw_value, Mapping):
+            raw_value = raw_tools.get("trivy_source")
         raw = raw_value if isinstance(raw_value, Mapping) else {}
         raw_status = str(raw.get("status") or "").lower()
         if not raw:
@@ -2980,8 +2998,9 @@ def _existing_security_run_result(
             failure_code = None if tool_status == "PASS" else ("tool_missing" if tool_status == "MISSING" else "tool_incomplete")
         tool_records[tool_id] = {
             "status": tool_status,
-            "duration_ms": int(raw.get("duration_ms") or 0) or None,
+            "duration_ms": int(raw.get("duration_ms") or (float(raw.get("elapsed_seconds") or 0) * 1000)) or None,
             "finding_count": int(raw.get("finding_count") or 0),
+            "version": _security_tool_version(raw_tools, tool_id),
             "failure_code": failure_code,
             "native_status": "VERIFIED native when discovered by existing Security path",
             "resource_class": "heavy",
@@ -3001,9 +3020,10 @@ def _existing_security_run_result(
         "tool_records": {
             **tool_records,
             "pocketlab-security": {
-                "status": mapped,
-                "duration_ms": int((time.monotonic() - started) * 1000),
-                "finding_count": len(findings),
+            "status": mapped,
+            "duration_ms": int((time.monotonic() - started) * 1000),
+            "finding_count": len(findings),
+            "version": None,
                 "native_status": "VERIFIED native when existing worker path executes",
                 "resource_class": "heavy",
             },
@@ -3172,6 +3192,7 @@ def _normalize_security_finding(
     run_id: str,
     suite_id: str,
     scanner_evidence_refs: Iterable[str],
+    tool_versions: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     source = str(item.get("source") or item.get("tool") or "security").strip().lower()[:80]
     category = str(item.get("category") or "security_finding").strip().lower()[:120]
@@ -3200,7 +3221,7 @@ def _normalize_security_finding(
         "suite": suite_id,
         "scenario_id": "security-projection",
         "tool": source,
-        "tool_version": None,
+        "tool_version": str(item.get("tool_version") or (tool_versions or {}).get(source) or "")[:120] or None,
         "category": category,
         "severity": policy.normalize_severity(item.get("severity")),
         "confidence": "medium" if source in {"trivy", "lynis"} else "unknown",
@@ -3896,12 +3917,18 @@ def execute_run(
                     deadline_expired = True
                     scanner_result_status = "PARTIAL"
                 raw_findings = scanner_summary.get("findings") if isinstance(scanner_summary.get("findings"), list) else []
+                scanner_versions = {
+                    tool_id: _security_tool_version(raw_records, tool_id)
+                    for tool_id in ("lynis", "trivy")
+                    if _security_tool_version(raw_records, tool_id)
+                }
                 findings.extend(
                     _normalize_security_finding(
                         item,
                         run_id=run_id,
                         suite_id=str(suite["id"]),
                         scanner_evidence_refs=scanner_summary.get("evidence_refs") or [],
+                        tool_versions=scanner_versions,
                     )
                     for item in raw_findings
                     if isinstance(item, Mapping)

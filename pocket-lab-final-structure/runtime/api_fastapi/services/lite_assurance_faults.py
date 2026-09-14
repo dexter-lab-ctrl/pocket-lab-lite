@@ -266,6 +266,15 @@ def execute_fault(*, fault_id: str, auth_context: Mapping[str, Any], confirm: bo
         supervisor = pocketlab_core_supervisor.LiteCoreSupervisor()
         action = supervisor.restart_pm2(str(definition["service_name"]), f"security_assurance_fault:{definition['id']}")
         acted = bool(action.get("acted"))
+        # A supervisor backoff or admission guard means the registered fault
+        # did not execute.  Keep the one-use control available for the
+        # operator after the supported retry window; consuming it here would
+        # turn an expected safety throttle into an unrecoverable qualification
+        # false negative.  Once PM2 has actually acted, the identifier stays
+        # consumed even if post-restart observation is partial.
+        if not acted:
+            with _USE_LOCK:
+                _USED_FAULTS.discard(definition["id"])
         recovery = _post_fault_observation(supervisor, definition) if acted else {"healthy": False, "failure_code": "fault_restart_not_acted", "sanitized": True}
         status = "PASS" if acted and recovery.get("healthy") else "PARTIAL"
         result = {
@@ -293,6 +302,8 @@ def execute_fault(*, fault_id: str, auth_context: Mapping[str, Any], confirm: bo
     except FaultControlError:
         raise
     except Exception as exc:
+        with _USE_LOCK:
+            _USED_FAULTS.discard(definition["id"])
         _audit(
             event_type="assurance_fault_control_failed",
             reason_code="fault_control_execution_failed",

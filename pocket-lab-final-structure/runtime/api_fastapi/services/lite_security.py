@@ -4501,6 +4501,25 @@ def _run_command(args: list[str], *, cwd: Path, timeout: int) -> dict[str, Any]:
     )
 
 
+def _tool_version(executable: str, *, args: tuple[str, ...], cwd: Path) -> str | None:
+    """Read a bounded, redacted version line using the existing process guard."""
+    try:
+        resolved = Path(executable).resolve(strict=True)
+        version_cwd = resolved.parent if resolved.parent.is_dir() else cwd
+    except OSError:
+        version_cwd = cwd
+    result = _run_command([executable, *args], cwd=version_cwd, timeout=5)
+    if result.get("timed_out") or result.get("returncode") not in {0, None}:
+        return None
+    for line in f"{result.get('stdout') or ''}\n{result.get('stderr') or ''}".splitlines():
+        candidate = re.sub(r"\s+", " ", policy.redact_text(line)).strip()
+        if not candidate or len(candidate) > 120:
+            continue
+        if re.search(r"(?:version|lynis|trivy|\b\d+\.\d+(?:\.\d+)?\b)", candidate, flags=re.IGNORECASE):
+            return candidate
+    return None
+
+
 def missing_tool_finding(source: str) -> dict[str, Any]:
     name = source.capitalize()
     return normalize_finding(
@@ -6764,8 +6783,9 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         missing = missing_tool_finding("lynis")
         missing["evidence_ref"] = f"security/evidence/{run_id}/lynis-normalized.json"
         findings.append(missing)
-        tool_results["lynis"] = {"status": "missing_tool", "available": False}
+        tool_results["lynis"] = {"status": "missing_tool", "available": False, "tool_version": None}
     else:
+        lynis_version = _tool_version(lynis, args=("--version",), cwd=root)
         timeout = _assurance_command_timeout(
             assurance_deadline_epoch, _command_timeout("lynis")
         )
@@ -6786,6 +6806,7 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             "available": True,
             "returncode": result.get("returncode"),
             "finding_count": len(normalized),
+            "tool_version": lynis_version,
         }
     evidence_refs.append(evidence.write_evidence(run_id, "lynis-normalized.json", {"tool": "lynis", "findings": [f for f in findings if f.get("source") == "lynis"]}))
     run["tool_results"] = tool_results
@@ -6799,6 +6820,7 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             "available": bool(shutil.which("trivy")),
             "finding_count": 0,
             "sbom_saved": False,
+            "tool_version": None,
             "failure_code": "assurance_deadline_exceeded" if _assurance_deadline_expired(assurance_deadline_epoch) else None,
         }
     else:
@@ -6807,7 +6829,7 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             missing = missing_tool_finding("trivy")
             missing["evidence_ref"] = f"security/evidence/{run_id}/trivy-normalized.json"
             findings.append(missing)
-            tool_results["trivy"] = {"status": "missing_tool", "available": False}
+            tool_results["trivy"] = {"status": "missing_tool", "available": False, "tool_version": None}
         else:
             scanners = "vuln,misconfig,secret"
             trivy_intelligence = _prepare_trivy_intelligence(trivy, root)
@@ -6839,6 +6861,11 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
                 evidence_refs.append(sbom_ref)
             trivy_result["sbom_saved"] = bool(sbom_ref)
             trivy_result["sbom_cache_hit"] = sbom_cache_hit
+            trivy_result["tool_version"] = (
+                str((trivy_result.get("cache") or {}).get("scanner_version") or "")
+                if isinstance(trivy_result.get("cache"), dict)
+                else ""
+            ) or _trivy_version_identity(trivy, root)
             if cache_context and cache_context.get("identity") and (
                 cache_context.get("cacheable") or cache_context.get("cache_hit")
             ):
@@ -7471,16 +7498,17 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         missing = missing_tool_finding("lynis")
         missing["evidence_ref"] = f"security/evidence/{run_id}/lynis-normalized.json"
         findings.append(missing)
-        tool_results["lynis"] = {"status": "missing_tool", "available": False, "label": "Termux host"}
+        tool_results["lynis"] = {"status": "missing_tool", "available": False, "tool_version": None, "label": "Termux host"}
         target_statuses.append(_full_target_status("termux_host", "Termux host", "lynis", "partial", finding_count=1, summary="Lynis is not available on this device."))
     else:
         lynis_started = time.monotonic()
+        lynis_version = _tool_version(lynis, args=("--version",), cwd=root)
         result = _run_command([lynis, "audit", "system", "--no-colors", "--quiet"], cwd=root, timeout=_command_timeout("full_lynis"))
         normalized = normalize_lynis_output(result, run_id)
         findings.extend(normalized)
         lynis_status = "timed_out" if result.get("timed_out") else "checked"
         partial = partial or bool(result.get("timed_out"))
-        tool_results["lynis"] = {"status": "completed" if lynis_status == "checked" else "timed_out", "available": True, "returncode": result.get("returncode"), "finding_count": len(normalized), "label": "Termux host"}
+        tool_results["lynis"] = {"status": "completed" if lynis_status == "checked" else "timed_out", "available": True, "returncode": result.get("returncode"), "finding_count": len(normalized), "tool_version": lynis_version, "label": "Termux host"}
         target_statuses.append(_full_target_status("termux_host", "Termux host", "lynis", lynis_status, elapsed_seconds=max(0, int(time.monotonic() - lynis_started)), finding_count=len(normalized), summary="Android/Termux host posture checked." if lynis_status == "checked" else "Android/Termux host posture partially checked."))
     evidence_refs.append(evidence.write_evidence(run_id, "lynis-normalized.json", {"tool": "lynis", "profile": policy.SCAN_PROFILE_FULL, "findings": [f for f in findings if f.get("source") == "lynis"]}))
     checkpoint_ledger.record(target_statuses[-1], resume_eligible=False)
@@ -7576,6 +7604,7 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         tool_results["trivy_source"] = {
             "status": "completed" if status.get("status") == "checked" else str(status.get("status") or "partial"),
             "available": bool(trivy),
+            "tool_version": str((status.get("cache") or {}).get("scanner_version") or "") if isinstance(status.get("cache"), dict) else None,
             "label": "Pocket Lab Lite",
             "scanners": scanners,
             "finding_count": len([item for item in findings if item.get("source") == "trivy"]),

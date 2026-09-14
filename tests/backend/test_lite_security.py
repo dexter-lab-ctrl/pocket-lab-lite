@@ -114,6 +114,9 @@ def test_trivy_secret_findings_are_redacted_and_critical(tmp_path, monkeypatch):
         bin_dir / "lynis",
         """
 import sys
+if sys.argv[1:] == ['--version']:
+    print('Lynis 3.1.6')
+    raise SystemExit(0)
 print('Lynis quick scan completed')
 raise SystemExit(0)
 """,
@@ -156,6 +159,8 @@ raise SystemExit(0)
     assert state["last_run"]["high_count"] == 1
     assert state["score"] == 55
     assert state["critical_issues"][0]["category"] == "secret_exposure"
+    assert state["last_run"]["tool_results"]["lynis"]["tool_version"] == "Lynis 3.1.6"
+    assert state["last_run"]["tool_results"]["trivy"]["tool_version"] == "test-trivy"
     assert trivy_call_log.read_text(encoding="utf-8").splitlines() == ["vuln,misconfig,secret", "cyclonedx"]
 
     evidence_payload = lite_security.read_evidence("security-critical")

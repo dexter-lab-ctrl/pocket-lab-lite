@@ -203,6 +203,50 @@ def test_worker_fault_uses_supervisor_fixed_service_and_one_use(controls_runtime
     assert replay.value.reason_code == "fault_already_used"
 
 
+def test_suppressed_fault_does_not_consume_one_use_slot(controls_runtime, monkeypatch):
+    from supervisors import pocketlab_core_supervisor
+    from api_fastapi.services import lite_assurance_faults
+
+    class FakeSupervisor:
+        def restart_pm2(self, service, reason):
+            assert service == "pocket-worker"
+            assert reason == "security_assurance_fault:worker_restart_once"
+            return {"acted": False, "suppressed_reason": "restart_backoff"}
+
+        def collect(self):
+            raise AssertionError("suppressed faults must not enter recovery observation")
+
+    monkeypatch.setenv("POCKETLAB_HARNESS_FAULT_CONTROL", "1")
+    monkeypatch.setattr(pocketlab_core_supervisor, "LiteCoreSupervisor", FakeSupervisor)
+    first = lite_assurance_faults.execute_fault(
+        fault_id="worker_restart_once",
+        auth_context=_assurance_context(),
+        confirm=True,
+    )
+    assert first["status"] == "PARTIAL"
+    assert first["acted"] is False
+
+    # The supervisor can be retried after its bounded backoff without an API
+    # restart or an in-memory state reset.
+    def acted_restart(self, service, reason):
+        assert service == "pocket-worker"
+        assert reason == "security_assurance_fault:worker_restart_once"
+        return {"acted": True, "restart_generation": 8}
+
+    monkeypatch.setattr(FakeSupervisor, "restart_pm2", acted_restart)
+    monkeypatch.setattr(FakeSupervisor, "collect", lambda self: {
+        "services": {"pocket-worker": "online"},
+        "checks": {"api_nats_connected": True, "nats_tcp_reachable": True, "api_http_reachable": True},
+    })
+    second = lite_assurance_faults.execute_fault(
+        fault_id="worker_restart_once",
+        auth_context=_assurance_context(),
+        confirm=True,
+    )
+    assert second["status"] == "PASS"
+    assert second["acted"] is True
+
+
 def test_assurance_policy_sync_queues_qualification_principal_without_owner(controls_runtime):
     from api_fastapi.db.connection import connection
     from api_fastapi.services import lite_policy_source_sync
