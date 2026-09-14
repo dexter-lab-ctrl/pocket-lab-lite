@@ -344,6 +344,21 @@ def test_quick_trivy_cache_misses_when_git_identity_is_uncertain(tmp_path, monke
 def test_quick_trivy_cache_misses_when_db_identity_is_unknown(tmp_path, monkeypatch):
     lite_security, call_log = _prepare_quick_cache_tools(tmp_path, monkeypatch)
     monkeypatch.setattr(lite_security, "_trivy_database_identity", lambda: None)
+    monkeypatch.setattr(
+        lite_security,
+        "_trivy_database_status",
+        lambda: {
+            "status": "unavailable",
+            "revision": None,
+            "version": None,
+            "updated_at": None,
+            "valid_until": None,
+            "stale_by_seconds": None,
+            "refresh_due": True,
+            "metadata_source": "unavailable",
+            "sanitized": True,
+        },
+    )
 
     result = lite_security.run_security_scan({"command_id": "security-cache-no-db", "run_id": "security-cache-no-db"})
     trivy_result = result["state"]["last_run"]["tool_results"]["trivy"]
