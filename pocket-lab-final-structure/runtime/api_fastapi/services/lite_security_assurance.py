@@ -2945,13 +2945,152 @@ def _tool_retry_policy(tool_id: str) -> dict[str, Any]:
     return {"retry_safe": False, "resume_supported": False, "checkpoint_supported": False, "max_attempts": 1}
 
 
+def _existing_security_run_result(
+    run: Mapping[str, Any] | None,
+    *,
+    started: float,
+    reused: bool,
+    recovery: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Map one authoritative Security lifecycle row to assurance output."""
+    item = run if isinstance(run, Mapping) else {}
+    run_status = str(item.get("status") or "").lower()
+    mapped = (
+        "PASS" if run_status in {"succeeded", "success", "completed"}
+        else "PARTIAL" if run_status in {"degraded", "partial", "paused_at_checkpoint", "running", "queued", "accepted"}
+        else "FAIL"
+    )
+    raw_tools = item.get("tool_results") if isinstance(item.get("tool_results"), Mapping) else {}
+    tool_records: dict[str, dict[str, Any]] = {}
+    for tool_id in ("lynis", "trivy"):
+        raw_value = raw_tools.get(tool_id)
+        raw = raw_value if isinstance(raw_value, Mapping) else {}
+        raw_status = str(raw.get("status") or "").lower()
+        if not raw:
+            tool_status = "MISSING"
+            failure_code = "registered_tool_result_missing"
+        else:
+            tool_status = (
+                "PASS" if raw_status in {"completed", "reused", "success", "succeeded", "checked"}
+                else "PARTIAL" if raw_status in {"timed_out", "partial", "skipped_overall_budget", "deferred_resource_pressure"}
+                else "MISSING" if raw_status in {"missing", "missing_tool"}
+                else "FAIL" if raw_status in {"failed", "error"}
+                else mapped
+            )
+            failure_code = None if tool_status == "PASS" else ("tool_missing" if tool_status == "MISSING" else "tool_incomplete")
+        tool_records[tool_id] = {
+            "status": tool_status,
+            "duration_ms": int(raw.get("duration_ms") or 0) or None,
+            "finding_count": int(raw.get("finding_count") or 0),
+            "failure_code": failure_code,
+            "native_status": "VERIFIED native when discovered by existing Security path",
+            "resource_class": "heavy",
+        }
+    findings = list(item.get("findings") or []) if isinstance(item.get("findings"), list) else []
+    evidence_refs = [
+        str(value)
+        for value in item.get("evidence_refs") or []
+        if str(value).startswith("security/evidence/")
+    ][:16]
+    result = {
+        "status": mapped,
+        "reused": bool(reused),
+        "security_run_id": str(item.get("run_id") or "")[:120] or None,
+        "security_run_id_present": bool(item.get("run_id")),
+        "failure_code": None if mapped == "PASS" else "existing_security_result_incomplete",
+        "tool_records": {
+            **tool_records,
+            "pocketlab-security": {
+                "status": mapped,
+                "duration_ms": int((time.monotonic() - started) * 1000),
+                "finding_count": len(findings),
+                "native_status": "VERIFIED native when existing worker path executes",
+                "resource_class": "heavy",
+            },
+        },
+        "findings": findings[:250],
+        "evidence_refs": evidence_refs,
+        "summary": "The registered assurance runner reused the existing worker-owned Security scanner and evidence lifecycle.",
+    }
+    if recovery:
+        result["recovery"] = dict(recovery)
+    return _redact(result)
+
+
+def _wait_for_owned_security_scan(
+    profile: str,
+    correlation_id: str,
+    *,
+    started: float,
+    assurance_deadline_epoch: float | None,
+    recovery: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Wait for an already-owned child without starting a duplicate scan."""
+    while True:
+        active = lite_security.active_assurance_scan(profile, correlation_id)
+        if not active:
+            return _redact({
+                "status": "PARTIAL",
+                "reused": True,
+                "security_run_id_present": False,
+                "failure_code": "owned_security_run_missing",
+                "tool_records": {},
+                "findings": [],
+                "evidence_refs": [],
+                "summary": "The owned Security child disappeared before a terminal result could be read.",
+                **({"recovery": dict(recovery)} if recovery else {}),
+            })
+        existing_id = str(active.get("run_id") or "")
+        existing = lite_security.read_run(existing_id) if existing_id else None
+        status = str((existing or active).get("status") or "").lower()
+        if status not in {"queued", "accepted", "running", "working", "in_progress"}:
+            return _existing_security_run_result(existing or active, started=started, reused=True, recovery=recovery)
+        if assurance_deadline_epoch is not None and time.time() >= float(assurance_deadline_epoch):
+            return _redact({
+                "status": "PARTIAL",
+                "reused": True,
+                "security_run_id": existing_id[:120] or None,
+                "security_run_id_present": bool(existing_id),
+                "failure_code": "assurance_deadline_exceeded",
+                "tool_records": {"pocketlab-security": {"status": "PARTIAL", "resource_class": "heavy"}},
+                "findings": [],
+                "evidence_refs": [],
+                "summary": "The owned Security child did not finish before the assurance lease expired.",
+                **({"recovery": dict(recovery)} if recovery else {}),
+            })
+        time.sleep(0.5)
+
+
 def _run_existing_security_scan(
-    suite_id: str, *, assurance_deadline_epoch: float | None = None
+    suite_id: str,
+    *,
+    assurance_run_id: str | None = None,
+    assurance_deadline_epoch: float | None = None,
+    worker_restarted: bool = False,
 ) -> dict[str, Any]:
     """Reuse the authoritative worker-owned Quick/Full Security lifecycle."""
     profile = str(suite_def(suite_id).get("existing_security_profile") or "")
     if profile not in {policy.SCAN_PROFILE_QUICK, policy.SCAN_PROFILE_FULL}:
         return {"status": "NOT_RUN", "tool_records": {}, "findings": [], "evidence_refs": [], "summary": "No existing Security scanner is selected for this suite."}
+    started = time.monotonic()
+    recovery: dict[str, Any] | None = None
+    if assurance_run_id:
+        owned_active = lite_security.active_assurance_scan(profile, assurance_run_id)
+        if owned_active and worker_restarted:
+            interrupted = lite_security.interrupt_assurance_scan(profile, assurance_run_id)
+            recovery = {
+                "worker_restarted": True,
+                "owned_child_interrupted": bool(interrupted),
+                "interrupted_security_run_id_present": bool((interrupted or {}).get("run_id")),
+                "safe_retry": True,
+            }
+        elif owned_active:
+            return _wait_for_owned_security_scan(
+                profile,
+                assurance_run_id,
+                started=started,
+                assurance_deadline_epoch=assurance_deadline_epoch,
+            )
     conflict = _security_conflict(profile)
     if conflict:
         return {"status": "PARTIAL", "failure_code": "security_scan_conflict", "tool_records": {}, "findings": [], "evidence_refs": [], "summary": "The existing Security scanner is already active."}
@@ -2964,9 +3103,10 @@ def _run_existing_security_scan(
         "reason": "registered runtime security assurance scanner",
         "requested_at": _now(),
     }
+    if assurance_run_id:
+        command["correlation_id"] = str(assurance_run_id)[:160]
     if assurance_deadline_epoch is not None:
         command["assurance_deadline_epoch"] = float(assurance_deadline_epoch)
-    started = time.monotonic()
     try:
         reservation = lite_security.build_and_reserve_scan_request(
             run_id=security_run_id,
@@ -2975,6 +3115,7 @@ def _run_existing_security_scan(
             app_id=None,
             reason=command["reason"],
             requested_at=command["requested_at"],
+            correlation_id=assurance_run_id,
         )
         reservation_data = reservation.get("reservation") if isinstance(reservation, Mapping) else {}
         if isinstance(reservation_data, Mapping) and not reservation_data.get("reserved"):
@@ -2982,61 +3123,28 @@ def _run_existing_security_scan(
             existing_id = str(response.get("run_id") or "")
             existing_run = lite_security.read_run(existing_id) if existing_id else None
             run_status = str((existing_run or response).get("status") or "").lower()
-            mapped = "PASS" if run_status in {"succeeded", "success", "completed"} else "PARTIAL"
-            return _redact({
-                "status": mapped,
-                "reused": True,
-                "security_run_id_present": bool(existing_id),
-                "failure_code": None if mapped == "PASS" else "existing_security_result_incomplete",
-                "tool_records": {
-                    "pocketlab-security": {"status": mapped, "duration_ms": int((time.monotonic() - started) * 1000), "finding_count": len((existing_run or {}).get("findings") or [])},
-                },
-                "findings": list((existing_run or {}).get("findings") or []),
-                "evidence_refs": [str(value) for value in (existing_run or {}).get("evidence_refs") or [] if str(value).startswith("security/evidence/")][:16],
-                "summary": "A recent authoritative Security result was reused under the existing cache/deduplication policy.",
-            })
+            if run_status in {"queued", "accepted", "running", "working", "in_progress"} and assurance_run_id:
+                return _wait_for_owned_security_scan(
+                    profile,
+                    assurance_run_id,
+                    started=started,
+                    assurance_deadline_epoch=assurance_deadline_epoch,
+                    recovery=recovery,
+                )
+            return _existing_security_run_result(existing_run or response, started=started, reused=True, recovery=recovery)
+        reserved_command = reservation.get("command") if isinstance(reservation, Mapping) else None
+        if isinstance(reserved_command, Mapping):
+            command = {**command, **reserved_command}
         result = lite_security.run_security_scan(command)
         run = result.get("run") if isinstance(result, Mapping) and isinstance(result.get("run"), Mapping) else {}
-        existing_findings = result.get("findings") if isinstance(result, Mapping) and isinstance(result.get("findings"), list) else []
-        run_status = str(run.get("status") or "").lower()
-        mapped = "PASS" if run_status in {"succeeded", "success", "completed"} else "PARTIAL" if run_status in {"degraded", "partial", "paused_at_checkpoint"} else "FAIL"
-        tool_records: dict[str, dict[str, Any]] = {}
-        raw_tools = run.get("tool_results") if isinstance(run.get("tool_results"), Mapping) else {}
-        for tool_id in ("lynis", "trivy"):
-            raw_value = raw_tools.get(tool_id)
-            raw = raw_value if isinstance(raw_value, Mapping) else {}
-            raw_status = str(raw.get("status") or "")
-            if not raw:
-                tool_status = "MISSING"
-                failure_code = "registered_tool_result_missing"
-            else:
-                tool_status = "PASS" if raw_status in {"completed", "reused", "success", "succeeded"} else "PARTIAL" if raw_status in {"timed_out", "partial", "skipped_overall_budget"} else "MISSING" if raw_status == "missing_tool" else "FAIL" if raw_status else mapped
-                failure_code = None if tool_status == "PASS" else ("tool_missing" if tool_status == "MISSING" else "tool_incomplete")
-            tool_records[tool_id] = {
-                "status": tool_status,
-                "duration_ms": int((time.monotonic() - started) * 1000) if tool_id == "trivy" else None,
-                "finding_count": int(raw.get("finding_count") or 0),
-                "failure_code": failure_code,
-                "native_status": "VERIFIED native when discovered by existing Security path",
-                "resource_class": "heavy",
-            }
-        tool_records["pocketlab-security"] = {
-            "status": mapped,
-            "duration_ms": int((time.monotonic() - started) * 1000),
-            "finding_count": len(existing_findings),
-            "native_status": "VERIFIED native when existing worker path executes",
-            "resource_class": "heavy",
-        }
-        return _redact({
-            "status": mapped,
-            "reused": False,
-            "security_run_id_present": bool(run.get("run_id")),
-            "failure_code": None if mapped == "PASS" else "existing_security_scan_incomplete",
-            "tool_records": tool_records,
-            "findings": existing_findings[:250],
-            "evidence_refs": [str(value) for value in result.get("evidence_refs") or [] if str(value).startswith("security/evidence/")][:16] if isinstance(result, Mapping) else [],
-            "summary": "The registered assurance runner reused the existing worker-owned Security scanner and evidence lifecycle.",
-        })
+        if not run and isinstance(result, Mapping):
+            run = result
+        mapped = _existing_security_run_result(run, started=started, reused=False, recovery=recovery)
+        if isinstance(result, Mapping) and isinstance(result.get("findings"), list):
+            mapped["findings"] = result["findings"][:250]
+        if isinstance(result, Mapping) and isinstance(result.get("evidence_refs"), list):
+            mapped["evidence_refs"] = [str(value) for value in result["evidence_refs"] if str(value).startswith("security/evidence/")][:16]
+        return _redact(mapped)
     except Exception as exc:
         return _redact({
             "status": "FAIL",
@@ -3054,6 +3162,7 @@ def _run_existing_security_scan(
             "findings": [],
             "evidence_refs": [],
             "summary": "The existing Security scanner did not produce a complete terminal result.",
+            **({"recovery": recovery} if recovery else {}),
         })
 
 
@@ -3570,6 +3679,8 @@ def execute_run(
             preflight_result=preflight_result,
         )
     worker_id = str(worker_instance_id or "pocket-worker")[:120]
+    previous_worker_id = str(row.get("worker_instance_id") or "")[:120]
+    worker_restarted = bool(previous_worker_id and previous_worker_id != worker_id)
     mark_running(run_id, worker_instance_id=worker_id, worker_operation_id=run_id)
     heartbeat_stop = threading.Event()
     heartbeat = threading.Thread(
@@ -3770,7 +3881,9 @@ def execute_run(
                     )
                 scanner_summary = _run_existing_security_scan(
                     str(suite["id"]),
+                    assurance_run_id=run_id,
                     assurance_deadline_epoch=assurance_deadline_epoch,
+                    worker_restarted=worker_restarted,
                 )
                 raw_records = scanner_summary.get("tool_records") if isinstance(scanner_summary.get("tool_records"), Mapping) else {}
                 scanner_records = {

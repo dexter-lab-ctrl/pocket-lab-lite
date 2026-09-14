@@ -402,6 +402,95 @@ def test_existing_security_scan_receives_server_derived_deadline(assurance_runti
     assert captured["assurance_deadline_epoch"] == 123.5
 
 
+def test_existing_security_scan_restarts_only_the_owned_child(assurance_runtime, monkeypatch):
+    from api_fastapi.services import lite_security_assurance as assurance
+
+    parent_id = "assurance-parent-" + "b" * 32
+    monkeypatch.setattr(
+        assurance,
+        "suite_def",
+        lambda _suite_id: {"existing_security_profile": "quick"},
+    )
+    monkeypatch.setattr(assurance, "_security_conflict", lambda _profile: None)
+    monkeypatch.setattr(
+        assurance.lite_security,
+        "active_assurance_scan",
+        lambda _profile, correlation_id: {
+            "run_id": "security-old-child",
+            "correlation_id": correlation_id,
+            "status": "running",
+        },
+    )
+    interrupted = []
+    monkeypatch.setattr(
+        assurance.lite_security,
+        "interrupt_assurance_scan",
+        lambda _profile, correlation_id: interrupted.append(correlation_id) or {
+            "run_id": "security-old-child",
+            "status": "failed",
+        },
+    )
+    captured = {}
+
+    def fake_reserve(**kwargs):
+        captured.update(kwargs)
+        return {"reservation": {"reserved": True}}
+
+    monkeypatch.setattr(
+        assurance.lite_security,
+        "build_and_reserve_scan_request",
+        fake_reserve,
+    )
+
+    def fake_scan(command):
+        captured["command"] = command
+        return {
+            "run": {
+                "run_id": command["run_id"],
+                "status": "succeeded",
+                "tool_results": {},
+                "findings": [],
+            },
+            "findings": [],
+            "evidence_refs": [],
+        }
+
+    monkeypatch.setattr(assurance.lite_security, "run_security_scan", fake_scan)
+    result = assurance._run_existing_security_scan(
+        "smoke",
+        assurance_run_id=parent_id,
+        assurance_deadline_epoch=123.5,
+        worker_restarted=True,
+    )
+
+    assert interrupted == [parent_id]
+    assert captured["correlation_id"] == parent_id
+    assert captured["command"]["correlation_id"] == parent_id
+    assert captured["command"]["assurance_deadline_epoch"] == 123.5
+    assert result["status"] == "PASS"
+    assert result["recovery"]["owned_child_interrupted"] is True
+
+
+def test_terminal_security_result_cannot_be_overwritten_by_late_worker(assurance_runtime):
+    from api_fastapi.services.lite_security_store import SecuritySQLiteRepository
+
+    repo = SecuritySQLiteRepository()
+    repo.reserve_scan(
+        run_id="security-terminal-immutable",
+        profile="quick",
+        correlation_id="assurance-terminal-parent",
+    )
+    repo.fail_run(
+        "security-terminal-immutable",
+        failure_code="worker_restarted",
+        failure_message="Worker restarted.",
+        partial_results=True,
+    )
+    late = repo.complete_run("security-terminal-immutable", summary="Late success", score=100)
+    assert late["ignored_terminal"] is True
+    assert late["run"]["status"] == "failed"
+
+
 def test_preflight_distinguishes_pm2_online_from_api_readiness(assurance_runtime, monkeypatch):
     from api_fastapi.services import lite_security_assurance as assurance
 

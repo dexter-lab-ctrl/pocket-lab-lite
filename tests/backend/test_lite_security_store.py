@@ -166,3 +166,47 @@ def test_lite_security_store_queries_are_parameterized(tmp_path, monkeypatch):
     assert repo.get_run("security-safe") is not None
     assert repo.get_run("security-safe'; DROP TABLE security_scan_runs;--") is None
     assert repo.get_run("security-safe") is not None
+
+
+def test_assurance_owned_scan_recovery_is_bound_and_terminal_rows_are_immutable(
+    tmp_path, monkeypatch
+):
+    repo = _repo(tmp_path, monkeypatch)
+    parent_id = "assurance-parent-" + "a" * 32
+    reserved = repo.reserve_scan(
+        run_id="security-owned-child",
+        profile="quick",
+        correlation_id=parent_id,
+    )
+    assert reserved.reserved is True
+    assert repo.get_active_scan_for_correlation(
+        profile="quick", correlation_id=parent_id
+    )["run_id"] == "security-owned-child"
+    assert repo.get_active_scan_for_correlation(
+        profile="quick", correlation_id="assurance-other"
+    ) is None
+
+    interrupted = repo.interrupt_active_scan_for_correlation(
+        profile="quick",
+        correlation_id=parent_id,
+        completed_at="2026-09-14T10:00:00Z",
+    )
+    assert interrupted is not None
+    assert interrupted["status"] == "failed"
+    assert interrupted["partial_results"] is True
+    assert interrupted["failure_code"] == "assurance_worker_restarted"
+    assert repo.get_active_scan_for_correlation(
+        profile="quick", correlation_id=parent_id
+    ) is None
+
+    late = repo.complete_run(
+        "security-owned-child", summary="Late orphan completion", score=100
+    )
+    assert late["ignored_terminal"] is True
+    assert late["run"]["status"] == "failed"
+    assert repo.get_active_scan() is None
+
+    unrelated = repo.reserve_scan(
+        run_id="security-unrelated-child", profile="quick", correlation_id="other"
+    )
+    assert unrelated.reserved is True

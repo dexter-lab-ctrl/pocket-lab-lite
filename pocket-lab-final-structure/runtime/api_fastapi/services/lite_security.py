@@ -493,6 +493,7 @@ def build_and_reserve_scan_request(
     app_id: str | None,
     reason: str,
     requested_at: str,
+    correlation_id: str | None = None,
 ) -> dict[str, Any]:
     """Build the compact command and reserve it entirely in the maintenance lane."""
     command = {
@@ -504,6 +505,10 @@ def build_and_reserve_scan_request(
         "reason": reason,
         "requested_at": requested_at,
     }
+    if correlation_id:
+        # The parent assurance operation is an internal server-owned binding,
+        # not a caller-selected NATS destination or execution parameter.
+        command["correlation_id"] = str(correlation_id)[:160]
     reservation_stages: dict[str, float] = {}
     reservation = reserve_scan_request(command, timing_sink=reservation_stages)
     return {
@@ -3960,6 +3965,57 @@ def active_scan_state(profile: str | None = None, app_id: str | None = None) -> 
         "summary": "A safety check is already running.",
         "scan_progress": progress,
     })
+
+
+def active_assurance_scan(
+    profile: str,
+    correlation_id: str,
+    app_id: str | None = None,
+) -> dict[str, Any] | None:
+    """Read an active SQLite Security child bound to one assurance run.
+
+    This intentionally does not use the compact progress projection: recovery
+    must make an ownership decision from the authoritative lifecycle row.
+    Non-SQLite compatibility modes cannot safely prove this binding and return
+    no match so callers retain the existing conservative conflict behavior.
+    """
+    if not _sqlite_lifecycle_enabled():
+        return None
+    if not str(correlation_id or "").strip():
+        return None
+    return _security_repository().get_active_scan_for_correlation(
+        profile=profile,
+        correlation_id=correlation_id,
+        app_id=app_id,
+    )
+
+
+def interrupt_assurance_scan(
+    profile: str,
+    correlation_id: str,
+    *,
+    app_id: str | None = None,
+    failure_code: str = "assurance_worker_restarted",
+) -> dict[str, Any] | None:
+    """Release only an assurance-owned interrupted Security child."""
+    if not _sqlite_lifecycle_enabled():
+        return None
+    if not str(correlation_id or "").strip():
+        return None
+    repository = _security_repository()
+    result = repository.interrupt_active_scan_for_correlation(
+        profile=profile,
+        correlation_id=correlation_id,
+        app_id=app_id,
+        failure_code=failure_code,
+    )
+    if result:
+        # The authoritative row changed outside the normal scan lifecycle
+        # helper.  Refresh the compact projection before the caller performs
+        # the next reservation, otherwise a cached active marker could
+        # masquerade as a second conflict.
+        publish_committed_progress(str(result.get("run_id") or ""), repository=repository)
+    return result
 
 
 

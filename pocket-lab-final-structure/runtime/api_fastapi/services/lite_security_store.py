@@ -889,6 +889,130 @@ class SecuritySQLiteRepository:
                 ).fetchone()
         return _row(row)
 
+    def get_active_scan_for_correlation(
+        self,
+        *,
+        profile: str,
+        correlation_id: str,
+        app_id: str | None = None,
+    ) -> dict[str, Any] | None:
+        """Return an active Security run owned by one assurance operation.
+
+        The assurance worker is allowed to recover only the child scan that it
+        admitted.  A correlation match is therefore deliberately stricter
+        than the ordinary profile-wide active-scan lookup and never falls back
+        to a newest-row heuristic.
+        """
+        normalized_profile = _normalize_profile(profile)
+        normalized_app = _normalize_app(normalized_profile, app_id)
+        safe_correlation = str(correlation_id or "").strip()[:160]
+        if not safe_correlation:
+            return None
+        with read_connection() as conn:
+            row = conn.execute(
+                """SELECT * FROM security_scan_runs
+                   WHERE active_key = ? AND correlation_id = ?
+                     AND status IN ('queued','accepted','running','working','in_progress')
+                   ORDER BY updated_at_epoch_ms DESC LIMIT 1""",
+                (_active_key(normalized_profile, normalized_app), safe_correlation),
+            ).fetchone()
+        return _row(row)
+
+    def interrupt_active_scan_for_correlation(
+        self,
+        *,
+        profile: str,
+        correlation_id: str,
+        app_id: str | None = None,
+        completed_at: str | None = None,
+        failure_code: str = "assurance_worker_restarted",
+        summary: str = "The worker restarted before the owned Security scan completed.",
+    ) -> dict[str, Any] | None:
+        """Terminalize exactly one interrupted assurance-owned child scan.
+
+        This is a compare-and-set recovery operation.  It cannot touch an
+        unrelated active Security scan, and it releases the global active
+        reservation only when the persisted correlation binding still matches.
+        The terminal state is deliberately failed/partial; recovery must never
+        infer a successful scanner result.
+        """
+        normalized_profile = _normalize_profile(profile)
+        normalized_app = _normalize_app(normalized_profile, app_id)
+        safe_correlation = str(correlation_id or "").strip()[:160]
+        if not safe_correlation:
+            return None
+        now = _parse_timestamp(completed_at)
+        now_epoch = _epoch_ms(now)
+        clean_code = policy.redact_text(failure_code)[:120] or "assurance_worker_restarted"
+        clean_summary = policy.redact_text(summary)[:500] or "Security check needs review."
+        with connection() as conn, begin_immediate(conn) as tx:
+            current = tx.execute(
+                """SELECT * FROM security_scan_runs
+                   WHERE active_key = ? AND correlation_id = ?
+                     AND status IN ('queued','accepted','running','working','in_progress')
+                   ORDER BY updated_at_epoch_ms DESC LIMIT 1""",
+                (_active_key(normalized_profile, normalized_app), safe_correlation),
+            ).fetchone()
+            if not current:
+                return None
+            current_metadata = _json_value(current["metadata_json"], {})
+            metadata = {
+                **(current_metadata if isinstance(current_metadata, dict) else {}),
+                "assurance_recovery": "worker_restart",
+                "assurance_correlation_bound": True,
+            }
+            cursor = tx.execute(
+                """UPDATE security_scan_runs
+                   SET status='failed', active_key=NULL, summary=?, partial_results=1,
+                       completed_at=?, completed_at_epoch_ms=?, updated_at=?,
+                       updated_at_epoch_ms=?, last_progress_at=?,
+                       last_progress_at_epoch_ms=?, current_stage=?,
+                       current_message=?, failure_code=?, failure_message=?,
+                       metadata_json=?, revision=revision+1
+                   WHERE run_id=? AND active_key=? AND correlation_id=?
+                     AND status IN ('queued','accepted','running','working','in_progress')""",
+                (
+                    clean_summary,
+                    now,
+                    now_epoch,
+                    now,
+                    now_epoch,
+                    now,
+                    now_epoch,
+                    "Security scan interrupted",
+                    clean_summary,
+                    clean_code,
+                    clean_summary,
+                    _safe_json(metadata),
+                    str(current["run_id"]),
+                    str(current["active_key"]),
+                    safe_correlation,
+                ),
+            )
+            if cursor.rowcount != 1:
+                return None
+            event = self._append_progress_event(
+                tx,
+                str(current["run_id"]),
+                status="failed",
+                stage="Security scan interrupted",
+                percent=int(current["current_percent"] or 0),
+                message=clean_summary,
+                tool=str(current["current_tool"] or "")[:80] or None,
+                payload={"failure_code": clean_code, "recovery": "worker_restart"},
+                created_at=now,
+            )
+            self._upsert_profile_snapshot(tx, str(current["run_id"]), updated_at=now)
+            revision = _bump_revision(tx, now)
+            row = tx.execute(
+                "SELECT * FROM security_scan_runs WHERE run_id=?",
+                (str(current["run_id"]),),
+            ).fetchone()
+        result = _row(row) or {}
+        result["domain_revision"] = revision
+        result["progress_event"] = event
+        return policy.redact_value(result)
+
     def list_stale_start_candidates(
         self,
         *,
@@ -1613,6 +1737,27 @@ class SecuritySQLiteRepository:
             ).fetchone()
             if not current:
                 raise SecurityStoreError("Security run not found")
+            # Terminal Security rows are immutable.  A worker that was
+            # interrupted may finish late (for example after a process-group
+            # boundary or service restart); allowing that late writer to
+            # replace a recovered failure would create a false PASS and could
+            # overwrite the evidence owned by the resumed operation.
+            current_status = str(current["status"])
+            if current_status in TERMINAL_STATUSES and status != "failed":
+                revision_row = tx.execute(
+                    "SELECT revision FROM domain_revisions WHERE domain = 'security'"
+                ).fetchone()
+                return {
+                    "deduplicated": True,
+                    "ignored_terminal": True,
+                    "domain_revision": int(revision_row["revision"]) if revision_row else 0,
+                    "run": _row(current) or {},
+                }
+            # A failed terminal row may receive a second bounded failure
+            # write so startup/worker recovery can attach its sanitized
+            # evidence references.  It can never be promoted to success by a
+            # late writer, and no successful/cancelled terminal row is
+            # mutable.
             # A terminal write is authoritative, but its timestamp may come from
             # scanner/tool metadata or a compatibility projection. Never commit a
             # terminal row whose lifecycle clock moves backwards relative to the
