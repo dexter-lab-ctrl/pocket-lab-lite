@@ -16,8 +16,8 @@ Current promoted evidence and historical change are intentionally separate autho
 | Signal | Value |
 | --- | --- |
 | Capture status | complete |
-| Run ID | runtime-assurance-final-published-20260913T234446Z-813731 |
-| Source commit | 6d257ff9fceef8069d9c83a23b7725321a18399b |
+| Run ID | runtime-assurance-final-cfe-20260914T0125Z |
+| Source commit | cfe3168e05f25483410217bb21bf711f80db596e |
 | Qualification surface | local-or-ci-diagnostic |
 | Development SBOM components | 54 |
 | Release SBOM components | 0 |
@@ -29,34 +29,34 @@ Current promoted evidence and historical change are intentionally separate autho
 | Deep source-license coverage | not-run |
 | Gitleaks findings | 3 |
 | Semgrep findings | 0 |
-| Scorecard posture | observed-with-provider-limitations |
+| Scorecard posture | partial |
 
 ### Tool coverage
 
 | Step | Status | Exit | Duration (s) |
 | --- | --- | --- | --- |
-| gitleaks-release | completed | 0 | 0.619 |
-| gitleaks-worktree | findings-or-tool-nonzero | 1 | 1.928 |
-| grype-sbom-dev | completed | 0 | 1.277 |
-| osv-sbom-dev | completed | 0 | 0.669 |
-| osv-source | findings-or-tool-nonzero | 1 | 25.778 |
-| scorecard | completed | 0 | 9.791 |
-| semgrep | completed | 0 | 9.845 |
-| syft-dev | completed | 0 | 1.573 |
+| gitleaks-release | completed | 0 | 0.82 |
+| gitleaks-worktree | findings-or-tool-nonzero | 1 | 2.938 |
+| grype-sbom-dev | completed | 0 | 3.377 |
+| osv-sbom-dev | completed | 0 | 0.719 |
+| osv-source | findings-or-tool-nonzero | 1 | 56.335 |
+| scorecard | completed | 0 | 0.921 |
+| semgrep | completed | 0 | 10.253 |
+| syft-dev | completed | 0 | 1.823 |
 | syft-release | completed | 0 | 1.171 |
-| trivy-sbom-dev | completed | 0 | 0.067 |
-| trivy-source | completed | 0 | 27.342 |
+| trivy-sbom-dev | completed | 0 | 0.117 |
+| trivy-source | completed | 0 | 49.298 |
 
 ### Repository posture
 
 | Control | Status | Score | Reason |
 | --- | --- | --- | --- |
 | Branch-Protection | provider-unavailable | — | scorecard-provider-unsupported-request-type |
-| Dangerous-Workflow | observed | 10 | recorded-by-scorecard |
+| Dangerous-Workflow | unobserved | — | scorecard-compatible-check-not-returned |
 | Maintained | provider-unavailable | — | scorecard-provider-unsupported-request-type |
-| Pinned-Dependencies | observed | 2 | recorded-by-scorecard |
+| Pinned-Dependencies | unobserved | — | scorecard-compatible-check-not-returned |
 | Signed-Releases | provider-unavailable | — | scorecard-provider-unsupported-request-type |
-| Token-Permissions | observed | 0 | recorded-by-scorecard |
+| Token-Permissions | unobserved | — | scorecard-compatible-check-not-returned |
 
 ## Baseline readiness
 
@@ -768,6 +768,10 @@ Compared **lite-2026.08.19.2** → **current-source** using verified canonical e
 
 ### Upstream posture changes
 
-No comparable upstream posture changes observed, or the historical canonical Scorecard artifact is unavailable.
+| Check | From | To |
+| --- | --- | --- |
+| Dangerous-Workflow | 10 | — |
+| Pinned-Dependencies | 2 | — |
+| Token-Permissions | 0 | — |
 
 Scanner disagreement remains evidence, not an automatic release failure.

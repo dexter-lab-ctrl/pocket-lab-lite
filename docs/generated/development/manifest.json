@@ -35,7 +35,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "77e93fc2b47bad7fb8db3ca9c7eacdf14cd46e8c44206d20efffaf44b4d921cf",
+  "source_fingerprint": "d6f130b3bb537e3a1fcb19e211af4a575ad9370ae3b117e9e189cb8f9d0806d8",
   "source_fingerprints": {
     ".github/workflows/docs-security-supply-chain.yml": "b5ce9661a2c0673d9e9c2a3be9b19e958b4046543816728556a581a2f338fa27",
     ".github/workflows/lite-quality.yml": "d44ad5b2dfc481c7a7e4d02c131cb09b3afe47fb7db94833bc541525393b1a9f",
@@ -58,7 +58,7 @@
     "scripts/dev/lite/documentation_security_tools.py": "8abe15f6acf7acc805914564443a1f005630916b706e1d40e60d19de10ab661c",
     "scripts/dev/lite/frontend-resource-preflight.sh": "74eed4341ce0a1c191c4e65f41984a14eb2aead2e8a19f63c0c090bac216a7f5",
     "scripts/dev/lite/har_tool.py": "593c19a5821dd4b8dbec0ecb29e33c4a2d120c6a799a64e7f67e76c76a7ec091",
-    "scripts/dev/lite/harness.py": "b21b882ee5077e845334fb3083d673e3ee109d7e342642131102f8fbb7dc2ff7",
+    "scripts/dev/lite/harness.py": "06d59810dcc4967d460244844c41ef582251c523297aabfd747448fad74236bf",
     "scripts/dev/lite/redaction_check.py": "e063173dfbedaf3e57680ee70c7518c4f07a77c885cd41c504691d6fc954f980",
     "scripts/dev/lite/release_artifact_check.py": "1a50fb4d9438fba3c3d6c31f43c5bcbeef041828fb6320153c0d50bfa2c79e44",
     "scripts/dev/lite/resolve-browser.mjs": "cfce0a19ef05720f3099df781151d32c611b70ffdb0808a17a12038dc3094a2a",

@@ -403,7 +403,7 @@
   "fingerprints": {
     "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
     "asyncapi": "c11f6d596f5ac3988e9109d921f85db7d147970e941b6f9d83f9ce220530e016",
-    "documentation": "5962e163ea8810357255766a884635f91eaba3b7d245f191ca4da13336141dc0",
+    "documentation": "a5cb6165e442f3d53c3b5f48a10fbc7f0c6c60363c1cfaed279ed2565a362740",
     "openapi": "29fe89e306d944e35445019dadaca666e129a76386a9b20e1d148bb6f40ef771",
     "operational_health": "713eb51a197ca51307428efa585736a19600ba3bdd8c891f0be5bd764aa65857"
   },
@@ -711,7 +711,7 @@
     ]
   },
   "runtime_baseline_binding": "lite-2026.08.12.2",
-  "sbom_digest": "303f8caf7e9eb0111ad567e46cc93290d92838c994ea235a218a2111985ca83e",
+  "sbom_digest": "8e5e77c70bd13a00ed4076f3c8233184be11f29c5b81644a703c76fb6fc77964",
   "security_scan_digest": "406f5afb2b4ff848a2b1cde0e0a6ace49473a1cbf2848a93bd3caeb2117656ba",
   "signatures": {
     "keyless_preferred": true,
