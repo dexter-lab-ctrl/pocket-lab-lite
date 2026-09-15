@@ -11,7 +11,9 @@ profiles:
     # reached just over ten minutes on a resource-constrained phone, so keep a
     # bounded margin rather than turning a late, complete scanner result into a
     # false PARTIAL run.
-    maximum_seconds: 900
+    # The latest exact-head qualification completed the real Quick path in
+    # 922 seconds on the resource-constrained phone. Keep a bounded margin.
+    maximum_seconds: 1200
     explicit_only: false
     qualification_only: false
     existing_security_profile: quick

@@ -482,6 +482,15 @@ def test_suite_listing_exposes_registered_external_tool_contracts(assurance_runt
     assert "pocketlab-security" in by_id["smoke"]["active_tools"]
 
 
+def test_smoke_lease_covers_observed_phone_quick_scan(assurance_runtime):
+    from api_fastapi.services import lite_security_assurance as assurance
+
+    smoke = assurance.suite_def("smoke")
+    assert smoke["target_seconds"] == 180
+    assert smoke["maximum_seconds"] == 1200
+    assert smoke["maximum_seconds"] > smoke["target_seconds"]
+
+
 def test_terminal_security_result_cannot_be_overwritten_by_late_worker(assurance_runtime):
     from api_fastapi.services.lite_security_store import SecuritySQLiteRepository
 

@@ -119,7 +119,7 @@ The four lifetimes are intentionally independent:
 | Bootstrap grant | 5 minutes, exactly one use | Ephemeral; consumed or expired grants cannot be reused |
 | Synthetic principal | 12 hours, bounded to 1–24 hours | Natural expiry blocks new sessions/runs; explicit revocation cancels active assurance work |
 | Authentication session | 20 minutes, bounded to 1–60 minutes | Expiry immediately removes request authority; it does not terminate an admitted run |
-| Assurance run | Suite registry maximum: Smoke 900s, Standard 1800s, Deep 7200s, Adversarial 600s | Durable run lease is independent of the authenticating session |
+| Assurance run | Suite registry maximum: Smoke 1200s, Standard 1800s, Deep 7200s, Adversarial 600s | Durable run lease is independent of the authenticating session |
 
 The client renews by issuing a new signed challenge/session before the current
 session expires. It never extends or persists a raw token. A local continuity
@@ -148,7 +148,7 @@ the tested vocabulary revision-bound and reproducible.
 
 | Profile | Intended use | Default policy |
 | --- | --- | --- |
-| `smoke` | Fast critical boundary and readiness checks plus existing Quick Security | Normal bounded run; target 180 seconds, maximum 900 seconds on the ARM64 qualification target |
+| `smoke` | Fast critical boundary and readiness checks plus existing Quick Security | Normal bounded run; target 180 seconds, maximum 1200 seconds on the ARM64 qualification target, based on the latest observed 922-second Quick path |
 | `standard` | Normal runtime qualification and coverage | Normal bounded run; target 900 seconds, maximum 1800 seconds |
 | `deep` | Extended manual qualification | Explicit-only; target 3600 seconds, maximum 7200 seconds |
 | `adversarial` | Reviewed fixed local adversarial cases | Explicit qualification-only; no destructive operation |

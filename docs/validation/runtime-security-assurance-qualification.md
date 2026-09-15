@@ -1,12 +1,13 @@
 # Runtime Security Assurance Qualification Dossier
 
-Status: `CURRENT EXACT-HEAD CANDIDATE` / `PARTIAL` for the explicit Deep result.
+Status: `PRE-FIX EXACT-HEAD EVIDENCE` / `PARTIAL` for the explicit Deep result.
 This dossier records the bounded qualification and supply-chain work performed
 for PR #576. The latest exact-`bc1c080d` continuation section near the end is
-authoritative for the pre-projection runtime capture; earlier sections are
-retained as historical evidence and are labelled where their result was
-superseded. A final exact-head qualification is run after this documentation
-projection is published. It intentionally separates
+the authoritative pre-fix runtime capture; it is retained as historical
+evidence because the DEV-PC suite deadline was subsequently corrected from
+900 to 1200 seconds after a 922-second phone Quick path. A final exact-head
+qualification is run after that correction and this documentation projection
+are published. It intentionally separates
 `RUNTIME-VALIDATED` Android/Termux observations from `VALIDATED` DEV-PC/CI
 tool evidence and from `UNVALIDATED`, `BLOCKED`, `UNSUPPORTED`, and
 `DEFERRED` scope.
@@ -66,7 +67,7 @@ The four lifetimes are independent:
 | Bootstrap grant | Process-ephemeral, five minutes, one use, bound to public key/fingerprint, runtime, revision, profile, purpose, and target (`IMPLEMENTED`, source/tests) |
 | Synthetic principal | Bounded qualification principal; default 12 hours, safe bounds 1–24 hours (`IMPLEMENTED`, source/tests) |
 | Authentication session | Short-lived current harness session; qualification evidence used a bounded 300-second TTL and renewed it five times (`RUNTIME-VALIDATED`) |
-| Assurance run | Suite-owned durable lease; Smoke 900s, Standard 1800s, Deep 7200s, Adversarial 600s (`IMPLEMENTED`, source/tests) |
+| Assurance run | Suite-owned durable lease; Smoke 1200s, Standard 1800s, Deep 7200s, Adversarial 600s (`IMPLEMENTED`, source/tests) |
 
 Session expiry does not terminate an admitted run. Explicit principal
 revocation is stronger: it prevents new sessions/runs, requests safe
@@ -977,11 +978,11 @@ exact-head qualification is required after the documentation and any remaining
 tracked changes are committed and published. No later phone result may be
 described as testing an earlier SHA.
 
-## 18. Latest exact-head continuation evidence
+## 18. Latest pre-fix exact-head continuation evidence
 
 This section supersedes the older C2 identities for the exact published
-`bc1c080d1e5d5ef9568d32b74dce6e70d9fa0f33` candidate. It is a sanitized
-pre-projection capture; the final documentation commit is intentionally
+`bc1c080d1e5d5ef9568d32b74dce6e70d9fa0f33` pre-fix candidate. It is a
+sanitized pre-projection capture; the final documentation/source candidate is
 qualified again so the final PR head and runtime-tested head remain identical.
 
 ### 18.1 Repository and authentication
@@ -1178,6 +1179,22 @@ contract. Deep is complete as an executed, truthful `PARTIAL` phone result;
 its partial target is existing protected runtime-config posture rather than a
 new harness execution error (`RUNTIME-VALIDATED`, `PARTIAL`).
 
-The final documentation/projection commit must now be published, consumed by
+The final documentation/source correction must now be published, consumed by
 the phone, and qualified at its exact SHA. Only that final capture can support
 the final PR recommendation (`UNVALIDATED`).
+
+## 19. Follow-up deadline correction before final qualification
+
+The exact `bc1c080d` requalification after the projection commit completed
+the worker-owned Quick Security path in 922 seconds, but the Smoke lease was
+900 seconds. The run therefore ended `PARTIAL` with `run_deadline_exceeded`
+and correctly did not admit Standard. This was a bounded runtime-budget
+observation, not a scanner finding or authorization failure (`RUNTIME-VALIDATED`).
+
+The DEV-PC correction keeps the Smoke target at 180 seconds and changes only
+the hard maximum to 1200 seconds. Standard remains 1800 seconds, Deep remains
+7200 seconds, and Adversarial remains 600 seconds. A regression test asserts
+the new Smoke contract. The worker still terminates and records `PARTIAL` on
+an actual deadline, so the change adds evidence-backed execution margin and
+does not weaken truthful timeout semantics (`IMPLEMENTED`, final exact-head
+runtime qualification pending).
