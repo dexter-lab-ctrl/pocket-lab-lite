@@ -11,7 +11,6 @@ from __future__ import annotations
 import argparse
 import os
 import shutil
-import sys
 from pathlib import Path
 
 DEV_ONLY_ENV = (
@@ -21,6 +20,9 @@ DEV_ONLY_ENV = (
     "POCKETLAB_ENV",
     "POCKETLAB_DEV_PYTHON",
     "POCKETLAB_DEV_TMPDIR",
+    "TMPDIR",
+    "TMP",
+    "TEMP",
 )
 
 
