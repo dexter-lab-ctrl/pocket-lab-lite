@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "62b4c4f9e7aab5d48445c32f228a73c04d57faf650a2e13fca7df17f1aa77c82",
+    "aggregate_fingerprint": "ce9075a3265936c3e5186068657bf5160c6f11a74b3e1d42b92ab27073b62255",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -10,7 +10,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/metadata/documentation-platform.json": "6bac24782ae83e9f3cd9b935e5db796ac32e278799fe9f40c677fd903795c1b4",
+      "contracts/metadata/documentation-platform.json": "54ea404fd374edcc6713400b2c076dc24b7c64f9c571e61a8854f518fd376ae2",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "scripts/dev/lite/har_tool.py": "593c19a5821dd4b8dbec0ecb29e33c4a2d120c6a799a64e7f67e76c76a7ec091",
       "scripts/dev/lite/redaction_check.py": "e063173dfbedaf3e57680ee70c7518c4f07a77c885cd41c504691d6fc954f980",

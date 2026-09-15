@@ -3451,6 +3451,12 @@
           "type": "owns"
         }
       ],
+      "reason:assurance_orphaned_child_reconciled": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
       "reason:assurance_policy_sync_denied": [
         {
           "source": "domain:validation",
@@ -8031,6 +8037,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:assurance_orphaned_child_reconciled",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:assurance_policy_sync_denied",
           "type": "verified_by"
         },
@@ -10865,6 +10875,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:assurance_orphaned_child_reconciled",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:interrupted",
           "type": "verified_by"
         }
@@ -12867,6 +12881,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:assurance_orphaned_child_reconciled",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:assurance_policy_sync_denied",
           "type": "verified_by"
         },
@@ -13910,6 +13928,10 @@
         },
         {
           "source": "reason:assurance_deadline_exceeded",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:assurance_orphaned_child_reconciled",
           "type": "verified_by"
         },
         {
@@ -26375,6 +26397,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:assurance_orphaned_child_reconciled",
+          "type": "owns"
+        },
+        {
           "target": "reason:assurance_policy_sync_denied",
           "type": "owns"
         },
@@ -28048,6 +28074,24 @@
       "reason:assurance_deadline_exceeded": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:assurance_orphaned_child_reconciled": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_assurance.py",
           "type": "verified_by"
         },
         {
@@ -32273,6 +32317,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "74e18ed746e2f0e883358c361aa7bcfcc006f76b08b2a412abd323b8c7684399"
+    "source_fingerprint": "100b9ca85bbcd7475c41ddce65e5f8ed6d99b6251473089d8b9069a19d473c8b"
   }
 }

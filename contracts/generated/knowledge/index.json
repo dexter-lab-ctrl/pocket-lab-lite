@@ -13498,6 +13498,26 @@
       "domain": "validation",
       "event_mapping": [],
       "http_status": 409,
+      "id": "reason:assurance_orphaned_child_reconciled",
+      "name": "assurance_orphaned_child_reconciled",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
       "id": "reason:assurance_policy_sync_denied",
       "name": "assurance_policy_sync_denied",
       "projection_mapping": [],
@@ -19287,7 +19307,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:134",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2834",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2910",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:29",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:562",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:665",
@@ -31364,6 +31384,7 @@
         "journey:runtime-promotion",
         "reason:already_tuned",
         "reason:assurance_deadline_exceeded",
+        "reason:assurance_orphaned_child_reconciled",
         "reason:assurance_policy_sync_denied",
         "reason:assurance_policy_sync_disabled",
         "reason:assurance_session_binding_mismatch",
@@ -31917,6 +31938,7 @@
         "reason:approval_transition_invalid",
         "reason:approval_unusable",
         "reason:assurance_deadline_exceeded",
+        "reason:assurance_orphaned_child_reconciled",
         "reason:assurance_policy_sync_denied",
         "reason:assurance_policy_sync_disabled",
         "reason:assurance_session_binding_mismatch",
@@ -36247,6 +36269,12 @@
         }
       ],
       "reason:assurance_deadline_exceeded": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:assurance_orphaned_child_reconciled": [
         {
           "source": "domain:validation",
           "type": "owns"
@@ -40832,6 +40860,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:assurance_orphaned_child_reconciled",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:assurance_policy_sync_denied",
           "type": "verified_by"
         },
@@ -43666,6 +43698,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:assurance_orphaned_child_reconciled",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:interrupted",
           "type": "verified_by"
         }
@@ -45668,6 +45704,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:assurance_orphaned_child_reconciled",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:assurance_policy_sync_denied",
           "type": "verified_by"
         },
@@ -46711,6 +46751,10 @@
         },
         {
           "source": "reason:assurance_deadline_exceeded",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:assurance_orphaned_child_reconciled",
           "type": "verified_by"
         },
         {
@@ -59176,6 +59220,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:assurance_orphaned_child_reconciled",
+          "type": "owns"
+        },
+        {
           "target": "reason:assurance_policy_sync_denied",
           "type": "owns"
         },
@@ -60849,6 +60897,24 @@
       "reason:assurance_deadline_exceeded": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:assurance_orphaned_child_reconciled": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_assurance.py",
           "type": "verified_by"
         },
         {
@@ -65650,6 +65716,15 @@
       "id": "rel:049aabec521fe6a0",
       "source": "journey:startup",
       "target": "test:tests/backend/test_lite_qualification_owner.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:04d47819b5b4fe40",
+      "source": "reason:assurance_orphaned_child_reconciled",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -76180,6 +76255,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:53761902f524a8ec",
+      "source": "reason:assurance_orphaned_child_reconciled",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:53af8b49c2352ece",
@@ -78587,6 +78671,15 @@
       "id": "rel:6737b6a5f5e65ca6",
       "source": "api:get:/api/lite/recovery/receipts/{backup_id}",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_security_assurance.py"
+      ],
+      "id": "rel:673c12c22d038966",
+      "source": "reason:assurance_orphaned_child_reconciled",
+      "target": "test:tests/backend/test_lite_security_assurance.py",
       "type": "verified_by"
     },
     {
@@ -85866,6 +85959,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:a0c5bf6e97a3d5d7",
+      "source": "domain:validation",
+      "target": "reason:assurance_orphaned_child_reconciled",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:a0e3ae63233ee75b",
@@ -89265,6 +89367,15 @@
       "source": "domain:recovery",
       "target": "api:get:/api/lite/recovery/apps/{app_id}",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:bc31f8e4f6118883",
+      "source": "reason:assurance_orphaned_child_reconciled",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -97955,9 +98066,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "74e18ed746e2f0e883358c361aa7bcfcc006f76b08b2a412abd323b8c7684399",
+  "source_fingerprint": "100b9ca85bbcd7475c41ddce65e5f8ed6d99b6251473089d8b9069a19d473c8b",
   "statistics": {
-    "entity_count": 1267,
+    "entity_count": 1268,
     "entity_type_counts": {
       "adr": 6,
       "api": 218,
@@ -97967,7 +98078,7 @@
       "glossary": 16,
       "journey": 24,
       "limitation": 18,
-      "reason-code": 241,
+      "reason-code": 242,
       "release": 3,
       "requirement": 10,
       "runbook": 5,
@@ -97981,7 +98092,7 @@
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3623,
+    "relation_count": 3628,
     "source_count": 261
   }
 }

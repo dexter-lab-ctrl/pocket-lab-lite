@@ -4804,6 +4804,18 @@
       "confidence": "source-derived",
       "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
       "domain": "validation",
+      "id": "reason:assurance_orphaned_child_reconciled",
+      "name": "assurance_orphaned_child_reconciled",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
       "id": "reason:assurance_policy_sync_denied",
       "name": "assurance_policy_sync_denied",
       "source_refs": [
@@ -7807,7 +7819,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:134",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2834",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2910",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:29",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:562",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:665",
@@ -15753,6 +15765,20 @@
       "id": "rel:049aabec521fe6a0",
       "source": "journey:startup",
       "target": "test:tests/backend/test_lite_qualification_owner.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:04d47819b5b4fe40",
+      "source": "reason:assurance_orphaned_child_reconciled",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -32088,6 +32114,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:53761902f524a8ec",
+      "source": "reason:assurance_orphaned_child_reconciled",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:53af8b49c2352ece",
@@ -35820,6 +35860,20 @@
       "id": "rel:6737b6a5f5e65ca6",
       "source": "api:get:/api/lite/recovery/receipts/{backup_id}",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_security_assurance.py"
+      ],
+      "id": "rel:673c12c22d038966",
+      "source": "reason:assurance_orphaned_child_reconciled",
+      "target": "test:tests/backend/test_lite_security_assurance.py",
       "type": "verified_by"
     },
     {
@@ -47114,6 +47168,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:a0c5bf6e97a3d5d7",
+      "source": "domain:validation",
+      "target": "reason:assurance_orphaned_child_reconciled",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:a0e3ae63233ee75b",
@@ -52383,6 +52451,20 @@
       "source": "domain:recovery",
       "target": "api:get:/api/lite/recovery/apps/{app_id}",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:bc31f8e4f6118883",
+      "source": "reason:assurance_orphaned_child_reconciled",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {

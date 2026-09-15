@@ -1853,6 +1853,10 @@
         "title": "assurance_deadline_exceeded",
         "url": "../../docs/generated/development/reason-codes.md#assurance-deadline-exceeded"
       },
+      "reason:assurance_orphaned_child_reconciled": {
+        "title": "assurance_orphaned_child_reconciled",
+        "url": "../../docs/generated/development/reason-codes.md#assurance-orphaned-child-reconciled"
+      },
       "reason:assurance_policy_sync_denied": {
         "title": "assurance_policy_sync_denied",
         "url": "../../docs/generated/development/reason-codes.md#assurance-policy-sync-denied"
@@ -3174,7 +3178,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "c951d76c1d2e6f444194d4b94710e2377aa06996451a1834314b03d9bf3c0b37",
+    "aggregate_fingerprint": "3b9174f58c9f8a4232800771efb71203515011ae75a379b754c38b81b8286080",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3185,7 +3189,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/generated/lite-openapi.json": "73df089dcb595eacedd99de1797a42e2eedbe4df044eebb8a6fc323fd9c2d1c4",
-      "contracts/metadata/documentation-platform.json": "6bac24782ae83e9f3cd9b935e5db796ac32e278799fe9f40c677fd903795c1b4",
+      "contracts/metadata/documentation-platform.json": "54ea404fd374edcc6713400b2c076dc24b7c64f9c571e61a8854f518fd376ae2",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",

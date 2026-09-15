@@ -138,13 +138,13 @@
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
         "assurance_deadline_exceeded",
+        "assurance_orphaned_child_reconciled",
         "assurance_policy_sync_denied",
         "assurance_policy_sync_disabled",
         "assurance_session_binding_mismatch",
         "battery_policy_threshold",
         "bootstrap_transport_rejected",
-        "checkpoint_ineligible",
-        "configured_target_budget"
+        "checkpoint_ineligible"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -547,13 +547,13 @@
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
         "assurance_deadline_exceeded",
+        "assurance_orphaned_child_reconciled",
         "assurance_policy_sync_denied",
         "assurance_policy_sync_disabled",
         "assurance_session_binding_mismatch",
         "bootstrap_transport_rejected",
         "connection_failed",
-        "enterprise_connect_links_retired",
-        "external_lane_owned_by_qualification_client"
+        "enterprise_connect_links_retired"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",

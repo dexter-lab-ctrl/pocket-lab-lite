@@ -27826,7 +27826,7 @@
         "security_classification": "internal metadata",
         "source_owner": [
           "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:134",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2834",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2910",
           "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:29",
           "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:562",
           "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:665",
@@ -35847,13 +35847,13 @@
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
           "assurance_deadline_exceeded",
+          "assurance_orphaned_child_reconciled",
           "assurance_policy_sync_denied",
           "assurance_policy_sync_disabled",
           "assurance_session_binding_mismatch",
           "battery_policy_threshold",
           "bootstrap_transport_rejected",
-          "checkpoint_ineligible",
-          "configured_target_budget"
+          "checkpoint_ineligible"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -36256,13 +36256,13 @@
         "occurrence": "not numerically scored without canonical incident frequency evidence",
         "reason_codes": [
           "assurance_deadline_exceeded",
+          "assurance_orphaned_child_reconciled",
           "assurance_policy_sync_denied",
           "assurance_policy_sync_disabled",
           "assurance_session_binding_mismatch",
           "bootstrap_transport_rejected",
           "connection_failed",
-          "enterprise_connect_links_retired",
-          "external_lane_owned_by_qualification_client"
+          "enterprise_connect_links_retired"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -44665,10 +44665,10 @@
       "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
-        "asyncapi": "3f6e55d0d55b276e52bd1545b922ac1103a69421a579fa5b5dbd8fbbec7b6388",
-        "documentation": "2ba820356101bf5afba2b55f262a96f157db0f2253444e40fa5acff8498ce7a3",
+        "asyncapi": "d4aa20ac97b514d88bff3a4d9e8e41ba5fb9582975e0546240ad3a790ab4c175",
+        "documentation": "f1d1030a7acc0f055576b0dedfb1f3a13ee47e3af491828c38134037c151250d",
         "openapi": "73df089dcb595eacedd99de1797a42e2eedbe4df044eebb8a6fc323fd9c2d1c4",
-        "operational_health": "0a6d923aefd74ed4f8aed6b2ae3d6e21613c9b17b2ae06fe4b8306b770ecae76"
+        "operational_health": "fa8f6aae6a0c18b9ae12792990502d1fd0d5bbbf4c378f38617d0fcaf00cce83"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -114332,5 +114332,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "def507a0b28365f41bc29cbef8759d2d465f747343fb2aafa2d3e12ef25179a1"
+  "source_fingerprint": "134becfa309a813bcf27d541861613605399be0fbf38f7854b9af59cf21a852f"
 }
