@@ -1,28 +1,31 @@
 # Security Assurance Taskfile reference
 
 The commands in this page are copied from the source files
-`tasks/Taskfile.lite.yml` and `tasks/Taskfile.docs.yml`. Run them from
-`/home/dj/pocket-lab-lite` on the environment stated by the playbook. Task
-variables are fixed inputs to the supported wrapper; they are not a generic
-command interface.
+`tasks/Taskfile.lite.yml` and `tasks/Taskfile.docs.yml`. Run them from the
+repository root on the environment stated by the playbook. Task variables are
+fixed inputs to the supported wrapper; they are not a generic command
+interface.
 
 ## Harness identity and qualification startup
 
 | Task | Wrapper | Environment / authority | Side effect |
 | --- | --- | --- | --- |
-| `lite:harness:profiles` | `harness.py profiles` | DEV PC/approved client; direct loopback | read-only profile manifest |
-| `lite:harness:status` | `harness.py status` | DEV PC/phone loopback | read-only bounded posture |
-| `lite:harness:verify-off` | `harness.py verify-off` | normal runtime loopback | read-only default-off assertion |
+| `lite:harness:profiles` | bounded `task_runtime.py` → `harness.py profiles` | DEV PC/Server Phone loopback | read-only profile manifest; Termux resolves installed Python and scrubs DEV state |
+| `lite:harness:status` | bounded `task_runtime.py` → `harness.py status` | DEV PC/Server Phone loopback | read-only bounded posture; Termux resolves installed Python and scrubs DEV state |
+| `lite:harness:verify-off` | bounded `task_runtime.py` → `harness.py verify-off` | normal runtime loopback | read-only default-off assertion; no fake `.venv` required on Termux |
 | `lite:harness:keygen` | `harness.py keygen --key-file` | approved client; `KEY_FILE` outside Git | creates local Ed25519 key, mode 0600 |
 | `lite:harness:bootstrap` | `harness.py bootstrap --principal-id --key-file` | approved client; key-bound qualification grant | consumes one grant and creates session authority |
 | `lite:harness:principal:create` | `harness.py principal-create ...` | manual operator provisioning | registers public principal; legacy compatibility path |
 | `lite:harness:session:start` | `harness.py session-start ...` | approved client with registered principal/key | creates a short-lived signed session |
 | `lite:qualification:start` | `start-qualification.sh` | operator-controlled qualification | legacy token-based startup; keep separate from normal startup |
-| `lite:qualification:start:key-bound` | `start-qualification.sh --bootstrap-*` | operator + approved public key | enables key-bound qualification, non-destructive |
-| `lite:qualification:start:key-bound:faults` | key-bound launcher plus fixed fault-control enablement | explicit qualification only | enables the registered non-destructive fault controls |
+| `lite:qualification:start:key-bound` | bounded `task_runtime.py` → `start-qualification.sh --bootstrap-*` | Server Phone operator + approved public key | scrubs DEV state then enables key-bound qualification, non-destructive |
+| `lite:qualification:start:key-bound:faults` | bounded task runtime plus fixed fault-control enablement | explicit Server Phone qualification only | scrubs DEV state then enables registered non-destructive fault controls |
 
 The private key is never a Taskfile value printed into output. The key-bound
-launcher accepts only the public-key file for operator approval.
+launcher accepts only the public-key file for operator approval. On a Server
+Phone, the bounded Task wrapper removes Taskfile development state/environment
+before the production launcher derives its runtime state root and OPA active
+policy path. See the Server Phone Task Runtime playbook.
 
 The CLI also exposes `principal-revoke`, `session-status`, and `session-stop`;
 they have no dedicated Taskfile wrappers in the current source. Use the exact
@@ -51,13 +54,21 @@ Use only IDs listed in the current registries.
 
 | Task | Wrapper | Environment / authority | Result |
 | --- | --- | --- | --- |
-| `lite:security:assurance:report` | `security_assurance.py report <run-id>` | authenticated report capability | read one sanitized report |
+| `lite:security:assurance:report` | `security_assurance.py report <run-id>` | authenticated report capability | read one sanitized runtime report bundle |
+| `lite:security:assurance:report:generate` | `security_assurance_report.py generate --qualification-id` | approved DEV PC/client with report capability | validates terminal normalized/sanitized evidence and builds deterministic report identity; no publication |
+| `lite:security:assurance:report:check` | `security_assurance_report.py check --qualification-id` | DEV PC/CI | validates one published Markdown/JSON/index set, redaction, link and count reconciliation |
+| `lite:security:assurance:report:publish` | `security_assurance_report.py publish --qualification-id` | approved DEV PC/client with report capability | stages, redaction-checks and atomically publishes Markdown + sanitized companion JSON + index |
+| `lite:security:assurance:reports:index` | `security_assurance_report.py index` | DEV PC/CI | deterministically rebuilds only the generated report index from sanitized companion JSON |
 | `lite:security:assurance:compare` | `security_assurance.py compare <run-id>` | authenticated report/baseline capability | read normalized baseline delta |
 | `lite:security:assurance:tools:install` | `security_assurance_toolchain.py install` | DEV PC operator | installs/checks fixed managed tools outside Git |
 | `lite:security:assurance:tools:check` | `security_assurance_toolchain.py check` | DEV PC | reports each tool as READY, NOT_APPLICABLE, or FAILED |
 | `lite:security:assurance:tools:run` | `security_assurance_toolchain.py run <suite>` | DEV PC and approved phone tunnel | runs fixed static/live tool lane; no arbitrary args |
 | `lite:security:assurance:qualify` | `security_assurance.py qualify ... --sync-policy ...` | approved client with key-bound startup | coordinated phone Smoke/Standard/Adversarial workflow with renewal/cleanup |
 | `lite:security:assurance:qualify:full` | same workflow plus `--full` | approved client; explicit full intent | adds fixed DEV-PC Standard/Deep lanes |
+
+Report publication is repository-owned and must not be used to edit tracked
+source on the Server Phone. The report publisher consumes the existing
+normalized/sanitized report API only; it does not parse raw scanner output.
 
 ## Documentation gate
 
