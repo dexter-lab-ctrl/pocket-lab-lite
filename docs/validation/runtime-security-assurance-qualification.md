@@ -1,10 +1,13 @@
 # Runtime Security Assurance Qualification Dossier
 
-Status: `PARTIAL` / `KEEP DRAFT` at the final continuation evidence point. This
+Status: `CURRENT C2 EVIDENCE` / `PARTIAL` for the explicit Deep result. This
 dossier records the bounded qualification and supply-chain work performed for
-PR #576. It intentionally separates `RUNTIME-VALIDATED` Android/Termux
-observations from `VALIDATED` DEV-PC/CI tool evidence and from
-`UNVALIDATED`, `BLOCKED`, `UNSUPPORTED`, and `DEFERRED` scope.
+PR #576. The C2 continuation section near the end is authoritative for the
+current feature head; earlier sections are retained as historical evidence and
+are labelled where their result was superseded. It intentionally separates
+`RUNTIME-VALIDATED` Android/Termux observations from `VALIDATED` DEV-PC/CI
+tool evidence and from `UNVALIDATED`, `BLOCKED`, `UNSUPPORTED`, and
+`DEFERRED` scope.
 
 The Runtime Security Assurance Harness is not a generic remote shell. The
 Server Phone is a consumer/qualification target, never the development
@@ -18,10 +21,10 @@ performed.
 | Repository | `dexter-lab-ctrl/pocket-lab-lite` |
 | Base main | `6d7e34920ceaecf773f8dbae36265cc282a199ed` (`VERIFIED`) |
 | Feature branch | `feat/runtime-security-assurance-harness` (`VERIFIED`) |
-| Feature source at the final authenticated phone qualification | `0cfe3978aba4848934b85c4ff2cd124c611e5b11` (`VERIFIED`) |
+| Feature source at the current authenticated phone qualification | `3ce5acf84675b666f47c6c16038afe54fae1671e` (`VERIFIED`) |
 | Feature source at the isolated rollback rehearsal | `3f4f277de5fc8c99d01b0d07baa7376b608d1bd7` (`VERIFIED`; migration/runtime path unchanged by later client/test-only fixes) |
-| Latest published DEV-PC supply-chain capture | `cfe3168e05f25483410217bb21bf711f80db596e` (`VERIFIED`; complete capture later promoted from this source revision) |
-| PR | #576, open, draft, and mergeable at `0cfe3978aba4848934b85c4ff2cd124c611e5b11` (`VERIFIED`; exact-head CI rechecked before publication) |
+| Latest published DEV-PC supply-chain capture | C2 manager captures `devpc-20260915T003837Z-2003561` and `devpc-20260915T004140Z-2003561`, source `3ce5acf…` (`VERIFIED`) |
+| PR | #576, open, draft, and mergeable at `3ce5acf84675b666f47c6c16038afe54fae1671e` (`VERIFIED`; `quick-and-docs` run `34904124568`, job `104176697071`, SUCCESS) |
 | Provisioning token | `POCKETLAB_HARNESS_PROVISIONING_TOKEN` absent from the approved client environment (`VERIFIED` boolean-only check) |
 | Qualification authentication | Key-bound operator bootstrap; no bearer provisioning token, test-auth bypass, qualification-owner, or human Owner identity (`RUNTIME-VALIDATED`) |
 | Network target | Pocket Lab-owned local/loopback surfaces only (`VERIFIED`) |
@@ -140,7 +143,14 @@ No policy file was manually rewritten on the phone. `qualification-owner`,
 test-auth bypass, and destructive gates remained disabled. This clears the
 Standard admission blocker without weakening OPA or granting Owner authority.
 
-## 5. Tool installation and execution evidence
+## 5. Historical pre-C2 tool installation and execution evidence
+
+The tables in this historical section document the earlier pre-promotion
+snapshot. The exact C2 tool receipts and execution results are authoritative
+in Section 17. In particular, the current registry no longer contains
+`deferred`, `inventory_only`, or `unsupported` tool states for the required
+assurance tools; Cosign is the sole explicit `NOT_APPLICABLE` result because
+no signed artifact is registered for this revision.
 
 ### 5.1 DEV-PC/CI fixed toolchain
 
@@ -216,7 +226,12 @@ dependency candidates from recursive source discovery. They are retained in
 the sanitized canonical correlation artifact and are not silently accepted as
 exploitable runtime findings. Further triage is `DEFERRED`.
 
-## 6. Runtime qualification results
+## 6. Historical pre-C2 runtime qualification results
+
+The runs in this section predate the direct outage-window controls, the
+worker/client recovery qualification, and the current exact-C2 promotion.
+They remain useful as an audit trail, but are superseded by the exact-C2
+results in Section 17.
 
 ### 6.1 Key-bound bootstrap and authenticated Smoke
 
@@ -628,3 +643,334 @@ the final phone runtime report, which is bound to `0cfe3978…`. Any later
 documentation-only commit must keep those evidence identities separate and
 must not be presented as a new phone runtime execution without an exact-SHA
 retest.
+
+## 17. Current C2 continuation addendum (authoritative)
+
+This section supersedes the historical qualification statements above for the
+current continuation. It records the current implementation and the bounded
+runtime evidence captured against the exact published C2 revision.
+
+### 17.1 Identity and scope
+
+| Item | Evidence |
+| --- | --- |
+| Status | `CURRENT C2 EVIDENCE`; harness execution blockers closed, with a truthful `PARTIAL` Deep phone result and existing static baseline findings |
+| Base `origin/main` | `6d7e34920ceaecf773f8dbae36265cc282a199ed` |
+| Feature revision tested | `3ce5acf84675b666f47c6c16038afe54fae1671e` |
+| PR | #576, open, draft at the time of this capture |
+| Primary framework | STRIDE |
+| OWASP reference | Top 10 2021 |
+| Runtime target | Server Phone, `local_server_host_only` |
+| Runtime identity | `runtime-408970a380f1bb14c7d0069eb2a8c453` |
+| Tool registry hash | `sha256:38755b7f13c94ff9a37a0eccf4324455d7f05fcddc9c7dfa1b85f3fb8c657687` |
+| Suite registry hash | `sha256:f1a63f73e1b086a24eec1b1f041948b7c17d3e30318d30ae858c89005cdc4bcb` |
+| Scenario registry hash | `sha256:a84205ac580f1ac3fab9e5e2d329b4b488f5d511e687f393e9d2d4a7cc232af5` |
+| Fault registry hash | `sha256:6a18652671ed48330c44f94f6d9e53d993c6831ec2f3dbd95f9be8b98ae35820` |
+| Provisioning token | `UNAVAILABLE` in the approved environment; no token path was weakened or bypassed |
+| Qualification identity | Key-bound, operator-approved bootstrap; disposable Ed25519 private keys stayed outside Git and reports |
+
+`VERIFIED`: the C2 client used the key-bound bootstrap path and did not need a
+long-lived `POCKETLAB_HARNESS_PROVISIONING_TOKEN`. The bootstrap grant is
+server-owned, fixed to `security-assurance-runner`, `security.assurance`,
+`local_server_host_only`, qualification runtime, non-destructive operation,
+one use, and a five-minute lifetime. The bootstrap-created principal is bounded
+to a qualification window, and normal sessions are short-lived and renewable.
+
+`VERIFIED`: an admitted assurance run has its own durable deadline, heartbeat,
+worker operation, checkpoint generation and cancellation state. Session expiry
+does not terminate an already admitted run.
+
+### 17.2 Authenticated run results
+
+The following are sanitized result identities. Run IDs, worker operation IDs,
+and correlation IDs are not credentials and are included only to establish
+same-run execution and recovery. Session tokens, signatures, challenges and
+private key material are intentionally absent.
+
+| Operation | Qualification result | Run result | Checkpoints/events | Evidence |
+| --- | --- | --- | --- | --- |
+| Authenticated Smoke | `PASS` | `assurance-3c4b4fb1ff3f461bb61167e975a9253e` | 24 / 32 | worker-owned Security path, sanitized report, exact C2 revision |
+| Authenticated Standard | `PASS` | `assurance-6c166dbfd4b94bd38d0a305fb9a2334f` | 30 / 41 | fixed NATS subject, JetStream delivery, worker result, sanitized report |
+| Safe Adversarial | `PASS` | `assurance-432681b19c5f403ea3c62217c354bb07` | 14 / 20 | negative authentication and authorization probes denied as expected |
+| Direct OPA outage window | `PASS` | fixed fault `opa_pause_probe_restore` | bounded fault evidence | unavailable policy denied; OPA restored and policy rechecked |
+| Direct NATS outage window | `PASS` for recovery control | injected Standard was `FAIL` during the intentional outage | preserved run/correlation | outage was observed, no false PASS or duplicate, NATS/JetStream/worker recovered |
+| Worker restart/resume | `PASS` | fixed fault `worker_restart_once` | completed checkpoints retained | new worker resumed the same run without suite duplication |
+| Physical client crash/reattach | `PASS` | `assurance-1179d31089294c64bf00115c38eff408` | same run and worker operation | monitor terminated and restarted; same run reattached and completed |
+| Phone Deep | `PARTIAL` | `assurance-19a5bd9588324f7d87ea4acf736b2e71` | 30 / 41 | all registered phone tools returned; existing Security Full result was partial, with no medium/high/critical finding |
+| DEV-PC external Standard | truthful tool result `FAIL` | `devpc-20260915T003837Z-2003561` | managed tool receipts | 512 existing normalized baseline findings |
+| DEV-PC external Deep | truthful tool result `FAIL` | `devpc-20260915T004140Z-2003561` | managed tool receipts | 517 findings: 512 existing and 5 new ZAP observations |
+
+`RUNTIME-VALIDATED`: the successful Smoke and Standard runs followed the
+normal control-plane path:
+
+```text
+key-bound signed client
+  -> FastAPI admission and preflight
+  -> fixed subject pocketlab.commands.lite.security.assurance
+  -> NATS / JetStream durable delivery
+  -> pocket-worker
+  -> registered worker-owned Security runner
+  -> Trivy/Lynis where discovered by the existing Security lifecycle
+  -> normalized/redacted evidence
+  -> SQLite assurance lifecycle
+  -> report and checksums
+```
+
+No caller-selected command, executable, working directory, target, URL, port,
+NATS subject, scanner flag, template, ruleset or environment override was
+accepted.
+
+### 17.3 Preflight, renewal and continuity
+
+Each C2 qualification first checked the exact deployed revision, a clean phone
+worktree, explicit qualification mode, harness enabled, test-auth bypass off,
+qualification-owner off, destructive gate off, API health, API readiness,
+Caddy, NATS, JetStream, worker, scanner capability, resource admission and
+absence of a conflicting heavyweight Security run. The preflight explicitly
+records that PM2 `online` is not equivalent to FastAPI readiness.
+
+`RUNTIME-VALIDATED`: the C2 client renewed short-lived sessions automatically
+(the qualification runs recorded multiple renewals, including five during the
+longer Smoke/Standard workflows) and continued to observe the same admitted
+run. The old session was allowed to expire logically; it was not extended in
+place and no raw token was persisted.
+
+`RUNTIME-VALIDATED`: the physical client-crash test terminated only the
+qualification client monitor on the DEV PC. While the client was absent, the
+phone retained the same `RUNNING` run and advancing worker heartbeat. A new
+client process loaded bounded continuity metadata, obtained a fresh session,
+reattached to the same run ID and observed terminal `PASS`. No duplicate run
+or scanner operation was admitted. Continuity state was absent after cleanup.
+
+### 17.4 Fault-window and recovery evidence
+
+The fixed fault registry contains only registered qualification actions. It
+does not expose a generic service-control API.
+
+* `opa_pause_probe_restore` stopped only the registered OPA service, executed
+  one fixed governed probe during the unavailable window, and restored OPA in a
+  bounded `finally` path. During the window the response was unavailable,
+  `fail_closed=true`, `decision_allow=false`, and policy revision was not
+  accepted as current. After restoration OPA was healthy/current and the same
+  probe was denied by current policy. `RUNTIME-VALIDATED: PASS`.
+* `nats_pause_probe_restore` stopped only the registered Pocket Lab NATS
+  service, observed the bounded outage, restored it promptly, and verified
+  TCP/API reconnect, JetStream availability, fixed-subject ownership, same
+  run/operation correlation, no duplicate execution and terminal-state
+  truthfulness. The injected assurance run returned `FAIL` while NATS was
+  intentionally unavailable, which is the required truthful result; the fault
+  control and recovery assertion returned `PASS`. No stream, consumer or
+  storage was deleted or modified.
+* `worker_restart_once` restarted only the registered worker through the
+  supported supervisor path. The old heartbeat became stale, the new worker
+  identity took over, completed checkpoints remained durable, and the same
+  run/operation reached terminal `PASS`. `RUNTIME-VALIDATED: PASS`.
+
+`VERIFIED`: these controls cannot turn an interrupted or unavailable execution
+into `PASS`. An injected outage result may therefore be `FAIL`/`PARTIAL` while
+the recovery assertion itself passes.
+
+### 17.5 Current registered toolchain
+
+The C2 registry promotes all 18 requested tools to first-class fixed contracts.
+The manager check reported 17 `READY` managed tools and one truthful
+`NOT_APPLICABLE` result for Cosign because this revision has no registered
+signed artifact. No registry entry remains `DEFERRED`, `INVENTORY_ONLY`, or
+`UNSUPPORTED`.
+
+| Tool | Version evidence | Lane | Harness status / execution |
+| --- | --- | --- | --- |
+| Pocket Lab Security | runtime-reported existing Security result; exact component version not exposed | Server Phone worker | `ACTIVE` / Smoke, Standard, Deep phone path |
+| Lynis | `3.1.6` runtime-reported | Server Phone worker | `ACTIVE` / worker-owned lifecycle |
+| Trivy | runtime-reported (`dev` in sanitized projection) | Server Phone worker | `ACTIVE` / worker-owned optimized lifecycle |
+| Bandit | `1.9.4` | DEV-PC static | `ACTIVE` / Standard and Deep executed |
+| Gitleaks | `8.30.1` | DEV-PC static | `ACTIVE` / Smoke, Standard and Deep executed |
+| pip-audit | `2.10.1` | DEV-PC static | `ACTIVE` / Standard and Deep executed |
+| npm audit | `11.13.0` | DEV-PC static | `ACTIVE` / Standard and Deep executed |
+| OPA | runtime readiness/current-policy evidence; CLI version not required by service path | Server Phone worker | `ACTIVE` / preflight, policy sync, outage window |
+| Schemathesis | `4.23.0` | DEV-PC → actual phone runtime | `ACTIVE` / fixed OpenAPI safe routes executed |
+| Cosign | `3.1.3` installed and checked | DEV-PC static | `ACTIVE` / `NOT_APPLICABLE`, no signed artifact |
+| Semgrep CE | `1.172.0` | DEV-PC static | `ACTIVE` / Standard and Deep executed |
+| OSV-Scanner | `2.5.0` | DEV-PC static | `ACTIVE` / Standard and Deep executed |
+| Syft | `1.50.0` | DEV-PC static | `ACTIVE` / Deep executed |
+| Grype | `0.116.1` | DEV-PC static | `ACTIVE` / Deep executed against managed Syft SBOM |
+| testssl.sh | `3.2.2` | DEV-PC → actual phone runtime | `ACTIVE` / Standard and Deep executed against fixed Caddy endpoint |
+| Nuclei | `3.8.0` | DEV-PC → actual phone runtime | `ACTIVE` / curated safe templates executed |
+| nmap | `7.98` | DEV-PC → actual phone runtime | `ACTIVE` / fixed local Pocket Lab listener list |
+| OWASP ZAP | `2.17.0` | DEV-PC → actual phone runtime | `ACTIVE` / bounded Deep API/baseline execution |
+
+Installation receipts were created by the fixed DEV-PC manager under the
+operator-owned tool directory, with pinned versions, source receipts,
+qualified absolute paths, bounded environments and checksums where the source
+supports them. Temporary download/extraction paths were not included in Git.
+The external manager Standard and Deep runs executed every applicable managed
+tool. The phone tool entries remain worker-owned and were attached to phone
+assurance reports rather than run by the client.
+
+`VERIFIED`: the toolchain is orchestrated through fixed server-owned contracts;
+the caller cannot change tool argv, target, template, ruleset or environment.
+`UNAVAILABLE`: the existing phone Security projection intentionally does not
+expose a Pocket Lab Security binary version, so no version is inferred here.
+
+### 17.6 Finding and delta summary
+
+Phone Smoke/Standard/Adversarial reports contained no Critical, High or Medium
+finding. The recurring one Low finding is the protected backend runtime-secret
+posture for `gitea/conf/app.runtime.ini`; the evidence records only the bounded
+path and sanitized metadata. Existing checks continue to show mode `0600`, a
+mode `0700` parent, no frontend exposure and no raw secret in logs/reports.
+It remains `REVIEW REQUIRED — NON-BLOCKING FOR SECURITY ASSURANCE HARNESS`.
+
+The DEV-PC managed Deep result contains 517 normalized findings: 512 existing
+baseline findings and five new ZAP observations (one Medium, one Low and three
+Info). The new ZAP observations are retained as normalized review findings,
+not hidden by the suite result. OSV critical/high dependency rows are existing
+baseline package findings and are not represented as new C2 harness defects;
+Trivy/OSV/pip-audit/npm-audit/Grype corroboration is correlated by stable
+package/advisory identity. The current production dependency-only npm audit
+result was clean.
+
+Bandit findings are existing bounded subprocess/agent patterns; the current
+harness's internal SQL and fixed loopback probe patterns were reviewed as
+bounded implementation behavior, not accepted as demonstrated exploitability.
+Gitleaks matches are fixed test/protocol fixtures; raw matches are never
+persisted. This is a classification of the observed result, not automatic risk
+acceptance.
+
+### 17.7 STRIDE and attack-path coverage
+
+`RUNTIME-VALIDATED`: authenticated admission, Caddy proof stripping, runtime
+readiness, worker ownership, evidence redaction, OPA outage fail-closed,
+NATS outage recovery, worker restart/resume, adversarial authentication
+negative tests and Security projection were executed. The canonical model
+still classifies every current AP entry. Current classifications are:
+
+| Attack path | Classification | Current evidence |
+| --- | --- | --- |
+| AP-01 Browser control-plane bypass | `PARTIALLY_EXECUTABLE` | Caddy/FastAPI boundary runtime-tested; direct browser-to-NATS remains source evidence |
+| AP-02 Browser shell execution | `EXECUTABLE_NOW` | frontend/backend shell boundary assertions and runtime ownership tested |
+| AP-03 Forged managed-device identity | `PARTIALLY_EXECUTABLE` | harness identity binding tested; enrolled-device forgery is not injected |
+| AP-04 Messaging command tampering/replay | `PARTIALLY_EXECUTABLE` | fixed subject, durable delivery and duplicate protection tested; arbitrary tampering is not injected |
+| AP-05 Supply-chain artifact compromise | `STATIC_EVIDENCE_ONLY` | managed tool receipts, SCA/SBOM/signature applicability and source evidence |
+| AP-06 Evidence poisoning | `EXECUTABLE_NOW` | redaction, normalized evidence and bounded persistence tested |
+| AP-07 Tailnet/private-network exposure | `PARTIALLY_EXECUTABLE` | local listener/Caddy/TLS checks; unrelated network scanning excluded |
+| AP-08 Recovery state tampering | `OUT_OF_SCOPE_FOR_PR_576` | destructive Recovery and production restore explicitly excluded |
+| AP-09 Human identity/WebAuthn misuse | `HUMAN_REVIEW_REQUIRED` | physical ceremony is not automated |
+| AP-10 Enterprise membership/final-Owner escalation | `HUMAN_REVIEW_REQUIRED` | governance ceremony remains human-owned |
+| AP-11 OPA authorization integrity failure | `EXECUTABLE_NOW` | policy sync, current revision and unavailable-window fail-closed proof |
+| AP-12 Runtime availability/worker recovery | `PARTIALLY_EXECUTABLE` | worker, NATS and bounded resource/restart recovery tested; uncontrolled load excluded |
+| AP-13 Backup/recovery media exposure | `HUMAN_REVIEW_REQUIRED` | no backup payload or user media was scanned |
+| AP-14 Protected runtime-secret handling | `HUMAN_REVIEW_REQUIRED` | ownership/rotation review remains operator-owned; exposure controls were checked |
+
+The STRIDE report retains the six categories and maps each executed scenario
+to its threat, asset, trust boundary, control, expected invariant, observed
+evidence and residual risk. Human-review classifications are complete coverage
+classifications, not missing implementation, when the model documents reviewer
+role and pass/fail evidence requirements.
+
+OWASP Top 10 2021 mappings remain reference mappings rather than a replacement
+for STRIDE. Runtime-tested categories include A01 Broken Access Control, A02
+Cryptographic Failures where applicable, A05 Security Misconfiguration, A07
+Identification and Authentication Failures, A08 Software and Data Integrity
+Failures, and A09 Security Logging and Monitoring Failures. Injection and
+other categories without a relevant safe scenario remain explicitly
+`NOT_APPLICABLE`, `HUMAN_REVIEW_REQUIRED`, or static-only in the report; they
+are not called runtime `PASS` without an executed scenario.
+
+### 17.8 Current command/output ledger
+
+The command ledger below is intentionally bounded and sanitized. Exact raw
+stdout/stderr is not reproduced when it could contain secrets, private paths,
+or scanner matches; the linked machine-readable receipts contain normalized
+summaries and checksums.
+
+| Seq. | Environment/lane | Sanitized command or operation | Result |
+| ---: | --- | --- | --- |
+| 43 | DEV PC | `security_assurance_toolchain.py install` | `PASS`; receipts for all managed tools |
+| 44 | DEV PC | `security_assurance_toolchain.py check` | `PASS`; 17 `READY`, Cosign `NOT_APPLICABLE` |
+| 45 | DEV PC | managed fixed Standard suite | `FAIL` from existing baseline findings; all applicable tools executed |
+| 46 | DEV PC | managed fixed Deep suite | `FAIL` from baseline/new normalized findings; all applicable tools executed |
+| 47 | Server Phone via fixed local tunnel | key-bound qualification bootstrap and signed client setup | `PASS`; no provisioning bearer token used |
+| 48 | Server Phone worker | fixed authenticated Smoke suite | `PASS`; FastAPI → NATS/JetStream → worker → Security |
+| 49 | Server Phone worker | fixed authenticated Standard suite | `PASS`; same architecture, renewable short sessions |
+| 50 | Server Phone worker | fixed safe Adversarial suite | `PASS`; bounded negative probes denied |
+| 51 | Server Phone worker | `opa_pause_probe_restore` | `PASS`; unavailable-window deny and restoration |
+| 52 | Server Phone worker | `nats_pause_probe_restore` | `PASS` recovery assertion; injected run failed truthfully during outage |
+| 53 | Server Phone worker | `worker_restart_once` | `PASS`; same run, retained checkpoints, new worker |
+| 54 | DEV PC client / Server Phone worker | terminate monitor, then rerun fixed client with same identity | `PASS`; same run reattached, no duplicate |
+| 55 | Server Phone | bounded Deep/full orchestration | `PARTIAL`; phone Security Full result partial, external Deep receipts complete |
+| 56 | Server Phone | sanitized evidence/checksum/continuity inspection | `PASS`; no raw credential material persisted |
+| 57 | Server Phone | supported qualification cleanup and default-off verification | `PASS` in C2 reports; final exact-head cleanup is repeated after the final promotion |
+
+Every entry had a fixed target and bounded timeout. No command in this ledger
+was a generic shell request or caller-defined scanner invocation. The full
+per-tool receipts record version, execution lane, fixed target, duration,
+exit/result classification, finding count, normalized output summary,
+STRIDE/OWASP/AP mapping, and evidence reference.
+
+### 17.9 Resource and sanitization evidence
+
+Measured phone values are reported only where the runtime exposed them:
+
+| Run | Duration | Battery | Temperature | Memory/free storage | CPU/RSS |
+| --- | ---: | --- | --- | --- | --- |
+| Smoke | approximately 708,672 ms | 72% → 59%, not charging across captures | 33.9–34.4 C | available memory approximately 2.99–3.13 GiB; free storage approximately 136.7 GiB | CPU and per-process RSS `UNAVAILABLE` |
+| Standard | approximately 370,209 ms | captured in sanitized resource snapshots | captured in sanitized resource snapshots | captured in sanitized resource snapshots | CPU/RSS `UNAVAILABLE` |
+| Adversarial | approximately 37,086 ms | captured in sanitized resource snapshot | captured in sanitized resource snapshot | captured in sanitized resource snapshot | CPU/RSS `UNAVAILABLE` |
+| Deep phone | approximately 610 s | captured start/finish | captured start/finish | captured start/finish | CPU/RSS `UNAVAILABLE` |
+
+`VERIFIED`: resource admission remained enabled, output was bounded, and the
+one-heavy-scanner guard remained true. Missing Android `/proc` metrics are not
+reported as zero. Security scans excluded PhotoPrism media, Android shared
+storage, backup payload contents, runtime state exclusions, generated/cache
+paths and other repository-defined user-data paths. Reports contain normalized
+findings only; raw secret matches, credentials, authorization headers, private
+keys, user media and recovery material are absent or replaced with
+`[REDACTED BY SECURITY ASSURANCE POLICY]`.
+
+### 17.10 Release and rollback conclusion
+
+`VERIFIED SAFE — NON-DESTRUCTIVE ISOLATED ROLLBACK REHEARSAL`: the existing
+Model A release contract was proven earlier in an isolated disposable sandbox:
+compatible pre-upgrade SQLite state, integrity check, feature migrations
+0035/0036, disposable pre-upgrade copy restoration, prior-runtime startup,
+health/readiness and schema/integrity checks. No live Server Phone database,
+Recovery repository, backup payload, user media or production state was
+restored or downgraded. The forward-only migration rejection safeguard remains
+enabled. This conclusion does not authorize destructive Recovery qualification.
+
+### 17.11 Non-blocking review classifications
+
+The following are intentionally outside the Runtime Security Assurance Harness
+readiness gate:
+
+* protected Gitea runtime-secret ownership/rotation: `REVIEW REQUIRED —
+  NON-BLOCKING FOR SECURITY ASSURANCE HARNESS`;
+* physical WebAuthn, human approval, Enterprise membership and final-Owner
+  ceremonies: `HUMAN_REVIEW_REQUIRED — NON-BLOCKING FOR PR #576`;
+* destructive Recovery and production backup/restore: `OUT_OF_SCOPE_FOR_PR_576
+  — NON-BLOCKING`;
+* general production maintenance activation and unrelated release-management
+  improvements: `OUT_OF_SCOPE — NON-BLOCKING`.
+
+These classifications do not accept risk automatically. They preserve human
+ownership and identify the evidence and reviewer responsibilities for later
+work.
+
+### 17.12 C2 qualification verdict
+
+`VALIDATED`: the C2 implementation closes the authenticated admission,
+renewal, durable run, idempotent admission, checkpoint/reconciliation,
+worker-heartbeat, worker restart, client reattachment, direct OPA outage,
+direct NATS recovery, toolchain orchestration, sanitization and reporting gaps
+that were open in the pre-C2 report.
+
+`PARTIAL`: the phone Deep result truthfully contains the existing Security Full
+partial outcome, and DEV-PC static Deep contains baseline and newly observed
+normalized tool findings. These are reported for review and are not converted
+to `PASS`.
+
+The C2 evidence is not the final head after this documentation update. A final
+exact-head qualification is required after the documentation and any remaining
+tracked changes are committed and published. No later phone result may be
+described as testing an earlier SHA.
