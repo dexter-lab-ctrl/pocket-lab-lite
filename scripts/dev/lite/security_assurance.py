@@ -47,6 +47,7 @@ CONTINUITY_KEYS = frozenset({
     "runtime_id",
     "revision_sha",
 })
+CONTINUITY_RUN_KEYS = ("active_run_id", "suite_id", "scenario_id", "last_event_sequence", "runtime_id", "revision_sha")
 FIXED_PROFILE = "security-assurance-runner"
 FIXED_PURPOSE = "security.assurance"
 FIXED_TARGET_SCOPE = "local_server_host_only"
@@ -303,7 +304,7 @@ def _reset_continuity_for_identity_change(state: dict, *, principal_id: str, fin
         return
     if existing_principal == requested_principal and existing_fingerprint == requested_fingerprint:
         return
-    for key in ("active_run_id", "suite_id", "scenario_id", "last_event_sequence", "runtime_id", "revision_sha"):
+    for key in CONTINUITY_RUN_KEYS:
         state.pop(key, None)
 
 
@@ -711,12 +712,26 @@ def _reattach_or_resume(
     if not raw_run_id:
         return None
     run_id = _safe_run_id(raw_run_id)
-    current = _request(
-        "GET",
-        f"/api/lite/harness/security-assurance/runs/{run_id}",
-        authenticated=True,
-        session_token=lease["session_token"],
-    )
+    try:
+        current = _request(
+            "GET",
+            f"/api/lite/harness/security-assurance/runs/{run_id}",
+            authenticated=True,
+            session_token=lease["session_token"],
+        )
+    except RuntimeError as exc:
+        # A stale local record can outlive a bounded run retention window or a
+        # failed bootstrap attempt from an earlier client version.  The API
+        # has authoritatively confirmed that this principal cannot see the
+        # attachment, so discard only the local run fields and start a fresh
+        # server-admitted workflow.  Authentication, authorization, transport,
+        # and all other errors remain fail-closed.
+        if str(exc).split(":", 1)[0].strip() != "run_not_found":
+            raise
+        for key in CONTINUITY_RUN_KEYS:
+            state.pop(key, None)
+        _write_continuity(continuity_path, state)
+        return None
     status = _terminal_status(current)
     if status in {"PASS", "FAIL", "BLOCKED", "CANCELLED"}:
         return {

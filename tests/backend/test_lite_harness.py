@@ -530,6 +530,43 @@ def test_assurance_client_bootstraps_after_principal_not_found_with_stale_run(tm
     assert [kind for kind, _kwargs in calls] == ["session", "bootstrap"]
 
 
+def test_assurance_client_discards_server_missing_continuity_run(tmp_path, monkeypatch):
+    script = Path("scripts/dev/lite/security_assurance.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_missing_run", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+    continuity = tmp_path / "continuity.json"
+    state = {
+        "principal_id": "assurance-runner",
+        "public_key_fingerprint": "sha256:" + "a" * 64,
+        "active_run_id": "assurance-" + "b" * 32,
+        "suite_id": "standard",
+        "last_event_sequence": 9,
+    }
+    client._write_continuity(continuity, state)
+
+    def fake_request(*_args, **_kwargs):
+        raise RuntimeError("run_not_found: the run is not visible to this principal")
+
+    monkeypatch.setattr(client, "_request", fake_request)
+    result = client._reattach_or_resume(
+        state=state,
+        lease={"session_token": "memory-only-token"},
+        principal_id="assurance-runner",
+        key_file=str(tmp_path / "runner.key"),
+        continuity_path=continuity,
+        session_ttl_seconds=180,
+        max_poll_seconds=30,
+    )
+
+    assert result is None
+    stored = json.loads(continuity.read_text(encoding="utf-8"))
+    assert "active_run_id" not in stored
+    assert "suite_id" not in stored
+    assert "last_event_sequence" not in stored
+
+
 def test_assurance_client_ensure_lease_renews_with_keyword_arguments(tmp_path, monkeypatch):
     script = Path("scripts/dev/lite/security_assurance.py").resolve()
     spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_ensure_lease", script)
