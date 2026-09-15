@@ -1,7 +1,8 @@
-schema_version: "1.0.0"
+schema_version: "1.1.0"
 name: pocketlab-runtime-security-assurance-scenarios
 primary_framework: STRIDE
 owasp_version: "2021"
+scenario_lifecycle: threat_to_mapping_to_safety_to_fixed_executor_to_registry_to_suite_to_tests_to_dev_validation_to_exact_sha_to_runtime_qualification_to_evidence
 scenarios:
   - id: harness-default-off
     title: Harness default-off and production fail-closed state
@@ -13,6 +14,25 @@ scenarios:
     owasp: [A07, A01]
     controls: [CTRL-API-CONTROL, CTRL-EVIDENCE-SANITIZE]
     attack_paths: [AP-01, AP-02, AP-03]
+    precondition: Pocket Lab Lite is started without explicit qualification opt-in.
+    action: Inspect fixed runtime environment and dangerous qualification flags.
+    expected_invariant: Production/default-off state never enables harness, destructive, Owner, or test-bypass authority implicitly.
+    pass_condition: All dangerous flags are off and startup configuration is valid for the observed environment.
+    fail_condition: Any dangerous flag or authority path is enabled without explicit qualification startup.
+    blocked_condition: Runtime configuration cannot be read safely.
+    cleanup: None; passive inspection only.
+    normalized_evidence: Sanitized configuration booleans and startup reason codes only.
+    coverage_cases:
+      - id: production-default-off
+        threat: Qualification authority accidentally survives normal production startup.
+        expected_invariant: Production remains production and harness authority remains disabled.
+      - id: qualification-owner-attempt
+        threat: Synthetic qualification gains human Owner authority.
+        expected_invariant: Qualification Owner capability remains disabled.
+      - id: destructive-gate-default-off
+        threat: Destructive qualification is enabled by default.
+        expected_invariant: Destructive gate remains disabled unless explicitly selected.
+
   - id: harness-auth-boundary
     title: Synthetic Ed25519 session and capability boundary
     execution: authenticated_admission_posture
@@ -23,6 +43,34 @@ scenarios:
     owasp: [A07, A01]
     controls: [CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS]
     attack_paths: [AP-01, AP-02, AP-03, AP-04, AP-09, AP-10]
+    precondition: A short-lived key-bound synthetic assurance session was admitted directly on loopback.
+    action: Verify admitted principal, profile, purpose, target, runtime, and capability bindings without reusing credential material.
+    expected_invariant: Synthetic assurance authority is purpose-bound, target-bound, runtime-bound, non-Owner, and non-destructive.
+    pass_condition: Every fixed binding check is true and the profile contains no Owner/destructive capability.
+    fail_condition: Any binding is mutable, broadened, or admits Owner/destructive authority.
+    blocked_condition: Admitted run/session binding cannot be inspected safely.
+    cleanup: Session lifecycle remains owned by the existing harness cleanup path.
+    normalized_evidence: Sanitized binding booleans, profile name, target scope, and lifecycle classification.
+    coverage_cases:
+      - id: wrong-purpose
+        threat: A valid machine identity is replayed for a different purpose.
+        expected_invariant: Purpose remains exactly security.assurance.
+      - id: wrong-profile
+        threat: A session is rebound to a broader harness profile.
+        expected_invariant: Profile remains security-assurance-runner.
+      - id: wrong-target
+        threat: Assurance authority is redirected to an unregistered target.
+        expected_invariant: Target remains the fixed local Server Phone scope.
+      - id: wrong-runtime
+        threat: An admitted session is replayed against another runtime identity.
+        expected_invariant: Runtime identity binding remains exact.
+      - id: capability-escalation
+        threat: Synthetic assurance authority acquires unrelated or destructive capabilities.
+        expected_invariant: Only registered security.assurance capabilities are present.
+      - id: session-expiry-independent-run
+        threat: Expired client session corrupts an already-admitted durable run.
+        expected_invariant: Admitted execution lease remains independent while new authority still requires a live session.
+
   - id: caddy-proof-strip
     title: Caddy never forwards qualification proof into FastAPI authority
     execution: fixed_caddy_probe
@@ -30,19 +78,74 @@ scenarios:
     required_capability: security.assurance.api
     suites: [smoke, standard, deep, adversarial]
     stride: [Spoofing, Tampering, Elevation of Privilege]
-    owasp: [A07, A01]
+    owasp: [A07, A01, A05]
     controls: [CTRL-API-CONTROL]
     attack_paths: [AP-01, AP-02, AP-07, AP-09]
+    precondition: Caddy and FastAPI are reachable on the fixed Pocket Lab local endpoints.
+    action: Send only fixed forged qualification/proof headers to the checked-in route set through Caddy.
+    expected_invariant: Proxy-visible headers never become harness authority and harness routes remain direct-loopback only.
+    pass_condition: Fixed forged markers are stripped/not accepted, harness namespace is not proxyable, and ordinary bounded routes remain healthy.
+    fail_condition: Forged proof is echoed/accepted, harness routes become proxy authority, or fixed boundary routes fail unexpectedly.
+    blocked_condition: Caddy is unavailable or the fixed route set cannot be probed.
+    cleanup: None; fixed non-mutating HTTP/SSE/WebSocket probes only.
+    normalized_evidence: Status codes, bounded response metadata, marker-presence booleans, and route classifications.
+    evidence_tools: [nuclei, owasp-zap, schemathesis, testssl.sh]
+    coverage_cases:
+      - id: forwarded-harness-proof
+        threat: Proxy-forwarded harness proof is interpreted as direct-loopback authority.
+        expected_invariant: Forwarded harness proof is never authoritative.
+      - id: caddy-proof-injection
+        threat: An external client injects synthetic harness/provisioning headers.
+        expected_invariant: Injected proof markers are stripped or rejected.
+      - id: synthetic-harness-header-forwarding
+        threat: Qualification/test headers survive the proxy boundary.
+        expected_invariant: Harness authority headers do not cross Caddy into FastAPI trust.
+      - id: proxy-proof-header-injection
+        threat: A forged principal/profile/purpose/target header set is accepted.
+        expected_invariant: Header-only proof cannot create authority.
+      - id: direct-fastapi-vs-caddy-header-boundary
+        threat: Proxy access becomes equivalent to direct-loopback harness transport.
+        expected_invariant: Harness namespace remains direct-loopback only.
+      - id: unexpected-debug-route-boundary
+        threat: Development/diagnostic routes unexpectedly become harness authority surfaces.
+        expected_invariant: Checked debug/documentation routes never accept harness proof.
+
   - id: runtime-readiness
     title: API health/readiness and PM2 readiness distinction
     execution: fixed_local_health_probe
     safety_class: PASSIVE
     required_capability: security.assurance.runtime
     suites: [smoke, standard, deep, adversarial]
-    stride: [Denial of Service]
-    owasp: []
+    stride: [Denial of Service, Information Disclosure]
+    owasp: [A05]
     controls: [CTRL-API-CONTROL]
     attack_paths: [AP-07, AP-11, AP-12]
+    precondition: The registered Pocket Lab runtime is expected to be locally reachable.
+    action: Probe fixed API/Caddy readiness and compare with bounded worker/NATS/JetStream process posture.
+    expected_invariant: Runtime readiness is based on API, message-bus, and worker truth rather than PM2 online alone.
+    pass_condition: Fixed health/readiness, NATS/JetStream, and worker checks satisfy admission policy.
+    fail_condition: Runtime reports healthy while required control-plane dependencies are unavailable.
+    blocked_condition: Required local readiness evidence cannot be observed.
+    cleanup: None; passive fixed local readiness checks.
+    normalized_evidence: Boolean readiness checks, status codes, and sanitized failure classes.
+    evidence_tools: [nmap, testssl.sh]
+    coverage_cases:
+      - id: required-listener-missing
+        threat: A required Pocket Lab listener disappears while process posture looks healthy.
+        expected_invariant: Readiness must expose the missing control-plane dependency.
+      - id: unexpected-listener-exposure
+        threat: Pocket Lab-owned service exposure drifts beyond the registered listener contract.
+        expected_invariant: External nmap evidence remains limited to and compared with the owned fixed listener set.
+      - id: nats-monitor-unexpectedly-exposed
+        threat: NATS monitoring escapes its intended loopback boundary.
+        expected_invariant: NATS monitor remains loopback-only in the registered runtime contract.
+      - id: opa-unexpectedly-exposed
+        threat: Loopback OPA becomes an externally reachable application surface.
+        expected_invariant: OPA remains loopback/internal and never browser-owned.
+      - id: remote-access-not-ready-truthfulness
+        threat: Remote access is presented as ready when required local control-plane readiness is absent.
+        expected_invariant: Readiness remains evidence-backed and fail-closed.
+
   - id: control-plane-ownership
     title: Assurance execution remains FastAPI to NATS to worker owned
     execution: worker_execution_receipt
@@ -53,6 +156,28 @@ scenarios:
     owasp: [A01, A08, A09]
     controls: [CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS]
     attack_paths: [AP-01, AP-02, AP-04, AP-06]
+    precondition: Runtime assurance is registered in domain commands and the worker durable consumer is observable.
+    action: Inspect fixed FastAPI/NATS/worker ownership markers and durable-consumer health.
+    expected_invariant: Browser clients cannot choose NATS subjects or commands; worker execution remains on the registered subject and domain handler.
+    pass_condition: Fixed subject, domain handler, worker route, JetStream, and durable consumer are all present/healthy.
+    fail_condition: A browser/arbitrary-command surface exists or the registered worker path is absent/unhealthy.
+    blocked_condition: Canonical source or sanitized bus posture is unavailable.
+    cleanup: None; passive ownership/evidence inspection.
+    normalized_evidence: Fixed subject/handler booleans and sanitized bus health only.
+    coverage_cases:
+      - id: arbitrary-nats-subject-denied
+        threat: Caller chooses an arbitrary NATS subject.
+        expected_invariant: Caller input never controls the assurance subject.
+      - id: arbitrary-command-envelope-denied
+        threat: Caller supplies command payload/argv instead of a registered scenario.
+        expected_invariant: FastAPI constructs the complete command envelope.
+      - id: durable-consumer-truthfulness
+        threat: Worker process is online but no durable command consumer is healthy.
+        expected_invariant: Durable consumer health is included in execution ownership truth.
+      - id: duplicate-operation-boundary
+        threat: Duplicate client submissions create unbounded parallel assurance work.
+        expected_invariant: Admission/idempotency remains server-owned and one-active-run bounded.
+
   - id: evidence-redaction
     title: Assurance evidence contains only normalized sanitized output
     execution: redaction_contract
@@ -63,16 +188,70 @@ scenarios:
     owasp: [A02, A05, A08, A09]
     controls: [CTRL-EVIDENCE-SANITIZE]
     attack_paths: [AP-05, AP-06, AP-08]
+    precondition: The existing evidence sanitizer is available.
+    action: Redact a fixed synthetic secret-shaped canary fixture and inspect only normalized output.
+    expected_invariant: Secret-like values, credentials, private-key material, cookies, and NATS credential shapes never survive normalized persistence.
+    pass_condition: No synthetic canary marker remains after recursive sanitization.
+    fail_condition: Any synthetic canary survives normalized sanitization.
+    blocked_condition: Sanitizer cannot be invoked safely.
+    cleanup: Synthetic canaries are in-memory only and are never persisted as raw evidence.
+    normalized_evidence: Canary count, leak count, redaction booleans, and sanitization markers.
+    coverage_cases:
+      - id: redaction-canary
+        threat: Sanitizer regression leaks a known synthetic marker.
+        expected_invariant: All synthetic markers are removed.
+      - id: secret-like-result-redaction
+        threat: Secret-shaped scanner content is copied into normalized findings.
+        expected_invariant: Secret-shaped values are redacted before persistence.
+      - id: authorization-header-redaction
+        threat: Authorization material enters evidence/report output.
+        expected_invariant: Authorization values never survive sanitization.
+      - id: cookie-redaction
+        threat: Session cookies enter evidence/report output.
+        expected_invariant: Cookie values never survive sanitization.
+      - id: nats-credential-redaction
+        threat: NATS credential-shaped fields leak through nested metadata.
+        expected_invariant: NATS credentials are recursively redacted.
+
   - id: security-projection
     title: Existing Security projection and scanner lifecycle are available
     execution: existing_security_projection
     safety_class: PASSIVE
     required_capability: security.assurance.sca
     suites: [smoke, standard, deep]
-    stride: [Tampering, Repudiation, Denial of Service]
-    owasp: [A06, A08, A09]
+    stride: [Tampering, Repudiation, Denial of Service, Information Disclosure]
+    owasp: [A05, A06, A08, A09]
     controls: [CTRL-EVIDENCE-SANITIZE, CTRL-EXECUTION-OWNERS]
     attack_paths: [AP-04, AP-05, AP-06, AP-08]
+    precondition: No unrelated Security scan is active and resource admission permits the registered Quick/Full profile.
+    action: Reuse the existing worker-owned Pocket Lab Security/Lynis/Trivy lifecycle selected by the suite.
+    expected_invariant: Scanner work remains worker-owned, sequential/resource-bounded, excludes user media, and produces normalized sanitized findings/evidence.
+    pass_condition: Existing Security lifecycle reaches a terminal result with registered tool records and normalized findings/evidence.
+    fail_condition: Scanner execution fails, produces unsafe evidence, or high/critical normalized findings remain open.
+    blocked_condition: Resource guard, scanner conflict, missing tool, or durable deadline prevents safe execution.
+    cleanup: Existing Security subprocess-group cleanup and assurance child reconciliation own cleanup.
+    normalized_evidence: Registered tool results, normalized findings, bounded evidence references, baseline delta, and resource metrics.
+    evidence_tools: [pocketlab-security, lynis, trivy]
+    coverage_cases:
+      - id: lynis-host-posture
+        threat: Host hardening posture regresses unnoticed.
+        expected_invariant: Registered Lynis host posture evidence is normalized through the existing Security lifecycle.
+      - id: trivy-vulnerability-evidence
+        threat: Vulnerable packages/components are missed by the assurance evidence path.
+        expected_invariant: Registered Trivy vulnerability evidence is normalized without raw scanner output.
+      - id: trivy-misconfiguration-evidence
+        threat: Security-relevant configuration drift is not represented.
+        expected_invariant: Registered Trivy misconfiguration evidence is normalized when applicable.
+      - id: trivy-secret-evidence
+        threat: Secret-shaped repository/runtime configuration content is exposed rather than safely classified.
+        expected_invariant: Secret findings are normalized and redacted; user media remains excluded.
+      - id: baseline-delta-integrity
+        threat: New/regressed/resolved finding state becomes inconsistent across qualifications.
+        expected_invariant: Stable keys produce deterministic NEW/REGRESSED/RESOLVED/UNCHANGED delta classifications.
+      - id: scanner-output-malformed
+        threat: Malformed/incomplete scanner results are treated as healthy evidence.
+        expected_invariant: Missing, partial, timed-out, and failed tool states remain explicit and never become PASS silently.
+
   - id: policy-readiness
     title: OPA loopback readiness and policy revision consistency
     execution: existing_opa_status
@@ -83,6 +262,29 @@ scenarios:
     owasp: [A01, A08]
     controls: [CTRL-POLICY-REVISION-LIFECYCLE]
     attack_paths: [AP-11, AP-12, AP-14]
+    precondition: The existing OPA runtime status projection is available.
+    action: Read the existing loopback OPA readiness/policy status without mutating policy state.
+    expected_invariant: Policy admission remains loopback-only, browser-hidden, revision-aware, and fail-closed when not ready.
+    pass_condition: Existing policy status is ready and preserves loopback/internal ownership.
+    fail_condition: Policy engine becomes browser-exposed or reports unsafe/ambiguous authority.
+    blocked_condition: Policy status is unavailable or degraded; this remains BLOCKED rather than PASS.
+    cleanup: None; passive existing status projection only.
+    normalized_evidence: Ready/degraded status, loopback/browser exposure booleans, and sanitized reason code.
+    evidence_tools: [opa]
+    coverage_cases:
+      - id: opa-unavailable-fail-closed
+        threat: Policy engine outage silently permits protected actions.
+        expected_invariant: Unavailable/degraded OPA posture is BLOCKED, never inferred PASS.
+      - id: policy-source-runtime-mismatch
+        threat: Active runtime policy differs from expected source revision.
+        expected_invariant: Policy readiness remains revision-aware and mismatches are not hidden.
+      - id: stale-policy-revision
+        threat: Stale policy state is represented as current authority.
+        expected_invariant: Existing lifecycle status exposes non-ready/stale state.
+      - id: protected-target-policy-bypass
+        threat: Browser/external transport bypasses OPA-protected control API policy.
+        expected_invariant: Policy engine remains internal and API-owned.
+
   - id: source-boundaries
     title: Canonical source preserves browser, shell, NATS, and user-media boundaries
     execution: bounded_source_assertions
@@ -93,6 +295,29 @@ scenarios:
     owasp: [A01, A02, A05, A08]
     controls: [CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS, CTRL-EVIDENCE-SANITIZE]
     attack_paths: [AP-01, AP-02, AP-04, AP-05, AP-07]
+    precondition: Canonical tracked frontend/backend source is available at the exact qualified revision.
+    action: Inspect a bounded tracked frontend inventory plus fixed backend/Caddy/evidence ownership markers.
+    expected_invariant: Frontend contains no direct NATS or shell execution surface and checked backend/Caddy evidence boundaries remain present.
+    pass_condition: No suspicious frontend NATS/shell markers are found and all fixed ownership/header/exclusion markers exist.
+    fail_condition: A direct frontend execution/event-bus path or required backend boundary marker is detected missing.
+    blocked_condition: Git/source inventory cannot be loaded within bounds.
+    cleanup: None; read-only exact-revision source inspection.
+    normalized_evidence: File/byte counts, match counts, fixed marker booleans, and no source excerpts.
+    evidence_tools: [bandit, semgrep, gitleaks]
+    coverage_cases:
+      - id: frontend-direct-nats-regression
+        threat: Browser starts publishing/subscribing directly to NATS/JetStream.
+        expected_invariant: No direct frontend NATS implementation marker exists.
+      - id: frontend-shell-regression
+        threat: Browser gains shell/process execution.
+        expected_invariant: No frontend child-process/shell execution implementation marker exists.
+      - id: user-media-exclusion-contract
+        threat: Security assurance begins traversing user/PhotoPrism media.
+        expected_invariant: Evidence/media exclusion markers remain canonical and runtime state is not traversed by this source probe.
+      - id: caddy-harness-header-strip-source
+        threat: Proxy configuration stops stripping harness authority headers.
+        expected_invariant: Checked Caddy source markers continue to enforce direct-loopback harness authority.
+
   - id: adversarial-negative-auth-probes
     title: Fixed malformed authentication and input probes remain denied
     execution: fixed_negative_auth_probes
@@ -103,6 +328,46 @@ scenarios:
     owasp: [A01, A03, A07]
     controls: [CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS]
     attack_paths: [AP-01, AP-02, AP-03, AP-04, AP-09, AP-10]
+    precondition: Direct loopback FastAPI is reachable; no valid credential material is supplied by the probe executor.
+    action: Execute the fixed malformed bootstrap/session/input/report/cancel request table owned by the server.
+    expected_invariant: Every fixed malformed/forged request is rejected without creating authority or intentional persistent mutation.
+    pass_condition: Every fixed probe returns a 4xx rejection and no valid authority material is sent.
+    fail_condition: Any fixed probe creates a session/grant/accepted authority response or succeeds unexpectedly.
+    blocked_condition: Direct loopback API cannot be reached safely.
+    cleanup: No valid authority material is created; persistent state is not intentionally mutated by the probe table.
+    normalized_evidence: Probe ID, fixed method/path identity, status code, rejection boolean, bounded response metadata, and duration.
+    coverage_cases:
+      - id: bootstrap-grant-replay
+        threat: Unknown/replayed bootstrap grant is accepted.
+        expected_invariant: Unknown grant/challenge material remains rejected.
+      - id: challenge-replay
+        threat: Replayed/unknown signing challenge creates a session.
+        expected_invariant: Unknown or already-invalid challenge cannot create authority.
+      - id: expired-challenge
+        threat: Expired/unknown challenge bypasses freshness enforcement.
+        expected_invariant: Expired or unknown challenge is rejected.
+      - id: wrong-bootstrap-key
+        threat: Invalid bootstrap public-key material is accepted.
+        expected_invariant: Invalid key material is rejected before authority exists.
+      - id: wrong-bootstrap-signature
+        threat: Forged bootstrap signature completes provisioning.
+        expected_invariant: Invalid signature cannot complete bootstrap.
+      - id: wrong-purpose-profile-target
+        threat: Purpose/profile/target binding is broadened by request input.
+        expected_invariant: Unregistered binding request is rejected.
+      - id: forged-session
+        threat: Caller-supplied fake harness session creates assurance authority.
+        expected_invariant: Forged session remains unauthorized.
+      - id: malformed-json-rejection
+        threat: Malformed request parsing bypasses normal authorization/input validation.
+        expected_invariant: Malformed JSON is rejected safely.
+      - id: unauthorized-report-access
+        threat: Unauthenticated caller reads another qualification report.
+        expected_invariant: Report access requires the bound harness principal/session.
+      - id: unauthorized-cancel
+        threat: Unauthenticated caller cancels another principal's run.
+        expected_invariant: Cancel requires bound principal authority.
+
   - id: threat-model-integrity
     title: Current canonical threat model is complete and executable statuses are explicit
     execution: canonical_threat_model_check
@@ -113,6 +378,28 @@ scenarios:
     owasp: [A08, A09]
     controls: [CTRL-EVIDENCE-SANITIZE]
     attack_paths: [AP-01, AP-02, AP-03, AP-04, AP-05, AP-06, AP-07, AP-08, AP-09, AP-10, AP-11, AP-12, AP-13, AP-14]
+    precondition: Canonical threat model, tool, suite, scenario, and fault registries are available at the exact revision.
+    action: Validate canonical identifiers, controls, capabilities, suite membership, fixed tool contracts, and AP coverage.
+    expected_invariant: Every current AP path is classified by registered assurance coverage and every reference resolves to canonical source.
+    pass_condition: Registry validation completes without duplicate/unknown/unsafe references.
+    fail_condition: Any AP/control/suite/tool/capability reference is invalid or coverage is incomplete.
+    blocked_condition: Canonical registry/threat-model source is unavailable or too large/invalid.
+    cleanup: None; deterministic source validation only.
+    normalized_evidence: Registry hashes, canonical IDs, execution defaults, retry policy, and coverage lists.
+    coverage_cases:
+      - id: duplicate-ap-id
+        threat: Duplicate attack-path identifiers make traceability ambiguous.
+        expected_invariant: AP identifiers remain unique and schema-valid.
+      - id: invalid-stride-mapping
+        threat: Scenario mapping uses a non-canonical STRIDE category.
+        expected_invariant: STRIDE mappings resolve to the canonical six categories.
+      - id: invalid-owasp-mapping
+        threat: Scenario mapping claims unsupported OWASP categories.
+        expected_invariant: OWASP mappings are limited to Top 10 2021 identifiers.
+      - id: unknown-control-mapping
+        threat: Scenario claims a mitigation that is not canonical.
+        expected_invariant: Every referenced control exists in the canonical threat model.
+
   - id: attack-path-inventory
     title: Every current AP path has a bounded execution classification
     execution: attack_path_inventory
@@ -123,3 +410,18 @@ scenarios:
     owasp: [A01, A02, A07, A08, A09]
     controls: [CTRL-EVIDENCE-SANITIZE]
     attack_paths: [AP-01, AP-02, AP-03, AP-04, AP-05, AP-06, AP-07, AP-08, AP-09, AP-10, AP-11, AP-12, AP-13, AP-14]
+    precondition: Canonical threat-model attack paths can be loaded safely.
+    action: Classify every AP path as executable now, partially executable, static evidence only, or human review required.
+    expected_invariant: No current AP path is silently treated as tested; coverage limitations remain explicit.
+    pass_condition: Every current AP path receives exactly one bounded execution classification.
+    fail_condition: A canonical AP path is missing or receives no truthful classification.
+    blocked_condition: Canonical threat model cannot be loaded safely.
+    cleanup: None; passive inventory only.
+    normalized_evidence: AP ID/name, classification, reason, STRIDE/OWASP mapping, controls, and human-review flag.
+    coverage_cases:
+      - id: human-review-not-pass
+        threat: Human-only controls are converted into automated PASS claims.
+        expected_invariant: HUMAN_REVIEW_REQUIRED and STATIC_EVIDENCE_ONLY remain visibly non-runtime classifications.
+      - id: scanner-not-attack-path
+        threat: A new tool is incorrectly modeled as a new attack path.
+        expected_invariant: AP identifiers describe threat paths, not scanners.
