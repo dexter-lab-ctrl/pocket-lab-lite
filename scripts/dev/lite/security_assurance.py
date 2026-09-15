@@ -285,6 +285,28 @@ def _load_continuity(path: Path) -> dict:
     return {key: raw[key] for key in CONTINUITY_KEYS if key in raw and isinstance(raw[key], (str, int))}
 
 
+def _reset_continuity_for_identity_change(state: dict, *, principal_id: str, fingerprint: str) -> None:
+    """Discard a prior run attachment when the requested identity changes.
+
+    Continuity is intentionally bound to both the synthetic principal and its
+    public-key fingerprint.  A client may retain an interrupted run after a
+    transport failure, but that run must never prevent an explicitly selected
+    new disposable principal from bootstrapping, nor may it be attached with a
+    different key.  Only run-attachment fields are removed; the caller writes
+    the new non-secret identity immediately afterwards.
+    """
+    existing_principal = str(state.get("principal_id") or "").strip().casefold()
+    existing_fingerprint = str(state.get("public_key_fingerprint") or "").strip().casefold()
+    requested_principal = str(principal_id or "").strip().casefold()
+    requested_fingerprint = str(fingerprint or "").strip().casefold()
+    if not existing_principal or not existing_fingerprint:
+        return
+    if existing_principal == requested_principal and existing_fingerprint == requested_fingerprint:
+        return
+    for key in ("active_run_id", "suite_id", "scenario_id", "last_event_sequence", "runtime_id", "revision_sha"):
+        state.pop(key, None)
+
+
 def _write_continuity(path: Path, state: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     safe = {
@@ -842,6 +864,11 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
     principal_id = str(args.principal_id or state.get("principal_id") or DEFAULT_PRINCIPAL_ID).strip().casefold()
     key_path = Path(args.key_file).expanduser() if args.key_file else Path(str(state.get("private_key_file_path") or DEFAULT_KEY_FILE))
     key_path, fingerprint = _ensure_qualification_key(key_path)
+    _reset_continuity_for_identity_change(
+        state,
+        principal_id=principal_id,
+        fingerprint=fingerprint,
+    )
     state.update({
         "principal_id": principal_id,
         "public_key_fingerprint": fingerprint,

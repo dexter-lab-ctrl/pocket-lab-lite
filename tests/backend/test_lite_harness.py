@@ -442,6 +442,60 @@ def test_assurance_client_continuity_is_bounded_and_does_not_persist_tokens(harn
     assert client._should_reauthenticate(RuntimeError("run_not_found: rejected")) is False
 
 
+def test_assurance_client_discards_stale_run_when_identity_changes(tmp_path):
+    script = Path("scripts/dev/lite/security_assurance.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_identity_continuity", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+
+    state = {
+        "principal_id": "old-assurance-runner",
+        "public_key_fingerprint": "sha256:" + "a" * 64,
+        "active_run_id": "assurance-" + "b" * 32,
+        "suite_id": "standard",
+        "scenario_id": "security-projection",
+        "last_event_sequence": 12,
+        "runtime_id": "runtime-old",
+        "revision_sha": "c" * 40,
+    }
+    client._reset_continuity_for_identity_change(
+        state,
+        principal_id="new-assurance-runner",
+        fingerprint="sha256:" + "d" * 64,
+    )
+
+    assert "active_run_id" not in state
+    assert "suite_id" not in state
+    assert "scenario_id" not in state
+    assert "last_event_sequence" not in state
+    assert "runtime_id" not in state
+    assert "revision_sha" not in state
+
+
+def test_assurance_client_keeps_matching_identity_continuity(tmp_path):
+    script = Path("scripts/dev/lite/security_assurance.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_matching_continuity", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+
+    state = {
+        "principal_id": "assurance-runner",
+        "public_key_fingerprint": "sha256:" + "a" * 64,
+        "active_run_id": "assurance-" + "b" * 32,
+        "suite_id": "standard",
+    }
+    client._reset_continuity_for_identity_change(
+        state,
+        principal_id="ASSURANCE-RUNNER",
+        fingerprint="SHA256:" + "A" * 64,
+    )
+
+    assert state["active_run_id"] == "assurance-" + "b" * 32
+    assert state["suite_id"] == "standard"
+
+
 def test_assurance_client_ensure_lease_renews_with_keyword_arguments(tmp_path, monkeypatch):
     script = Path("scripts/dev/lite/security_assurance.py").resolve()
     spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_ensure_lease", script)
