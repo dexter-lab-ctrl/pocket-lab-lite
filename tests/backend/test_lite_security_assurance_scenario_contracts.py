@@ -102,7 +102,8 @@ def test_tool_backed_scenarios_remain_fixed_and_bounded():
     assert nuclei["execution_lane"] == "dev_pc_live_runtime"
     assert nuclei["fixed_target"] == "approved_server_phone_api_tunnel"
     assert nuclei["template_allowlist"] == "security/assurance/nuclei-safe-templates"
-    assert nuclei["ruleset"] == "checked_in_safe_templates_only"
+    assert nuclei["ruleset"] == "security/assurance/nuclei-safe-templates"
+    assert "-templates" in nuclei["fixed_argv"]
     nmap = tools["nmap"]
     assert nmap["fixed_target"] == "approved_loopback_listener_set"
     joined_nmap = " ".join(nmap["fixed_argv"])
@@ -110,11 +111,15 @@ def test_tool_backed_scenarios_remain_fixed_and_bounded():
     assert "-p-" not in joined_nmap
     zap = tools["owasp-zap"]
     assert zap["execution_lane"] == "dev_pc_live_runtime"
-    assert "baseline" in str(zap["allowed_mode"]).lower()
+    assert zap["suite_membership"] == ["deep"]
+    assert zap["ruleset"] == "fixed_api_baseline_profile"
+    assert zap["template_allowlist"] == "fixed_safe_api_routes"
     schemathesis = tools["schemathesis"]
-    assert "GET" in " ".join(schemathesis["fixed_argv"]).upper()
+    assert "get_only" in schemathesis["fixed_argv"]
+    assert schemathesis["template_allowlist"] == "safe_get_routes_only"
     testssl = tools["testssl.sh"]
     assert testssl["fixed_target"] == "approved_server_phone_caddy_tls_tunnel"
+    assert "--fast" in testssl["fixed_argv"]
 
 
 def test_scenario_evidence_tool_references_are_registered():
