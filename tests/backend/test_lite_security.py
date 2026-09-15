@@ -34,6 +34,47 @@ def test_lite_security_default_state_is_stable():
     assert payload["guidance"] == []
 
 
+def test_sqlite_security_tool_projection_preserves_only_bounded_version_metadata():
+    from api_fastapi.services import lite_security
+
+    class Repository:
+        def list_tool_runs(self, _run_id, *, limit):
+            assert limit == 20
+            return [
+                {
+                    "tool_name": "lynis",
+                    "status": "completed",
+                    "finding_count": 0,
+                    "started_at": "2026-09-14T12:00:00Z",
+                    "completed_at": "2026-09-14T12:00:01.250Z",
+                    "duration_ms": None,
+                    "metadata": {
+                        "tool_version": "3.1.6",
+                        "raw_stdout": "must not be projected",
+                    },
+                },
+                {
+                    "tool_name": "trivy",
+                    "status": "reused",
+                    "finding_count": 1,
+                    "duration_ms": 12,
+                    "metadata": {
+                        "scanner_version": "dev",
+                        "raw_secret": "must not be projected",
+                    },
+                },
+            ]
+
+    projected = lite_security._sqlite_tool_results(Repository(), "security-test")
+    assert projected["lynis"]["tool_version"] == "3.1.6"
+    assert projected["lynis"]["duration_ms"] == 1250
+    assert projected["trivy"]["tool_version"] == "dev"
+    assert projected["trivy"]["duration_ms"] == 12
+    dumped = json.dumps(projected)
+    assert "raw_stdout" not in dumped
+    assert "raw_secret" not in dumped
+
+
 def test_lite_security_check_queues_worker_command(monkeypatch):
     from api_fastapi.services import lite_security
     from api_fastapi.services.nats_bus import BUS
@@ -114,6 +155,9 @@ def test_trivy_secret_findings_are_redacted_and_critical(tmp_path, monkeypatch):
         bin_dir / "lynis",
         """
 import sys
+if sys.argv[1:] == ['--version']:
+    print('Lynis 3.1.6')
+    raise SystemExit(0)
 print('Lynis quick scan completed')
 raise SystemExit(0)
 """,
@@ -156,6 +200,8 @@ raise SystemExit(0)
     assert state["last_run"]["high_count"] == 1
     assert state["score"] == 55
     assert state["critical_issues"][0]["category"] == "secret_exposure"
+    assert state["last_run"]["tool_results"]["lynis"]["tool_version"] == "Lynis 3.1.6"
+    assert state["last_run"]["tool_results"]["trivy"]["tool_version"] == "test-trivy"
     assert trivy_call_log.read_text(encoding="utf-8").splitlines() == ["vuln,misconfig,secret", "cyclonedx"]
 
     evidence_payload = lite_security.read_evidence("security-critical")
@@ -344,6 +390,21 @@ def test_quick_trivy_cache_misses_when_git_identity_is_uncertain(tmp_path, monke
 def test_quick_trivy_cache_misses_when_db_identity_is_unknown(tmp_path, monkeypatch):
     lite_security, call_log = _prepare_quick_cache_tools(tmp_path, monkeypatch)
     monkeypatch.setattr(lite_security, "_trivy_database_identity", lambda: None)
+    monkeypatch.setattr(
+        lite_security,
+        "_trivy_database_status",
+        lambda: {
+            "status": "unavailable",
+            "revision": None,
+            "version": None,
+            "updated_at": None,
+            "valid_until": None,
+            "stale_by_seconds": None,
+            "refresh_due": True,
+            "metadata_source": "unavailable",
+            "sanitized": True,
+        },
+    )
 
     result = lite_security.run_security_scan({"command_id": "security-cache-no-db", "run_id": "security-cache-no-db"})
     trivy_result = result["state"]["last_run"]["tool_results"]["trivy"]

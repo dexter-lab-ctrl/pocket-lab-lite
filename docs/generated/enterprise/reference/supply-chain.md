@@ -28,13 +28,13 @@ Heavy tools run only through explicit WSL2/CI tasks. MkDocs never invokes them. 
 | jsonschema | 4.26 | PyPI | yes | development Python dependency | development | unobserved until ScanCode/SBOM evidence | present-in-baseline |
 | jsonschema | 4.26.0 | PyPI | yes | development Python dependency | development | unobserved until ScanCode/SBOM evidence | present-in-baseline |
 | mkdocs | 1.6.1 | PyPI | yes | development Python dependency | development | unobserved until ScanCode/SBOM evidence | present-in-baseline |
-| mkdocs-material | 9.7.6 | PyPI | yes | development Python dependency | development | unobserved until ScanCode/SBOM evidence | present-in-baseline |
+| mkdocs-material | 9.7.7 | PyPI | yes | development Python dependency | development | unobserved until ScanCode/SBOM evidence | version-changed-since-baseline |
 | mypy | 1.10 | PyPI | yes | development Python dependency | development | unobserved until ScanCode/SBOM evidence | present-in-baseline |
 | nats-py | 2.7.2 | PyPI | yes | runtime Python dependency | runtime | unobserved until ScanCode/SBOM evidence | present-in-baseline |
 | openapi-spec-validator | 0.7.2,<1.0 | PyPI | yes | development Python dependency | development | unobserved until ScanCode/SBOM evidence | present-in-baseline |
 | pre-commit | 3.7 | PyPI | yes | development Python dependency | development | unobserved until ScanCode/SBOM evidence | present-in-baseline |
 | pydantic | 2.7.0 | PyPI | yes | runtime Python dependency | runtime | unobserved until ScanCode/SBOM evidence | present-in-baseline |
-| pymdown-extensions | 10.21.3 | PyPI | yes | development Python dependency | development | unobserved until ScanCode/SBOM evidence | present-in-baseline |
+| pymdown-extensions | 11.0.1 | PyPI | yes | development Python dependency | development | unobserved until ScanCode/SBOM evidence | version-changed-since-baseline |
 | pytest | 8.0 | PyPI | yes | development Python dependency | development | unobserved until ScanCode/SBOM evidence | present-in-baseline |
 | pytest-asyncio | 0.23 | PyPI | yes | development Python dependency | development | unobserved until ScanCode/SBOM evidence | present-in-baseline |
 | pytest-cov | 5.0 | PyPI | yes | development Python dependency | development | unobserved until ScanCode/SBOM evidence | present-in-baseline |

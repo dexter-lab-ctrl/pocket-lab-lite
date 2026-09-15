@@ -47,12 +47,52 @@ class SessionRequest(BaseModel):
     ttl_seconds: int | None = Field(default=None, ge=60, le=3600)
 
 
+class BootstrapGrantRequest(BaseModel):
+    """Public inputs for the operator-approved assurance bootstrap."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    principal_id: str = Field(min_length=3, max_length=80, pattern=r"^[a-z][a-z0-9._-]{2,79}$")
+    public_key: str = Field(min_length=40, max_length=64)
+
+
+class BootstrapChallengeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    grant_id: str = Field(min_length=36, max_length=40, pattern=r"^hbg-[0-9a-f]{32}$")
+
+
+class BootstrapCompleteRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    challenge_id: str = Field(min_length=36, max_length=40, pattern=r"^hbc-[0-9a-f]{32}$")
+    grant_id: str = Field(min_length=36, max_length=40, pattern=r"^hbg-[0-9a-f]{32}$")
+    principal_id: str = Field(min_length=3, max_length=80, pattern=r"^[a-z][a-z0-9._-]{2,79}$")
+    public_key: str = Field(min_length=40, max_length=64)
+    signature: str = Field(min_length=80, max_length=100)
+    ttl_seconds: int | None = Field(default=None, ge=60, le=3600)
+
+
 def _require_direct(request: Request) -> None:
     if not lite_harness.is_direct_local_request(request):
         raise HTTPException(
             status_code=401,
             headers={"Cache-Control": "no-store"},
             detail={"reason_code": "harness_transport_rejected", "message": "The harness requires direct loopback transport.", "sanitized": True},
+        )
+
+
+def _require_bootstrap_direct(request: Request) -> None:
+    _require_direct(request)
+    if lite_harness.harness_headers_present(request):
+        raise HTTPException(
+            status_code=401,
+            headers={"Cache-Control": "no-store"},
+            detail={
+                "reason_code": "bootstrap_transport_rejected",
+                "message": "Bootstrap authority cannot be supplied through harness or proxy headers.",
+                "sanitized": True,
+            },
         )
 
 
@@ -66,6 +106,62 @@ def _raise(exc: lite_harness.HarnessError) -> None:
 
 def _no_store(response: Response) -> None:
     response.headers["Cache-Control"] = "no-store"
+
+
+@router.post("/bootstrap/grants", status_code=201)
+def bootstrap_grant(
+    payload: BootstrapGrantRequest,
+    request: Request,
+    response: Response,
+) -> dict[str, Any]:
+    """Create a process-ephemeral, key-bound grant after operator startup approval."""
+    _require_bootstrap_direct(request)
+    try:
+        result = lite_harness.create_bootstrap_grant(
+            principal_id=payload.principal_id,
+            public_key=payload.public_key,
+        )
+    except lite_harness.HarnessError as exc:
+        _raise(exc)
+    _no_store(response)
+    return result
+
+
+@router.post("/bootstrap/challenge")
+def bootstrap_challenge(
+    payload: BootstrapChallengeRequest,
+    request: Request,
+    response: Response,
+) -> dict[str, Any]:
+    _require_bootstrap_direct(request)
+    try:
+        result = lite_harness.issue_bootstrap_challenge(grant_id=payload.grant_id)
+    except lite_harness.HarnessError as exc:
+        _raise(exc)
+    _no_store(response)
+    return result
+
+
+@router.post("/bootstrap/complete", status_code=201)
+def bootstrap_complete(
+    payload: BootstrapCompleteRequest,
+    request: Request,
+    response: Response,
+) -> dict[str, Any]:
+    _require_bootstrap_direct(request)
+    try:
+        result = lite_harness.complete_bootstrap(
+            challenge_id=payload.challenge_id,
+            grant_id=payload.grant_id,
+            principal_id=payload.principal_id,
+            public_key=payload.public_key,
+            signature=payload.signature,
+            ttl_seconds=payload.ttl_seconds,
+        )
+    except lite_harness.HarnessError as exc:
+        _raise(exc)
+    _no_store(response)
+    return result
 
 
 @router.get("/capabilities")
@@ -114,6 +210,30 @@ def revoke_principal(principal_id: str, request: Request, response: Response) ->
         _raise(lite_harness.HarnessError("harness_provisioning_rejected", "Synthetic-principal revocation was not authorized.", status_code=401))
     try:
         result = lite_harness.revoke_principal(principal_id)
+    except lite_harness.HarnessError as exc:
+        _raise(exc)
+    _no_store(response)
+    return result
+
+
+@router.post("/principal/revoke")
+def revoke_authenticated_principal(request: Request, response: Response) -> dict[str, Any]:
+    """Allow a bootstrap-created assurance principal to revoke itself.
+
+    This is intentionally narrower than provisioning-token revocation: the
+    signed session must be direct-loopback, bound to the assurance profile, and
+    hold the server-owned cleanup capability.
+    """
+    _require_direct(request)
+    try:
+        auth = lite_harness.authenticate_request(request)
+        lite_harness.enforce_capability(
+            auth,
+            action_id="security.assurance.cleanup",
+            target_type="security_assurance",
+            target_id="local-server",
+        )
+        result = lite_harness.revoke_authenticated_principal(auth)
     except lite_harness.HarnessError as exc:
         _raise(exc)
     _no_store(response)

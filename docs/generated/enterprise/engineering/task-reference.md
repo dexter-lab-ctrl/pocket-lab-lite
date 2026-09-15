@@ -15,11 +15,11 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 | Workflow | Task count |
 | --- | --- |
-| Development loop | 56 |
+| Development loop | 58 |
 | Documentation loop | 55 |
 | API-validation loop | 12 |
 | Runtime-evidence loop | 24 |
-| Security-analysis loop | 8 |
+| Security-analysis loop | 26 |
 | Release loop | 19 |
 | Recovery-diagnostics loop | 6 |
 
@@ -3946,6 +3946,74 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Example:** `task lite:har:sanitize`
 
+## `lite:harness:bootstrap`
+
+**Purpose:** Complete the one-use key-bound assurance bootstrap without printing the session token
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/harness.py bootstrap --principal-id "{{.PRINCIPAL_ID}}" --key-file "{{.KEY_FILE}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/harness.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=True; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=False; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:harness:bootstrap`
+
+## `lite:harness:keygen`
+
+**Purpose:** Create disposable 0600 Ed25519 qualification key material outside the repository
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/harness.py keygen --key-file "{{.KEY_FILE}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/harness.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:harness:keygen`
+
 ## `lite:harness:principal:create`
 
 **Purpose:** Register public Ed25519 material with a server-owned profile
@@ -4183,6 +4251,618 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:qualification:start`
+
+## `lite:qualification:start:key-bound`
+
+**Purpose:** Explicitly start qualification with operator-approved security-assurance public-key bootstrap
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `bash scripts/dev/lite/start-qualification.sh --bootstrap-principal-id "{{.PRINCIPAL_ID}}" --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}" --bootstrap-profile security-assurance-runner`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/start-qualification.sh
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=True; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=False; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:qualification:start:key-bound`
+
+## `lite:qualification:start:key-bound:faults`
+
+**Purpose:** Explicitly start key-bound qualification with the fixed non-destructive service-fault controls enabled
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `bash scripts/dev/lite/start-qualification.sh --bootstrap-principal-id "{{.PRINCIPAL_ID}}" --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}" --bootstrap-profile security-assurance-runner --enable-fault-control`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/start-qualification.sh
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=True; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=False; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:qualification:start:key-bound:faults`
+
+## `lite:security:assurance:adversarial`
+
+**Purpose:** Run the qualification-only fixed adversarial assurance suite
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance.py run adversarial`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:adversarial`
+
+## `lite:security:assurance:check`
+
+**Purpose:** Show the server-owned Runtime Security Assurance registry without starting a run
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance.py check`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:security:assurance:check`
+
+## `lite:security:assurance:compare`
+
+**Purpose:** Read one normalized runtime security assurance baseline delta
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance.py compare "{{.RUN_ID}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:compare`
+
+## `lite:security:assurance:deep`
+
+**Purpose:** Run the explicit manual-only Deep runtime security assurance suite
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance.py run deep`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:deep`
+
+## `lite:security:assurance:fault`
+
+**Purpose:** Execute one registered non-destructive qualification service-fault control
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance.py fault "{{.FAULT_ID}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:fault`
+
+## `lite:security:assurance:policy-sync`
+
+**Purpose:** Queue the current repository Safety Rules through the qualification-only supervisor lifecycle
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance.py policy-sync --wait-seconds "{{.WAIT_SECONDS}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=True; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:policy-sync`
+
+## `lite:security:assurance:preflight`
+
+**Purpose:** Run fixed local admission checks for one registered assurance suite
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance.py preflight "{{.SUITE}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:preflight`
+
+## `lite:security:assurance:qualify`
+
+**Purpose:** Run the bounded key-bound qualification workflow with renewal, reattach, and cleanup
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance.py qualify --principal-id "{{.PRINCIPAL_ID}}" --key-file "{{.KEY_FILE}}" --sync-policy --policy-sync-wait-seconds "{{.POLICY_SYNC_WAIT_SECONDS}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=True; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:qualify`
+
+## `lite:security:assurance:qualify:full`
+
+**Purpose:** Run phone qualification plus the fixed DEV-PC Standard and Deep tool lanes
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance.py qualify --principal-id "{{.PRINCIPAL_ID}}" --key-file "{{.KEY_FILE}}" --sync-policy --policy-sync-wait-seconds "{{.POLICY_SYNC_WAIT_SECONDS}}" --full`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=True; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:qualify:full`
+
+## `lite:security:assurance:report`
+
+**Purpose:** Read one sanitized runtime security assurance report
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance.py report "{{.RUN_ID}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:report`
+
+## `lite:security:assurance:scenario`
+
+**Purpose:** Run one registered scenario through the Standard assurance profile
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance.py scenario "{{.ID}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:scenario`
+
+## `lite:security:assurance:smoke`
+
+**Purpose:** Run the bounded Smoke runtime security assurance suite
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance.py run smoke`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:smoke`
+
+## `lite:security:assurance:standard`
+
+**Purpose:** Run the bounded Standard runtime security assurance suite
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance.py run standard`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:standard`
+
+## `lite:security:assurance:tools:check`
+
+**Purpose:** Check every registered assurance tool as READY, NOT_APPLICABLE, or FAILED
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance_toolchain.py check`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance_toolchain.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:security:assurance:tools:check`
+
+## `lite:security:assurance:tools:install`
+
+**Purpose:** Install or promote the fixed DEV-PC Runtime Security Assurance toolchain outside Git
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance_toolchain.py install`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance_toolchain.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=True; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=False; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:tools:install`
+
+## `lite:security:assurance:tools:run`
+
+**Purpose:** Run one fixed DEV-PC assurance tool lane for a registered suite
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance_toolchain.py run "{{.SUITE}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance_toolchain.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:tools:run`
 
 ## `lite:setup`
 

@@ -910,6 +910,27 @@ def canonical_reason_codes() -> list[dict[str, Any]]:
                 "user_message": "The requested Identity or Rules action could not continue."
             })
             known.add(code)
+    assurance_codes = metadata().get("security_assurance_reason_codes") or []
+    for code in assurance_codes:
+        code = str(code)
+        if not code or code in known:
+            continue
+        registry.append({
+            "audit_severity": "warning",
+            "code": code,
+            "deprecated_aliases": [],
+            "domain": "validation",
+            "event_mapping": [],
+            "http_status": 409,
+            "meaning": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+            "projection_mapping": [],
+            "retryable": True,
+            "source": "contracts/metadata/documentation-platform.json security_assurance_reason_codes",
+            "terminal": False,
+            "ui_mapping": [],
+            "user_message": "Runtime Security Assurance could not continue safely."
+        })
+        known.add(code)
     return sorted(registry, key=lambda item: str(item["code"]))
 
 

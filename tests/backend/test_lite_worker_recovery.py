@@ -198,3 +198,76 @@ def test_worker_renews_long_jetstream_delivery_ownership():
         return message.heartbeats
 
     assert asyncio.run(exercise()) >= 2
+
+
+def test_assurance_callback_renews_jetstream_delivery_ownership(monkeypatch):
+    """A long assurance callback must retain its delivery until it is acked."""
+    ensure_runtime_path()
+    worker = _load_worker_module()
+    from api_fastapi.services import (
+        domain_commands,
+        lite_security_assurance,
+        lite_security_maintenance,
+    )
+
+    monkeypatch.setattr(
+        lite_security_maintenance,
+        "worker_command_allowed",
+        lambda _subject: True,
+    )
+    monkeypatch.setattr(lite_security_assurance, "is_terminal", lambda _run_id: False)
+
+    heartbeat_started = False
+
+    async def fake_heartbeat(_message):
+        nonlocal heartbeat_started
+        heartbeat_started = True
+
+    executed = []
+
+    async def fake_execute(subject, command):
+        executed.append((subject, command))
+        await asyncio.sleep(0)
+        return {"status": "success"}
+
+    monkeypatch.setattr(worker, "_command_ack_heartbeat", fake_heartbeat)
+    monkeypatch.setattr(domain_commands, "execute_domain_command", fake_execute)
+
+    published = []
+
+    async def fake_publish(subject, event_type, data, *, trace_id=None):
+        published.append((subject, event_type, data, trace_id))
+
+    monkeypatch.setattr(worker, "publish", fake_publish)
+
+    class FakeBus:
+        def __init__(self):
+            self.acked = 0
+
+        def delivery_attempt(self, _message):
+            return 1
+
+        async def ack_message(self, _message):
+            self.acked += 1
+
+    fake_bus = FakeBus()
+    monkeypatch.setattr(worker, "BUS", fake_bus)
+
+    class Message:
+        subject = "pocketlab.commands.lite.security.assurance"
+        data = json.dumps(
+            {
+                "run_id": "assurance-heartbeat-run",
+                "command_id": "assurance-heartbeat-command",
+            }
+        ).encode()
+
+        async def in_progress(self):
+            return None
+
+    asyncio.run(worker.command_callback(Message()))
+
+    assert heartbeat_started is True
+    assert executed[0][0] == "pocketlab.commands.lite.security.assurance"
+    assert executed[0][1]["_worker_instance_id"] == worker.WORKER_NAME
+    assert fake_bus.acked == 1

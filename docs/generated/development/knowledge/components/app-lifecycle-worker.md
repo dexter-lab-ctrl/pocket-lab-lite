@@ -109,6 +109,7 @@ Owns install, repair, media import, backup, restore preview, update readiness/ap
 - recovers_with: `App installation failure`
 - related_to: `pocketlab.commands.lite.app.repair`
 - related_to: `pocketlab.commands.lite.app.update.check`
+- related_to: `pocketlab.commands.lite.security.assurance`
 - related_to: `pocketlab.events.operation.succeeded`
 - verified_by: `tests/backend/test_lite_control_plane_sqlite_p3.py`
 - verified_by: `tests/backend/test_lite_projection_semantic_hardening.py`

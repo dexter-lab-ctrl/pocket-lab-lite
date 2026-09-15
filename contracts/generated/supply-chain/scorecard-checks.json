@@ -12,9 +12,9 @@
     {
       "name": "Dangerous-Workflow",
       "provider": "openssf-scorecard",
-      "reason": "recorded-by-scorecard",
-      "score": 10,
-      "status": "observed"
+      "reason": "scorecard-compatible-check-not-returned",
+      "score": null,
+      "status": "unobserved"
     },
     {
       "blocking": false,
@@ -28,9 +28,9 @@
     {
       "name": "Pinned-Dependencies",
       "provider": "openssf-scorecard",
-      "reason": "recorded-by-scorecard",
-      "score": 2,
-      "status": "observed"
+      "reason": "scorecard-compatible-check-not-returned",
+      "score": null,
+      "status": "unobserved"
     },
     {
       "blocking": false,
@@ -44,9 +44,9 @@
     {
       "name": "Token-Permissions",
       "provider": "openssf-scorecard",
-      "reason": "recorded-by-scorecard",
-      "score": 0,
-      "status": "observed"
+      "reason": "scorecard-compatible-check-not-returned",
+      "score": null,
+      "status": "unobserved"
     }
   ],
   "compatible_checks": [
@@ -64,5 +64,5 @@
   ],
   "provider_unavailable_reason": "scorecard-provider-unsupported-request-type",
   "schema_version": "1.1.0",
-  "status": "observed-with-provider-limitations"
+  "status": "partial"
 }

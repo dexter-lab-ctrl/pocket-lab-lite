@@ -13,6 +13,7 @@ app_current_state
 workflow_event_index
 security_database_backups
 policy_revisions
+assurance_runs
 security_scan_runs
 auth_sessions
 policy_decision_details
@@ -22,6 +23,10 @@ webauthn_credentials
 device_lifecycle_events
 policy_activation_operations
 app_action_lifecycle
+assurance_execution_checkpoints
+assurance_findings
+assurance_scenarios
+assurance_tool_results
 device_awareness_state
 device_health_attention
 device_health_current

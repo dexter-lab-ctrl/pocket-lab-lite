@@ -7,6 +7,7 @@ import fnmatch
 import hashlib
 import json
 import logging
+import math
 import sqlite3
 import threading
 import os
@@ -492,6 +493,7 @@ def build_and_reserve_scan_request(
     app_id: str | None,
     reason: str,
     requested_at: str,
+    correlation_id: str | None = None,
 ) -> dict[str, Any]:
     """Build the compact command and reserve it entirely in the maintenance lane."""
     command = {
@@ -503,6 +505,10 @@ def build_and_reserve_scan_request(
         "reason": reason,
         "requested_at": requested_at,
     }
+    if correlation_id:
+        # The parent assurance operation is an internal server-owned binding,
+        # not a caller-selected NATS destination or execution parameter.
+        command["correlation_id"] = str(correlation_id)[:160]
     reservation_stages: dict[str, float] = {}
     reservation = reserve_scan_request(command, timing_sink=reservation_stages)
     return {
@@ -1642,6 +1648,20 @@ def _sqlite_tool_results(repository: Any, run_id: str) -> dict[str, Any]:
     tools: dict[str, Any] = {}
     for item in repository.list_tool_runs(run_id, limit=20):
         name = str(item.get("tool_name") or "tool")[:80]
+        metadata = item.get("metadata") if isinstance(item.get("metadata"), dict) else {}
+        started_at = _parse_iso_timestamp(item.get("started_at"))
+        completed_at = _parse_iso_timestamp(item.get("completed_at"))
+        stored_duration = item.get("duration_ms")
+        duration_ms = max(0, int(stored_duration or 0)) or None
+        if duration_ms is None and started_at is not None and completed_at is not None:
+            duration_ms = max(0, int((completed_at - started_at).total_seconds() * 1000)) or None
+        # The assurance projection needs the scanner identity recorded by the
+        # worker, but must not expose the rest of the raw Security metadata.
+        tool_version = str(
+            metadata.get("tool_version")
+            or metadata.get("scanner_version")
+            or ""
+        ).strip()[:120] or None
         tools[name] = policy.redact_value({
             "status": item.get("status") or "unknown",
             "finding_count": int(item.get("finding_count") or 0),
@@ -1649,7 +1669,8 @@ def _sqlite_tool_results(repository: Any, run_id: str) -> dict[str, Any]:
             "timeout_reason": item.get("timeout_reason"),
             "started_at": item.get("started_at"),
             "completed_at": item.get("completed_at"),
-            "duration_ms": item.get("duration_ms"),
+            "duration_ms": duration_ms,
+            **({"tool_version": policy.redact_text(tool_version)} if tool_version else {}),
         })
     return tools
 
@@ -3961,6 +3982,61 @@ def active_scan_state(profile: str | None = None, app_id: str | None = None) -> 
     })
 
 
+def active_assurance_scan(
+    profile: str,
+    correlation_id: str,
+    app_id: str | None = None,
+) -> dict[str, Any] | None:
+    """Read an active SQLite Security child bound to one assurance run.
+
+    This intentionally does not use the compact progress projection: recovery
+    must make an ownership decision from the authoritative lifecycle row.
+    Non-SQLite compatibility modes cannot safely prove this binding and return
+    no match so callers retain the existing conservative conflict behavior.
+    """
+    if not _sqlite_lifecycle_enabled():
+        return None
+    if not str(correlation_id or "").strip():
+        return None
+    return _security_repository().get_active_scan_for_correlation(
+        profile=profile,
+        correlation_id=correlation_id,
+        app_id=app_id,
+    )
+
+
+def interrupt_assurance_scan(
+    profile: str,
+    correlation_id: str,
+    *,
+    app_id: str | None = None,
+    failure_code: str = "assurance_worker_restarted",
+    recovery_kind: str = "worker_restart",
+    summary: str = "The worker restarted before the owned Security scan completed.",
+) -> dict[str, Any] | None:
+    """Release only an assurance-owned interrupted Security child."""
+    if not _sqlite_lifecycle_enabled():
+        return None
+    if not str(correlation_id or "").strip():
+        return None
+    repository = _security_repository()
+    result = repository.interrupt_active_scan_for_correlation(
+        profile=profile,
+        correlation_id=correlation_id,
+        app_id=app_id,
+        failure_code=failure_code,
+        recovery_kind=recovery_kind,
+        summary=summary,
+    )
+    if result:
+        # The authoritative row changed outside the normal scan lifecycle
+        # helper.  Refresh the compact projection before the caller performs
+        # the next reservation, otherwise a cached active marker could
+        # masquerade as a second conflict.
+        publish_committed_progress(str(result.get("run_id") or ""), repository=repository)
+    return result
+
+
 
 def _security_progress_age_seconds(progress: dict[str, Any]) -> float | None:
     value = progress.get("updated_at") or progress.get("completed_at") or progress.get("started_at")
@@ -4442,6 +4518,25 @@ def _run_command(args: list[str], *, cwd: Path, timeout: int) -> dict[str, Any]:
         redact=policy.redact_text,
         popen_factory=subprocess.Popen,
     )
+
+
+def _tool_version(executable: str, *, args: tuple[str, ...], cwd: Path) -> str | None:
+    """Read a bounded, redacted version line using the existing process guard."""
+    try:
+        resolved = Path(executable).resolve(strict=True)
+        version_cwd = resolved.parent if resolved.parent.is_dir() else cwd
+    except OSError:
+        version_cwd = cwd
+    result = _run_command([executable, *args], cwd=version_cwd, timeout=5)
+    if result.get("timed_out") or result.get("returncode") not in {0, None}:
+        return None
+    for line in f"{result.get('stdout') or ''}\n{result.get('stderr') or ''}".splitlines():
+        candidate = re.sub(r"\s+", " ", policy.redact_text(line)).strip()
+        if not candidate or len(candidate) > 120:
+            continue
+        if re.search(r"(?:version|lynis|trivy|\b\d+\.\d+(?:\.\d+)?\b)", candidate, flags=re.IGNORECASE):
+            return candidate
+    return None
 
 
 def missing_tool_finding(source: str) -> dict[str, Any]:
@@ -6144,18 +6239,74 @@ def _write_sbom(
     trivy: str,
     root: Path,
     intelligence: Mapping[str, Any] | None = None,
+    assurance_deadline_epoch: float | None = None,
 ) -> str | None:
     out = evidence.evidence_dir(run_id) / "sbom.cdx.json"
     args = [trivy, "fs", "--format", "cyclonedx", "--output", str(out)]
     args.extend(_trivy_intelligence_args(intelligence))
     args.extend(policy.source_trivy_skip_args(root))
     args.append(str(root))
-    result = _run_command(args, cwd=root, timeout=_command_timeout("trivy_sbom"))
+    timeout = _assurance_command_timeout(
+        assurance_deadline_epoch, _command_timeout("trivy_sbom")
+    )
+    if timeout <= 0:
+        return None
+    result = _run_command(args, cwd=root, timeout=timeout)
     if result.get("ok") and out.exists():
         existing = evidence.read_json(out, {})
         evidence.write_json(out, existing if existing else {"status": "created"})
         return f"security/evidence/{run_id}/sbom.cdx.json"
+    try:
+        out.unlink(missing_ok=True)
+    except OSError:
+        pass
     return None
+
+
+def _assurance_deadline_epoch(command: Mapping[str, Any] | None) -> float | None:
+    """Read the worker-supplied assurance lease without trusting callers.
+
+    The field is injected by ``lite_security_assurance`` after the durable run
+    has been admitted.  Normal Security scans do not carry it and retain their
+    existing policy timeouts.
+    """
+    if not isinstance(command, Mapping):
+        return None
+    try:
+        value = float(command.get("assurance_deadline_epoch"))
+    except (TypeError, ValueError):
+        return None
+    return value if math.isfinite(value) and value > 0 else None
+
+
+def _assurance_deadline_expired(deadline_epoch: float | None) -> bool:
+    return deadline_epoch is not None and deadline_epoch <= time.time()
+
+
+def _assurance_command_timeout(
+    deadline_epoch: float | None, configured_seconds: int
+) -> int:
+    """Bound a scanner child timeout by the durable assurance lease."""
+    configured = max(1, int(configured_seconds))
+    if deadline_epoch is None:
+        return configured
+    remaining = deadline_epoch - time.time()
+    if remaining <= 0:
+        return 0
+    return max(1, min(configured, int(remaining)))
+
+
+def _assurance_timeout_result() -> dict[str, Any]:
+    """Return the same bounded shape as the process runtime timeout result."""
+    return {
+        "ok": False,
+        "returncode": None,
+        "stdout": "",
+        "stderr": "Assurance execution deadline reached before scanner start.",
+        "timed_out": True,
+        "deadline_exceeded": True,
+        "process_cleanup": "not_started",
+    }
 
 
 def _run_quick_trivy_target_job(
@@ -6166,11 +6317,34 @@ def _run_quick_trivy_target_job(
     scanners: str,
     secret_mode: bool,
     intelligence: Mapping[str, Any] | None = None,
+    assurance_deadline_epoch: float | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any] | None]:
     """Run or safely reuse Quick's combined repository Trivy target."""
     target_id = "pocketlab_source"
     target_label = "Pocket Lab Lite"
     evidence_name = "target-pocketlab-quick-trivy.json"
+    if _assurance_deadline_expired(assurance_deadline_epoch):
+        ref = _write_target_json(
+            run_id,
+            evidence_name,
+            {
+                "target_id": target_id,
+                "target_label": target_label,
+                "tool": "trivy",
+                "scanners": scanners,
+                "status": "partial",
+                "reason": "assurance_deadline_exceeded",
+            },
+        )
+        return [], {
+            "status": "partial",
+            "available": True,
+            "scanners": scanners,
+            "finding_count": 0,
+            "sbom_saved": False,
+            "cache": {"status": "not_run", "reason": "assurance_deadline_exceeded"},
+            "evidence_ref": ref,
+        }, None
     cache_identity = _quick_trivy_cache_identity(
         root=root,
         trivy=trivy,
@@ -6253,6 +6427,29 @@ def _run_quick_trivy_target_job(
         _command_timeout("trivy_vuln_misconfig"),
         _command_timeout("trivy_secret"),
     )
+    timeout = _assurance_command_timeout(assurance_deadline_epoch, timeout)
+    if timeout <= 0:
+        ref = _write_target_json(
+            run_id,
+            evidence_name,
+            {
+                "target_id": target_id,
+                "target_label": target_label,
+                "tool": "trivy",
+                "scanners": scanners,
+                "status": "partial",
+                "reason": "assurance_deadline_exceeded",
+            },
+        )
+        return [], {
+            "status": "partial",
+            "available": True,
+            "scanners": scanners,
+            "finding_count": 0,
+            "sbom_saved": False,
+            "cache": {"status": "not_run", "reason": "assurance_deadline_exceeded"},
+            "evidence_ref": ref,
+        }, None
     result = _run_command(args, cwd=root, timeout=timeout)
     payload, payload_valid = _load_json_object_text(result.get("stdout") or "")
     trivy_findings = normalize_trivy_json(
@@ -6588,6 +6785,7 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     run = mark_running(command)
     run_id = str(run["run_id"])
     started = time.monotonic()
+    assurance_deadline_epoch = _assurance_deadline_epoch(command)
     resource_start = optimization.resource_snapshot()
     root = policy.allowed_scan_root(command.get("scope") or command.get("scan_root"))
     plan = policy.build_quick_scan_plan(root)
@@ -6604,9 +6802,21 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         missing = missing_tool_finding("lynis")
         missing["evidence_ref"] = f"security/evidence/{run_id}/lynis-normalized.json"
         findings.append(missing)
-        tool_results["lynis"] = {"status": "missing_tool", "available": False}
+        tool_results["lynis"] = {"status": "missing_tool", "available": False, "tool_version": None}
     else:
-        result = _run_command([lynis, "audit", "system", "--quick", "--no-colors", "--quiet"], cwd=root, timeout=_command_timeout("lynis"))
+        lynis_version = _tool_version(lynis, args=("--version",), cwd=root)
+        timeout = _assurance_command_timeout(
+            assurance_deadline_epoch, _command_timeout("lynis")
+        )
+        result = (
+            _assurance_timeout_result()
+            if timeout <= 0
+            else _run_command(
+                [lynis, "audit", "system", "--quick", "--no-colors", "--quiet"],
+                cwd=root,
+                timeout=timeout,
+            )
+        )
         normalized = normalize_lynis_output(result, run_id)
         findings.extend(normalized)
         partial = partial or bool(result.get("timed_out"))
@@ -6615,22 +6825,30 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             "available": True,
             "returncode": result.get("returncode"),
             "finding_count": len(normalized),
+            "tool_version": lynis_version,
         }
     evidence_refs.append(evidence.write_evidence(run_id, "lynis-normalized.json", {"tool": "lynis", "findings": [f for f in findings if f.get("source") == "lynis"]}))
     run["tool_results"] = tool_results
     run["execution_timeline"] = execution_timeline_for_phase(run, "trivy_running")
     _write_intermediate_running_state(run, findings, evidence_refs)
 
-    if time.monotonic() - started > policy.TIMEOUTS["overall"]:
+    if _assurance_deadline_expired(assurance_deadline_epoch) or time.monotonic() - started > policy.TIMEOUTS["overall"]:
         partial = True
-        tool_results["trivy"] = {"status": "skipped_overall_budget", "available": bool(shutil.which("trivy")), "finding_count": 0, "sbom_saved": False}
+        tool_results["trivy"] = {
+            "status": "skipped_overall_budget",
+            "available": bool(shutil.which("trivy")),
+            "finding_count": 0,
+            "sbom_saved": False,
+            "tool_version": None,
+            "failure_code": "assurance_deadline_exceeded" if _assurance_deadline_expired(assurance_deadline_epoch) else None,
+        }
     else:
         trivy = shutil.which("trivy")
         if not trivy:
             missing = missing_tool_finding("trivy")
             missing["evidence_ref"] = f"security/evidence/{run_id}/trivy-normalized.json"
             findings.append(missing)
-            tool_results["trivy"] = {"status": "missing_tool", "available": False}
+            tool_results["trivy"] = {"status": "missing_tool", "available": False, "tool_version": None}
         else:
             scanners = "vuln,misconfig,secret"
             trivy_intelligence = _prepare_trivy_intelligence(trivy, root)
@@ -6642,6 +6860,7 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
                 scanners=scanners,
                 secret_mode=True,
                 intelligence=trivy_intelligence,
+                assurance_deadline_epoch=assurance_deadline_epoch,
             )
             findings.extend(trivy_findings)
             trivy_partial = trivy_result.get("status") == "partial"
@@ -6650,11 +6869,22 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             sbom_ref = _write_cached_sbom(run_id, cache_entry) if cache_entry else None
             sbom_cache_hit = bool(sbom_ref)
             if not sbom_ref:
-                sbom_ref = _write_sbom(run_id, trivy, root, trivy_intelligence)
+                sbom_ref = _write_sbom(
+                    run_id,
+                    trivy,
+                    root,
+                    trivy_intelligence,
+                    assurance_deadline_epoch,
+                )
             if sbom_ref:
                 evidence_refs.append(sbom_ref)
             trivy_result["sbom_saved"] = bool(sbom_ref)
             trivy_result["sbom_cache_hit"] = sbom_cache_hit
+            trivy_result["tool_version"] = (
+                str((trivy_result.get("cache") or {}).get("scanner_version") or "")
+                if isinstance(trivy_result.get("cache"), dict)
+                else ""
+            ) or _trivy_version_identity(trivy, root)
             if cache_context and cache_context.get("identity") and (
                 cache_context.get("cacheable") or cache_context.get("cache_hit")
             ):
@@ -6687,7 +6917,11 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     run["execution_timeline"] = execution_timeline_for_phase(run, "posture_running")
     _write_intermediate_running_state(run, findings, evidence_refs)
 
-    posture = runtime_config_posture(root)
+    posture = (
+        {"status": "partial", "summary": "Runtime posture was skipped after the assurance deadline."}
+        if _assurance_deadline_expired(assurance_deadline_epoch)
+        else runtime_config_posture(root)
+    )
     tool_results["config_posture"] = {
         "status": posture.get("status") or "completed",
         "available": True,
@@ -7283,16 +7517,17 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         missing = missing_tool_finding("lynis")
         missing["evidence_ref"] = f"security/evidence/{run_id}/lynis-normalized.json"
         findings.append(missing)
-        tool_results["lynis"] = {"status": "missing_tool", "available": False, "label": "Termux host"}
+        tool_results["lynis"] = {"status": "missing_tool", "available": False, "tool_version": None, "label": "Termux host"}
         target_statuses.append(_full_target_status("termux_host", "Termux host", "lynis", "partial", finding_count=1, summary="Lynis is not available on this device."))
     else:
         lynis_started = time.monotonic()
+        lynis_version = _tool_version(lynis, args=("--version",), cwd=root)
         result = _run_command([lynis, "audit", "system", "--no-colors", "--quiet"], cwd=root, timeout=_command_timeout("full_lynis"))
         normalized = normalize_lynis_output(result, run_id)
         findings.extend(normalized)
         lynis_status = "timed_out" if result.get("timed_out") else "checked"
         partial = partial or bool(result.get("timed_out"))
-        tool_results["lynis"] = {"status": "completed" if lynis_status == "checked" else "timed_out", "available": True, "returncode": result.get("returncode"), "finding_count": len(normalized), "label": "Termux host"}
+        tool_results["lynis"] = {"status": "completed" if lynis_status == "checked" else "timed_out", "available": True, "returncode": result.get("returncode"), "finding_count": len(normalized), "tool_version": lynis_version, "label": "Termux host"}
         target_statuses.append(_full_target_status("termux_host", "Termux host", "lynis", lynis_status, elapsed_seconds=max(0, int(time.monotonic() - lynis_started)), finding_count=len(normalized), summary="Android/Termux host posture checked." if lynis_status == "checked" else "Android/Termux host posture partially checked."))
     evidence_refs.append(evidence.write_evidence(run_id, "lynis-normalized.json", {"tool": "lynis", "profile": policy.SCAN_PROFILE_FULL, "findings": [f for f in findings if f.get("source") == "lynis"]}))
     checkpoint_ledger.record(target_statuses[-1], resume_eligible=False)
@@ -7388,6 +7623,7 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         tool_results["trivy_source"] = {
             "status": "completed" if status.get("status") == "checked" else str(status.get("status") or "partial"),
             "available": bool(trivy),
+            "tool_version": str((status.get("cache") or {}).get("scanner_version") or "") if isinstance(status.get("cache"), dict) else None,
             "label": "Pocket Lab Lite",
             "scanners": scanners,
             "finding_count": len([item for item in findings if item.get("source") == "trivy"]),

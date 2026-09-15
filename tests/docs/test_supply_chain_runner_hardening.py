@@ -103,6 +103,27 @@ def test_scanner_selection_is_bounded_and_adds_dependencies():
     assert "scancode" not in selected
 
 
+def test_source_scans_have_fixed_generated_and_dependency_exclusions():
+    source = MODULE.read_text(encoding="utf-8")
+    gitleaks = (ROOT / "security/static-analysis/gitleaks.toml").read_text(encoding="utf-8")
+    requirements = (ROOT / "requirements-docs.txt").read_text(encoding="utf-8")
+    for path in [
+        ".pocketlab-dev/**",
+        ".venv/**",
+        "node_modules/**",
+        "docs/generated/**",
+        "contracts/generated/**",
+    ]:
+        assert path in source
+        assert f"{path[:-3]}" in gitleaks
+    assert '"--config", str(ROOT / "security/static-analysis/gitleaks.toml")' in source
+    assert 'syft_source_argv.extend(["-o", "cyclonedx-json"])' in source
+    assert 'osv_source_argv.extend(["--experimental-exclude", excluded])' in source
+    assert '".pocketlab-dev"' in source
+    assert "mkdocs-material==9.7.7" in requirements
+    assert "pymdown-extensions==11.0.1" in requirements
+
+
 def test_partial_capture_is_never_promotable(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     run_dir = tmp_path / "run"
     (run_dir / "raw").mkdir(parents=True)

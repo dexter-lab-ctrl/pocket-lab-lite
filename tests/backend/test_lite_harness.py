@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import importlib.util
 import json
 import os
 import stat
 import subprocess
 import sys
+import tempfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -191,6 +193,602 @@ def test_app_lifespan_refuses_unsafe_production_flags(harness_runtime, monkeypat
             pass
 
 
+def test_key_bound_bootstrap_is_one_use_and_hash_only(harness_runtime, monkeypatch):
+    client = _client()
+    private, public = _key()
+    principal_id = "codex-assurance-bootstrap"
+    public_key = _b64u(public)
+    fingerprint = "sha256:" + hashlib.sha256(public).hexdigest()
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_APPROVED", "1")
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PRINCIPAL_ID", principal_id)
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT", fingerprint)
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PROFILE", "security-assurance-runner")
+
+    grant_response = client.post(
+        "/api/lite/harness/bootstrap/grants",
+        json={"principal_id": principal_id, "public_key": public_key},
+    )
+    assert grant_response.status_code == 201, grant_response.text
+    grant = grant_response.json()
+    assert grant["profile"] == "security-assurance-runner"
+    assert grant["purpose"] == "security.assurance"
+    assert grant["target_scope"] == TARGET_SCOPE
+    assert grant["max_uses"] == 1
+    assert "public_key" not in grant
+
+    challenge_response = client.post(
+        "/api/lite/harness/bootstrap/challenge",
+        json={"grant_id": grant["grant_id"]},
+    )
+    assert challenge_response.status_code == 200, challenge_response.text
+    challenge = challenge_response.json()
+    complete_response = client.post(
+        "/api/lite/harness/bootstrap/complete",
+        json={
+            "challenge_id": challenge["challenge_id"],
+            "grant_id": grant["grant_id"],
+            "principal_id": principal_id,
+            "public_key": public_key,
+            "signature": _b64u(private.sign(challenge["signing_payload"].encode("utf-8"))),
+        },
+    )
+    assert complete_response.status_code == 201, complete_response.text
+    session = complete_response.json()
+    assert session["principal"]["default_profile"] == "security-assurance-runner"
+    assert session["session"]["status"] == "active"
+    assert session["session_token"]
+    assert session["principal"]["principal_class"] == "qualification"
+    assert "private" not in json.dumps(session).casefold()
+
+    replay = client.post(
+        "/api/lite/harness/bootstrap/complete",
+        json={
+            "challenge_id": challenge["challenge_id"],
+            "grant_id": grant["grant_id"],
+            "principal_id": principal_id,
+            "public_key": public_key,
+            "signature": _b64u(private.sign(challenge["signing_payload"].encode("utf-8"))),
+        },
+    )
+    assert replay.status_code == 401
+    assert replay.json()["reason_code"] == "bootstrap_grant_replayed"
+
+    cleanup = client.post(
+        "/api/lite/harness/principal/revoke",
+        headers={HARNESS_HEADER: session["session_token"]},
+    )
+    assert cleanup.status_code == 200, cleanup.text
+    assert cleanup.json()["active_assurance_runs_cancelled"] == 0
+    after_cleanup = client.get("/api/lite/status", headers={HARNESS_HEADER: session["session_token"]})
+    assert after_cleanup.status_code == 401
+    assert after_cleanup.json()["reason_code"] == "harness_session_revoked"
+
+    from api_fastapi.db.connection import connection
+
+    with connection() as conn:
+        row = conn.execute(
+            "SELECT token_hash,public_key FROM harness_sessions s JOIN synthetic_principals p ON p.principal_id=s.principal_id WHERE s.principal_id=?",
+            (principal_id,),
+        ).fetchone()
+        audit_types = {
+            event["event_type"]
+            for event in conn.execute(
+                "SELECT event_type FROM harness_audit_events WHERE principal_id=? OR operation_id=?",
+                (principal_id, grant["grant_id"]),
+            )
+        }
+    assert row["token_hash"] != session["session_token"]
+    assert row["public_key"] == public_key
+    assert {
+        "bootstrap_grant_created",
+        "bootstrap_grant_consumed",
+        "bootstrap_principal_created",
+        "bootstrap_principal_revoked",
+    }.issubset(audit_types)
+
+
+def test_key_bound_bootstrap_applies_bounded_requested_session_ttl(harness_runtime, monkeypatch):
+    client = _client()
+    private, public = _key()
+    principal_id = "codex-assurance-bootstrap-ttl"
+    fingerprint = "sha256:" + hashlib.sha256(public).hexdigest()
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_APPROVED", "1")
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PRINCIPAL_ID", principal_id)
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT", fingerprint)
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PROFILE", "security-assurance-runner")
+
+    grant = client.post(
+        "/api/lite/harness/bootstrap/grants",
+        json={"principal_id": principal_id, "public_key": _b64u(public)},
+    ).json()
+    challenge = client.post(
+        "/api/lite/harness/bootstrap/challenge",
+        json={"grant_id": grant["grant_id"]},
+    ).json()
+    response = client.post(
+        "/api/lite/harness/bootstrap/complete",
+        json={
+            "challenge_id": challenge["challenge_id"],
+            "grant_id": grant["grant_id"],
+            "principal_id": principal_id,
+            "public_key": _b64u(public),
+            "signature": _b64u(private.sign(challenge["signing_payload"].encode("utf-8"))),
+            "ttl_seconds": 60,
+        },
+    )
+    assert response.status_code == 201, response.text
+    session = response.json()["session"]
+    started = datetime.fromisoformat(session["started_at"].replace("Z", "+00:00"))
+    expires = datetime.fromisoformat(session["expires_at"].replace("Z", "+00:00"))
+    assert 59 <= (expires - started).total_seconds() <= 61
+
+    cleanup = client.post(
+        "/api/lite/harness/principal/revoke",
+        headers={HARNESS_HEADER: response.json()["session_token"]},
+    )
+    assert cleanup.status_code == 200, cleanup.text
+
+
+def test_bootstrap_rejects_wrong_key_and_forwarded_transport(harness_runtime, monkeypatch):
+    client = _client()
+    private, public = _key()
+    wrong_private, wrong_public = _key()
+    principal_id = "codex-assurance-wrong-key"
+    fingerprint = "sha256:" + hashlib.sha256(public).hexdigest()
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_APPROVED", "1")
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PRINCIPAL_ID", principal_id)
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT", fingerprint)
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PROFILE", "security-assurance-runner")
+    grant = client.post(
+        "/api/lite/harness/bootstrap/grants",
+        json={"principal_id": principal_id, "public_key": _b64u(public)},
+    ).json()
+    challenge = client.post(
+        "/api/lite/harness/bootstrap/challenge",
+        json={"grant_id": grant["grant_id"]},
+    ).json()
+    wrong = client.post(
+        "/api/lite/harness/bootstrap/complete",
+        json={
+            "challenge_id": challenge["challenge_id"],
+            "grant_id": grant["grant_id"],
+            "principal_id": principal_id,
+            "public_key": _b64u(wrong_public),
+            "signature": _b64u(wrong_private.sign(challenge["signing_payload"].encode("utf-8"))),
+        },
+    )
+    assert wrong.status_code == 401
+    assert wrong.json()["reason_code"] == "bootstrap_binding_mismatch"
+    forwarded = client.post(
+        "/api/lite/harness/bootstrap/challenge",
+        json={"grant_id": grant["grant_id"]},
+        headers={"X-Forwarded-For": "127.0.0.1"},
+    )
+    assert forwarded.status_code == 401
+    assert forwarded.json()["reason_code"] == "harness_transport_rejected"
+
+
+def test_bootstrap_retries_are_bounded_and_exact_grant_creation_is_idempotent(harness_runtime, monkeypatch):
+    client = _client()
+    private, public = _key()
+    principal_id = "codex-assurance-attempts"
+    fingerprint = "sha256:" + hashlib.sha256(public).hexdigest()
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_APPROVED", "1")
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PRINCIPAL_ID", principal_id)
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT", fingerprint)
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PROFILE", "security-assurance-runner")
+
+    payload = {"principal_id": principal_id, "public_key": _b64u(public)}
+    first_response = client.post("/api/lite/harness/bootstrap/grants", json=payload)
+    assert first_response.status_code == 201, first_response.text
+    first = first_response.json()
+    retry = client.post("/api/lite/harness/bootstrap/grants", json=payload)
+    assert retry.status_code == 201, retry.text
+    assert retry.json()["grant_id"] == first["grant_id"]
+    assert retry.json()["idempotent_reuse"] is True
+
+    challenge = client.post(
+        "/api/lite/harness/bootstrap/challenge", json={"grant_id": first["grant_id"]}
+    ).json()
+    # Keep the invalid proof deterministic without putting private material in
+    # the request's public fields or test output.
+    wrong_private, _ = _key()
+    for attempt in range(1, 6):
+        rejected = client.post(
+            "/api/lite/harness/bootstrap/complete",
+            json={
+                "challenge_id": challenge["challenge_id"],
+                "grant_id": first["grant_id"],
+                "principal_id": principal_id,
+                "public_key": _b64u(public),
+                "signature": _b64u(wrong_private.sign(challenge["signing_payload"].encode("utf-8"))),
+            },
+        )
+        assert rejected.status_code == 401, rejected.text
+        expected = "bootstrap_attempt_limit" if attempt == 5 else "bootstrap_signature_invalid"
+        assert rejected.json()["reason_code"] == expected
+
+    replay = client.post(
+        "/api/lite/harness/bootstrap/challenge", json={"grant_id": first["grant_id"]}
+    )
+    assert replay.status_code == 401
+    assert replay.json()["reason_code"] == "bootstrap_grant_replayed"
+
+
+def test_assurance_client_continuity_is_bounded_and_does_not_persist_tokens(harness_runtime, tmp_path):
+    script = Path("scripts/dev/lite/security_assurance.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_client", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+    continuity = tmp_path / "continuity.json"
+    client._write_continuity(
+        continuity,
+        {
+            "principal_id": "codex-assurance",
+            "public_key_fingerprint": "sha256:" + "a" * 64,
+            "private_key_file_path": "/tmp/codex-assurance.key",
+            "active_run_id": "assurance-" + "b" * 32,
+            "session_token": "must-not-persist",
+            "signing_payload": "must-not-persist",
+            "signature": "must-not-persist",
+        },
+    )
+    content = continuity.read_text(encoding="utf-8")
+    assert "must-not-persist" not in content
+    assert "session_token" not in content
+    assert stat.S_IMODE(continuity.stat().st_mode) == 0o600
+    assert client._should_reauthenticate(RuntimeError("assurance_transport_unavailable: OSError")) is True
+    assert client._should_reauthenticate(RuntimeError("run_not_found: rejected")) is False
+
+
+def test_assurance_client_discards_stale_run_when_identity_changes(tmp_path):
+    script = Path("scripts/dev/lite/security_assurance.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_identity_continuity", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+
+    state = {
+        "principal_id": "old-assurance-runner",
+        "public_key_fingerprint": "sha256:" + "a" * 64,
+        "active_run_id": "assurance-" + "b" * 32,
+        "suite_id": "standard",
+        "scenario_id": "security-projection",
+        "last_event_sequence": 12,
+        "runtime_id": "runtime-old",
+        "revision_sha": "c" * 40,
+    }
+    client._reset_continuity_for_identity_change(
+        state,
+        principal_id="new-assurance-runner",
+        fingerprint="sha256:" + "d" * 64,
+    )
+
+    assert "active_run_id" not in state
+    assert "suite_id" not in state
+    assert "scenario_id" not in state
+    assert "last_event_sequence" not in state
+    assert "runtime_id" not in state
+    assert "revision_sha" not in state
+
+
+def test_assurance_client_keeps_matching_identity_continuity(tmp_path):
+    script = Path("scripts/dev/lite/security_assurance.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_matching_continuity", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+
+    state = {
+        "principal_id": "assurance-runner",
+        "public_key_fingerprint": "sha256:" + "a" * 64,
+        "active_run_id": "assurance-" + "b" * 32,
+        "suite_id": "standard",
+    }
+    client._reset_continuity_for_identity_change(
+        state,
+        principal_id="ASSURANCE-RUNNER",
+        fingerprint="SHA256:" + "A" * 64,
+    )
+
+    assert state["active_run_id"] == "assurance-" + "b" * 32
+    assert state["suite_id"] == "standard"
+
+
+def test_assurance_client_bootstraps_after_principal_not_found_with_stale_run(tmp_path, monkeypatch):
+    script = Path("scripts/dev/lite/security_assurance.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_stale_bootstrap", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+
+    calls = []
+
+    def fake_start_session(**kwargs):
+        calls.append(("session", kwargs))
+        raise RuntimeError("principal_not_found: The synthetic principal was not found.")
+
+    def fake_bootstrap_session(**kwargs):
+        calls.append(("bootstrap", kwargs))
+        return {
+            "session_token": "memory-only-token",
+            "session": {"harness_session_id": "hs-bootstrap"},
+        }
+
+    monkeypatch.setattr(client.harness_client, "start_session", fake_start_session)
+    monkeypatch.setattr(client.harness_client, "bootstrap_session", fake_bootstrap_session)
+    lease, bootstrapped = client._establish_lease(
+        principal_id="new-assurance-runner",
+        key_path=tmp_path / "runner.key",
+        active_run_id="assurance-" + "b" * 32,
+        session_ttl_seconds=180,
+    )
+
+    assert bootstrapped is True
+    assert lease["session_token"] == "memory-only-token"
+    assert [kind for kind, _kwargs in calls] == ["session", "bootstrap"]
+
+
+def test_assurance_client_discards_server_missing_continuity_run(tmp_path, monkeypatch):
+    script = Path("scripts/dev/lite/security_assurance.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_missing_run", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+    continuity = tmp_path / "continuity.json"
+    state = {
+        "principal_id": "assurance-runner",
+        "public_key_fingerprint": "sha256:" + "a" * 64,
+        "active_run_id": "assurance-" + "b" * 32,
+        "suite_id": "standard",
+        "last_event_sequence": 9,
+    }
+    client._write_continuity(continuity, state)
+
+    def fake_request(*_args, **_kwargs):
+        raise RuntimeError("run_not_found: the run is not visible to this principal")
+
+    monkeypatch.setattr(client, "_request", fake_request)
+    result = client._reattach_or_resume(
+        state=state,
+        lease={"session_token": "memory-only-token"},
+        principal_id="assurance-runner",
+        key_file=str(tmp_path / "runner.key"),
+        continuity_path=continuity,
+        session_ttl_seconds=180,
+        max_poll_seconds=30,
+    )
+
+    assert result is None
+    stored = json.loads(continuity.read_text(encoding="utf-8"))
+    assert "active_run_id" not in stored
+    assert "suite_id" not in stored
+    assert "last_event_sequence" not in stored
+
+
+def test_assurance_client_ensure_lease_renews_with_keyword_arguments(tmp_path, monkeypatch):
+    script = Path("scripts/dev/lite/security_assurance.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_ensure_lease", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+    lease = {
+        "session_token": "memory-only-token",
+        "session": {
+            "started_at": "2026-09-14T12:00:00Z",
+            "expires_at": "2026-09-14T12:00:10Z",
+        },
+        "session_ids": ["hs-old"],
+        "renewal_count": 0,
+    }
+    calls = []
+
+    def fake_renew(current, *, principal_id, key_file, ttl_seconds):
+        calls.append((current, principal_id, key_file, ttl_seconds))
+
+    monkeypatch.setattr(client, "_renew_lease", fake_renew)
+    client._ensure_lease(
+        lease,
+        principal_id="assurance-runner",
+        key_file=str(tmp_path / "runner.key"),
+        ttl_seconds=60,
+    )
+    assert len(calls) == 1
+    assert calls[0][1:] == ("assurance-runner", str(tmp_path / "runner.key"), 60)
+
+
+def test_assurance_client_recovers_lost_admission_response_without_duplicate_run(tmp_path, monkeypatch):
+    script = Path("scripts/dev/lite/security_assurance.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_admission_recovery", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+
+    calls = []
+
+    def fake_request(method, path, payload=None, **kwargs):
+        calls.append((method, path, payload, kwargs))
+        if method == "POST":
+            raise RuntimeError("assurance_transport_unavailable: TimeoutError")
+        return {
+            "runs": [{
+                "run_id": "assurance-" + "c" * 32,
+                "suite_id": "standard",
+                "status": "QUEUED",
+                "runtime_id": "runtime-test",
+                "revision_sha": "a" * 40,
+            }],
+            "sanitized": True,
+        }
+
+    monkeypatch.setattr(client, "_request", fake_request)
+    monkeypatch.setattr(client, "_ensure_lease", lambda *args, **kwargs: None)
+    result = client._admit_qualified_run(
+        suite_id="standard",
+        lease={"session_token": "memory-only-token"},
+        principal_id="assurance-runner",
+        key_file=str(tmp_path / "runner.key"),
+        preflight={"runtime_id": "runtime-test", "revision": "a" * 40},
+        session_ttl_seconds=180,
+    )
+
+    assert result["run_id"] == "assurance-" + "c" * 32
+    assert result["transport_recovered"] is True
+    assert [call[0] for call in calls] == ["POST", "POST", "GET"]
+    assert calls[0][1].endswith("/runs")
+    assert calls[2][1].endswith("/runs?limit=100")
+    assert all(call[3].get("timeout_seconds") in {30.0, 60.0} for call in calls)
+
+
+def test_harness_client_forwards_bounded_session_ttl_without_persisting_token(tmp_path, monkeypatch):
+    script = Path("scripts/dev/lite/harness.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_harness_client_ttl", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+
+    class FakeKey:
+        def sign(self, payload):
+            assert payload == b"canonical-challenge"
+            return b"s" * 64
+
+    requests = []
+
+    def fake_request(method, path, payload=None, headers=None):
+        requests.append((method, path, payload, headers))
+        if path.endswith("/challenge"):
+            return {"challenge_id": "hch-" + "a" * 32, "signing_payload": "canonical-challenge"}
+        return {"session_token": "memory-only-test-token", "session": {"harness_session_id": "hs-test"}}
+
+    monkeypatch.setattr(client, "_request", fake_request)
+    monkeypatch.setattr(client, "_private_key", lambda _path: FakeKey())
+    client.start_session(
+        principal_id="ttl-runner",
+        profile="security-assurance-runner",
+        purpose="security.assurance",
+        key_file=str(tmp_path / "machine.key"),
+        ttl_seconds=60,
+    )
+
+    assert requests[0][2]["ttl_seconds"] == 60
+    assert requests[1][2]["ttl_seconds"] == 60
+
+
+def test_qualification_keeps_safe_adversarial_lane_independent_of_standard(tmp_path):
+    script = Path("scripts/dev/lite/security_assurance.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_adversarial_gate", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+
+    assert client._safe_adversarial_admitted(
+        {"smoke": {"status": "PASS"}, "standard": {"status": "BLOCKED"}},
+        skipped=False,
+    ) is True
+    assert client._safe_adversarial_admitted(
+        {"smoke": {"status": "PASS"}, "standard": {"status": "FAIL"}},
+        skipped=False,
+    ) is True
+    assert client._safe_adversarial_admitted(
+        {"smoke": {"status": "PARTIAL"}, "standard": {"status": "PASS"}},
+        skipped=False,
+    ) is False
+    assert client._safe_adversarial_admitted(
+        {"smoke": {"status": "PASS"}},
+        skipped=True,
+    ) is False
+
+
+def test_assurance_fault_requests_use_a_bounded_recovery_timeout(tmp_path, monkeypatch):
+    script = Path("scripts/dev/lite/security_assurance.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_fault_timeout", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+
+    observed = {}
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self, _limit):
+            return b'{"status":"PASS"}'
+
+    def fake_urlopen(_request, timeout):
+        observed["timeout"] = timeout
+        return FakeResponse()
+
+    monkeypatch.setattr(client.urllib.request, "urlopen", fake_urlopen)
+    result = client._request(
+        "POST",
+        "/api/lite/harness/security-assurance/faults/opa_pause_probe_restore",
+        {"confirm": True},
+        authenticated=True,
+        session_token="memory-only-session",
+        timeout_seconds=150.0,
+    )
+    assert result["status"] == "PASS"
+    assert observed["timeout"] == 150.0
+
+
+def test_harness_client_forwards_bounded_bootstrap_session_ttl(tmp_path, monkeypatch):
+    script = Path("scripts/dev/lite/harness.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_harness_client_bootstrap_ttl", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+
+    class FakeKey:
+        def sign(self, payload):
+            assert payload == b"canonical-bootstrap-challenge"
+            return b"s" * 64
+
+        def public_key(self):
+            return self
+
+        def public_bytes(self, *_args):
+            return b"p" * 32
+
+    requests = []
+
+    def fake_request(method, path, payload=None, headers=None):
+        requests.append((method, path, payload, headers))
+        if path.endswith("/grants"):
+            return {"grant_id": "hbg-" + "a" * 32}
+        if path.endswith("/bootstrap/challenge"):
+            return {"challenge_id": "hbc-" + "b" * 32, "signing_payload": "canonical-bootstrap-challenge"}
+        return {"session_token": "memory-only-bootstrap-token", "session": {"harness_session_id": "hs-test"}}
+
+    monkeypatch.setattr(client, "_request", fake_request)
+    monkeypatch.setattr(client, "_private_key", lambda _path: FakeKey())
+    client.bootstrap_session(
+        principal_id="ttl-bootstrap-runner",
+        key_file=str(tmp_path / "machine.key"),
+        ttl_seconds=60,
+    )
+
+    assert requests[2][2]["ttl_seconds"] == 60
+
+
+def test_bootstrap_configuration_cannot_be_enabled_in_production(harness_runtime, monkeypatch):
+    from api_fastapi.services import lite_harness
+
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "production")
+    monkeypatch.setenv("POCKETLAB_HARNESS_ENABLED", "0")
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_APPROVED", "1")
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PRINCIPAL_ID", "codex-assurance-bootstrap")
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT", "sha256:" + "a" * 64)
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PROFILE", "security-assurance-runner")
+    with pytest.raises(lite_harness.HarnessConfigurationError) as error:
+        lite_harness.validate_startup_configuration()
+    assert error.value.reason_code == "harness_forbidden_in_production"
+
+
 def test_normal_release_headers_never_activate_synthetic_authority(harness_runtime, monkeypatch):
     monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "production")
     monkeypatch.setenv("POCKETLAB_HARNESS_ENABLED", "0")
@@ -216,6 +814,7 @@ def test_capability_manifest_and_maintenance_deferral(harness_runtime):
     assert set(payload["profiles"]) == {
         "debug-observer", "test-runner", "security-qualifier", "recovery-qualifier",
         "release-qualifier", "maintenance-runner", "qualification-owner",
+        "security-assurance-runner",
     }
     assert payload["profiles"]["recovery-qualifier"]["capabilities"] == [
         "recovery.read", "backup.create", "backup.verify", "restore.preview",
@@ -724,22 +1323,37 @@ def test_expired_and_disabled_principals_cannot_issue_challenges(harness_runtime
 
 
 def test_cli_generates_restrictive_key_without_printing_private_material(harness_runtime, tmp_path):
-    key_path = tmp_path / "machine.key"
+    with tempfile.TemporaryDirectory(prefix="pocketlab-harness-") as temporary:
+        key_path = Path(temporary) / "machine.key"
+        result = subprocess.run(
+            [sys.executable, "scripts/dev/lite/harness.py", "keygen", "--key-file", str(key_path)],
+            check=False,
+            capture_output=True,
+            text=True,
+            env=os.environ.copy(),
+        )
+        assert result.returncode == 0, result.stderr
+        output = json.loads(result.stdout)
+        assert output["algorithm"] == "ed25519"
+        assert output["private_key_returned"] is False
+        assert output["private_key_mode"] == "0o600"
+        assert len(key_path.read_bytes()) == 32
+        assert "BEGIN" not in result.stdout
+        assert output["private_key_path"].endswith("machine.key")
+        assert output["public_key_path"].endswith("machine.key.pub")
+        assert output["public_key_mode"] == "0o644"
+
+
+def test_cli_refuses_key_material_inside_repository(harness_runtime):
     result = subprocess.run(
-        [sys.executable, "scripts/dev/lite/harness.py", "keygen", "--key-file", str(key_path)],
+        [sys.executable, "scripts/dev/lite/harness.py", "keygen", "--key-file", "scripts/dev/lite/unsafe.key"],
         check=False,
         capture_output=True,
         text=True,
         env=os.environ.copy(),
     )
-    assert result.returncode == 0, result.stderr
-    output = json.loads(result.stdout)
-    assert output["algorithm"] == "ed25519"
-    assert output["private_key_returned"] is False
-    assert output["private_key_mode"] == "0o600"
-    assert len(key_path.read_bytes()) == 32
-    assert "BEGIN" not in result.stdout
-    assert output["private_key_path"].endswith("machine.key")
+    assert result.returncode == 2
+    assert "outside the repository" in result.stderr
 
 
 def test_qualification_launcher_owns_lite_profile(harness_runtime):

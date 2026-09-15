@@ -47,6 +47,10 @@ device_removal_receipts
 device_health_current
 device_health_attention
 device_awareness_state
+assurance_tool_results
+assurance_scenarios
+assurance_findings
+assurance_execution_checkpoints
 app_action_lifecycle
 policy_activation_operations
 device_lifecycle_events
@@ -56,6 +60,7 @@ recovery_code_batches
 policy_decision_details
 auth_sessions
 security_scan_runs
+assurance_runs
 policy_revisions
 security_database_backups
 workflow_event_index

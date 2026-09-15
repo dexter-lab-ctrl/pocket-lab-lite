@@ -193,11 +193,11 @@
       "license": "unobserved until ScanCode/SBOM evidence",
       "name": "mkdocs-material",
       "purpose": "development Python dependency",
-      "release_introduced": "present-in-baseline",
+      "release_introduced": "version-changed-since-baseline",
       "runtime_or_dev": "development",
       "transitive": false,
       "upstream_posture": "normalized evidence when promoted",
-      "version": "9.7.6",
+      "version": "9.7.7",
       "vulnerability_status": "canonical scanner evidence when promoted"
     },
     {
@@ -289,11 +289,11 @@
       "license": "unobserved until ScanCode/SBOM evidence",
       "name": "pymdown-extensions",
       "purpose": "development Python dependency",
-      "release_introduced": "present-in-baseline",
+      "release_introduced": "version-changed-since-baseline",
       "runtime_or_dev": "development",
       "transitive": false,
       "upstream_posture": "normalized evidence when promoted",
-      "version": "10.21.3",
+      "version": "11.0.1",
       "vulnerability_status": "canonical scanner evidence when promoted"
     },
     {

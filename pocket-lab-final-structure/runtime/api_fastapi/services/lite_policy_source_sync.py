@@ -163,6 +163,244 @@ def _public_state(state: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def public_state() -> dict[str, Any]:
+    """Return the bounded policy-source state used by qualification clients."""
+    return _public_state(source_state())
+
+
+def _require_assurance_context(auth_context: dict[str, Any]) -> tuple[str, str]:
+    """Enforce the narrow non-Owner policy-sync contract at the service boundary."""
+    harness = auth_context.get("harness") if isinstance(auth_context, dict) else None
+    authorization = auth_context.get("authorization") if isinstance(auth_context, dict) else None
+    if not isinstance(harness, dict) or not isinstance(authorization, dict):
+        raise PolicySourceSyncError(
+            "assurance_policy_sync_denied",
+            "A signed security-assurance session is required for policy synchronization.",
+            status_code=403,
+        )
+    capabilities = {str(value) for value in harness.get("capabilities") or []}
+    if (
+        harness.get("enabled") is not True
+        or harness.get("qualification_environment") is not True
+        or harness.get("profile") != "security-assurance-runner"
+        or harness.get("purpose") != "security.assurance"
+        or harness.get("principal_class") != "qualification"
+        or harness.get("target_scope") != "local_server_host_only"
+        or harness.get("destructive_allowed") is True
+        or "security.assurance.policy_sync" not in capabilities
+        or authorization.get("role") is not None
+        or authorization.get("owner_authority") is True
+        or authorization.get("identity_class") != "synthetic_machine"
+    ):
+        raise PolicySourceSyncError(
+            "assurance_policy_sync_denied",
+            "The signed session is not authorized for qualification policy synchronization.",
+            status_code=403,
+        )
+    from . import lite_harness
+
+    if (
+        lite_harness.environment() != lite_harness.HARNESS_RUNTIME_ENVIRONMENT
+        or not lite_harness.harness_enabled()
+        or lite_harness.destructive_enabled()
+        or lite_harness.qualification_owner_enabled()
+        or lite_harness._flag("POCKETLAB_TEST_AUTH_BYPASS")
+    ):
+        raise PolicySourceSyncError(
+            "assurance_policy_sync_disabled",
+            "Qualification policy synchronization is disabled by the runtime safety gates.",
+            status_code=403,
+        )
+    principal_id = str(harness.get("principal_id") or "").strip()[:80]
+    if not principal_id:
+        raise PolicySourceSyncError(
+            "assurance_policy_sync_denied",
+            "The signed session has no valid qualification principal.",
+            status_code=403,
+        )
+    return principal_id, str(harness.get("session_id") or "")[:100]
+
+
+def request_assurance_source_sync(
+    *, auth_context: dict[str, Any], correlation_id: str | None = None
+) -> dict[str, Any]:
+    """Queue only the current repository Safety Rules for assurance qualification.
+
+    This path deliberately accepts no policy text, revision, file path, role,
+    target, or activation option.  It records the same durable activation
+    operation consumed by the core supervisor, while keeping the normal human
+    Owner source-sync route unchanged.
+    """
+    principal_id, session_id = _require_assurance_context(auth_context)
+    apply_migrations()
+    state = source_state()
+    cleanup = {"owner_approval_requests_cancelled": 0, "mode": "security_assurance"}
+    if not state.get("durable"):
+        return {
+            "status": "current",
+            "accepted": False,
+            "activation_required": False,
+            "summary": "Safety Rules are using the repository baseline; no durable source update is pending.",
+            "cleanup": cleanup,
+            "source": _public_state(state),
+        }
+    candidate = state.get("candidate") if isinstance(state.get("candidate"), dict) else {}
+    candidate_revision = str(candidate.get("revision_id") or "")
+    if not candidate_revision:
+        raise PolicySourceSyncError(
+            "policy_source_validation_unavailable",
+            "Pocket Lab could not derive the repository Safety Rules revision.",
+            status_code=503,
+        )
+    existing_operation = state.get("activation_operation") if isinstance(state.get("activation_operation"), dict) else None
+    if existing_operation:
+        if str(existing_operation.get("candidate_revision_id") or "") == candidate_revision:
+            return {
+                "status": "already_requested",
+                "accepted": True,
+                "activation_required": True,
+                "summary": "Safety Rules update is already being verified by Pocket Lab.",
+                "cleanup": cleanup,
+                "source": _public_state(state),
+                "operation": {
+                    "operation_id": str(existing_operation.get("operation_id") or "")[:120],
+                    "candidate_revision_id": candidate_revision[:80],
+                    "state": str(existing_operation.get("state") or "")[:40],
+                },
+            }
+        raise PolicySourceSyncError(
+            "policy_activation_in_progress",
+            "Another Safety Rules activation is already in progress.",
+            status_code=409,
+        )
+    if not state.get("source_update_required"):
+        return {
+            "status": "current",
+            "accepted": False,
+            "activation_required": False,
+            "summary": "Safety Rules already match the repository source.",
+            "cleanup": cleanup,
+            "source": _public_state(state),
+        }
+
+    now = _now()
+    operation_id = "plo-" + uuid.uuid4().hex
+    safe_correlation = str(correlation_id or session_id or uuid.uuid4().hex)[:80]
+    manifest_json = _canonical({"files": candidate["manifest"], "candidate_hash": candidate["content_hash"]})
+    parameters_json = _canonical(candidate["parameters"])
+    try:
+        with connection() as conn:
+            with begin_immediate(conn) as tx:
+                runtime = tx.execute(
+                    "SELECT active_revision_id,known_good_revision_id FROM policy_runtime_state WHERE state_id=1"
+                ).fetchone()
+                if not runtime or str(runtime["active_revision_id"] or "") != str(state.get("active_revision") or ""):
+                    raise PolicySourceSyncError(
+                        "policy_source_state_changed",
+                        "Safety Rules changed while Pocket Lab was preparing the update. Refresh and try again.",
+                        status_code=409,
+                    )
+                nonterminal = tx.execute(
+                    """SELECT operation_id,candidate_revision_id,state FROM policy_activation_operations
+                       WHERE state IN ('pending','validating','switching','restarting','verifying','rolling_back','uncertain')
+                       LIMIT 1"""
+                ).fetchone()
+                if nonterminal:
+                    raise PolicySourceSyncError(
+                        "policy_activation_in_progress",
+                        "Another Safety Rules activation is already in progress.",
+                        status_code=409,
+                    )
+                tx.execute(
+                    """INSERT INTO policy_revisions(
+                           revision_id,parent_revision_id,template_id,template_version,
+                           canonical_parameters_json,manifest_json,content_hash,created_by_human_id,
+                           created_by_principal_type,created_by_principal_id,created_at,
+                           validation_status,validation_reason_code,lifecycle_status,
+                           change_summary
+                       ) VALUES (?,?,?,?,?,?,?,?,?,?,?,'pending','','draft',?)
+                       ON CONFLICT(revision_id) DO NOTHING""",
+                    (
+                        candidate_revision,
+                        str(runtime["active_revision_id"] or "") or None,
+                        candidate["template_id"],
+                        candidate["template_version"],
+                        parameters_json,
+                        manifest_json,
+                        candidate["content_hash"],
+                        None,
+                        "qualification",
+                        principal_id,
+                        now,
+                        "Qualification-only assurance policy source synchronization.",
+                    ),
+                )
+                revision = tx.execute(
+                    "SELECT manifest_json,content_hash FROM policy_revisions WHERE revision_id=?",
+                    (candidate_revision,),
+                ).fetchone()
+                if not revision or str(revision["manifest_json"] or "") != manifest_json or str(revision["content_hash"] or "") != str(candidate["content_hash"]):
+                    raise PolicySourceSyncError(
+                        "policy_source_revision_conflict",
+                        "The repository Safety Rules candidate did not match its immutable revision record.",
+                        status_code=409,
+                    )
+                tx.execute(
+                    """INSERT INTO policy_activation_operations(
+                           operation_id,requested_by_human_id,requested_by_principal_type,
+                           requested_by_principal_id,correlation_id,candidate_revision_id,
+                           prior_known_good_revision_id,state,created_at,updated_at
+                       ) VALUES (?,?,?,?,?,?,?,'pending',?,?)""",
+                    (
+                        operation_id,
+                        None,
+                        "qualification",
+                        principal_id,
+                        safe_correlation,
+                        candidate_revision,
+                        str(runtime["known_good_revision_id"] or "") or None,
+                        now,
+                        now,
+                    ),
+                )
+                from . import lite_harness
+
+                lite_harness._insert_audit(
+                    tx,
+                    event_type="assurance_policy_source_sync_requested",
+                    reason_code="assurance_policy_source_sync_requested",
+                    principal_id=principal_id,
+                    principal_class="qualification",
+                    harness_session_id=session_id,
+                    purpose="security.assurance",
+                    capability="security.assurance.policy_sync",
+                    target_scope="local_server_host_only",
+                    operation_id=operation_id,
+                    result="accepted",
+                    summary="Qualification assurance queued the current repository Safety Rules for supervisor verification.",
+                    correlation_id=safe_correlation,
+                )
+    except sqlite3.IntegrityError as exc:
+        raise PolicySourceSyncError(
+            "policy_activation_in_progress",
+            "Another Safety Rules activation is already in progress.",
+            status_code=409,
+        ) from exc
+    return {
+        "status": "queued",
+        "accepted": True,
+        "activation_required": True,
+        "summary": "Safety Rules update was accepted for qualification and will be staged, verified, and rolled back automatically if proof fails.",
+        "cleanup": cleanup,
+        "source": _public_state(state),
+        "operation": {
+            "operation_id": operation_id,
+            "candidate_revision_id": candidate_revision[:80],
+            "state": "pending",
+        },
+    }
+
+
 def request_source_sync(*, auth_context: dict[str, Any], correlation_id: str | None = None) -> dict[str, Any]:
     """Record an Owner-confirmed source synchronization for supervisor execution."""
     apply_migrations()

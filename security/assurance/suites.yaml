@@ -1,0 +1,52 @@
+schema_version: "1.0.0"
+name: pocketlab-runtime-security-assurance-suites
+target_scope: local_server_host_only
+execution_owner: worker
+profiles:
+  smoke:
+    purpose: Fast bounded runtime assurance using existing low-power Security and critical control-boundary checks.
+    target_seconds: 180
+    # The target stays fast, but the Android/Termux ARM64 Security Quick path
+    # is a real worker-owned scan.  The observed qualification envelope has
+    # reached just over ten minutes on a resource-constrained phone, so keep a
+    # bounded margin rather than turning a late, complete scanner result into a
+    # false PARTIAL run.
+    # The latest exact-head qualification completed the real Quick path in
+    # 922 seconds on the resource-constrained phone. Keep a bounded margin.
+    maximum_seconds: 1200
+    explicit_only: false
+    qualification_only: false
+    existing_security_profile: quick
+    allowed_safety_classes: [PASSIVE, SAFE_ACTIVE]
+    required_capabilities: [security.assurance.read, security.assurance.passive, security.assurance.runtime, security.assurance.sca, security.assurance.threat_scenario, security.assurance.report]
+    scenarios: [harness-default-off, harness-auth-boundary, caddy-proof-strip, runtime-readiness, control-plane-ownership, evidence-redaction, security-projection, threat-model-integrity]
+  standard:
+    purpose: Normal runtime qualification with the existing Quick scanner, API boundary probes, policy readiness, and threat coverage.
+    target_seconds: 900
+    maximum_seconds: 1800
+    explicit_only: false
+    qualification_only: false
+    existing_security_profile: quick
+    allowed_safety_classes: [PASSIVE, SAFE_ACTIVE]
+    required_capabilities: [security.assurance.read, security.assurance.passive, security.assurance.sast, security.assurance.sca, security.assurance.api, security.assurance.runtime, security.assurance.threat_scenario, security.assurance.report, security.assurance.baseline]
+    scenarios: [harness-default-off, harness-auth-boundary, caddy-proof-strip, runtime-readiness, control-plane-ownership, evidence-redaction, security-projection, policy-readiness, source-boundaries, threat-model-integrity, attack-path-inventory]
+  deep:
+    purpose: Manual-only extended assurance profile; approved heavyweight tools execute through the fixed DEV-PC lanes and the existing worker-owned Security path.
+    target_seconds: 3600
+    maximum_seconds: 7200
+    explicit_only: true
+    qualification_only: false
+    existing_security_profile: full
+    allowed_safety_classes: [PASSIVE, SAFE_ACTIVE]
+    required_capabilities: [security.assurance.read, security.assurance.passive, security.assurance.sast, security.assurance.sca, security.assurance.api, security.assurance.runtime, security.assurance.threat_scenario, security.assurance.report, security.assurance.baseline]
+    scenarios: [harness-default-off, harness-auth-boundary, caddy-proof-strip, runtime-readiness, control-plane-ownership, evidence-redaction, security-projection, policy-readiness, source-boundaries, threat-model-integrity, attack-path-inventory]
+  adversarial:
+    purpose: Qualification-only reviewed adversarial checks limited to fixed local control-boundary requests.
+    target_seconds: 180
+    maximum_seconds: 600
+    explicit_only: true
+    qualification_only: true
+    existing_security_profile: null
+    allowed_safety_classes: [SAFE_ACTIVE]
+    required_capabilities: [security.assurance.read, security.assurance.api, security.assurance.runtime, security.assurance.threat_scenario, security.assurance.report]
+    scenarios: [harness-auth-boundary, caddy-proof-strip, runtime-readiness, evidence-redaction, source-boundaries, adversarial-negative-auth-probes]

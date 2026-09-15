@@ -1,0 +1,125 @@
+schema_version: "1.0.0"
+name: pocketlab-runtime-security-assurance-scenarios
+primary_framework: STRIDE
+owasp_version: "2021"
+scenarios:
+  - id: harness-default-off
+    title: Harness default-off and production fail-closed state
+    execution: configuration_posture
+    safety_class: PASSIVE
+    required_capability: security.assurance.passive
+    suites: [smoke, standard, deep]
+    stride: [Spoofing, Elevation of Privilege]
+    owasp: [A07, A01]
+    controls: [CTRL-API-CONTROL, CTRL-EVIDENCE-SANITIZE]
+    attack_paths: [AP-01, AP-02, AP-03]
+  - id: harness-auth-boundary
+    title: Synthetic Ed25519 session and capability boundary
+    execution: authenticated_admission_posture
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.runtime
+    suites: [smoke, standard, deep, adversarial]
+    stride: [Spoofing, Tampering, Elevation of Privilege]
+    owasp: [A07, A01]
+    controls: [CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS]
+    attack_paths: [AP-01, AP-02, AP-03, AP-04, AP-09, AP-10]
+  - id: caddy-proof-strip
+    title: Caddy never forwards qualification proof into FastAPI authority
+    execution: fixed_caddy_probe
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.api
+    suites: [smoke, standard, deep, adversarial]
+    stride: [Spoofing, Tampering, Elevation of Privilege]
+    owasp: [A07, A01]
+    controls: [CTRL-API-CONTROL]
+    attack_paths: [AP-01, AP-02, AP-07, AP-09]
+  - id: runtime-readiness
+    title: API health/readiness and PM2 readiness distinction
+    execution: fixed_local_health_probe
+    safety_class: PASSIVE
+    required_capability: security.assurance.runtime
+    suites: [smoke, standard, deep, adversarial]
+    stride: [Denial of Service]
+    owasp: []
+    controls: [CTRL-API-CONTROL]
+    attack_paths: [AP-07, AP-11, AP-12]
+  - id: control-plane-ownership
+    title: Assurance execution remains FastAPI to NATS to worker owned
+    execution: worker_execution_receipt
+    safety_class: PASSIVE
+    required_capability: security.assurance.runtime
+    suites: [smoke, standard, deep]
+    stride: [Tampering, Repudiation, Elevation of Privilege]
+    owasp: [A01, A08, A09]
+    controls: [CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS]
+    attack_paths: [AP-01, AP-02, AP-04, AP-06]
+  - id: evidence-redaction
+    title: Assurance evidence contains only normalized sanitized output
+    execution: redaction_contract
+    safety_class: PASSIVE
+    required_capability: security.assurance.passive
+    suites: [smoke, standard, deep, adversarial]
+    stride: [Repudiation, Information Disclosure, Tampering]
+    owasp: [A02, A05, A08, A09]
+    controls: [CTRL-EVIDENCE-SANITIZE]
+    attack_paths: [AP-05, AP-06, AP-08]
+  - id: security-projection
+    title: Existing Security projection and scanner lifecycle are available
+    execution: existing_security_projection
+    safety_class: PASSIVE
+    required_capability: security.assurance.sca
+    suites: [smoke, standard, deep]
+    stride: [Tampering, Repudiation, Denial of Service]
+    owasp: [A06, A08, A09]
+    controls: [CTRL-EVIDENCE-SANITIZE, CTRL-EXECUTION-OWNERS]
+    attack_paths: [AP-04, AP-05, AP-06, AP-08]
+  - id: policy-readiness
+    title: OPA loopback readiness and policy revision consistency
+    execution: existing_opa_status
+    safety_class: PASSIVE
+    required_capability: security.assurance.runtime
+    suites: [standard, deep]
+    stride: [Tampering, Denial of Service, Elevation of Privilege]
+    owasp: [A01, A08]
+    controls: [CTRL-POLICY-REVISION-LIFECYCLE]
+    attack_paths: [AP-11, AP-12, AP-14]
+  - id: source-boundaries
+    title: Canonical source preserves browser, shell, NATS, and user-media boundaries
+    execution: bounded_source_assertions
+    safety_class: PASSIVE
+    required_capability: security.assurance.sast
+    suites: [standard, deep, adversarial]
+    stride: [Tampering, Information Disclosure, Elevation of Privilege]
+    owasp: [A01, A02, A05, A08]
+    controls: [CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS, CTRL-EVIDENCE-SANITIZE]
+    attack_paths: [AP-01, AP-02, AP-04, AP-05, AP-07]
+  - id: adversarial-negative-auth-probes
+    title: Fixed malformed authentication and input probes remain denied
+    execution: fixed_negative_auth_probes
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.api
+    suites: [adversarial]
+    stride: [Spoofing, Tampering, Elevation of Privilege]
+    owasp: [A01, A03, A07]
+    controls: [CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS]
+    attack_paths: [AP-01, AP-02, AP-03, AP-04, AP-09, AP-10]
+  - id: threat-model-integrity
+    title: Current canonical threat model is complete and executable statuses are explicit
+    execution: canonical_threat_model_check
+    safety_class: PASSIVE
+    required_capability: security.assurance.threat_scenario
+    suites: [smoke, standard, deep]
+    stride: [Tampering, Repudiation]
+    owasp: [A08, A09]
+    controls: [CTRL-EVIDENCE-SANITIZE]
+    attack_paths: [AP-01, AP-02, AP-03, AP-04, AP-05, AP-06, AP-07, AP-08, AP-09, AP-10, AP-11, AP-12, AP-13, AP-14]
+  - id: attack-path-inventory
+    title: Every current AP path has a bounded execution classification
+    execution: attack_path_inventory
+    safety_class: PASSIVE
+    required_capability: security.assurance.threat_scenario
+    suites: [standard, deep]
+    stride: [Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege]
+    owasp: [A01, A02, A07, A08, A09]
+    controls: [CTRL-EVIDENCE-SANITIZE]
+    attack_paths: [AP-01, AP-02, AP-03, AP-04, AP-05, AP-06, AP-07, AP-08, AP-09, AP-10, AP-11, AP-12, AP-13, AP-14]

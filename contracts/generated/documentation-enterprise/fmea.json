@@ -78,7 +78,10 @@
       ],
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
-      "reason_codes": [],
+      "reason_codes": [
+        "nats_fault_requires_active_assurance_run",
+        "nats_probe_failed"
+      ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
       "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -104,6 +107,8 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "pm2_worker_missing",
+        "pm2_worker_status_unparsed",
         "worker_failed",
         "worker_start_timeout"
       ],
@@ -132,14 +137,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "assurance_deadline_exceeded",
+        "assurance_orphaned_child_reconciled",
+        "assurance_policy_sync_denied",
+        "assurance_policy_sync_disabled",
+        "assurance_session_binding_mismatch",
         "battery_policy_threshold",
-        "checkpoint_ineligible",
-        "configured_target_budget",
-        "deferred_resource_pressure",
-        "elapsed_budget_exhausted",
-        "enterprise_connect_links_retired",
-        "enterprise_mode_disabled",
-        "enterprise_owner_authority_required"
+        "bootstrap_transport_rejected",
+        "checkpoint_ineligible"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -199,7 +204,10 @@
       ],
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
-      "reason_codes": [],
+      "reason_codes": [
+        "nats_fault_requires_active_assurance_run",
+        "nats_probe_failed"
+      ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
       "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -365,7 +373,10 @@
       ],
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
-      "reason_codes": [],
+      "reason_codes": [
+        "nats_fault_requires_active_assurance_run",
+        "nats_probe_failed"
+      ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
       "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -391,6 +402,8 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "pm2_worker_missing",
+        "pm2_worker_status_unparsed",
         "worker_failed",
         "worker_start_timeout"
       ],
@@ -533,14 +546,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
-        "enterprise_connect_links_retired",
-        "webauthn_algorithm_unsupported",
-        "webauthn_assertion_invalid",
-        "webauthn_attestation_unsupported",
-        "webauthn_attested_data_missing",
-        "webauthn_authenticator_data_invalid",
-        "webauthn_cbor_invalid",
-        "webauthn_challenge_expired"
+        "assurance_deadline_exceeded",
+        "assurance_orphaned_child_reconciled",
+        "assurance_policy_sync_denied",
+        "assurance_policy_sync_disabled",
+        "assurance_session_binding_mismatch",
+        "bootstrap_transport_rejected",
+        "connection_failed",
+        "enterprise_connect_links_retired"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -634,7 +647,10 @@
       ],
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
-      "reason_codes": [],
+      "reason_codes": [
+        "nats_fault_requires_active_assurance_run",
+        "nats_probe_failed"
+      ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
       "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -660,6 +676,8 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "pm2_worker_missing",
+        "pm2_worker_status_unparsed",
         "worker_failed",
         "worker_start_timeout"
       ],
@@ -798,13 +816,13 @@
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
         "policy_unavailable",
+        "assurance_policy_sync_denied",
+        "assurance_policy_sync_disabled",
         "battery_policy_threshold",
         "generic_policy_toggle_retired",
         "identity_unavailable",
-        "owner_approval_policy_inconsistent",
-        "policy_action_not_registered",
-        "policy_activation_in_progress",
-        "policy_activation_not_uncertain"
+        "opa_status_unknown",
+        "owner_approval_policy_inconsistent"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -831,14 +849,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "assurance_policy_sync_denied",
+        "assurance_policy_sync_disabled",
         "battery_policy_threshold",
         "generic_policy_toggle_retired",
         "human_session_required",
         "identity_unavailable",
         "owner_approval_policy_inconsistent",
-        "policy_action_not_registered",
-        "policy_activation_in_progress",
-        "policy_activation_not_uncertain"
+        "policy_action_not_registered"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -957,7 +975,10 @@
       ],
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
-      "reason_codes": [],
+      "reason_codes": [
+        "nats_fault_requires_active_assurance_run",
+        "nats_probe_failed"
+      ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
       "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -983,6 +1004,8 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "pm2_worker_missing",
+        "pm2_worker_status_unparsed",
         "worker_failed",
         "worker_start_timeout"
       ],

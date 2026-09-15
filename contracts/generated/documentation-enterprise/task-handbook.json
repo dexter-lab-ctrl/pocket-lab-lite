@@ -4712,6 +4712,86 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
+        "{{.PYTHON}} scripts/dev/lite/harness.py bootstrap --principal-id \"{{.PRINCIPAL_ID}}\" --key-file \"{{.KEY_FILE}}\""
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:harness:bootstrap",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/harness.py"
+      ],
+      "name": "lite:harness:bootstrap",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Complete the one-use key-bound assurance bootstrap without printing the session token",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": true,
+      "safe_local": false,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": true
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/harness.py keygen --key-file \"{{.KEY_FILE}}\""
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:harness:keygen",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/harness.py"
+      ],
+      "name": "lite:harness:keygen",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Create disposable 0600 Ed25519 qualification key material outside the repository",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
         "{{.PYTHON}} scripts/dev/lite/harness.py principal-create --principal-id \"{{.PRINCIPAL_ID}}\" --display-name \"{{.DISPLAY_NAME}}\" --key-file \"{{.KEY_FILE}}\" --profile \"{{.PROFILE}}\""
       ],
       "dependencies": [],
@@ -4986,6 +5066,726 @@
       "source": "tasks/Taskfile.lite.yml",
       "validation_outcome": "not-a-validation-task",
       "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "bash scripts/dev/lite/start-qualification.sh --bootstrap-principal-id \"{{.PRINCIPAL_ID}}\" --bootstrap-public-key-file \"{{.PUBLIC_KEY_FILE}}\" --bootstrap-profile security-assurance-runner"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:qualification:start:key-bound",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/start-qualification.sh"
+      ],
+      "name": "lite:qualification:start:key-bound",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Explicitly start qualification with operator-approved security-assurance public-key bootstrap",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": true,
+      "safe_local": false,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": true
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "bash scripts/dev/lite/start-qualification.sh --bootstrap-principal-id \"{{.PRINCIPAL_ID}}\" --bootstrap-public-key-file \"{{.PUBLIC_KEY_FILE}}\" --bootstrap-profile security-assurance-runner --enable-fault-control"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:qualification:start:key-bound:faults",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/start-qualification.sh"
+      ],
+      "name": "lite:qualification:start:key-bound:faults",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Explicitly start key-bound qualification with the fixed non-destructive service-fault controls enabled",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": true,
+      "safe_local": false,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": true
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance.py run adversarial"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:adversarial",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance.py"
+      ],
+      "name": "lite:security:assurance:adversarial",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run the qualification-only fixed adversarial assurance suite",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance.py check"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:check",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance.py"
+      ],
+      "name": "lite:security:assurance:check",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Show the server-owned Runtime Security Assurance registry without starting a run",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance.py compare \"{{.RUN_ID}}\""
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:compare",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance.py"
+      ],
+      "name": "lite:security:assurance:compare",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Read one normalized runtime security assurance baseline delta",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance.py run deep"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:deep",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance.py"
+      ],
+      "name": "lite:security:assurance:deep",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run the explicit manual-only Deep runtime security assurance suite",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance.py fault \"{{.FAULT_ID}}\""
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:fault",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance.py"
+      ],
+      "name": "lite:security:assurance:fault",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Execute one registered non-destructive qualification service-fault control",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance.py policy-sync --wait-seconds \"{{.WAIT_SECONDS}}\""
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:policy-sync",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance.py"
+      ],
+      "name": "lite:security:assurance:policy-sync",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Queue the current repository Safety Rules through the qualification-only supervisor lifecycle",
+      "related_tasks": [],
+      "repository_mutation": true,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": true,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance.py preflight \"{{.SUITE}}\""
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:preflight",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance.py"
+      ],
+      "name": "lite:security:assurance:preflight",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run fixed local admission checks for one registered assurance suite",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance.py qualify --principal-id \"{{.PRINCIPAL_ID}}\" --key-file \"{{.KEY_FILE}}\" --sync-policy --policy-sync-wait-seconds \"{{.POLICY_SYNC_WAIT_SECONDS}}\""
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:qualify",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance.py"
+      ],
+      "name": "lite:security:assurance:qualify",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run the bounded key-bound qualification workflow with renewal, reattach, and cleanup",
+      "related_tasks": [],
+      "repository_mutation": true,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": true,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance.py qualify --principal-id \"{{.PRINCIPAL_ID}}\" --key-file \"{{.KEY_FILE}}\" --sync-policy --policy-sync-wait-seconds \"{{.POLICY_SYNC_WAIT_SECONDS}}\" --full"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:qualify:full",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance.py"
+      ],
+      "name": "lite:security:assurance:qualify:full",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run phone qualification plus the fixed DEV-PC Standard and Deep tool lanes",
+      "related_tasks": [],
+      "repository_mutation": true,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": true,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance.py report \"{{.RUN_ID}}\""
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:report",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance.py"
+      ],
+      "name": "lite:security:assurance:report",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Read one sanitized runtime security assurance report",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance.py scenario \"{{.ID}}\""
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:scenario",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance.py"
+      ],
+      "name": "lite:security:assurance:scenario",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run one registered scenario through the Standard assurance profile",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance.py run smoke"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:smoke",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance.py"
+      ],
+      "name": "lite:security:assurance:smoke",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run the bounded Smoke runtime security assurance suite",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance.py run standard"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:standard",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance.py"
+      ],
+      "name": "lite:security:assurance:standard",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run the bounded Standard runtime security assurance suite",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance_toolchain.py check"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:tools:check",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance_toolchain.py"
+      ],
+      "name": "lite:security:assurance:tools:check",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Check every registered assurance tool as READY, NOT_APPLICABLE, or FAILED",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance_toolchain.py install"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:tools:install",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance_toolchain.py"
+      ],
+      "name": "lite:security:assurance:tools:install",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Install or promote the fixed DEV-PC Runtime Security Assurance toolchain outside Git",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": true,
+      "safe_local": false,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": true
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance_toolchain.py run \"{{.SUITE}}\""
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:tools:run",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance_toolchain.py"
+      ],
+      "name": "lite:security:assurance:tools:run",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run one fixed DEV-PC assurance tool lane for a registered suite",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
     },
     {
       "aliases": [],

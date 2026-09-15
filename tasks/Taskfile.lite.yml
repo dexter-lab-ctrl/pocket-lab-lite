@@ -86,6 +86,20 @@ tasks:
     cmds:
       - '{{.PYTHON}} scripts/dev/lite/harness.py verify-off'
 
+  lite:harness:keygen:
+    desc: Create disposable 0600 Ed25519 qualification key material outside the repository
+    requires:
+      vars: [KEY_FILE]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/harness.py keygen --key-file "{{.KEY_FILE}}"'
+
+  lite:harness:bootstrap:
+    desc: Complete the one-use key-bound assurance bootstrap without printing the session token
+    requires:
+      vars: [PRINCIPAL_ID, KEY_FILE]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/harness.py bootstrap --principal-id "{{.PRINCIPAL_ID}}" --key-file "{{.KEY_FILE}}"'
+
   lite:harness:principal:create:
     desc: Register public Ed25519 material with a server-owned profile
     requires:
@@ -114,6 +128,142 @@ tasks:
     desc: Explicitly start the qualification profile; requires a provisioning token and remains separate from normal Lite startup
     cmds:
       - bash scripts/dev/lite/start-qualification.sh
+
+  lite:qualification:start:key-bound:
+    desc: Explicitly start qualification with operator-approved security-assurance public-key bootstrap
+    requires:
+      vars: [PRINCIPAL_ID, PUBLIC_KEY_FILE]
+    cmds:
+      - >-
+        bash scripts/dev/lite/start-qualification.sh
+        --bootstrap-principal-id "{{.PRINCIPAL_ID}}"
+        --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}"
+        --bootstrap-profile security-assurance-runner
+
+  lite:qualification:start:key-bound:faults:
+    desc: Explicitly start key-bound qualification with the fixed non-destructive service-fault controls enabled
+    requires:
+      vars: [PRINCIPAL_ID, PUBLIC_KEY_FILE]
+    cmds:
+      - >-
+        bash scripts/dev/lite/start-qualification.sh
+        --bootstrap-principal-id "{{.PRINCIPAL_ID}}"
+        --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}"
+        --bootstrap-profile security-assurance-runner
+        --enable-fault-control
+
+  lite:security:assurance:check:
+    desc: Show the server-owned Runtime Security Assurance registry without starting a run
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py check'
+
+  lite:security:assurance:preflight:
+    desc: Run fixed local admission checks for one registered assurance suite
+    vars:
+      SUITE: '{{default "smoke" .SUITE}}'
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py preflight "{{.SUITE}}"'
+
+  lite:security:assurance:policy-sync:
+    desc: Queue the current repository Safety Rules through the qualification-only supervisor lifecycle
+    vars:
+      WAIT_SECONDS: '{{default "120" .WAIT_SECONDS}}'
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py policy-sync --wait-seconds "{{.WAIT_SECONDS}}"'
+
+  lite:security:assurance:smoke:
+    desc: Run the bounded Smoke runtime security assurance suite
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py run smoke'
+
+  lite:security:assurance:standard:
+    desc: Run the bounded Standard runtime security assurance suite
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py run standard'
+
+  lite:security:assurance:deep:
+    desc: Run the explicit manual-only Deep runtime security assurance suite
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py run deep'
+
+  lite:security:assurance:adversarial:
+    desc: Run the qualification-only fixed adversarial assurance suite
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py run adversarial'
+
+  lite:security:assurance:fault:
+    desc: Execute one registered non-destructive qualification service-fault control
+    requires:
+      vars: [FAULT_ID]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py fault "{{.FAULT_ID}}"'
+
+  lite:security:assurance:scenario:
+    desc: Run one registered scenario through the Standard assurance profile
+    requires:
+      vars: [ID]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py scenario "{{.ID}}"'
+
+  lite:security:assurance:report:
+    desc: Read one sanitized runtime security assurance report
+    requires:
+      vars: [RUN_ID]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py report "{{.RUN_ID}}"'
+
+  lite:security:assurance:compare:
+    desc: Read one normalized runtime security assurance baseline delta
+    requires:
+      vars: [RUN_ID]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance.py compare "{{.RUN_ID}}"'
+
+  lite:security:assurance:tools:install:
+    desc: Install or promote the fixed DEV-PC Runtime Security Assurance toolchain outside Git
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance_toolchain.py install'
+
+  lite:security:assurance:tools:check:
+    desc: Check every registered assurance tool as READY, NOT_APPLICABLE, or FAILED
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance_toolchain.py check'
+
+  lite:security:assurance:tools:run:
+    desc: Run one fixed DEV-PC assurance tool lane for a registered suite
+    vars:
+      SUITE: '{{default "deep" .SUITE}}'
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance_toolchain.py run "{{.SUITE}}"'
+
+  lite:security:assurance:qualify:
+    desc: Run the bounded key-bound qualification workflow with renewal, reattach, and cleanup
+    vars:
+      PRINCIPAL_ID: '{{default "codex-security-assurance" .PRINCIPAL_ID}}'
+      KEY_FILE: '{{default "~/.pocketlab-qualification/codex-security-assurance.key" .KEY_FILE}}'
+      POLICY_SYNC_WAIT_SECONDS: '{{default "120" .POLICY_SYNC_WAIT_SECONDS}}'
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/security_assurance.py qualify
+        --principal-id "{{.PRINCIPAL_ID}}"
+        --key-file "{{.KEY_FILE}}"
+        --sync-policy
+        --policy-sync-wait-seconds "{{.POLICY_SYNC_WAIT_SECONDS}}"
+
+  lite:security:assurance:qualify:full:
+    desc: Run phone qualification plus the fixed DEV-PC Standard and Deep tool lanes
+    vars:
+      PRINCIPAL_ID: '{{default "codex-security-assurance" .PRINCIPAL_ID}}'
+      KEY_FILE: '{{default "~/.pocketlab-qualification/codex-security-assurance.key" .KEY_FILE}}'
+      POLICY_SYNC_WAIT_SECONDS: '{{default "120" .POLICY_SYNC_WAIT_SECONDS}}'
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/security_assurance.py qualify
+        --principal-id "{{.PRINCIPAL_ID}}"
+        --key-file "{{.KEY_FILE}}"
+        --sync-policy
+        --policy-sync-wait-seconds "{{.POLICY_SYNC_WAIT_SECONDS}}"
+        --full
 
   lite:check:quick:
     desc: 'Fast developer gate: compile, shell syntax, focused tests, contracts, PWA build, and cheap doc drift'

@@ -336,3 +336,14 @@ def test_caddy_strips_qualification_proof_headers(route):
         assert f"header_up -X-Pocket-Lab-Harness-{header}" in handler
     if route == "/api/lite/security/events":
         assert "flush_interval -1" in handler
+
+
+def test_caddy_denies_the_entire_direct_loopback_harness_namespace():
+    source = Path(
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
+    ).read_text(encoding="utf-8")
+    matcher = source.split("  @pocketlab_harness_routes {", 1)[1].split("  }", 1)[0]
+    assert "path /api/lite/harness /api/lite/harness/*" in matcher
+    handler = source.split("  handle @pocketlab_harness_routes {", 1)[1].split("\n  }", 1)[0]
+    assert "respond 404" in handler
+    assert source.index("handle @pocketlab_harness_routes") < source.index("handle /api/*")

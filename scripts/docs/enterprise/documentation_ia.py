@@ -852,6 +852,7 @@ def _owner(path: str) -> str:
         "recovery/backup-restore.md": "reference",
         "validation/lite-validation.md": "reference",
         "validation/qualification-maintenance-harness.md": "build-test",
+        "validation/runtime-security-assurance-harness.md": "build-test",
     }
     if path in exact:
         return exact[path]

@@ -255,7 +255,7 @@ SUPPORTED_APP_CHECK_TARGETS = {
 }
 
 SENSITIVE_KEY_RE = re.compile(
-    r"(token|password|passwd|pwd|secret|api[_-]?key|authorization|bearer|vault|unseal|nats|invite|tailscale[_-]?auth|private[_-]?key)",
+    r"(token|password|passwd|pwd|secret|api[_-]?key|authorization|bearer|vault|unseal|nats|invite|tailscale[_-]?auth|private[_-]?key|cookie|csrf)",
     re.IGNORECASE,
 )
 

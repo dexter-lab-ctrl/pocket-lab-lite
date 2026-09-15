@@ -32,10 +32,26 @@
           "method": "POST",
           "operation_id": "revoke_lite_fleet_invite_api_lite_fleet_invites__invite_id__revoke_post",
           "path": "/api/lite/fleet/invites/{invite_id}/revoke"
+        },
+        {
+          "method": "POST",
+          "operation_id": "bootstrap_challenge_api_lite_harness_bootstrap_challenge_post",
+          "path": "/api/lite/harness/bootstrap/challenge"
+        },
+        {
+          "method": "POST",
+          "operation_id": "bootstrap_complete_api_lite_harness_bootstrap_complete_post",
+          "path": "/api/lite/harness/bootstrap/complete"
+        },
+        {
+          "method": "POST",
+          "operation_id": "bootstrap_grant_api_lite_harness_bootstrap_grants_post",
+          "path": "/api/lite/harness/bootstrap/grants"
         }
       ],
       "backend_handler": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/harness.py",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py"
       ],
@@ -56,6 +72,7 @@
       ],
       "fastapi_handler": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/harness.py",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py"
       ],
@@ -78,6 +95,7 @@
       "result_event": "canonical lifecycle/event projection when declared",
       "source_files": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/harness.py",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py",
         "src/lib/liteApi.js",

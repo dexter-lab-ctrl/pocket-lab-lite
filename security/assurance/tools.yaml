@@ -1,0 +1,578 @@
+schema_version: "2.0.0"
+name: pocketlab-runtime-security-assurance-tools
+description: >-
+  Server-owned, fixed-command contracts for phone-worker, DEV-PC static, and
+  DEV-PC live-runtime assurance lanes. Callers select a suite only; they never
+  select an executable, argv, path, URL, environment, target, or scanner option.
+execution_defaults:
+  shell: false
+  cwd: repository_root
+  allowed_target: local_server_host_only
+  allowed_target_scope: local_server_host_only
+  timeout_seconds: 5
+  max_output_bytes: 32768
+  process_group_cleanup: true
+  concurrency: exclusive_for_heavy_tools
+  output_parser: first_version_line_only
+  finding_normalizer: normalized_sanitized_assurance_finding
+  sanitization_policy: lite_security_policy.redact_value
+  failure_classification: [missing, failed, timed_out, output_limited]
+toolchain:
+  - id: pocketlab-security
+    version_pin: runtime-reported
+    installation_source: existing_pocketlab_security_worker
+    purpose: Existing worker-owned Quick/Full Security lifecycle, scanner fusion, cache, SBOM, and sanitized evidence.
+    execution: existing_worker_security_path
+    execution_lane: server_phone_worker
+    supported_platforms: [android-termux-arm64, ubuntu-wsl2]
+    native_status: VERIFIED native when discovered by existing Security path
+    harness_status: ACTIVE
+    resource_class: heavy
+    allowed_mode: registered_security_profile
+    required_capability: security.assurance.sca
+    suite_membership: [smoke, standard, deep]
+    binary_discovery: repository_service
+    version_command: existing_security_tool_result
+    version_source: repository_revision
+    command_id: security.existing_profile
+    fixed_target: server_runtime_local
+    fixed_argv: [registered_profile_only]
+    parser: existing_security_projection
+    sanitizer: lite_security_policy.redact_value
+    timeout_seconds: 7200
+    max_output_bytes: 262144
+    ruleset: existing_security_registry
+    template_allowlist: none
+    retry_safe: true
+    resume_supported: true
+    checkpoint_supported: true
+    max_attempts: 2
+    checksum_policy: existing_security_receipt
+    signature_policy: existing_security_receipt
+  - id: trivy
+    version_pin: runtime-reported
+    installation_source: existing_pocketlab_security_worker
+    purpose: Existing bounded vulnerability, misconfiguration, secret-mode, and SBOM execution through Security.
+    execution: existing_worker_security_path
+    execution_lane: server_phone_worker
+    supported_platforms: [android-termux-arm64, ubuntu-wsl2]
+    native_status: VERIFIED native when discovered by existing Security path
+    harness_status: ACTIVE
+    resource_class: heavy
+    allowed_mode: existing_profile_only
+    required_capability: security.assurance.sca
+    suite_membership: [smoke, standard, deep]
+    binary_discovery: server_owned_path_lookup
+    version_command: existing_security_tool_result
+    version_source: registered_security_tool_result
+    command_id: security.trivy_profile
+    fixed_target: server_runtime_local
+    fixed_argv: [registered_profile_only]
+    parser: existing_security_projection
+    sanitizer: lite_security_policy.redact_value
+    timeout_seconds: 7200
+    max_output_bytes: 262144
+    ruleset: existing_security_registry
+    template_allowlist: none
+    retry_safe: true
+    resume_supported: true
+    checkpoint_supported: true
+    max_attempts: 2
+    checksum_policy: existing_security_receipt
+    signature_policy: existing_security_receipt
+  - id: lynis
+    version_pin: runtime-reported
+    installation_source: existing_pocketlab_security_worker
+    purpose: Existing bounded host posture checks through the worker-owned Security lifecycle.
+    execution: existing_worker_security_path
+    execution_lane: server_phone_worker
+    supported_platforms: [android-termux-arm64, ubuntu-wsl2]
+    native_status: VERIFIED native when discovered by existing Security path
+    harness_status: ACTIVE
+    resource_class: heavy
+    allowed_mode: existing_profile_only
+    required_capability: security.assurance.passive
+    suite_membership: [smoke, standard, deep]
+    binary_discovery: server_owned_path_lookup
+    version_command: existing_security_tool_result
+    version_source: registered_security_tool_result
+    command_id: security.lynis_profile
+    fixed_target: server_runtime_local
+    fixed_argv: [registered_profile_only]
+    parser: existing_security_projection
+    sanitizer: lite_security_policy.redact_value
+    timeout_seconds: 7200
+    max_output_bytes: 262144
+    ruleset: existing_security_registry
+    template_allowlist: none
+    retry_safe: true
+    resume_supported: true
+    checkpoint_supported: true
+    max_attempts: 2
+    checksum_policy: existing_security_receipt
+    signature_policy: existing_security_receipt
+  - id: bandit
+    version_pin: "1.9.4"
+    installation_source: python_venv_or_pypi_receipt
+    purpose: Fixed Python SAST over Pocket Lab runtime source with repository exclusions.
+    execution: managed_external_tool
+    execution_lane: dev_pc_static
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED DEV-PC static
+    harness_status: ACTIVE
+    resource_class: medium
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.sast
+    suite_membership: [standard, deep]
+    binary_discovery: managed_tool_receipt_or_venv
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: source.bandit_runtime
+    fixed_target: repository_runtime_source
+    fixed_argv: [-r, pocket-lab-final-structure/runtime, --format, json]
+    parser: bandit_json
+    sanitizer: redacted_finding_fields
+    timeout_seconds: 300
+    max_output_bytes: 524288
+    ruleset: bandit_default_pinned
+    template_allowlist: none
+    retry_safe: false
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt
+    signature_policy: receipt_or_package_integrity
+  - id: gitleaks
+    version_pin: "8.30.1"
+    installation_source: official_github_release_receipt
+    purpose: Fixed current-tree secret detection with raw matches removed from evidence.
+    execution: managed_external_tool
+    execution_lane: dev_pc_static
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED DEV-PC static
+    harness_status: ACTIVE
+    resource_class: medium
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.sast
+    suite_membership: [smoke, standard, deep]
+    binary_discovery: managed_tool_receipt
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: source.gitleaks_current_tree
+    fixed_target: repository_current_tree
+    fixed_argv: [detect, --source, repository_root, --no-banner, --report-format, json]
+    parser: gitleaks_json
+    sanitizer: secret_match_metadata_only
+    timeout_seconds: 300
+    max_output_bytes: 524288
+    ruleset: gitleaks_default_pinned
+    template_allowlist: none
+    retry_safe: false
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt
+    signature_policy: receipt_or_package_integrity
+  - id: pip-audit
+    version_pin: "2.10.1"
+    installation_source: python_venv_or_pypi_receipt
+    purpose: Fixed Python dependency vulnerability corroboration from the repository requirements lock surface.
+    execution: managed_external_tool
+    execution_lane: dev_pc_static
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED DEV-PC static
+    harness_status: ACTIVE
+    resource_class: small
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.sca
+    suite_membership: [standard, deep]
+    binary_discovery: managed_tool_receipt_or_venv
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: dependency.pip_audit
+    fixed_target: repository_python_requirements
+    fixed_argv: [-r, pocket-lab-final-structure/runtime/requirements.txt, --format, json]
+    parser: pip_audit_json
+    sanitizer: redacted_dependency_finding
+    timeout_seconds: 180
+    max_output_bytes: 524288
+    ruleset: pinned_requirements_only
+    template_allowlist: none
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt
+    signature_policy: receipt_or_package_integrity
+  - id: npm-audit
+    version_pin: "11.13.0"
+    installation_source: approved_node_toolchain
+    purpose: Fixed offline frontend lockfile vulnerability assessment without a network refresh.
+    execution: managed_external_tool
+    execution_lane: dev_pc_static
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED DEV-PC static with the approved Node 24.16.0 toolchain
+    harness_status: ACTIVE
+    resource_class: medium
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.sca
+    suite_membership: [standard, deep]
+    binary_discovery: managed_tool_receipt_or_system
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: dependency.npm_audit_offline
+    fixed_target: repository_package_lock
+    fixed_argv: [audit, --package-lock-only, --json, --offline]
+    parser: npm_audit_json
+    sanitizer: redacted_dependency_finding
+    timeout_seconds: 180
+    max_output_bytes: 524288
+    ruleset: package_lock_only
+    template_allowlist: none
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: package_manager_lockfile
+    signature_policy: package_manager_lockfile
+  - id: opa
+    version_pin: runtime-reported
+    installation_source: existing_loopback_policy_service
+    purpose: Loopback policy readiness, revision consistency, policy tests, and fail-closed posture.
+    execution: existing_loopback_policy_service
+    execution_lane: server_phone_worker
+    supported_platforms: [android-termux-arm64, ubuntu-wsl2]
+    native_status: VERIFIED native when policy service is ready
+    harness_status: ACTIVE
+    resource_class: small
+    allowed_mode: fixed_local_health_and_revision
+    required_capability: security.assurance.runtime
+    suite_membership: [smoke, standard, deep, adversarial]
+    binary_discovery: existing_policy_service
+    version_command: policy_status
+    version_source: policy_status
+    command_id: policy.health_revision
+    fixed_target: loopback_opa_service
+    fixed_argv: [health, revision, policy_test]
+    parser: opa_status
+    sanitizer: fixed_policy_status
+    timeout_seconds: 30
+    max_output_bytes: 65536
+    ruleset: active_policy_revision
+    template_allowlist: none
+    retry_safe: true
+    resume_supported: true
+    checkpoint_supported: true
+    max_attempts: 2
+    checksum_policy: policy_revision
+    signature_policy: policy_revision
+  - id: schemathesis
+    version_pin: "4.23.0"
+    installation_source: approved_parity_python_venv
+    purpose: Bounded OpenAPI security and contract probing over a fixed GET-only Pocket Lab route allow-list.
+    execution: managed_external_tool
+    execution_lane: dev_pc_live_runtime
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED DEV-PC live-runtime
+    harness_status: ACTIVE
+    resource_class: heavy
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.api
+    suite_membership: [standard, deep]
+    binary_discovery: managed_tool_receipt_or_parity_venv
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: runtime.schemathesis_safe_get
+    fixed_target: approved_server_phone_api_tunnel
+    fixed_argv: [fixed_openapi_schema, workers=1, max_examples=20, get_only]
+    parser: schemathesis_junit_summary
+    sanitizer: redacted_http_summary
+    timeout_seconds: 600
+    max_output_bytes: 524288
+    ruleset: scripts/test/parity/prepare_schemathesis_schema.py
+    template_allowlist: safe_get_routes_only
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt
+    signature_policy: receipt_or_package_integrity
+  - id: cosign
+    version_pin: "3.1.3"
+    installation_source: official_github_release_receipt
+    purpose: Fixed provenance verification for an applicable signed Pocket Lab artifact; no signing or downloads.
+    execution: managed_external_tool
+    execution_lane: dev_pc_static
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED DEV-PC static when a signed artifact is registered
+    harness_status: ACTIVE
+    resource_class: small
+    allowed_mode: registered_artifact_only
+    required_capability: security.assurance.sca
+    suite_membership: [standard, deep]
+    binary_discovery: managed_tool_receipt
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: supply_chain.cosign_registered_artifact
+    fixed_target: registered_signed_artifact
+    fixed_argv: [verify, registered_artifact_only]
+    parser: cosign_verification_summary
+    sanitizer: bounded_provenance
+    timeout_seconds: 120
+    max_output_bytes: 131072
+    ruleset: registered_release_metadata
+    template_allowlist: none
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt
+    signature_policy: cosign_signature_required_or_not_applicable
+  - id: semgrep
+    version_pin: "1.172.0"
+    installation_source: official_pypi_wheelhouse_receipt
+    purpose: Curated Semgrep Community Edition SAST with checked-in Pocket Lab boundary rules.
+    execution: managed_external_tool
+    execution_lane: dev_pc_static
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED DEV-PC static
+    harness_status: ACTIVE
+    resource_class: heavy
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.sast
+    suite_membership: [standard, deep]
+    binary_discovery: managed_tool_receipt
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: source.semgrep_boundary_rules
+    fixed_target: repository_source_boundary
+    fixed_argv: [scan, --config, security/assurance/semgrep-rules.yml, --json]
+    parser: semgrep_json
+    sanitizer: redacted_static_finding
+    timeout_seconds: 600
+    max_output_bytes: 1048576
+    ruleset: security/assurance/semgrep-rules.yml
+    template_allowlist: none
+    retry_safe: false
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt
+    signature_policy: receipt_or_package_integrity
+  - id: osv-scanner
+    version_pin: "2.5.0"
+    installation_source: official_github_release_receipt
+    purpose: Fixed lockfile and SBOM vulnerability corroboration.
+    execution: managed_external_tool
+    execution_lane: dev_pc_static
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED DEV-PC static
+    harness_status: ACTIVE
+    resource_class: medium
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.sca
+    suite_membership: [standard, deep]
+    binary_discovery: managed_tool_receipt
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: dependency.osv_lockfiles
+    fixed_target: repository_lockfiles
+    fixed_argv: [scan, source, fixed_dependency_manifests, --format, json]
+    parser: osv_json
+    sanitizer: redacted_dependency_finding
+    timeout_seconds: 300
+    max_output_bytes: 2097152
+    ruleset: repository_lockfiles_only
+    template_allowlist: none
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt
+    signature_policy: receipt_or_package_integrity
+  - id: syft
+    version_pin: "1.50.0"
+    installation_source: official_github_release_receipt
+    purpose: Fixed CycloneDX SBOM generation over repository source while excluding user/media/cache surfaces.
+    execution: managed_external_tool
+    execution_lane: dev_pc_static
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED DEV-PC static
+    harness_status: ACTIVE
+    resource_class: heavy
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.sca
+    suite_membership: [deep]
+    binary_discovery: managed_tool_receipt
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: supply_chain.syft_cyclonedx
+    fixed_target: repository_source_excluding_generated_caches
+    fixed_argv: [dir:repository_root, -o, cyclonedx-json:managed_output]
+    parser: cyclonedx_json
+    sanitizer: redacted_sbom
+    timeout_seconds: 900
+    max_output_bytes: 2097152
+    ruleset: fixed_repository_exclusions
+    template_allowlist: none
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt
+    signature_policy: receipt_or_package_integrity
+  - id: grype
+    version_pin: "0.116.1"
+    installation_source: official_github_release_receipt
+    purpose: Fixed vulnerability corroboration from the harness-managed Syft SBOM only.
+    execution: managed_external_tool
+    execution_lane: dev_pc_static
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED DEV-PC static
+    harness_status: ACTIVE
+    resource_class: heavy
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.sca
+    suite_membership: [deep]
+    binary_discovery: managed_tool_receipt
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: supply_chain.grype_sbom
+    fixed_target: managed_syft_sbom
+    fixed_argv: [sbom:managed_syft_output, -o, json]
+    parser: grype_json
+    sanitizer: redacted_dependency_finding
+    timeout_seconds: 900
+    max_output_bytes: 1048576
+    ruleset: managed_syft_sbom_only
+    template_allowlist: none
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt
+    signature_policy: receipt_or_package_integrity
+  - id: testssl.sh
+    version_pin: "3.2.2"
+    installation_source: official_testssl_release_receipt
+    purpose: Fixed fast TLS posture analysis of the approved Pocket Lab Caddy tunnel only.
+    execution: managed_external_tool
+    execution_lane: dev_pc_live_runtime
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED DEV-PC live-runtime
+    harness_status: ACTIVE
+    resource_class: medium
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.api
+    suite_membership: [standard, deep]
+    binary_discovery: managed_tool_receipt
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: runtime.testssl_caddy
+    fixed_target: approved_server_phone_caddy_tls_tunnel
+    fixed_argv: [--fast, --warnings, batch, --quiet, -n, none, --ip, fixed_loopback, fixed_caddy_identity]
+    parser: testssl_text_summary
+    sanitizer: redacted_tls_summary
+    timeout_seconds: 300
+    max_output_bytes: 524288
+    ruleset: fast_tls_profile
+    template_allowlist: none
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt
+    signature_policy: receipt_or_release_checksum
+  - id: nuclei
+    version_pin: "3.8.0"
+    installation_source: official_nuclei_release_receipt
+    purpose: Curated safe HTTP misconfiguration probes against the approved Pocket Lab endpoint only.
+    execution: managed_external_tool
+    execution_lane: dev_pc_live_runtime
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED DEV-PC live-runtime
+    harness_status: ACTIVE
+    resource_class: heavy
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.api
+    suite_membership: [standard, deep]
+    binary_discovery: managed_tool_receipt
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: runtime.nuclei_safe_templates
+    fixed_target: approved_server_phone_api_tunnel
+    fixed_argv: [-templates, security/assurance/nuclei-safe-templates, -target, fixed_api_endpoint, -c, "1", -rl, "2"]
+    parser: nuclei_jsonl
+    sanitizer: redacted_http_finding
+    timeout_seconds: 300
+    max_output_bytes: 524288
+    ruleset: security/assurance/nuclei-safe-templates
+    template_allowlist: security/assurance/nuclei-safe-templates
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt
+    signature_policy: receipt_or_release_checksum
+  - id: nmap
+    version_pin: "7.98"
+    installation_source: approved_os_package_or_release_receipt
+    purpose: Fixed loopback listener exposure validation for Pocket Lab-owned ports only.
+    execution: managed_external_tool
+    execution_lane: dev_pc_live_runtime
+    supported_platforms: [ubuntu-wsl2, android-termux-arm64]
+    native_status: VERIFIED DEV-PC live-runtime; native only when independently discovered
+    harness_status: ACTIVE
+    resource_class: medium
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.passive
+    suite_membership: [standard, deep]
+    binary_discovery: managed_tool_receipt_or_system
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: runtime.nmap_owned_ports
+    fixed_target: approved_loopback_listener_set
+    fixed_argv: [-Pn, -n, -sT, -p, "14222,18080,18181,18222,18443", 127.0.0.1]
+    parser: nmap_grepable
+    sanitizer: fixed_listener_summary
+    timeout_seconds: 120
+    max_output_bytes: 262144
+    ruleset: pocketlab_owned_listener_ports
+    template_allowlist: none
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt
+    signature_policy: receipt_or_package_integrity
+  - id: owasp-zap
+    version_pin: "2.17.0"
+    installation_source: official_zap_release_receipt
+    purpose: Deep-only bounded API baseline against the approved Pocket Lab endpoint and route allow-list.
+    execution: managed_external_tool
+    execution_lane: dev_pc_live_runtime
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED DEV-PC live-runtime
+    harness_status: ACTIVE
+    resource_class: heavy
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.api
+    suite_membership: [deep]
+    binary_discovery: managed_tool_receipt_or_java
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: runtime.zap_api_baseline
+    fixed_target: approved_server_phone_api_tunnel
+    fixed_argv: [-cmd, -quickurl, fixed_api_endpoint, -quickprogress, fixed_route_allowlist]
+    parser: zap_json_or_xml
+    sanitizer: redacted_zap_alert
+    timeout_seconds: 900
+    max_output_bytes: 1048576
+    ruleset: fixed_api_baseline_profile
+    template_allowlist: fixed_safe_api_routes
+    retry_safe: false
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt
+    signature_policy: receipt_or_release_checksum

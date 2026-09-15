@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: db973c6304d67a70aad3390cbc931edc9dadd7a2badfb6438f86b892c8a30272
+source_fingerprint: 2bcad6d308d0a58007b4bf6aef98bd3daf1cc09e314372d65fa8d0a3b9674394
 schema_revision: 1
 validation_status: generated
 ---
@@ -137,6 +137,8 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:evidence:runtime:promote`
 - `lite:har:inspect`
 - `lite:har:sanitize`
+- `lite:harness:bootstrap`
+- `lite:harness:keygen`
 - `lite:harness:principal:create`
 - `lite:harness:profiles`
 - `lite:harness:session:start`
@@ -162,6 +164,8 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:performance:wsl`
 - `lite:playwright:preflight`
 - `lite:qualification:start`
+- `lite:qualification:start:key-bound`
+- `lite:qualification:start:key-bound:faults`
 - `lite:release:artifact-check`
 - `lite:release:dry-run`
 - `lite:runtime:ssh:check`
@@ -172,6 +176,22 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:runtime:termux:inspect`
 - `lite:runtime:termux:promote`
 - `lite:runtime:termux:validate`
+- `lite:security:assurance:adversarial`
+- `lite:security:assurance:check`
+- `lite:security:assurance:compare`
+- `lite:security:assurance:deep`
+- `lite:security:assurance:fault`
+- `lite:security:assurance:policy-sync`
+- `lite:security:assurance:preflight`
+- `lite:security:assurance:qualify`
+- `lite:security:assurance:qualify:full`
+- `lite:security:assurance:report`
+- `lite:security:assurance:scenario`
+- `lite:security:assurance:smoke`
+- `lite:security:assurance:standard`
+- `lite:security:assurance:tools:check`
+- `lite:security:assurance:tools:install`
+- `lite:security:assurance:tools:run`
 - `lite:setup`
 - `lite:setup:check`
 - `lite:setup:system`

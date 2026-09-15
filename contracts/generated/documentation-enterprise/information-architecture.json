@@ -525,6 +525,12 @@
           "depth": 2,
           "relation_type": "related_to",
           "source": "component:app-lifecycle-worker",
+          "target": "subject:pocketlab.commands.lite.security.assurance"
+        },
+        {
+          "depth": 2,
+          "relation_type": "related_to",
+          "source": "component:app-lifecycle-worker",
           "target": "subject:pocketlab.events.operation.succeeded"
         },
         {
@@ -544,12 +550,6 @@
           "relation_type": "verified_by",
           "source": "component:app-lifecycle-worker",
           "target": "test:tests/backend/test_lite_security_s8_recovery.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:app-lifecycle-worker",
-          "target": "test:tests/backend/test_lite_termux_runtime_documentation.py"
         }
       ],
       "expansion": {
@@ -4650,7 +4650,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 434,
+  "page_count": 436,
   "page_types": [
     "overview",
     "guide",
@@ -16239,10 +16239,57 @@
       "source_or_generator": "validation/qualification-maintenance-harness.md",
       "title": "Pocket Lab Qualification & Maintenance Harness",
       "url": "/validation/qualification-maintenance-harness/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/runtime-security-assurance-harness.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/runtime-security-assurance-harness",
+      "intents": [
+        "build",
+        "test"
+      ],
+      "page_type": "evidence",
+      "path": "validation/runtime-security-assurance-harness.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "build-test",
+      "related_pages": [],
+      "source_or_generator": "validation/runtime-security-assurance-harness.md",
+      "title": "Runtime Security Assurance Harness",
+      "url": "/validation/runtime-security-assurance-harness/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/runtime-security-assurance-qualification.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/runtime-security-assurance-qualification",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "evidence",
+      "path": "validation/runtime-security-assurance-qualification.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "validation/runtime-security-assurance-qualification.md",
+      "title": "Runtime Security Assurance Qualification Dossier",
+      "url": "/validation/runtime-security-assurance-qualification/"
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "6a384728fa0ab67eb2066a8682d13ffb8a0c73504cbcc09d06a3c83e71400b30",
+  "source_fingerprint": "930f613d7f79b2285e908420b094282130a306e6df0340b5806a9a8251db71c1",
   "top_level": [
     "start-here",
     "use",

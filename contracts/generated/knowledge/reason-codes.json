@@ -302,6 +302,106 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:assurance_deadline_exceeded",
+      "name": "assurance_deadline_exceeded",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:assurance_orphaned_child_reconciled",
+      "name": "assurance_orphaned_child_reconciled",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:assurance_policy_sync_denied",
+      "name": "assurance_policy_sync_denied",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:assurance_policy_sync_disabled",
+      "name": "assurance_policy_sync_disabled",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:assurance_session_binding_mismatch",
+      "name": "assurance_session_binding_mismatch",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
       "domain": "rules",
       "event_mapping": [],
@@ -402,6 +502,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:bootstrap_transport_rejected",
+      "name": "bootstrap_transport_rejected",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
       "description": "An exact target cache entry was rejected because its checkpoint provenance was missing, incomplete, or incompatible.",
       "domain": "security",
       "event_mapping": [],
@@ -499,6 +619,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The remaining safety targets can resume in a later Full check."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:connection_failed",
+      "name": "connection_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
     },
     {
       "confidence": "source-derived",
@@ -1002,6 +1142,306 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:external_lane_owned_by_qualification_client",
+      "name": "external_lane_owned_by_qualification_client",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_already_used",
+      "name": "fault_already_used",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_confirmation_required",
+      "name": "fault_confirmation_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_control_denied",
+      "name": "fault_control_denied",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_control_disabled",
+      "name": "fault_control_disabled",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_control_execution_failed",
+      "name": "fault_control_execution_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_pause_not_acted",
+      "name": "fault_pause_not_acted",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_recovery_observation_failed",
+      "name": "fault_recovery_observation_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_recovery_timeout",
+      "name": "fault_recovery_timeout",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_registry_invalid",
+      "name": "fault_registry_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_registry_unavailable",
+      "name": "fault_registry_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_restart_not_acted",
+      "name": "fault_restart_not_acted",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_restarted",
+      "name": "fault_restarted",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_restore_not_acted",
+      "name": "fault_restore_not_acted",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:fault_unknown",
+      "name": "fault_unknown",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The source generation changed during work.",
       "domain": "projections",
       "event_mapping": [],
@@ -1039,6 +1479,86 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "This legacy Rules action is no longer available."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:git_unavailable",
+      "name": "git_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:harness_session_invalid",
+      "name": "harness_session_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:harness_session_not_found",
+      "name": "harness_session_not_found",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:harness_session_required",
+      "name": "harness_session_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
     },
     {
       "confidence": "source-derived",
@@ -1628,6 +2148,46 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:nats_fault_requires_active_assurance_run",
+      "name": "nats_fault_requires_active_assurance_run",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:nats_probe_failed",
+      "name": "nats_probe_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
       "description": "There is no active generation.",
       "domain": "projections",
       "event_mapping": [],
@@ -1665,6 +2225,86 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The record is not present in the restored snapshot."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:opa_status_unknown",
+      "name": "opa_status_unknown",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:outage_observation_failed",
+      "name": "outage_observation_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:outage_window_not_observed",
+      "name": "outage_window_not_observed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:owned_security_run_missing",
+      "name": "owned_security_run_missing",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
     },
     {
       "confidence": "source-derived",
@@ -1865,6 +2505,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:ownership_source_unavailable",
+      "name": "ownership_source_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
     },
     {
       "confidence": "source-derived",
@@ -2105,6 +2765,106 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The bounded payload limit was exceeded."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:pm2_inventory_failed",
+      "name": "pm2_inventory_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:pm2_inventory_invalid",
+      "name": "pm2_inventory_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:pm2_unavailable",
+      "name": "pm2_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:pm2_worker_missing",
+      "name": "pm2_worker_missing",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:pm2_worker_status_unparsed",
+      "name": "pm2_worker_status_unparsed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
     },
     {
       "confidence": "source-derived",
@@ -2405,6 +3165,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:policy_probe_failed",
+      "name": "policy_probe_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
     },
     {
       "confidence": "source-derived",
@@ -2788,6 +3568,46 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:preflight_exception",
+      "name": "preflight_exception",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:process_start_failed",
+      "name": "process_start_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The last committed projection is too old for a safe write.",
       "domain": "projections",
       "event_mapping": [],
@@ -2908,6 +3728,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:registered_tool_result_missing",
+      "name": "registered_tool_result_missing",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The release prepared projection is unavailable.",
       "domain": "release",
       "event_mapping": [],
@@ -2945,6 +3785,46 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "Private remote access is not ready."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:report_write_failed",
+      "name": "report_write_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:restore_not_attempted",
+      "name": "restore_not_attempted",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
     },
     {
       "confidence": "source-derived",
@@ -2988,6 +3868,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:run_not_found",
+      "name": "run_not_found",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Managed Trivy intelligence exceeded its bounded freshness policy and a bounded refresh did not restore a valid revision.",
       "domain": "security",
       "event_mapping": [],
@@ -3005,6 +3905,66 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "Scanner intelligence needs a successful refresh before this target can be checked."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:security_load_unknown",
+      "name": "security_load_unknown",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:security_scan_conflict",
+      "name": "security_scan_conflict",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:security_scanner_execution_failed",
+      "name": "security_scanner_execution_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
     },
     {
       "confidence": "source-derived",
@@ -3085,6 +4045,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "Shutdown occurred while the bounded mailbox was under pressure."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:source_inventory_failed",
+      "name": "source_inventory_failed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime Security Assurance could not continue safely."
     },
     {
       "confidence": "source-derived",
@@ -3879,6 +4859,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "39fc1a068ddf558002bd1f875ec870244f35e6250f7919baa25fd7e4b8be5992"
+    "source_fingerprint": "2f3d9a876d176d0fb4a6fcf009cd3763abc237e8ba2927f5e728933c457c851f"
   }
 }

@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: db973c6304d67a70aad3390cbc931edc9dadd7a2badfb6438f86b892c8a30272
+source_fingerprint: 2bcad6d308d0a58007b4bf6aef98bd3daf1cc09e314372d65fa8d0a3b9674394
 schema_revision: 1
 validation_status: generated
 ---
@@ -21,7 +21,7 @@ validation_status: generated
 
 FastAPI OpenAPI is the canonical browser/backend contract. Redocly validates the generated Lite-only view.
 
-## Lite paths (190)
+## Lite paths (208)
 
 - `/api/lite/apps/lifecycle`
 - `/api/lite/apps/lifecycle/{app_id}`
@@ -108,11 +108,29 @@ FastAPI OpenAPI is the canonical browser/backend contract. Redocly validates the
 - `/api/lite/fleet/invites/latest`
 - `/api/lite/fleet/invites/{invite_id}/revoke`
 - `/api/lite/fleet/remove-device`
+- `/api/lite/harness/bootstrap/challenge`
+- `/api/lite/harness/bootstrap/complete`
+- `/api/lite/harness/bootstrap/grants`
 - `/api/lite/harness/capabilities`
 - `/api/lite/harness/challenge`
+- `/api/lite/harness/principal/revoke`
 - `/api/lite/harness/principals`
 - `/api/lite/harness/principals/{principal_id}`
 - `/api/lite/harness/principals/{principal_id}/revoke`
+- `/api/lite/harness/security-assurance/capabilities`
+- `/api/lite/harness/security-assurance/faults`
+- `/api/lite/harness/security-assurance/faults/{fault_id}`
+- `/api/lite/harness/security-assurance/policy-sync`
+- `/api/lite/harness/security-assurance/policy-sync/status`
+- `/api/lite/harness/security-assurance/preflight`
+- `/api/lite/harness/security-assurance/runs`
+- `/api/lite/harness/security-assurance/runs/{run_id}`
+- `/api/lite/harness/security-assurance/runs/{run_id}/cancel`
+- `/api/lite/harness/security-assurance/runs/{run_id}/events`
+- `/api/lite/harness/security-assurance/runs/{run_id}/findings`
+- `/api/lite/harness/security-assurance/runs/{run_id}/report`
+- `/api/lite/harness/security-assurance/runs/{run_id}/resume`
+- `/api/lite/harness/security-assurance/suites`
 - `/api/lite/harness/session`
 - `/api/lite/harness/session/{session_id}`
 - `/api/lite/harness/status`

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "8207ef693babefa7f5b0e252d9be85cb18e2727bedf4b175d303206dd1aa946a",
+    "aggregate_fingerprint": "3432207f46e1c11770b7c13959ecee3c4a4733fcf20d05d228b3e0da346771cc",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -11,7 +11,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "scripts/docs/lite/capture-storybook.mjs": "8f23bf560451088cdb0f456d444913ca6ea620108eee764b9d421cc372b9b2c8",
-      "scripts/docs/lite/generate_platform_catalogs.py": "dfffe974977a9c4f1f3e4d86686c1b36390405c4ae25d230cb98c13990ab83c1",
+      "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4",
       "src/lite/LiteCatalog.stories.jsx": "d15cc614846f6c01c5e3d577fe5e747919ae4de80ec8189341a2ed13dac80c05",
       "src/lite/LiteDevices.stories.jsx": "09ef4d871905c5e099a9d4086a829c381bf070b38e281fd9f5cdc9165de8786b",
       "src/lite/LiteHome.stories.jsx": "8a8cd6bcf833ad98d7140a1e7b6a82bb93419a848fb139d16037418ac61f8966",
