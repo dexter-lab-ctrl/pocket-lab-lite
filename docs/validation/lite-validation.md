@@ -1,5 +1,10 @@
 # Lite Validation
 
+For the current end-to-end Security Assurance operator experience, start with
+the [Security Assurance Playbook](security-assurance/README.md). This page
+continues to cover the narrower Lite bootstrap, API, frontend, and documentation
+checks.
+
 Pocket Lab Lite keeps the core Pocket Lab control-plane model while reducing the default runtime footprint. Validation should prove that the Lite API, Lite UI, Lite bootstrap profile, and documentation build remain healthy without starting the heavyweight observability stack by default. For the separate backend-only machine qualification surface, see [Qualification & maintenance harness](qualification-maintenance-harness.md) and the [Runtime Security Assurance Harness](runtime-security-assurance-harness.md).
 
 ## What is validated

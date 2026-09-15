@@ -18,8 +18,8 @@ Tasks remain source-derived; commands are documented but never executed by this 
 | Development loop | 58 |
 | Documentation loop | 55 |
 | API-validation loop | 12 |
-| Runtime-evidence loop | 24 |
-| Security-analysis loop | 26 |
+| Runtime-evidence loop | 23 |
+| Security-analysis loop | 28 |
 | Release loop | 19 |
 | Recovery-diagnostics loop | 6 |
 
@@ -479,6 +479,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 **Commands:**
 
 - `task lite:docs:tools:check`
+- `task lite:docs:security-assurance:check`
 - `task lite:contracts:check`
 - `task lite:docs:platform:check`
 - `task lite:docs:runtime:check`
@@ -509,7 +510,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 **Runtime:** requires Termux=False; requires WSL2=True; safe local=True; class=heavy-dev
 
-**Related tasks:** lite:contracts:check, lite:dev:scratch:prepare, lite:docs:architecture:check, lite:docs:backend-tests, lite:docs:codebase-map:check, lite:docs:development:check, lite:docs:diagrams:check, lite:docs:enterprise:check, lite:docs:health:check, lite:docs:intelligence:check, lite:docs:knowledge:check, lite:docs:parity:check, lite:docs:platform:check, lite:docs:production:check, lite:docs:runtime-network:check, lite:docs:runtime:check, lite:docs:tools:check
+**Related tasks:** lite:contracts:check, lite:dev:scratch:prepare, lite:docs:architecture:check, lite:docs:backend-tests, lite:docs:codebase-map:check, lite:docs:development:check, lite:docs:diagrams:check, lite:docs:enterprise:check, lite:docs:health:check, lite:docs:intelligence:check, lite:docs:knowledge:check, lite:docs:parity:check, lite:docs:platform:check, lite:docs:production:check, lite:docs:runtime-network:check, lite:docs:runtime:check, lite:docs:security-assurance:check, lite:docs:tools:check
 
 **Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
 
@@ -2278,6 +2279,41 @@ Tasks remain source-derived; commands are documented but never executed by this 
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:docs:security`
+
+## `lite:docs:security-assurance:check`
+
+**Purpose:** Check the source-owned Security Assurance Playbook tree against current registries, routes, CLI commands, tasks, and safety markers
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/docs/check_security_assurance_playbooks.py`
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_security_assurance_playbooks.py`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/docs/check_security_assurance_playbooks.py, tests/docs/test_security_assurance_playbooks.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:docs:security-assurance:check`
 
 ## `lite:docs:security-tools:check`
 

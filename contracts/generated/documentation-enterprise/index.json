@@ -11163,20 +11163,21 @@
       {
         "affected_components": [
           "FastAPI",
+          "documentation",
           "repository tooling"
         ],
-        "affects_release": true,
-        "affects_runtime": true,
+        "affects_release": false,
+        "affects_runtime": false,
         "default": "redacted/not inferred",
         "name": "POCKETLAB_HARNESS_PROVISIONING_TOKEN",
-        "owner": "FastAPI/runtime",
-        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "owner": "documentation tooling",
+        "purpose": "Documentation/developer automation configuration",
         "related_troubleshooting": [
           "Development Troubleshooting",
           "Production Troubleshooting"
         ],
         "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
-        "restart_required": "likely-runtime-restart",
+        "restart_required": "no-runtime-restart-for-doc-tooling",
         "runtime_scope": "runtime or development depending on source",
         "secret": true,
         "source": [
@@ -11184,8 +11185,8 @@
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
           "scripts/dev/lite/harness.py",
           "scripts/dev/lite/start-qualification.sh",
-          "tests/backend/test_lite_harness.py",
-          "tests/backend/test_lite_security_assurance.py"
+          "scripts/docs/check_security_assurance_playbooks.py",
+          "tests/backend/test_lite_harness.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -36782,7 +36783,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 436,
+      "page_count": 467,
       "top_level": [
         "start-here",
         "use",
@@ -44666,7 +44667,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "d4aa20ac97b514d88bff3a4d9e8e41ba5fb9582975e0546240ad3a790ab4c175",
-        "documentation": "ca1c8df2c44f9479cb8ff2a3a1b4d4d2d54eeb4539901d5226324fffcb205826",
+        "documentation": "6c80525f3b647efecabd14bc73a8d8d54c856024455745e2497feb47a2a97a1b",
         "openapi": "73df089dcb595eacedd99de1797a42e2eedbe4df044eebb8a6fc323fd9c2d1c4",
         "operational_health": "fa8f6aae6a0c18b9ae12792990502d1fd0d5bbbf4c378f38617d0fcaf00cce83"
       },
@@ -86848,6 +86849,7 @@
         "lite:docs:runtime-network:check",
         "lite:docs:runtime:check",
         "lite:docs:runtime:generate",
+        "lite:docs:security-assurance:check",
         "lite:docs:security-tools:check",
         "lite:docs:sqlite:check",
         "lite:docs:supply-chain:check",
@@ -86884,6 +86886,7 @@
       "Security-analysis loop": [
         "lite:docs:redaction",
         "lite:docs:security",
+        "lite:docs:security-assurance:check",
         "lite:docs:security-tools:check",
         "lite:docs:security-tools:plan",
         "lite:docs:security-tools:setup",
@@ -87453,6 +87456,7 @@
         "captures_runtime": false,
         "commands": [
           "task lite:docs:tools:check",
+          "task lite:docs:security-assurance:check",
           "task lite:contracts:check",
           "task lite:docs:platform:check",
           "task lite:docs:runtime:check",
@@ -87508,6 +87512,7 @@
           "lite:docs:production:check",
           "lite:docs:runtime-network:check",
           "lite:docs:runtime:check",
+          "lite:docs:security-assurance:check",
           "lite:docs:tools:check"
         ],
         "repository_mutation": true,
@@ -87522,7 +87527,7 @@
         },
         "source": "tasks/Taskfile.docs.yml",
         "validation_outcome": "gate-defined",
-        "workflow_group": "Runtime-evidence loop"
+        "workflow_group": "Security-analysis loop"
       },
       {
         "aliases": [],
@@ -89639,6 +89644,48 @@
         },
         "source": "tasks/Taskfile.docs.yml",
         "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Security-analysis loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/docs/check_security_assurance_playbooks.py",
+          "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_security_assurance_playbooks.py"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:docs:security-assurance:check",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/docs/check_security_assurance_playbooks.py",
+          "tests/docs/test_security_assurance_playbooks.py"
+        ],
+        "name": "lite:docs:security-assurance:check",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Check the source-owned Security Assurance Playbook tree against current registries, routes, CLI commands, tasks, and safety markers",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.docs.yml",
+        "validation_outcome": "gate-defined",
         "workflow_group": "Security-analysis loop"
       },
       {
@@ -114332,5 +114379,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "37b1ff241fba4f43c13337e8544dfe8b705e519db9317fda21d9249365785146"
+  "source_fingerprint": "720f58e8e7898d2c2ea2fb323d7bdf501153f38c12583d173c6176e66406454a"
 }

@@ -545,6 +545,7 @@
       "captures_runtime": false,
       "commands": [
         "task lite:docs:tools:check",
+        "task lite:docs:security-assurance:check",
         "task lite:contracts:check",
         "task lite:docs:platform:check",
         "task lite:docs:runtime:check",
@@ -600,6 +601,7 @@
         "lite:docs:production:check",
         "lite:docs:runtime-network:check",
         "lite:docs:runtime:check",
+        "lite:docs:security-assurance:check",
         "lite:docs:tools:check"
       ],
       "repository_mutation": true,
@@ -614,7 +616,7 @@
       },
       "source": "tasks/Taskfile.docs.yml",
       "validation_outcome": "gate-defined",
-      "workflow_group": "Runtime-evidence loop"
+      "workflow_group": "Security-analysis loop"
     },
     {
       "aliases": [],
@@ -2731,6 +2733,48 @@
       },
       "source": "tasks/Taskfile.docs.yml",
       "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/docs/check_security_assurance_playbooks.py",
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_security_assurance_playbooks.py"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:docs:security-assurance:check",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "generated drift"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/docs/check_security_assurance_playbooks.py",
+        "tests/docs/test_security_assurance_playbooks.py"
+      ],
+      "name": "lite:docs:security-assurance:check",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Check the source-owned Security Assurance Playbook tree against current registries, routes, CLI commands, tasks, and safety markers",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.docs.yml",
+      "validation_outcome": "gate-defined",
       "workflow_group": "Security-analysis loop"
     },
     {

@@ -13451,6 +13451,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/docs/test_security_assurance_playbooks.py",
+      "name": "tests/docs/test_security_assurance_playbooks.py",
+      "source_refs": [
+        "tests/docs/test_security_assurance_playbooks.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/docs/test_supply_chain_runner_hardening.py",
       "name": "tests/docs/test_supply_chain_runner_hardening.py",
       "source_refs": [
