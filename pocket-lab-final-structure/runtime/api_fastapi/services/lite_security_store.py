@@ -927,6 +927,7 @@ class SecuritySQLiteRepository:
         completed_at: str | None = None,
         failure_code: str = "assurance_worker_restarted",
         summary: str = "The worker restarted before the owned Security scan completed.",
+        recovery_kind: str = "worker_restart",
     ) -> dict[str, Any] | None:
         """Terminalize exactly one interrupted assurance-owned child scan.
 
@@ -945,6 +946,11 @@ class SecuritySQLiteRepository:
         now_epoch = _epoch_ms(now)
         clean_code = policy.redact_text(failure_code)[:120] or "assurance_worker_restarted"
         clean_summary = policy.redact_text(summary)[:500] or "Security check needs review."
+        clean_recovery_kind = (
+            recovery_kind
+            if recovery_kind in {"worker_restart", "orphaned_assurance_child"}
+            else "worker_restart"
+        )
         with connection() as conn, begin_immediate(conn) as tx:
             current = tx.execute(
                 """SELECT * FROM security_scan_runs
@@ -958,7 +964,7 @@ class SecuritySQLiteRepository:
             current_metadata = _json_value(current["metadata_json"], {})
             metadata = {
                 **(current_metadata if isinstance(current_metadata, dict) else {}),
-                "assurance_recovery": "worker_restart",
+                "assurance_recovery": clean_recovery_kind,
                 "assurance_correlation_bound": True,
             }
             cursor = tx.execute(
@@ -999,7 +1005,7 @@ class SecuritySQLiteRepository:
                 percent=int(current["current_percent"] or 0),
                 message=clean_summary,
                 tool=str(current["current_tool"] or "")[:80] or None,
-                payload={"failure_code": clean_code, "recovery": "worker_restart"},
+                payload={"failure_code": clean_code, "recovery": clean_recovery_kind},
                 created_at=now,
             )
             self._upsert_profile_snapshot(tx, str(current["run_id"]), updated_at=now)

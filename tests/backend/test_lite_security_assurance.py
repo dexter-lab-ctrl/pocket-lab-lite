@@ -939,6 +939,48 @@ def test_stale_run_reconciliation_is_truthful_and_terminal(assurance_runtime):
     assert assurance.get_run(run["run_id"])["status"] == "PARTIAL"
 
 
+def test_terminal_assurance_releases_only_its_orphaned_security_child(
+    assurance_runtime, monkeypatch
+):
+    from api_fastapi.services import lite_security_assurance as assurance
+    from api_fastapi.services import lite_security_store
+
+    monkeypatch.setenv("POCKETLAB_LITE_SECURITY_STORE_MODE", "sqlite")
+    _insert_synthetic_session()
+    parent = assurance.create_run(
+        suite_id="smoke",
+        scenario_id="evidence-redaction",
+        baseline_run_id=None,
+        principal_id="assurance-test-principal",
+        session_id="assurance-test-session",
+        revision_sha="1" * 40,
+        preflight_result={"status": "ready", "sanitized": True},
+    )
+    assurance.record_blocked_run(
+        parent["run_id"],
+        failure_code="preflight_blocked",
+        preflight_result={"status": "blocked", "sanitized": True},
+    )
+    repository = lite_security_store.SecuritySQLiteRepository()
+    reserved = repository.reserve_scan(
+        run_id="security-orphaned-child",
+        profile="quick",
+        correlation_id=parent["run_id"],
+    )
+    assert reserved.reserved is True
+
+    recovered = assurance.reconcile_stale_runs()
+
+    assert recovered["orphaned_security_child_count"] == 1
+    assert recovered["orphaned_security_children"][0]["assurance_run_id"] == parent[
+        "run_id"
+    ]
+    child = repository.get_run("security-orphaned-child")
+    assert child["status"] == "failed"
+    assert child["failure_code"] == "assurance_orphaned_child_reconciled"
+    assert repository.get_active_scan() is None
+
+
 def test_worker_command_is_bound_to_durable_runtime_envelope(assurance_runtime):
     from api_fastapi.services import lite_security_assurance as assurance
 

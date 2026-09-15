@@ -4011,6 +4011,8 @@ def interrupt_assurance_scan(
     *,
     app_id: str | None = None,
     failure_code: str = "assurance_worker_restarted",
+    recovery_kind: str = "worker_restart",
+    summary: str = "The worker restarted before the owned Security scan completed.",
 ) -> dict[str, Any] | None:
     """Release only an assurance-owned interrupted Security child."""
     if not _sqlite_lifecycle_enabled():
@@ -4023,6 +4025,8 @@ def interrupt_assurance_scan(
         correlation_id=correlation_id,
         app_id=app_id,
         failure_code=failure_code,
+        recovery_kind=recovery_kind,
+        summary=summary,
     )
     if result:
         # The authoritative row changed outside the normal scan lifecycle

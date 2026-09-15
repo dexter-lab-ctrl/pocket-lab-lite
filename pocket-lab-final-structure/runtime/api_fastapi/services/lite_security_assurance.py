@@ -1983,7 +1983,83 @@ def reconcile_stale_runs() -> dict[str, Any]:
             "status": str(result.get("status") or "PARTIAL"),
             "failure_code": failure_code,
         })
-    return _redact({"reconciled": reconciled, "count": len(reconciled), "sanitized": True})
+    # A client/API transport failure can leave the existing Security child in
+    # its worker-owned active reservation after the parent assurance run has
+    # already reached a terminal state.  Reconcile only an exact correlation
+    # owned by a terminal assurance parent.  This cannot release an unrelated
+    # user-initiated Security scan and never treats the child as successful.
+    orphaned_children: list[dict[str, Any]] = []
+    if lite_security._sqlite_lifecycle_enabled():
+        with read_connection() as conn:
+            terminal_rows = conn.execute(
+                """SELECT ar.run_id,ar.suite_id,ar.principal_id,
+                          ar.harness_session_id,ar.status,sr.profile
+                   FROM assurance_runs AS ar
+                   JOIN security_scan_runs AS sr
+                     ON sr.correlation_id = ar.run_id
+                    AND sr.active_key IS NOT NULL
+                    AND sr.status IN ('queued','accepted','running','working','in_progress')
+                   WHERE ar.status IN ('PASS','FAIL','PARTIAL','BLOCKED')
+                   ORDER BY ar.updated_at DESC"""
+            ).fetchall()
+        for raw in terminal_rows:
+            parent_id = str(raw["run_id"] or "")
+            if not parent_id:
+                continue
+            try:
+                child_profile = str(raw["profile"] or "")
+                expected_profile = str(
+                    suite_def(raw["suite_id"]).get("existing_security_profile") or ""
+                )
+            except Exception:
+                continue
+            if child_profile != expected_profile or child_profile not in {
+                policy.SCAN_PROFILE_QUICK,
+                policy.SCAN_PROFILE_FULL,
+            }:
+                continue
+            try:
+                interrupted = lite_security.interrupt_assurance_scan(
+                    child_profile,
+                    parent_id,
+                    failure_code="assurance_orphaned_child_reconciled",
+                    recovery_kind="orphaned_assurance_child",
+                    summary=(
+                        "The assurance parent was already terminal; its active "
+                        "Security child was released without inferring success."
+                    ),
+                )
+            except Exception:
+                continue
+            if not interrupted:
+                continue
+            _assurance_audit(
+                event_type="assurance_child_reconciled",
+                reason_code="assurance_orphaned_child_reconciled",
+                principal_id=str(raw["principal_id"] or ""),
+                session_id=str(raw["harness_session_id"] or ""),
+                operation_id=parent_id,
+                result="partial",
+                summary=(
+                    "An orphaned Security child was released from a terminal "
+                    "assurance parent without asserting scanner success."
+                ),
+            )
+            orphaned_children.append(
+                {
+                    "assurance_run_id": parent_id,
+                    "security_run_id_present": bool(interrupted.get("run_id")),
+                    "status": "PARTIAL",
+                    "failure_code": "assurance_orphaned_child_reconciled",
+                }
+            )
+    return _redact({
+        "reconciled": reconciled,
+        "count": len(reconciled),
+        "orphaned_security_children": orphaned_children,
+        "orphaned_security_child_count": len(orphaned_children),
+        "sanitized": True,
+    })
 
 
 def _resume_checkpoint(run_id: str) -> dict[str, Any] | None:
