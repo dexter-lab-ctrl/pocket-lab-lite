@@ -61,3 +61,29 @@ def test_phone_task_wrapper_preserves_dev_and_scrubs_termux(monkeypatch):
     assert "POCKETLAB_ENV" not in phone_child
     assert "POCKETLAB_ENVIRONMENT" not in phone_child
     assert "TMPDIR" not in phone_child
+
+
+def test_report_fixture_build_publish_and_check_are_sanitized(tmp_path):
+    report_tests = _load(ROOT / "tests/docs/test_security_assurance_report.py", "security_assurance_report_fixture")
+    report_module = report_tests._module()
+    run, report = report_tests._fixture()
+    model = report_module.build_model(run, report)
+    assert model["qualification_id"] == run["run_id"]
+    assert model["severity_counts"]["medium"] == 1
+    assert len(model["findings"]) == 1
+    published = report_module.publish_model(model, tmp_path)
+    assert published["status"] == "published"
+    checked = report_module.check_published(run["run_id"], tmp_path)
+    assert checked["status"] == "PASS"
+
+
+def test_scenario_registry_contracts_are_exercised_by_docs_gate():
+    scenario_tests = _load(
+        ROOT / "tests/backend/test_lite_security_assurance_scenario_contracts.py",
+        "security_assurance_scenario_contract_fixture",
+    )
+    scenario_tests.test_registry_scenarios_have_unique_fixed_lifecycle_contracts()
+    scenario_tests.test_all_suite_scenario_references_exist_and_safety_classes_are_allowed()
+    scenario_tests.test_caller_request_model_has_no_arbitrary_execution_inputs()
+    scenario_tests.test_tool_backed_scenarios_remain_fixed_and_bounded()
+    scenario_tests.test_scenario_evidence_tool_references_are_registered()
