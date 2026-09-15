@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 2bcad6d308d0a58007b4bf6aef98bd3daf1cc09e314372d65fa8d0a3b9674394
+source_fingerprint: 3dafb7cf52df240ac510f97324101679dddca1928f1d4d2da49a5665f3c67791
 schema_revision: 1
 validation_status: generated
 ---
@@ -109,6 +109,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:runtime:check`
 - `lite:docs:runtime:generate`
 - `lite:docs:security`
+- `lite:docs:security-assurance:check`
 - `lite:docs:security-tools:check`
 - `lite:docs:security-tools:plan`
 - `lite:docs:security-tools:setup`
@@ -246,6 +247,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:check` → `lite:docs:production:check`
 - `lite:docs:check` → `lite:docs:runtime-network:check`
 - `lite:docs:check` → `lite:docs:runtime:check`
+- `lite:docs:check` → `lite:docs:security-assurance:check`
 - `lite:docs:check` → `lite:docs:tools:check`
 - `lite:docs:enterprise:check` → `lite:docs:ia:check`
 - `lite:docs:generate` → `lite:contracts:generate`

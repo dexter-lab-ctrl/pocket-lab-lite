@@ -14,6 +14,13 @@ human identity ceremonies remain `OUT_OF_SCOPE` or `HUMAN_REVIEW_REQUIRED`.
 > The Server Phone is a consumer/qualification target, never the development
 > workspace.
 
+Use the [Security Assurance Playbook](security-assurance/README.md) for current
+operator procedures, the [reference catalogs](reference/command-catalog.md)
+for source-checked commands/routes, and the
+[historical qualification dossier](evidence-history/runtime-security-assurance-qualification.md)
+for prior run evidence. This page is the canonical architecture and contract
+overview.
+
 This is an operator and qualification surface for the actual Pocket Lab Lite
 runtime. It is not exposed in the PWA, does not add a user navigation item,
 and does not replace the existing Security, Recovery, Identity, Rules, health,

@@ -3,6 +3,12 @@
 Status: `IMPLEMENTED` for the local qualification surface; production
 maintenance activation is `DEFERRED`.
 
+For current Runtime Security Assurance operation, use the
+[Security Assurance Playbook](security-assurance/README.md). This page remains
+the broader Qualification & Maintenance Harness architecture and compatibility
+reference; historical command examples are mapped in the
+[command completeness appendix](reference/command-completeness.md).
+
 This page is for developers, testers, debuggers, maintainers, release
 engineers, security engineers, automation authors, Codex users, CI services,
 and other explicitly provisioned machine clients. It describes an operator
@@ -199,11 +205,11 @@ authentication, synthetic-machine identity class, no membership, and a
 server-derived Owner role only for the exceptional profile.
 
 The legacy header path remains a compatibility shim for existing qualification
-tests. It still requires `POCKETLAB_TEST_AUTH_BYPASS=1`,
-`POCKETLAB_QUALIFICATION_OWNER=1`, `POCKETLAB_ENVIRONMENT=qualification`,
-`X-Pocket-Lab-Test: 1`, `X-Pocket-Lab-Qualification: 1`, direct loopback, no
-forwarded markers, and no caller role. It is not the generalized machine
-authentication protocol.
+tests. It is gated by its operator-managed test-only flags and qualification
+headers, direct loopback, no forwarded markers, and no caller role. Do not copy
+or enable that compatibility path for a new machine workflow; use the
+operator-approved key-bound bootstrap documented in the Security Assurance
+Playbook. It is not the generalized machine authentication protocol.
 
 ## Authentication lifecycle
 
@@ -267,12 +273,13 @@ python3 scripts/dev/lite/harness.py keygen \
   --key-file '<machine-private-dir>/qualification-runner.key'
 ```
 
-The command prints the public key and fingerprint, not the private bytes. Set
-the provisioning token only in the local qualification environment; never put
-it in Git, a task file, a fixture, or a documentation example:
+The command prints the public key and fingerprint, not the private bytes. The
+legacy provisioning credential, when an operator explicitly uses that
+compatibility path, is injected only through the approved local qualification
+environment. Its value is intentionally omitted and must never enter Git, a
+task file, a fixture, or a documentation example:
 
 ```bash
-export POCKETLAB_HARNESS_PROVISIONING_TOKEN='<operator-provided-token>'
 task lite:harness:principal:create \
   PRINCIPAL_ID=qualification-runner \
   DISPLAY_NAME='Local recovery qualification runner' \

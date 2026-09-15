@@ -4650,7 +4650,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 436,
+  "page_count": 467,
   "page_types": [
     "overview",
     "guide",
@@ -16197,6 +16197,54 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "validation/README.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "testing",
+      "generated": false,
+      "id": "page:validation/README",
+      "intents": [
+        "build",
+        "test"
+      ],
+      "page_type": "reference",
+      "path": "validation/README.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "build-test",
+      "related_pages": [],
+      "source_or_generator": "validation/README.md",
+      "title": "Pocket Lab Lite validation",
+      "url": "/validation/README/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/evidence-history/runtime-security-assurance-qualification.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/evidence-history/runtime-security-assurance-qualification",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/evidence-history/runtime-security-assurance-qualification.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/evidence-history/runtime-security-assurance-qualification.md",
+      "title": "Runtime Security Assurance Qualification Dossier",
+      "url": "/validation/evidence-history/runtime-security-assurance-qualification/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "validation/lite-validation.md"
       ],
       "confidence": "source-derived",
@@ -16244,6 +16292,222 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "validation/reference/api-reference.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "testing",
+      "generated": false,
+      "id": "page:validation/reference/api-reference",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "reference",
+      "path": "validation/reference/api-reference.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/reference/api-reference.md",
+      "title": "Direct-loopback harness API reference",
+      "url": "/validation/reference/api-reference/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/reference/command-catalog.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/reference/command-catalog",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/reference/command-catalog.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/reference/command-catalog.md",
+      "title": "Security Assurance command catalog",
+      "url": "/validation/reference/command-catalog/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/reference/command-completeness.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "apps",
+      "generated": false,
+      "id": "page:validation/reference/command-completeness",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "reference",
+      "path": "validation/reference/command-completeness.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/reference/command-completeness.md",
+      "title": "Historical command completeness mapping",
+      "url": "/validation/reference/command-completeness/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/reference/evidence-artifact-reference.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "testing",
+      "generated": false,
+      "id": "page:validation/reference/evidence-artifact-reference",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/reference/evidence-artifact-reference.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/reference/evidence-artifact-reference.md",
+      "title": "Evidence-artifact reference",
+      "url": "/validation/reference/evidence-artifact-reference/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/reference/fault-control-catalog.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "apps",
+      "generated": false,
+      "id": "page:validation/reference/fault-control-catalog",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "catalog",
+      "path": "validation/reference/fault-control-catalog.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/reference/fault-control-catalog.md",
+      "title": "Fault-control catalog",
+      "url": "/validation/reference/fault-control-catalog/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/reference/result-status-reference.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "testing",
+      "generated": false,
+      "id": "page:validation/reference/result-status-reference",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "reference",
+      "path": "validation/reference/result-status-reference.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/reference/result-status-reference.md",
+      "title": "Result-status reference",
+      "url": "/validation/reference/result-status-reference/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/reference/scenario-catalog.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/reference/scenario-catalog",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/reference/scenario-catalog.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/reference/scenario-catalog.md",
+      "title": "Security Assurance scenario catalog",
+      "url": "/validation/reference/scenario-catalog/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/reference/task-reference.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/reference/task-reference",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/reference/task-reference.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/reference/task-reference.md",
+      "title": "Security Assurance Taskfile reference",
+      "url": "/validation/reference/task-reference/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/reference/tool-matrix.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/reference/tool-matrix",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/reference/tool-matrix.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/reference/tool-matrix.md",
+      "title": "Security Assurance tool matrix",
+      "url": "/validation/reference/tool-matrix/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "validation/runtime-security-assurance-harness.md"
       ],
       "confidence": "source-derived",
@@ -16284,12 +16548,492 @@
       "primary_navigation_owner": "reference",
       "related_pages": [],
       "source_or_generator": "validation/runtime-security-assurance-qualification.md",
-      "title": "Runtime Security Assurance Qualification Dossier",
+      "title": "Historical Runtime Security Assurance Qualification Dossier",
       "url": "/validation/runtime-security-assurance-qualification/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/01-architecture.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/01-architecture",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "architecture",
+      "path": "validation/security-assurance/01-architecture.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/01-architecture.md",
+      "title": "1. Architecture and trust boundaries",
+      "url": "/validation/security-assurance/01-architecture/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/02-getting-started.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/02-getting-started",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/02-getting-started.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/02-getting-started.md",
+      "title": "2. Getting started",
+      "url": "/validation/security-assurance/02-getting-started/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/03-environment-prerequisites.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/03-environment-prerequisites",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/03-environment-prerequisites.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/03-environment-prerequisites.md",
+      "title": "3. Environment prerequisites",
+      "url": "/validation/security-assurance/03-environment-prerequisites/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/04-toolchain-installation.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/04-toolchain-installation",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/04-toolchain-installation.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/04-toolchain-installation.md",
+      "title": "4. Toolchain installation and receipts",
+      "url": "/validation/security-assurance/04-toolchain-installation/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/05-harness-bootstrap-auth.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/05-harness-bootstrap-auth",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/05-harness-bootstrap-auth.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/05-harness-bootstrap-auth.md",
+      "title": "5. Bootstrap and authentication",
+      "url": "/validation/security-assurance/05-harness-bootstrap-auth/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/06-preflight.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/06-preflight",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/06-preflight.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/06-preflight.md",
+      "title": "6. Preflight and admission",
+      "url": "/validation/security-assurance/06-preflight/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/07-smoke-playbook.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/07-smoke-playbook",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/07-smoke-playbook.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/07-smoke-playbook.md",
+      "title": "7. Smoke playbook",
+      "url": "/validation/security-assurance/07-smoke-playbook/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/08-standard-playbook.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/08-standard-playbook",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/08-standard-playbook.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/08-standard-playbook.md",
+      "title": "8. Standard playbook",
+      "url": "/validation/security-assurance/08-standard-playbook/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/09-adversarial-playbook.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/09-adversarial-playbook",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/09-adversarial-playbook.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/09-adversarial-playbook.md",
+      "title": "9. Adversarial playbook",
+      "url": "/validation/security-assurance/09-adversarial-playbook/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/10-deep-playbook.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/10-deep-playbook",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/10-deep-playbook.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/10-deep-playbook.md",
+      "title": "10. Deep playbook",
+      "url": "/validation/security-assurance/10-deep-playbook/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/11-fault-recovery-playbook.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "recovery",
+      "generated": false,
+      "id": "page:validation/security-assurance/11-fault-recovery-playbook",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/11-fault-recovery-playbook.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/11-fault-recovery-playbook.md",
+      "title": "11. Fault and recovery playbook",
+      "url": "/validation/security-assurance/11-fault-recovery-playbook/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/12-tool-specific-playbooks.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/12-tool-specific-playbooks",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/12-tool-specific-playbooks.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/12-tool-specific-playbooks.md",
+      "title": "12. Tool-specific playbooks",
+      "url": "/validation/security-assurance/12-tool-specific-playbooks/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/13-stride-owasp-attack-paths.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/13-stride-owasp-attack-paths",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/13-stride-owasp-attack-paths.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/13-stride-owasp-attack-paths.md",
+      "title": "STRIDE, OWASP, and attack-path playbook",
+      "url": "/validation/security-assurance/13-stride-owasp-attack-paths/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/14-findings-remediation.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/14-findings-remediation",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/14-findings-remediation.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/14-findings-remediation.md",
+      "title": "Findings and remediation playbook",
+      "url": "/validation/security-assurance/14-findings-remediation/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/15-evidence-reporting.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/15-evidence-reporting",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/15-evidence-reporting.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/15-evidence-reporting.md",
+      "title": "Evidence and reporting playbook",
+      "url": "/validation/security-assurance/15-evidence-reporting/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/16-cleanup-default-off.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/16-cleanup-default-off",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/16-cleanup-default-off.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/16-cleanup-default-off.md",
+      "title": "Cleanup and default-off playbook",
+      "url": "/validation/security-assurance/16-cleanup-default-off/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/17-troubleshooting.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/17-troubleshooting",
+      "intents": [
+        "operate",
+        "diagnose"
+      ],
+      "page_type": "runbook",
+      "path": "validation/security-assurance/17-troubleshooting.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/17-troubleshooting.md",
+      "title": "Troubleshooting playbook",
+      "url": "/validation/security-assurance/17-troubleshooting/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/18-exact-head-release-qualification.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/18-exact-head-release-qualification",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/18-exact-head-release-qualification.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/18-exact-head-release-qualification.md",
+      "title": "Exact-head and release qualification playbook",
+      "url": "/validation/security-assurance/18-exact-head-release-qualification/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/19-human-review-playbook.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/19-human-review-playbook",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/19-human-review-playbook.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/19-human-review-playbook.md",
+      "title": "Human review playbook",
+      "url": "/validation/security-assurance/19-human-review-playbook/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/README.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/README",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/README.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/README.md",
+      "title": "Pocket Lab Lite Security Assurance Playbook",
+      "url": "/validation/security-assurance/README/"
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "930f613d7f79b2285e908420b094282130a306e6df0340b5806a9a8251db71c1",
+  "source_fingerprint": "37e2c03be43e0016b0b40acfe96b0691cb76625130fa187729c12e21cae00cff",
   "top_level": [
     "start-here",
     "use",

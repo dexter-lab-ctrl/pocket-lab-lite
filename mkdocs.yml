@@ -198,6 +198,7 @@ nav:
       - SQLite / data: generated/development/lite-sqlite-schema.md
       - UI state ownership: generated/development/ui-state-catalog.md
       - Testing matrix: generated/development/testing.md
+      - Validation index: validation/README.md
       - Qualification & maintenance harness: validation/qualification-maintenance-harness.md
       - Runtime security assurance harness: validation/runtime-security-assurance-harness.md
       - Accessibility & visual gates: generated/development/accessibility-visual.md
@@ -249,6 +250,38 @@ nav:
       - Dependency health: generated/enterprise/reference/dependency-health.md
       - Supply chain: generated/enterprise/reference/supply-chain.md
       - Reliability & resilience: generated/enterprise/reference/reliability.md
+      - Runtime Security Assurance Playbook:
+          - Start here: validation/security-assurance/README.md
+          - Architecture: validation/security-assurance/01-architecture.md
+          - Getting started: validation/security-assurance/02-getting-started.md
+          - Environment prerequisites: validation/security-assurance/03-environment-prerequisites.md
+          - Toolchain installation: validation/security-assurance/04-toolchain-installation.md
+          - Bootstrap and authentication: validation/security-assurance/05-harness-bootstrap-auth.md
+          - Preflight: validation/security-assurance/06-preflight.md
+          - Smoke: validation/security-assurance/07-smoke-playbook.md
+          - Standard: validation/security-assurance/08-standard-playbook.md
+          - Adversarial: validation/security-assurance/09-adversarial-playbook.md
+          - Deep: validation/security-assurance/10-deep-playbook.md
+          - Fault and recovery: validation/security-assurance/11-fault-recovery-playbook.md
+          - Tool-specific playbooks: validation/security-assurance/12-tool-specific-playbooks.md
+          - STRIDE, OWASP, and attack paths: validation/security-assurance/13-stride-owasp-attack-paths.md
+          - Findings and remediation: validation/security-assurance/14-findings-remediation.md
+          - Evidence and reporting: validation/security-assurance/15-evidence-reporting.md
+          - Cleanup and default-off: validation/security-assurance/16-cleanup-default-off.md
+          - Troubleshooting: validation/security-assurance/17-troubleshooting.md
+          - Exact-head qualification: validation/security-assurance/18-exact-head-release-qualification.md
+          - Human review: validation/security-assurance/19-human-review-playbook.md
+          - Reference catalogs:
+              - Command catalog: validation/reference/command-catalog.md
+              - API reference: validation/reference/api-reference.md
+              - Task reference: validation/reference/task-reference.md
+              - Tool matrix: validation/reference/tool-matrix.md
+              - Scenario catalog: validation/reference/scenario-catalog.md
+              - Fault-control catalog: validation/reference/fault-control-catalog.md
+              - Result-status reference: validation/reference/result-status-reference.md
+              - Evidence-artifact reference: validation/reference/evidence-artifact-reference.md
+              - Command completeness: validation/reference/command-completeness.md
+          - Historical qualification dossier: validation/evidence-history/runtime-security-assurance-qualification.md
   - Release & Change:
       - Overview: generated/enterprise/hubs/release-change.md
       - What changed: generated/production/intelligence/what-changed.md

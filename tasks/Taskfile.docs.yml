@@ -513,6 +513,7 @@ tasks:
     deps: [lite:dev:scratch:prepare]
     cmds:
       - task: lite:docs:tools:check
+      - task: lite:docs:security-assurance:check
       - task: lite:contracts:check
       - task: lite:docs:platform:check
       - task: lite:docs:runtime:check
@@ -530,6 +531,12 @@ tasks:
       - task: lite:docs:backend-tests
       - '{{.PYTHON}} -m mkdocs build --strict'
       - task: lite:docs:runtime-network:check
+
+  lite:docs:security-assurance:check:
+    desc: Check the source-owned Security Assurance Playbook tree against current registries, routes, CLI commands, tasks, and safety markers
+    cmds:
+      - '{{.PYTHON}} scripts/docs/check_security_assurance_playbooks.py'
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_security_assurance_playbooks.py'
 
   lite:docs:backend-tests:
     desc: Run backend Documentation Platform ownership, wiring, and architecture contract tests

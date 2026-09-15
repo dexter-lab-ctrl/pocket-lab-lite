@@ -851,8 +851,10 @@ def _owner(path: str) -> str:
         "security/lite-security-model.md": "reference",
         "recovery/backup-restore.md": "reference",
         "validation/lite-validation.md": "reference",
+        "validation/README.md": "build-test",
         "validation/qualification-maintenance-harness.md": "build-test",
         "validation/runtime-security-assurance-harness.md": "build-test",
+        "validation/security-assurance/README.md": "security-assurance",
     }
     if path in exact:
         return exact[path]
@@ -864,6 +866,10 @@ def _owner(path: str) -> str:
     if path.startswith("generated/enterprise/journeys/"):
         slug = Path(path).stem
         return {"remote-access": "operate", "release": "release-change"}.get(slug, "use")
+    if path.startswith("validation/security-assurance/"):
+        return "security-assurance"
+    if path.startswith("validation/reference/") or path.startswith("validation/evidence-history/"):
+        return "security-assurance"
     if path.startswith("generated/enterprise/threat-model/"):
         return "security-assurance"
     if path.startswith("generated/enterprise/knowledgebase/") or path.startswith("generated/enterprise/architecture/"):

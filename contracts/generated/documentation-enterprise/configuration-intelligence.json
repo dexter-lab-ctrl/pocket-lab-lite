@@ -9020,20 +9020,21 @@
     {
       "affected_components": [
         "FastAPI",
+        "documentation",
         "repository tooling"
       ],
-      "affects_release": true,
-      "affects_runtime": true,
+      "affects_release": false,
+      "affects_runtime": false,
       "default": "redacted/not inferred",
       "name": "POCKETLAB_HARNESS_PROVISIONING_TOKEN",
-      "owner": "FastAPI/runtime",
-      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "owner": "documentation tooling",
+      "purpose": "Documentation/developer automation configuration",
       "related_troubleshooting": [
         "Development Troubleshooting",
         "Production Troubleshooting"
       ],
       "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
-      "restart_required": "likely-runtime-restart",
+      "restart_required": "no-runtime-restart-for-doc-tooling",
       "runtime_scope": "runtime or development depending on source",
       "secret": true,
       "source": [
@@ -9041,8 +9042,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "scripts/dev/lite/harness.py",
         "scripts/dev/lite/start-qualification.sh",
-        "tests/backend/test_lite_harness.py",
-        "tests/backend/test_lite_security_assurance.py"
+        "scripts/docs/check_security_assurance_playbooks.py",
+        "tests/backend/test_lite_harness.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

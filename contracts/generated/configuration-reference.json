@@ -4748,7 +4748,8 @@
       "runtime_readers": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "scripts/dev/lite/harness.py",
-        "scripts/dev/lite/start-qualification.sh"
+        "scripts/dev/lite/start-qualification.sh",
+        "scripts/docs/check_security_assurance_playbooks.py"
       ],
       "safe_default": "not documented for secret variables",
       "secret_classification": "secret",
@@ -14867,7 +14868,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_source_sync.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py",
         "pocket-lab-final-structure/runtime/tests/test_observability_status.py",
-        "scripts/dev/lite/start-qualification.sh"
+        "scripts/dev/lite/start-qualification.sh",
+        "scripts/docs/check_security_assurance_playbooks.py"
       ],
       "safe_default": "0",
       "secret_classification": "configuration",
