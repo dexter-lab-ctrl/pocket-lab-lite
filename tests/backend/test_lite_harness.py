@@ -496,6 +496,40 @@ def test_assurance_client_keeps_matching_identity_continuity(tmp_path):
     assert state["suite_id"] == "standard"
 
 
+def test_assurance_client_bootstraps_after_principal_not_found_with_stale_run(tmp_path, monkeypatch):
+    script = Path("scripts/dev/lite/security_assurance.py").resolve()
+    spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_stale_bootstrap", script)
+    assert spec and spec.loader
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+
+    calls = []
+
+    def fake_start_session(**kwargs):
+        calls.append(("session", kwargs))
+        raise RuntimeError("principal_not_found: The synthetic principal was not found.")
+
+    def fake_bootstrap_session(**kwargs):
+        calls.append(("bootstrap", kwargs))
+        return {
+            "session_token": "memory-only-token",
+            "session": {"harness_session_id": "hs-bootstrap"},
+        }
+
+    monkeypatch.setattr(client.harness_client, "start_session", fake_start_session)
+    monkeypatch.setattr(client.harness_client, "bootstrap_session", fake_bootstrap_session)
+    lease, bootstrapped = client._establish_lease(
+        principal_id="new-assurance-runner",
+        key_path=tmp_path / "runner.key",
+        active_run_id="assurance-" + "b" * 32,
+        session_ttl_seconds=180,
+    )
+
+    assert bootstrapped is True
+    assert lease["session_token"] == "memory-only-token"
+    assert [kind for kind, _kwargs in calls] == ["session", "bootstrap"]
+
+
 def test_assurance_client_ensure_lease_renews_with_keyword_arguments(tmp_path, monkeypatch):
     script = Path("scripts/dev/lite/security_assurance.py").resolve()
     spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_ensure_lease", script)

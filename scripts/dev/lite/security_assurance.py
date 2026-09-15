@@ -841,9 +841,11 @@ def _establish_lease(
     except RuntimeError as exc:
         # A client crash can happen after bootstrap creates the principal but
         # before it admits a run. Reuse that principal instead of attempting a
-        # second bootstrap. No other rejection is safe to reinterpret as
-        # "principal absent".
-        if active_run_id or str(exc).split(":", 1)[0].strip() != "principal_not_found":
+        # second bootstrap. A stale local attachment does not change the
+        # server's principal-not-found fact: the key-bound bootstrap endpoint
+        # still requires the operator-approved, one-use grant. No other
+        # rejection is safe to reinterpret as "principal absent".
+        if str(exc).split(":", 1)[0].strip() != "principal_not_found":
             raise
     session = harness_client.bootstrap_session(
         principal_id=principal_id,
