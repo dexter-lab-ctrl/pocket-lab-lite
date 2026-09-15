@@ -43,7 +43,7 @@ The tool registry must own the target, command ID, argv, timeout, output bound, 
 For the current live-runtime tools:
 
 - Nuclei uses only checked-in reviewed templates under `security/assurance/nuclei-safe-templates/`; no public exploit templates or Interactsh.
-- nmap remains bound to the registered loopback target and Pocket Lab-owned listener ports; no `-p-`, LAN, Tailnet, or public scanning.
+- nmap remains bound to the registered loopback target and Pocket Lab-owned listener ports. Full-range enumeration and LAN, Tailnet, or public scanning remain prohibited.
 - ZAP remains baseline/passive and route-allowlisted; no unrestricted spider or active attack mode.
 - Schemathesis remains route/method allowlisted and bounded in examples/workers.
 - testssl.sh remains bound to the fixed Pocket Lab Caddy TLS/SNI tunnel.
