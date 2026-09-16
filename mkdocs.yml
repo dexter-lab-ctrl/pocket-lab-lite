@@ -275,7 +275,6 @@ nav:
           - Adding a tool: validation/security-assurance/21-adding-tool.md
           - Server Phone Task runtime: validation/security-assurance/22-server-phone-task-runtime.md
           - Report publication: validation/security-assurance/23-report-publication.md
-          - Published Security Assurance reports: generated/security-assurance/reports/index.md
           - Reference catalogs:
               - Command catalog: validation/reference/command-catalog.md
               - API reference: validation/reference/api-reference.md
@@ -307,6 +306,7 @@ nav:
           # END GENERATED KNOWLEDGE RELEASE NAV: production
   - Reference:
       - Overview: generated/enterprise/hubs/reference.md
+      - Security Assurance Reports: generated/security-assurance/reports/index.md
       - Lite API: reference/api/lite-api.md
       - Events: generated/enterprise/engineering/events.md
       - Configuration Intelligence: generated/enterprise/reference/configuration.md
