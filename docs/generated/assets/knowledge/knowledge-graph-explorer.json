@@ -12538,6 +12538,28 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_assurance_portability.py",
+      "name": "tests/backend/test_lite_security_assurance_portability.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_assurance_portability.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_assurance_scenario_contracts.py",
+      "name": "tests/backend/test_lite_security_assurance_scenario_contracts.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_assurance_scenario_contracts.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_security_assurance_toolchain.py",
       "name": "tests/backend/test_lite_security_assurance_toolchain.py",
       "source_refs": [
@@ -13455,6 +13477,17 @@
       "name": "tests/docs/test_security_assurance_playbooks.py",
       "source_refs": [
         "tests/docs/test_security_assurance_playbooks.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/docs/test_security_assurance_report.py",
+      "name": "tests/docs/test_security_assurance_report.py",
+      "source_refs": [
+        "tests/docs/test_security_assurance_report.py"
       ],
       "type": "test"
     },
@@ -24211,6 +24244,20 @@
       "source": "component:opa-policy-engine",
       "target": "table:policy_recovery_resolutions",
       "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_security_assurance_report.py"
+      ],
+      "id": "rel:2d560fa0e9860e7b",
+      "source": "domain:identity",
+      "target": "test:tests/docs/test_security_assurance_report.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -37322,6 +37369,20 @@
       "id": "rel:6daf3f265ab2b30a",
       "source": "journey:device-reconnect",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_security_assurance_report.py"
+      ],
+      "id": "rel:6db8134c6d6805e0",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_security_assurance_report.py",
       "type": "verified_by"
     },
     {

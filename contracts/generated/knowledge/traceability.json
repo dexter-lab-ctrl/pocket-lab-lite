@@ -3489,6 +3489,7 @@
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
+        "test:tests/docs/test_security_assurance_report.py",
         "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-phase9-qualification.spec.ts",
@@ -3710,6 +3711,7 @@
         "test:tests/docs/test_enterprise_documentation.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
+        "test:tests/docs/test_security_assurance_report.py",
         "test:tests/docs/test_threat_model_atlas.py",
         "test:tests/docs/test_threat_model_enterprise_console.py",
         "test:tests/docs/test_threat_model_layout.py",
@@ -4280,6 +4282,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "3dbbf2d911bc9c6a629b54dcc7c9b0ad21af7e8cc4cbe14b0191776b501af990"
+    "source_fingerprint": "c2889cdc1ea7410a23dafc3023afdb9ccce23d342c52d091660ddb923350dcd0"
   }
 }

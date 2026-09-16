@@ -2834,6 +2834,7 @@
         "scripts/dev/lite/run-playwright-mocked.sh",
         "scripts/dev/lite/serve-docs.sh",
         "scripts/dev/lite/setup-architecture-icons.sh",
+        "scripts/dev/lite/task_runtime.py",
         "scripts/test/parity/run_oasdiff.sh",
         "scripts/test/parity/run_schemathesis.sh",
         "scripts/test/parity/run_schemathesis_discovery.sh"
@@ -2894,6 +2895,7 @@
         "Taskfile.yml",
         "scripts/dev/lite/dev-scratch.sh",
         "scripts/dev/lite/documentation_security_tools.py",
+        "scripts/dev/lite/task_runtime.py",
         "scripts/docs/enterprise/supply_chain_automation.py",
         "scripts/docs/sqlite/generate_schemaspy.py"
       ],
@@ -3218,7 +3220,8 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
-        "Taskfile.yml"
+        "Taskfile.yml",
+        "scripts"
       ],
       "deprecated_aliases": [],
       "name": "POCKETLAB_ENV",
@@ -3226,7 +3229,8 @@
       "required": false,
       "restart_required": "component-dependent",
       "runtime_readers": [
-        "Taskfile.yml"
+        "Taskfile.yml",
+        "scripts/dev/lite/task_runtime.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -3249,7 +3253,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
-        "scripts/dev/lite/start-qualification.sh"
+        "scripts/dev/lite/start-qualification.sh",
+        "scripts/dev/lite/task_runtime.py"
       ],
       "safe_default": "production",
       "secret_classification": "configuration",
@@ -14416,6 +14421,7 @@
         "scripts/dev/lib/long_gate_json.py",
         "scripts/dev/lib/long_gate_s8.py",
         "scripts/dev/lib/long_gate_sqlite.sh",
+        "scripts/dev/lite/task_runtime.py",
         "scripts/dev/long-gates/security-s8-recovery.sh",
         "scripts/dev/run-fastapi-dev.sh",
         "scripts/dev/run-worker-dev.sh",

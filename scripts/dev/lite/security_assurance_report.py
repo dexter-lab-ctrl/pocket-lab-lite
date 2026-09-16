@@ -363,6 +363,7 @@ def render_markdown(model: Mapping[str, Any], history: list[Mapping[str, Any]] |
             ("Tool", item.get("tool")), ("Scenario", item.get("scenario_id")), ("Rule ID", item.get("rule_id") or item.get("category")),
             ("CVE", ", ".join(item.get("cve") or [])), ("CWE", ", ".join(item.get("cwe") or [])),
             ("Package/component", item.get("component")), ("Asset", item.get("asset")),
+            ("Title", item.get("title") or "Untitled normalized finding"),
             ("Summary", item.get("safe_summary") or item.get("title")), ("Security impact", item.get("security_impact") or "Requires review in context"),
             ("Evidence summary", ", ".join(item.get("evidence_refs") or []) or "Sanitized normalized evidence"),
             ("STRIDE", ", ".join(item.get("stride") or [])), ("OWASP", ", ".join(item.get("owasp") or [])),

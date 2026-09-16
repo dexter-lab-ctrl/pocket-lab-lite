@@ -993,6 +993,26 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_assurance_portability.py",
+      "name": "tests/backend/test_lite_security_assurance_portability.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_assurance_portability.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_assurance_scenario_contracts.py",
+      "name": "tests/backend/test_lite_security_assurance_scenario_contracts.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_assurance_scenario_contracts.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_security_assurance_toolchain.py",
       "name": "tests/backend/test_lite_security_assurance_toolchain.py",
       "source_refs": [
@@ -1833,6 +1853,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/test_security_assurance_report.py",
+      "name": "tests/docs/test_security_assurance_report.py",
+      "source_refs": [
+        "tests/docs/test_security_assurance_report.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/docs/test_supply_chain_runner_hardening.py",
       "name": "tests/docs/test_supply_chain_runner_hardening.py",
       "source_refs": [
@@ -2257,6 +2287,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "3dbbf2d911bc9c6a629b54dcc7c9b0ad21af7e8cc4cbe14b0191776b501af990"
+    "source_fingerprint": "c2889cdc1ea7410a23dafc3023afdb9ccce23d342c52d091660ddb923350dcd0"
   }
 }

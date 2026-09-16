@@ -54,6 +54,12 @@ def test_registry_scenarios_have_unique_fixed_lifecycle_contracts():
     threat = _threat()
     ap_ids = {item["id"] for item in threat["attack_paths"]}
     controls = {item["id"] for item in threat["controls"]}
+    for path in threat["attack_paths"]:
+        controls.update(
+            str(value).strip()
+            for value in path.get("controls", [])
+            if str(value).strip()
+        )
     case_ids: set[str] = set()
     for scenario in scenarios:
         assert scenario["execution"] in EXECUTIONS

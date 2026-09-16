@@ -14845,6 +14845,16 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/docs/test_security_assurance_report.py": [
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/docs/test_supply_chain_runner_hardening.py": [
         {
           "source": "reason:disabled",
@@ -24521,6 +24531,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_security_assurance_report.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-content-stress.spec.ts",
           "type": "verified_by"
         },
@@ -26218,6 +26232,10 @@
         },
         {
           "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_security_assurance_report.py",
           "type": "verified_by"
         },
         {
@@ -32317,6 +32335,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "3dbbf2d911bc9c6a629b54dcc7c9b0ad21af7e8cc4cbe14b0191776b501af990"
+    "source_fingerprint": "c2889cdc1ea7410a23dafc3023afdb9ccce23d342c52d091660ddb923350dcd0"
   }
 }
