@@ -4650,7 +4650,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 472,
+  "page_count": 473,
   "page_types": [
     "overview",
     "guide",
@@ -15845,6 +15845,29 @@
     },
     {
       "additional_audiences": [],
+      "authority": "derived",
+      "canonical_source_references": [
+        "derived-generator-not-specialized"
+      ],
+      "confidence": "generated",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": true,
+      "id": "page:generated/security-assurance/reports/security-assurance-20260916T173302Z-4199c1e3f1-assurance-eb3d0c1d7d5b437b9743c9961aa722f8",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "evidence",
+      "path": "generated/security-assurance/reports/security-assurance-20260916T173302Z-4199c1e3f1-assurance-eb3d0c1d7d5b437b9743c9961aa722f8.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "derived-generator-not-specialized",
+      "title": "Security Assurance Report — assurance-eb3d0c1d7d5b437b9743c9961aa722f8",
+      "url": "/generated/security-assurance/reports/security-assurance-20260916T173302Z-4199c1e3f1-assurance-eb3d0c1d7d5b437b9743c9961aa722f8/"
+    },
+    {
+      "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
         "getting-started/android-termux.md"
@@ -17152,7 +17175,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "85f078ddca39916f987f6d6ed30b88bfaabb7b073fc25d78b32b44035959ace4",
+  "source_fingerprint": "440f98fae191ed509b7ff93940caf174c9d0a185e93745aacbc49c7c811f607e",
   "top_level": [
     "start-here",
     "use",
