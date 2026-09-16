@@ -1,11 +1,7 @@
 # Security Assurance Reports
 
-No sanitized Security Assurance report has been published from this branch yet.
+Generated reports are sanitized assurance evidence, not security certifications. The newest report is listed first.
 
-Reports are generated only from completed normalized/sanitized qualification evidence with:
-
-```bash
-task lite:security:assurance:report:publish QUALIFICATION_ID=<assurance-run-id>
-```
-
-A published report is assurance evidence, not a security certification. The generator rebuilds this index deterministically from sanitized companion JSON files.
+| Completed UTC | Runtime SHA | Qualification | Result | Critical | High | Medium | Low | Info | Suite | Coverage % | Report |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-09-16T17:33:02Z | 4199c1e3f1 | assurance-eb3d0c1d7d5b437b9743c9961aa722f8 | PARTIAL | 0 | 0 | 0 | 1 | 0 | deep | 100.0 | [security-assurance-20260916T173302Z-4199c1e3f1-assurance-eb3d0c1d7d5b437b9743c9961aa722f8](security-assurance-20260916T173302Z-4199c1e3f1-assurance-eb3d0c1d7d5b437b9743c9961aa722f8.md) |
