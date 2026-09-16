@@ -74,17 +74,17 @@ tasks:
   lite:harness:profiles:
     desc: Show the backend-owned synthetic harness capability profiles (DEV PC or supported Server Phone runtime)
     cmds:
-      - 'python3 scripts/dev/lite/task_runtime.py python --dev-python "{{.PYTHON}}" -- scripts/dev/lite/harness.py profiles'
+      - 'python3 scripts/dev/lite/task_runtime.py --dev-python "{{.PYTHON}}" python -- scripts/dev/lite/harness.py profiles'
 
   lite:harness:status:
     desc: Show bounded backend harness status over loopback (DEV PC or supported Server Phone runtime)
     cmds:
-      - 'python3 scripts/dev/lite/task_runtime.py python --dev-python "{{.PYTHON}}" -- scripts/dev/lite/harness.py status'
+      - 'python3 scripts/dev/lite/task_runtime.py --dev-python "{{.PYTHON}}" python -- scripts/dev/lite/harness.py status'
 
   lite:harness:verify-off:
     desc: Prove the normal runtime has no harness, destructive, Owner, or test-bypass authority (DEV PC or Server Phone)
     cmds:
-      - 'python3 scripts/dev/lite/task_runtime.py python --dev-python "{{.PYTHON}}" -- scripts/dev/lite/harness.py verify-off'
+      - 'python3 scripts/dev/lite/task_runtime.py --dev-python "{{.PYTHON}}" python -- scripts/dev/lite/harness.py verify-off'
 
   lite:harness:keygen:
     desc: Create disposable 0600 Ed25519 qualification key material outside the repository
