@@ -63,6 +63,69 @@ content into the dossier.
    supported by the underlying result rather than by process launch alone.
 7. Preserve the sanitized report according to repository retention policy.
 
+## MkDocs publication
+
+A completed normalized report can be transformed into a first-class MkDocs
+Security Assurance report without reading raw scanner output:
+
+```bash
+task lite:security:assurance:report:generate \
+  QUALIFICATION_ID=<assurance-run-id>
+
+task lite:security:assurance:report:publish \
+  QUALIFICATION_ID=<assurance-run-id>
+
+task lite:security:assurance:report:check \
+  QUALIFICATION_ID=<assurance-run-id>
+```
+
+The publisher requires a specific terminal qualification ID; there is no
+implicit `latest` selection. It reads the existing sanitized report endpoint,
+requires the complete normalized artifact set and fail-closed sanitization
+markers, enforces bounded file/bundle sizes, stages output in a temporary
+directory, applies the existing redaction patterns, and atomically publishes
+only after redaction succeeds.
+
+Published files live under:
+
+```text
+docs/generated/security-assurance/reports/
+```
+
+Each report gets a deterministic identity:
+
+```text
+security-assurance-YYYYMMDDTHHMMSSZ-<short-runtime-sha>-<qualification-id>.md
+```
+
+A sanitized companion JSON file with the same stem supports future dashboards,
+CI comparisons, and automation. `index.md` is rebuilt deterministically from
+those companion files. Re-publishing the same qualification/revision is
+idempotent; a conflicting identity is rejected rather than overwritten.
+
+The generated Markdown includes every sanitized normalized finding, harness
+verdict, transparent evidence metrics, severity/tool/suite counts, STRIDE,
+OWASP Top 10 2021 and AP-* matrices, toolchain and runtime/resource tables,
+architecture/trust-boundary summaries, human-review/out-of-scope statements,
+remediation priorities, retest guidance, and the sanitization statement.
+Where previous compatible reports exist, a bounded trend table is added;
+different registry revisions are labeled rather than silently compared as
+equivalent.
+
+See [23 — Security Assurance Report Publication](23-report-publication.md) for
+the complete operating procedure and interpretation rules.
+
+## Scenario and tool semantics
+
+A **scenario** is the Pocket Lab security invariant. A **tool** is an evidence
+source. A scanner alert is not automatically a demonstrated exploit. When a
+fixed executor already covers multiple related negative cases, the scenario
+registry records those as machine-readable `coverage_cases` rather than
+creating duplicate top-level scenarios that rerun the same executor.
+
+Contributor procedures are in [20 — Adding a Scenario](20-adding-scenario.md)
+and [21 — Adding a Tool](21-adding-tool.md).
+
 ## Historical lineage
 
 The former large qualification dossier is preserved at

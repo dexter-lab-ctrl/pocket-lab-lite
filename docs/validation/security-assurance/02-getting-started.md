@@ -30,7 +30,16 @@ git rev-parse HEAD
 pm2 status
 curl -fsS http://127.0.0.1:8080/health
 curl -fsS http://127.0.0.1:8080/ready
+
+task lite:harness:status
+task lite:harness:profiles
+task lite:harness:verify-off
 ```
+
+The three Task commands above are supported phone-side commands. They resolve
+the installed Termux Python automatically and do not require a
+`PYTHON=python3` override. They also do not project `.pocketlab-dev/state` into
+the runtime. See [22 — Server Phone Task Runtime](22-server-phone-task-runtime.md).
 
 `/ready` is the admission proof; PM2 `online` is only process posture.
 
@@ -57,6 +66,12 @@ task lite:qualification:start:key-bound \
   PUBLIC_KEY_FILE=~/.pocketlab-qualification/codex-security-assurance.pub
 ```
 
+The phone wrapper removes DEV-PC scratch variables before starting the
+qualification launcher. `start-qualification.sh` then explicitly sets
+`POCKETLAB_ENVIRONMENT=qualification`, while `start-dashboard.sh` owns the
+runtime `POCKETLAB_STATE_DIR` and OPA active-policy path. The startup output
+must not show `.pocketlab-dev/state`.
+
 For fixed non-destructive service-fault controls, the operator must explicitly
 choose the separate `:faults` task. It is not part of normal startup.
 
@@ -80,7 +95,7 @@ The client never persists `POCKETLAB_HARNESS_SESSION`. If a client process is
 interrupted, use its continuity record and the [reattachment procedure](11-fault-recovery-playbook.md#client-disconnect-and-reattach),
 not a second run submission.
 
-## 6. Inspect and clean up
+## 6. Inspect, publish, and clean up
 
 **[APPROVED CLIENT / DEV PC]** Use only sanitized `run_id` values returned by
 the client:
@@ -89,6 +104,21 @@ the client:
 task lite:security:assurance:report RUN_ID=<sanitized-run-id>
 task lite:security:assurance:compare RUN_ID=<sanitized-run-id>
 ```
+
+When the bound session is still authorized to read the completed normalized
+report bundle, publication into the MkDocs source tree is explicit and
+qualification-ID specific:
+
+```bash
+task lite:security:assurance:report:publish \
+  QUALIFICATION_ID=<sanitized-run-id>
+
+task lite:security:assurance:report:check \
+  QUALIFICATION_ID=<sanitized-run-id>
+```
+
+Publication is a DEV-PC/repository workflow; do not edit tracked documentation
+on the Server Phone. See [23 — Report Publication](23-report-publication.md).
 
 Then follow [16 — cleanup and default-off](16-cleanup-default-off.md). If a
 source defect is found, stop qualification and apply the documented DEV-PC

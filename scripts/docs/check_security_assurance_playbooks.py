@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Check the source-owned Security Assurance Playbook contract.
 
-This check is intentionally static.  It reads the checked-in registries,
-routers, CLI parsers, Taskfiles, and playbooks; it never starts a service,
-contacts the Server Phone, installs a tool, or executes a scanner.
+This check is intentionally static. It reads the checked-in registries,
+routers, CLI parsers, Taskfiles, report/task wrappers, and playbooks; it never
+starts a service, contacts the Server Phone, installs a tool, or executes a
+scanner.
 """
 from __future__ import annotations
 
@@ -21,6 +22,7 @@ except ImportError as exc:  # pragma: no cover - the repository venv supplies Py
 ROOT = Path(__file__).resolve().parents[2]
 DOC_ROOT = ROOT / "docs/validation"
 ASSURANCE_ROOT = ROOT / "security/assurance"
+REPORT_INDEX = ROOT / "docs/generated/security-assurance/reports/index.md"
 
 PLAYBOOKS = (
     "README.md",
@@ -44,6 +46,10 @@ PLAYBOOKS = (
     "security-assurance/17-troubleshooting.md",
     "security-assurance/18-exact-head-release-qualification.md",
     "security-assurance/19-human-review-playbook.md",
+    "security-assurance/20-adding-scenario.md",
+    "security-assurance/21-adding-tool.md",
+    "security-assurance/22-server-phone-task-runtime.md",
+    "security-assurance/23-report-publication.md",
     "reference/command-catalog.md",
     "reference/api-reference.md",
     "reference/task-reference.md",
@@ -64,7 +70,9 @@ REQUIRED_SOURCES = (
     "security/threat-model-scenarios.json",
     "scripts/dev/lite/harness.py",
     "scripts/dev/lite/security_assurance.py",
+    "scripts/dev/lite/security_assurance_report.py",
     "scripts/dev/lite/security_assurance_toolchain.py",
+    "scripts/dev/lite/task_runtime.py",
     "scripts/dev/lite/start-qualification.sh",
     "pocket-lab-final-structure/runtime/api_fastapi/routers/harness.py",
     "pocket-lab-final-structure/runtime/api_fastapi/routers/security_assurance.py",
@@ -86,10 +94,6 @@ def _registry(name: str) -> dict:
     if not isinstance(value, dict):
         raise ValueError(f"{name} is not a mapping")
     return value
-
-
-def _ids(text: str, pattern: str) -> set[str]:
-    return set(re.findall(pattern, text, flags=re.MULTILINE))
 
 
 def _task_ids() -> set[str]:
@@ -140,6 +144,8 @@ def collect_errors(root: Path = ROOT) -> list[str]:
     for relative in REQUIRED_SOURCES:
         if not (root / relative).exists():
             errors.append(f"missing implementation source: {relative}")
+    if not (root / REPORT_INDEX.relative_to(ROOT)).is_file():
+        errors.append("missing generated Security Assurance report index")
     if errors:
         return errors
 
@@ -231,6 +237,9 @@ def collect_errors(root: Path = ROOT) -> list[str]:
         "OWASP Top 10 2021",
         "AP-14",
         "[REDACTED BY SECURITY ASSURANCE POLICY]",
+        "scenario",
+        "normalized",
+        "report:publish",
     )
     for marker in required_markers:
         if marker not in all_playbook_text:
@@ -245,6 +254,17 @@ def collect_errors(root: Path = ROOT) -> list[str]:
     for pattern in unsafe_patterns:
         if re.search(pattern, all_playbook_text, re.IGNORECASE):
             errors.append(f"unsafe documentation pattern found: {pattern}")
+
+    mkdocs = _read(root / "mkdocs.yml")
+    for path in (
+        "validation/security-assurance/20-adding-scenario.md",
+        "validation/security-assurance/21-adding-tool.md",
+        "validation/security-assurance/22-server-phone-task-runtime.md",
+        "validation/security-assurance/23-report-publication.md",
+        "generated/security-assurance/reports/index.md",
+    ):
+        if path not in mkdocs:
+            errors.append(f"Security Assurance MkDocs navigation omits: {path}")
 
     return errors
 
