@@ -44622,9 +44622,9 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "d4aa20ac97b514d88bff3a4d9e8e41ba5fb9582975e0546240ad3a790ab4c175",
-        "documentation": "405b9db7edc0d46c3d977c9aedc4ea3e6d4b6e9a828a1fbb4a32cc552bcb55f1",
+        "documentation": "a41d61a77f27b7204566a68587b54c0a5ef80f24e5e2ab133acba8296e534c43",
         "openapi": "73df089dcb595eacedd99de1797a42e2eedbe4df044eebb8a6fc323fd9c2d1c4",
-        "operational_health": "fa8f6aae6a0c18b9ae12792990502d1fd0d5bbbf4c378f38617d0fcaf00cce83"
+        "operational_health": "d140668f25f52ff0dd417d70ff7b3661c5f703194828e53d43fbbc16798ed1e2"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -91746,7 +91746,7 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
-          "python3 scripts/dev/lite/task_runtime.py python --dev-python \"{{.PYTHON}}\" -- scripts/dev/lite/harness.py profiles"
+          "python3 scripts/dev/lite/task_runtime.py --dev-python \"{{.PYTHON}}\" python -- scripts/dev/lite/harness.py profiles"
         ],
         "dependencies": [],
         "environment": [],
@@ -91827,7 +91827,7 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
-          "python3 scripts/dev/lite/task_runtime.py python --dev-python \"{{.PYTHON}}\" -- scripts/dev/lite/harness.py status"
+          "python3 scripts/dev/lite/task_runtime.py --dev-python \"{{.PYTHON}}\" python -- scripts/dev/lite/harness.py status"
         ],
         "dependencies": [],
         "environment": [],
@@ -91868,7 +91868,7 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
-          "python3 scripts/dev/lite/task_runtime.py python --dev-python \"{{.PYTHON}}\" -- scripts/dev/lite/harness.py verify-off"
+          "python3 scripts/dev/lite/task_runtime.py --dev-python \"{{.PYTHON}}\" python -- scripts/dev/lite/harness.py verify-off"
         ],
         "dependencies": [],
         "environment": [],
@@ -114503,5 +114503,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "512a2e1a2f9cc5670fda2bd8db9e8eef7ff398527f60f0e9c373a2d41deb8f6d"
+  "source_fingerprint": "0dd4bda226507694dae4abc14d4df9899f840f99f54991f61f8e19e3217c0874"
 }

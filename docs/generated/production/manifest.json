@@ -32,7 +32,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "ae8861c332adc004f49e8d46d22ce014a75cef9976f02ba51c033e757109f41f",
+  "source_fingerprint": "3c52bd7f04af7afe5eae663a31115b43f4e9ebaf1ec612aae935a5dc1aa17eab",
   "source_fingerprints": {
     ".github/workflows/docs-security-supply-chain.yml": "b5ce9661a2c0673d9e9c2a3be9b19e958b4046543816728556a581a2f338fa27",
     ".github/workflows/lite-quality.yml": "d44ad5b2dfc481c7a7e4d02c131cb09b3afe47fb7db94833bc541525393b1a9f",
@@ -154,7 +154,7 @@
     "src/lite/security/SecurityProgressiveDetailsLazy.jsx": "e9a559372a679f3514639d0aafe316b023a2fd79e6d22b5d6117adf197265886",
     "src/lite/stories/LiteStoryFrame.jsx": "43818e5ad4485a61208b612438c17b3a4e9cfea25a4ed091b717328e7e90cdef",
     "tasks/Taskfile.docs.yml": "fcb726d3e667f674daa06d8fe4d7affab0c609a5202864f80c0bcf08f70bd7a3",
-    "tasks/Taskfile.lite.yml": "ffb09d386222906a8fff30f2b90b05876c2c56e9149a7bc3ca8889b88426c8ae",
+    "tasks/Taskfile.lite.yml": "40b124b2b7c1694a382887a767079503123fc801de4ab16be964665567bad461",
     "tasks/Taskfile.parity.yml": "8c391f835e11b0a25a215c8cf7a4cfbf36f19ef9c623675a0e9f56861e6f7b34",
     "tasks/Taskfile.release.yml": "c027ceca7a9f849cf4eb3f167a6b8d4f4bb52f292277ea3bbda572b14b4fb35e",
     "tasks/Taskfile.ui.yml": "b2314c871a855fb29ab3d7da71a9f7a0351c9264118e172ab347b18e5fac9291",

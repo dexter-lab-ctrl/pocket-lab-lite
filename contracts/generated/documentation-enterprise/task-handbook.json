@@ -4876,7 +4876,7 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
-        "python3 scripts/dev/lite/task_runtime.py python --dev-python \"{{.PYTHON}}\" -- scripts/dev/lite/harness.py profiles"
+        "python3 scripts/dev/lite/task_runtime.py --dev-python \"{{.PYTHON}}\" python -- scripts/dev/lite/harness.py profiles"
       ],
       "dependencies": [],
       "environment": [],
@@ -4957,7 +4957,7 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
-        "python3 scripts/dev/lite/task_runtime.py python --dev-python \"{{.PYTHON}}\" -- scripts/dev/lite/harness.py status"
+        "python3 scripts/dev/lite/task_runtime.py --dev-python \"{{.PYTHON}}\" python -- scripts/dev/lite/harness.py status"
       ],
       "dependencies": [],
       "environment": [],
@@ -4998,7 +4998,7 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
-        "python3 scripts/dev/lite/task_runtime.py python --dev-python \"{{.PYTHON}}\" -- scripts/dev/lite/harness.py verify-off"
+        "python3 scripts/dev/lite/task_runtime.py --dev-python \"{{.PYTHON}}\" python -- scripts/dev/lite/harness.py verify-off"
       ],
       "dependencies": [],
       "environment": [],

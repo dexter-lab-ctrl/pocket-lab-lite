@@ -4096,7 +4096,7 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Commands:**
 
-- `python3 scripts/dev/lite/task_runtime.py python --dev-python "{{.PYTHON}}" -- scripts/dev/lite/harness.py profiles`
+- `python3 scripts/dev/lite/task_runtime.py --dev-python "{{.PYTHON}}" python -- scripts/dev/lite/harness.py profiles`
 
 **Environment:** None source-discovered
 
@@ -4164,7 +4164,7 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Commands:**
 
-- `python3 scripts/dev/lite/task_runtime.py python --dev-python "{{.PYTHON}}" -- scripts/dev/lite/harness.py status`
+- `python3 scripts/dev/lite/task_runtime.py --dev-python "{{.PYTHON}}" python -- scripts/dev/lite/harness.py status`
 
 **Environment:** None source-discovered
 
@@ -4198,7 +4198,7 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Commands:**
 
-- `python3 scripts/dev/lite/task_runtime.py python --dev-python "{{.PYTHON}}" -- scripts/dev/lite/harness.py verify-off`
+- `python3 scripts/dev/lite/task_runtime.py --dev-python "{{.PYTHON}}" python -- scripts/dev/lite/harness.py verify-off`
 
 **Environment:** None source-discovered
 
