@@ -4876,7 +4876,7 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
-        "{{.PYTHON}} scripts/dev/lite/harness.py profiles"
+        "python3 scripts/dev/lite/task_runtime.py --dev-python \"{{.PYTHON}}\" python -- scripts/dev/lite/harness.py profiles"
       ],
       "dependencies": [],
       "environment": [],
@@ -4890,12 +4890,13 @@
       "generated_artifacts": [],
       "implementation_status": "implemented",
       "inputs": [
-        "scripts/dev/lite/harness.py"
+        "scripts/dev/lite/harness.py",
+        "scripts/dev/lite/task_runtime.py"
       ],
       "name": "lite:harness:profiles",
       "outputs": [],
       "promotes_evidence": false,
-      "purpose": "Show the backend-owned synthetic harness capability profiles",
+      "purpose": "Show the backend-owned synthetic harness capability profiles (DEV PC or supported Server Phone runtime)",
       "related_tasks": [],
       "repository_mutation": false,
       "requires_termux": false,
@@ -4909,7 +4910,7 @@
       },
       "source": "tasks/Taskfile.lite.yml",
       "validation_outcome": "not-a-validation-task",
-      "workflow_group": "Development loop"
+      "workflow_group": "Runtime-evidence loop"
     },
     {
       "aliases": [],
@@ -4956,7 +4957,7 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
-        "{{.PYTHON}} scripts/dev/lite/harness.py status"
+        "python3 scripts/dev/lite/task_runtime.py --dev-python \"{{.PYTHON}}\" python -- scripts/dev/lite/harness.py status"
       ],
       "dependencies": [],
       "environment": [],
@@ -4970,12 +4971,13 @@
       "generated_artifacts": [],
       "implementation_status": "implemented",
       "inputs": [
-        "scripts/dev/lite/harness.py"
+        "scripts/dev/lite/harness.py",
+        "scripts/dev/lite/task_runtime.py"
       ],
       "name": "lite:harness:status",
       "outputs": [],
       "promotes_evidence": false,
-      "purpose": "Show bounded backend harness status over loopback",
+      "purpose": "Show bounded backend harness status over loopback (DEV PC or supported Server Phone runtime)",
       "related_tasks": [],
       "repository_mutation": false,
       "requires_termux": false,
@@ -4989,14 +4991,14 @@
       },
       "source": "tasks/Taskfile.lite.yml",
       "validation_outcome": "not-a-validation-task",
-      "workflow_group": "Development loop"
+      "workflow_group": "Runtime-evidence loop"
     },
     {
       "aliases": [],
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
-        "{{.PYTHON}} scripts/dev/lite/harness.py verify-off"
+        "python3 scripts/dev/lite/task_runtime.py --dev-python \"{{.PYTHON}}\" python -- scripts/dev/lite/harness.py verify-off"
       ],
       "dependencies": [],
       "environment": [],
@@ -5010,12 +5012,13 @@
       "generated_artifacts": [],
       "implementation_status": "implemented",
       "inputs": [
-        "scripts/dev/lite/harness.py"
+        "scripts/dev/lite/harness.py",
+        "scripts/dev/lite/task_runtime.py"
       ],
       "name": "lite:harness:verify-off",
       "outputs": [],
       "promotes_evidence": false,
-      "purpose": "Prove the normal runtime has no harness, destructive, Owner, or test-bypass authority",
+      "purpose": "Prove the normal runtime has no harness, destructive, Owner, or test-bypass authority (DEV PC or Server Phone)",
       "related_tasks": [],
       "repository_mutation": false,
       "requires_termux": false,
@@ -5029,7 +5032,7 @@
       },
       "source": "tasks/Taskfile.lite.yml",
       "validation_outcome": "gate-defined",
-      "workflow_group": "Development loop"
+      "workflow_group": "Runtime-evidence loop"
     },
     {
       "aliases": [],
@@ -5116,7 +5119,7 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
-        "bash scripts/dev/lite/start-qualification.sh --bootstrap-principal-id \"{{.PRINCIPAL_ID}}\" --bootstrap-public-key-file \"{{.PUBLIC_KEY_FILE}}\" --bootstrap-profile security-assurance-runner"
+        "python3 scripts/dev/lite/task_runtime.py shell -- scripts/dev/lite/start-qualification.sh --bootstrap-principal-id \"{{.PRINCIPAL_ID}}\" --bootstrap-public-key-file \"{{.PUBLIC_KEY_FILE}}\" --bootstrap-profile security-assurance-runner"
       ],
       "dependencies": [],
       "environment": [],
@@ -5130,12 +5133,13 @@
       "generated_artifacts": [],
       "implementation_status": "implemented",
       "inputs": [
-        "scripts/dev/lite/start-qualification.sh"
+        "scripts/dev/lite/start-qualification.sh",
+        "scripts/dev/lite/task_runtime.py"
       ],
       "name": "lite:qualification:start:key-bound",
       "outputs": [],
       "promotes_evidence": false,
-      "purpose": "Explicitly start qualification with operator-approved security-assurance public-key bootstrap",
+      "purpose": "Explicitly start qualification with operator-approved security-assurance public-key bootstrap; Server Phone DEV state is scrubbed first",
       "related_tasks": [],
       "repository_mutation": false,
       "requires_termux": false,
@@ -5156,7 +5160,7 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
-        "bash scripts/dev/lite/start-qualification.sh --bootstrap-principal-id \"{{.PRINCIPAL_ID}}\" --bootstrap-public-key-file \"{{.PUBLIC_KEY_FILE}}\" --bootstrap-profile security-assurance-runner --enable-fault-control"
+        "python3 scripts/dev/lite/task_runtime.py shell -- scripts/dev/lite/start-qualification.sh --bootstrap-principal-id \"{{.PRINCIPAL_ID}}\" --bootstrap-public-key-file \"{{.PUBLIC_KEY_FILE}}\" --bootstrap-profile security-assurance-runner --enable-fault-control"
       ],
       "dependencies": [],
       "environment": [],
@@ -5170,12 +5174,13 @@
       "generated_artifacts": [],
       "implementation_status": "implemented",
       "inputs": [
-        "scripts/dev/lite/start-qualification.sh"
+        "scripts/dev/lite/start-qualification.sh",
+        "scripts/dev/lite/task_runtime.py"
       ],
       "name": "lite:qualification:start:key-bound:faults",
       "outputs": [],
       "promotes_evidence": false,
-      "purpose": "Explicitly start key-bound qualification with the fixed non-destructive service-fault controls enabled",
+      "purpose": "Explicitly start key-bound qualification with fixed non-destructive service-fault controls; Server Phone DEV state is scrubbed first",
       "related_tasks": [],
       "repository_mutation": false,
       "requires_termux": false,
@@ -5576,6 +5581,166 @@
       "outputs": [],
       "promotes_evidence": false,
       "purpose": "Read one sanitized runtime security assurance report",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance_report.py check --qualification-id \"{{.QUALIFICATION_ID}}\""
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:report:check",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance_report.py"
+      ],
+      "name": "lite:security:assurance:report:check",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Validate one published sanitized Security Assurance MkDocs report and its index link",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance_report.py generate --qualification-id \"{{.QUALIFICATION_ID}}\""
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:report:generate",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "generated drift"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance_report.py"
+      ],
+      "name": "lite:security:assurance:report:generate",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Validate and assemble the MkDocs report model for one completed sanitized qualification",
+      "related_tasks": [],
+      "repository_mutation": true,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": true,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance_report.py publish --qualification-id \"{{.QUALIFICATION_ID}}\""
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:report:publish",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance_report.py"
+      ],
+      "name": "lite:security:assurance:report:publish",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Atomically publish one completed sanitized Security Assurance qualification into MkDocs",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Security-analysis loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/security_assurance_report.py index"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:security:assurance:reports:index",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/security_assurance_report.py"
+      ],
+      "name": "lite:security:assurance:reports:index",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Deterministically rebuild the generated Security Assurance report index from sanitized companion JSON files",
       "related_tasks": [],
       "repository_mutation": false,
       "requires_termux": false,

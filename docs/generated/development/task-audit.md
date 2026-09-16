@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 3dafb7cf52df240ac510f97324101679dddca1928f1d4d2da49a5665f3c67791
+source_fingerprint: 3c52bd7f04af7afe5eae663a31115b43f4e9ebaf1ec612aae935a5dc1aa17eab
 schema_revision: 1
 validation_status: generated
 ---
@@ -297,6 +297,10 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:security:assurance:qualify`
 - `lite:security:assurance:qualify:full`
 - `lite:security:assurance:report`
+- `lite:security:assurance:report:check`
+- `lite:security:assurance:report:generate`
+- `lite:security:assurance:report:publish`
+- `lite:security:assurance:reports:index`
 - `lite:security:assurance:scenario`
 - `lite:security:assurance:smoke`
 - `lite:security:assurance:standard`

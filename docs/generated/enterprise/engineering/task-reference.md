@@ -15,11 +15,11 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 | Workflow | Task count |
 | --- | --- |
-| Development loop | 58 |
+| Development loop | 55 |
 | Documentation loop | 55 |
 | API-validation loop | 12 |
-| Runtime-evidence loop | 23 |
-| Security-analysis loop | 28 |
+| Runtime-evidence loop | 26 |
+| Security-analysis loop | 32 |
 | Release loop | 19 |
 | Recovery-diagnostics loop | 6 |
 
@@ -4086,7 +4086,7 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 ## `lite:harness:profiles`
 
-**Purpose:** Show the backend-owned synthetic harness capability profiles
+**Purpose:** Show the backend-owned synthetic harness capability profiles (DEV PC or supported Server Phone runtime)
 
 **Audience:** developer
 
@@ -4096,11 +4096,11 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Commands:**
 
-- `{{.PYTHON}} scripts/dev/lite/harness.py profiles`
+- `python3 scripts/dev/lite/task_runtime.py --dev-python "{{.PYTHON}}" python -- scripts/dev/lite/harness.py profiles`
 
 **Environment:** None source-discovered
 
-**Inputs:** scripts/dev/lite/harness.py
+**Inputs:** scripts/dev/lite/harness.py, scripts/dev/lite/task_runtime.py
 
 **Outputs:** No explicit file outputs discovered
 
@@ -4154,7 +4154,7 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 ## `lite:harness:status`
 
-**Purpose:** Show bounded backend harness status over loopback
+**Purpose:** Show bounded backend harness status over loopback (DEV PC or supported Server Phone runtime)
 
 **Audience:** developer
 
@@ -4164,11 +4164,11 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Commands:**
 
-- `{{.PYTHON}} scripts/dev/lite/harness.py status`
+- `python3 scripts/dev/lite/task_runtime.py --dev-python "{{.PYTHON}}" python -- scripts/dev/lite/harness.py status`
 
 **Environment:** None source-discovered
 
-**Inputs:** scripts/dev/lite/harness.py
+**Inputs:** scripts/dev/lite/harness.py, scripts/dev/lite/task_runtime.py
 
 **Outputs:** No explicit file outputs discovered
 
@@ -4188,7 +4188,7 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 ## `lite:harness:verify-off`
 
-**Purpose:** Prove the normal runtime has no harness, destructive, Owner, or test-bypass authority
+**Purpose:** Prove the normal runtime has no harness, destructive, Owner, or test-bypass authority (DEV PC or Server Phone)
 
 **Audience:** developer
 
@@ -4198,11 +4198,11 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Commands:**
 
-- `{{.PYTHON}} scripts/dev/lite/harness.py verify-off`
+- `python3 scripts/dev/lite/task_runtime.py --dev-python "{{.PYTHON}}" python -- scripts/dev/lite/harness.py verify-off`
 
 **Environment:** None source-discovered
 
-**Inputs:** scripts/dev/lite/harness.py
+**Inputs:** scripts/dev/lite/harness.py, scripts/dev/lite/task_runtime.py
 
 **Outputs:** No explicit file outputs discovered
 
@@ -4290,7 +4290,7 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 ## `lite:qualification:start:key-bound`
 
-**Purpose:** Explicitly start qualification with operator-approved security-assurance public-key bootstrap
+**Purpose:** Explicitly start qualification with operator-approved security-assurance public-key bootstrap; Server Phone DEV state is scrubbed first
 
 **Audience:** developer
 
@@ -4300,11 +4300,11 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Commands:**
 
-- `bash scripts/dev/lite/start-qualification.sh --bootstrap-principal-id "{{.PRINCIPAL_ID}}" --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}" --bootstrap-profile security-assurance-runner`
+- `python3 scripts/dev/lite/task_runtime.py shell -- scripts/dev/lite/start-qualification.sh --bootstrap-principal-id "{{.PRINCIPAL_ID}}" --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}" --bootstrap-profile security-assurance-runner`
 
 **Environment:** None source-discovered
 
-**Inputs:** scripts/dev/lite/start-qualification.sh
+**Inputs:** scripts/dev/lite/start-qualification.sh, scripts/dev/lite/task_runtime.py
 
 **Outputs:** No explicit file outputs discovered
 
@@ -4324,7 +4324,7 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 ## `lite:qualification:start:key-bound:faults`
 
-**Purpose:** Explicitly start key-bound qualification with the fixed non-destructive service-fault controls enabled
+**Purpose:** Explicitly start key-bound qualification with fixed non-destructive service-fault controls; Server Phone DEV state is scrubbed first
 
 **Audience:** developer
 
@@ -4334,11 +4334,11 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Commands:**
 
-- `bash scripts/dev/lite/start-qualification.sh --bootstrap-principal-id "{{.PRINCIPAL_ID}}" --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}" --bootstrap-profile security-assurance-runner --enable-fault-control`
+- `python3 scripts/dev/lite/task_runtime.py shell -- scripts/dev/lite/start-qualification.sh --bootstrap-principal-id "{{.PRINCIPAL_ID}}" --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}" --bootstrap-profile security-assurance-runner --enable-fault-control`
 
 **Environment:** None source-discovered
 
-**Inputs:** scripts/dev/lite/start-qualification.sh
+**Inputs:** scripts/dev/lite/start-qualification.sh, scripts/dev/lite/task_runtime.py
 
 **Outputs:** No explicit file outputs discovered
 
@@ -4695,6 +4695,142 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:security:assurance:report`
+
+## `lite:security:assurance:report:check`
+
+**Purpose:** Validate one published sanitized Security Assurance MkDocs report and its index link
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance_report.py check --qualification-id "{{.QUALIFICATION_ID}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance_report.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:security:assurance:report:check`
+
+## `lite:security:assurance:report:generate`
+
+**Purpose:** Validate and assemble the MkDocs report model for one completed sanitized qualification
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance_report.py generate --qualification-id "{{.QUALIFICATION_ID}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance_report.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=True; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:report:generate`
+
+## `lite:security:assurance:report:publish`
+
+**Purpose:** Atomically publish one completed sanitized Security Assurance qualification into MkDocs
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance_report.py publish --qualification-id "{{.QUALIFICATION_ID}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance_report.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:report:publish`
+
+## `lite:security:assurance:reports:index`
+
+**Purpose:** Deterministically rebuild the generated Security Assurance report index from sanitized companion JSON files
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance_report.py index`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance_report.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:reports:index`
 
 ## `lite:security:assurance:scenario`
 

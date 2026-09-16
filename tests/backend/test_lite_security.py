@@ -851,6 +851,30 @@ def test_security_redaction_preserves_scanner_return_codes():
     assert redacted["nested"]["api_key"] == "***REDACTED***"
 
 
+def test_security_redaction_preserves_assurance_boolean_markers():
+    from api_fastapi.services import lite_security_policy as policy
+
+    marker_names = (
+        "raw_scanner_output_persisted",
+        "raw_credentials_persisted",
+        "session_tokens_persisted",
+        "key_material_persisted",
+        "authorization_headers_persisted",
+        "user_media_scanned",
+        "backup_payloads_scanned",
+    )
+    payload = {name: False for name in marker_names}
+    payload["session_token"] = "do-not-show"
+    payload["nested"] = {"authorization": "Bearer do-not-show"}
+
+    redacted = policy.redact_value(payload)
+
+    assert all(redacted[name] is False for name in marker_names)
+    assert redacted["session_token"] == "***REDACTED***"
+    assert redacted["nested"]["authorization"] == "***REDACTED***"
+    assert policy.redact_value({"session_tokens_persisted": "unexpected"})["session_tokens_persisted"] == "***REDACTED***"
+
+
 def test_security_history_and_delta_compare_previous_run():
     from api_fastapi.services import lite_security
     from api_fastapi.services import lite_security_evidence as evidence

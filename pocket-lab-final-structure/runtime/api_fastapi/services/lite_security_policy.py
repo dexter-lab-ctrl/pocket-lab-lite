@@ -759,6 +759,19 @@ SAFE_SCANNER_METADATA_KEYS = {
     "secret_mode",
 }
 
+# These are boolean evidence markers, not secret material.  Their names are
+# intentionally explicit so the report publisher can fail closed on an
+# unsafe value while still receiving the required false/true posture.
+SAFE_BOOLEAN_METADATA_KEYS = {
+    "raw_scanner_output_persisted",
+    "raw_credentials_persisted",
+    "session_tokens_persisted",
+    "key_material_persisted",
+    "authorization_headers_persisted",
+    "user_media_scanned",
+    "backup_payloads_scanned",
+}
+
 
 def is_safe_scanner_metadata_key(key: Any) -> bool:
     normalized = str(key or "").strip().lower().replace("-", "_")
@@ -769,7 +782,10 @@ def redact_value(value: Any) -> Any:
     if isinstance(value, dict):
         clean: dict[str, Any] = {}
         for key, item in value.items():
-            if SENSITIVE_KEY_RE.search(str(key)) and not is_safe_scanner_metadata_key(key):
+            normalized = str(key or "").strip().lower().replace("-", "_")
+            if normalized in SAFE_BOOLEAN_METADATA_KEYS:
+                clean[str(key)] = item if isinstance(item, bool) else "***REDACTED***"
+            elif SENSITIVE_KEY_RE.search(str(key)) and not is_safe_scanner_metadata_key(key):
                 clean[str(key)] = "***REDACTED***"
             else:
                 clean[str(key)] = redact_value(item)

@@ -27018,6 +27018,26 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_assurance_portability.py",
+      "name": "tests/backend/test_lite_security_assurance_portability.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_assurance_portability.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_assurance_scenario_contracts.py",
+      "name": "tests/backend/test_lite_security_assurance_scenario_contracts.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_assurance_scenario_contracts.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_security_assurance_toolchain.py",
       "name": "tests/backend/test_lite_security_assurance_toolchain.py",
       "source_refs": [
@@ -27852,6 +27872,16 @@
       "name": "tests/docs/test_security_assurance_playbooks.py",
       "source_refs": [
         "tests/docs/test_security_assurance_playbooks.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/docs/test_security_assurance_report.py",
+      "name": "tests/docs/test_security_assurance_report.py",
+      "source_refs": [
+        "tests/docs/test_security_assurance_report.py"
       ],
       "type": "test"
     },
@@ -31253,6 +31283,8 @@
         "test:tests/backend/test_lite_security_advanced_optimization.py",
         "test:tests/backend/test_lite_security_assurance.py",
         "test:tests/backend/test_lite_security_assurance_controls.py",
+        "test:tests/backend/test_lite_security_assurance_portability.py",
+        "test:tests/backend/test_lite_security_assurance_scenario_contracts.py",
         "test:tests/backend/test_lite_security_assurance_toolchain.py",
         "test:tests/backend/test_lite_security_f11_events_contract.py",
         "test:tests/backend/test_lite_security_f12_f14_stability_contract.py",
@@ -31337,6 +31369,7 @@
         "test:tests/docs/test_release_inventory_experience.py",
         "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_security_assurance_playbooks.py",
+        "test:tests/docs/test_security_assurance_report.py",
         "test:tests/docs/test_supply_chain_runner_hardening.py",
         "test:tests/docs/test_threat_model_atlas.py",
         "test:tests/docs/test_threat_model_boundary_ux_polish.py",
@@ -32603,6 +32636,8 @@
         "test:tests/backend/test_lite_security_advanced_optimization.py",
         "test:tests/backend/test_lite_security_assurance.py",
         "test:tests/backend/test_lite_security_assurance_controls.py",
+        "test:tests/backend/test_lite_security_assurance_portability.py",
+        "test:tests/backend/test_lite_security_assurance_scenario_contracts.py",
         "test:tests/backend/test_lite_security_assurance_toolchain.py",
         "test:tests/backend/test_lite_security_f11_events_contract.py",
         "test:tests/backend/test_lite_security_f12_f14_stability_contract.py",
@@ -32687,6 +32722,7 @@
         "test:tests/docs/test_release_inventory_experience.py",
         "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_security_assurance_playbooks.py",
+        "test:tests/docs/test_security_assurance_report.py",
         "test:tests/docs/test_supply_chain_runner_hardening.py",
         "test:tests/docs/test_threat_model_atlas.py",
         "test:tests/docs/test_threat_model_boundary_ux_polish.py",
@@ -47680,6 +47716,16 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/docs/test_security_assurance_report.py": [
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/docs/test_supply_chain_runner_hardening.py": [
         {
           "source": "reason:disabled",
@@ -57356,6 +57402,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/docs/test_security_assurance_report.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-content-stress.spec.ts",
           "type": "verified_by"
         },
@@ -59053,6 +59103,10 @@
         },
         {
           "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_security_assurance_report.py",
           "type": "verified_by"
         },
         {
@@ -71171,6 +71225,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_security_assurance_report.py"
+      ],
+      "id": "rel:2d560fa0e9860e7b",
+      "source": "domain:identity",
+      "target": "test:tests/docs/test_security_assurance_report.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:2d5eadfe6756709d",
@@ -79619,6 +79682,15 @@
       "id": "rel:6daf3f265ab2b30a",
       "source": "journey:device-reconnect",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_security_assurance_report.py"
+      ],
+      "id": "rel:6db8134c6d6805e0",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_security_assurance_report.py",
       "type": "verified_by"
     },
     {
@@ -98078,9 +98150,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "3dbbf2d911bc9c6a629b54dcc7c9b0ad21af7e8cc4cbe14b0191776b501af990",
+  "source_fingerprint": "9aa8d50ba03525edeaa375bd86ce0f2482d5bc0b247354039a7ccf7795ca3910",
   "statistics": {
-    "entity_count": 1269,
+    "entity_count": 1272,
     "entity_type_counts": {
       "adr": 6,
       "api": 218,
@@ -98097,14 +98169,14 @@
       "runtime-topology": 9,
       "subject": 210,
       "table": 78,
-      "test": 225,
+      "test": 228,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3628,
-    "source_count": 262
+    "relation_count": 3630,
+    "source_count": 265
   }
 }

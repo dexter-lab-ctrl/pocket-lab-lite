@@ -2834,6 +2834,7 @@
         "scripts/dev/lite/run-playwright-mocked.sh",
         "scripts/dev/lite/serve-docs.sh",
         "scripts/dev/lite/setup-architecture-icons.sh",
+        "scripts/dev/lite/task_runtime.py",
         "scripts/test/parity/run_oasdiff.sh",
         "scripts/test/parity/run_schemathesis.sh",
         "scripts/test/parity/run_schemathesis_discovery.sh"
@@ -2894,6 +2895,7 @@
         "Taskfile.yml",
         "scripts/dev/lite/dev-scratch.sh",
         "scripts/dev/lite/documentation_security_tools.py",
+        "scripts/dev/lite/task_runtime.py",
         "scripts/docs/enterprise/supply_chain_automation.py",
         "scripts/docs/sqlite/generate_schemaspy.py"
       ],
@@ -3218,7 +3220,8 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
-        "Taskfile.yml"
+        "Taskfile.yml",
+        "scripts"
       ],
       "deprecated_aliases": [],
       "name": "POCKETLAB_ENV",
@@ -3226,7 +3229,8 @@
       "required": false,
       "restart_required": "component-dependent",
       "runtime_readers": [
-        "Taskfile.yml"
+        "Taskfile.yml",
+        "scripts/dev/lite/task_runtime.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -3249,7 +3253,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
-        "scripts/dev/lite/start-qualification.sh"
+        "scripts/dev/lite/start-qualification.sh",
+        "scripts/dev/lite/task_runtime.py"
       ],
       "safe_default": "production",
       "secret_classification": "configuration",
@@ -14416,6 +14421,7 @@
         "scripts/dev/lib/long_gate_json.py",
         "scripts/dev/lib/long_gate_s8.py",
         "scripts/dev/lib/long_gate_sqlite.sh",
+        "scripts/dev/lite/task_runtime.py",
         "scripts/dev/long-gates/security-s8-recovery.sh",
         "scripts/dev/run-fastapi-dev.sh",
         "scripts/dev/run-worker-dev.sh",
@@ -16567,7 +16573,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "9f93f60d59975748be86744b754a7e3edf1cc595136c8a186f8f7f87c41ecd19",
+    "aggregate_fingerprint": "792c75766a14340d750b6dc093d2a4236fcd9982c99da3dd9b3d47c2cc85ca5e",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -16690,7 +16696,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_generation.py": "5bcd9ce99c8247703fb3c226fb1e3a0cf98cd1f0902a959ba5f903b9111f0721",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_maintenance.py": "9ea0f234b155297a9008a509b80dd99f19486cce23b91838c2690dfdcc98c78d",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py": "823486a953f6f97ac5395c90b16a8a57be1f29574757049c9649971a73f20da8",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py": "8c63b3e133a057126d9ae1671c600909fa455d9e5b2376a6adaa4a3ccc9cb119",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py": "85426d31ed25012582d1df637957d66e64513316dcb223eb58cdd285a9c87765",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_store.py": "3454a78c1955bde967ef02089bb52d99b14f4090356a2cee18d5eec59150c59a",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_semantic_bands.py": "2d7467bfd788f51acd40325c777f51892fd35370d48af97ce756057bf1f68a00",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_semantic_revisions.py": "276b8526111c275eac56206e3c41362d7e80add09a28229804fc953909ccf97a",

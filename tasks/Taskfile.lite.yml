@@ -72,19 +72,19 @@ tasks:
       - bash scripts/dev/run-nats-dev.sh
 
   lite:harness:profiles:
-    desc: Show the backend-owned synthetic harness capability profiles
+    desc: Show the backend-owned synthetic harness capability profiles (DEV PC or supported Server Phone runtime)
     cmds:
-      - '{{.PYTHON}} scripts/dev/lite/harness.py profiles'
+      - 'python3 scripts/dev/lite/task_runtime.py --dev-python "{{.PYTHON}}" python -- scripts/dev/lite/harness.py profiles'
 
   lite:harness:status:
-    desc: Show bounded backend harness status over loopback
+    desc: Show bounded backend harness status over loopback (DEV PC or supported Server Phone runtime)
     cmds:
-      - '{{.PYTHON}} scripts/dev/lite/harness.py status'
+      - 'python3 scripts/dev/lite/task_runtime.py --dev-python "{{.PYTHON}}" python -- scripts/dev/lite/harness.py status'
 
   lite:harness:verify-off:
-    desc: Prove the normal runtime has no harness, destructive, Owner, or test-bypass authority
+    desc: Prove the normal runtime has no harness, destructive, Owner, or test-bypass authority (DEV PC or Server Phone)
     cmds:
-      - '{{.PYTHON}} scripts/dev/lite/harness.py verify-off'
+      - 'python3 scripts/dev/lite/task_runtime.py --dev-python "{{.PYTHON}}" python -- scripts/dev/lite/harness.py verify-off'
 
   lite:harness:keygen:
     desc: Create disposable 0600 Ed25519 qualification key material outside the repository
@@ -130,23 +130,23 @@ tasks:
       - bash scripts/dev/lite/start-qualification.sh
 
   lite:qualification:start:key-bound:
-    desc: Explicitly start qualification with operator-approved security-assurance public-key bootstrap
+    desc: Explicitly start qualification with operator-approved security-assurance public-key bootstrap; Server Phone DEV state is scrubbed first
     requires:
       vars: [PRINCIPAL_ID, PUBLIC_KEY_FILE]
     cmds:
       - >-
-        bash scripts/dev/lite/start-qualification.sh
+        python3 scripts/dev/lite/task_runtime.py shell -- scripts/dev/lite/start-qualification.sh
         --bootstrap-principal-id "{{.PRINCIPAL_ID}}"
         --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}"
         --bootstrap-profile security-assurance-runner
 
   lite:qualification:start:key-bound:faults:
-    desc: Explicitly start key-bound qualification with the fixed non-destructive service-fault controls enabled
+    desc: Explicitly start key-bound qualification with fixed non-destructive service-fault controls; Server Phone DEV state is scrubbed first
     requires:
       vars: [PRINCIPAL_ID, PUBLIC_KEY_FILE]
     cmds:
       - >-
-        bash scripts/dev/lite/start-qualification.sh
+        python3 scripts/dev/lite/task_runtime.py shell -- scripts/dev/lite/start-qualification.sh
         --bootstrap-principal-id "{{.PRINCIPAL_ID}}"
         --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}"
         --bootstrap-profile security-assurance-runner
@@ -211,6 +211,32 @@ tasks:
       vars: [RUN_ID]
     cmds:
       - '{{.PYTHON}} scripts/dev/lite/security_assurance.py report "{{.RUN_ID}}"'
+
+  lite:security:assurance:report:generate:
+    desc: Validate and assemble the MkDocs report model for one completed sanitized qualification
+    requires:
+      vars: [QUALIFICATION_ID]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance_report.py generate --qualification-id "{{.QUALIFICATION_ID}}"'
+
+  lite:security:assurance:report:check:
+    desc: Validate one published sanitized Security Assurance MkDocs report and its index link
+    requires:
+      vars: [QUALIFICATION_ID]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance_report.py check --qualification-id "{{.QUALIFICATION_ID}}"'
+
+  lite:security:assurance:report:publish:
+    desc: Atomically publish one completed sanitized Security Assurance qualification into MkDocs
+    requires:
+      vars: [QUALIFICATION_ID]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance_report.py publish --qualification-id "{{.QUALIFICATION_ID}}"'
+
+  lite:security:assurance:reports:index:
+    desc: Deterministically rebuild the generated Security Assurance report index from sanitized companion JSON files
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance_report.py index'
 
   lite:security:assurance:compare:
     desc: Read one normalized runtime security assurance baseline delta

@@ -6986,7 +6986,7 @@
       "default": "source-defined/unvalidated",
       "name": "POCKETLAB_ENV",
       "owner": "repository tooling",
-      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "purpose": "Documentation/developer automation configuration",
       "related_troubleshooting": [
         "Development Troubleshooting",
         "Production Troubleshooting"
@@ -6996,7 +6996,10 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "Taskfile.yml"
+        "Taskfile.yml",
+        "scripts/dev/lite/task_runtime.py",
+        "tests/backend/test_lite_security_assurance_portability.py",
+        "tests/docs/test_security_assurance_playbooks.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -7021,12 +7024,12 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        ".harness-demo.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
-        "scripts/dev/lite/start-qualification.sh"
+        "scripts/dev/lite/start-qualification.sh",
+        "scripts/dev/lite/task_runtime.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -8864,52 +8867,6 @@
     },
     {
       "affected_components": [
-        "repository tooling"
-      ],
-      "affects_release": false,
-      "affects_runtime": true,
-      "default": "source-defined/unvalidated",
-      "name": "POCKETLAB_HARNESS_DEMO_BEGIN",
-      "owner": "repository tooling",
-      "purpose": "Pocket Lab runtime/development configuration discovered from source",
-      "related_troubleshooting": [
-        "Development Troubleshooting",
-        "Production Troubleshooting"
-      ],
-      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
-      "restart_required": "source-dependent",
-      "runtime_scope": "runtime or development depending on source",
-      "secret": false,
-      "source": [
-        ".harness-demo.sh"
-      ],
-      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
-    },
-    {
-      "affected_components": [
-        "repository tooling"
-      ],
-      "affects_release": false,
-      "affects_runtime": true,
-      "default": "source-defined/unvalidated",
-      "name": "POCKETLAB_HARNESS_DEMO_END",
-      "owner": "repository tooling",
-      "purpose": "Pocket Lab runtime/development configuration discovered from source",
-      "related_troubleshooting": [
-        "Development Troubleshooting",
-        "Production Troubleshooting"
-      ],
-      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
-      "restart_required": "source-dependent",
-      "runtime_scope": "runtime or development depending on source",
-      "secret": false,
-      "source": [
-        ".harness-demo.sh"
-      ],
-      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
-    },
-    {
-      "affected_components": [
         "FastAPI",
         "bootstrap/runtime",
         "repository tooling"
@@ -8929,12 +8886,12 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        ".harness-demo.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py",
-        "scripts/dev/lite/start-qualification.sh"
+        "scripts/dev/lite/start-qualification.sh",
+        "tests/backend/test_lite_harness.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -8959,12 +8916,12 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        ".harness-demo.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
-        "scripts/dev/lite/start-qualification.sh"
+        "scripts/dev/lite/start-qualification.sh",
+        "tests/backend/test_lite_harness.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -9038,12 +8995,12 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": true,
       "source": [
-        ".harness-demo.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "scripts/dev/lite/harness.py",
         "scripts/dev/lite/start-qualification.sh",
         "scripts/docs/check_security_assurance_playbooks.py",
-        "tests/backend/test_lite_harness.py"
+        "tests/backend/test_lite_harness.py",
+        "tests/backend/test_lite_security_assurance.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -9093,7 +9050,6 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        ".harness-demo.sh",
         "scripts/dev/lite/harness.py",
         "scripts/dev/lite/security_assurance.py"
       ],
@@ -18509,12 +18465,12 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        ".harness-demo.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py",
+        "scripts/dev/lite/start-qualification.sh"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -22371,8 +22327,7 @@
     {
       "affected_components": [
         "FastAPI",
-        "bootstrap/runtime",
-        "repository tooling"
+        "bootstrap/runtime"
       ],
       "affects_release": true,
       "affects_runtime": true,
@@ -22389,12 +22344,12 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": true,
       "source": [
-        ".harness-demo.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_source_sync.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

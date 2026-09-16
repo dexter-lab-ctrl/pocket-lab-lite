@@ -4650,7 +4650,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 467,
+  "page_count": 473,
   "page_types": [
     "overview",
     "guide",
@@ -15822,6 +15822,52 @@
     },
     {
       "additional_audiences": [],
+      "authority": "derived",
+      "canonical_source_references": [
+        "derived-generator-not-specialized"
+      ],
+      "confidence": "generated",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": true,
+      "id": "page:generated/security-assurance/reports/index",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "evidence",
+      "path": "generated/security-assurance/reports/index.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "derived-generator-not-specialized",
+      "title": "Security Assurance Reports",
+      "url": "/generated/security-assurance/reports/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "derived",
+      "canonical_source_references": [
+        "derived-generator-not-specialized"
+      ],
+      "confidence": "generated",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": true,
+      "id": "page:generated/security-assurance/reports/security-assurance-20260916T173302Z-4199c1e3f1-assurance-eb3d0c1d7d5b437b9743c9961aa722f8",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "evidence",
+      "path": "generated/security-assurance/reports/security-assurance-20260916T173302Z-4199c1e3f1-assurance-eb3d0c1d7d5b437b9743c9961aa722f8.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "derived-generator-not-specialized",
+      "title": "Security Assurance Report — assurance-eb3d0c1d7d5b437b9743c9961aa722f8",
+      "url": "/generated/security-assurance/reports/security-assurance-20260916T173302Z-4199c1e3f1-assurance-eb3d0c1d7d5b437b9743c9961aa722f8/"
+    },
+    {
+      "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
         "getting-started/android-termux.md"
@@ -17011,6 +17057,102 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "validation/security-assurance/20-adding-scenario.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/20-adding-scenario",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/20-adding-scenario.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/20-adding-scenario.md",
+      "title": "Adding a Security Assurance Scenario",
+      "url": "/validation/security-assurance/20-adding-scenario/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/21-adding-tool.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/21-adding-tool",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/21-adding-tool.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/21-adding-tool.md",
+      "title": "Adding a Security Assurance Tool",
+      "url": "/validation/security-assurance/21-adding-tool/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/22-server-phone-task-runtime.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/22-server-phone-task-runtime",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/22-server-phone-task-runtime.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/22-server-phone-task-runtime.md",
+      "title": "Server Phone Task Runtime",
+      "url": "/validation/security-assurance/22-server-phone-task-runtime/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/security-assurance/23-report-publication.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:validation/security-assurance/23-report-publication",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "validation/security-assurance/23-report-publication.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "validation/security-assurance/23-report-publication.md",
+      "title": "Security Assurance Report Publication",
+      "url": "/validation/security-assurance/23-report-publication/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "validation/security-assurance/README.md"
       ],
       "confidence": "source-derived",
@@ -17033,7 +17175,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "37e2c03be43e0016b0b40acfe96b0691cb76625130fa187729c12e21cae00cff",
+  "source_fingerprint": "440f98fae191ed509b7ff93940caf174c9d0a185e93745aacbc49c7c811f607e",
   "top_level": [
     "start-here",
     "use",

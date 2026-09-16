@@ -9129,7 +9129,7 @@
         "default": "source-defined/unvalidated",
         "name": "POCKETLAB_ENV",
         "owner": "repository tooling",
-        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "purpose": "Documentation/developer automation configuration",
         "related_troubleshooting": [
           "Development Troubleshooting",
           "Production Troubleshooting"
@@ -9139,7 +9139,10 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          "Taskfile.yml"
+          "Taskfile.yml",
+          "scripts/dev/lite/task_runtime.py",
+          "tests/backend/test_lite_security_assurance_portability.py",
+          "tests/docs/test_security_assurance_playbooks.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -9164,12 +9167,12 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          ".harness-demo.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
           "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
-          "scripts/dev/lite/start-qualification.sh"
+          "scripts/dev/lite/start-qualification.sh",
+          "scripts/dev/lite/task_runtime.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -11007,52 +11010,6 @@
       },
       {
         "affected_components": [
-          "repository tooling"
-        ],
-        "affects_release": false,
-        "affects_runtime": true,
-        "default": "source-defined/unvalidated",
-        "name": "POCKETLAB_HARNESS_DEMO_BEGIN",
-        "owner": "repository tooling",
-        "purpose": "Pocket Lab runtime/development configuration discovered from source",
-        "related_troubleshooting": [
-          "Development Troubleshooting",
-          "Production Troubleshooting"
-        ],
-        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
-        "restart_required": "source-dependent",
-        "runtime_scope": "runtime or development depending on source",
-        "secret": false,
-        "source": [
-          ".harness-demo.sh"
-        ],
-        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
-      },
-      {
-        "affected_components": [
-          "repository tooling"
-        ],
-        "affects_release": false,
-        "affects_runtime": true,
-        "default": "source-defined/unvalidated",
-        "name": "POCKETLAB_HARNESS_DEMO_END",
-        "owner": "repository tooling",
-        "purpose": "Pocket Lab runtime/development configuration discovered from source",
-        "related_troubleshooting": [
-          "Development Troubleshooting",
-          "Production Troubleshooting"
-        ],
-        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
-        "restart_required": "source-dependent",
-        "runtime_scope": "runtime or development depending on source",
-        "secret": false,
-        "source": [
-          ".harness-demo.sh"
-        ],
-        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
-      },
-      {
-        "affected_components": [
           "FastAPI",
           "bootstrap/runtime",
           "repository tooling"
@@ -11072,12 +11029,12 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          ".harness-demo.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py",
-          "scripts/dev/lite/start-qualification.sh"
+          "scripts/dev/lite/start-qualification.sh",
+          "tests/backend/test_lite_harness.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -11102,12 +11059,12 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          ".harness-demo.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
           "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
-          "scripts/dev/lite/start-qualification.sh"
+          "scripts/dev/lite/start-qualification.sh",
+          "tests/backend/test_lite_harness.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -11181,12 +11138,12 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": true,
         "source": [
-          ".harness-demo.sh",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
           "scripts/dev/lite/harness.py",
           "scripts/dev/lite/start-qualification.sh",
           "scripts/docs/check_security_assurance_playbooks.py",
-          "tests/backend/test_lite_harness.py"
+          "tests/backend/test_lite_harness.py",
+          "tests/backend/test_lite_security_assurance.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -11236,7 +11193,6 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          ".harness-demo.sh",
           "scripts/dev/lite/harness.py",
           "scripts/dev/lite/security_assurance.py"
         ],
@@ -20652,12 +20608,12 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          ".harness-demo.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
           "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py",
+          "scripts/dev/lite/start-qualification.sh"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -24514,8 +24470,7 @@
       {
         "affected_components": [
           "FastAPI",
-          "bootstrap/runtime",
-          "repository tooling"
+          "bootstrap/runtime"
         ],
         "affects_release": true,
         "affects_runtime": true,
@@ -24532,12 +24487,12 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": true,
         "source": [
-          ".harness-demo.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
           "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_source_sync.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -36783,7 +36738,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 467,
+      "page_count": 473,
       "top_level": [
         "start-here",
         "use",
@@ -44667,9 +44622,9 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "d4aa20ac97b514d88bff3a4d9e8e41ba5fb9582975e0546240ad3a790ab4c175",
-        "documentation": "6c80525f3b647efecabd14bc73a8d8d54c856024455745e2497feb47a2a97a1b",
+        "documentation": "a41d61a77f27b7204566a68587b54c0a5ef80f24e5e2ab133acba8296e534c43",
         "openapi": "73df089dcb595eacedd99de1797a42e2eedbe4df044eebb8a6fc323fd9c2d1c4",
-        "operational_health": "fa8f6aae6a0c18b9ae12792990502d1fd0d5bbbf4c378f38617d0fcaf00cce83"
+        "operational_health": "d140668f25f52ff0dd417d70ff7b3661c5f703194828e53d43fbbc16798ed1e2"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -86901,6 +86856,10 @@
         "lite:security:assurance:qualify",
         "lite:security:assurance:qualify:full",
         "lite:security:assurance:report",
+        "lite:security:assurance:report:check",
+        "lite:security:assurance:report:generate",
+        "lite:security:assurance:report:publish",
+        "lite:security:assurance:reports:index",
         "lite:security:assurance:scenario",
         "lite:security:assurance:smoke",
         "lite:security:assurance:standard",
@@ -91787,7 +91746,7 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
-          "{{.PYTHON}} scripts/dev/lite/harness.py profiles"
+          "python3 scripts/dev/lite/task_runtime.py --dev-python \"{{.PYTHON}}\" python -- scripts/dev/lite/harness.py profiles"
         ],
         "dependencies": [],
         "environment": [],
@@ -91801,12 +91760,13 @@
         "generated_artifacts": [],
         "implementation_status": "implemented",
         "inputs": [
-          "scripts/dev/lite/harness.py"
+          "scripts/dev/lite/harness.py",
+          "scripts/dev/lite/task_runtime.py"
         ],
         "name": "lite:harness:profiles",
         "outputs": [],
         "promotes_evidence": false,
-        "purpose": "Show the backend-owned synthetic harness capability profiles",
+        "purpose": "Show the backend-owned synthetic harness capability profiles (DEV PC or supported Server Phone runtime)",
         "related_tasks": [],
         "repository_mutation": false,
         "requires_termux": false,
@@ -91820,7 +91780,7 @@
         },
         "source": "tasks/Taskfile.lite.yml",
         "validation_outcome": "not-a-validation-task",
-        "workflow_group": "Development loop"
+        "workflow_group": "Runtime-evidence loop"
       },
       {
         "aliases": [],
@@ -91867,7 +91827,7 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
-          "{{.PYTHON}} scripts/dev/lite/harness.py status"
+          "python3 scripts/dev/lite/task_runtime.py --dev-python \"{{.PYTHON}}\" python -- scripts/dev/lite/harness.py status"
         ],
         "dependencies": [],
         "environment": [],
@@ -91881,12 +91841,13 @@
         "generated_artifacts": [],
         "implementation_status": "implemented",
         "inputs": [
-          "scripts/dev/lite/harness.py"
+          "scripts/dev/lite/harness.py",
+          "scripts/dev/lite/task_runtime.py"
         ],
         "name": "lite:harness:status",
         "outputs": [],
         "promotes_evidence": false,
-        "purpose": "Show bounded backend harness status over loopback",
+        "purpose": "Show bounded backend harness status over loopback (DEV PC or supported Server Phone runtime)",
         "related_tasks": [],
         "repository_mutation": false,
         "requires_termux": false,
@@ -91900,14 +91861,14 @@
         },
         "source": "tasks/Taskfile.lite.yml",
         "validation_outcome": "not-a-validation-task",
-        "workflow_group": "Development loop"
+        "workflow_group": "Runtime-evidence loop"
       },
       {
         "aliases": [],
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
-          "{{.PYTHON}} scripts/dev/lite/harness.py verify-off"
+          "python3 scripts/dev/lite/task_runtime.py --dev-python \"{{.PYTHON}}\" python -- scripts/dev/lite/harness.py verify-off"
         ],
         "dependencies": [],
         "environment": [],
@@ -91921,12 +91882,13 @@
         "generated_artifacts": [],
         "implementation_status": "implemented",
         "inputs": [
-          "scripts/dev/lite/harness.py"
+          "scripts/dev/lite/harness.py",
+          "scripts/dev/lite/task_runtime.py"
         ],
         "name": "lite:harness:verify-off",
         "outputs": [],
         "promotes_evidence": false,
-        "purpose": "Prove the normal runtime has no harness, destructive, Owner, or test-bypass authority",
+        "purpose": "Prove the normal runtime has no harness, destructive, Owner, or test-bypass authority (DEV PC or Server Phone)",
         "related_tasks": [],
         "repository_mutation": false,
         "requires_termux": false,
@@ -91940,7 +91902,7 @@
         },
         "source": "tasks/Taskfile.lite.yml",
         "validation_outcome": "gate-defined",
-        "workflow_group": "Development loop"
+        "workflow_group": "Runtime-evidence loop"
       },
       {
         "aliases": [],
@@ -92027,7 +91989,7 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
-          "bash scripts/dev/lite/start-qualification.sh --bootstrap-principal-id \"{{.PRINCIPAL_ID}}\" --bootstrap-public-key-file \"{{.PUBLIC_KEY_FILE}}\" --bootstrap-profile security-assurance-runner"
+          "python3 scripts/dev/lite/task_runtime.py shell -- scripts/dev/lite/start-qualification.sh --bootstrap-principal-id \"{{.PRINCIPAL_ID}}\" --bootstrap-public-key-file \"{{.PUBLIC_KEY_FILE}}\" --bootstrap-profile security-assurance-runner"
         ],
         "dependencies": [],
         "environment": [],
@@ -92041,12 +92003,13 @@
         "generated_artifacts": [],
         "implementation_status": "implemented",
         "inputs": [
-          "scripts/dev/lite/start-qualification.sh"
+          "scripts/dev/lite/start-qualification.sh",
+          "scripts/dev/lite/task_runtime.py"
         ],
         "name": "lite:qualification:start:key-bound",
         "outputs": [],
         "promotes_evidence": false,
-        "purpose": "Explicitly start qualification with operator-approved security-assurance public-key bootstrap",
+        "purpose": "Explicitly start qualification with operator-approved security-assurance public-key bootstrap; Server Phone DEV state is scrubbed first",
         "related_tasks": [],
         "repository_mutation": false,
         "requires_termux": false,
@@ -92067,7 +92030,7 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
-          "bash scripts/dev/lite/start-qualification.sh --bootstrap-principal-id \"{{.PRINCIPAL_ID}}\" --bootstrap-public-key-file \"{{.PUBLIC_KEY_FILE}}\" --bootstrap-profile security-assurance-runner --enable-fault-control"
+          "python3 scripts/dev/lite/task_runtime.py shell -- scripts/dev/lite/start-qualification.sh --bootstrap-principal-id \"{{.PRINCIPAL_ID}}\" --bootstrap-public-key-file \"{{.PUBLIC_KEY_FILE}}\" --bootstrap-profile security-assurance-runner --enable-fault-control"
         ],
         "dependencies": [],
         "environment": [],
@@ -92081,12 +92044,13 @@
         "generated_artifacts": [],
         "implementation_status": "implemented",
         "inputs": [
-          "scripts/dev/lite/start-qualification.sh"
+          "scripts/dev/lite/start-qualification.sh",
+          "scripts/dev/lite/task_runtime.py"
         ],
         "name": "lite:qualification:start:key-bound:faults",
         "outputs": [],
         "promotes_evidence": false,
-        "purpose": "Explicitly start key-bound qualification with the fixed non-destructive service-fault controls enabled",
+        "purpose": "Explicitly start key-bound qualification with fixed non-destructive service-fault controls; Server Phone DEV state is scrubbed first",
         "related_tasks": [],
         "repository_mutation": false,
         "requires_termux": false,
@@ -92487,6 +92451,166 @@
         "outputs": [],
         "promotes_evidence": false,
         "purpose": "Read one sanitized runtime security assurance report",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Security-analysis loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/dev/lite/security_assurance_report.py check --qualification-id \"{{.QUALIFICATION_ID}}\""
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:security:assurance:report:check",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/security_assurance_report.py"
+        ],
+        "name": "lite:security:assurance:report:check",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Validate one published sanitized Security Assurance MkDocs report and its index link",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Security-analysis loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/dev/lite/security_assurance_report.py generate --qualification-id \"{{.QUALIFICATION_ID}}\""
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:security:assurance:report:generate",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/security_assurance_report.py"
+        ],
+        "name": "lite:security:assurance:report:generate",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Validate and assemble the MkDocs report model for one completed sanitized qualification",
+        "related_tasks": [],
+        "repository_mutation": true,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": true,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Security-analysis loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/dev/lite/security_assurance_report.py publish --qualification-id \"{{.QUALIFICATION_ID}}\""
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:security:assurance:report:publish",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/security_assurance_report.py"
+        ],
+        "name": "lite:security:assurance:report:publish",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Atomically publish one completed sanitized Security Assurance qualification into MkDocs",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Security-analysis loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/dev/lite/security_assurance_report.py index"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:security:assurance:reports:index",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/security_assurance_report.py"
+        ],
+        "name": "lite:security:assurance:reports:index",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Deterministically rebuild the generated Security Assurance report index from sanitized companion JSON files",
         "related_tasks": [],
         "repository_mutation": false,
         "requires_termux": false,
@@ -114379,5 +114503,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "720f58e8e7898d2c2ea2fb323d7bdf501153f38c12583d173c6176e66406454a"
+  "source_fingerprint": "0dd4bda226507694dae4abc14d4df9899f840f99f54991f61f8e19e3217c0874"
 }
