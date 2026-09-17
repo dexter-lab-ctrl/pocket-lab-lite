@@ -54,6 +54,41 @@ SANITIZATION_EXCLUSIONS = (
     "Tailscale credentials", "Recovery encryption material", "raw secret matches",
     "user/PhotoPrism media", "raw scanner output",
 )
+REPORT_VOCABULARY = (
+    ("PASS", "The registered check or scenario executed and met its required invariant for this qualification.", "The whole product is secure or certified."),
+    ("PARTIAL", "Valid evidence was produced, but coverage or the resulting condition is incomplete.", "A complete failure or an automatic exploit."),
+    ("FAIL", "The registered invariant executed and was not satisfied.", "The issue is automatically exploitable without review."),
+    ("BLOCKED", "The harness intentionally could not proceed because a safety, admission, resource, dependency, or prerequisite condition prevented execution.", "The underlying security control necessarily failed."),
+    ("CANCELLED", "The qualification or run was intentionally terminated before completion.", "PASS or FAIL."),
+    ("NOT_RUN", "The registered suite or tool was not executed as part of this specific qualification.", "Broken, unsupported, failed, or a clean scan with zero findings."),
+    ("DEFERRED", "Execution is intentionally postponed because the applicable prerequisite or safe executor is not currently available.", "PASS."),
+    ("UNAVAILABLE", "This particular metadata value was not present in the normalized evidence used by this report.", "The whole tool or service was unavailable."),
+    ("NOT_APPLICABLE", "The check does not apply to this target, profile, or qualification context.", "An applicable control was tested and passed."),
+    ("HUMAN_REVIEW_REQUIRED", "The assurance decision requires a human-governed ceremony or contextual review.", "Automated PASS."),
+    ("EVIDENCE_PRESENT", "Applicable evidence exists for the category.", "Every possible weakness in the category was tested."),
+    ("NOT_ASSESSED", "No applicable automated evidence was produced for the category.", "PASS."),
+    ("NEW", "A current finding has no matching finding in the selected baseline.", "The current code change necessarily introduced it."),
+    ("EXISTING", "The finding matches the selected baseline.", "The risk has been accepted or is safe."),
+    ("REGRESSED", "Baseline comparison indicates that a known condition became materially worse.", "Automatic exploitability."),
+    ("RESOLVED", "A prior baseline finding is absent according to the comparison rules.", "The condition can never recur."),
+    ("UNCHANGED", "The current finding materially matches the prior baseline.", "The finding is safe or accepted."),
+    ("runtime-reported", "The registry intentionally delegates the tool version to runtime or service evidence instead of pinning a numeric version.", "The tool is unversioned or unknown by design."),
+    ("Registered version", "The expected version or version policy declared by the hash-matched security/assurance/tools.yaml used by the qualification.", "Proof that the same version actually executed."),
+    ("Observed version", "The version captured from this qualification's normalized runtime or tool receipt.", "The repository's required or pinned version."),
+    ("MATCH", "A fixed registered version and an observed version are both present and match after normalization.", "A security result by itself."),
+    ("MISMATCH", "A fixed registered version and an observed version are both present but do not match.", "Automatic exploitability; it is a qualification integrity issue requiring review."),
+    ("NOT_OBSERVED", "A fixed registered version exists, but this qualification has no observed version for the tool.", "The tool failed; it may simply be NOT_RUN."),
+    ("RUNTIME_VERSION_NOT_CAPTURED", "The registry requires runtime-reported version evidence, but this qualification did not capture a usable version value.", "The tool itself did not run when run status says otherwise."),
+    ("0 findings", "No normalized findings are associated with the relevant executed evidence set.", "A NOT_RUN tool performed a clean scan."),
+    ("Finding", "Sanitized normalized security evidence that requires interpretation in context.", "A demonstrated exploit."),
+    ("Scenario", "A registered Pocket Lab security invariant being assessed.", "A scanner product."),
+    ("Tool", "A registered evidence source used by a scenario or suite.", "The security requirement itself."),
+    ("Scenario coverage", "The percentage of registered applicable scenarios with terminal evidence under the report formula.", "A security score."),
+    ("Attack-path coverage", "The percentage of registered attack paths with applicable non-human-only evidence under the report formula.", "The percentage of all real-world attacks prevented."),
+    ("Tool readiness", "PASS tools divided by applicable tools that actually participated in the metric; NOT_RUN and DEFERRED are excluded.", "The percentage of all registered tools installed everywhere."),
+    ("Sanitized evidence", "Evidence normalized and filtered by Pocket Lab publication rules before report generation.", "Raw scanner output."),
+    ("Source SHA / Runtime SHA", "The exact code revision represented by the qualification evidence.", "A later report-publication commit unless it is explicitly the same revision."),
+)
 
 
 class ReportError(RuntimeError):
@@ -179,6 +214,74 @@ def _load_canonical_context(manifest: Mapping[str, Any]) -> dict[str, Any]:
     return result
 
 
+def _canonical_tool_map(canonical_tools: Any) -> dict[str, dict[str, Any]]:
+    if not isinstance(canonical_tools, Mapping):
+        return {}
+    values = canonical_tools.get("toolchain")
+    if not isinstance(values, list):
+        return {}
+    return {
+        str(item.get("id")): dict(item)
+        for item in values
+        if isinstance(item, Mapping) and str(item.get("id") or "")
+    }
+
+
+def _normalized_version(value: Any) -> str | None:
+    raw = str(value or "").strip().lower()
+    if not raw:
+        return None
+    match = re.search(r"(?<!\d)v?(\d+(?:\.\d+){1,3}(?:[-+][a-z0-9._-]+)?)", raw)
+    if match:
+        return match.group(1)
+    return raw.removeprefix("v")
+
+
+def _enrich_tools(
+    tools: list[Mapping[str, Any]],
+    canonical_tools: Any,
+    *,
+    registry_hash_matches: bool,
+) -> list[dict[str, Any]]:
+    canonical_map = _canonical_tool_map(canonical_tools) if registry_hash_matches else {}
+    enriched: list[dict[str, Any]] = []
+    for source in tools:
+        item = dict(source)
+        tool_id = str(item.get("tool_id") or "")
+        canonical = canonical_map.get(tool_id)
+        observed = item.get("version")
+        status = str(item.get("status") or "").upper()
+        if canonical is None:
+            item.update({
+                "registered_version_policy": None,
+                "registered_version_source": None,
+                "observed_version": observed,
+                "version_state": "REGISTRY_METADATA_UNAVAILABLE",
+            })
+            enriched.append(item)
+            continue
+        policy = str(canonical.get("version_pin") or "").strip() or None
+        source_name = str(canonical.get("version_source") or "").strip() or None
+        if policy == "runtime-reported":
+            state = "RUNTIME_REPORTED" if observed not in (None, "") else "RUNTIME_VERSION_NOT_CAPTURED"
+        elif observed in (None, ""):
+            state = "NOT_OBSERVED"
+        else:
+            expected = _normalized_version(policy)
+            actual = _normalized_version(observed)
+            state = "MATCH" if expected is not None and actual == expected else "MISMATCH"
+        item.update({
+            "registered_version_policy": policy,
+            "registered_version_source": source_name,
+            "observed_version": observed,
+            "version_state": state,
+        })
+        if status == "NOT_RUN" and item.get("finding_count") in (None, ""):
+            item["finding_count"] = 0
+        enriched.append(item)
+    return enriched
+
+
 def _counts(findings: Iterable[Mapping[str, Any]]) -> tuple[dict[str, int], dict[str, int]]:
     severity = Counter(str(item.get("severity") or "info").lower() for item in findings)
     baseline = Counter(str(item.get("baseline_state") or "EXISTING").upper() for item in findings)
@@ -221,7 +324,7 @@ def build_model(run: Mapping[str, Any], report: Mapping[str, Any]) -> dict[str, 
     performance = _bounded_mapping(files["performance.json"], label="performance.json")
     findings = [dict(x) for x in findings_doc.get("findings", []) if isinstance(x, Mapping)]
     scenarios = [dict(x) for x in threat.get("scenarios", []) if isinstance(x, Mapping)]
-    tools = [dict(x) for x in toolchain.get("tools", []) if isinstance(x, Mapping)]
+    raw_tools = [dict(x) for x in toolchain.get("tools", []) if isinstance(x, Mapping)]
     attack_paths = [dict(x) for x in attacks.get("paths", []) if isinstance(x, Mapping)]
     controls = [dict(x) for x in controls_doc.get("controls", []) if isinstance(x, Mapping)]
     severity_counts, baseline_counts = _counts(findings)
@@ -236,13 +339,18 @@ def build_model(run: Mapping[str, Any], report: Mapping[str, Any]) -> dict[str, 
         raise ReportError("deterministic report identity is invalid")
     registry_hashes = _registry_hashes(manifest)
     canonical = _load_canonical_context(manifest)
+    tools = _enrich_tools(
+        raw_tools,
+        canonical.get("tools"),
+        registry_hash_matches=bool((canonical.get("hash_match") or {}).get("tools")),
+    )
     metrics = _coverage_metrics(scenarios, attack_paths, controls, tools)
     suite = str(manifest.get("suite") or run.get("suite_id") or "unknown")
     suites = {name: "NOT_RUN" for name in ("smoke", "standard", "adversarial", "deep")}
     if suite in suites:
         suites[suite] = str(run.get("status") or manifest.get("status") or "PARTIAL").upper()
     model = {
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "report_id": report_stem,
         "qualification_id": run_id,
         "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
@@ -297,6 +405,15 @@ def _finding_tools(model: Mapping[str, Any]) -> dict[str, int]:
     return dict(sorted(counts.items()))
 
 
+def _observed_version_display(tool: Mapping[str, Any]) -> str:
+    observed = tool.get("observed_version")
+    if observed not in (None, ""):
+        return str(observed)
+    if str(tool.get("status") or "").upper() == "NOT_RUN":
+        return "NOT_RUN"
+    return "UNAVAILABLE"
+
+
 def _history_models(directory: Path, current: Mapping[str, Any], limit: int = 10) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
     if not directory.is_dir():
@@ -326,6 +443,15 @@ def render_markdown(model: Mapping[str, Any], history: list[Mapping[str, Any]] |
         f"# Security Assurance Report — {model['qualification_id']}", "",
         "!!! info \"Assurance evidence, not certification\"",
         "    This report summarizes bounded Security Assurance evidence. It does not claim that Pocket Lab Lite is certified or universally secure.", "",
+        "## How to Read This Report", "",
+        "This document represents **one specific Security Assurance qualification**. Status, version, finding, coverage, and baseline terms describe evidence in that qualification unless the report explicitly says otherwise.", "",
+    ]
+    lines += _table(["Term", "Meaning", "Does NOT mean"], REPORT_VOCABULARY)
+    lines += [
+        "",
+        "> **Per-qualification scope:** `NOT_RUN` means the registered suite or tool did not execute in this qualification. Another suite may have separate qualification evidence.", "",
+        "> **Zero findings:** `0` findings on a `NOT_RUN` tool does not mean the tool scanned and found nothing; it means this qualification has no normalized findings from an execution that did not occur.", "",
+        "> **Version provenance:** **Registered version** is the expected pin/policy from the hash-matched tool registry; **Observed version** is what this qualification actually captured. They are intentionally separate.", "",
         "## 1. Executive Security Summary", "",
         f"**What was tested:** the registered **{model['suite']}** suite against **{model['target_scope']}** using the fixed harness and registered toolchain.", "",
         f"**Overall result:** **{model['overall_status']}**. The run recorded {len(scenarios)} scenario results and {len(findings)} sanitized normalized findings.", "",
@@ -392,8 +518,20 @@ def render_markdown(model: Mapping[str, Any], history: list[Mapping[str, Any]] |
         ap_rows.append((item.get("attack_path_id"), item.get("name"), ", ".join(canonical.get("path_nodes") or []) or "UNAVAILABLE", ", ".join(canonical.get("boundaries") or []) or "UNAVAILABLE", ", ".join(item.get("controls") or []), item.get("classification"), item.get("status")))
     lines += _table(["AP", "Threat", "Assets/path", "Trust boundaries", "Controls", "Execution", "Result"], ap_rows)
     lines += ["", "## 13. Toolchain Matrix", ""]
-    lines += _table(["Tool", "Version", "Lane", "Run status", "Findings", "Duration"], [
-        (x.get("tool_id"), x.get("version"), x.get("execution_lane") or "server_phone_worker", x.get("status"), x.get("finding_count", 0), _fmt(x.get("duration_ms"))) for x in tools
+    lines += ["Registered version metadata is loaded only from the `security/assurance/tools.yaml` whose SHA-256 matches the tool-registry hash recorded by this qualification. A registry pin is never substituted for missing observed runtime evidence.", ""]
+    lines += _table(["Tool", "Registered version", "Observed version", "Version state", "Version source", "Lane", "Run status", "Findings", "Duration"], [
+        (
+            x.get("tool_id"),
+            x.get("registered_version_policy"),
+            _observed_version_display(x),
+            x.get("version_state"),
+            x.get("registered_version_source"),
+            x.get("execution_lane") or "server_phone_worker",
+            x.get("status"),
+            x.get("finding_count", 0),
+            _fmt(x.get("duration_ms")),
+        )
+        for x in tools
     ])
     perf = model.get("performance") or {}
     finish = perf.get("resource_finish") if isinstance(perf.get("resource_finish"), Mapping) else {}
