@@ -13,6 +13,10 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
 import security_assurance_report_core as _core
 
 for _name in dir(_core):
@@ -112,7 +116,7 @@ def render_index(models):
         *("| " + " | ".join(str(v).replace("|", "\\|") for v in row) + " |" for row in rows),
         "",
         f"Historical qualification artifacts outside the latest-per-suite set: **{historical}**.", "",
-        ("Latest suite evidence uses one runtime SHA." if len(shas) <= 1 else "Latest suite evidence spans different runtime SHAs; keep the suite qualifications separate."),
+        ("Latest suite evidence uses one runtime SHA." if shas and len(shas) == 1 else "Latest suite evidence spans different runtime SHAs or is incomplete; keep the suite qualifications separate."),
         "",
         "[Open Model ↔ Assurance Evidence](../model-assurance-evidence.md) · [How the pieces fit together](../model-and-evidence.md)", "",
     ]
