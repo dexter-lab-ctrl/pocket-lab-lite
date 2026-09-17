@@ -6,6 +6,12 @@ import pytest, yaml
 ROOT=Path(__file__).resolve().parents[2]; MOD=ROOT/'scripts/docs/enterprise/security_assurance_correlation.py'
 sys.path.insert(0,str(MOD.parent)); spec=importlib.util.spec_from_file_location('security_assurance_correlation',MOD); c=importlib.util.module_from_spec(spec); assert spec.loader; spec.loader.exec_module(c)
 
+IA_MOD=ROOT/'scripts/docs/enterprise/documentation_ia.py'
+ia_spec=importlib.util.spec_from_file_location('documentation_ia_extended',IA_MOD); ia=importlib.util.module_from_spec(ia_spec); assert ia_spec.loader; ia_spec.loader.exec_module(ia)
+
+REPORT_MOD=ROOT/'scripts/dev/lite/security_assurance_report.py'
+sys.path.insert(0,str(REPORT_MOD.parent)); report_spec=importlib.util.spec_from_file_location('security_assurance_report_extended',REPORT_MOD); report_module=importlib.util.module_from_spec(report_spec); assert report_spec.loader; report_spec.loader.exec_module(report_module)
+
 def write(p,v):
     p.parent.mkdir(parents=True,exist_ok=True)
     if p.suffix in {'.yaml','.yml'}:p.write_text(yaml.safe_dump(v,sort_keys=False),encoding='utf-8')
@@ -68,3 +74,29 @@ def test_deterministic_projection(tmp_path):
 
 def test_truth_boundaries_are_machine_readable(tmp_path):
     _,m=projection(tmp_path); assert 'human_review' in m['truth_boundaries'] and m['sanitized'] is True
+
+def test_security_search_aliases_are_static_and_local():
+    search=ia._extend_search({'entries':[]})
+    by_name={row['canonical']:row for row in search['entries']}
+    assert by_name['security assurance report']['destinations'][0]=='generated/enterprise/hubs/security-assurance/reports/index.md'
+    assert by_name['model assurance evidence']['intent_priority']=='canonical-reference'
+
+def test_security_ia_links_are_unique_page_relations():
+    rows=ia._security_page_links({})
+    assert len(rows)==len({row['id'] for row in rows})
+    assert all(row['target_type']=='page' for row in rows)
+    assert any(row['target'].endswith('threat-model/assurance-evidence') for row in rows)
+
+def test_report_publisher_uses_canonical_hub_tree():
+    rel=report_module.REPORTS_DIR.relative_to(report_module.REPO_ROOT).as_posix()
+    assert rel=='docs/generated/enterprise/hubs/security-assurance/reports'
+
+def test_report_human_review_remains_separate_from_automated_pass():
+    model={'attack_paths':[{'attack_path_id':'AP-01','classification':'EXECUTABLE_NOW','status':'PASS','human_review_required':True}]}
+    text=report_module._human_review_clarifier(model)
+    assert 'HUMAN_REVIEW_REQUIRED' in text and 'Automated PASS does not satisfy' in text
+
+def test_report_model_links_include_security_atlas_and_scenario_catalog():
+    model={'attack_paths':[{'attack_path_id':'AP-01'}],'scenarios':[{'scenario_id':'harness-auth-boundary'}]}
+    text=report_module._model_links(model)
+    assert 'Security Atlas' in text and 'scenario-model.md#harness-auth-boundary' in text
