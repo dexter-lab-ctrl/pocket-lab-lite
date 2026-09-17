@@ -1,0 +1,3956 @@
+{
+  "attack_paths": [
+    {
+      "attack_path_id": "AP-01",
+      "classification": "PARTIALLY_EXECUTABLE",
+      "controls": [
+        "CTRL-BROWSER-NATS",
+        "CTRL-API-CONTROL"
+      ],
+      "human_review_required": false,
+      "name": "Browser control-plane bypass",
+      "owasp": [
+        "A01",
+        "A07",
+        "A08"
+      ],
+      "reason": "Caddy and harness admission are exercised; direct browser-to-NATS reachability remains source evidence.",
+      "sanitized": true,
+      "status": "PASS",
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "attack_path_id": "AP-02",
+      "classification": "EXECUTABLE_NOW",
+      "controls": [
+        "CTRL-BROWSER-SHELL",
+        "CTRL-API-CONTROL"
+      ],
+      "human_review_required": false,
+      "name": "Browser shell execution",
+      "owasp": [
+        "A01",
+        "A08"
+      ],
+      "reason": "Frontend and backend source boundary assertions are executed.",
+      "sanitized": true,
+      "status": "PASS",
+      "stride": [
+        "Tampering",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "attack_path_id": "AP-03",
+      "classification": "STATIC_EVIDENCE_ONLY",
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "human_review_required": true,
+      "name": "Forged managed-device identity",
+      "owasp": [
+        "A01",
+        "A07",
+        "A08"
+      ],
+      "reason": "Managed-device identity forgery is not performed against enrolled device state.",
+      "sanitized": true,
+      "status": "PASS",
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "attack_path_id": "AP-04",
+      "classification": "PARTIALLY_EXECUTABLE",
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "human_review_required": false,
+      "name": "Messaging command tampering or replay",
+      "owasp": [
+        "A08",
+        "A09"
+      ],
+      "reason": "Worker ownership and durable command path are inspected; replay/tampering is not injected.",
+      "sanitized": true,
+      "status": "PASS",
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service"
+      ]
+    },
+    {
+      "attack_path_id": "AP-05",
+      "classification": "STATIC_EVIDENCE_ONLY",
+      "controls": [
+        "CTRL-SUPPLY-CHAIN",
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-EVIDENCE-SANITIZE"
+      ],
+      "human_review_required": true,
+      "name": "Supply-chain artifact compromise",
+      "owasp": [
+        "A01",
+        "A02",
+        "A08"
+      ],
+      "reason": "Release and dependency controls are represented by existing Security evidence and source checks.",
+      "sanitized": true,
+      "status": "PASS",
+      "stride": [
+        "Tampering",
+        "Information Disclosure",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "attack_path_id": "AP-06",
+      "classification": "EXECUTABLE_NOW",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "human_review_required": false,
+      "name": "Evidence poisoning",
+      "owasp": [
+        "A01",
+        "A02",
+        "A08",
+        "A09"
+      ],
+      "reason": "Normalized evidence redaction is exercised with secret-shaped fixtures.",
+      "sanitized": true,
+      "status": "PASS",
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Information Disclosure"
+      ]
+    },
+    {
+      "attack_path_id": "AP-07",
+      "classification": "PARTIALLY_EXECUTABLE",
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "human_review_required": false,
+      "name": "Tailnet/private-network exposure",
+      "owasp": [
+        "A01",
+        "A02",
+        "A07"
+      ],
+      "reason": "Local listener and Caddy surface are bounded; no Tailnet peer or LAN scan is performed.",
+      "sanitized": true,
+      "status": "PASS",
+      "stride": [
+        "Spoofing",
+        "Information Disclosure",
+        "Denial of Service"
+      ]
+    },
+    {
+      "attack_path_id": "AP-08",
+      "classification": "STATIC_EVIDENCE_ONLY",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-API-CONTROL"
+      ],
+      "human_review_required": true,
+      "name": "Recovery state tampering",
+      "owasp": [
+        "A08",
+        "A09"
+      ],
+      "reason": "Recovery replacement/restore mutation is excluded from normal assurance.",
+      "sanitized": true,
+      "status": "PASS",
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service"
+      ]
+    },
+    {
+      "attack_path_id": "AP-09",
+      "classification": "HUMAN_REVIEW_REQUIRED",
+      "controls": [
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-WEBAUTHN-ASSURANCE"
+      ],
+      "human_review_required": true,
+      "name": "Human identity and WebAuthn assurance misuse",
+      "owasp": [
+        "A01",
+        "A07",
+        "A08"
+      ],
+      "reason": "Human WebAuthn ceremonies are not impersonated by the synthetic machine principal.",
+      "sanitized": true,
+      "status": "PASS",
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "attack_path_id": "AP-10",
+      "classification": "HUMAN_REVIEW_REQUIRED",
+      "controls": [
+        "CTRL-WEBAUTHN-ASSURANCE",
+        "CTRL-ENTERPRISE-ROLE-FINAL-OWNER"
+      ],
+      "human_review_required": true,
+      "name": "Enterprise membership and final-Owner privilege escalation",
+      "owasp": [
+        "A01",
+        "A08",
+        "A09"
+      ],
+      "reason": "Enterprise membership and final-Owner review remain human-governed.",
+      "sanitized": true,
+      "status": "PASS",
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "attack_path_id": "AP-11",
+      "classification": "PARTIALLY_EXECUTABLE",
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-OPA-FAIL-CLOSED"
+      ],
+      "human_review_required": false,
+      "name": "OPA authorization decision integrity failure",
+      "owasp": [
+        "A01",
+        "A08"
+      ],
+      "reason": "OPA readiness is checked where required; outage injection is not performed.",
+      "sanitized": true,
+      "status": "PASS",
+      "stride": [
+        "Tampering",
+        "Elevation of Privilege",
+        "Denial of Service"
+      ]
+    },
+    {
+      "attack_path_id": "AP-12",
+      "classification": "STATIC_EVIDENCE_ONLY",
+      "controls": [
+        "CTRL-POLICY-REVISION-LIFECYCLE",
+        "CTRL-OPA-FAIL-CLOSED"
+      ],
+      "human_review_required": true,
+      "name": "Policy revision activation and recovery integrity",
+      "owasp": [
+        "A08",
+        "A09"
+      ],
+      "reason": "Policy revision activation/recovery is not mutated by this safe profile.",
+      "sanitized": true,
+      "status": "PASS",
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service"
+      ]
+    },
+    {
+      "attack_path_id": "AP-13",
+      "classification": "HUMAN_REVIEW_REQUIRED",
+      "controls": [
+        "CTRL-WEBAUTHN-ASSURANCE",
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION"
+      ],
+      "human_review_required": true,
+      "name": "Approval and continuation integrity",
+      "owasp": [
+        "A01",
+        "A07",
+        "A08",
+        "A09"
+      ],
+      "reason": "Independent approval and requester continuation require human review.",
+      "sanitized": true,
+      "status": "PASS",
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Repudiation",
+        "Elevation of Privilege"
+      ]
+    },
+    {
+      "attack_path_id": "AP-14",
+      "classification": "HUMAN_REVIEW_REQUIRED",
+      "controls": [
+        "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+        "CTRL-OPA-FAIL-CLOSED"
+      ],
+      "human_review_required": true,
+      "name": "Temporary-exception scope and expiry bypass",
+      "owasp": [
+        "A01",
+        "A08"
+      ],
+      "reason": "Temporary exception issuance and expiry bypass are not attempted.",
+      "sanitized": true,
+      "status": "PASS",
+      "stride": [
+        "Tampering",
+        "Elevation of Privilege"
+      ]
+    }
+  ],
+  "baseline_counts": {
+    "EXISTING": 0,
+    "NEW": 1,
+    "REGRESSED": 0,
+    "RESOLVED": 0,
+    "UNCHANGED": 0
+  },
+  "canonical_context_hash_match": {
+    "threat_model": true,
+    "tools": true
+  },
+  "canonical_threat_model": {
+    "attack_paths": [
+      {
+        "boundaries": [
+          "browser",
+          "messaging-execution"
+        ],
+        "consequences": [
+          "unauthorized command injection",
+          "control-plane bypass",
+          "loss of expected audit/control ownership"
+        ],
+        "controls": [
+          "CTRL-BROWSER-NATS",
+          "CTRL-API-CONTROL"
+        ],
+        "entry_point": "browser",
+        "id": "AP-01",
+        "name": "Browser control-plane bypass",
+        "path_nodes": [
+          "browser",
+          "nats-jetstream",
+          "worker"
+        ],
+        "review_status": "human-review-required",
+        "status": "modeled",
+        "stride": [
+          "Spoofing",
+          "Tampering",
+          "Elevation of Privilege"
+        ],
+        "target": "nats-jetstream"
+      },
+      {
+        "boundaries": [
+          "browser",
+          "control-api",
+          "server-host"
+        ],
+        "consequences": [
+          "host mutation",
+          "secret exposure",
+          "runtime integrity loss"
+        ],
+        "controls": [
+          "CTRL-BROWSER-SHELL",
+          "CTRL-API-CONTROL"
+        ],
+        "entry_point": "browser",
+        "id": "AP-02",
+        "name": "Browser shell execution",
+        "path_nodes": [
+          "browser",
+          "lite-api",
+          "server-host"
+        ],
+        "review_status": "human-review-required",
+        "status": "modeled",
+        "stride": [
+          "Tampering",
+          "Elevation of Privilege"
+        ],
+        "target": "server-host"
+      },
+      {
+        "boundaries": [
+          "managed-device",
+          "control-api",
+          "messaging-execution"
+        ],
+        "consequences": [
+          "unauthorized device enrollment",
+          "command execution under a forged identity",
+          "audit attribution failure"
+        ],
+        "controls": [
+          "CTRL-API-CONTROL",
+          "CTRL-EXECUTION-OWNERS"
+        ],
+        "entry_point": "managed-device",
+        "id": "AP-03",
+        "name": "Forged managed-device identity",
+        "path_nodes": [
+          "managed-device",
+          "lite-api",
+          "nats-jetstream",
+          "node-agent"
+        ],
+        "review_status": "human-review-required",
+        "status": "modeled",
+        "stride": [
+          "Spoofing",
+          "Tampering",
+          "Elevation of Privilege"
+        ],
+        "target": "node-agent"
+      },
+      {
+        "boundaries": [
+          "control-api",
+          "messaging-execution",
+          "managed-device"
+        ],
+        "consequences": [
+          "incorrect or repeated device commands",
+          "loss of command integrity",
+          "device availability impact"
+        ],
+        "controls": [
+          "CTRL-API-CONTROL",
+          "CTRL-EXECUTION-OWNERS"
+        ],
+        "entry_point": "lite-api",
+        "id": "AP-04",
+        "name": "Messaging command tampering or replay",
+        "path_nodes": [
+          "lite-api",
+          "nats-jetstream",
+          "worker",
+          "node-agent"
+        ],
+        "review_status": "human-review-required",
+        "status": "modeled",
+        "stride": [
+          "Tampering",
+          "Repudiation",
+          "Denial of Service"
+        ],
+        "target": "node-agent"
+      },
+      {
+        "boundaries": [
+          "external-release",
+          "server-host",
+          "application-container"
+        ],
+        "consequences": [
+          "compromised release execution",
+          "dependency or artifact integrity loss",
+          "misleading release posture"
+        ],
+        "controls": [
+          "CTRL-SUPPLY-CHAIN",
+          "CTRL-EXPLICIT-PROMOTION",
+          "CTRL-EVIDENCE-SANITIZE"
+        ],
+        "entry_point": "github-release",
+        "id": "AP-05",
+        "name": "Supply-chain artifact compromise",
+        "path_nodes": [
+          "github-release",
+          "release-artifacts",
+          "server-host"
+        ],
+        "review_status": "human-review-required",
+        "status": "modeled",
+        "stride": [
+          "Tampering",
+          "Information Disclosure",
+          "Elevation of Privilege"
+        ],
+        "target": "server-host"
+      },
+      {
+        "boundaries": [
+          "external-release",
+          "durable-state",
+          "server-host"
+        ],
+        "consequences": [
+          "incorrect security posture",
+          "secret or private-path disclosure",
+          "loss of evidence trust"
+        ],
+        "controls": [
+          "CTRL-EVIDENCE-SANITIZE",
+          "CTRL-EXPLICIT-PROMOTION"
+        ],
+        "entry_point": "scanner-evidence",
+        "id": "AP-06",
+        "name": "Evidence poisoning",
+        "path_nodes": [
+          "scanner-evidence",
+          "promoted-evidence",
+          "documentation"
+        ],
+        "review_status": "human-review-required",
+        "status": "modeled",
+        "stride": [
+          "Tampering",
+          "Repudiation",
+          "Information Disclosure"
+        ],
+        "target": "documentation"
+      },
+      {
+        "boundaries": [
+          "private-network",
+          "control-api",
+          "server-host"
+        ],
+        "consequences": [
+          "unexpected control-plane reachability",
+          "service exposure",
+          "availability impact"
+        ],
+        "controls": [
+          "CTRL-API-CONTROL",
+          "CTRL-EXECUTION-OWNERS"
+        ],
+        "entry_point": "private-network",
+        "id": "AP-07",
+        "name": "Tailnet/private-network exposure",
+        "path_nodes": [
+          "private-network",
+          "tailscale",
+          "caddy",
+          "lite-api"
+        ],
+        "review_status": "human-review-required",
+        "status": "modeled",
+        "stride": [
+          "Spoofing",
+          "Information Disclosure",
+          "Denial of Service"
+        ],
+        "target": "lite-api"
+      },
+      {
+        "boundaries": [
+          "durable-state",
+          "control-api"
+        ],
+        "consequences": [
+          "unsafe restore decisions",
+          "loss of recovery evidence integrity",
+          "recovery unavailability"
+        ],
+        "controls": [
+          "CTRL-EVIDENCE-SANITIZE",
+          "CTRL-EXPLICIT-PROMOTION",
+          "CTRL-API-CONTROL"
+        ],
+        "entry_point": "sqlite",
+        "id": "AP-08",
+        "name": "Recovery state tampering",
+        "path_nodes": [
+          "sqlite",
+          "recovery-state",
+          "lite-api"
+        ],
+        "review_status": "human-review-required",
+        "status": "modeled",
+        "stride": [
+          "Tampering",
+          "Repudiation",
+          "Denial of Service"
+        ],
+        "target": "recovery-state"
+      },
+      {
+        "boundaries": [
+          "browser",
+          "control-api",
+          "durable-state"
+        ],
+        "consequences": [
+          "human or browser-session impersonation",
+          "unauthorized passkey or step-up assurance use",
+          "privileged mutation without intended purpose-bound assurance"
+        ],
+        "controls": [
+          "CTRL-HUMAN-SESSION-CSRF",
+          "CTRL-WEBAUTHN-ASSURANCE"
+        ],
+        "entry_point": "browser",
+        "id": "AP-09",
+        "name": "Human identity and WebAuthn assurance misuse",
+        "path_nodes": [
+          "browser",
+          "caddy",
+          "lite-api",
+          "sqlite"
+        ],
+        "review_status": "human-review-required",
+        "status": "modeled",
+        "stride": [
+          "Spoofing",
+          "Tampering",
+          "Elevation of Privilege"
+        ],
+        "target": "lite-api"
+      },
+      {
+        "boundaries": [
+          "browser",
+          "control-api",
+          "durable-state"
+        ],
+        "consequences": [
+          "unauthorized enterprise role elevation",
+          "loss of final-Owner recovery authority",
+          "audit attribution failure"
+        ],
+        "controls": [
+          "CTRL-WEBAUTHN-ASSURANCE",
+          "CTRL-ENTERPRISE-ROLE-FINAL-OWNER"
+        ],
+        "entry_point": "browser",
+        "id": "AP-10",
+        "name": "Enterprise membership and final-Owner privilege escalation",
+        "path_nodes": [
+          "browser",
+          "caddy",
+          "lite-api",
+          "sqlite"
+        ],
+        "review_status": "human-review-required",
+        "status": "modeled",
+        "stride": [
+          "Tampering",
+          "Repudiation",
+          "Elevation of Privilege"
+        ],
+        "target": "sqlite"
+      },
+      {
+        "boundaries": [
+          "browser",
+          "control-api"
+        ],
+        "consequences": [
+          "protected mutation proceeds without valid policy admission",
+          "policy decision ambiguity",
+          "control-plane availability impact"
+        ],
+        "controls": [
+          "CTRL-API-CONTROL",
+          "CTRL-OPA-FAIL-CLOSED"
+        ],
+        "entry_point": "browser",
+        "id": "AP-11",
+        "name": "OPA authorization decision integrity failure",
+        "path_nodes": [
+          "browser",
+          "caddy",
+          "lite-api"
+        ],
+        "review_status": "human-review-required",
+        "status": "modeled",
+        "stride": [
+          "Tampering",
+          "Elevation of Privilege",
+          "Denial of Service"
+        ],
+        "target": "lite-api"
+      },
+      {
+        "boundaries": [
+          "browser",
+          "control-api",
+          "durable-state"
+        ],
+        "consequences": [
+          "wrong policy revision observed or activated",
+          "loss of known-good recovery integrity",
+          "governance availability locked in uncertain state"
+        ],
+        "controls": [
+          "CTRL-POLICY-REVISION-LIFECYCLE",
+          "CTRL-OPA-FAIL-CLOSED"
+        ],
+        "entry_point": "browser",
+        "id": "AP-12",
+        "name": "Policy revision activation and recovery integrity",
+        "path_nodes": [
+          "browser",
+          "caddy",
+          "lite-api",
+          "sqlite"
+        ],
+        "review_status": "human-review-required",
+        "status": "modeled",
+        "stride": [
+          "Tampering",
+          "Repudiation",
+          "Denial of Service"
+        ],
+        "target": "sqlite"
+      },
+      {
+        "boundaries": [
+          "browser",
+          "control-api",
+          "durable-state"
+        ],
+        "consequences": [
+          "requester self-approval or ineligible review",
+          "exact action, target, or revision binding bypass",
+          "approved continuation replay or double-use"
+        ],
+        "controls": [
+          "CTRL-WEBAUTHN-ASSURANCE",
+          "CTRL-INDEPENDENT-APPROVAL-CONTINUATION"
+        ],
+        "entry_point": "browser",
+        "id": "AP-13",
+        "name": "Approval and continuation integrity",
+        "path_nodes": [
+          "browser",
+          "caddy",
+          "lite-api",
+          "sqlite"
+        ],
+        "review_status": "human-review-required",
+        "status": "modeled",
+        "stride": [
+          "Spoofing",
+          "Tampering",
+          "Repudiation",
+          "Elevation of Privilege"
+        ],
+        "target": "sqlite"
+      },
+      {
+        "boundaries": [
+          "browser",
+          "control-api",
+          "durable-state"
+        ],
+        "consequences": [
+          "exception widened beyond approved scope",
+          "expired or revoked exception reused",
+          "unauthorized catalog install admission"
+        ],
+        "controls": [
+          "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+          "CTRL-OPA-FAIL-CLOSED"
+        ],
+        "entry_point": "browser",
+        "id": "AP-14",
+        "name": "Temporary-exception scope and expiry bypass",
+        "path_nodes": [
+          "browser",
+          "caddy",
+          "lite-api",
+          "sqlite"
+        ],
+        "review_status": "human-review-required",
+        "status": "modeled",
+        "stride": [
+          "Tampering",
+          "Elevation of Privilege"
+        ],
+        "target": "sqlite"
+      }
+    ],
+    "consequences_without_model": [
+      "Trust assumptions become implicit and easier to violate during change.",
+      "Controls can exist without a clear statement of which threats and assets they protect.",
+      "Runtime, release and supply-chain evidence become disconnected from security reasoning.",
+      "Boundary changes can ship without exposing their security-review impact.",
+      "Duplicated, missing or weakly evidenced controls are harder to identify.",
+      "Residual risk and human-review decisions become less auditable."
+    ],
+    "controls": [
+      {
+        "boundaries": [
+          "browser",
+          "control-api",
+          "durable-state"
+        ],
+        "description": "WebAuthn ceremonies bind short-lived server-owned challenges to purpose, origin and RP ID; passkey assertions update signer counters and purpose-bound step-up expires independently of the browser session.",
+        "freshness": "source-current",
+        "id": "CTRL-WEBAUTHN-ASSURANCE",
+        "implementation": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+        ],
+        "owner": "FastAPI Identity/WebAuthn boundary",
+        "source_refs": [
+          "architecture/metadata/pocket-lab-architecture.json"
+        ],
+        "status": "mitigation-source-derived",
+        "tests": [
+          "tests/backend/test_lite_identity_passkeys_rules_p1.py"
+        ],
+        "threats": [
+          "Spoofing",
+          "Tampering",
+          "Elevation of Privilege"
+        ]
+      },
+      {
+        "boundaries": [
+          "control-api",
+          "durable-state"
+        ],
+        "description": "Enterprise authorization resolves active memberships server-side, restricts governance changes to authorized roles, invalidates affected authorization/session state, audits changes, and refuses removal or demotion of the final active Owner.",
+        "freshness": "source-current",
+        "id": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+        "implementation": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+        ],
+        "owner": "FastAPI Enterprise Identity boundary",
+        "source_refs": [
+          "architecture/metadata/pocket-lab-architecture.json"
+        ],
+        "status": "mitigation-source-derived",
+        "tests": [
+          "tests/backend/test_lite_enterprise_identity_p2.py"
+        ],
+        "threats": [
+          "Tampering",
+          "Repudiation",
+          "Elevation of Privilege"
+        ]
+      },
+      {
+        "boundaries": [
+          "control-api",
+          "durable-state",
+          "server-host"
+        ],
+        "description": "Typed policy candidates produce deterministic immutable revisions and manifests; activation proves loopback OPA observed revision/readiness before durable convergence, with known-good rollback/quarantine and explicit recovery proof when state is uncertain.",
+        "freshness": "source-current",
+        "id": "CTRL-POLICY-REVISION-LIFECYCLE",
+        "implementation": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py"
+        ],
+        "owner": "FastAPI Rules lifecycle and loopback OPA boundary",
+        "source_refs": [
+          "architecture/metadata/pocket-lab-architecture.json"
+        ],
+        "status": "mitigation-source-derived",
+        "tests": [
+          "tests/backend/test_lite_policy_lifecycle_p2_2.py",
+          "tests/backend/test_lite_policy_opa_readiness.py",
+          "tests/backend/test_lite_policy_first_activation_recovery.py",
+          "tests/backend/test_lite_policy_uncertain_resolution.py"
+        ],
+        "threats": [
+          "Tampering",
+          "Repudiation",
+          "Denial of Service"
+        ]
+      },
+      {
+        "boundaries": [
+          "browser",
+          "control-api",
+          "durable-state"
+        ],
+        "description": "Approval must come from a different currently eligible Owner/Admin with purpose-bound passkey step-up and exact action/target/revision binding; approval does not execute the action, and the initiator retry atomically consumes one continuation with replay refusal.",
+        "freshness": "source-current",
+        "id": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+        "implementation": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+        ],
+        "owner": "FastAPI Rules approval/continuation boundary",
+        "source_refs": [
+          "architecture/metadata/pocket-lab-architecture.json"
+        ],
+        "status": "mitigation-source-derived",
+        "tests": [
+          "tests/backend/test_lite_policy_approvals_p3_1.py"
+        ],
+        "threats": [
+          "Spoofing",
+          "Tampering",
+          "Repudiation",
+          "Elevation of Privilege"
+        ]
+      },
+      {
+        "boundaries": [
+          "browser",
+          "control-api",
+          "durable-state"
+        ],
+        "description": "Temporary exceptions are restricted to catalog.install and exact app/device/human/policy revision, reject wildcard/global scope, expire within at most 60 minutes and can be revoked; matching enforces active unexpired exact scope.",
+        "freshness": "source-current",
+        "id": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+        "implementation": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+        ],
+        "owner": "FastAPI Rules temporary-exception boundary",
+        "source_refs": [
+          "architecture/metadata/pocket-lab-architecture.json"
+        ],
+        "status": "mitigation-source-derived",
+        "tests": [
+          "tests/backend/test_lite_policy_approvals_p3_1.py"
+        ],
+        "threats": [
+          "Tampering",
+          "Elevation of Privilege"
+        ]
+      }
+    ],
+    "exclusions": [
+      "Live attack monitoring or packet inspection",
+      "Live NATS polling or traffic visualization",
+      "Running Trivy, Lynis, Semgrep or other scanners from MkDocs",
+      "Scanning the live Android filesystem from documentation generation",
+      "Automatically deciding whether a vulnerability is exploitable",
+      "Automatically accepting residual risk or security exceptions",
+      "Replacing penetration testing, source review or operational monitoring",
+      "Replacing incident detection, release qualification or runtime health checks"
+    ],
+    "framework": {
+      "application": [
+        "Identify canonical trust boundaries, assets, actors and flows.",
+        "Generate STRIDE candidates for every trust boundary.",
+        "Map repository-owned controls to applicable threat categories and boundaries.",
+        "Attach promoted runtime, security, release and dependency evidence to control posture.",
+        "Require human review for threat relevance, mitigation adequacy, residual risk, risk acceptance and exceptions."
+      ],
+      "definitions": {
+        "Denial of Service": "Loss of availability, command delivery or recovery capability.",
+        "Elevation of Privilege": "Bypassing browser, control API, execution-owner or host boundaries.",
+        "Information Disclosure": "Exposure of secrets, private paths, credentials or sensitive operational metadata.",
+        "Repudiation": "Loss of trustworthy evidence about who or what performed an action.",
+        "Spoofing": "Impersonating a user, device, service or release identity.",
+        "Tampering": "Unauthorized modification of commands, durable state, releases or evidence."
+      },
+      "primary": "STRIDE",
+      "reference_mappings": [
+        "OWASP Top 10 where applicable"
+      ]
+    },
+    "schema_version": "1.0.0",
+    "truth_layers": [
+      {
+        "authority": "canonical architecture and security source",
+        "id": "threat-model",
+        "question": "What could go wrong?"
+      },
+      {
+        "authority": "source plus promoted evidence",
+        "id": "control-posture",
+        "question": "Which mitigations currently have evidence?"
+      },
+      {
+        "authority": "promoted sanitized runtime/security/release evidence",
+        "id": "operational-posture",
+        "question": "What does the latest promoted evidence report?"
+      }
+    ]
+  },
+  "canonical_tools": {
+    "description": "Server-owned, fixed-command contracts for phone-worker, DEV-PC static, and DEV-PC live-runtime assurance lanes. Callers select a suite only; they never select an executable, argv, path, URL, environment, target, or scanner option.",
+    "execution_defaults": {
+      "allowed_target": "local_server_host_only",
+      "allowed_target_scope": "local_server_host_only",
+      "concurrency": "exclusive_for_heavy_tools",
+      "cwd": "repository_root",
+      "failure_classification": [
+        "missing",
+        "failed",
+        "timed_out",
+        "output_limited"
+      ],
+      "finding_normalizer": "normalized_sanitized_assurance_finding",
+      "max_output_bytes": 32768,
+      "output_parser": "first_version_line_only",
+      "process_group_cleanup": true,
+      "sanitization_policy": "lite_security_policy.redact_value",
+      "shell": false,
+      "timeout_seconds": 5
+    },
+    "name": "pocketlab-runtime-security-assurance-tools",
+    "schema_version": "2.0.0",
+    "toolchain": [
+      {
+        "allowed_mode": "registered_security_profile",
+        "binary_discovery": "repository_service",
+        "checkpoint_supported": true,
+        "checksum_policy": "existing_security_receipt",
+        "command_id": "security.existing_profile",
+        "execution": "existing_worker_security_path",
+        "execution_lane": "server_phone_worker",
+        "fixed_argv": [
+          "registered_profile_only"
+        ],
+        "fixed_target": "server_runtime_local",
+        "harness_status": "ACTIVE",
+        "id": "pocketlab-security",
+        "installation_source": "existing_pocketlab_security_worker",
+        "max_attempts": 2,
+        "max_output_bytes": 262144,
+        "native_status": "VERIFIED native when discovered by existing Security path",
+        "parser": "existing_security_projection",
+        "purpose": "Existing worker-owned Quick/Full Security lifecycle, scanner fusion, cache, SBOM, and sanitized evidence.",
+        "required_capability": "security.assurance.sca",
+        "resource_class": "heavy",
+        "resume_supported": true,
+        "retry_safe": true,
+        "ruleset": "existing_security_registry",
+        "sanitizer": "lite_security_policy.redact_value",
+        "signature_policy": "existing_security_receipt",
+        "suite_membership": [
+          "smoke",
+          "standard",
+          "deep"
+        ],
+        "supported_platforms": [
+          "android-termux-arm64",
+          "ubuntu-wsl2"
+        ],
+        "template_allowlist": "none",
+        "timeout_seconds": 7200,
+        "version_command": "existing_security_tool_result",
+        "version_pin": "runtime-reported",
+        "version_source": "repository_revision"
+      },
+      {
+        "allowed_mode": "existing_profile_only",
+        "binary_discovery": "server_owned_path_lookup",
+        "checkpoint_supported": true,
+        "checksum_policy": "existing_security_receipt",
+        "command_id": "security.trivy_profile",
+        "execution": "existing_worker_security_path",
+        "execution_lane": "server_phone_worker",
+        "fixed_argv": [
+          "registered_profile_only"
+        ],
+        "fixed_target": "server_runtime_local",
+        "harness_status": "ACTIVE",
+        "id": "trivy",
+        "installation_source": "existing_pocketlab_security_worker",
+        "max_attempts": 2,
+        "max_output_bytes": 262144,
+        "native_status": "VERIFIED native when discovered by existing Security path",
+        "parser": "existing_security_projection",
+        "purpose": "Existing bounded vulnerability, misconfiguration, secret-mode, and SBOM execution through Security.",
+        "required_capability": "security.assurance.sca",
+        "resource_class": "heavy",
+        "resume_supported": true,
+        "retry_safe": true,
+        "ruleset": "existing_security_registry",
+        "sanitizer": "lite_security_policy.redact_value",
+        "signature_policy": "existing_security_receipt",
+        "suite_membership": [
+          "smoke",
+          "standard",
+          "deep"
+        ],
+        "supported_platforms": [
+          "android-termux-arm64",
+          "ubuntu-wsl2"
+        ],
+        "template_allowlist": "none",
+        "timeout_seconds": 7200,
+        "version_command": "existing_security_tool_result",
+        "version_pin": "runtime-reported",
+        "version_source": "registered_security_tool_result"
+      },
+      {
+        "allowed_mode": "existing_profile_only",
+        "binary_discovery": "server_owned_path_lookup",
+        "checkpoint_supported": true,
+        "checksum_policy": "existing_security_receipt",
+        "command_id": "security.lynis_profile",
+        "execution": "existing_worker_security_path",
+        "execution_lane": "server_phone_worker",
+        "fixed_argv": [
+          "registered_profile_only"
+        ],
+        "fixed_target": "server_runtime_local",
+        "harness_status": "ACTIVE",
+        "id": "lynis",
+        "installation_source": "existing_pocketlab_security_worker",
+        "max_attempts": 2,
+        "max_output_bytes": 262144,
+        "native_status": "VERIFIED native when discovered by existing Security path",
+        "parser": "existing_security_projection",
+        "purpose": "Existing bounded host posture checks through the worker-owned Security lifecycle.",
+        "required_capability": "security.assurance.passive",
+        "resource_class": "heavy",
+        "resume_supported": true,
+        "retry_safe": true,
+        "ruleset": "existing_security_registry",
+        "sanitizer": "lite_security_policy.redact_value",
+        "signature_policy": "existing_security_receipt",
+        "suite_membership": [
+          "smoke",
+          "standard",
+          "deep"
+        ],
+        "supported_platforms": [
+          "android-termux-arm64",
+          "ubuntu-wsl2"
+        ],
+        "template_allowlist": "none",
+        "timeout_seconds": 7200,
+        "version_command": "existing_security_tool_result",
+        "version_pin": "runtime-reported",
+        "version_source": "registered_security_tool_result"
+      },
+      {
+        "allowed_mode": "fixed_registered_command",
+        "binary_discovery": "managed_tool_receipt_or_venv",
+        "checkpoint_supported": true,
+        "checksum_policy": "qualified_tool_receipt",
+        "command_id": "source.bandit_runtime",
+        "execution": "managed_external_tool",
+        "execution_lane": "dev_pc_static",
+        "fixed_argv": [
+          "-r",
+          "pocket-lab-final-structure/runtime",
+          "--format",
+          "json"
+        ],
+        "fixed_target": "repository_runtime_source",
+        "harness_status": "ACTIVE",
+        "id": "bandit",
+        "installation_source": "python_venv_or_pypi_receipt",
+        "max_attempts": 1,
+        "max_output_bytes": 524288,
+        "native_status": "VERIFIED DEV-PC static",
+        "parser": "bandit_json",
+        "purpose": "Fixed Python SAST over Pocket Lab runtime source with repository exclusions.",
+        "required_capability": "security.assurance.sast",
+        "resource_class": "medium",
+        "resume_supported": false,
+        "retry_safe": false,
+        "ruleset": "bandit_default_pinned",
+        "sanitizer": "redacted_finding_fields",
+        "signature_policy": "receipt_or_package_integrity",
+        "suite_membership": [
+          "standard",
+          "deep"
+        ],
+        "supported_platforms": [
+          "ubuntu-wsl2"
+        ],
+        "template_allowlist": "none",
+        "timeout_seconds": 300,
+        "version_command": "fixed_binary_version_probe",
+        "version_pin": "1.9.4",
+        "version_source": "qualified_tool_receipt"
+      },
+      {
+        "allowed_mode": "fixed_registered_command",
+        "binary_discovery": "managed_tool_receipt",
+        "checkpoint_supported": true,
+        "checksum_policy": "qualified_tool_receipt",
+        "command_id": "source.gitleaks_current_tree",
+        "execution": "managed_external_tool",
+        "execution_lane": "dev_pc_static",
+        "fixed_argv": [
+          "detect",
+          "--source",
+          "repository_root",
+          "--no-banner",
+          "--report-format",
+          "json"
+        ],
+        "fixed_target": "repository_current_tree",
+        "harness_status": "ACTIVE",
+        "id": "gitleaks",
+        "installation_source": "official_github_release_receipt",
+        "max_attempts": 1,
+        "max_output_bytes": 524288,
+        "native_status": "VERIFIED DEV-PC static",
+        "parser": "gitleaks_json",
+        "purpose": "Fixed current-tree secret detection with raw matches removed from evidence.",
+        "required_capability": "security.assurance.sast",
+        "resource_class": "medium",
+        "resume_supported": false,
+        "retry_safe": false,
+        "ruleset": "gitleaks_default_pinned",
+        "sanitizer": "secret_match_metadata_only",
+        "signature_policy": "receipt_or_package_integrity",
+        "suite_membership": [
+          "smoke",
+          "standard",
+          "deep"
+        ],
+        "supported_platforms": [
+          "ubuntu-wsl2"
+        ],
+        "template_allowlist": "none",
+        "timeout_seconds": 300,
+        "version_command": "fixed_binary_version_probe",
+        "version_pin": "8.30.1",
+        "version_source": "qualified_tool_receipt"
+      },
+      {
+        "allowed_mode": "fixed_registered_command",
+        "binary_discovery": "managed_tool_receipt_or_venv",
+        "checkpoint_supported": true,
+        "checksum_policy": "qualified_tool_receipt",
+        "command_id": "dependency.pip_audit",
+        "execution": "managed_external_tool",
+        "execution_lane": "dev_pc_static",
+        "fixed_argv": [
+          "-r",
+          "pocket-lab-final-structure/runtime/requirements.txt",
+          "--format",
+          "json"
+        ],
+        "fixed_target": "repository_python_requirements",
+        "harness_status": "ACTIVE",
+        "id": "pip-audit",
+        "installation_source": "python_venv_or_pypi_receipt",
+        "max_attempts": 1,
+        "max_output_bytes": 524288,
+        "native_status": "VERIFIED DEV-PC static",
+        "parser": "pip_audit_json",
+        "purpose": "Fixed Python dependency vulnerability corroboration from the repository requirements lock surface.",
+        "required_capability": "security.assurance.sca",
+        "resource_class": "small",
+        "resume_supported": false,
+        "retry_safe": true,
+        "ruleset": "pinned_requirements_only",
+        "sanitizer": "redacted_dependency_finding",
+        "signature_policy": "receipt_or_package_integrity",
+        "suite_membership": [
+          "standard",
+          "deep"
+        ],
+        "supported_platforms": [
+          "ubuntu-wsl2"
+        ],
+        "template_allowlist": "none",
+        "timeout_seconds": 180,
+        "version_command": "fixed_binary_version_probe",
+        "version_pin": "2.10.1",
+        "version_source": "qualified_tool_receipt"
+      },
+      {
+        "allowed_mode": "fixed_registered_command",
+        "binary_discovery": "managed_tool_receipt_or_system",
+        "checkpoint_supported": true,
+        "checksum_policy": "package_manager_lockfile",
+        "command_id": "dependency.npm_audit_offline",
+        "execution": "managed_external_tool",
+        "execution_lane": "dev_pc_static",
+        "fixed_argv": [
+          "audit",
+          "--package-lock-only",
+          "--json",
+          "--offline"
+        ],
+        "fixed_target": "repository_package_lock",
+        "harness_status": "ACTIVE",
+        "id": "npm-audit",
+        "installation_source": "approved_node_toolchain",
+        "max_attempts": 1,
+        "max_output_bytes": 524288,
+        "native_status": "VERIFIED DEV-PC static with the approved Node 24.16.0 toolchain",
+        "parser": "npm_audit_json",
+        "purpose": "Fixed offline frontend lockfile vulnerability assessment without a network refresh.",
+        "required_capability": "security.assurance.sca",
+        "resource_class": "medium",
+        "resume_supported": false,
+        "retry_safe": true,
+        "ruleset": "package_lock_only",
+        "sanitizer": "redacted_dependency_finding",
+        "signature_policy": "package_manager_lockfile",
+        "suite_membership": [
+          "standard",
+          "deep"
+        ],
+        "supported_platforms": [
+          "ubuntu-wsl2"
+        ],
+        "template_allowlist": "none",
+        "timeout_seconds": 180,
+        "version_command": "fixed_binary_version_probe",
+        "version_pin": "11.13.0",
+        "version_source": "qualified_tool_receipt"
+      },
+      {
+        "allowed_mode": "fixed_local_health_and_revision",
+        "binary_discovery": "existing_policy_service",
+        "checkpoint_supported": true,
+        "checksum_policy": "policy_revision",
+        "command_id": "policy.health_revision",
+        "execution": "existing_loopback_policy_service",
+        "execution_lane": "server_phone_worker",
+        "fixed_argv": [
+          "health",
+          "revision",
+          "policy_test"
+        ],
+        "fixed_target": "loopback_opa_service",
+        "harness_status": "ACTIVE",
+        "id": "opa",
+        "installation_source": "existing_loopback_policy_service",
+        "max_attempts": 2,
+        "max_output_bytes": 65536,
+        "native_status": "VERIFIED native when policy service is ready",
+        "parser": "opa_status",
+        "purpose": "Loopback policy readiness, revision consistency, policy tests, and fail-closed posture.",
+        "required_capability": "security.assurance.runtime",
+        "resource_class": "small",
+        "resume_supported": true,
+        "retry_safe": true,
+        "ruleset": "active_policy_revision",
+        "sanitizer": "fixed_policy_status",
+        "signature_policy": "policy_revision",
+        "suite_membership": [
+          "smoke",
+          "standard",
+          "deep",
+          "adversarial"
+        ],
+        "supported_platforms": [
+          "android-termux-arm64",
+          "ubuntu-wsl2"
+        ],
+        "template_allowlist": "none",
+        "timeout_seconds": 30,
+        "version_command": "policy_status",
+        "version_pin": "runtime-reported",
+        "version_source": "policy_status"
+      },
+      {
+        "allowed_mode": "fixed_registered_command",
+        "binary_discovery": "managed_tool_receipt_or_parity_venv",
+        "checkpoint_supported": true,
+        "checksum_policy": "qualified_tool_receipt",
+        "command_id": "runtime.schemathesis_safe_get",
+        "execution": "managed_external_tool",
+        "execution_lane": "dev_pc_live_runtime",
+        "fixed_argv": [
+          "fixed_openapi_schema",
+          "workers=1",
+          "max_examples=20",
+          "get_only"
+        ],
+        "fixed_target": "approved_server_phone_api_tunnel",
+        "harness_status": "ACTIVE",
+        "id": "schemathesis",
+        "installation_source": "approved_parity_python_venv",
+        "max_attempts": 1,
+        "max_output_bytes": 524288,
+        "native_status": "VERIFIED DEV-PC live-runtime",
+        "parser": "schemathesis_junit_summary",
+        "purpose": "Bounded OpenAPI security and contract probing over a fixed GET-only Pocket Lab route allow-list.",
+        "required_capability": "security.assurance.api",
+        "resource_class": "heavy",
+        "resume_supported": false,
+        "retry_safe": true,
+        "ruleset": "scripts/test/parity/prepare_schemathesis_schema.py",
+        "sanitizer": "redacted_http_summary",
+        "signature_policy": "receipt_or_package_integrity",
+        "suite_membership": [
+          "standard",
+          "deep"
+        ],
+        "supported_platforms": [
+          "ubuntu-wsl2"
+        ],
+        "template_allowlist": "safe_get_routes_only",
+        "timeout_seconds": 600,
+        "version_command": "fixed_binary_version_probe",
+        "version_pin": "4.23.0",
+        "version_source": "qualified_tool_receipt"
+      },
+      {
+        "allowed_mode": "registered_artifact_only",
+        "binary_discovery": "managed_tool_receipt",
+        "checkpoint_supported": true,
+        "checksum_policy": "qualified_tool_receipt",
+        "command_id": "supply_chain.cosign_registered_artifact",
+        "execution": "managed_external_tool",
+        "execution_lane": "dev_pc_static",
+        "fixed_argv": [
+          "verify",
+          "registered_artifact_only"
+        ],
+        "fixed_target": "registered_signed_artifact",
+        "harness_status": "ACTIVE",
+        "id": "cosign",
+        "installation_source": "official_github_release_receipt",
+        "max_attempts": 1,
+        "max_output_bytes": 131072,
+        "native_status": "VERIFIED DEV-PC static when a signed artifact is registered",
+        "parser": "cosign_verification_summary",
+        "purpose": "Fixed provenance verification for an applicable signed Pocket Lab artifact; no signing or downloads.",
+        "required_capability": "security.assurance.sca",
+        "resource_class": "small",
+        "resume_supported": false,
+        "retry_safe": true,
+        "ruleset": "registered_release_metadata",
+        "sanitizer": "bounded_provenance",
+        "signature_policy": "cosign_signature_required_or_not_applicable",
+        "suite_membership": [
+          "standard",
+          "deep"
+        ],
+        "supported_platforms": [
+          "ubuntu-wsl2"
+        ],
+        "template_allowlist": "none",
+        "timeout_seconds": 120,
+        "version_command": "fixed_binary_version_probe",
+        "version_pin": "3.1.3",
+        "version_source": "qualified_tool_receipt"
+      },
+      {
+        "allowed_mode": "fixed_registered_command",
+        "binary_discovery": "managed_tool_receipt",
+        "checkpoint_supported": true,
+        "checksum_policy": "qualified_tool_receipt",
+        "command_id": "source.semgrep_boundary_rules",
+        "execution": "managed_external_tool",
+        "execution_lane": "dev_pc_static",
+        "fixed_argv": [
+          "scan",
+          "--config",
+          "security/assurance/semgrep-rules.yml",
+          "--json"
+        ],
+        "fixed_target": "repository_source_boundary",
+        "harness_status": "ACTIVE",
+        "id": "semgrep",
+        "installation_source": "official_pypi_wheelhouse_receipt",
+        "max_attempts": 1,
+        "max_output_bytes": 1048576,
+        "native_status": "VERIFIED DEV-PC static",
+        "parser": "semgrep_json",
+        "purpose": "Curated Semgrep Community Edition SAST with checked-in Pocket Lab boundary rules.",
+        "required_capability": "security.assurance.sast",
+        "resource_class": "heavy",
+        "resume_supported": false,
+        "retry_safe": false,
+        "ruleset": "security/assurance/semgrep-rules.yml",
+        "sanitizer": "redacted_static_finding",
+        "signature_policy": "receipt_or_package_integrity",
+        "suite_membership": [
+          "standard",
+          "deep"
+        ],
+        "supported_platforms": [
+          "ubuntu-wsl2"
+        ],
+        "template_allowlist": "none",
+        "timeout_seconds": 600,
+        "version_command": "fixed_binary_version_probe",
+        "version_pin": "1.172.0",
+        "version_source": "qualified_tool_receipt"
+      },
+      {
+        "allowed_mode": "fixed_registered_command",
+        "binary_discovery": "managed_tool_receipt",
+        "checkpoint_supported": true,
+        "checksum_policy": "qualified_tool_receipt",
+        "command_id": "dependency.osv_lockfiles",
+        "execution": "managed_external_tool",
+        "execution_lane": "dev_pc_static",
+        "fixed_argv": [
+          "scan",
+          "source",
+          "fixed_dependency_manifests",
+          "--format",
+          "json"
+        ],
+        "fixed_target": "repository_lockfiles",
+        "harness_status": "ACTIVE",
+        "id": "osv-scanner",
+        "installation_source": "official_github_release_receipt",
+        "max_attempts": 1,
+        "max_output_bytes": 2097152,
+        "native_status": "VERIFIED DEV-PC static",
+        "parser": "osv_json",
+        "purpose": "Fixed lockfile and SBOM vulnerability corroboration.",
+        "required_capability": "security.assurance.sca",
+        "resource_class": "medium",
+        "resume_supported": false,
+        "retry_safe": true,
+        "ruleset": "repository_lockfiles_only",
+        "sanitizer": "redacted_dependency_finding",
+        "signature_policy": "receipt_or_package_integrity",
+        "suite_membership": [
+          "standard",
+          "deep"
+        ],
+        "supported_platforms": [
+          "ubuntu-wsl2"
+        ],
+        "template_allowlist": "none",
+        "timeout_seconds": 300,
+        "version_command": "fixed_binary_version_probe",
+        "version_pin": "2.5.0",
+        "version_source": "qualified_tool_receipt"
+      },
+      {
+        "allowed_mode": "fixed_registered_command",
+        "binary_discovery": "managed_tool_receipt",
+        "checkpoint_supported": true,
+        "checksum_policy": "qualified_tool_receipt",
+        "command_id": "supply_chain.syft_cyclonedx",
+        "execution": "managed_external_tool",
+        "execution_lane": "dev_pc_static",
+        "fixed_argv": [
+          "dir:repository_root",
+          "-o",
+          "cyclonedx-json:managed_output"
+        ],
+        "fixed_target": "repository_source_excluding_generated_caches",
+        "harness_status": "ACTIVE",
+        "id": "syft",
+        "installation_source": "official_github_release_receipt",
+        "max_attempts": 1,
+        "max_output_bytes": 2097152,
+        "native_status": "VERIFIED DEV-PC static",
+        "parser": "cyclonedx_json",
+        "purpose": "Fixed CycloneDX SBOM generation over repository source while excluding user/media/cache surfaces.",
+        "required_capability": "security.assurance.sca",
+        "resource_class": "heavy",
+        "resume_supported": false,
+        "retry_safe": true,
+        "ruleset": "fixed_repository_exclusions",
+        "sanitizer": "redacted_sbom",
+        "signature_policy": "receipt_or_package_integrity",
+        "suite_membership": [
+          "deep"
+        ],
+        "supported_platforms": [
+          "ubuntu-wsl2"
+        ],
+        "template_allowlist": "none",
+        "timeout_seconds": 900,
+        "version_command": "fixed_binary_version_probe",
+        "version_pin": "1.50.0",
+        "version_source": "qualified_tool_receipt"
+      },
+      {
+        "allowed_mode": "fixed_registered_command",
+        "binary_discovery": "managed_tool_receipt",
+        "checkpoint_supported": true,
+        "checksum_policy": "qualified_tool_receipt",
+        "command_id": "supply_chain.grype_sbom",
+        "execution": "managed_external_tool",
+        "execution_lane": "dev_pc_static",
+        "fixed_argv": [
+          "sbom:managed_syft_output",
+          "-o",
+          "json"
+        ],
+        "fixed_target": "managed_syft_sbom",
+        "harness_status": "ACTIVE",
+        "id": "grype",
+        "installation_source": "official_github_release_receipt",
+        "max_attempts": 1,
+        "max_output_bytes": 1048576,
+        "native_status": "VERIFIED DEV-PC static",
+        "parser": "grype_json",
+        "purpose": "Fixed vulnerability corroboration from the harness-managed Syft SBOM only.",
+        "required_capability": "security.assurance.sca",
+        "resource_class": "heavy",
+        "resume_supported": false,
+        "retry_safe": true,
+        "ruleset": "managed_syft_sbom_only",
+        "sanitizer": "redacted_dependency_finding",
+        "signature_policy": "receipt_or_package_integrity",
+        "suite_membership": [
+          "deep"
+        ],
+        "supported_platforms": [
+          "ubuntu-wsl2"
+        ],
+        "template_allowlist": "none",
+        "timeout_seconds": 900,
+        "version_command": "fixed_binary_version_probe",
+        "version_pin": "0.116.1",
+        "version_source": "qualified_tool_receipt"
+      },
+      {
+        "allowed_mode": "fixed_registered_command",
+        "binary_discovery": "managed_tool_receipt",
+        "checkpoint_supported": true,
+        "checksum_policy": "qualified_tool_receipt",
+        "command_id": "runtime.testssl_caddy",
+        "execution": "managed_external_tool",
+        "execution_lane": "dev_pc_live_runtime",
+        "fixed_argv": [
+          "--fast",
+          "--warnings",
+          "batch",
+          "--quiet",
+          "-n",
+          "none",
+          "--ip",
+          "fixed_loopback",
+          "fixed_caddy_identity"
+        ],
+        "fixed_target": "approved_server_phone_caddy_tls_tunnel",
+        "harness_status": "ACTIVE",
+        "id": "testssl.sh",
+        "installation_source": "official_testssl_release_receipt",
+        "max_attempts": 1,
+        "max_output_bytes": 524288,
+        "native_status": "VERIFIED DEV-PC live-runtime",
+        "parser": "testssl_text_summary",
+        "purpose": "Fixed fast TLS posture analysis of the approved Pocket Lab Caddy tunnel only.",
+        "required_capability": "security.assurance.api",
+        "resource_class": "medium",
+        "resume_supported": false,
+        "retry_safe": true,
+        "ruleset": "fast_tls_profile",
+        "sanitizer": "redacted_tls_summary",
+        "signature_policy": "receipt_or_release_checksum",
+        "suite_membership": [
+          "standard",
+          "deep"
+        ],
+        "supported_platforms": [
+          "ubuntu-wsl2"
+        ],
+        "template_allowlist": "none",
+        "timeout_seconds": 300,
+        "version_command": "fixed_binary_version_probe",
+        "version_pin": "3.2.2",
+        "version_source": "qualified_tool_receipt"
+      },
+      {
+        "allowed_mode": "fixed_registered_command",
+        "binary_discovery": "managed_tool_receipt",
+        "checkpoint_supported": true,
+        "checksum_policy": "qualified_tool_receipt",
+        "command_id": "runtime.nuclei_safe_templates",
+        "execution": "managed_external_tool",
+        "execution_lane": "dev_pc_live_runtime",
+        "fixed_argv": [
+          "-templates",
+          "security/assurance/nuclei-safe-templates",
+          "-target",
+          "fixed_api_endpoint",
+          "-c",
+          "1",
+          "-rl",
+          "2"
+        ],
+        "fixed_target": "approved_server_phone_api_tunnel",
+        "harness_status": "ACTIVE",
+        "id": "nuclei",
+        "installation_source": "official_nuclei_release_receipt",
+        "max_attempts": 1,
+        "max_output_bytes": 524288,
+        "native_status": "VERIFIED DEV-PC live-runtime",
+        "parser": "nuclei_jsonl",
+        "purpose": "Curated safe HTTP misconfiguration probes against the approved Pocket Lab endpoint only.",
+        "required_capability": "security.assurance.api",
+        "resource_class": "heavy",
+        "resume_supported": false,
+        "retry_safe": true,
+        "ruleset": "security/assurance/nuclei-safe-templates",
+        "sanitizer": "redacted_http_finding",
+        "signature_policy": "receipt_or_release_checksum",
+        "suite_membership": [
+          "standard",
+          "deep"
+        ],
+        "supported_platforms": [
+          "ubuntu-wsl2"
+        ],
+        "template_allowlist": "security/assurance/nuclei-safe-templates",
+        "timeout_seconds": 300,
+        "version_command": "fixed_binary_version_probe",
+        "version_pin": "3.8.0",
+        "version_source": "qualified_tool_receipt"
+      },
+      {
+        "allowed_mode": "fixed_registered_command",
+        "binary_discovery": "managed_tool_receipt_or_system",
+        "checkpoint_supported": true,
+        "checksum_policy": "qualified_tool_receipt",
+        "command_id": "runtime.nmap_owned_ports",
+        "execution": "managed_external_tool",
+        "execution_lane": "dev_pc_live_runtime",
+        "fixed_argv": [
+          "-Pn",
+          "-n",
+          "-sT",
+          "-p",
+          "14222,18080,18181,18222,18443",
+          "127.0.0.1"
+        ],
+        "fixed_target": "approved_loopback_listener_set",
+        "harness_status": "ACTIVE",
+        "id": "nmap",
+        "installation_source": "approved_os_package_or_release_receipt",
+        "max_attempts": 1,
+        "max_output_bytes": 262144,
+        "native_status": "VERIFIED DEV-PC live-runtime; native only when independently discovered",
+        "parser": "nmap_grepable",
+        "purpose": "Fixed loopback listener exposure validation for Pocket Lab-owned ports only.",
+        "required_capability": "security.assurance.passive",
+        "resource_class": "medium",
+        "resume_supported": false,
+        "retry_safe": true,
+        "ruleset": "pocketlab_owned_listener_ports",
+        "sanitizer": "fixed_listener_summary",
+        "signature_policy": "receipt_or_package_integrity",
+        "suite_membership": [
+          "standard",
+          "deep"
+        ],
+        "supported_platforms": [
+          "ubuntu-wsl2",
+          "android-termux-arm64"
+        ],
+        "template_allowlist": "none",
+        "timeout_seconds": 120,
+        "version_command": "fixed_binary_version_probe",
+        "version_pin": "7.98",
+        "version_source": "qualified_tool_receipt"
+      },
+      {
+        "allowed_mode": "fixed_registered_command",
+        "binary_discovery": "managed_tool_receipt_or_java",
+        "checkpoint_supported": true,
+        "checksum_policy": "qualified_tool_receipt",
+        "command_id": "runtime.zap_api_baseline",
+        "execution": "managed_external_tool",
+        "execution_lane": "dev_pc_live_runtime",
+        "fixed_argv": [
+          "-cmd",
+          "-quickurl",
+          "fixed_api_endpoint",
+          "-quickprogress",
+          "fixed_route_allowlist"
+        ],
+        "fixed_target": "approved_server_phone_api_tunnel",
+        "harness_status": "ACTIVE",
+        "id": "owasp-zap",
+        "installation_source": "official_zap_release_receipt",
+        "max_attempts": 1,
+        "max_output_bytes": 1048576,
+        "native_status": "VERIFIED DEV-PC live-runtime",
+        "parser": "zap_json_or_xml",
+        "purpose": "Deep-only bounded API baseline against the approved Pocket Lab endpoint and route allow-list.",
+        "required_capability": "security.assurance.api",
+        "resource_class": "heavy",
+        "resume_supported": false,
+        "retry_safe": false,
+        "ruleset": "fixed_api_baseline_profile",
+        "sanitizer": "redacted_zap_alert",
+        "signature_policy": "receipt_or_release_checksum",
+        "suite_membership": [
+          "deep"
+        ],
+        "supported_platforms": [
+          "ubuntu-wsl2"
+        ],
+        "template_allowlist": "fixed_safe_api_routes",
+        "timeout_seconds": 900,
+        "version_command": "fixed_binary_version_probe",
+        "version_pin": "2.17.0",
+        "version_source": "qualified_tool_receipt"
+      }
+    ]
+  },
+  "controls": [
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-03",
+        "AP-04",
+        "AP-05",
+        "AP-06",
+        "AP-07",
+        "AP-09",
+        "AP-10",
+        "AP-11",
+        "AP-12"
+      ],
+      "control_id": "CTRL-API-CONTROL",
+      "scenario_ids": [
+        "harness-default-off",
+        "harness-auth-boundary",
+        "caddy-proof-strip",
+        "runtime-readiness",
+        "control-plane-ownership",
+        "source-boundaries"
+      ],
+      "status": "PASS"
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-03",
+        "AP-04",
+        "AP-05",
+        "AP-06",
+        "AP-07",
+        "AP-08",
+        "AP-09",
+        "AP-10",
+        "AP-11",
+        "AP-12",
+        "AP-13",
+        "AP-14"
+      ],
+      "control_id": "CTRL-EVIDENCE-SANITIZE",
+      "scenario_ids": [
+        "harness-default-off",
+        "evidence-redaction",
+        "security-projection",
+        "source-boundaries",
+        "threat-model-integrity",
+        "attack-path-inventory"
+      ],
+      "status": "PARTIAL"
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-03",
+        "AP-04",
+        "AP-05",
+        "AP-06",
+        "AP-07",
+        "AP-08",
+        "AP-09",
+        "AP-10"
+      ],
+      "control_id": "CTRL-EXECUTION-OWNERS",
+      "scenario_ids": [
+        "harness-auth-boundary",
+        "control-plane-ownership",
+        "security-projection",
+        "source-boundaries"
+      ],
+      "status": "PARTIAL"
+    },
+    {
+      "attack_paths": [
+        "AP-11",
+        "AP-12",
+        "AP-14"
+      ],
+      "control_id": "CTRL-POLICY-REVISION-LIFECYCLE",
+      "scenario_ids": [
+        "policy-readiness"
+      ],
+      "status": "PASS"
+    }
+  ],
+  "delta": {
+    "baseline_available": false,
+    "baseline_run_id": null,
+    "counts": {
+      "EXISTING": 0,
+      "NEW": 1,
+      "REGRESSED": 0,
+      "RESOLVED": 0,
+      "UNCHANGED": 0
+    },
+    "new_finding_count": 1,
+    "regressed_finding_count": 0,
+    "resolved_finding_count": 0,
+    "sanitized": true,
+    "unchanged_finding_count": 0
+  },
+  "environment": "qualification",
+  "findings": [
+    {
+      "asset": "gitea/conf/app.runtime.ini",
+      "attack_paths": [
+        "AP-06"
+      ],
+      "baseline_state": "NEW",
+      "category": "protected_runtime_secret",
+      "component": "Pocket Lab Lite",
+      "confidence": "medium",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE"
+      ],
+      "cve": [],
+      "cwe": [],
+      "evidence_refs": [
+        "security/evidence/security-015550d9d9e84545b0177341814db796/summary.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/lynis-normalized.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-pocketlab-source-trivy.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-pocketlab_source-sbom.cdx.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-runtime-config.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/resource-budget.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-proot-ubuntu-trivy-1.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-proot-ubuntu-trivy-2.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-proot-ubuntu-trivy-3.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-photoprism-trivy.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-photoprism-config-secret.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-photoprism_app_files-sbom.cdx.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-backup-metadata.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/trivy-normalized.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/coverage-summary.json"
+      ],
+      "finding_id": "assurance-3d7968589ce447f18454d1caf69a10e3-15deb392776f0f7b27d15fb1",
+      "first_seen_at": "2026-09-17T11:07:28Z",
+      "last_seen_at": "2026-09-17T11:50:20Z",
+      "owasp": [
+        "A02",
+        "A05"
+      ],
+      "remediation": "Keep this server-side config locked down, exclude it from frontend assets and normal evidence, and rotate it during planned maintenance if exposure is suspected.",
+      "run_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+      "runtime_target": "local_server_host_only",
+      "safe_summary": "Protected backend runtime secret found.",
+      "sanitized_file_reference": "security/evidence/security-015550d9d9e84545b0177341814db796/summary.json",
+      "scenario_id": "security-projection",
+      "severity": "low",
+      "stable_key": "assurance:15deb392776f0f7b27d15fb1f4e6bfb6f2dfaa7c9ec129dd",
+      "status": "open",
+      "stride": [
+        "Information Disclosure"
+      ],
+      "suite": "deep",
+      "title": "Registered Security finding",
+      "tool": "trivy",
+      "tool_version": "dev",
+      "trust_boundary": "worker-owned security scanner to sanitized evidence"
+    }
+  ],
+  "generated_at": "2026-09-17T11:51:18.697351Z",
+  "metrics": {
+    "attack_path_coverage_percent": 71.4,
+    "control_coverage_percent": 100.0,
+    "evidence_completeness_percent": 100.0,
+    "formula": "each percentage is completed applicable evidence units divided by registered applicable units; missing/blocked units are never treated as passing",
+    "scenario_coverage_percent": 100.0,
+    "scenario_pass_percent": 90.9,
+    "tool_readiness_percent": 75.0
+  },
+  "out_of_scope": [
+    "Destructive production Recovery or restore execution",
+    "Unrelated LAN or Tailnet hosts and public Internet targets",
+    "User media and PhotoPrism media contents",
+    "Credential attacks or password guessing",
+    "Arbitrary shell execution, caller-selected targets, ports, templates, scanner arguments, or NATS subjects"
+  ],
+  "overall_status": "PARTIAL",
+  "owasp": [
+    {
+      "id": "A01",
+      "name": "Broken Access Control",
+      "passing_scenarios": 7,
+      "scenario_count": 7
+    },
+    {
+      "id": "A02",
+      "name": "Cryptographic Failures",
+      "passing_scenarios": 3,
+      "scenario_count": 3
+    },
+    {
+      "id": "A03",
+      "name": "Injection",
+      "passing_scenarios": 0,
+      "scenario_count": 0
+    },
+    {
+      "id": "A04",
+      "name": "Insecure Design",
+      "passing_scenarios": 0,
+      "scenario_count": 0
+    },
+    {
+      "id": "A05",
+      "name": "Security Misconfiguration",
+      "passing_scenarios": 4,
+      "scenario_count": 5
+    },
+    {
+      "id": "A06",
+      "name": "Vulnerable and Outdated Components",
+      "passing_scenarios": 0,
+      "scenario_count": 1
+    },
+    {
+      "id": "A07",
+      "name": "Identification and Authentication Failures",
+      "passing_scenarios": 4,
+      "scenario_count": 4
+    },
+    {
+      "id": "A08",
+      "name": "Software and Data Integrity Failures",
+      "passing_scenarios": 6,
+      "scenario_count": 7
+    },
+    {
+      "id": "A09",
+      "name": "Security Logging and Monitoring Failures",
+      "passing_scenarios": 4,
+      "scenario_count": 5
+    },
+    {
+      "id": "A10",
+      "name": "Server-Side Request Forgery",
+      "passing_scenarios": 0,
+      "scenario_count": 0
+    }
+  ],
+  "performance": {
+    "completed_at": "2026-09-17T11:51:07Z",
+    "duration_ms": 601212,
+    "resource_finish": {
+      "available_memory": 2632994816,
+      "available_memory_percent": 35.5,
+      "battery_percent": 95.0,
+      "captured_at": "2026-09-17T11:51:03.252142Z",
+      "charging": true,
+      "free_storage": 136491929600,
+      "sanitized": true,
+      "system_load_ratio": null,
+      "telemetry_age_ms": 2076,
+      "telemetry_source": "termux-battery-status",
+      "temperature_c": 36.1
+    },
+    "resource_governor": {
+      "bounded_output": true,
+      "bounded_target": "local_server_host_only",
+      "one_heavy_scanner": true
+    },
+    "resource_start": {
+      "available_memory": 2505637888,
+      "available_memory_percent": 33.79,
+      "battery_percent": 95.0,
+      "captured_at": "2026-09-17T11:41:06.781176Z",
+      "charging": true,
+      "free_storage": 136423301120,
+      "sanitized": true,
+      "system_load_ratio": null,
+      "telemetry_age_ms": 2185,
+      "telemetry_source": "termux-battery-status",
+      "temperature_c": 37.3
+    },
+    "sanitized": true,
+    "started_at": "2026-09-17T11:51:03Z"
+  },
+  "profile": "security-assurance-runner",
+  "qualification_completed_at": "2026-09-17T11:51:07Z",
+  "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+  "registry_hashes": {
+    "faults": "sha256:6a18652671ed48330c44f94f6d9e53d993c6831ec2f3dbd95f9be8b98ae35820",
+    "scenarios": "sha256:92310371d7c8ed9b2ff686ddb6116b471e3ba3c261988d3a66b65c15c68afbc1",
+    "suites": "sha256:407d1c893f8de7579f0fd3193e262da5b8f67c612bcb9d2c76308c3f36afd164",
+    "threat_model": "sha256:74442eb35bcd488a67b5fc995ca1d6f6f341343bb3f8c3a0663cb89e241a908c",
+    "tools": "sha256:38755b7f13c94ff9a37a0eccf4324455d7f05fcddc9c7dfa1b85f3fb8c657687"
+  },
+  "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+  "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+  "sanitization": {
+    "authorization_headers_persisted": false,
+    "backup_payloads_scanned": false,
+    "evidence_policy": "normalized_and_redacted",
+    "key_material_persisted": false,
+    "raw_credentials_persisted": false,
+    "raw_scanner_output_persisted": false,
+    "sanitized": true,
+    "session_tokens_persisted": false,
+    "user_media_scanned": false
+  },
+  "sanitized": true,
+  "scenarios": [
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-03"
+      ],
+      "completed_at": "2026-09-17T11:41:09Z",
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EVIDENCE-SANITIZE"
+      ],
+      "details": {
+        "checks": {
+          "destructive_gate": true,
+          "harness_enabled": true,
+          "qualification_environment": true,
+          "qualification_owner": true,
+          "startup_valid": true,
+          "test_auth_bypass": true
+        },
+        "dangerous_flags_off": true,
+        "sanitized": true,
+        "startup": {
+          "failure_code": null,
+          "valid": true
+        },
+        "status": "PASS"
+      },
+      "evidence_refs": [],
+      "execution": "configuration_posture",
+      "expected_invariant": "Harness default-off and production fail-closed state",
+      "failure_code": null,
+      "observed_evidence": "Dangerous qualification bypasses remain disabled.",
+      "owasp": [
+        "A07",
+        "A01"
+      ],
+      "safety_class": "PASSIVE",
+      "scenario_id": "harness-default-off",
+      "started_at": "2026-09-17T11:41:08Z",
+      "status": "PASS",
+      "stride": [
+        "Spoofing",
+        "Elevation of Privilege"
+      ],
+      "title": "Harness default-off and production fail-closed state"
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-03",
+        "AP-04",
+        "AP-09",
+        "AP-10"
+      ],
+      "completed_at": "2026-09-17T11:41:10Z",
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "details": {
+        "capability_count": 14,
+        "checks": {
+          "fixed_target": true,
+          "no_destructive_capability": true,
+          "no_owner_capability": true,
+          "profile": true,
+          "purpose": true,
+          "session": true
+        },
+        "destructive_capabilities": [],
+        "principal_class": "qualification",
+        "profile": "security-assurance-runner",
+        "sanitized": true,
+        "session_posture": {
+          "checks": {
+            "execution_lease_independent_of_session": true,
+            "profile": true,
+            "purpose": true,
+            "runtime_id": true,
+            "session_admitted": true,
+            "target_scope": true
+          },
+          "ok": true,
+          "profile": "security-assurance-runner",
+          "purpose": "security.assurance",
+          "runtime_bound": true,
+          "session_lifecycle": "admitted_run_is_independent_of_session_expiry",
+          "target_scope": "local_server_host_only"
+        },
+        "status": "PASS",
+        "synthetic_owner": false
+      },
+      "evidence_refs": [],
+      "execution": "authenticated_admission_posture",
+      "expected_invariant": "Synthetic Ed25519 session and capability boundary",
+      "failure_code": null,
+      "observed_evidence": "The signed session remains profile, purpose, runtime, and target bound.",
+      "owasp": [
+        "A07",
+        "A01"
+      ],
+      "safety_class": "SAFE_ACTIVE",
+      "scenario_id": "harness-auth-boundary",
+      "started_at": "2026-09-17T11:41:09Z",
+      "status": "PASS",
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "title": "Synthetic Ed25519 session and capability boundary"
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-07",
+        "AP-09"
+      ],
+      "completed_at": "2026-09-17T11:41:10Z",
+      "controls": [
+        "CTRL-API-CONTROL"
+      ],
+      "details": {
+        "assurance_request": {
+          "authority_not_accepted": true,
+          "body": {
+            "json": true,
+            "keys": []
+          },
+          "marker_not_authorized": true,
+          "route_registered": true,
+          "status_code": 404
+        },
+        "harness_namespace_denied": true,
+        "proof_header_injection": "not_accepted",
+        "route_results": [
+          {
+            "body": {
+              "healthy": true,
+              "json": true,
+              "keys": [
+                "degraded",
+                "health_engine",
+                "healthy",
+                "maintenance",
+                "service",
+                "services",
+                "status",
+                "time",
+                "total",
+                "unavailable",
+                "unhealthy",
+                "unknown",
+                "warning"
+              ],
+              "status": "healthy"
+            },
+            "body_bytes": 1787,
+            "duration_ms": 34,
+            "path": "/health",
+            "status_code": 200,
+            "transport": "loopback"
+          },
+          {
+            "body": {
+              "json": true,
+              "keys": [
+                "gitops_repo",
+                "health_engine",
+                "health_engine_services",
+                "health_engine_source",
+                "health_engine_summary",
+                "live_status",
+                "nats",
+                "status",
+                "vault"
+              ],
+              "status": "ready"
+            },
+            "body_bytes": 4313,
+            "duration_ms": 29,
+            "path": "/ready",
+            "status_code": 200,
+            "transport": "loopback"
+          },
+          {
+            "body": {
+              "healthy": true,
+              "json": true,
+              "keys": [
+                "degraded",
+                "health_engine",
+                "healthy",
+                "maintenance",
+                "service",
+                "services",
+                "status",
+                "time",
+                "total",
+                "unavailable",
+                "unhealthy",
+                "unknown",
+                "warning"
+              ],
+              "status": "healthy"
+            },
+            "body_bytes": 1787,
+            "duration_ms": 16,
+            "path": "/healthz",
+            "status_code": 200,
+            "transport": "loopback"
+          },
+          {
+            "duration_ms": 72,
+            "path": "/api/lite/security/events",
+            "response_bytes": 841,
+            "response_harness_marker_echoed": false,
+            "status_code": 200,
+            "transport": "loopback-stream"
+          },
+          {
+            "body": {
+              "json": false,
+              "oversized": true
+            },
+            "body_bytes": 65537,
+            "duration_ms": 39,
+            "path": "/openapi.json",
+            "status_code": 200,
+            "transport": "loopback"
+          },
+          {
+            "body": {
+              "json": false,
+              "oversized": false
+            },
+            "body_bytes": 1034,
+            "duration_ms": 11,
+            "path": "/docs",
+            "status_code": 200,
+            "transport": "loopback"
+          },
+          {
+            "body": {
+              "json": false,
+              "oversized": false
+            },
+            "body_bytes": 916,
+            "duration_ms": 11,
+            "path": "/redoc",
+            "status_code": 200,
+            "transport": "loopback"
+          },
+          {
+            "body": {
+              "json": true,
+              "keys": []
+            },
+            "body_bytes": 0,
+            "duration_ms": 4,
+            "http_error": true,
+            "path": "/api/lite/harness",
+            "status_code": 404,
+            "transport": "loopback"
+          },
+          {
+            "body": {
+              "json": true,
+              "keys": []
+            },
+            "body_bytes": 0,
+            "duration_ms": 7,
+            "http_error": true,
+            "path": "/api/lite/harness/bootstrap/grants",
+            "status_code": 404,
+            "transport": "loopback"
+          },
+          {
+            "body": {
+              "json": true,
+              "keys": []
+            },
+            "body_bytes": 0,
+            "duration_ms": 5,
+            "http_error": true,
+            "path": "/api/lite/harness/bootstrap/challenge",
+            "status_code": 404,
+            "transport": "loopback"
+          },
+          {
+            "body": {
+              "json": true,
+              "keys": []
+            },
+            "body_bytes": 0,
+            "duration_ms": 5,
+            "http_error": true,
+            "path": "/api/lite/harness/bootstrap/complete",
+            "status_code": 404,
+            "transport": "loopback"
+          },
+          {
+            "body": {
+              "json": true,
+              "keys": []
+            },
+            "body_bytes": 0,
+            "duration_ms": 3,
+            "http_error": true,
+            "path": "/api/lite/harness/challenge",
+            "status_code": 404,
+            "transport": "loopback"
+          },
+          {
+            "body": {
+              "json": true,
+              "keys": []
+            },
+            "body_bytes": 0,
+            "duration_ms": 3,
+            "http_error": true,
+            "path": "/api/lite/harness/session",
+            "status_code": 404,
+            "transport": "loopback"
+          },
+          {
+            "body": {
+              "json": true,
+              "keys": []
+            },
+            "body_bytes": 0,
+            "duration_ms": 5,
+            "http_error": true,
+            "path": "/api/lite/harness/security-assurance/runs",
+            "status_code": 404,
+            "transport": "loopback"
+          }
+        ],
+        "routes_tested": [
+          "/health",
+          "/ready",
+          "/healthz",
+          "/api/lite/security/events",
+          "/openapi.json",
+          "/docs",
+          "/redoc",
+          "/api/lite/harness",
+          "/api/lite/harness/bootstrap/grants",
+          "/api/lite/harness/bootstrap/challenge",
+          "/api/lite/harness/bootstrap/complete",
+          "/api/lite/harness/challenge",
+          "/api/lite/harness/session",
+          "/api/lite/harness/security-assurance/runs",
+          "/ws/events (websocket upgrade)"
+        ],
+        "sanitized": true,
+        "source_strip_contract": true,
+        "status": "PASS",
+        "target_scope": "local_server_host_only",
+        "websocket_result": {
+          "duration_ms": 22,
+          "handshake_accepted": true,
+          "response_bytes": 4096,
+          "response_harness_marker_echoed": false,
+          "response_sha256": "sha256:5cae51209b4844a9b3d503148ed2105f9ba469e3e668df8265e5537d852fc48a",
+          "status_code": 101,
+          "transport": "loopback-websocket"
+        }
+      },
+      "evidence_refs": [],
+      "execution": "fixed_caddy_probe",
+      "expected_invariant": "Caddy never forwards qualification proof into FastAPI authority",
+      "failure_code": null,
+      "observed_evidence": "Forged qualification markers were not accepted through the Caddy proxy.",
+      "owasp": [
+        "A07",
+        "A01",
+        "A05"
+      ],
+      "safety_class": "SAFE_ACTIVE",
+      "scenario_id": "caddy-proof-strip",
+      "started_at": "2026-09-17T11:41:10Z",
+      "status": "PASS",
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "title": "Caddy never forwards qualification proof into FastAPI authority"
+    },
+    {
+      "attack_paths": [
+        "AP-07",
+        "AP-11",
+        "AP-12"
+      ],
+      "completed_at": "2026-09-17T11:41:11Z",
+      "controls": [
+        "CTRL-API-CONTROL"
+      ],
+      "details": {
+        "checks": {
+          "api_health": true,
+          "api_ready": true,
+          "jetstream": true,
+          "nats": "***REDACTED***",
+          "worker_process": true
+        },
+        "pm2_online_is_not_api_ready": true,
+        "sanitized": true,
+        "status": "PASS"
+      },
+      "evidence_refs": [],
+      "execution": "fixed_local_health_probe",
+      "expected_invariant": "API health/readiness and PM2 readiness distinction",
+      "failure_code": null,
+      "observed_evidence": "Qualification admitted only after API health/readiness, NATS, JetStream, and worker checks.",
+      "owasp": [
+        "A05"
+      ],
+      "safety_class": "PASSIVE",
+      "scenario_id": "runtime-readiness",
+      "started_at": "2026-09-17T11:41:10Z",
+      "status": "PASS",
+      "stride": [
+        "Denial of Service",
+        "Information Disclosure"
+      ],
+      "title": "API health/readiness and PM2 readiness distinction"
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-04",
+        "AP-06"
+      ],
+      "completed_at": "2026-09-17T11:41:12Z",
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "details": {
+        "checks": {
+          "arbitrary_command_surface": false,
+          "browser_surface": false,
+          "domain_handler": true,
+          "durable_worker_consumer": true,
+          "fixed_subject": true,
+          "message_bus_connected": true,
+          "message_bus_jetstream": true,
+          "worker_route": true
+        },
+        "execution_path": [
+          "FastAPI admission",
+          "NATS/JetStream",
+          "worker",
+          "registered assurance runner",
+          "sanitized evidence"
+        ],
+        "sanitized": true,
+        "status": "PASS"
+      },
+      "evidence_refs": [],
+      "execution": "worker_execution_receipt",
+      "expected_invariant": "Assurance execution remains FastAPI to NATS to worker owned",
+      "failure_code": null,
+      "observed_evidence": "Assurance execution is routed through the fixed NATS and worker-owned domain path.",
+      "owasp": [
+        "A01",
+        "A08",
+        "A09"
+      ],
+      "safety_class": "PASSIVE",
+      "scenario_id": "control-plane-ownership",
+      "started_at": "2026-09-17T11:41:12Z",
+      "status": "PASS",
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Elevation of Privilege"
+      ],
+      "title": "Assurance execution remains FastAPI to NATS to worker owned"
+    },
+    {
+      "attack_paths": [
+        "AP-05",
+        "AP-06",
+        "AP-08"
+      ],
+      "completed_at": "2026-09-17T11:41:13Z",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE"
+      ],
+      "details": {
+        "keys_redacted": true,
+        "leak_count": 0,
+        "raw_markers_checked": 6,
+        "raw_scanner_output_persisted": false,
+        "sanitized": true,
+        "status": "PASS"
+      },
+      "evidence_refs": [],
+      "execution": "redaction_contract",
+      "expected_invariant": "Assurance evidence contains only normalized sanitized output",
+      "failure_code": null,
+      "observed_evidence": "Secret-shaped evidence fixture values were removed before persistence.",
+      "owasp": [
+        "A02",
+        "A05",
+        "A08",
+        "A09"
+      ],
+      "safety_class": "PASSIVE",
+      "scenario_id": "evidence-redaction",
+      "started_at": "2026-09-17T11:41:12Z",
+      "status": "PASS",
+      "stride": [
+        "Repudiation",
+        "Information Disclosure",
+        "Tampering"
+      ],
+      "title": "Assurance evidence contains only normalized sanitized output"
+    },
+    {
+      "attack_paths": [
+        "AP-04",
+        "AP-05",
+        "AP-06",
+        "AP-08"
+      ],
+      "completed_at": "2026-09-17T11:50:20Z",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "details": {
+        "evidence_ref_count": 15,
+        "finding_count": 1,
+        "run_deadline_exceeded": false,
+        "scanner_status": "PARTIAL"
+      },
+      "evidence_refs": [
+        "security/evidence/security-015550d9d9e84545b0177341814db796/summary.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/lynis-normalized.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-pocketlab-source-trivy.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-pocketlab_source-sbom.cdx.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-runtime-config.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/resource-budget.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-proot-ubuntu-trivy-1.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-proot-ubuntu-trivy-2.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-proot-ubuntu-trivy-3.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-photoprism-trivy.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-photoprism-config-secret.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-photoprism_app_files-sbom.cdx.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/target-backup-metadata.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/trivy-normalized.json",
+        "security/evidence/security-015550d9d9e84545b0177341814db796/coverage-summary.json"
+      ],
+      "execution": "existing_security_projection",
+      "expected_invariant": "Existing Security projection and scanner lifecycle are available",
+      "failure_code": null,
+      "observed_evidence": "The registered assurance runner reused the existing worker-owned Security scanner and evidence lifecycle.",
+      "owasp": [
+        "A05",
+        "A06",
+        "A08",
+        "A09"
+      ],
+      "safety_class": "PASSIVE",
+      "scenario_id": "security-projection",
+      "started_at": "2026-09-17T11:41:13Z",
+      "status": "PARTIAL",
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service",
+        "Information Disclosure"
+      ],
+      "title": "Existing Security projection and scanner lifecycle are available"
+    },
+    {
+      "attack_paths": [
+        "AP-11",
+        "AP-12",
+        "AP-14"
+      ],
+      "completed_at": "2026-09-17T11:50:39Z",
+      "controls": [
+        "CTRL-POLICY-REVISION-LIFECYCLE"
+      ],
+      "details": {
+        "browser_exposed": false,
+        "degraded_reason": "",
+        "loopback_only": true,
+        "ready": true,
+        "sanitized": true,
+        "status": "PASS",
+        "status_value": "ready"
+      },
+      "evidence_refs": [],
+      "execution": "existing_opa_status",
+      "expected_invariant": "OPA loopback readiness and policy revision consistency",
+      "failure_code": null,
+      "observed_evidence": "OPA readiness and loopback policy posture were checked without changing policy state.",
+      "owasp": [
+        "A01",
+        "A08"
+      ],
+      "safety_class": "PASSIVE",
+      "scenario_id": "policy-readiness",
+      "started_at": "2026-09-17T11:50:30Z",
+      "status": "PASS",
+      "stride": [
+        "Tampering",
+        "Denial of Service",
+        "Elevation of Privilege"
+      ],
+      "title": "OPA loopback readiness and policy revision consistency"
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-04",
+        "AP-05",
+        "AP-07"
+      ],
+      "completed_at": "2026-09-17T11:50:51Z",
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS",
+        "CTRL-EVIDENCE-SANITIZE"
+      ],
+      "details": {
+        "checks": {
+          "backend_worker_owned": true,
+          "caddy_strips_harness_headers": true,
+          "evidence_and_media_exclusions": true,
+          "frontend_no_direct_event_bus": true,
+          "frontend_no_shell_execution": true
+        },
+        "fixed_source_markers": {
+          "action_queue": true,
+          "caddy": true,
+          "evidence_policy": true,
+          "worker": true
+        },
+        "runtime_state_traversed": false,
+        "sanitized": true,
+        "status": "PASS",
+        "suspicious_frontend_event_bus_matches": 0,
+        "suspicious_frontend_shell_matches": 0,
+        "tracked_frontend_bytes_read": 2162851,
+        "tracked_frontend_file_count": 233,
+        "user_media_traversed": false
+      },
+      "evidence_refs": [],
+      "execution": "bounded_source_assertions",
+      "expected_invariant": "Canonical source preserves browser, shell, NATS, and user-media boundaries",
+      "failure_code": null,
+      "observed_evidence": "Frontend, Caddy, worker ownership, and exclusion markers were checked from canonical source.",
+      "owasp": [
+        "A01",
+        "A02",
+        "A05",
+        "A08"
+      ],
+      "safety_class": "PASSIVE",
+      "scenario_id": "source-boundaries",
+      "started_at": "2026-09-17T11:50:40Z",
+      "status": "PASS",
+      "stride": [
+        "Tampering",
+        "Information Disclosure",
+        "Elevation of Privilege"
+      ],
+      "title": "Canonical source preserves browser, shell, NATS, and user-media boundaries"
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-03",
+        "AP-04",
+        "AP-05",
+        "AP-06",
+        "AP-07",
+        "AP-08",
+        "AP-09",
+        "AP-10",
+        "AP-11",
+        "AP-12",
+        "AP-13",
+        "AP-14"
+      ],
+      "completed_at": "2026-09-17T11:50:57Z",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE"
+      ],
+      "details": {
+        "attack_paths": [
+          "AP-01",
+          "AP-02",
+          "AP-03",
+          "AP-04",
+          "AP-05",
+          "AP-06",
+          "AP-07",
+          "AP-08",
+          "AP-09",
+          "AP-10",
+          "AP-11",
+          "AP-12",
+          "AP-13",
+          "AP-14"
+        ],
+        "execution_defaults": {
+          "allowed_target": "local_server_host_only",
+          "allowed_target_scope": "local_server_host_only",
+          "concurrency": "exclusive_for_heavy_tools",
+          "cwd": "repository_root",
+          "failure_classification": [
+            "missing",
+            "failed",
+            "timed_out",
+            "output_limited"
+          ],
+          "finding_normalizer": "normalized_sanitized_assurance_finding",
+          "max_output_bytes": 32768,
+          "output_parser": "first_version_line_only",
+          "process_group_cleanup": true,
+          "sanitization_policy": "lite_security_policy.redact_value",
+          "shell": false,
+          "timeout_seconds": 5
+        },
+        "execution_owner": "worker",
+        "faults": [
+          "worker_restart_once",
+          "nats_restart_once",
+          "opa_restart_once",
+          "opa_pause_probe_restore",
+          "nats_pause_probe_restore"
+        ],
+        "owasp_version": "2021",
+        "primary_framework": "STRIDE",
+        "registry_hashes": {
+          "faults": "sha256:6a18652671ed48330c44f94f6d9e53d993c6831ec2f3dbd95f9be8b98ae35820",
+          "scenarios": "sha256:92310371d7c8ed9b2ff686ddb6116b471e3ba3c261988d3a66b65c15c68afbc1",
+          "suites": "sha256:407d1c893f8de7579f0fd3193e262da5b8f67c612bcb9d2c76308c3f36afd164",
+          "threat_model": "sha256:74442eb35bcd488a67b5fc995ca1d6f6f341343bb3f8c3a0663cb89e241a908c",
+          "tools": "sha256:38755b7f13c94ff9a37a0eccf4324455d7f05fcddc9c7dfa1b85f3fb8c657687"
+        },
+        "retry_policy": {
+          "bandit": {
+            "checkpoint_supported": true,
+            "max_attempts": 1,
+            "resume_supported": false,
+            "retry_safe": false
+          },
+          "cosign": {
+            "checkpoint_supported": true,
+            "max_attempts": 1,
+            "resume_supported": false,
+            "retry_safe": true
+          },
+          "gitleaks": {
+            "checkpoint_supported": true,
+            "max_attempts": 1,
+            "resume_supported": false,
+            "retry_safe": false
+          },
+          "grype": {
+            "checkpoint_supported": true,
+            "max_attempts": 1,
+            "resume_supported": false,
+            "retry_safe": true
+          },
+          "lynis": {
+            "checkpoint_supported": true,
+            "max_attempts": 2,
+            "resume_supported": true,
+            "retry_safe": true
+          },
+          "nmap": {
+            "checkpoint_supported": true,
+            "max_attempts": 1,
+            "resume_supported": false,
+            "retry_safe": true
+          },
+          "npm-audit": {
+            "checkpoint_supported": true,
+            "max_attempts": 1,
+            "resume_supported": false,
+            "retry_safe": true
+          },
+          "nuclei": {
+            "checkpoint_supported": true,
+            "max_attempts": 1,
+            "resume_supported": false,
+            "retry_safe": true
+          },
+          "opa": {
+            "checkpoint_supported": true,
+            "max_attempts": 2,
+            "resume_supported": true,
+            "retry_safe": true
+          },
+          "osv-scanner": {
+            "checkpoint_supported": true,
+            "max_attempts": 1,
+            "resume_supported": false,
+            "retry_safe": true
+          },
+          "owasp-zap": {
+            "checkpoint_supported": true,
+            "max_attempts": 1,
+            "resume_supported": false,
+            "retry_safe": false
+          },
+          "pip-audit": {
+            "checkpoint_supported": true,
+            "max_attempts": 1,
+            "resume_supported": false,
+            "retry_safe": true
+          },
+          "pocketlab-security": {
+            "checkpoint_supported": true,
+            "max_attempts": 2,
+            "resume_supported": true,
+            "retry_safe": true
+          },
+          "schemathesis": {
+            "checkpoint_supported": true,
+            "max_attempts": 1,
+            "resume_supported": false,
+            "retry_safe": true
+          },
+          "semgrep": {
+            "checkpoint_supported": true,
+            "max_attempts": 1,
+            "resume_supported": false,
+            "retry_safe": false
+          },
+          "syft": {
+            "checkpoint_supported": true,
+            "max_attempts": 1,
+            "resume_supported": false,
+            "retry_safe": true
+          },
+          "testssl.sh": {
+            "checkpoint_supported": true,
+            "max_attempts": 1,
+            "resume_supported": false,
+            "retry_safe": true
+          },
+          "trivy": {
+            "checkpoint_supported": true,
+            "max_attempts": 2,
+            "resume_supported": true,
+            "retry_safe": true
+          }
+        },
+        "sanitized": true,
+        "scenarios": [
+          "adversarial-negative-auth-probes",
+          "attack-path-inventory",
+          "caddy-proof-strip",
+          "control-plane-ownership",
+          "evidence-redaction",
+          "harness-auth-boundary",
+          "harness-default-off",
+          "policy-readiness",
+          "runtime-readiness",
+          "security-projection",
+          "source-boundaries",
+          "threat-model-integrity"
+        ],
+        "schema_version": "1.0.0",
+        "suites": [
+          "adversarial",
+          "deep",
+          "smoke",
+          "standard"
+        ],
+        "target_scope": "local_server_host_only",
+        "tool_contracts": [
+          {
+            "command_id": "source.bandit_runtime",
+            "execution": "managed_external_tool",
+            "execution_lane": "dev_pc_static",
+            "fixed_argv": [
+              "-r",
+              "pocket-lab-final-structure/runtime",
+              "--format",
+              "json"
+            ],
+            "fixed_target": "repository_runtime_source",
+            "harness_status": "ACTIVE",
+            "id": "bandit",
+            "installation_source": "python_venv_or_pypi_receipt",
+            "max_output_bytes": 524288,
+            "parser": "bandit_json",
+            "resource_class": "medium",
+            "ruleset": "bandit_default_pinned",
+            "sanitizer": "redacted_finding_fields",
+            "suite_membership": [
+              "standard",
+              "deep"
+            ],
+            "template_allowlist": "none",
+            "timeout_seconds": 300,
+            "version_pin": "1.9.4"
+          },
+          {
+            "command_id": "supply_chain.cosign_registered_artifact",
+            "execution": "managed_external_tool",
+            "execution_lane": "dev_pc_static",
+            "fixed_argv": [
+              "verify",
+              "registered_artifact_only"
+            ],
+            "fixed_target": "registered_signed_artifact",
+            "harness_status": "ACTIVE",
+            "id": "cosign",
+            "installation_source": "official_github_release_receipt",
+            "max_output_bytes": 131072,
+            "parser": "cosign_verification_summary",
+            "resource_class": "small",
+            "ruleset": "registered_release_metadata",
+            "sanitizer": "bounded_provenance",
+            "suite_membership": [
+              "standard",
+              "deep"
+            ],
+            "template_allowlist": "none",
+            "timeout_seconds": 120,
+            "version_pin": "3.1.3"
+          },
+          {
+            "command_id": "source.gitleaks_current_tree",
+            "execution": "managed_external_tool",
+            "execution_lane": "dev_pc_static",
+            "fixed_argv": [
+              "detect",
+              "--source",
+              "repository_root",
+              "--no-banner",
+              "--report-format",
+              "json"
+            ],
+            "fixed_target": "repository_current_tree",
+            "harness_status": "ACTIVE",
+            "id": "gitleaks",
+            "installation_source": "official_github_release_receipt",
+            "max_output_bytes": 524288,
+            "parser": "gitleaks_json",
+            "resource_class": "medium",
+            "ruleset": "gitleaks_default_pinned",
+            "sanitizer": "secret_match_metadata_only",
+            "suite_membership": [
+              "smoke",
+              "standard",
+              "deep"
+            ],
+            "template_allowlist": "none",
+            "timeout_seconds": 300,
+            "version_pin": "8.30.1"
+          },
+          {
+            "command_id": "supply_chain.grype_sbom",
+            "execution": "managed_external_tool",
+            "execution_lane": "dev_pc_static",
+            "fixed_argv": [
+              "sbom:managed_syft_output",
+              "-o",
+              "json"
+            ],
+            "fixed_target": "managed_syft_sbom",
+            "harness_status": "ACTIVE",
+            "id": "grype",
+            "installation_source": "official_github_release_receipt",
+            "max_output_bytes": 1048576,
+            "parser": "grype_json",
+            "resource_class": "heavy",
+            "ruleset": "managed_syft_sbom_only",
+            "sanitizer": "redacted_dependency_finding",
+            "suite_membership": [
+              "deep"
+            ],
+            "template_allowlist": "none",
+            "timeout_seconds": 900,
+            "version_pin": "0.116.1"
+          },
+          {
+            "command_id": "security.lynis_profile",
+            "execution": "existing_worker_security_path",
+            "execution_lane": "server_phone_worker",
+            "fixed_argv": [
+              "registered_profile_only"
+            ],
+            "fixed_target": "server_runtime_local",
+            "harness_status": "ACTIVE",
+            "id": "lynis",
+            "installation_source": "existing_pocketlab_security_worker",
+            "max_output_bytes": 262144,
+            "parser": "existing_security_projection",
+            "resource_class": "heavy",
+            "ruleset": "existing_security_registry",
+            "sanitizer": "lite_security_policy.redact_value",
+            "suite_membership": [
+              "smoke",
+              "standard",
+              "deep"
+            ],
+            "template_allowlist": "none",
+            "timeout_seconds": 7200,
+            "version_pin": "runtime-reported"
+          },
+          {
+            "command_id": "runtime.nmap_owned_ports",
+            "execution": "managed_external_tool",
+            "execution_lane": "dev_pc_live_runtime",
+            "fixed_argv": [
+              "-Pn",
+              "-n",
+              "-sT",
+              "-p",
+              "14222,18080,18181,18222,18443",
+              "127.0.0.1"
+            ],
+            "fixed_target": "approved_loopback_listener_set",
+            "harness_status": "ACTIVE",
+            "id": "nmap",
+            "installation_source": "approved_os_package_or_release_receipt",
+            "max_output_bytes": 262144,
+            "parser": "nmap_grepable",
+            "resource_class": "medium",
+            "ruleset": "pocketlab_owned_listener_ports",
+            "sanitizer": "fixed_listener_summary",
+            "suite_membership": [
+              "standard",
+              "deep"
+            ],
+            "template_allowlist": "none",
+            "timeout_seconds": 120,
+            "version_pin": "7.98"
+          },
+          {
+            "command_id": "dependency.npm_audit_offline",
+            "execution": "managed_external_tool",
+            "execution_lane": "dev_pc_static",
+            "fixed_argv": [
+              "audit",
+              "--package-lock-only",
+              "--json",
+              "--offline"
+            ],
+            "fixed_target": "repository_package_lock",
+            "harness_status": "ACTIVE",
+            "id": "npm-audit",
+            "installation_source": "approved_node_toolchain",
+            "max_output_bytes": 524288,
+            "parser": "npm_audit_json",
+            "resource_class": "medium",
+            "ruleset": "package_lock_only",
+            "sanitizer": "redacted_dependency_finding",
+            "suite_membership": [
+              "standard",
+              "deep"
+            ],
+            "template_allowlist": "none",
+            "timeout_seconds": 180,
+            "version_pin": "11.13.0"
+          },
+          {
+            "command_id": "runtime.nuclei_safe_templates",
+            "execution": "managed_external_tool",
+            "execution_lane": "dev_pc_live_runtime",
+            "fixed_argv": [
+              "-templates",
+              "security/assurance/nuclei-safe-templates",
+              "-target",
+              "fixed_api_endpoint",
+              "-c",
+              "1",
+              "-rl",
+              "2"
+            ],
+            "fixed_target": "approved_server_phone_api_tunnel",
+            "harness_status": "ACTIVE",
+            "id": "nuclei",
+            "installation_source": "official_nuclei_release_receipt",
+            "max_output_bytes": 524288,
+            "parser": "nuclei_jsonl",
+            "resource_class": "heavy",
+            "ruleset": "security/assurance/nuclei-safe-templates",
+            "sanitizer": "redacted_http_finding",
+            "suite_membership": [
+              "standard",
+              "deep"
+            ],
+            "template_allowlist": "security/assurance/nuclei-safe-templates",
+            "timeout_seconds": 300,
+            "version_pin": "3.8.0"
+          },
+          {
+            "command_id": "policy.health_revision",
+            "execution": "existing_loopback_policy_service",
+            "execution_lane": "server_phone_worker",
+            "fixed_argv": [
+              "health",
+              "revision",
+              "policy_test"
+            ],
+            "fixed_target": "loopback_opa_service",
+            "harness_status": "ACTIVE",
+            "id": "opa",
+            "installation_source": "existing_loopback_policy_service",
+            "max_output_bytes": 65536,
+            "parser": "opa_status",
+            "resource_class": "small",
+            "ruleset": "active_policy_revision",
+            "sanitizer": "fixed_policy_status",
+            "suite_membership": [
+              "smoke",
+              "standard",
+              "deep",
+              "adversarial"
+            ],
+            "template_allowlist": "none",
+            "timeout_seconds": 30,
+            "version_pin": "runtime-reported"
+          },
+          {
+            "command_id": "dependency.osv_lockfiles",
+            "execution": "managed_external_tool",
+            "execution_lane": "dev_pc_static",
+            "fixed_argv": [
+              "scan",
+              "source",
+              "fixed_dependency_manifests",
+              "--format",
+              "json"
+            ],
+            "fixed_target": "repository_lockfiles",
+            "harness_status": "ACTIVE",
+            "id": "osv-scanner",
+            "installation_source": "official_github_release_receipt",
+            "max_output_bytes": 2097152,
+            "parser": "osv_json",
+            "resource_class": "medium",
+            "ruleset": "repository_lockfiles_only",
+            "sanitizer": "redacted_dependency_finding",
+            "suite_membership": [
+              "standard",
+              "deep"
+            ],
+            "template_allowlist": "none",
+            "timeout_seconds": 300,
+            "version_pin": "2.5.0"
+          },
+          {
+            "command_id": "runtime.zap_api_baseline",
+            "execution": "managed_external_tool",
+            "execution_lane": "dev_pc_live_runtime",
+            "fixed_argv": [
+              "-cmd",
+              "-quickurl",
+              "fixed_api_endpoint",
+              "-quickprogress",
+              "fixed_route_allowlist"
+            ],
+            "fixed_target": "approved_server_phone_api_tunnel",
+            "harness_status": "ACTIVE",
+            "id": "owasp-zap",
+            "installation_source": "official_zap_release_receipt",
+            "max_output_bytes": 1048576,
+            "parser": "zap_json_or_xml",
+            "resource_class": "heavy",
+            "ruleset": "fixed_api_baseline_profile",
+            "sanitizer": "redacted_zap_alert",
+            "suite_membership": [
+              "deep"
+            ],
+            "template_allowlist": "fixed_safe_api_routes",
+            "timeout_seconds": 900,
+            "version_pin": "2.17.0"
+          },
+          {
+            "command_id": "dependency.pip_audit",
+            "execution": "managed_external_tool",
+            "execution_lane": "dev_pc_static",
+            "fixed_argv": [
+              "-r",
+              "pocket-lab-final-structure/runtime/requirements.txt",
+              "--format",
+              "json"
+            ],
+            "fixed_target": "repository_python_requirements",
+            "harness_status": "ACTIVE",
+            "id": "pip-audit",
+            "installation_source": "python_venv_or_pypi_receipt",
+            "max_output_bytes": 524288,
+            "parser": "pip_audit_json",
+            "resource_class": "small",
+            "ruleset": "pinned_requirements_only",
+            "sanitizer": "redacted_dependency_finding",
+            "suite_membership": [
+              "standard",
+              "deep"
+            ],
+            "template_allowlist": "none",
+            "timeout_seconds": 180,
+            "version_pin": "2.10.1"
+          },
+          {
+            "command_id": "security.existing_profile",
+            "execution": "existing_worker_security_path",
+            "execution_lane": "server_phone_worker",
+            "fixed_argv": [
+              "registered_profile_only"
+            ],
+            "fixed_target": "server_runtime_local",
+            "harness_status": "ACTIVE",
+            "id": "pocketlab-security",
+            "installation_source": "existing_pocketlab_security_worker",
+            "max_output_bytes": 262144,
+            "parser": "existing_security_projection",
+            "resource_class": "heavy",
+            "ruleset": "existing_security_registry",
+            "sanitizer": "lite_security_policy.redact_value",
+            "suite_membership": [
+              "smoke",
+              "standard",
+              "deep"
+            ],
+            "template_allowlist": "none",
+            "timeout_seconds": 7200,
+            "version_pin": "runtime-reported"
+          },
+          {
+            "command_id": "runtime.schemathesis_safe_get",
+            "execution": "managed_external_tool",
+            "execution_lane": "dev_pc_live_runtime",
+            "fixed_argv": [
+              "fixed_openapi_schema",
+              "workers=1",
+              "max_examples=20",
+              "get_only"
+            ],
+            "fixed_target": "approved_server_phone_api_tunnel",
+            "harness_status": "ACTIVE",
+            "id": "schemathesis",
+            "installation_source": "approved_parity_python_venv",
+            "max_output_bytes": 524288,
+            "parser": "schemathesis_junit_summary",
+            "resource_class": "heavy",
+            "ruleset": "scripts/test/parity/prepare_schemathesis_schema.py",
+            "sanitizer": "redacted_http_summary",
+            "suite_membership": [
+              "standard",
+              "deep"
+            ],
+            "template_allowlist": "safe_get_routes_only",
+            "timeout_seconds": 600,
+            "version_pin": "4.23.0"
+          },
+          {
+            "command_id": "source.semgrep_boundary_rules",
+            "execution": "managed_external_tool",
+            "execution_lane": "dev_pc_static",
+            "fixed_argv": [
+              "scan",
+              "--config",
+              "security/assurance/semgrep-rules.yml",
+              "--json"
+            ],
+            "fixed_target": "repository_source_boundary",
+            "harness_status": "ACTIVE",
+            "id": "semgrep",
+            "installation_source": "official_pypi_wheelhouse_receipt",
+            "max_output_bytes": 1048576,
+            "parser": "semgrep_json",
+            "resource_class": "heavy",
+            "ruleset": "security/assurance/semgrep-rules.yml",
+            "sanitizer": "redacted_static_finding",
+            "suite_membership": [
+              "standard",
+              "deep"
+            ],
+            "template_allowlist": "none",
+            "timeout_seconds": 600,
+            "version_pin": "1.172.0"
+          },
+          {
+            "command_id": "supply_chain.syft_cyclonedx",
+            "execution": "managed_external_tool",
+            "execution_lane": "dev_pc_static",
+            "fixed_argv": [
+              "dir:repository_root",
+              "-o",
+              "cyclonedx-json:managed_output"
+            ],
+            "fixed_target": "repository_source_excluding_generated_caches",
+            "harness_status": "ACTIVE",
+            "id": "syft",
+            "installation_source": "official_github_release_receipt",
+            "max_output_bytes": 2097152,
+            "parser": "cyclonedx_json",
+            "resource_class": "heavy",
+            "ruleset": "fixed_repository_exclusions",
+            "sanitizer": "redacted_sbom",
+            "suite_membership": [
+              "deep"
+            ],
+            "template_allowlist": "none",
+            "timeout_seconds": 900,
+            "version_pin": "1.50.0"
+          },
+          {
+            "command_id": "runtime.testssl_caddy",
+            "execution": "managed_external_tool",
+            "execution_lane": "dev_pc_live_runtime",
+            "fixed_argv": [
+              "--fast",
+              "--warnings",
+              "batch",
+              "--quiet",
+              "-n",
+              "none",
+              "--ip",
+              "fixed_loopback",
+              "fixed_caddy_identity"
+            ],
+            "fixed_target": "approved_server_phone_caddy_tls_tunnel",
+            "harness_status": "ACTIVE",
+            "id": "testssl.sh",
+            "installation_source": "official_testssl_release_receipt",
+            "max_output_bytes": 524288,
+            "parser": "testssl_text_summary",
+            "resource_class": "medium",
+            "ruleset": "fast_tls_profile",
+            "sanitizer": "redacted_tls_summary",
+            "suite_membership": [
+              "standard",
+              "deep"
+            ],
+            "template_allowlist": "none",
+            "timeout_seconds": 300,
+            "version_pin": "3.2.2"
+          },
+          {
+            "command_id": "security.trivy_profile",
+            "execution": "existing_worker_security_path",
+            "execution_lane": "server_phone_worker",
+            "fixed_argv": [
+              "registered_profile_only"
+            ],
+            "fixed_target": "server_runtime_local",
+            "harness_status": "ACTIVE",
+            "id": "trivy",
+            "installation_source": "existing_pocketlab_security_worker",
+            "max_output_bytes": 262144,
+            "parser": "existing_security_projection",
+            "resource_class": "heavy",
+            "ruleset": "existing_security_registry",
+            "sanitizer": "lite_security_policy.redact_value",
+            "suite_membership": [
+              "smoke",
+              "standard",
+              "deep"
+            ],
+            "template_allowlist": "none",
+            "timeout_seconds": 7200,
+            "version_pin": "runtime-reported"
+          }
+        ],
+        "tools": [
+          "bandit",
+          "cosign",
+          "gitleaks",
+          "grype",
+          "lynis",
+          "nmap",
+          "npm-audit",
+          "nuclei",
+          "opa",
+          "osv-scanner",
+          "owasp-zap",
+          "pip-audit",
+          "pocketlab-security",
+          "schemathesis",
+          "semgrep",
+          "syft",
+          "testssl.sh",
+          "trivy"
+        ]
+      },
+      "evidence_refs": [],
+      "execution": "canonical_threat_model_check",
+      "expected_invariant": "Current canonical threat model is complete and executable statuses are explicit",
+      "failure_code": null,
+      "observed_evidence": "The canonical STRIDE model and assurance registries are complete for all current attack paths.",
+      "owasp": [
+        "A08",
+        "A09"
+      ],
+      "safety_class": "PASSIVE",
+      "scenario_id": "threat-model-integrity",
+      "started_at": "2026-09-17T11:50:53Z",
+      "status": "PASS",
+      "stride": [
+        "Tampering",
+        "Repudiation"
+      ],
+      "title": "Current canonical threat model is complete and executable statuses are explicit"
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-03",
+        "AP-04",
+        "AP-05",
+        "AP-06",
+        "AP-07",
+        "AP-08",
+        "AP-09",
+        "AP-10",
+        "AP-11",
+        "AP-12",
+        "AP-13",
+        "AP-14"
+      ],
+      "completed_at": "2026-09-17T11:50:59Z",
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE"
+      ],
+      "details": {
+        "all_current_paths_classified": true,
+        "classification_counts": {
+          "EXECUTABLE_NOW": 2,
+          "HUMAN_REVIEW_REQUIRED": 4,
+          "PARTIALLY_EXECUTABLE": 4,
+          "STATIC_EVIDENCE_ONLY": 4
+        }
+      },
+      "evidence_refs": [],
+      "execution": "attack_path_inventory",
+      "expected_invariant": "Every current AP path has a bounded execution classification",
+      "failure_code": null,
+      "observed_evidence": "Every current AP-* entry has an explicit execution classification; human-review and static-only paths remain deferred.",
+      "owasp": [
+        "A01",
+        "A02",
+        "A07",
+        "A08",
+        "A09"
+      ],
+      "safety_class": "PASSIVE",
+      "scenario_id": "attack-path-inventory",
+      "started_at": "2026-09-17T11:50:58Z",
+      "status": "PASS",
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Repudiation",
+        "Information Disclosure",
+        "Denial of Service",
+        "Elevation of Privilege"
+      ],
+      "title": "Every current AP path has a bounded execution classification"
+    }
+  ],
+  "schema_version": "1.1.0",
+  "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "info": 0,
+    "low": 1,
+    "medium": 0
+  },
+  "source_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+  "stride": {
+    "Denial of Service": {
+      "BLOCKED": 0,
+      "FAIL": 0,
+      "PARTIAL": 1,
+      "PASS": 3
+    },
+    "Elevation of Privilege": {
+      "BLOCKED": 0,
+      "FAIL": 0,
+      "PARTIAL": 0,
+      "PASS": 7
+    },
+    "Information Disclosure": {
+      "BLOCKED": 0,
+      "FAIL": 0,
+      "PARTIAL": 1,
+      "PASS": 4
+    },
+    "Repudiation": {
+      "BLOCKED": 0,
+      "FAIL": 0,
+      "PARTIAL": 1,
+      "PASS": 4
+    },
+    "Spoofing": {
+      "BLOCKED": 0,
+      "FAIL": 0,
+      "PARTIAL": 0,
+      "PASS": 4
+    },
+    "Tampering": {
+      "BLOCKED": 0,
+      "FAIL": 0,
+      "PARTIAL": 1,
+      "PASS": 8
+    }
+  },
+  "suite": "deep",
+  "suite_results": {
+    "adversarial": "NOT_RUN",
+    "deep": "PARTIAL",
+    "smoke": "NOT_RUN",
+    "standard": "NOT_RUN"
+  },
+  "target_scope": "local_server_host_only",
+  "tools": [
+    {
+      "command_id": "security.existing_profile",
+      "duration_ms": 536213,
+      "execution_lane": "server_phone_worker",
+      "finding_count": 0,
+      "fixed_target": "server_runtime_local",
+      "harness_status": "ACTIVE",
+      "native_status": "VERIFIED native when existing worker path executes",
+      "observed_version": null,
+      "purpose": "Existing worker-owned Quick/Full Security lifecycle, scanner fusion, cache, SBOM, and sanitized evidence.",
+      "registered_version_policy": "runtime-reported",
+      "registered_version_source": "repository_revision",
+      "resource_class": "heavy",
+      "status": "PARTIAL",
+      "tool_id": "pocketlab-security",
+      "version": null,
+      "version_command": "existing_security_tool_result",
+      "version_state": "RUNTIME_VERSION_NOT_CAPTURED"
+    },
+    {
+      "command_id": "security.trivy_profile",
+      "duration_ms": null,
+      "execution_lane": "server_phone_worker",
+      "failure_code": null,
+      "finding_count": 1,
+      "fixed_target": "server_runtime_local",
+      "harness_status": "ACTIVE",
+      "native_status": "VERIFIED native when discovered by existing Security path",
+      "observed_version": "dev",
+      "purpose": "Existing bounded vulnerability, misconfiguration, secret-mode, and SBOM execution through Security.",
+      "registered_version_policy": "runtime-reported",
+      "registered_version_source": "registered_security_tool_result",
+      "resource_class": "heavy",
+      "status": "PASS",
+      "tool_id": "trivy",
+      "version": "dev",
+      "version_command": "existing_security_tool_result",
+      "version_state": "RUNTIME_REPORTED"
+    },
+    {
+      "command_id": "security.lynis_profile",
+      "duration_ms": null,
+      "execution_lane": "server_phone_worker",
+      "failure_code": null,
+      "finding_count": 0,
+      "fixed_target": "server_runtime_local",
+      "harness_status": "ACTIVE",
+      "native_status": "VERIFIED native when discovered by existing Security path",
+      "observed_version": "3.1.6",
+      "purpose": "Existing bounded host posture checks through the worker-owned Security lifecycle.",
+      "registered_version_policy": "runtime-reported",
+      "registered_version_source": "registered_security_tool_result",
+      "resource_class": "heavy",
+      "status": "PASS",
+      "tool_id": "lynis",
+      "version": "3.1.6",
+      "version_command": "existing_security_tool_result",
+      "version_state": "RUNTIME_REPORTED"
+    },
+    {
+      "command_id": "source.bandit_runtime",
+      "execution_lane": "dev_pc_static",
+      "failure_code": "external_lane_owned_by_qualification_client",
+      "finding_count": 0,
+      "fixed_target": "repository_runtime_source",
+      "harness_status": "ACTIVE",
+      "native_status": "VERIFIED DEV-PC static",
+      "observed_version": null,
+      "registered_version_policy": "1.9.4",
+      "registered_version_source": "qualified_tool_receipt",
+      "resource_class": "medium",
+      "status": "NOT_RUN",
+      "tool_id": "bandit",
+      "version_command": "fixed_binary_version_probe",
+      "version_state": "NOT_OBSERVED"
+    },
+    {
+      "command_id": "source.gitleaks_current_tree",
+      "execution_lane": "dev_pc_static",
+      "failure_code": "external_lane_owned_by_qualification_client",
+      "finding_count": 0,
+      "fixed_target": "repository_current_tree",
+      "harness_status": "ACTIVE",
+      "native_status": "VERIFIED DEV-PC static",
+      "observed_version": null,
+      "registered_version_policy": "8.30.1",
+      "registered_version_source": "qualified_tool_receipt",
+      "resource_class": "medium",
+      "status": "NOT_RUN",
+      "tool_id": "gitleaks",
+      "version_command": "fixed_binary_version_probe",
+      "version_state": "NOT_OBSERVED"
+    },
+    {
+      "command_id": "dependency.pip_audit",
+      "execution_lane": "dev_pc_static",
+      "failure_code": "external_lane_owned_by_qualification_client",
+      "finding_count": 0,
+      "fixed_target": "repository_python_requirements",
+      "harness_status": "ACTIVE",
+      "native_status": "VERIFIED DEV-PC static",
+      "observed_version": null,
+      "registered_version_policy": "2.10.1",
+      "registered_version_source": "qualified_tool_receipt",
+      "resource_class": "small",
+      "status": "NOT_RUN",
+      "tool_id": "pip-audit",
+      "version_command": "fixed_binary_version_probe",
+      "version_state": "NOT_OBSERVED"
+    },
+    {
+      "command_id": "dependency.npm_audit_offline",
+      "execution_lane": "dev_pc_static",
+      "failure_code": "external_lane_owned_by_qualification_client",
+      "finding_count": 0,
+      "fixed_target": "repository_package_lock",
+      "harness_status": "ACTIVE",
+      "native_status": "VERIFIED DEV-PC static with the approved Node 24.16.0 toolchain",
+      "observed_version": null,
+      "registered_version_policy": "11.13.0",
+      "registered_version_source": "qualified_tool_receipt",
+      "resource_class": "medium",
+      "status": "NOT_RUN",
+      "tool_id": "npm-audit",
+      "version_command": "fixed_binary_version_probe",
+      "version_state": "NOT_OBSERVED"
+    },
+    {
+      "command_id": "policy.health_revision",
+      "execution_lane": "server_phone_worker",
+      "failure_code": null,
+      "fixed_target": "loopback_opa_service",
+      "harness_status": "ACTIVE",
+      "metadata": {
+        "browser_exposed": false,
+        "loopback_only": true
+      },
+      "native_status": "VERIFIED native when policy service is ready",
+      "observed_version": null,
+      "registered_version_policy": "runtime-reported",
+      "registered_version_source": "policy_status",
+      "resource_class": "small",
+      "status": "PASS",
+      "tool_id": "opa",
+      "version": null,
+      "version_command": "policy_status",
+      "version_state": "RUNTIME_VERSION_NOT_CAPTURED"
+    },
+    {
+      "command_id": "runtime.schemathesis_safe_get",
+      "execution_lane": "dev_pc_live_runtime",
+      "failure_code": "external_lane_owned_by_qualification_client",
+      "finding_count": 0,
+      "fixed_target": "approved_server_phone_api_tunnel",
+      "harness_status": "ACTIVE",
+      "native_status": "VERIFIED DEV-PC live-runtime",
+      "observed_version": null,
+      "registered_version_policy": "4.23.0",
+      "registered_version_source": "qualified_tool_receipt",
+      "resource_class": "heavy",
+      "status": "NOT_RUN",
+      "tool_id": "schemathesis",
+      "version_command": "fixed_binary_version_probe",
+      "version_state": "NOT_OBSERVED"
+    },
+    {
+      "command_id": "supply_chain.cosign_registered_artifact",
+      "execution_lane": "dev_pc_static",
+      "failure_code": "external_lane_owned_by_qualification_client",
+      "finding_count": 0,
+      "fixed_target": "registered_signed_artifact",
+      "harness_status": "ACTIVE",
+      "native_status": "VERIFIED DEV-PC static when a signed artifact is registered",
+      "observed_version": null,
+      "registered_version_policy": "3.1.3",
+      "registered_version_source": "qualified_tool_receipt",
+      "resource_class": "small",
+      "status": "NOT_RUN",
+      "tool_id": "cosign",
+      "version_command": "fixed_binary_version_probe",
+      "version_state": "NOT_OBSERVED"
+    },
+    {
+      "command_id": "source.semgrep_boundary_rules",
+      "execution_lane": "dev_pc_static",
+      "failure_code": "external_lane_owned_by_qualification_client",
+      "finding_count": 0,
+      "fixed_target": "repository_source_boundary",
+      "harness_status": "ACTIVE",
+      "native_status": "VERIFIED DEV-PC static",
+      "observed_version": null,
+      "registered_version_policy": "1.172.0",
+      "registered_version_source": "qualified_tool_receipt",
+      "resource_class": "heavy",
+      "status": "NOT_RUN",
+      "tool_id": "semgrep",
+      "version_command": "fixed_binary_version_probe",
+      "version_state": "NOT_OBSERVED"
+    },
+    {
+      "command_id": "dependency.osv_lockfiles",
+      "execution_lane": "dev_pc_static",
+      "failure_code": "external_lane_owned_by_qualification_client",
+      "finding_count": 0,
+      "fixed_target": "repository_lockfiles",
+      "harness_status": "ACTIVE",
+      "native_status": "VERIFIED DEV-PC static",
+      "observed_version": null,
+      "registered_version_policy": "2.5.0",
+      "registered_version_source": "qualified_tool_receipt",
+      "resource_class": "medium",
+      "status": "NOT_RUN",
+      "tool_id": "osv-scanner",
+      "version_command": "fixed_binary_version_probe",
+      "version_state": "NOT_OBSERVED"
+    },
+    {
+      "command_id": "supply_chain.syft_cyclonedx",
+      "execution_lane": "dev_pc_static",
+      "failure_code": "external_lane_owned_by_qualification_client",
+      "finding_count": 0,
+      "fixed_target": "repository_source_excluding_generated_caches",
+      "harness_status": "ACTIVE",
+      "native_status": "VERIFIED DEV-PC static",
+      "observed_version": null,
+      "registered_version_policy": "1.50.0",
+      "registered_version_source": "qualified_tool_receipt",
+      "resource_class": "heavy",
+      "status": "NOT_RUN",
+      "tool_id": "syft",
+      "version_command": "fixed_binary_version_probe",
+      "version_state": "NOT_OBSERVED"
+    },
+    {
+      "command_id": "supply_chain.grype_sbom",
+      "execution_lane": "dev_pc_static",
+      "failure_code": "external_lane_owned_by_qualification_client",
+      "finding_count": 0,
+      "fixed_target": "managed_syft_sbom",
+      "harness_status": "ACTIVE",
+      "native_status": "VERIFIED DEV-PC static",
+      "observed_version": null,
+      "registered_version_policy": "0.116.1",
+      "registered_version_source": "qualified_tool_receipt",
+      "resource_class": "heavy",
+      "status": "NOT_RUN",
+      "tool_id": "grype",
+      "version_command": "fixed_binary_version_probe",
+      "version_state": "NOT_OBSERVED"
+    },
+    {
+      "command_id": "runtime.testssl_caddy",
+      "execution_lane": "dev_pc_live_runtime",
+      "failure_code": "external_lane_owned_by_qualification_client",
+      "finding_count": 0,
+      "fixed_target": "approved_server_phone_caddy_tls_tunnel",
+      "harness_status": "ACTIVE",
+      "native_status": "VERIFIED DEV-PC live-runtime",
+      "observed_version": null,
+      "registered_version_policy": "3.2.2",
+      "registered_version_source": "qualified_tool_receipt",
+      "resource_class": "medium",
+      "status": "NOT_RUN",
+      "tool_id": "testssl.sh",
+      "version_command": "fixed_binary_version_probe",
+      "version_state": "NOT_OBSERVED"
+    },
+    {
+      "command_id": "runtime.nuclei_safe_templates",
+      "execution_lane": "dev_pc_live_runtime",
+      "failure_code": "external_lane_owned_by_qualification_client",
+      "finding_count": 0,
+      "fixed_target": "approved_server_phone_api_tunnel",
+      "harness_status": "ACTIVE",
+      "native_status": "VERIFIED DEV-PC live-runtime",
+      "observed_version": null,
+      "registered_version_policy": "3.8.0",
+      "registered_version_source": "qualified_tool_receipt",
+      "resource_class": "heavy",
+      "status": "NOT_RUN",
+      "tool_id": "nuclei",
+      "version_command": "fixed_binary_version_probe",
+      "version_state": "NOT_OBSERVED"
+    },
+    {
+      "command_id": "runtime.nmap_owned_ports",
+      "execution_lane": "dev_pc_live_runtime",
+      "failure_code": "external_lane_owned_by_qualification_client",
+      "finding_count": 0,
+      "fixed_target": "approved_loopback_listener_set",
+      "harness_status": "ACTIVE",
+      "native_status": "VERIFIED DEV-PC live-runtime; native only when independently discovered",
+      "observed_version": null,
+      "registered_version_policy": "7.98",
+      "registered_version_source": "qualified_tool_receipt",
+      "resource_class": "medium",
+      "status": "NOT_RUN",
+      "tool_id": "nmap",
+      "version_command": "fixed_binary_version_probe",
+      "version_state": "NOT_OBSERVED"
+    },
+    {
+      "command_id": "runtime.zap_api_baseline",
+      "execution_lane": "dev_pc_live_runtime",
+      "failure_code": "external_lane_owned_by_qualification_client",
+      "finding_count": 0,
+      "fixed_target": "approved_server_phone_api_tunnel",
+      "harness_status": "ACTIVE",
+      "native_status": "VERIFIED DEV-PC live-runtime",
+      "observed_version": null,
+      "registered_version_policy": "2.17.0",
+      "registered_version_source": "qualified_tool_receipt",
+      "resource_class": "heavy",
+      "status": "NOT_RUN",
+      "tool_id": "owasp-zap",
+      "version_command": "fixed_binary_version_probe",
+      "version_state": "NOT_OBSERVED"
+    }
+  ]
+}

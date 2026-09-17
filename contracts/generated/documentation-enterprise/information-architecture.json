@@ -4650,7 +4650,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 473,
+  "page_count": 477,
   "page_types": [
     "overview",
     "guide",
@@ -15868,6 +15868,98 @@
     },
     {
       "additional_audiences": [],
+      "authority": "derived",
+      "canonical_source_references": [
+        "derived-generator-not-specialized"
+      ],
+      "confidence": "generated",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": true,
+      "id": "page:generated/security-assurance/reports/security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "evidence",
+      "path": "generated/security-assurance/reports/security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "derived-generator-not-specialized",
+      "title": "Security Assurance Report — assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+      "url": "/generated/security-assurance/reports/security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "derived",
+      "canonical_source_references": [
+        "derived-generator-not-specialized"
+      ],
+      "confidence": "generated",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": true,
+      "id": "page:generated/security-assurance/reports/security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "evidence",
+      "path": "generated/security-assurance/reports/security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "derived-generator-not-specialized",
+      "title": "Security Assurance Report — assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+      "url": "/generated/security-assurance/reports/security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "derived",
+      "canonical_source_references": [
+        "derived-generator-not-specialized"
+      ],
+      "confidence": "generated",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": true,
+      "id": "page:generated/security-assurance/reports/security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "evidence",
+      "path": "generated/security-assurance/reports/security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "derived-generator-not-specialized",
+      "title": "Security Assurance Report — assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+      "url": "/generated/security-assurance/reports/security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "derived",
+      "canonical_source_references": [
+        "derived-generator-not-specialized"
+      ],
+      "confidence": "generated",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": true,
+      "id": "page:generated/security-assurance/reports/security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "evidence",
+      "path": "generated/security-assurance/reports/security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "derived-generator-not-specialized",
+      "title": "Security Assurance Report — assurance-3d7968589ce447f18454d1caf69a10e3",
+      "url": "/generated/security-assurance/reports/security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3/"
+    },
+    {
+      "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
         "getting-started/android-termux.md"
@@ -17175,7 +17267,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "440f98fae191ed509b7ff93940caf174c9d0a185e93745aacbc49c7c811f607e",
+  "source_fingerprint": "682c03e5362da4ad1e4abba41cbf0ce7bbb7a0335214bce8c703efead3a737e8",
   "top_level": [
     "start-here",
     "use",

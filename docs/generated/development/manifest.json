@@ -35,7 +35,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "3c52bd7f04af7afe5eae663a31115b43f4e9ebaf1ec612aae935a5dc1aa17eab",
+  "source_fingerprint": "98bb3dab003839cbf88b7e2155ff4cdbc7920e61d5841fd969f9f70874f3fcbf",
   "source_fingerprints": {
     ".github/workflows/docs-security-supply-chain.yml": "b5ce9661a2c0673d9e9c2a3be9b19e958b4046543816728556a581a2f338fa27",
     ".github/workflows/lite-quality.yml": "d44ad5b2dfc481c7a7e4d02c131cb09b3afe47fb7db94833bc541525393b1a9f",
@@ -65,7 +65,7 @@
     "scripts/dev/lite/run-gate.sh": "8c0ee4015a9f604da6c7715313ea287674e07a9ad59c8b2419129ad63bba3198",
     "scripts/dev/lite/run-playwright-mocked.sh": "9293ca6becf155ebefd5348901302e694eae8cca478ed0012b91e3a0dc68fd16",
     "scripts/dev/lite/security_assurance.py": "b6e72006c0b522ac73054e8d1296ed96edab95c3057d4ddf27e03f5c0f4af079",
-    "scripts/dev/lite/security_assurance_report.py": "2b4a149030bf0bea98689c0a861cac2f280f370f8dd92b85f747508a3771c72b",
+    "scripts/dev/lite/security_assurance_report.py": "05f28a87607ca4bafad133bcac995082f47569c39d333211373d26e2a015f714",
     "scripts/dev/lite/security_assurance_toolchain.py": "2d040d5c9d10c4ea13a999d3f8ccc0673a02b988b043a269be055dffcf99d6ef",
     "scripts/dev/lite/serve-docs.sh": "d3026ce84c5d83efc8b3e9e39e175961587a961800f09a1eaeb738b6fa4e5927",
     "scripts/dev/lite/setup-architecture-icons.sh": "0d81b57af59460b24f9b879c02c1860a97a8ef7db8a8f24c446506efa9fac6bf",
