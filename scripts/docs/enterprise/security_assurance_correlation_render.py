@@ -93,7 +93,7 @@ def correlation_page(m):
     for a in m.get('attack_paths') or []:
         out += [f'<a id="{anchor(a["id"])}"></a>',f'### {a["id"]} — {a.get("name")}','',f'**Trust boundaries:** {", ".join(a.get("boundaries") or []) or "—"}  ',f'**Controls:** {", ".join(a.get("controls") or []) or "—"}  ',f'**Scenarios:** {", ".join(a.get("scenarios") or []) or "—"}  ',f'**STRIDE:** {", ".join(a.get("stride") or []) or "—"}','']
         ev=a.get('latest_evidence') or []; out += [table(['Suite','Runtime SHA','Automation class','Automated result','Qualification','Human decision','Findings','Report'],[(e.get('suite'),str(e.get('runtime_sha') or '')[:10],e.get('automation_classification'),e.get('automated_result'),e.get('qualification_status'),e.get('human_assurance_decision'),', '.join(e.get('findings') or []) or 'none',f'[open](reports/{e.get("report_id")}.md)') for e in ev]) if ev else 'No published assurance evidence currently correlates to this path.','',f'[Open {a["id"]} in Security Atlas](../../threat-model/catalog.md?atlas-attack-path={a["id"]}#security-atlas)','']
-    out += ['## Controls','',table(['Control','Boundaries','APs','Scenarios','Model posture'],[(c.get('id'),c.get('boundaries'),c.get('attack_paths'),c.get('scenarios'),c.get('model_status')) for c in m.get('controls') or [])]
+    out += ['## Controls','',table(['Control','Boundaries','APs','Scenarios','Model posture'],[(c.get('id'),c.get('boundaries'),c.get('attack_paths'),c.get('scenarios'),c.get('model_status')) for c in m.get('controls') or []])]
     return fm('Model ↔ Assurance Evidence','AP, control, scenario, qualification, SHA, finding, and human-review correlation.')+'\n'.join(out)+'\n'
 
 def scenario_model(m):
