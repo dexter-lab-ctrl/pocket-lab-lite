@@ -51,6 +51,15 @@ def test_required_walkthroughs(tmp_path,ap):
 def test_exact_sha_per_suite_and_partial_preserved(tmp_path):
     _,m=projection(tmp_path); assert m['latest_suite_set_same_runtime_sha']; assert m['latest_by_suite']['deep']['status']=='PARTIAL'
 
+def test_empty_report_set_is_not_same_runtime_sha(tmp_path):
+    root=fixture(tmp_path)
+    for path in (root/c.REPORTS).glob('*.json'):
+        path.unlink()
+    _,m=c.build_projection(root)
+    assert m['published_report_count']==0
+    assert m['latest_suite_runtime_shas']==[]
+    assert m['latest_suite_set_same_runtime_sha'] is False
+
 def test_human_review_never_promoted_by_automation(tmp_path):
     _,m=projection(tmp_path); e=m['attack_paths'][0]['latest_evidence'][0]; assert e['automated_result']=='PASS' and e['human_assurance_decision']=='HUMAN_REVIEW_REQUIRED'
 
