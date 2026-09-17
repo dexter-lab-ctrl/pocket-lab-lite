@@ -13495,6 +13495,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/docs/test_security_assurance_report_readability.py",
+      "name": "tests/docs/test_security_assurance_report_readability.py",
+      "source_refs": [
+        "tests/docs/test_security_assurance_report_readability.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/docs/test_supply_chain_runner_hardening.py",
       "name": "tests/docs/test_supply_chain_runner_hardening.py",
       "source_refs": [
@@ -27717,6 +27728,20 @@
       "id": "rel:3d247749c535101c",
       "source": "reason:policy_activation_pending",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_security_assurance_report_readability.py"
+      ],
+      "id": "rel:3d2b71e099f3b45d",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_security_assurance_report_readability.py",
       "type": "verified_by"
     },
     {

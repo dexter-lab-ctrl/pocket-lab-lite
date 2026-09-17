@@ -44622,7 +44622,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "d4aa20ac97b514d88bff3a4d9e8e41ba5fb9582975e0546240ad3a790ab4c175",
-        "documentation": "a41d61a77f27b7204566a68587b54c0a5ef80f24e5e2ab133acba8296e534c43",
+        "documentation": "6dfc9d22f1d8df0c543ce0e833ed77b4a6b82537be9da68b14d26cf889be9299",
         "openapi": "73df089dcb595eacedd99de1797a42e2eedbe4df044eebb8a6fc323fd9c2d1c4",
         "operational_health": "d140668f25f52ff0dd417d70ff7b3661c5f703194828e53d43fbbc16798ed1e2"
       },
@@ -114503,5 +114503,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "0dd4bda226507694dae4abc14d4df9899f840f99f54991f61f8e19e3217c0874"
+  "source_fingerprint": "452c56d751fa760d03573c49ad868c708e91d878e6173865acec86adcadd40b6"
 }

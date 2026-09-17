@@ -27888,6 +27888,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/test_security_assurance_report_readability.py",
+      "name": "tests/docs/test_security_assurance_report_readability.py",
+      "source_refs": [
+        "tests/docs/test_security_assurance_report_readability.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/docs/test_supply_chain_runner_hardening.py",
       "name": "tests/docs/test_supply_chain_runner_hardening.py",
       "source_refs": [
@@ -31370,6 +31380,7 @@
         "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_security_assurance_playbooks.py",
         "test:tests/docs/test_security_assurance_report.py",
+        "test:tests/docs/test_security_assurance_report_readability.py",
         "test:tests/docs/test_supply_chain_runner_hardening.py",
         "test:tests/docs/test_threat_model_atlas.py",
         "test:tests/docs/test_threat_model_boundary_ux_polish.py",
@@ -32723,6 +32734,7 @@
         "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_security_assurance_playbooks.py",
         "test:tests/docs/test_security_assurance_report.py",
+        "test:tests/docs/test_security_assurance_report_readability.py",
         "test:tests/docs/test_supply_chain_runner_hardening.py",
         "test:tests/docs/test_threat_model_atlas.py",
         "test:tests/docs/test_threat_model_boundary_ux_polish.py",
@@ -47726,6 +47738,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/docs/test_security_assurance_report_readability.py": [
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/docs/test_supply_chain_runner_hardening.py": [
         {
           "source": "reason:disabled",
@@ -59107,6 +59125,10 @@
         },
         {
           "target": "test:tests/docs/test_security_assurance_report.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_security_assurance_report_readability.py",
           "type": "verified_by"
         },
         {
@@ -73460,6 +73482,15 @@
       "id": "rel:3d247749c535101c",
       "source": "reason:policy_activation_pending",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_security_assurance_report_readability.py"
+      ],
+      "id": "rel:3d2b71e099f3b45d",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_security_assurance_report_readability.py",
       "type": "verified_by"
     },
     {
@@ -98150,9 +98181,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "9aa8d50ba03525edeaa375bd86ce0f2482d5bc0b247354039a7ccf7795ca3910",
+  "source_fingerprint": "6e9faa901106e6fd54fe83b09d79ca16f00e596f973ec6e31029b243e43fc521",
   "statistics": {
-    "entity_count": 1272,
+    "entity_count": 1273,
     "entity_type_counts": {
       "adr": 6,
       "api": 218,
@@ -98169,14 +98200,14 @@
       "runtime-topology": 9,
       "subject": 210,
       "table": 78,
-      "test": 228,
+      "test": 229,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3630,
-    "source_count": 265
+    "relation_count": 3631,
+    "source_count": 266
   }
 }
