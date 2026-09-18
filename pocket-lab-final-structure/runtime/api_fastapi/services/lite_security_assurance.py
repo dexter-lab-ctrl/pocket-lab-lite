@@ -109,19 +109,30 @@ ACTIVE_TOOLS_BY_SUITE = {
     "adversarial": (),
 }
 FIXED_VERSION_ARGS = {
-    "bandit": ("--version",),
-    "gitleaks": ("version",),
-    "pip-audit": ("--version",),
-    "npm-audit": ("--version",),
-    "cosign": ("version",),
-    "semgrep": ("--version",),
-    "osv-scanner": ("--version",),
-    "syft": ("version",),
-    "grype": ("version",),
-    "testssl.sh": ("--version",),
-    "nuclei": ("-version",),
-    "nmap": ("--version",),
-    "owasp-zap": ("--version",),
+    'bandit': ('--version',),
+    'gitleaks': ('version',),
+    'pip-audit': ('--version',),
+    'npm-audit': ('--version',),
+    'cosign': ('version',),
+    'semgrep': ('--version',),
+    'osv-scanner': ('--version',),
+    'syft': ('version',),
+    'grype': ('version',),
+    'testssl.sh': ('--version',),
+    'nuclei': ('-version',),
+    'nmap': ('--version',),
+    'owasp-zap': ('--version',),
+    'playwright': ('--version',),
+    'mitmdump': ('--version',),
+    'hurl': ('--version',),
+    'k6': ('version',),
+    'websocat': ('--version',),
+    'katana': ('-version',),
+    'httpx': ('-version',),
+    'tlsx': ('-version',),
+    'tshark': ('--version',),
+    'ffuf': ('-V',),
+    'nats-cli': ('--version',),
 }
 FIXED_BINARY_NAMES = {"npm-audit": "npm", "cosign": "cosign"}
 TOOL_EXECUTION_LANES = frozenset({
@@ -146,6 +157,8 @@ TOOL_TARGETS = frozenset({
     "managed_syft_sbom",
     "approved_server_phone_caddy_tls_tunnel",
     "approved_loopback_listener_set",
+    "fixed_server_phone_runtime_tunnels",
+    "fixed_caddy_browser_runtime",
 })
 TOOL_COMMAND_RE = re.compile(r"^[a-z][a-z0-9._-]{2,79}$")
 TOOL_ARG_FORBIDDEN_RE = re.compile(r"[\x00\r\n;|&$`()<>]")
@@ -446,8 +459,16 @@ def validate_registries() -> dict[str, Any]:
         if not isinstance(required, list) or any(str(value) not in profile_caps for value in required):
             raise AssuranceRegistryError("assurance_registry_invalid", "An assurance suite requests an unregistered capability.", status_code=503)
         refs = item.get("scenarios") or []
-        if not isinstance(refs, list):
+        external_refs = item.get("external_scenarios") or []
+        external_lane = str(item.get("external_execution_lane") or "")
+        if not isinstance(refs, list) or not isinstance(external_refs, list):
             raise AssuranceRegistryError("assurance_registry_invalid", "An assurance suite has invalid scenarios.", status_code=503)
+        if external_refs and external_lane != "dev_pc_live_runtime":
+            raise AssuranceRegistryError(
+                "assurance_registry_invalid",
+                "External assurance scenarios must use the fixed DEV-PC live-runtime lane.",
+                status_code=503,
+            )
         suite_map[identifier] = item
     scenario_map: dict[str, Mapping[str, Any]] = {}
     paths = _threat_paths(threat)
@@ -473,6 +494,29 @@ def validate_registries() -> dict[str, Any]:
             ref = str(scenario).casefold()
             if ref not in scenario_map:
                 raise AssuranceRegistryError("assurance_registry_invalid", f"Suite {suite_name} references an unknown scenario.", status_code=503)
+        for scenario in suite.get("external_scenarios") or []:
+            ref = str(scenario).casefold()
+            definition = scenario_map.get(ref)
+            if definition is None:
+                raise AssuranceRegistryError(
+                    "assurance_registry_invalid",
+                    f"Suite {suite_name} references an unknown external scenario.",
+                    status_code=503,
+                )
+            declared_suites = {str(value).casefold() for value in definition.get("suites") or []}
+            if suite_name not in declared_suites:
+                raise AssuranceRegistryError(
+                    "assurance_registry_invalid",
+                    f"External scenario {ref} does not declare suite {suite_name}.",
+                    status_code=503,
+                )
+            execution = str(definition.get("execution") or "")
+            if not execution.startswith("dev_pc_"):
+                raise AssuranceRegistryError(
+                    "assurance_registry_invalid",
+                    f"External scenario {ref} is not owned by a DEV-PC assurance lane.",
+                    status_code=503,
+                )
     current_ap_ids = {str(item["id"]) for item in paths}
     if not current_ap_ids.issubset(scenario_refs):
         raise AssuranceRegistryError(
@@ -620,6 +664,8 @@ def list_suites() -> dict[str, Any]:
             "allowed_safety_classes": item.get("allowed_safety_classes") or [],
             "required_capabilities": item.get("required_capabilities") or [],
             "scenarios": item.get("scenarios") or [],
+            "external_execution_lane": item.get("external_execution_lane"),
+            "external_scenarios": item.get("external_scenarios") or [],
             "active_tools": list(ACTIVE_TOOLS_BY_SUITE.get(identifier, ())),
             "registered_tools": registered_tools,
             "external_tools": external_tools,

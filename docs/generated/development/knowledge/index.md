@@ -33,7 +33,7 @@ This generated layer joins architecture, contracts, runtime evidence, parity, da
 | runtime-topology | 9 |
 | subject | 210 |
 | table | 78 |
-| test | 230 |
+| test | 232 |
 | threat-boundary | 9 |
 | threat-model | 9 |
 | troubleshooting | 27 |

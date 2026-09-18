@@ -1,8 +1,11 @@
 # Runtime Security Assurance Harness
 
 Status: `IMPLEMENTED` for the bounded server-owned assurance foundation, the
-fixed DEV-PC toolchain, the approved live-runtime lane, and the explicit Deep
-orchestrator; runtime qualification is `RUNTIME-VALIDATED` only when a
+fixed DEV-PC toolchain, the approved live-runtime lane, the external 360-degree
+Standard/Deep/Adversarial scenario projection, and the explicit Deep
+orchestrator. The new Chromium/Caddy/runtime 360 adapters are `UNVALIDATED`
+until an exact-revision DEV-PC + Server Phone qualification report records
+their result; runtime qualification is `RUNTIME-VALIDATED` only when a
 sanitized report from the target revision says so. The command-by-command
 qualification record is in
 [`runtime-security-assurance-qualification.md`](runtime-security-assurance-qualification.md).
@@ -43,8 +46,9 @@ security/threat-model-scenarios.json
 ```
 
 The target is always `local_server_host_only`. Callers cannot provide a shell
-command, argv, executable path, cwd, URL, port, NATS subject, scanner flag,
-environment variable, template, or filesystem path. The server selects every
+command, argv, executable path, cwd, URL, host, port, NATS subject, scanner
+flag, environment variable, template, wordlist, browser script, fixture path,
+or filesystem path. The server selects every
 execution detail from the checked-in registry and existing Security service.
 
 The normal edge-first architecture remains authoritative:
@@ -156,9 +160,9 @@ the tested vocabulary revision-bound and reproducible.
 | Profile | Intended use | Default policy |
 | --- | --- | --- |
 | `smoke` | Fast critical boundary and readiness checks plus existing Quick Security | Normal bounded run; target 180 seconds, maximum 1200 seconds on the ARM64 qualification target, based on the latest observed 922-second Quick path |
-| `standard` | Normal runtime qualification and coverage | Normal bounded run; target 900 seconds, maximum 1800 seconds |
-| `deep` | Extended manual qualification | Explicit-only; target 3600 seconds, maximum 7200 seconds |
-| `adversarial` | Reviewed fixed local adversarial cases | Explicit qualification-only; no destructive operation |
+| `standard` | Normal runtime qualification plus routine browser/session/network reality | Normal bounded phone run plus 18 fixed DEV-PC external scenarios; target 900 seconds, maximum 1800 seconds |
+| `deep` | Extended manual qualification across browser, code, dependencies, provenance, Recovery evidence and host posture | Explicit-only phone run plus all 36 fixed external scenarios; target 3600 seconds, maximum 7200 seconds |
+| `adversarial` | Reviewed hostile-origin, malformed-state, network-boundary and bounded resilience cases | Explicit qualification-only phone run plus 29 fixed DEV-PC external scenarios; no arbitrary target and no destructive operation |
 
 Every registered scenario declares one of:
 
@@ -170,9 +174,39 @@ Every registered scenario declares one of:
 - `DESTRUCTIVE_QUALIFICATION` — not enabled by the current safe profiles and
   remains subject to the existing destructive safeguards.
 
-Smoke and Standard do not run Deep-only tools, Recovery mutations, human
-identity ceremonies, uncontrolled load, public-network scans, LAN/Tailnet
-peer scans, password attacks, or user-media scans.
+Smoke and Standard do not run Deep-only provenance work, Recovery mutations,
+human identity ceremonies, uncontrolled load, public-network scans, LAN/Tailnet
+peer scans, password attacks, or user-media scans. Standard may run the fixed
+Chromium/Caddy runtime adapters, but it never receives a production Owner
+credential or arbitrary browser script.
+
+### 360-degree external scenario lanes
+
+The phone-owned `scenarios` list and the DEV-PC `external_scenarios` list are
+separate by design. Phone scenarios still execute through FastAPI →
+NATS/JetStream → worker. External scenarios execute only in the fixed
+`dev_pc_live_runtime`/deep-provenance lanes and correlate back to the same
+canonical STRIDE/OWASP/AP/control IDs.
+
+| Lane | Registered external scenarios | Primary perspective |
+| --- | ---: | --- |
+| Standard | 18 | real browser/PWA, CORS/CSRF boundary, WebSocket, proxy/TLS, device/recovery authorization posture, remote-access truth |
+| Deep | 36 | every Standard/Adversarial perspective plus release/dependency/app provenance, backup/restore evidence, Android/Termux posture and deeper evidence integrity |
+| Adversarial | 29 | hostile origin, malformed workflow, replay/reconnect contracts, bounded availability pressure, policy/approval/exception abuse |
+
+`playwright-runtime` drives real Chromium only against the operator-approved
+fixed Caddy identity and a repository-owned hostile loopback origin.
+`pocketlab-runtime-360` performs fixed Caddy HTTPS/WSS, listener, TLS,
+bounded-resilience, and provenance observations. Neither adapter accepts a
+runtime target from the caller.
+
+Some scenarios intentionally emit `NOT_ASSESSED` rather than pretending to
+PASS when a safe disposable fixture does not yet exist. Examples include
+production-equivalent Owner session revocation, virtual-WebAuthn application
+identity, invite replay, NATS command replay, Recovery mutation, and
+enterprise approval/exception fixtures. The existing direct-loopback harness
+proof is not injected through Caddy because doing so would weaken the proxy
+trust boundary being tested.
 
 ## Toolchain
 
@@ -200,13 +234,17 @@ arguments or arbitrary targets.
 | OSV-Scanner | `IMPLEMENTED` fixed source/lockfile corroboration; unranked dev candidates remain visible | Medium; Standard, Deep static lane |
 | Syft | `IMPLEMENTED` fixed bounded source/release SBOM capture; phone prefers Trivy SBOM reuse | Heavy; Deep static lane |
 | Grype | `IMPLEMENTED` fixed Syft-SBOM vulnerability corroboration | Heavy; Deep static lane |
-| testssl.sh | `IMPLEMENTED` fixed DEV-PC live-runtime adapter with the approved Caddy SNI/loopback target | Medium; Standard, Deep |
-| Nuclei | `IMPLEMENTED` fixed DEV-PC live-runtime adapter with one checked-in safe template and no external interaction | Heavy; Standard, Deep |
-| nmap | `IMPLEMENTED` fixed DEV-PC live-runtime adapter with the Pocket Lab-owned forwarded listener set only | Medium; Standard, Deep |
-| OWASP ZAP | `IMPLEMENTED` bounded Deep-only API baseline adapter with fixed route/target and output cap | Heavy; Deep |
+| testssl.sh | `IMPLEMENTED` fixed DEV-PC live-runtime adapter with the approved Caddy SNI/loopback target | Medium; Standard, Deep, Adversarial |
+| Nuclei | `IMPLEMENTED` fixed DEV-PC live-runtime adapter with one checked-in safe template and no external interaction | Heavy; Standard, Deep, Adversarial |
+| nmap | `IMPLEMENTED` fixed DEV-PC live-runtime adapter with the Pocket Lab-owned forwarded listener set only | Medium; Standard, Deep, Adversarial |
+| OWASP ZAP | `IMPLEMENTED` bounded API baseline adapter with fixed route/target and output cap | Heavy; Deep, Adversarial |
+| `playwright-runtime` | `IMPLEMENTED / UNVALIDATED` repository-owned real-Chromium adapter; fixed Caddy identity + fixed hostile origin; no credential injection | Medium; Standard, Deep, Adversarial live-runtime lane |
+| `pocketlab-runtime-360` | `IMPLEMENTED / UNVALIDATED` repository-owned Caddy HTTPS/WSS, listener, TLS, bounded resilience and provenance adapter | Medium; Standard, Deep, Adversarial live-runtime lane |
 
-The operator-owned DEV-PC tool manager promotes the external tools into a
-fixed receipt-backed directory outside Git. `tools:install` uses only
+The operator-owned DEV-PC tool manager promotes external scanner tools into a
+fixed receipt-backed directory outside Git. Repository-owned
+`playwright-runtime` and `pocketlab-runtime-360` adapters are checked in
+place and are never promoted as scanner binaries or interpreter copies. `tools:install` uses only
 source-owned package/release recipes, verifies pinned checksums where the
 recipe provides them, rejects archive traversal, removes temporary archives,
 and records the execution lane and provenance. `tools:check` reports every
@@ -218,9 +256,29 @@ environment values.
 
 The live-runtime adapters are DEV-PC tools testing only the approved
 Server-Phone tunnel. They are not phone-native execution and do not broaden
-the target beyond the fixed Pocket Lab API, Caddy TLS identity, safe Nuclei
-template, or loopback listener ports. Raw tool output is parsed in memory or
+the target beyond the fixed Pocket Lab API, Caddy TLS/WSS identity, the fixed
+hostile loopback browser origin, safe Nuclei template, or registered loopback
+listener ports. Raw tool output is parsed in memory or
 kept in bounded disposable files and is not promoted to canonical evidence.
+
+The DEV-PC live-runtime lane can establish those fixed forwards itself through
+the already managed `pocketlab-termux` SSH alias. It does not accept an SSH
+destination from the caller. The phone reports the active SSH server endpoint
+from `SSH_CONNECTION` and its Tailnet IPv4 from
+`tailscale-cli ip -4` / `tailscale ip -4`; both are validated as private
+runtime facts before use. The resulting SSH argv retains the alias's key and
+known-hosts policy, overrides `Hostname` with the runtime-observed Server
+Phone IP, uses the runtime-observed SSH port/user, and forwards local 18443 to
+the runtime-observed Tailnet IPv4 on Caddy port 443.
+
+The operator-approved Caddy SNI remains a separate local marker. Chromium has
+no 127.0.0.1 identity fallback: the marker must be present and valid, the
+fixed SNI is mapped to the local 18443 tunnel, and normal TLS
+certificate/hostname verification must succeed. Raw runtime addresses are
+available to the assurance harness only in the ephemeral 0600
+`~/.pocketlab-lite/qualification/runtime-tunnel.json` state while the tunnel
+context is active. Normalized assurance evidence records only their provenance
+and readiness, not the address values.
 
 The DEV-PC capture records installation origin, pinned version, checksum or
 signature posture, fixed argv, bounded output, parser status, and sanitized
@@ -499,13 +557,23 @@ Authentication session expiry does not terminate an already admitted Security
 Assurance run. Explicit principal revocation is stronger: it marks active runs
 for safe cancellation and prevents new sessions/runs.
 
-The current safe increment intentionally does not automatically execute
-Recovery replacement/restore mutation, Tailnet/LAN scans, browser WebAuthn
-ceremonies, Enterprise membership/final-Owner scenarios, arbitrary API fuzzing,
-or history-wide Gitleaks. The fixed DEV-PC/CI manager now executes Bandit,
-Gitleaks, pip-audit, npm audit, Semgrep CE, OSV-Scanner, Syft, Grype,
-testssl.sh, Nuclei, nmap, and bounded ZAP through fixed contracts; Cosign is
-reported `NOT_APPLICABLE` when no signed artifact is registered. Those captures
+The 360-degree expansion intentionally does not manufacture production human
+credentials or silently automate destructive Recovery. Real Chromium,
+hostile-origin, Caddy/WSS/TLS, fixed listener, route-discovery, bounded
+concurrency/slow-client, and deep provenance contracts are implemented.
+Authenticated Owner revocation, application-level virtual WebAuthn, invite
+replay/misbinding, direct NATS command replay, Recovery replacement/restore,
+Tailnet peer-side scans, Enterprise approval/exception mutation and
+history-wide Gitleaks remain explicit `NOT_ASSESSED`, `PARTIAL`, or
+human-review/fixed-fixture work until their server-owned disposable fixture is
+present. The direct-loopback harness credential is never pushed through Caddy
+to make these cases appear covered.
+
+The fixed DEV-PC/CI manager executes Bandit, Gitleaks, pip-audit, npm audit,
+Semgrep CE, OSV-Scanner, Syft, Grype, testssl.sh, Nuclei, nmap, bounded ZAP,
+real Chromium through `playwright-runtime`, and the repository-owned
+`pocketlab-runtime-360` adapter through fixed contracts; Cosign is reported
+`NOT_APPLICABLE` when no signed artifact is registered. Those captures
 do not prove native phone execution. Phone runtime qualification continues to
 execute the installed worker-owned Security, Trivy/Lynis, OPA posture, fixed
 harness boundary checks, and registered fault controls. Direct OPA/NATS outage

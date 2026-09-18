@@ -7819,7 +7819,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:134",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2910",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2956",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:29",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:562",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:665",
@@ -12527,6 +12527,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_security_assurance_360.py",
+      "name": "tests/backend/test_lite_security_assurance_360.py",
+      "source_refs": [
+        "tests/backend/test_lite_security_assurance_360.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_security_assurance_controls.py",
       "name": "tests/backend/test_lite_security_assurance_controls.py",
       "source_refs": [
@@ -13741,6 +13752,17 @@
       "name": "tests/e2e/lite-rules-activation-progress.spec.ts",
       "source_refs": [
         "tests/e2e/lite-rules-activation-progress.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-security-runtime.spec.ts",
+      "name": "tests/e2e/lite-security-runtime.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-security-runtime.spec.ts"
       ],
       "type": "test"
     },
@@ -31821,6 +31843,20 @@
       "source": "domain:harness",
       "target": "api:get:/api/lite/harness/capabilities",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_security_assurance_360.py"
+      ],
+      "id": "rel:5105beae81e3f658",
+      "source": "reason:identity_unavailable",
+      "target": "test:tests/backend/test_lite_security_assurance_360.py",
+      "type": "verified_by"
     },
     {
       "derivation": {

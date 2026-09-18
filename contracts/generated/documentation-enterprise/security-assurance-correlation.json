@@ -91,7 +91,15 @@
         "source-boundaries",
         "adversarial-negative-auth-probes",
         "threat-model-integrity",
-        "attack-path-inventory"
+        "attack-path-inventory",
+        "browser-origin-control-plane-bypass",
+        "cross-origin-session-abuse",
+        "websocket-auth-boundary",
+        "browser-network-egress-contract",
+        "proxy-header-trust-confusion",
+        "app-install-authority-boundary",
+        "runtime-env-secret-boundary",
+        "hidden-route-and-debug-surface"
       ],
       "stride": [
         "Spoofing",
@@ -191,7 +199,9 @@
         "source-boundaries",
         "adversarial-negative-auth-probes",
         "threat-model-integrity",
-        "attack-path-inventory"
+        "attack-path-inventory",
+        "browser-origin-control-plane-bypass",
+        "android-termux-host-hardening"
       ],
       "stride": [
         "Tampering",
@@ -288,7 +298,8 @@
         "harness-auth-boundary",
         "adversarial-negative-auth-probes",
         "threat-model-integrity",
-        "attack-path-inventory"
+        "attack-path-inventory",
+        "device-invite-replay-and-misbinding"
       ],
       "stride": [
         "Spoofing",
@@ -388,7 +399,13 @@
         "source-boundaries",
         "adversarial-negative-auth-probes",
         "threat-model-integrity",
-        "attack-path-inventory"
+        "attack-path-inventory",
+        "malformed-api-state-machine",
+        "nats-command-replay-integrity",
+        "worker-reconnect-command-integrity",
+        "app-install-authority-boundary",
+        "rate-limit-and-admission-resilience",
+        "duplicate-operation-flood"
       ],
       "stride": [
         "Tampering",
@@ -486,7 +503,12 @@
         "security-projection",
         "source-boundaries",
         "threat-model-integrity",
-        "attack-path-inventory"
+        "attack-path-inventory",
+        "service-worker-version-integrity",
+        "release-artifact-tamper",
+        "dependency-confusion-and-lock-integrity",
+        "app-package-provenance",
+        "runtime-env-secret-boundary"
       ],
       "stride": [
         "Tampering",
@@ -589,7 +611,12 @@
         "evidence-redaction",
         "security-projection",
         "threat-model-integrity",
-        "attack-path-inventory"
+        "attack-path-inventory",
+        "pwa-offline-secret-retention",
+        "audit-event-attribution",
+        "security-evidence-poisoning",
+        "unicode-log-and-ui-injection",
+        "runtime-env-secret-boundary"
       ],
       "stride": [
         "Tampering",
@@ -687,7 +714,18 @@
         "runtime-readiness",
         "source-boundaries",
         "threat-model-integrity",
-        "attack-path-inventory"
+        "attack-path-inventory",
+        "browser-origin-control-plane-bypass",
+        "browser-network-egress-contract",
+        "tailnet-service-exposure",
+        "proxy-header-trust-confusion",
+        "worker-reconnect-command-integrity",
+        "tls-identity-drift",
+        "remote-access-truthfulness",
+        "rate-limit-and-admission-resilience",
+        "slow-client-resource-exhaustion",
+        "android-termux-host-hardening",
+        "hidden-route-and-debug-surface"
       ],
       "stride": [
         "Spoofing",
@@ -783,7 +821,11 @@
         "evidence-redaction",
         "security-projection",
         "threat-model-integrity",
-        "attack-path-inventory"
+        "attack-path-inventory",
+        "malformed-api-state-machine",
+        "recovery-object-authorization",
+        "backup-confidentiality-integrity",
+        "restore-transaction-integrity"
       ],
       "stride": [
         "Tampering",
@@ -881,7 +923,20 @@
         "caddy-proof-strip",
         "adversarial-negative-auth-probes",
         "threat-model-integrity",
-        "attack-path-inventory"
+        "attack-path-inventory",
+        "cross-origin-session-abuse",
+        "csrf-protected-mutation",
+        "owner-session-lifecycle",
+        "websocket-auth-boundary",
+        "pwa-offline-secret-retention",
+        "webauthn-challenge-boundary",
+        "service-worker-version-integrity",
+        "proxy-header-trust-confusion",
+        "device-invite-replay-and-misbinding",
+        "tls-identity-drift",
+        "unicode-log-and-ui-injection",
+        "webauthn-origin-rpid-mismatch",
+        "cookie-security-posture"
       ],
       "stride": [
         "Spoofing",
@@ -978,7 +1033,12 @@
         "harness-auth-boundary",
         "adversarial-negative-auth-probes",
         "threat-model-integrity",
-        "attack-path-inventory"
+        "attack-path-inventory",
+        "owner-session-lifecycle",
+        "authorization-resource-boundary",
+        "webauthn-challenge-boundary",
+        "audit-event-attribution",
+        "webauthn-origin-rpid-mismatch"
       ],
       "stride": [
         "Tampering",
@@ -1073,7 +1133,15 @@
         "runtime-readiness",
         "policy-readiness",
         "threat-model-integrity",
-        "attack-path-inventory"
+        "attack-path-inventory",
+        "csrf-protected-mutation",
+        "authorization-resource-boundary",
+        "malformed-api-state-machine",
+        "recovery-object-authorization",
+        "app-install-authority-boundary",
+        "rate-limit-and-admission-resilience",
+        "slow-client-resource-exhaustion",
+        "policy-known-good-recovery"
       ],
       "stride": [
         "Tampering",
@@ -1170,7 +1238,10 @@
         "runtime-readiness",
         "policy-readiness",
         "threat-model-integrity",
-        "attack-path-inventory"
+        "attack-path-inventory",
+        "malformed-api-state-machine",
+        "remote-access-truthfulness",
+        "policy-known-good-recovery"
       ],
       "stride": [
         "Tampering",
@@ -1265,7 +1336,14 @@
       ],
       "scenarios": [
         "threat-model-integrity",
-        "attack-path-inventory"
+        "attack-path-inventory",
+        "authorization-resource-boundary",
+        "webauthn-challenge-boundary",
+        "malformed-api-state-machine",
+        "audit-event-attribution",
+        "approval-continuation-replay",
+        "webauthn-origin-rpid-mismatch",
+        "duplicate-operation-flood"
       ],
       "stride": [
         "Spoofing",
@@ -1362,7 +1440,8 @@
       "scenarios": [
         "policy-readiness",
         "threat-model-integrity",
-        "attack-path-inventory"
+        "attack-path-inventory",
+        "temporary-exception-scope-bypass"
       ],
       "stride": [
         "Tampering",
@@ -1402,7 +1481,34 @@
         "runtime-readiness",
         "control-plane-ownership",
         "source-boundaries",
-        "adversarial-negative-auth-probes"
+        "adversarial-negative-auth-probes",
+        "browser-origin-control-plane-bypass",
+        "cross-origin-session-abuse",
+        "csrf-protected-mutation",
+        "authorization-resource-boundary",
+        "websocket-auth-boundary",
+        "browser-network-egress-contract",
+        "service-worker-version-integrity",
+        "tailnet-service-exposure",
+        "proxy-header-trust-confusion",
+        "malformed-api-state-machine",
+        "device-invite-replay-and-misbinding",
+        "nats-command-replay-integrity",
+        "worker-reconnect-command-integrity",
+        "tls-identity-drift",
+        "audit-event-attribution",
+        "recovery-object-authorization",
+        "app-install-authority-boundary",
+        "remote-access-truthfulness",
+        "rate-limit-and-admission-resilience",
+        "slow-client-resource-exhaustion",
+        "unicode-log-and-ui-injection",
+        "backup-confidentiality-integrity",
+        "restore-transaction-integrity",
+        "android-termux-host-hardening",
+        "runtime-env-secret-boundary",
+        "hidden-route-and-debug-surface",
+        "duplicate-operation-flood"
       ]
     },
     {
@@ -1413,7 +1519,10 @@
       "description": null,
       "id": "CTRL-BROWSER-NATS",
       "model_status": "source-derived-or-referenced",
-      "scenarios": []
+      "scenarios": [
+        "browser-origin-control-plane-bypass",
+        "browser-network-egress-contract"
+      ]
     },
     {
       "attack_paths": [
@@ -1423,7 +1532,9 @@
       "description": null,
       "id": "CTRL-BROWSER-SHELL",
       "model_status": "source-derived-or-referenced",
-      "scenarios": []
+      "scenarios": [
+        "browser-origin-control-plane-bypass"
+      ]
     },
     {
       "attack_paths": [
@@ -1436,7 +1547,9 @@
       "description": "Enterprise authorization resolves active memberships server-side, restricts governance changes to authorized roles, invalidates affected authorization/session state, audits changes, and refuses removal or demotion of the final active Owner.",
       "id": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
       "model_status": "mitigation-source-derived",
-      "scenarios": []
+      "scenarios": [
+        "authorization-resource-boundary"
+      ]
     },
     {
       "attack_paths": [
@@ -1454,7 +1567,13 @@
         "security-projection",
         "source-boundaries",
         "threat-model-integrity",
-        "attack-path-inventory"
+        "attack-path-inventory",
+        "pwa-offline-secret-retention",
+        "audit-event-attribution",
+        "security-evidence-poisoning",
+        "unicode-log-and-ui-injection",
+        "backup-confidentiality-integrity",
+        "runtime-env-secret-boundary"
       ]
     },
     {
@@ -1472,7 +1591,17 @@
         "control-plane-ownership",
         "security-projection",
         "source-boundaries",
-        "adversarial-negative-auth-probes"
+        "adversarial-negative-auth-probes",
+        "tailnet-service-exposure",
+        "malformed-api-state-machine",
+        "device-invite-replay-and-misbinding",
+        "nats-command-replay-integrity",
+        "worker-reconnect-command-integrity",
+        "app-install-authority-boundary",
+        "remote-access-truthfulness",
+        "rate-limit-and-admission-resilience",
+        "android-termux-host-hardening",
+        "duplicate-operation-flood"
       ]
     },
     {
@@ -1485,7 +1614,14 @@
       "description": null,
       "id": "CTRL-EXPLICIT-PROMOTION",
       "model_status": "source-derived-or-referenced",
-      "scenarios": []
+      "scenarios": [
+        "recovery-object-authorization",
+        "release-artifact-tamper",
+        "security-evidence-poisoning",
+        "backup-confidentiality-integrity",
+        "restore-transaction-integrity",
+        "app-package-provenance"
+      ]
     },
     {
       "attack_paths": [
@@ -1495,7 +1631,17 @@
       "description": null,
       "id": "CTRL-HUMAN-SESSION-CSRF",
       "model_status": "source-derived-or-referenced",
-      "scenarios": []
+      "scenarios": [
+        "cross-origin-session-abuse",
+        "csrf-protected-mutation",
+        "owner-session-lifecycle",
+        "websocket-auth-boundary",
+        "pwa-offline-secret-retention",
+        "service-worker-version-integrity",
+        "proxy-header-trust-confusion",
+        "unicode-log-and-ui-injection",
+        "cookie-security-posture"
+      ]
     },
     {
       "attack_paths": [
@@ -1509,7 +1655,11 @@
       "description": "Approval must come from a different currently eligible Owner/Admin with purpose-bound passkey step-up and exact action/target/revision binding; approval does not execute the action, and the initiator retry atomically consumes one continuation with replay refusal.",
       "id": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
       "model_status": "mitigation-source-derived",
-      "scenarios": []
+      "scenarios": [
+        "malformed-api-state-machine",
+        "approval-continuation-replay",
+        "duplicate-operation-flood"
+      ]
     },
     {
       "attack_paths": [
@@ -1521,7 +1671,14 @@
       "description": null,
       "id": "CTRL-OPA-FAIL-CLOSED",
       "model_status": "source-derived-or-referenced",
-      "scenarios": []
+      "scenarios": [
+        "csrf-protected-mutation",
+        "authorization-resource-boundary",
+        "malformed-api-state-machine",
+        "rate-limit-and-admission-resilience",
+        "temporary-exception-scope-bypass",
+        "policy-known-good-recovery"
+      ]
     },
     {
       "attack_paths": [
@@ -1536,7 +1693,8 @@
       "id": "CTRL-POLICY-REVISION-LIFECYCLE",
       "model_status": "mitigation-source-derived",
       "scenarios": [
-        "policy-readiness"
+        "policy-readiness",
+        "policy-known-good-recovery"
       ]
     },
     {
@@ -1547,7 +1705,12 @@
       "description": null,
       "id": "CTRL-SUPPLY-CHAIN",
       "model_status": "source-derived-or-referenced",
-      "scenarios": []
+      "scenarios": [
+        "service-worker-version-integrity",
+        "release-artifact-tamper",
+        "dependency-confusion-and-lock-integrity",
+        "app-package-provenance"
+      ]
     },
     {
       "attack_paths": [
@@ -1561,7 +1724,9 @@
       "description": "Temporary exceptions are restricted to catalog.install and exact app/device/human/policy revision, reject wildcard/global scope, expire within at most 60 minutes and can be revoked; matching enforces active unexpired exact scope.",
       "id": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
       "model_status": "mitigation-source-derived",
-      "scenarios": []
+      "scenarios": [
+        "temporary-exception-scope-bypass"
+      ]
     },
     {
       "attack_paths": [
@@ -1577,26 +1742,31 @@
       "description": "WebAuthn ceremonies bind short-lived server-owned challenges to purpose, origin and RP ID; passkey assertions update signer counters and purpose-bound step-up expires independently of the browser session.",
       "id": "CTRL-WEBAUTHN-ASSURANCE",
       "model_status": "mitigation-source-derived",
-      "scenarios": []
+      "scenarios": [
+        "owner-session-lifecycle",
+        "webauthn-challenge-boundary",
+        "approval-continuation-replay",
+        "webauthn-origin-rpid-mismatch"
+      ]
     }
   ],
   "current_registry_hashes": {
-    "scenarios": "sha256:92310371d7c8ed9b2ff686ddb6116b471e3ba3c261988d3a66b65c15c68afbc1",
-    "suites": "sha256:407d1c893f8de7579f0fd3193e262da5b8f67c612bcb9d2c76308c3f36afd164",
+    "scenarios": "sha256:d90875e664dcd7dfcf6a1cd0392b1cefb0ff12fd1a0663b0c9cf46bbb405869d",
+    "suites": "sha256:017df0a53275d69a213abdf7a605424a1fc4b37fddf66dcf67fb1599c446d2a3",
     "threat_model": "sha256:74442eb35bcd488a67b5fc995ca1d6f6f341343bb3f8c3a0663cb89e241a908c",
-    "tools": "sha256:38755b7f13c94ff9a37a0eccf4324455d7f05fcddc9c7dfa1b85f3fb8c657687"
+    "tools": "sha256:6789301f2b6752a336ad9290fbcb0bfd64350ecb5d81fcac7f70ed401119a777"
   },
   "kind": "security-assurance-correlation",
   "latest_by_suite": {
     "adversarial": {
       "completed_at": "2026-09-17T11:39:34Z",
       "critical": 0,
-      "current_registry_match": true,
+      "current_registry_match": false,
       "hash_matches": {
-        "scenarios": true,
-        "suites": true,
+        "scenarios": false,
+        "suites": false,
         "threat_model": true,
-        "tools": true
+        "tools": false
       },
       "high": 0,
       "low": 0,
@@ -1610,12 +1780,12 @@
     "deep": {
       "completed_at": "2026-09-17T11:51:07Z",
       "critical": 0,
-      "current_registry_match": true,
+      "current_registry_match": false,
       "hash_matches": {
-        "scenarios": true,
-        "suites": true,
+        "scenarios": false,
+        "suites": false,
         "threat_model": true,
-        "tools": true
+        "tools": false
       },
       "high": 0,
       "low": 1,
@@ -1629,12 +1799,12 @@
     "smoke": {
       "completed_at": "2026-09-17T11:30:42Z",
       "critical": 0,
-      "current_registry_match": true,
+      "current_registry_match": false,
       "hash_matches": {
-        "scenarios": true,
-        "suites": true,
+        "scenarios": false,
+        "suites": false,
         "threat_model": true,
-        "tools": true
+        "tools": false
       },
       "high": 0,
       "low": 1,
@@ -1648,12 +1818,12 @@
     "standard": {
       "completed_at": "2026-09-17T11:37:52Z",
       "critical": 0,
-      "current_registry_match": true,
+      "current_registry_match": false,
       "hash_matches": {
-        "scenarios": true,
-        "suites": true,
+        "scenarios": false,
+        "suites": false,
         "threat_model": true,
-        "tools": true
+        "tools": false
       },
       "high": 0,
       "low": 1,
@@ -1673,12 +1843,12 @@
   "reports": [
     {
       "completed_at": "2026-09-16T17:33:02Z",
-      "current_registry_match": true,
+      "current_registry_match": false,
       "hash_matches": {
-        "scenarios": true,
-        "suites": true,
+        "scenarios": false,
+        "suites": false,
         "threat_model": true,
-        "tools": true
+        "tools": false
       },
       "qualification_id": "assurance-eb3d0c1d7d5b437b9743c9961aa722f8",
       "report_id": "security-assurance-20260916T173302Z-4199c1e3f1-assurance-eb3d0c1d7d5b437b9743c9961aa722f8",
@@ -1688,12 +1858,12 @@
     },
     {
       "completed_at": "2026-09-17T11:30:42Z",
-      "current_registry_match": true,
+      "current_registry_match": false,
       "hash_matches": {
-        "scenarios": true,
-        "suites": true,
+        "scenarios": false,
+        "suites": false,
         "threat_model": true,
-        "tools": true
+        "tools": false
       },
       "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
       "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
@@ -1703,12 +1873,12 @@
     },
     {
       "completed_at": "2026-09-17T11:37:52Z",
-      "current_registry_match": true,
+      "current_registry_match": false,
       "hash_matches": {
-        "scenarios": true,
-        "suites": true,
+        "scenarios": false,
+        "suites": false,
         "threat_model": true,
-        "tools": true
+        "tools": false
       },
       "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
       "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
@@ -1718,12 +1888,12 @@
     },
     {
       "completed_at": "2026-09-17T11:39:34Z",
-      "current_registry_match": true,
+      "current_registry_match": false,
       "hash_matches": {
-        "scenarios": true,
-        "suites": true,
+        "scenarios": false,
+        "suites": false,
         "threat_model": true,
-        "tools": true
+        "tools": false
       },
       "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
       "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
@@ -1733,12 +1903,12 @@
     },
     {
       "completed_at": "2026-09-17T11:51:07Z",
-      "current_registry_match": true,
+      "current_registry_match": false,
       "hash_matches": {
-        "scenarios": true,
-        "suites": true,
+        "scenarios": false,
+        "suites": false,
         "threat_model": true,
-        "tools": true
+        "tools": false
       },
       "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
       "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
@@ -2566,6 +2736,1401 @@
       ],
       "title": "Every current AP path has a bounded execution classification",
       "tools": []
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-07"
+      ],
+      "controls": [
+        "CTRL-BROWSER-NATS",
+        "CTRL-API-CONTROL",
+        "CTRL-BROWSER-SHELL"
+      ],
+      "execution": "dev_pc_browser_runtime_evidence",
+      "id": "browser-origin-control-plane-bypass",
+      "latest_results": [],
+      "normalized_evidence": "Sanitized request-count/host-class/port-class metadata only; raw URLs and response bodies are not persisted.",
+      "owasp": [
+        "A01",
+        "A05",
+        "A07"
+      ],
+      "purpose": "Browser JavaScript communicates only through approved same-origin HTTP/WebSocket surfaces and never directly reaches NATS, OPA, shell, or internal service ports.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "Real browser control-plane ownership",
+      "tools": [
+        "playwright-runtime",
+        "pocketlab-runtime-360",
+        "owasp-zap",
+        "playwright",
+        "mitmdump",
+        "tshark"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-09"
+      ],
+      "controls": [
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-API-CONTROL"
+      ],
+      "execution": "dev_pc_browser_runtime_evidence",
+      "id": "cross-origin-session-abuse",
+      "latest_results": [],
+      "normalized_evidence": "Boolean cross-origin readability, status class, and WebSocket-open result only.",
+      "owasp": [
+        "A01",
+        "A07",
+        "A05"
+      ],
+      "purpose": "A hostile origin cannot read protected Pocket Lab API responses or inherit browser authority.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Spoofing",
+        "Information Disclosure",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "Hostile-origin browser session abuse",
+      "tools": [
+        "playwright-runtime",
+        "pocketlab-runtime-360",
+        "owasp-zap",
+        "playwright"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-09",
+        "AP-11"
+      ],
+      "controls": [
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-API-CONTROL",
+        "CTRL-OPA-FAIL-CLOSED"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "csrf-protected-mutation",
+      "latest_results": [],
+      "normalized_evidence": "HTTP status class and explicit authenticated-fixture coverage state.",
+      "owasp": [
+        "A01",
+        "A07"
+      ],
+      "purpose": "Cross-site unauthenticated mutation is rejected and authenticated CSRF coverage is never inferred without a real disposable identity.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "Cross-site protected mutation resistance",
+      "tools": [
+        "pocketlab-runtime-360",
+        "playwright-runtime",
+        "owasp-zap",
+        "playwright",
+        "hurl"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-09",
+        "AP-10"
+      ],
+      "controls": [
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-WEBAUTHN-ASSURANCE"
+      ],
+      "execution": "dev_pc_browser_runtime_evidence",
+      "id": "owner-session-lifecycle",
+      "latest_results": [],
+      "normalized_evidence": "Sanitized session-state booleans and rejection classes; no cookies or passkey material.",
+      "owasp": [
+        "A01",
+        "A07",
+        "A09"
+      ],
+      "purpose": "HTTP, UI and WebSocket authority disappear promptly after logout or revocation.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Spoofing",
+        "Repudiation",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "Owner session logout and revocation lifecycle",
+      "tools": [
+        "playwright-runtime",
+        "playwright"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-10",
+        "AP-11",
+        "AP-13"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-OPA-FAIL-CLOSED",
+        "CTRL-ENTERPRISE-ROLE-FINAL-OWNER"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "authorization-resource-boundary",
+      "latest_results": [],
+      "normalized_evidence": "Status/reason-code and policy-decision metadata only.",
+      "owasp": [
+        "A01",
+        "A03"
+      ],
+      "purpose": "Authorization decisions remain server-side and independent of caller-controlled IDs or UI restrictions.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "Server-side resource authorization boundary",
+      "tools": [
+        "pocketlab-runtime-360",
+        "schemathesis",
+        "opa",
+        "hurl"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-09"
+      ],
+      "controls": [
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-API-CONTROL"
+      ],
+      "execution": "dev_pc_browser_runtime_evidence",
+      "id": "websocket-auth-boundary",
+      "latest_results": [],
+      "normalized_evidence": "Handshake status and boolean open/reject classification only.",
+      "owasp": [
+        "A01",
+        "A07",
+        "A05"
+      ],
+      "purpose": "Event-stream authority follows the intended browser authorization and Origin policy.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Spoofing",
+        "Information Disclosure",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "WebSocket authentication, Origin and revocation boundary",
+      "tools": [
+        "playwright-runtime",
+        "pocketlab-runtime-360",
+        "playwright",
+        "websocat"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-06",
+        "AP-09"
+      ],
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-HUMAN-SESSION-CSRF"
+      ],
+      "execution": "dev_pc_browser_runtime_evidence",
+      "id": "pwa-offline-secret-retention",
+      "latest_results": [],
+      "normalized_evidence": "Counts and sanitized key classifications; stored values are never read.",
+      "owasp": [
+        "A02",
+        "A07",
+        "A05",
+        "A09"
+      ],
+      "purpose": "Browser persistence does not expose secret-shaped material and logout-specific claims require an authenticated disposable fixture.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Information Disclosure",
+        "Tampering",
+        "Repudiation"
+      ],
+      "suites": [
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "PWA storage and offline secret retention",
+      "tools": [
+        "playwright-runtime",
+        "playwright"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-07"
+      ],
+      "controls": [
+        "CTRL-BROWSER-NATS",
+        "CTRL-API-CONTROL"
+      ],
+      "execution": "dev_pc_browser_runtime_evidence",
+      "id": "browser-network-egress-contract",
+      "latest_results": [],
+      "normalized_evidence": "Request counts, host class, protocol and forbidden-port count.",
+      "owasp": [
+        "A02",
+        "A05"
+      ],
+      "purpose": "The browser contacts only approved Caddy/same-origin destinations plus the fixed local hostile-origin fixture.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Information Disclosure",
+        "Tampering"
+      ],
+      "suites": [
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "Browser network egress contract",
+      "tools": [
+        "playwright-runtime",
+        "nmap",
+        "playwright",
+        "tshark"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-09",
+        "AP-10",
+        "AP-13"
+      ],
+      "controls": [
+        "CTRL-WEBAUTHN-ASSURANCE"
+      ],
+      "execution": "dev_pc_browser_runtime_evidence",
+      "id": "webauthn-challenge-boundary",
+      "latest_results": [],
+      "normalized_evidence": "Outcome/reason-code metadata; no private key or assertion payload persists.",
+      "owasp": [
+        "A01",
+        "A07"
+      ],
+      "purpose": "Passkey assertions remain challenge-, origin-, RP- and session-bound.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "deep",
+        "adversarial"
+      ],
+      "title": "WebAuthn challenge, RP and origin boundary",
+      "tools": [
+        "playwright-runtime"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-05",
+        "AP-09"
+      ],
+      "controls": [
+        "CTRL-SUPPLY-CHAIN",
+        "CTRL-API-CONTROL",
+        "CTRL-HUMAN-SESSION-CSRF"
+      ],
+      "execution": "dev_pc_browser_runtime_evidence",
+      "id": "service-worker-version-integrity",
+      "latest_results": [],
+      "normalized_evidence": "Service-worker/cache counts and same-origin booleans only.",
+      "owasp": [
+        "A05",
+        "A08"
+      ],
+      "purpose": "Service workers remain same-origin and stale cached code never broadens authority semantics.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Tampering",
+        "Information Disclosure"
+      ],
+      "suites": [
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "Service-worker and cached-version integrity",
+      "tools": [
+        "playwright-runtime",
+        "playwright"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-07"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "tailnet-service-exposure",
+      "latest_results": [],
+      "normalized_evidence": "Fixed listener booleans, port labels and readiness classes.",
+      "owasp": [
+        "A01",
+        "A05"
+      ],
+      "purpose": "Only intended services are reachable in their registered scope; OPA/NATS monitor/harness remain internal as designed.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Spoofing",
+        "Information Disclosure",
+        "Denial of Service",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "Private-network and Tailnet service exposure",
+      "tools": [
+        "pocketlab-runtime-360",
+        "nmap",
+        "testssl.sh",
+        "httpx",
+        "tlsx"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-07",
+        "AP-09"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-HUMAN-SESSION-CSRF"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "proxy-header-trust-confusion",
+      "latest_results": [],
+      "normalized_evidence": "HTTP status class and marker-acceptance booleans.",
+      "owasp": [
+        "A01",
+        "A05",
+        "A07"
+      ],
+      "purpose": "Proxy metadata never becomes application identity or qualification authority.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "Reverse-proxy header trust confusion",
+      "tools": [
+        "pocketlab-runtime-360",
+        "owasp-zap",
+        "nuclei",
+        "hurl",
+        "mitmdump"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-04",
+        "AP-11",
+        "AP-08",
+        "AP-12",
+        "AP-13"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS",
+        "CTRL-OPA-FAIL-CLOSED",
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "malformed-api-state-machine",
+      "latest_results": [],
+      "normalized_evidence": "Status/reason-code and idempotency metadata only.",
+      "owasp": [
+        "A01",
+        "A04",
+        "A05",
+        "A03",
+        "A08"
+      ],
+      "purpose": "Multi-step APIs reject invalid state transitions and replay without arbitrary mutation targets.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "Malformed and invalid API state-machine sequences",
+      "tools": [
+        "pocketlab-runtime-360",
+        "schemathesis",
+        "owasp-zap",
+        "hurl"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-03",
+        "AP-09"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "device-invite-replay-and-misbinding",
+      "latest_results": [],
+      "normalized_evidence": "Reason codes, mutation booleans and audit-event identifiers; no invite token persists.",
+      "owasp": [
+        "A01",
+        "A07"
+      ],
+      "purpose": "Invites are one-time and identity-bound; mismatch causes no env overwrite or PM2 restart.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "Device invite replay and identity misbinding",
+      "tools": [
+        "pocketlab-runtime-360",
+        "hurl"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-04"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "nats-command-replay-integrity",
+      "latest_results": [],
+      "normalized_evidence": "Operation IDs, delivery counts and sanitized reason codes only.",
+      "owasp": [
+        "A01",
+        "A08",
+        "A09"
+      ],
+      "purpose": "Duplicate delivery is idempotent/target-bound and callers never select NATS subjects or envelopes.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service"
+      ],
+      "suites": [
+        "deep",
+        "adversarial"
+      ],
+      "title": "NATS command replay and target integrity",
+      "tools": [
+        "pocketlab-runtime-360",
+        "nats-cli",
+        "hurl"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-04",
+        "AP-07"
+      ],
+      "controls": [
+        "CTRL-EXECUTION-OWNERS",
+        "CTRL-API-CONTROL"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "worker-reconnect-command-integrity",
+      "latest_results": [],
+      "normalized_evidence": "Sanitized command IDs/counts and reconnect classifications only.",
+      "owasp": [
+        "A08",
+        "A09"
+      ],
+      "purpose": "Commands are not lost, duplicated or reordered across worker reconnect; acknowledgements remain truthful.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service"
+      ],
+      "suites": [
+        "deep",
+        "adversarial"
+      ],
+      "title": "Worker reconnect and command delivery integrity",
+      "tools": [
+        "pocketlab-runtime-360"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-07",
+        "AP-09"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "tls-identity-drift",
+      "latest_results": [],
+      "normalized_evidence": "Protocol/cipher class, identity validation boolean and normalized TLS findings.",
+      "owasp": [
+        "A02",
+        "A05"
+      ],
+      "purpose": "The runtime presents the intended certificate identity and approved transport posture.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Spoofing",
+        "Information Disclosure"
+      ],
+      "suites": [
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "TLS identity and transport posture drift",
+      "tools": [
+        "pocketlab-runtime-360",
+        "testssl.sh",
+        "tlsx",
+        "httpx"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-06",
+        "AP-10",
+        "AP-13"
+      ],
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-API-CONTROL"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "audit-event-attribution",
+      "latest_results": [],
+      "normalized_evidence": "Audit event type, actor class, target class and operation correlation only.",
+      "owasp": [
+        "A09"
+      ],
+      "purpose": "Protected operations remain attributable without leaking credentials or raw identity secrets.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Repudiation",
+        "Tampering"
+      ],
+      "suites": [
+        "standard",
+        "deep"
+      ],
+      "title": "Security-sensitive audit attribution",
+      "tools": [
+        "pocketlab-runtime-360"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-08",
+        "AP-11"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "recovery-object-authorization",
+      "latest_results": [],
+      "normalized_evidence": "Status/reason-code and object-class metadata only.",
+      "owasp": [
+        "A01",
+        "A08"
+      ],
+      "purpose": "Recovery objects cannot be read or operated across authorization boundaries.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "Recovery object authorization boundary",
+      "tools": [
+        "pocketlab-runtime-360",
+        "schemathesis"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-04",
+        "AP-11"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "app-install-authority-boundary",
+      "latest_results": [],
+      "normalized_evidence": "Admission/reason-code/execution-path metadata only.",
+      "owasp": [
+        "A01",
+        "A08"
+      ],
+      "purpose": "Install authority remains FastAPI → policy → NATS/worker owned and callers cannot choose argv/subjects.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "App installation control-plane authority",
+      "tools": [
+        "pocketlab-runtime-360",
+        "opa"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-07",
+        "AP-12"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "remote-access-truthfulness",
+      "latest_results": [],
+      "normalized_evidence": "Readiness booleans and fixed listener classifications.",
+      "owasp": [
+        "A05"
+      ],
+      "purpose": "Remote access is shown ready only when all required evidence is actually ready.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Information Disclosure",
+        "Denial of Service"
+      ],
+      "suites": [
+        "standard",
+        "deep"
+      ],
+      "title": "Remote access readiness truthfulness",
+      "tools": [
+        "pocketlab-runtime-360",
+        "nmap",
+        "playwright",
+        "httpx"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-04",
+        "AP-07",
+        "AP-11"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS",
+        "CTRL-OPA-FAIL-CLOSED"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "rate-limit-and-admission-resilience",
+      "latest_results": [],
+      "normalized_evidence": "Request count, max concurrency, status classes and duration only.",
+      "owasp": [
+        "A04",
+        "A05"
+      ],
+      "purpose": "Low-power runtime remains responsive and server-owned admission/idempotency prevents unbounded duplicate work.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Denial of Service",
+        "Repudiation"
+      ],
+      "suites": [
+        "deep",
+        "adversarial"
+      ],
+      "title": "Bounded admission and duplicate-operation resilience",
+      "tools": [
+        "pocketlab-runtime-360",
+        "owasp-zap",
+        "k6"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-07",
+        "AP-11"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "slow-client-resource-exhaustion",
+      "latest_results": [],
+      "normalized_evidence": "Connection count, hold duration and concurrent health status only.",
+      "owasp": [
+        "A05",
+        "A04"
+      ],
+      "purpose": "Two bounded slow clients do not make the control API unavailable.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Denial of Service"
+      ],
+      "suites": [
+        "deep",
+        "adversarial"
+      ],
+      "title": "Bounded slow-client resilience",
+      "tools": [
+        "pocketlab-runtime-360",
+        "k6"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-05"
+      ],
+      "controls": [
+        "CTRL-SUPPLY-CHAIN",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "execution": "dev_pc_deep_provenance_evidence",
+      "id": "release-artifact-tamper",
+      "latest_results": [],
+      "normalized_evidence": "Artifact-presence, digest and signature/provenance status only.",
+      "owasp": [
+        "A06",
+        "A08"
+      ],
+      "purpose": "A modified artifact cannot masquerade as the exact qualified release.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "deep",
+        "adversarial"
+      ],
+      "title": "Release artifact tamper and provenance detection",
+      "tools": [
+        "pocketlab-runtime-360",
+        "cosign",
+        "syft",
+        "grype"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-05"
+      ],
+      "controls": [
+        "CTRL-SUPPLY-CHAIN"
+      ],
+      "execution": "dev_pc_deep_provenance_evidence",
+      "id": "dependency-confusion-and-lock-integrity",
+      "latest_results": [],
+      "normalized_evidence": "Manifest hashes, package identities and normalized advisories only.",
+      "owasp": [
+        "A06",
+        "A08"
+      ],
+      "purpose": "Installed/qualified dependency evidence stays bound to repository-owned lock inputs.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Tampering",
+        "Information Disclosure",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "deep"
+      ],
+      "title": "Dependency lock and resolved graph integrity",
+      "tools": [
+        "pocketlab-runtime-360",
+        "osv-scanner",
+        "syft",
+        "grype",
+        "pip-audit",
+        "npm-audit"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-06"
+      ],
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "execution": "dev_pc_deep_provenance_evidence",
+      "id": "security-evidence-poisoning",
+      "latest_results": [],
+      "normalized_evidence": "Leak counts, schema/reason codes and normalized finding metadata.",
+      "owasp": [
+        "A02",
+        "A08",
+        "A09"
+      ],
+      "purpose": "Tool output cannot fabricate PASS, inject raw secrets/markup, or become authoritative outside its schema.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Information Disclosure"
+      ],
+      "suites": [
+        "deep",
+        "adversarial",
+        "standard"
+      ],
+      "title": "Security evidence poisoning resistance",
+      "tools": [
+        "pocketlab-runtime-360",
+        "gitleaks",
+        "semgrep",
+        "hurl"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-06",
+        "AP-09"
+      ],
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-API-CONTROL",
+        "CTRL-HUMAN-SESSION-CSRF"
+      ],
+      "execution": "dev_pc_deep_provenance_evidence",
+      "id": "unicode-log-and-ui-injection",
+      "latest_results": [],
+      "normalized_evidence": "Escaping booleans and sanitized render classification only.",
+      "owasp": [
+        "A03",
+        "A09"
+      ],
+      "purpose": "Untrusted names/evidence cannot create executable HTML or misleading terminal/audit records.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Information Disclosure"
+      ],
+      "suites": [
+        "deep",
+        "adversarial",
+        "standard"
+      ],
+      "title": "Unicode, terminal and UI injection resistance",
+      "tools": [
+        "playwright-runtime",
+        "pocketlab-runtime-360",
+        "semgrep",
+        "playwright"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-08"
+      ],
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-API-CONTROL"
+      ],
+      "execution": "dev_pc_deep_provenance_evidence",
+      "id": "backup-confidentiality-integrity",
+      "latest_results": [],
+      "normalized_evidence": "Integrity/auth booleans and reason codes; no backup payload persisted.",
+      "owasp": [
+        "A02",
+        "A08",
+        "A01"
+      ],
+      "purpose": "Backup contents remain confidential and tampering is detected before restore admission.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Information Disclosure",
+        "Tampering",
+        "Repudiation"
+      ],
+      "suites": [
+        "deep",
+        "adversarial"
+      ],
+      "title": "Backup confidentiality and integrity",
+      "tools": [
+        "pocketlab-runtime-360",
+        "hurl"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-08"
+      ],
+      "controls": [
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-API-CONTROL"
+      ],
+      "execution": "dev_pc_deep_provenance_evidence",
+      "id": "restore-transaction-integrity",
+      "latest_results": [],
+      "normalized_evidence": "Checkpoint/journal/status metadata only.",
+      "owasp": [
+        "A08",
+        "A09",
+        "A01"
+      ],
+      "purpose": "Interrupted restore cannot expose partially trusted active state and recovery remains deterministic.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service"
+      ],
+      "suites": [
+        "deep",
+        "adversarial"
+      ],
+      "title": "Restore transaction and interruption integrity",
+      "tools": [
+        "pocketlab-runtime-360",
+        "hurl"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-05"
+      ],
+      "controls": [
+        "CTRL-SUPPLY-CHAIN",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "execution": "dev_pc_deep_provenance_evidence",
+      "id": "app-package-provenance",
+      "latest_results": [],
+      "normalized_evidence": "Registered artifact IDs, digests, SBOM/signature status only.",
+      "owasp": [
+        "A06",
+        "A08"
+      ],
+      "purpose": "App installation input is distinguishable from tampered/unqualified artifacts.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "deep"
+      ],
+      "title": "App package and catalog provenance",
+      "tools": [
+        "pocketlab-runtime-360",
+        "cosign",
+        "syft",
+        "trivy"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-02",
+        "AP-07"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "execution": "dev_pc_deep_provenance_evidence",
+      "id": "android-termux-host-hardening",
+      "latest_results": [],
+      "normalized_evidence": "Normalized host findings, applicability and listener posture only.",
+      "owasp": [
+        "A05",
+        "A06"
+      ],
+      "purpose": "Runtime files/services/listeners preserve least exposure and known hardening posture for Termux constraints.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Information Disclosure",
+        "Elevation of Privilege",
+        "Denial of Service"
+      ],
+      "suites": [
+        "deep"
+      ],
+      "title": "Android/Termux runtime host hardening",
+      "tools": [
+        "pocketlab-runtime-360",
+        "lynis",
+        "trivy",
+        "nmap"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-05",
+        "AP-06"
+      ],
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-API-CONTROL"
+      ],
+      "execution": "dev_pc_deep_provenance_evidence",
+      "id": "runtime-env-secret-boundary",
+      "latest_results": [],
+      "normalized_evidence": "Finding metadata and redaction booleans only.",
+      "owasp": [
+        "A02",
+        "A05"
+      ],
+      "purpose": "Backend secrets never become frontend bundles, generated docs, normalized evidence, or browser-readable config.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Information Disclosure",
+        "Tampering"
+      ],
+      "suites": [
+        "deep",
+        "standard"
+      ],
+      "title": "Runtime environment and frontend secret boundary",
+      "tools": [
+        "pocketlab-runtime-360",
+        "gitleaks",
+        "trivy",
+        "playwright"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-07"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "hidden-route-and-debug-surface",
+      "latest_results": [],
+      "normalized_evidence": "Route labels/status classes and normalized safe-template findings.",
+      "owasp": [
+        "A01",
+        "A05"
+      ],
+      "purpose": "Unexpected debug/admin/metrics surfaces are not externally reachable.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Information Disclosure",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "deep",
+        "adversarial"
+      ],
+      "title": "Hidden route and debug surface discovery",
+      "tools": [
+        "pocketlab-runtime-360",
+        "nuclei",
+        "owasp-zap",
+        "katana",
+        "httpx",
+        "ffuf"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-13"
+      ],
+      "controls": [
+        "CTRL-WEBAUTHN-ASSURANCE",
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "approval-continuation-replay",
+      "latest_results": [],
+      "normalized_evidence": "Reason codes, actor classes, binding booleans and continuation-use count.",
+      "owasp": [
+        "A01",
+        "A07",
+        "A08",
+        "A09"
+      ],
+      "purpose": "Approval remains independent, exact-action-bound and single-use.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Repudiation",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "deep",
+        "adversarial"
+      ],
+      "title": "Approval continuation replay and exact-binding integrity",
+      "tools": [
+        "pocketlab-runtime-360",
+        "opa",
+        "hurl"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-14"
+      ],
+      "controls": [
+        "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+        "CTRL-OPA-FAIL-CLOSED"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "temporary-exception-scope-bypass",
+      "latest_results": [],
+      "normalized_evidence": "Scope/time/revocation decision metadata and reason codes only.",
+      "owasp": [
+        "A01",
+        "A08",
+        "A05"
+      ],
+      "purpose": "Temporary exceptions cannot widen beyond approved action/target/time and fail closed after expiry/revocation.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "deep",
+        "adversarial"
+      ],
+      "title": "Temporary exception scope, expiry and revocation",
+      "tools": [
+        "pocketlab-runtime-360",
+        "opa",
+        "hurl"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-11",
+        "AP-12"
+      ],
+      "controls": [
+        "CTRL-POLICY-REVISION-LIFECYCLE",
+        "CTRL-OPA-FAIL-CLOSED"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "policy-known-good-recovery",
+      "latest_results": [],
+      "normalized_evidence": "Revision IDs/hashes, readiness and recovery reason codes only.",
+      "owasp": [
+        "A05",
+        "A08",
+        "A01"
+      ],
+      "purpose": "Bad/stale policy cannot become silently authoritative and known-good recovery remains auditable/fail-closed.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "deep",
+        "adversarial"
+      ],
+      "title": "Policy known-good recovery integrity",
+      "tools": [
+        "pocketlab-runtime-360",
+        "opa",
+        "hurl"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-09",
+        "AP-10",
+        "AP-13"
+      ],
+      "controls": [
+        "CTRL-WEBAUTHN-ASSURANCE"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "webauthn-origin-rpid-mismatch",
+      "latest_results": [],
+      "normalized_evidence": "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states.",
+      "owasp": [
+        "A01",
+        "A07"
+      ],
+      "purpose": "WebAuthn origin/RP-ID binding is never inferred PASS from unrelated browser or password-login evidence.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Spoofing",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "deep",
+        "adversarial"
+      ],
+      "title": "WebAuthn origin and RP-ID assurance remains explicit",
+      "tools": [
+        "playwright"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-04",
+        "AP-13"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS",
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "duplicate-operation-flood",
+      "latest_results": [],
+      "normalized_evidence": "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states.",
+      "owasp": [
+        "A01",
+        "A04",
+        "A09"
+      ],
+      "purpose": "Duplicate submissions cannot create unbounded parallel work, replay approved continuations, or bypass idempotency.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service"
+      ],
+      "suites": [
+        "deep",
+        "adversarial"
+      ],
+      "title": "Duplicate operations remain idempotent and bounded",
+      "tools": [
+        "k6",
+        "hurl"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-09"
+      ],
+      "controls": [
+        "CTRL-HUMAN-SESSION-CSRF"
+      ],
+      "execution": "dev_pc_live_runtime_evidence",
+      "id": "cookie-security-posture",
+      "latest_results": [],
+      "normalized_evidence": "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states.",
+      "owasp": [
+        "A02",
+        "A07"
+      ],
+      "purpose": "Session-bearing cookies are Secure, HttpOnly where applicable, SameSite-scoped, and not over-broad in path/domain.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Spoofing",
+        "Information Disclosure"
+      ],
+      "suites": [
+        "standard",
+        "deep"
+      ],
+      "title": "Browser session cookies retain secure scope and lifecycle flags",
+      "tools": [
+        "playwright"
+      ]
     }
   ],
   "schema_version": "1.0.0",
@@ -2577,6 +4142,41 @@
       ],
       "existing_security_profile": null,
       "explicit_only": true,
+      "external_execution_lane": "dev_pc_live_runtime",
+      "external_scenarios": [
+        "browser-origin-control-plane-bypass",
+        "cross-origin-session-abuse",
+        "csrf-protected-mutation",
+        "owner-session-lifecycle",
+        "authorization-resource-boundary",
+        "websocket-auth-boundary",
+        "pwa-offline-secret-retention",
+        "browser-network-egress-contract",
+        "webauthn-challenge-boundary",
+        "service-worker-version-integrity",
+        "tailnet-service-exposure",
+        "proxy-header-trust-confusion",
+        "malformed-api-state-machine",
+        "device-invite-replay-and-misbinding",
+        "nats-command-replay-integrity",
+        "worker-reconnect-command-integrity",
+        "tls-identity-drift",
+        "recovery-object-authorization",
+        "app-install-authority-boundary",
+        "rate-limit-and-admission-resilience",
+        "slow-client-resource-exhaustion",
+        "release-artifact-tamper",
+        "security-evidence-poisoning",
+        "unicode-log-and-ui-injection",
+        "backup-confidentiality-integrity",
+        "restore-transaction-integrity",
+        "hidden-route-and-debug-surface",
+        "approval-continuation-replay",
+        "temporary-exception-scope-bypass",
+        "policy-known-good-recovery",
+        "webauthn-origin-rpid-mismatch",
+        "duplicate-operation-flood"
+      ],
       "maximum_seconds": 600,
       "purpose": "Qualification-only reviewed adversarial checks limited to fixed local control-boundary requests.",
       "qualification_only": true,
@@ -2604,6 +4204,48 @@
       ],
       "existing_security_profile": "full",
       "explicit_only": true,
+      "external_execution_lane": "dev_pc_live_runtime",
+      "external_scenarios": [
+        "browser-origin-control-plane-bypass",
+        "cross-origin-session-abuse",
+        "csrf-protected-mutation",
+        "owner-session-lifecycle",
+        "authorization-resource-boundary",
+        "websocket-auth-boundary",
+        "pwa-offline-secret-retention",
+        "browser-network-egress-contract",
+        "webauthn-challenge-boundary",
+        "service-worker-version-integrity",
+        "tailnet-service-exposure",
+        "proxy-header-trust-confusion",
+        "malformed-api-state-machine",
+        "device-invite-replay-and-misbinding",
+        "nats-command-replay-integrity",
+        "worker-reconnect-command-integrity",
+        "tls-identity-drift",
+        "audit-event-attribution",
+        "recovery-object-authorization",
+        "app-install-authority-boundary",
+        "remote-access-truthfulness",
+        "rate-limit-and-admission-resilience",
+        "slow-client-resource-exhaustion",
+        "release-artifact-tamper",
+        "dependency-confusion-and-lock-integrity",
+        "security-evidence-poisoning",
+        "unicode-log-and-ui-injection",
+        "backup-confidentiality-integrity",
+        "restore-transaction-integrity",
+        "app-package-provenance",
+        "android-termux-host-hardening",
+        "runtime-env-secret-boundary",
+        "hidden-route-and-debug-surface",
+        "approval-continuation-replay",
+        "temporary-exception-scope-bypass",
+        "policy-known-good-recovery",
+        "webauthn-origin-rpid-mismatch",
+        "duplicate-operation-flood",
+        "cookie-security-posture"
+      ],
       "maximum_seconds": 7200,
       "purpose": "Manual-only extended assurance profile; approved heavyweight tools execute through the fixed DEV-PC lanes and the existing worker-owned Security path.",
       "qualification_only": false,
@@ -2670,6 +4312,31 @@
       ],
       "existing_security_profile": "quick",
       "explicit_only": false,
+      "external_execution_lane": "dev_pc_live_runtime",
+      "external_scenarios": [
+        "browser-origin-control-plane-bypass",
+        "cross-origin-session-abuse",
+        "csrf-protected-mutation",
+        "owner-session-lifecycle",
+        "authorization-resource-boundary",
+        "websocket-auth-boundary",
+        "pwa-offline-secret-retention",
+        "browser-network-egress-contract",
+        "service-worker-version-integrity",
+        "tailnet-service-exposure",
+        "proxy-header-trust-confusion",
+        "malformed-api-state-machine",
+        "device-invite-replay-and-misbinding",
+        "tls-identity-drift",
+        "audit-event-attribution",
+        "recovery-object-authorization",
+        "app-install-authority-boundary",
+        "remote-access-truthfulness",
+        "security-evidence-poisoning",
+        "unicode-log-and-ui-injection",
+        "runtime-env-secret-boundary",
+        "cookie-security-posture"
+      ],
       "maximum_seconds": 1800,
       "purpose": "Normal runtime qualification with the existing Quick scanner, API boundary probes, policy readiness, and threat coverage.",
       "qualification_only": false,

@@ -287,3 +287,744 @@ Registered scenarios are safe invariant definitions. This catalog shows their ca
 | standard | PASS | 66ed279c01 | assurance-b798f7e3a4c64b8b8c780a6c737b9e23 | sanitized evidence | [open](reports/security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23.md) |
 | deep | PASS | 66ed279c01 | assurance-3d7968589ce447f18454d1caf69a10e3 | sanitized evidence | [open](reports/security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3.md) |
 
+<a id="browser-origin-control-plane-bypass"></a>
+## `browser-origin-control-plane-bypass` — Real browser control-plane ownership
+
+**Purpose / invariant:** Browser JavaScript communicates only through approved same-origin HTTP/WebSocket surfaces and never directly reaches NATS, OPA, shell, or internal service ports.
+
+| Field | Value |
+| --- | --- |
+| Suites | standard, deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_browser_runtime_evidence |
+| STRIDE | Spoofing, Tampering, Elevation of Privilege |
+| OWASP | A01, A05, A07 |
+| Attack paths | AP-01, AP-02, AP-07 |
+| Controls | CTRL-BROWSER-NATS, CTRL-API-CONTROL, CTRL-BROWSER-SHELL |
+| Tools/evidence sources | playwright-runtime, pocketlab-runtime-360, owasp-zap, playwright, mitmdump, tshark |
+| Normalized evidence | Sanitized request-count/host-class/port-class metadata only; raw URLs and response bodies are not persisted. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="cross-origin-session-abuse"></a>
+## `cross-origin-session-abuse` — Hostile-origin browser session abuse
+
+**Purpose / invariant:** A hostile origin cannot read protected Pocket Lab API responses or inherit browser authority.
+
+| Field | Value |
+| --- | --- |
+| Suites | standard, deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_browser_runtime_evidence |
+| STRIDE | Spoofing, Information Disclosure, Elevation of Privilege |
+| OWASP | A01, A07, A05 |
+| Attack paths | AP-01, AP-09 |
+| Controls | CTRL-HUMAN-SESSION-CSRF, CTRL-API-CONTROL |
+| Tools/evidence sources | playwright-runtime, pocketlab-runtime-360, owasp-zap, playwright |
+| Normalized evidence | Boolean cross-origin readability, status class, and WebSocket-open result only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="csrf-protected-mutation"></a>
+## `csrf-protected-mutation` — Cross-site protected mutation resistance
+
+**Purpose / invariant:** Cross-site unauthenticated mutation is rejected and authenticated CSRF coverage is never inferred without a real disposable identity.
+
+| Field | Value |
+| --- | --- |
+| Suites | standard, deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Spoofing, Tampering, Elevation of Privilege |
+| OWASP | A01, A07 |
+| Attack paths | AP-09, AP-11 |
+| Controls | CTRL-HUMAN-SESSION-CSRF, CTRL-API-CONTROL, CTRL-OPA-FAIL-CLOSED |
+| Tools/evidence sources | pocketlab-runtime-360, playwright-runtime, owasp-zap, playwright, hurl |
+| Normalized evidence | HTTP status class and explicit authenticated-fixture coverage state. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="owner-session-lifecycle"></a>
+## `owner-session-lifecycle` — Owner session logout and revocation lifecycle
+
+**Purpose / invariant:** HTTP, UI and WebSocket authority disappear promptly after logout or revocation.
+
+| Field | Value |
+| --- | --- |
+| Suites | standard, deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_browser_runtime_evidence |
+| STRIDE | Spoofing, Repudiation, Elevation of Privilege |
+| OWASP | A01, A07, A09 |
+| Attack paths | AP-09, AP-10 |
+| Controls | CTRL-HUMAN-SESSION-CSRF, CTRL-WEBAUTHN-ASSURANCE |
+| Tools/evidence sources | playwright-runtime, playwright |
+| Normalized evidence | Sanitized session-state booleans and rejection classes; no cookies or passkey material. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="authorization-resource-boundary"></a>
+## `authorization-resource-boundary` — Server-side resource authorization boundary
+
+**Purpose / invariant:** Authorization decisions remain server-side and independent of caller-controlled IDs or UI restrictions.
+
+| Field | Value |
+| --- | --- |
+| Suites | standard, deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Tampering, Elevation of Privilege |
+| OWASP | A01, A03 |
+| Attack paths | AP-10, AP-11, AP-13 |
+| Controls | CTRL-API-CONTROL, CTRL-OPA-FAIL-CLOSED, CTRL-ENTERPRISE-ROLE-FINAL-OWNER |
+| Tools/evidence sources | pocketlab-runtime-360, schemathesis, opa, hurl |
+| Normalized evidence | Status/reason-code and policy-decision metadata only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="websocket-auth-boundary"></a>
+## `websocket-auth-boundary` — WebSocket authentication, Origin and revocation boundary
+
+**Purpose / invariant:** Event-stream authority follows the intended browser authorization and Origin policy.
+
+| Field | Value |
+| --- | --- |
+| Suites | standard, deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_browser_runtime_evidence |
+| STRIDE | Spoofing, Information Disclosure, Elevation of Privilege |
+| OWASP | A01, A07, A05 |
+| Attack paths | AP-01, AP-09 |
+| Controls | CTRL-HUMAN-SESSION-CSRF, CTRL-API-CONTROL |
+| Tools/evidence sources | playwright-runtime, pocketlab-runtime-360, playwright, websocat |
+| Normalized evidence | Handshake status and boolean open/reject classification only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="pwa-offline-secret-retention"></a>
+## `pwa-offline-secret-retention` — PWA storage and offline secret retention
+
+**Purpose / invariant:** Browser persistence does not expose secret-shaped material and logout-specific claims require an authenticated disposable fixture.
+
+| Field | Value |
+| --- | --- |
+| Suites | standard, deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_browser_runtime_evidence |
+| STRIDE | Information Disclosure, Tampering, Repudiation |
+| OWASP | A02, A07, A05, A09 |
+| Attack paths | AP-06, AP-09 |
+| Controls | CTRL-EVIDENCE-SANITIZE, CTRL-HUMAN-SESSION-CSRF |
+| Tools/evidence sources | playwright-runtime, playwright |
+| Normalized evidence | Counts and sanitized key classifications; stored values are never read. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="browser-network-egress-contract"></a>
+## `browser-network-egress-contract` — Browser network egress contract
+
+**Purpose / invariant:** The browser contacts only approved Caddy/same-origin destinations plus the fixed local hostile-origin fixture.
+
+| Field | Value |
+| --- | --- |
+| Suites | standard, deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_browser_runtime_evidence |
+| STRIDE | Information Disclosure, Tampering |
+| OWASP | A02, A05 |
+| Attack paths | AP-01, AP-07 |
+| Controls | CTRL-BROWSER-NATS, CTRL-API-CONTROL |
+| Tools/evidence sources | playwright-runtime, nmap, playwright, tshark |
+| Normalized evidence | Request counts, host class, protocol and forbidden-port count. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="webauthn-challenge-boundary"></a>
+## `webauthn-challenge-boundary` — WebAuthn challenge, RP and origin boundary
+
+**Purpose / invariant:** Passkey assertions remain challenge-, origin-, RP- and session-bound.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_browser_runtime_evidence |
+| STRIDE | Spoofing, Tampering, Elevation of Privilege |
+| OWASP | A01, A07 |
+| Attack paths | AP-09, AP-10, AP-13 |
+| Controls | CTRL-WEBAUTHN-ASSURANCE |
+| Tools/evidence sources | playwright-runtime |
+| Normalized evidence | Outcome/reason-code metadata; no private key or assertion payload persists. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="service-worker-version-integrity"></a>
+## `service-worker-version-integrity` — Service-worker and cached-version integrity
+
+**Purpose / invariant:** Service workers remain same-origin and stale cached code never broadens authority semantics.
+
+| Field | Value |
+| --- | --- |
+| Suites | standard, deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_browser_runtime_evidence |
+| STRIDE | Tampering, Information Disclosure |
+| OWASP | A05, A08 |
+| Attack paths | AP-05, AP-09 |
+| Controls | CTRL-SUPPLY-CHAIN, CTRL-API-CONTROL, CTRL-HUMAN-SESSION-CSRF |
+| Tools/evidence sources | playwright-runtime, playwright |
+| Normalized evidence | Service-worker/cache counts and same-origin booleans only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="tailnet-service-exposure"></a>
+## `tailnet-service-exposure` — Private-network and Tailnet service exposure
+
+**Purpose / invariant:** Only intended services are reachable in their registered scope; OPA/NATS monitor/harness remain internal as designed.
+
+| Field | Value |
+| --- | --- |
+| Suites | standard, deep, adversarial |
+| Safety class | PASSIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Spoofing, Information Disclosure, Denial of Service, Elevation of Privilege |
+| OWASP | A01, A05 |
+| Attack paths | AP-07 |
+| Controls | CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS |
+| Tools/evidence sources | pocketlab-runtime-360, nmap, testssl.sh, httpx, tlsx |
+| Normalized evidence | Fixed listener booleans, port labels and readiness classes. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="proxy-header-trust-confusion"></a>
+## `proxy-header-trust-confusion` — Reverse-proxy header trust confusion
+
+**Purpose / invariant:** Proxy metadata never becomes application identity or qualification authority.
+
+| Field | Value |
+| --- | --- |
+| Suites | standard, deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Spoofing, Tampering, Elevation of Privilege |
+| OWASP | A01, A05, A07 |
+| Attack paths | AP-01, AP-07, AP-09 |
+| Controls | CTRL-API-CONTROL, CTRL-HUMAN-SESSION-CSRF |
+| Tools/evidence sources | pocketlab-runtime-360, owasp-zap, nuclei, hurl, mitmdump |
+| Normalized evidence | HTTP status class and marker-acceptance booleans. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="malformed-api-state-machine"></a>
+## `malformed-api-state-machine` — Malformed and invalid API state-machine sequences
+
+**Purpose / invariant:** Multi-step APIs reject invalid state transitions and replay without arbitrary mutation targets.
+
+| Field | Value |
+| --- | --- |
+| Suites | standard, deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Tampering, Repudiation, Denial of Service, Elevation of Privilege |
+| OWASP | A01, A04, A05, A03, A08 |
+| Attack paths | AP-04, AP-11, AP-08, AP-12, AP-13 |
+| Controls | CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS, CTRL-OPA-FAIL-CLOSED, CTRL-INDEPENDENT-APPROVAL-CONTINUATION |
+| Tools/evidence sources | pocketlab-runtime-360, schemathesis, owasp-zap, hurl |
+| Normalized evidence | Status/reason-code and idempotency metadata only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="device-invite-replay-and-misbinding"></a>
+## `device-invite-replay-and-misbinding` — Device invite replay and identity misbinding
+
+**Purpose / invariant:** Invites are one-time and identity-bound; mismatch causes no env overwrite or PM2 restart.
+
+| Field | Value |
+| --- | --- |
+| Suites | standard, deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Spoofing, Tampering, Elevation of Privilege |
+| OWASP | A01, A07 |
+| Attack paths | AP-03, AP-09 |
+| Controls | CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS |
+| Tools/evidence sources | pocketlab-runtime-360, hurl |
+| Normalized evidence | Reason codes, mutation booleans and audit-event identifiers; no invite token persists. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="nats-command-replay-integrity"></a>
+## `nats-command-replay-integrity` — NATS command replay and target integrity
+
+**Purpose / invariant:** Duplicate delivery is idempotent/target-bound and callers never select NATS subjects or envelopes.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Tampering, Repudiation, Denial of Service |
+| OWASP | A01, A08, A09 |
+| Attack paths | AP-04 |
+| Controls | CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS |
+| Tools/evidence sources | pocketlab-runtime-360, nats-cli, hurl |
+| Normalized evidence | Operation IDs, delivery counts and sanitized reason codes only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="worker-reconnect-command-integrity"></a>
+## `worker-reconnect-command-integrity` — Worker reconnect and command delivery integrity
+
+**Purpose / invariant:** Commands are not lost, duplicated or reordered across worker reconnect; acknowledgements remain truthful.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Tampering, Repudiation, Denial of Service |
+| OWASP | A08, A09 |
+| Attack paths | AP-04, AP-07 |
+| Controls | CTRL-EXECUTION-OWNERS, CTRL-API-CONTROL |
+| Tools/evidence sources | pocketlab-runtime-360 |
+| Normalized evidence | Sanitized command IDs/counts and reconnect classifications only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="tls-identity-drift"></a>
+## `tls-identity-drift` — TLS identity and transport posture drift
+
+**Purpose / invariant:** The runtime presents the intended certificate identity and approved transport posture.
+
+| Field | Value |
+| --- | --- |
+| Suites | standard, deep, adversarial |
+| Safety class | PASSIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Spoofing, Information Disclosure |
+| OWASP | A02, A05 |
+| Attack paths | AP-07, AP-09 |
+| Controls | CTRL-API-CONTROL |
+| Tools/evidence sources | pocketlab-runtime-360, testssl.sh, tlsx, httpx |
+| Normalized evidence | Protocol/cipher class, identity validation boolean and normalized TLS findings. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="audit-event-attribution"></a>
+## `audit-event-attribution` — Security-sensitive audit attribution
+
+**Purpose / invariant:** Protected operations remain attributable without leaking credentials or raw identity secrets.
+
+| Field | Value |
+| --- | --- |
+| Suites | standard, deep |
+| Safety class | PASSIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Repudiation, Tampering |
+| OWASP | A09 |
+| Attack paths | AP-06, AP-10, AP-13 |
+| Controls | CTRL-EVIDENCE-SANITIZE, CTRL-API-CONTROL |
+| Tools/evidence sources | pocketlab-runtime-360 |
+| Normalized evidence | Audit event type, actor class, target class and operation correlation only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="recovery-object-authorization"></a>
+## `recovery-object-authorization` — Recovery object authorization boundary
+
+**Purpose / invariant:** Recovery objects cannot be read or operated across authorization boundaries.
+
+| Field | Value |
+| --- | --- |
+| Suites | standard, deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Tampering, Elevation of Privilege |
+| OWASP | A01, A08 |
+| Attack paths | AP-08, AP-11 |
+| Controls | CTRL-API-CONTROL, CTRL-EXPLICIT-PROMOTION |
+| Tools/evidence sources | pocketlab-runtime-360, schemathesis |
+| Normalized evidence | Status/reason-code and object-class metadata only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="app-install-authority-boundary"></a>
+## `app-install-authority-boundary` — App installation control-plane authority
+
+**Purpose / invariant:** Install authority remains FastAPI → policy → NATS/worker owned and callers cannot choose argv/subjects.
+
+| Field | Value |
+| --- | --- |
+| Suites | standard, deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Tampering, Elevation of Privilege |
+| OWASP | A01, A08 |
+| Attack paths | AP-01, AP-04, AP-11 |
+| Controls | CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS |
+| Tools/evidence sources | pocketlab-runtime-360, opa |
+| Normalized evidence | Admission/reason-code/execution-path metadata only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="remote-access-truthfulness"></a>
+## `remote-access-truthfulness` — Remote access readiness truthfulness
+
+**Purpose / invariant:** Remote access is shown ready only when all required evidence is actually ready.
+
+| Field | Value |
+| --- | --- |
+| Suites | standard, deep |
+| Safety class | PASSIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Information Disclosure, Denial of Service |
+| OWASP | A05 |
+| Attack paths | AP-07, AP-12 |
+| Controls | CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS |
+| Tools/evidence sources | pocketlab-runtime-360, nmap, playwright, httpx |
+| Normalized evidence | Readiness booleans and fixed listener classifications. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="rate-limit-and-admission-resilience"></a>
+## `rate-limit-and-admission-resilience` — Bounded admission and duplicate-operation resilience
+
+**Purpose / invariant:** Low-power runtime remains responsive and server-owned admission/idempotency prevents unbounded duplicate work.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Denial of Service, Repudiation |
+| OWASP | A04, A05 |
+| Attack paths | AP-04, AP-07, AP-11 |
+| Controls | CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS, CTRL-OPA-FAIL-CLOSED |
+| Tools/evidence sources | pocketlab-runtime-360, owasp-zap, k6 |
+| Normalized evidence | Request count, max concurrency, status classes and duration only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="slow-client-resource-exhaustion"></a>
+## `slow-client-resource-exhaustion` — Bounded slow-client resilience
+
+**Purpose / invariant:** Two bounded slow clients do not make the control API unavailable.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Denial of Service |
+| OWASP | A05, A04 |
+| Attack paths | AP-07, AP-11 |
+| Controls | CTRL-API-CONTROL |
+| Tools/evidence sources | pocketlab-runtime-360, k6 |
+| Normalized evidence | Connection count, hold duration and concurrent health status only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="release-artifact-tamper"></a>
+## `release-artifact-tamper` — Release artifact tamper and provenance detection
+
+**Purpose / invariant:** A modified artifact cannot masquerade as the exact qualified release.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep, adversarial |
+| Safety class | PASSIVE |
+| Execution | dev_pc_deep_provenance_evidence |
+| STRIDE | Tampering, Elevation of Privilege |
+| OWASP | A06, A08 |
+| Attack paths | AP-05 |
+| Controls | CTRL-SUPPLY-CHAIN, CTRL-EXPLICIT-PROMOTION |
+| Tools/evidence sources | pocketlab-runtime-360, cosign, syft, grype |
+| Normalized evidence | Artifact-presence, digest and signature/provenance status only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="dependency-confusion-and-lock-integrity"></a>
+## `dependency-confusion-and-lock-integrity` — Dependency lock and resolved graph integrity
+
+**Purpose / invariant:** Installed/qualified dependency evidence stays bound to repository-owned lock inputs.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep |
+| Safety class | PASSIVE |
+| Execution | dev_pc_deep_provenance_evidence |
+| STRIDE | Tampering, Information Disclosure, Elevation of Privilege |
+| OWASP | A06, A08 |
+| Attack paths | AP-05 |
+| Controls | CTRL-SUPPLY-CHAIN |
+| Tools/evidence sources | pocketlab-runtime-360, osv-scanner, syft, grype, pip-audit, npm-audit |
+| Normalized evidence | Manifest hashes, package identities and normalized advisories only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="security-evidence-poisoning"></a>
+## `security-evidence-poisoning` — Security evidence poisoning resistance
+
+**Purpose / invariant:** Tool output cannot fabricate PASS, inject raw secrets/markup, or become authoritative outside its schema.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep, adversarial, standard |
+| Safety class | PASSIVE |
+| Execution | dev_pc_deep_provenance_evidence |
+| STRIDE | Tampering, Repudiation, Information Disclosure |
+| OWASP | A02, A08, A09 |
+| Attack paths | AP-06 |
+| Controls | CTRL-EVIDENCE-SANITIZE, CTRL-EXPLICIT-PROMOTION |
+| Tools/evidence sources | pocketlab-runtime-360, gitleaks, semgrep, hurl |
+| Normalized evidence | Leak counts, schema/reason codes and normalized finding metadata. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="unicode-log-and-ui-injection"></a>
+## `unicode-log-and-ui-injection` — Unicode, terminal and UI injection resistance
+
+**Purpose / invariant:** Untrusted names/evidence cannot create executable HTML or misleading terminal/audit records.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep, adversarial, standard |
+| Safety class | PASSIVE |
+| Execution | dev_pc_deep_provenance_evidence |
+| STRIDE | Tampering, Repudiation, Information Disclosure |
+| OWASP | A03, A09 |
+| Attack paths | AP-06, AP-09 |
+| Controls | CTRL-EVIDENCE-SANITIZE, CTRL-API-CONTROL, CTRL-HUMAN-SESSION-CSRF |
+| Tools/evidence sources | playwright-runtime, pocketlab-runtime-360, semgrep, playwright |
+| Normalized evidence | Escaping booleans and sanitized render classification only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="backup-confidentiality-integrity"></a>
+## `backup-confidentiality-integrity` — Backup confidentiality and integrity
+
+**Purpose / invariant:** Backup contents remain confidential and tampering is detected before restore admission.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep, adversarial |
+| Safety class | PASSIVE |
+| Execution | dev_pc_deep_provenance_evidence |
+| STRIDE | Information Disclosure, Tampering, Repudiation |
+| OWASP | A02, A08, A01 |
+| Attack paths | AP-08 |
+| Controls | CTRL-EVIDENCE-SANITIZE, CTRL-EXPLICIT-PROMOTION, CTRL-API-CONTROL |
+| Tools/evidence sources | pocketlab-runtime-360, hurl |
+| Normalized evidence | Integrity/auth booleans and reason codes; no backup payload persisted. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="restore-transaction-integrity"></a>
+## `restore-transaction-integrity` — Restore transaction and interruption integrity
+
+**Purpose / invariant:** Interrupted restore cannot expose partially trusted active state and recovery remains deterministic.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_deep_provenance_evidence |
+| STRIDE | Tampering, Repudiation, Denial of Service |
+| OWASP | A08, A09, A01 |
+| Attack paths | AP-08 |
+| Controls | CTRL-EXPLICIT-PROMOTION, CTRL-API-CONTROL |
+| Tools/evidence sources | pocketlab-runtime-360, hurl |
+| Normalized evidence | Checkpoint/journal/status metadata only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="app-package-provenance"></a>
+## `app-package-provenance` — App package and catalog provenance
+
+**Purpose / invariant:** App installation input is distinguishable from tampered/unqualified artifacts.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep |
+| Safety class | PASSIVE |
+| Execution | dev_pc_deep_provenance_evidence |
+| STRIDE | Tampering, Elevation of Privilege |
+| OWASP | A06, A08 |
+| Attack paths | AP-05 |
+| Controls | CTRL-SUPPLY-CHAIN, CTRL-EXPLICIT-PROMOTION |
+| Tools/evidence sources | pocketlab-runtime-360, cosign, syft, trivy |
+| Normalized evidence | Registered artifact IDs, digests, SBOM/signature status only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="android-termux-host-hardening"></a>
+## `android-termux-host-hardening` — Android/Termux runtime host hardening
+
+**Purpose / invariant:** Runtime files/services/listeners preserve least exposure and known hardening posture for Termux constraints.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep |
+| Safety class | PASSIVE |
+| Execution | dev_pc_deep_provenance_evidence |
+| STRIDE | Information Disclosure, Elevation of Privilege, Denial of Service |
+| OWASP | A05, A06 |
+| Attack paths | AP-02, AP-07 |
+| Controls | CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS |
+| Tools/evidence sources | pocketlab-runtime-360, lynis, trivy, nmap |
+| Normalized evidence | Normalized host findings, applicability and listener posture only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="runtime-env-secret-boundary"></a>
+## `runtime-env-secret-boundary` — Runtime environment and frontend secret boundary
+
+**Purpose / invariant:** Backend secrets never become frontend bundles, generated docs, normalized evidence, or browser-readable config.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep, standard |
+| Safety class | PASSIVE |
+| Execution | dev_pc_deep_provenance_evidence |
+| STRIDE | Information Disclosure, Tampering |
+| OWASP | A02, A05 |
+| Attack paths | AP-01, AP-05, AP-06 |
+| Controls | CTRL-EVIDENCE-SANITIZE, CTRL-API-CONTROL |
+| Tools/evidence sources | pocketlab-runtime-360, gitleaks, trivy, playwright |
+| Normalized evidence | Finding metadata and redaction booleans only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="hidden-route-and-debug-surface"></a>
+## `hidden-route-and-debug-surface` — Hidden route and debug surface discovery
+
+**Purpose / invariant:** Unexpected debug/admin/metrics surfaces are not externally reachable.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Information Disclosure, Elevation of Privilege |
+| OWASP | A01, A05 |
+| Attack paths | AP-01, AP-07 |
+| Controls | CTRL-API-CONTROL |
+| Tools/evidence sources | pocketlab-runtime-360, nuclei, owasp-zap, katana, httpx, ffuf |
+| Normalized evidence | Route labels/status classes and normalized safe-template findings. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="approval-continuation-replay"></a>
+## `approval-continuation-replay` — Approval continuation replay and exact-binding integrity
+
+**Purpose / invariant:** Approval remains independent, exact-action-bound and single-use.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Spoofing, Tampering, Repudiation, Elevation of Privilege |
+| OWASP | A01, A07, A08, A09 |
+| Attack paths | AP-13 |
+| Controls | CTRL-WEBAUTHN-ASSURANCE, CTRL-INDEPENDENT-APPROVAL-CONTINUATION |
+| Tools/evidence sources | pocketlab-runtime-360, opa, hurl |
+| Normalized evidence | Reason codes, actor classes, binding booleans and continuation-use count. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="temporary-exception-scope-bypass"></a>
+## `temporary-exception-scope-bypass` — Temporary exception scope, expiry and revocation
+
+**Purpose / invariant:** Temporary exceptions cannot widen beyond approved action/target/time and fail closed after expiry/revocation.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Tampering, Elevation of Privilege |
+| OWASP | A01, A08, A05 |
+| Attack paths | AP-14 |
+| Controls | CTRL-TEMPORARY-EXCEPTION-SCOPE, CTRL-OPA-FAIL-CLOSED |
+| Tools/evidence sources | pocketlab-runtime-360, opa, hurl |
+| Normalized evidence | Scope/time/revocation decision metadata and reason codes only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="policy-known-good-recovery"></a>
+## `policy-known-good-recovery` — Policy known-good recovery integrity
+
+**Purpose / invariant:** Bad/stale policy cannot become silently authoritative and known-good recovery remains auditable/fail-closed.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Tampering, Repudiation, Denial of Service, Elevation of Privilege |
+| OWASP | A05, A08, A01 |
+| Attack paths | AP-11, AP-12 |
+| Controls | CTRL-POLICY-REVISION-LIFECYCLE, CTRL-OPA-FAIL-CLOSED |
+| Tools/evidence sources | pocketlab-runtime-360, opa, hurl |
+| Normalized evidence | Revision IDs/hashes, readiness and recovery reason codes only. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="webauthn-origin-rpid-mismatch"></a>
+## `webauthn-origin-rpid-mismatch` — WebAuthn origin and RP-ID assurance remains explicit
+
+**Purpose / invariant:** WebAuthn origin/RP-ID binding is never inferred PASS from unrelated browser or password-login evidence.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep, adversarial |
+| Safety class | PASSIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Spoofing, Elevation of Privilege |
+| OWASP | A01, A07 |
+| Attack paths | AP-09, AP-10, AP-13 |
+| Controls | CTRL-WEBAUTHN-ASSURANCE |
+| Tools/evidence sources | playwright |
+| Normalized evidence | Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="duplicate-operation-flood"></a>
+## `duplicate-operation-flood` — Duplicate operations remain idempotent and bounded
+
+**Purpose / invariant:** Duplicate submissions cannot create unbounded parallel work, replay approved continuations, or bypass idempotency.
+
+| Field | Value |
+| --- | --- |
+| Suites | deep, adversarial |
+| Safety class | SAFE_ACTIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Tampering, Repudiation, Denial of Service |
+| OWASP | A01, A04, A09 |
+| Attack paths | AP-04, AP-13 |
+| Controls | CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS, CTRL-INDEPENDENT-APPROVAL-CONTINUATION |
+| Tools/evidence sources | k6, hurl |
+| Normalized evidence | Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states. |
+
+No published latest-suite result currently contains this scenario.
+
+<a id="cookie-security-posture"></a>
+## `cookie-security-posture` — Browser session cookies retain secure scope and lifecycle flags
+
+**Purpose / invariant:** Session-bearing cookies are Secure, HttpOnly where applicable, SameSite-scoped, and not over-broad in path/domain.
+
+| Field | Value |
+| --- | --- |
+| Suites | standard, deep |
+| Safety class | PASSIVE |
+| Execution | dev_pc_live_runtime_evidence |
+| STRIDE | Spoofing, Information Disclosure |
+| OWASP | A02, A07 |
+| Attack paths | AP-09 |
+| Controls | CTRL-HUMAN-SESSION-CSRF |
+| Tools/evidence sources | playwright |
+| Normalized evidence | Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states. |
+
+No published latest-suite result currently contains this scenario.
+

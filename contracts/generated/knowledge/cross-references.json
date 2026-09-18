@@ -10883,6 +10883,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_security_assurance_360.py": [
+        {
+          "source": "reason:identity_unavailable",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_security_assurance_controls.py": [
         {
           "source": "domain:validation",
@@ -29411,6 +29417,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_security_assurance_360.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -32363,6 +32373,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "0b599178e52f698a5f60c4d46f00e4843ebf576e1c8da66214ac17388e8cf7a7"
+    "source_fingerprint": "89d78c364e1841c9c7a54310010eed753cba64309d66266d46a07c16fbf524e0"
   }
 }

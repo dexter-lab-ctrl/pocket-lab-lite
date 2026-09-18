@@ -20,7 +20,7 @@ These use existing canonical IDs and latest published evidence. PASS is bounded 
 
 **Controls:** CTRL-BROWSER-NATS, CTRL-API-CONTROL
 
-**Assurance scenarios:** harness-default-off, harness-auth-boundary, caddy-proof-strip, control-plane-ownership, source-boundaries, adversarial-negative-auth-probes, threat-model-integrity, attack-path-inventory
+**Assurance scenarios:** harness-default-off, harness-auth-boundary, caddy-proof-strip, control-plane-ownership, source-boundaries, adversarial-negative-auth-probes, threat-model-integrity, attack-path-inventory, browser-origin-control-plane-bypass, cross-origin-session-abuse, websocket-auth-boundary, browser-network-egress-contract, proxy-header-trust-confusion, app-install-authority-boundary, runtime-env-secret-boundary, hidden-route-and-debug-surface
 
 | Suite | Automation classification | Automated result | Qualification result | Runtime SHA | Human assurance decision | Findings |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -40,7 +40,7 @@ These use existing canonical IDs and latest published evidence. PASS is bounded 
 
 **Controls:** CTRL-BROWSER-SHELL, CTRL-API-CONTROL
 
-**Assurance scenarios:** harness-default-off, harness-auth-boundary, caddy-proof-strip, control-plane-ownership, source-boundaries, adversarial-negative-auth-probes, threat-model-integrity, attack-path-inventory
+**Assurance scenarios:** harness-default-off, harness-auth-boundary, caddy-proof-strip, control-plane-ownership, source-boundaries, adversarial-negative-auth-probes, threat-model-integrity, attack-path-inventory, browser-origin-control-plane-bypass, android-termux-host-hardening
 
 | Suite | Automation classification | Automated result | Qualification result | Runtime SHA | Human assurance decision | Findings |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -60,7 +60,7 @@ These use existing canonical IDs and latest published evidence. PASS is bounded 
 
 **Controls:** CTRL-EVIDENCE-SANITIZE, CTRL-EXPLICIT-PROMOTION
 
-**Assurance scenarios:** control-plane-ownership, evidence-redaction, security-projection, threat-model-integrity, attack-path-inventory
+**Assurance scenarios:** control-plane-ownership, evidence-redaction, security-projection, threat-model-integrity, attack-path-inventory, pwa-offline-secret-retention, audit-event-attribution, security-evidence-poisoning, unicode-log-and-ui-injection, runtime-env-secret-boundary
 
 | Suite | Automation classification | Automated result | Qualification result | Runtime SHA | Human assurance decision | Findings |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -80,7 +80,7 @@ These use existing canonical IDs and latest published evidence. PASS is bounded 
 
 **Controls:** CTRL-API-CONTROL, CTRL-OPA-FAIL-CLOSED
 
-**Assurance scenarios:** runtime-readiness, policy-readiness, threat-model-integrity, attack-path-inventory
+**Assurance scenarios:** runtime-readiness, policy-readiness, threat-model-integrity, attack-path-inventory, csrf-protected-mutation, authorization-resource-boundary, malformed-api-state-machine, recovery-object-authorization, app-install-authority-boundary, rate-limit-and-admission-resilience, slow-client-resource-exhaustion, policy-known-good-recovery
 
 | Suite | Automation classification | Automated result | Qualification result | Runtime SHA | Human assurance decision | Findings |
 | --- | --- | --- | --- | --- | --- | --- |

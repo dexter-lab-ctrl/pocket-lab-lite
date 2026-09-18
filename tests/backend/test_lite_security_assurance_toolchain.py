@@ -17,7 +17,7 @@ def _module():
 def test_tool_registry_promotes_all_required_tools_to_fixed_harness_contracts():
     toolchain = _module()
     registry = toolchain._registry()
-    assert len(registry["toolchain"]) == 18
+    assert len(registry["toolchain"]) == 31
     assert all(item.get("harness_status") == "ACTIVE" for item in registry["toolchain"].values())
     assert all(item.get("execution_lane") in {"server_phone_worker", "dev_pc_static", "dev_pc_live_runtime"} for item in registry["toolchain"].values())
     assert all(item.get("command_id") and item.get("fixed_target") for item in registry["toolchain"].values())
@@ -29,7 +29,7 @@ def test_check_status_uses_only_terminal_toolchain_vocabulary():
     toolchain = _module()
     result = toolchain.check_toolchain()
     assert result["required_status_vocabulary"] == ["READY", "NOT_APPLICABLE", "FAILED"]
-    assert len(result["tools"]) == 18
+    assert len(result["tools"]) == 31
     assert {item["status"] for item in result["tools"]} <= {"READY", "NOT_APPLICABLE", "FAILED"}
     assert all("binary_path" not in item or not str(item["binary_path"]).startswith("/home/") for item in result["tools"])
 
@@ -60,6 +60,34 @@ def test_fixed_runtime_commands_have_no_caller_target_or_argv_inputs(tmp_path: P
     displayed = toolchain._display_argv(command)
     assert "qualification.example.test:18443" not in displayed
     assert displayed[-1] == "FIXED_CADDY_TLS_IDENTITY:FIXED_CADDY_TLS_PORT"
+
+
+    runtime_command, _ = toolchain._run_command_for_tool(
+        "pocketlab-runtime-360",
+        "adversarial",
+        Path(sys.executable),
+        tmp_path,
+        toolchain._fixed_env(tool_id="pocketlab-runtime-360"),
+    )
+    assert runtime_command == [
+        str(Path(sys.executable)),
+        str(toolchain.LIVE_360_SCRIPT),
+        "adversarial",
+    ]
+    assert "attacker.invalid" not in " ".join(runtime_command)
+
+    browser_command, _ = toolchain._run_command_for_tool(
+        "playwright-runtime",
+        "standard",
+        Path("/usr/bin/node"),
+        tmp_path,
+        toolchain._fixed_env(tool_id="playwright-runtime"),
+    )
+    assert browser_command == [
+        "/usr/bin/node",
+        str(toolchain.BROWSER_360_SCRIPT),
+        "standard",
+    ]
 
 
 def test_osv_and_zap_use_bounded_structured_artifacts(tmp_path: Path):
@@ -187,3 +215,160 @@ def test_baseline_delta_is_stable_and_only_contains_finding_ids(tmp_path: Path, 
     assert second["existing"] == [finding["finding_id"]]
     stored = json.loads((tmp_path / "evidence/baseline.json").read_text())
     assert set(stored) == {"finding_digest", "finding_ids", "sanitized", "updated_at"}
+
+
+def test_external_scenario_aggregation_preserves_not_assessed_and_fail_truth():
+    toolchain = _module()
+    definitions = toolchain._external_scenario_definitions("standard")
+    ids = {item["id"] for item in definitions}
+    assert "browser-origin-control-plane-bypass" in ids
+    assert "owner-session-lifecycle" in ids
+
+    rows = toolchain._aggregate_external_scenarios(
+        "standard",
+        [
+            {
+                "tool_id": "playwright-runtime",
+                "scenario_results": {
+                    "browser-origin-control-plane-bypass": {
+                        "status": "PASS",
+                        "evidence": "fixed browser evidence",
+                    },
+                    "owner-session-lifecycle": {
+                        "status": "NOT_ASSESSED",
+                        "evidence": "disposable identity required",
+                    },
+                },
+            },
+            {
+                "tool_id": "pocketlab-runtime-360",
+                "scenario_results": {
+                    "browser-origin-control-plane-bypass": {
+                        "status": "FAIL",
+                        "evidence": "fixed runtime evidence",
+                    }
+                },
+            },
+        ],
+    )
+    by_id = {item["scenario_id"]: item for item in rows}
+    assert by_id["browser-origin-control-plane-bypass"]["status"] == "FAIL"
+    assert by_id["owner-session-lifecycle"]["status"] == "NOT_ASSESSED"
+
+
+def test_repository_owned_adapters_are_not_promoted_as_scanner_binaries(monkeypatch):
+    toolchain = _module()
+    checked = {
+        "status": "READY",
+        "version": "1.0.0",
+        "version_status": "verified",
+        "checksum_status": "not_managed",
+        "signature_status": "not_applicable",
+    }
+    monkeypatch.setattr(toolchain, "_check_one", lambda tool_id, spec: {"tool_id": tool_id, **checked})
+    monkeypatch.setattr(
+        toolchain,
+        "_candidate",
+        lambda tool_id: Path(sys.executable) if tool_id in {"pocketlab-runtime-360", "playwright-runtime"} else None,
+    )
+    original_registry = toolchain._registry
+    registry = original_registry()
+    registry["toolchain"] = {
+        key: value
+        for key, value in registry["toolchain"].items()
+        if key in {"pocketlab-runtime-360", "playwright-runtime"}
+    }
+    monkeypatch.setattr(toolchain, "_registry", lambda: registry)
+    result = toolchain.install_toolchain()
+    assert result["status"] == "PASS"
+    assert {row["action"] for row in result["tools"]} == {"repository_owned_adapter"}
+
+
+def test_consolidated_expansion_tools_are_registered():
+    toolchain = _module()
+    registry = toolchain._registry()["toolchain"]
+
+    expected = {
+        "playwright",
+        "mitmdump",
+        "hurl",
+        "k6",
+        "websocat",
+        "katana",
+        "httpx",
+        "tlsx",
+        "tshark",
+        "ffuf",
+        "nats-cli",
+        "playwright-runtime",
+        "pocketlab-runtime-360",
+    }
+
+    assert len(registry) == 31
+    assert expected.issubset(registry)
+
+
+def test_consolidated_high_live_finding_is_scenario_fail():
+    toolchain = _module()
+
+    rows = toolchain._aggregate_external_scenarios(
+        "standard",
+        [
+            {
+                "tool_id": "playwright",
+                "status": "PASS",
+                "findings": [
+                    {
+                        "finding_id": "x",
+                        "severity": "high",
+                    }
+                ],
+            },
+            {
+                "tool_id": "playwright-runtime",
+                "status": "PASS",
+                "findings": [],
+                "scenario_results": {
+                    "browser-origin-control-plane-bypass": {
+                        "status": "PASS",
+                        "evidence": "fixed browser observation",
+                        "reason": None,
+                    }
+                },
+            },
+        ],
+    )
+
+    target = next(
+        row
+        for row in rows
+        if row["scenario_id"]
+        == "browser-origin-control-plane-bypass"
+    )
+
+    assert target["status"] == "FAIL"
+
+
+def test_webauthn_human_review_never_auto_promotes_to_pass():
+    toolchain = _module()
+
+    rows = toolchain._aggregate_external_scenarios(
+        "deep",
+        [
+            {
+                "tool_id": "playwright",
+                "status": "PASS",
+                "findings": [],
+            }
+        ],
+    )
+
+    target = next(
+        row
+        for row in rows
+        if row["scenario_id"]
+        == "webauthn-origin-rpid-mismatch"
+    )
+
+    assert target["status"] == "PARTIAL"
+    assert target["human_review_required"] is True

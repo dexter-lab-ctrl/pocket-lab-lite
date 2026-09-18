@@ -479,6 +479,12 @@ def test_suite_listing_exposes_registered_external_tool_contracts(assurance_runt
     assert "bandit" in by_id["standard"]["registered_tools"]
     assert "schemathesis" in by_id["standard"]["external_tools"]
     assert "owasp-zap" in by_id["deep"]["external_tools"]
+    assert "playwright-runtime" in by_id["standard"]["external_tools"]
+    assert "pocketlab-runtime-360" in by_id["adversarial"]["external_tools"]
+    assert by_id["standard"]["external_execution_lane"] == "dev_pc_live_runtime"
+    assert "browser-origin-control-plane-bypass" in by_id["standard"]["external_scenarios"]
+    assert "rate-limit-and-admission-resilience" in by_id["adversarial"]["external_scenarios"]
+    assert "release-artifact-tamper" in by_id["deep"]["external_scenarios"]
     assert "pocketlab-security" in by_id["smoke"]["active_tools"]
 
 

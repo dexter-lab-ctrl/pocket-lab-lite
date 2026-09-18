@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: be8fbd9182208967cbcb0974cd983e0c11794e0d49e78c6188681208aeaa8f28
+source_fingerprint: bff6f238fdf442a8f97e934e78d6d0aef98f15172e14a7a4796bee1c5bc7578c
 schema_revision: 1
 validation_status: generated
 ---
@@ -66,14 +66,18 @@ No current environment values are read or emitted. Secret-like names are classif
 | `LITE_STORYBOOK_URL` | configuration | source-defined or empty | yes | component-dependent | Taskfile.yml, scripts/docs/lite/generate_docs.py |
 | `NATS_CONTAINER` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/check-wsl-docker-desktop.sh |
 | `NATS_HEALTH_URL` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/check-wsl-docker-desktop.sh |
+| `NATS_MONITOR_PORT` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/security_assurance_360.py |
 | `NATS_PASSWORD` | secret | not documented for secret variables | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh |
+| `NATS_PORT` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/security_assurance_360.py |
 | `NATS_SERVICE` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/check-wsl-docker-desktop.sh |
 | `NATS_STATUS_URL` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/check-lite-production-gate-server-phone.sh |
-| `NATS_URL` | configuration | source-defined or empty | yes | component-dependent | Taskfile.yml, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh, scripts/docs/lite/generate_docs.py |
+| `NATS_URL` | configuration | source-defined or empty | yes | component-dependent | Taskfile.yml, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh, scripts/dev/lite/security_assurance_runtime_probe.py, scripts/docs/lite/generate_docs.py |
 | `NATS_USER` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh |
 | `PLAYWRIGHT_BROWSER_REPORT` | configuration | source-defined or empty | no | component-dependent | scripts/dev/check-wsl-ubuntu-dev.sh |
 | `PLAYWRIGHT_REPORT` | configuration | source-defined or empty | no | component-dependent | scripts/test/parity/promote_runtime_verification.py |
 | `PLAYWRIGHT_SCRATCH` | configuration | source-defined or empty | no | component-dependent | scripts/dev/lite/frontend-resource-preflight.sh |
+| `PLAYWRIGHT_SECURITY_CONFIG` | configuration | source-defined or empty | no | component-dependent | scripts/dev/lite/security_assurance_toolchain.py |
+| `PLAYWRIGHT_SECURITY_SPEC` | configuration | source-defined or empty | no | component-dependent | scripts/dev/lite/security_assurance_toolchain.py |
 | `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD` | configuration | source-defined or empty | no | component-dependent | scripts/dev/lite/setup.sh |
 | `POCKETLAB_ACTIVE_CODE_SCAN_EXCLUDES` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/check-iac.sh |
 | `POCKETLAB_ADAPTIVE_EVENT_LOOP_CRITICAL_MS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/adaptive_runtime.py |
@@ -209,6 +213,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_EXISTING_NODE_ID` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py |
 | `POCKETLAB_EXISTING_NODE_NAME` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py |
 | `POCKETLAB_FAULTS_WORKERS` | configuration | 2 | yes | component-dependent | scripts/dev/check-faults.sh, scripts/docs/run_validation_release_gates.py |
+| `POCKETLAB_FIXED_CADDY_HOST` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/security_assurance_toolchain.py |
 | `POCKETLAB_FLAKES_REPEAT` | configuration | ${POCKETLAB_FLAKE_ROUNDS:-3 | yes | component-dependent | scripts/dev/report-flakes.sh, scripts/docs/run_validation_release_gates.py |
 | `POCKETLAB_FLAKES_WORKERS` | configuration | ${POCKETLAB_FLAKE_WORKERS:-2 | yes | component-dependent | scripts/dev/report-flakes.sh, scripts/docs/run_validation_release_gates.py |
 | `POCKETLAB_FLAKE_ROUNDS` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/report-flakes.sh |

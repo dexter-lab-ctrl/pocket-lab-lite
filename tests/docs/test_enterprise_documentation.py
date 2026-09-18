@@ -158,3 +158,19 @@ def test_docs_repository_source_is_static_and_edge_safe():
     )
     for token in forbidden_runtime_dependencies:
         assert token not in source
+
+def test_security_assurance_correlation_renderer_has_no_trailing_whitespace():
+    from scripts.docs.enterprise.security_assurance_correlation import build_projection
+
+    outputs, _model = build_projection()
+    for path, text in outputs.items():
+        if "security-assurance" not in path.as_posix():
+            continue
+        offenders = [
+            index
+            for index, line in enumerate(text.splitlines(), start=1)
+            if line != line.rstrip()
+        ]
+        assert offenders == [], (
+            f"{path} contains trailing whitespace on lines {offenders}"
+        )

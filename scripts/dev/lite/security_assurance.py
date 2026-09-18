@@ -358,10 +358,19 @@ def _write_unified_manifest(*, qualification_id: str, started_at: str, principal
     tool_reports = {}
     for name, value in (toolchain.get("suites") or {}).items() if isinstance(toolchain, dict) else ():
         if isinstance(value, dict):
+            scenario_rows = value.get("scenarios") if isinstance(value.get("scenarios"), list) else []
+            scenario_status_counts: dict[str, int] = {}
+            for row in scenario_rows:
+                if not isinstance(row, dict):
+                    continue
+                status = str(row.get("status") or "NOT_ASSESSED").upper()
+                scenario_status_counts[status] = scenario_status_counts.get(status, 0) + 1
             tool_reports[name] = {
                 "status": value.get("status"),
                 "qualification_id": value.get("qualification_id"),
                 "finding_count": value.get("finding_count"),
+                "scenario_count": len(scenario_rows),
+                "scenario_status_counts": scenario_status_counts,
                 "evidence_dir": value.get("evidence_dir"),
                 "registry_sha256": value.get("registry_sha256"),
             }
@@ -1054,7 +1063,11 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
                     try:
                         import security_assurance_toolchain
 
-                        for tool_suite in ("standard", "deep"):
+                        tool_suites = ["standard"]
+                        if not args.skip_adversarial:
+                            tool_suites.append("adversarial")
+                        tool_suites.append("deep")
+                        for tool_suite in tool_suites:
                             workflow_phase = f"dev_pc_{tool_suite}"
                             tool_result = security_assurance_toolchain.run_suite(tool_suite)
                             toolchain_suites[tool_suite] = tool_result
@@ -1206,7 +1219,11 @@ def _parser() -> argparse.ArgumentParser:
     qualify.add_argument("--max-poll-seconds", type=float, default=MAX_POLL_SECONDS)
     qualify.add_argument("--skip-standard", action="store_true")
     qualify.add_argument("--skip-adversarial", action="store_true")
-    qualify.add_argument("--full", action="store_true", help="run the fixed DEV-PC Standard and Deep tool lanes after phone Smoke")
+    qualify.add_argument(
+        "--full",
+        action="store_true",
+        help="run the fixed DEV-PC Standard, Adversarial, and Deep 360-degree tool lanes after phone Smoke",
+    )
     qualify.add_argument(
         "--fault-id",
         choices=("worker_restart_once", "nats_restart_once", "opa_restart_once", "nats_pause_probe_restore", "opa_pause_probe_restore"),

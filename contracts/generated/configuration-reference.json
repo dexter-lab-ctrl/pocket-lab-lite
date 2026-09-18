@@ -790,6 +790,24 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "NATS_MONITOR_PORT",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/security_assurance_360.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
         "pocket-lab-final-structure"
       ],
       "deprecated_aliases": [],
@@ -802,6 +820,24 @@
       ],
       "safe_default": "not documented for secret variables",
       "secret_classification": "secret",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "NATS_PORT",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/security_assurance_360.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
       "wsl2": true
     },
     {
@@ -856,6 +892,7 @@
       "runtime_readers": [
         "Taskfile.yml",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh",
+        "scripts/dev/lite/security_assurance_runtime_probe.py",
         "scripts/docs/lite/generate_docs.py"
       ],
       "safe_default": "source-defined or empty",
@@ -929,6 +966,42 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "scripts/dev/lite/frontend-resource-preflight.sh"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "PLAYWRIGHT_SECURITY_CONFIG",
+      "production": false,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/security_assurance_toolchain.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "PLAYWRIGHT_SECURITY_SPEC",
+      "production": false,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/security_assurance_toolchain.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -3459,6 +3532,24 @@
         "scripts/docs/run_validation_release_gates.py"
       ],
       "safe_default": "2",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_FIXED_CADDY_HOST",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/security_assurance_toolchain.py"
+      ],
+      "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
       "wsl2": true
     },
@@ -16573,7 +16664,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "792c75766a14340d750b6dc093d2a4236fcd9982c99da3dd9b3d47c2cc85ca5e",
+    "aggregate_fingerprint": "fb31e278c6e309d1cc60962d74ad3223f8f41d4ab86320574dc1612e6884214e",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -16691,7 +16782,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_runtime_services.py": "712eecd5baf85fc4deab04cb2aedc65b3fa698c2173d88c37979dc118e6499fa",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_safe_read_headers.py": "f8daa3d6fb7092a999bc5d2a450ebaf2c8a45850834fd60f7c9b8efdfa4f034b",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py": "1771fdbf5772cbb52f31c400be21879622d61d7df72fa9699d503e6a7bbe1437",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py": "bd509f8d62c039aa57f292cca3705dacb5457dd8ebc1eba713c2b121851374e2",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py": "4767c0a07c2982f57cd8e7f42f2e8d0d2497f16d52ca9272d60e6a309c28d43b",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_evidence.py": "3c5a4c9bc7ede905706fe77d781528e46462e19c58906cdd142d17edc2f2a907",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_generation.py": "5bcd9ce99c8247703fb3c226fb1e3a0cf98cd1f0902a959ba5f903b9111f0721",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_maintenance.py": "9ea0f234b155297a9008a509b80dd99f19486cce23b91838c2690dfdcc98c78d",

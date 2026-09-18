@@ -16,7 +16,7 @@ generator_version: 3
 
 > Need physical repository structure, execution ownership, Uses/Used-by, symbols, and bounded impact? Open the separate [Codebase Map](codebase-map.md). This Repository Map retains reverse source→Knowledge semantics.
 
-<div class="pl-repo-summary"><div><span>architecture</span><strong>1</strong><small>mapped sources</small></div><div><span>contracts</span><strong>21</strong><small>mapped sources</small></div><div><span>docs</span><strong>3</strong><small>mapped sources</small></div><div><span>pocket-lab-final-structure</span><strong>101</strong><small>mapped sources</small></div><div><span>runbooks</span><strong>5</strong><small>mapped sources</small></div><div><span>scripts</span><strong>7</strong><small>mapped sources</small></div><div><span>src</span><strong>22</strong><small>mapped sources</small></div><div><span>tasks</span><strong>1</strong><small>mapped sources</small></div><div><span>tests</span><strong>227</strong><small>mapped sources</small></div></div>
+<div class="pl-repo-summary"><div><span>architecture</span><strong>1</strong><small>mapped sources</small></div><div><span>contracts</span><strong>21</strong><small>mapped sources</small></div><div><span>docs</span><strong>3</strong><small>mapped sources</small></div><div><span>pocket-lab-final-structure</span><strong>101</strong><small>mapped sources</small></div><div><span>runbooks</span><strong>5</strong><small>mapped sources</small></div><div><span>scripts</span><strong>7</strong><small>mapped sources</small></div><div><span>src</span><strong>22</strong><small>mapped sources</small></div><div><span>tasks</span><strong>1</strong><small>mapped sources</small></div><div><span>tests</span><strong>229</strong><small>mapped sources</small></div></div>
 
 ## architecture
 
@@ -317,6 +317,7 @@ generator_version: 3
 <article class="pl-repository-card"><code>tests/backend/test_lite_security.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/backend/test_lite_security.py</span></div></article>
 <article class="pl-repository-card"><code>tests/backend/test_lite_security_advanced_optimization.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/backend/test_lite_security_advanced_optimization.py</span></div></article>
 <article class="pl-repository-card"><code>tests/backend/test_lite_security_assurance.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/backend/test_lite_security_assurance.py</span></div></article>
+<article class="pl-repository-card"><code>tests/backend/test_lite_security_assurance_360.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/backend/test_lite_security_assurance_360.py</span></div></article>
 <article class="pl-repository-card"><code>tests/backend/test_lite_security_assurance_controls.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/backend/test_lite_security_assurance_controls.py</span></div></article>
 <article class="pl-repository-card"><code>tests/backend/test_lite_security_assurance_portability.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/backend/test_lite_security_assurance_portability.py</span></div></article>
 <article class="pl-repository-card"><code>tests/backend/test_lite_security_assurance_scenario_contracts.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/backend/test_lite_security_assurance_scenario_contracts.py</span></div></article>
@@ -428,6 +429,7 @@ generator_version: 3
 <article class="pl-repository-card"><code>tests/e2e/lite-parity.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-parity.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-phase9-qualification.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-phase9-qualification.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-rules-activation-progress.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-rules-activation-progress.spec.ts</span></div></article>
+<article class="pl-repository-card"><code>tests/e2e/lite-security-runtime.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-security-runtime.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-test-helpers.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-test-helpers.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-visual-devices.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-visual-devices.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-visual-overlays.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-visual-overlays.spec.ts</span></div></article>

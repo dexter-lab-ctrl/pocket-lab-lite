@@ -6,25 +6,58 @@ import re
 from pathlib import Path
 from typing import Mapping
 
-from security_assurance_correlation_data import (
-    ARCHITECTURE, REPORTS, SCENARIOS, SUITES, THREAT_MODEL, TOOLS, WALKTHROUGHS,
-    build_model, current_hashes,
-)
+try:
+    from .security_assurance_correlation_data import (
+        ARCHITECTURE,
+        REPORTS,
+        SCENARIOS,
+        SUITES,
+        THREAT_MODEL,
+        TOOLS,
+        WALKTHROUGHS,
+        build_model,
+        current_hashes,
+    )
+    from .security_assurance_correlation_render import (
+        stable,
+        hub,
+        model_and_evidence,
+        walkthroughs,
+        stride,
+        owasp,
+        correlation_page,
+        scenario_model,
+        how_to_read,
+        threat_assurance,
+        migration,
+    )
+except ImportError:  # direct script execution compatibility
+    from security_assurance_correlation_data import (
+        ARCHITECTURE,
+        REPORTS,
+        SCENARIOS,
+        SUITES,
+        THREAT_MODEL,
+        TOOLS,
+        WALKTHROUGHS,
+        build_model,
+        current_hashes,
+    )
+    from security_assurance_correlation_render import (
+        stable,
+        hub,
+        model_and_evidence,
+        walkthroughs,
+        stride,
+        owasp,
+        correlation_page,
+        scenario_model,
+        how_to_read,
+        threat_assurance,
+        migration,
+    )
 
 _current_hashes = current_hashes
-from security_assurance_correlation_render import (
-    stable,
-    hub,
-    model_and_evidence,
-    walkthroughs,
-    stride,
-    owasp,
-    correlation_page,
-    scenario_model,
-    how_to_read,
-    threat_assurance,
-    migration,
-)
 
 ROOT = Path(__file__).resolve().parents[3]
 CORRELATION = Path("contracts/generated/documentation-enterprise/security-assurance-correlation.json")

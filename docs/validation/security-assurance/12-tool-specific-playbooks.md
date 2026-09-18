@@ -48,3 +48,28 @@ Termux while still be first-class in the DEV-PC lane. A runtime lane may be
 DEV-PC → actual Server Phone, not phone-native. A `NOT_APPLICABLE` Cosign result
 means no signed artifact is registered, not that signature verification was
 skipped silently. All limitations must remain visible in the report.
+
+## Consolidated 360-degree runtime tool lanes
+
+The registry below extends the existing detailed playbooks. Exact command,
+target, timeout, parser and sanitizer contracts remain authoritative in
+`security/assurance/tools.yaml`.
+
+| Tool | Lane | Suites | Fixed target |
+| --- | --- | --- | --- |
+| `pocketlab-runtime-360` | `dev_pc_live_runtime` | standard, deep, adversarial | `fixed_server_phone_runtime_tunnels` |
+| `playwright-runtime` | `dev_pc_live_runtime` | standard, deep, adversarial | `fixed_caddy_browser_runtime` |
+| `playwright` | `dev_pc_live_runtime` | standard, deep, adversarial | `approved_server_phone_caddy_tls_tunnel` |
+| `mitmdump` | `dev_pc_live_runtime` | standard, deep, adversarial | `approved_server_phone_api_tunnel` |
+| `hurl` | `dev_pc_live_runtime` | standard, deep, adversarial | `approved_server_phone_caddy_tls_tunnel` |
+| `k6` | `dev_pc_live_runtime` | deep, adversarial | `approved_server_phone_caddy_tls_tunnel` |
+| `websocat` | `dev_pc_live_runtime` | standard, deep, adversarial | `approved_server_phone_api_tunnel` |
+| `katana` | `dev_pc_live_runtime` | deep, adversarial | `approved_server_phone_caddy_tls_tunnel` |
+| `httpx` | `dev_pc_live_runtime` | standard, deep, adversarial | `approved_server_phone_api_tunnel` |
+| `tlsx` | `dev_pc_live_runtime` | standard, deep, adversarial | `approved_server_phone_caddy_tls_tunnel` |
+| `tshark` | `dev_pc_live_runtime` | standard, deep, adversarial | `approved_loopback_listener_set` |
+| `ffuf` | `dev_pc_live_runtime` | deep, adversarial | `approved_server_phone_caddy_tls_tunnel` |
+| `nats-cli` | `dev_pc_live_runtime` | deep, adversarial | `approved_loopback_listener_set` |
+
+These additions do not create a generic command runner. Server Phone is a
+consumer/qualification target, never the development workspace.
