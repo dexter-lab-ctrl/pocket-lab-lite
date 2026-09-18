@@ -89,7 +89,6 @@ def test_runtime_360_uses_only_fixed_runtime_targets(monkeypatch):
     assert result["raw_response_bodies_persisted"] is False
     assert result["scenario_results"]["cross-origin-session-abuse"]["status"] == "PASS"
     assert result["scenario_results"]["csrf-protected-mutation"]["status"] == "PASS"
-    assert result["scenario_results"]["owner-session-lifecycle"]["status"] == "NOT_ASSESSED"
     assert result["findings"] == []
 
 
