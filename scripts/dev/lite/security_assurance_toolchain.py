@@ -774,6 +774,16 @@ def install_toolchain() -> dict[str, Any]:
         if lane == "server_phone_worker":
             results.append({"tool_id": tool_id, "status": "READY", "action": "server_worker_owned", "sanitized": True})
             continue
+        if tool_id in {"pocketlab-runtime-360", "playwright-runtime"}:
+            checked = _check_one(tool_id, spec)
+            results.append({
+                "tool_id": tool_id,
+                "action": "repository_owned_adapter",
+                "check": checked,
+                "status": "PASS" if checked.get("status") in {"READY", "NOT_APPLICABLE"} else "FAIL",
+                "sanitized": True,
+            })
+            continue
         source = _candidate(tool_id)
         try:
             current = _check_one(tool_id, spec) if source is not None else None
