@@ -9,4 +9,6 @@ Content-Type: application/json
 X-Pocket-Lab-Harness-Session: forged
 X-Forwarded-For: 127.0.0.1
 {"suite_id":"smoke"}
-HTTP >= 400
+HTTP *
+[Asserts]
+status >= 400
