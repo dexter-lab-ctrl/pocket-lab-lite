@@ -950,7 +950,7 @@ def _parse_findings(
 ) -> list[dict[str, Any]]:
     findings: list[dict[str, Any]] = []
     payload = artifact_payload if artifact_payload is not None else _parse_json(stdout)
-    if tool_id in {"mitmdump", "websocat", "tshark", "nats-cli"} and isinstance(payload, dict):
+    if tool_id in {"mitmdump", "websocat", "tshark", "nats-cli", "httpx"} and isinstance(payload, dict):
         for item in payload.get("security_findings") or []:
             if isinstance(item, Mapping):
                 finding = _base_finding(
@@ -970,10 +970,6 @@ def _parse_findings(
         unexpected = int(stats.get("unexpected") or 0)
         if unexpected:
             findings.append(_base_finding(tool_id=tool_id, suite_id=suite_id, identity=f"playwright-unexpected-{unexpected}", title="Live browser security assertion failed", severity="high", summary=f"{unexpected} fixed browser security assertion(s) failed against the qualified runtime.", component="browser/PWA runtime"))
-        return findings
-    if tool_id == "httpx" and stdout.strip():
-        findings.append(_base_finding(tool_id=tool_id, suite_id=suite_id, identity="tailnet-direct-fastapi", title="Direct FastAPI unexpectedly reachable on private network", severity="high", summary="The fixed Tailnet exposure probe observed the direct FastAPI service outside Caddy.", component="private-network exposure"))
-        findings[-1]["attack_paths"] = ["AP-07"]
         return findings
     if tool_id == "katana":
         if any("/api/lite/harness" in line or "/debug" in line or "/admin" in line for line in stdout.splitlines()):
@@ -1304,6 +1300,7 @@ def _scenario_results(suite_id: str, tool_results: list[dict[str, Any]]) -> list
         missing = sorted(set(external) - set(by_tool))
         findings = [finding for item in evidence for finding in item.get("findings") or [] if isinstance(finding, Mapping)]
         severe = [finding for finding in findings if str(finding.get("severity") or "").casefold() in {"critical", "high"}]
+        moderate = [finding for finding in findings if str(finding.get("severity") or "").casefold() == "medium"]
         incomplete = [item for item in evidence if str(item.get("status") or "") in {"FAILED", "PARTIAL", "BLOCKED", "NOT_RUN"}]
         human_review = str(definition.get("id") or "") == "webauthn-origin-rpid-mismatch"
         if severe:
@@ -1312,9 +1309,9 @@ def _scenario_results(suite_id: str, tool_results: list[dict[str, Any]]) -> list
         elif missing or not evidence:
             status = "BLOCKED"
             reason = "required_live_tool_unavailable"
-        elif incomplete or human_review:
+        elif incomplete or human_review or moderate:
             status = "PARTIAL"
-            reason = "human_review_required" if human_review else "runtime_evidence_incomplete"
+            reason = "human_review_required" if human_review else "runtime_evidence_incomplete" if incomplete else "security_observation_requires_review"
         else:
             status = "PASS"
             reason = None
@@ -1352,10 +1349,7 @@ def _run_command_for_tool(tool_id: str, suite_id: str, binary: Path, workspace: 
     if tool_id == "nats-cli":
         return [sys.executable, str(RUNTIME_PROBE), "nats"], None
     if tool_id == "httpx":
-        tailnet = _fixed_tailnet_ip()
-        if tailnet is None:
-            raise RuntimeError("remote_access_not_ready")
-        return [str(binary), "-u", f"http://{tailnet}:8080/health", "-silent", "-status-code", "-no-color", "-timeout", "3", "-retries", "0"], None
+        return [sys.executable, str(RUNTIME_PROBE), "tailnet"], None
     if tool_id == "tlsx":
         sni = _fixed_tls_sni()
         if sni is None:
