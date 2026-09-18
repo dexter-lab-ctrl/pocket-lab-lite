@@ -346,8 +346,6 @@ def _fixed_env(*, tool_id: str | None = None, nmap_data: Path | None = None) -> 
         "NPM_CONFIG_UPDATE_NOTIFIER": "false",
         "NPM_CONFIG_OFFLINE": "true",
     }
-    if tool_id == "httpx":
-        return {"available": _fixed_tailnet_ip() is not None, "target": "fixed_tailnet_runtime", "failure_code": None if _fixed_tailnet_ip() is not None else "remote_access_not_ready", "sanitized": True}
     if tool_id == "testssl.sh":
         # The fixed target is an IP-based local tunnel.  Avoid DNS helpers
         # and any network discovery outside that tunnel.
@@ -1233,6 +1231,9 @@ def _live_target_probe(tool_id: str) -> dict[str, Any]:
             return {"available": False, "target": "fixed_api_tunnel", "http_status": int(exc.code), "failure_code": "runtime_target_unhealthy", "sanitized": True}
         except (OSError, urllib.error.URLError):
             return {"available": False, "target": "fixed_api_tunnel", "failure_code": "runtime_target_unavailable", "sanitized": True}
+    if tool_id == "httpx":
+        tailnet = _fixed_tailnet_ip()
+        return {"available": tailnet is not None, "target": "fixed_tailnet_runtime", "failure_code": None if tailnet is not None else "remote_access_not_ready", "sanitized": True}
     if tool_id == "testssl.sh":
         sni = _fixed_tls_sni()
         if sni is None:
@@ -1457,6 +1458,7 @@ def _display_argv(argv: Iterable[str]) -> list[str]:
     """Return a safe, fixed-command representation for evidence."""
     displayed: list[str] = []
     fixed_sni = _fixed_tls_sni()
+    fixed_tailnet = _fixed_tailnet_ip()
     for value in argv:
         item = str(value)
         if item == API_BASE:
@@ -1469,6 +1471,10 @@ def _display_argv(argv: Iterable[str]) -> list[str]:
             displayed.append("FIXED_CADDY_TLS_IDENTITY")
         elif fixed_sni and item == f"{fixed_sni}:18443":
             displayed.append("FIXED_CADDY_TLS_IDENTITY:FIXED_CADDY_TLS_PORT")
+        elif fixed_tailnet and fixed_tailnet in item:
+            displayed.append(item.replace(fixed_tailnet, "FIXED_SERVER_PHONE_TAILNET_IP"))
+        elif fixed_sni and fixed_sni in item:
+            displayed.append(item.replace(fixed_sni, "FIXED_CADDY_TLS_IDENTITY"))
         else:
             displayed.append(_display_path(Path(item)) if item.startswith("/") else item)
     return displayed
