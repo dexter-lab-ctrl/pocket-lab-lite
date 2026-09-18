@@ -29,6 +29,7 @@ EXECUTIONS = {
     "fixed_negative_auth_probes",
     "canonical_threat_model_check",
     "attack_path_inventory",
+    "dev_pc_live_runtime_evidence",
 }
 LIFECYCLE = {
     "precondition", "action", "expected_invariant", "pass_condition", "fail_condition",
@@ -86,9 +87,17 @@ def test_all_suite_scenario_references_exist_and_safety_classes_are_allowed():
     scenario_map = {item["id"]: item for item in _yaml(SCENARIOS)["scenarios"]}
     for suite_id, suite in _yaml(SUITES)["profiles"].items():
         allowed = set(suite["allowed_safety_classes"])
-        for scenario_id in suite["scenarios"]:
+        phone = set(suite["scenarios"])
+        dev_pc = set(suite.get("dev_pc_scenarios", []))
+        assert phone.isdisjoint(dev_pc)
+        for scenario_id in phone:
             assert scenario_id in scenario_map, (suite_id, scenario_id)
             assert scenario_map[scenario_id]["safety_class"] in allowed
+        for scenario_id in dev_pc:
+            assert scenario_id in scenario_map, (suite_id, scenario_id)
+            assert scenario_map[scenario_id]["safety_class"] in allowed
+            assert scenario_map[scenario_id]["execution"] == "dev_pc_live_runtime_evidence"
+            assert suite_id in scenario_map[scenario_id]["suites"]
 
 
 def test_caller_request_model_has_no_arbitrary_execution_inputs():
@@ -132,3 +141,44 @@ def test_scenario_evidence_tool_references_are_registered():
     tools = {item["id"] for item in _yaml(TOOLS)["toolchain"]}
     for scenario in _yaml(SCENARIOS)["scenarios"]:
         assert set(scenario.get("evidence_tools", [])).issubset(tools)
+
+
+def test_360_runtime_expansion_is_fixed_and_dev_pc_owned():
+    tools = {item["id"]: item for item in _yaml(TOOLS)["toolchain"]}
+    expected = {
+        "playwright", "mitmdump", "hurl", "k6", "websocat", "katana",
+        "httpx", "tlsx", "tshark", "ffuf", "nats-cli",
+    }
+    assert len(tools) == 29
+    assert expected.issubset(tools)
+    for tool_id in expected:
+        item = tools[tool_id]
+        assert item["execution_lane"] == "dev_pc_live_runtime"
+        assert item["harness_status"] == "ACTIVE"
+        assert item["allowed_mode"] == "fixed_registered_command"
+        assert item["fixed_target"] in {
+            "approved_server_phone_api_tunnel",
+            "approved_server_phone_caddy_tls_tunnel",
+            "approved_loopback_listener_set",
+        }
+        rendered = " ".join(item["fixed_argv"]).casefold()
+        for forbidden in ("caller_url", "caller_host", "caller_port", "caller_argv", "caller_subject"):
+            assert forbidden not in rendered
+
+    profiles = _yaml(SUITES)["profiles"]
+    assert len(profiles["standard"]["dev_pc_scenarios"]) == 18
+    assert len(profiles["deep"]["dev_pc_scenarios"]) == 32
+    assert len(profiles["adversarial"]["dev_pc_scenarios"]) == 27
+    assert profiles["smoke"]["dev_pc_scenarios"] == []
+
+
+def test_runtime_probe_cli_has_no_arbitrary_target_options():
+    probe = (ROOT / "scripts/dev/lite/security_assurance_runtime_probe.py").read_text(encoding="utf-8")
+    assert 'choices=("websocket","mitmproxy","tshark","nats","tailnet")' in probe
+    for forbidden in ('add_argument("--url"', 'add_argument("--host"', 'add_argument("--port"', 'add_argument("--argv"', 'add_argument("--subject"'):
+        assert forbidden not in probe
+
+    config = (ROOT / "playwright.security.config.ts").read_text(encoding="utf-8")
+    assert "LITE_BASE_URL" not in config
+    assert "caddy-sni" in config
+    assert "--host-resolver-rules=MAP" in config
