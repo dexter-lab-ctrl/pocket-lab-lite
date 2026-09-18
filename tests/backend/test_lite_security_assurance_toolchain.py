@@ -17,7 +17,7 @@ def _module():
 def test_tool_registry_promotes_all_required_tools_to_fixed_harness_contracts():
     toolchain = _module()
     registry = toolchain._registry()
-    assert len(registry["toolchain"]) == 18
+    assert len(registry["toolchain"]) == 29
     assert all(item.get("harness_status") == "ACTIVE" for item in registry["toolchain"].values())
     assert all(item.get("execution_lane") in {"server_phone_worker", "dev_pc_static", "dev_pc_live_runtime"} for item in registry["toolchain"].values())
     assert all(item.get("command_id") and item.get("fixed_target") for item in registry["toolchain"].values())
@@ -29,7 +29,7 @@ def test_check_status_uses_only_terminal_toolchain_vocabulary():
     toolchain = _module()
     result = toolchain.check_toolchain()
     assert result["required_status_vocabulary"] == ["READY", "NOT_APPLICABLE", "FAILED"]
-    assert len(result["tools"]) == 18
+    assert len(result["tools"]) == 29
     assert {item["status"] for item in result["tools"]} <= {"READY", "NOT_APPLICABLE", "FAILED"}
     assert all("binary_path" not in item or not str(item["binary_path"]).startswith("/home/") for item in result["tools"])
 
@@ -187,3 +187,46 @@ def test_baseline_delta_is_stable_and_only_contains_finding_ids(tmp_path: Path, 
     assert second["existing"] == [finding["finding_id"]]
     stored = json.loads((tmp_path / "evidence/baseline.json").read_text())
     assert set(stored) == {"finding_digest", "finding_ids", "sanitized", "updated_at"}
+
+
+def test_adversarial_dev_pc_lane_and_scenario_truthfulness(monkeypatch, tmp_path):
+    toolchain = _module()
+    monkeypatch.setattr(toolchain, "EVIDENCE_ROOT", tmp_path / "evidence")
+    monkeypatch.setattr(toolchain, "MANAGED_ROOT", tmp_path / "managed")
+    monkeypatch.setattr(toolchain, "_candidate", lambda _tool_id: Path(sys.executable))
+    monkeypatch.setattr(toolchain, "_probe_version", lambda _tool_id, _binary: {"status": "READY", "version": "1.0.0", "version_status": "verified"})
+    monkeypatch.setattr(toolchain, "_live_target_probe", lambda _tool_id: {"available": True, "sanitized": True})
+    monkeypatch.setattr(toolchain, "_run_command_for_tool", lambda *_args: ([sys.executable, "-c", ""], None))
+    monkeypatch.setattr(toolchain, "_bounded_run", lambda *_args, **_kwargs: {"status": "PASS", "exit_code": 0, "duration_ms": 1, "stdout": "", "stderr": ""})
+    monkeypatch.setattr(toolchain, "_parse_findings", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(toolchain, "_git_revision", lambda: "a" * 40)
+    result = toolchain.run_suite("adversarial")
+    assert result["scenario_count"] == 27
+    assert result["status"] in {"PASS", "PARTIAL"}
+    assert {row["scenario_id"] for row in result["scenarios"]} >= {"websocket-auth-boundary", "rate-limit-and-admission-resilience"}
+
+
+def test_dev_pc_scenario_high_finding_is_fail():
+    toolchain = _module()
+    rows = toolchain._scenario_results(
+        "standard",
+        [
+            {"tool_id": "playwright", "status": "PASS", "findings": [{"finding_id": "x", "severity": "high"}]},
+            {"tool_id": "mitmdump", "status": "PASS", "findings": []},
+            {"tool_id": "tshark", "status": "PASS", "findings": []},
+        ],
+    )
+    target = next(row for row in rows if row["scenario_id"] == "browser-origin-control-plane-bypass")
+    assert target["status"] == "FAIL"
+    assert target["failure_code"] == "security_invariant_violation"
+
+
+def test_webauthn_runtime_scenario_never_auto_promotes_to_pass():
+    toolchain = _module()
+    rows = toolchain._scenario_results(
+        "deep",
+        [{"tool_id": "playwright", "status": "PASS", "findings": []}],
+    )
+    target = next(row for row in rows if row["scenario_id"] == "webauthn-origin-rpid-mismatch")
+    assert target["status"] == "PARTIAL"
+    assert target["human_review_required"] is True
