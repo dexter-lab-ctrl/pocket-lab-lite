@@ -256,6 +256,117 @@ GITHUB_RECIPES: dict[str, dict[str, Any]] = {
         "source": "zaproxy/zaproxy:v2.17.0 official release asset",
         "signature_status": "release_sha256_from_zap_admin",
     },
+    "hurl": {
+        "version": "8.0.1",
+        "url": "https://github.com/Orange-OpenSource/hurl/releases/download/8.0.1/hurl-8.0.1-x86_64-unknown-linux-gnu.tar.gz",
+        "sha256": "cac7c4670d69444db120edb21fe06c97ba8c80dcc52279957c8dd18f05fb0c06",
+        "archive": "tar.gz",
+        "binary_name": "hurl",
+        "architectures": ["x86_64", "amd64"],
+        "source": "Orange-OpenSource/hurl:8.0.1 official release asset",
+        "signature_status": "github_release_asset_sha256",
+    },
+    "k6": {
+        "version": "2.2.0",
+        "url": "https://github.com/grafana/k6/releases/download/v2.2.0/k6-v2.2.0-linux-amd64.tar.gz",
+        "sha256": "b5a8003c86f35f5cd5ceef1490312c48e587696c94d998cefc6d7b3b4cb1597d",
+        "archive": "tar.gz",
+        "binary_name": "k6",
+        "architectures": ["x86_64", "amd64"],
+        "source": "grafana/k6:v2.2.0 official release asset",
+        "signature_status": "github_release_asset_sha256",
+    },
+    "websocat": {
+        "version": "1.14.1",
+        "url": "https://github.com/vi/websocat/releases/download/v1.14.1/websocat.x86_64-unknown-linux-musl",
+        "sha256": "66f8dd3a0394761556339117f8bb5123bddefd44e087af2a72ec22b0bd08d514",
+        "archive": "raw",
+        "binary_name": "websocat",
+        "architectures": ["x86_64", "amd64"],
+        "source": "vi/websocat:v1.14.1 official release asset",
+        "signature_status": "github_release_asset_sha256",
+    },
+    "katana": {
+        "version": "1.7.0",
+        "url": "https://github.com/projectdiscovery/katana/releases/download/v1.7.0/katana_1.7.0_linux_amd64.zip",
+        "sha256": "fe1142d92f418549338ea46d67a472124878482e225d279e9a42700c75d76a4d",
+        "archive": "zip",
+        "binary_name": "katana",
+        "architectures": ["x86_64", "amd64"],
+        "source": "projectdiscovery/katana:v1.7.0 official release asset",
+        "signature_status": "github_release_asset_sha256",
+    },
+    "httpx": {
+        "version": "1.12.0",
+        "url": "https://github.com/projectdiscovery/httpx/releases/download/v1.12.0/httpx_1.12.0_linux_amd64.zip",
+        "sha256": "9d8439e8b6c9aa7d1e2314817a392e00d5178da3af5652f7475f88868f418f76",
+        "archive": "zip",
+        "binary_name": "httpx",
+        "architectures": ["x86_64", "amd64"],
+        "source": "projectdiscovery/httpx:v1.12.0 official release asset",
+        "signature_status": "github_release_asset_sha256",
+    },
+    "tlsx": {
+        "version": "1.4.0",
+        "url": "https://github.com/projectdiscovery/tlsx/releases/download/v1.4.0/tlsx_1.4.0_linux_amd64.zip",
+        "sha256": "05628cec246e292e2f9afc6e7bc5de95aaa0fbe78fd556d5ad220b9f4702d364",
+        "archive": "zip",
+        "binary_name": "tlsx",
+        "architectures": ["x86_64", "amd64"],
+        "source": "projectdiscovery/tlsx:v1.4.0 official release asset",
+        "signature_status": "github_release_asset_sha256",
+    },
+    "ffuf": {
+        "version": "2.3.0",
+        "url": "https://github.com/ffuf/ffuf/releases/download/v2.3.0/ffuf_2.3.0_linux_amd64.tar.gz",
+        "sha256": "b2a3c725fcb9da175159682f54d6e9149f2905b00d84d155e7efc5d599975ceb",
+        "archive": "tar.gz",
+        "binary_name": "ffuf",
+        "architectures": ["x86_64", "amd64"],
+        "source": "ffuf/ffuf:v2.3.0 official release asset",
+        "signature_status": "github_release_asset_sha256",
+    },
+    "nats-cli": {
+        "version": "0.5.0",
+        "url": "https://github.com/nats-io/natscli/releases/download/v0.5.0/nats-0.5.0-linux-amd64.zip",
+        "sha256": "d9fc93e9e9ab0310deff7e719a8a0da6f9d66f26d473f039aaee70155507aecc",
+        "archive": "zip",
+        "binary_name": "nats",
+        "architectures": ["x86_64", "amd64"],
+        "source": "nats-io/natscli:v0.5.0 official release asset",
+        "signature_status": "github_release_asset_sha256",
+    },
+}
+
+REPOSITORY_ADAPTERS = frozenset({"pocketlab-runtime-360", "playwright-runtime"})
+REPOSITORY_DEPENDENCIES: dict[str, dict[str, Any]] = {
+    "playwright": {
+        "package": "@playwright/test",
+        "version": "1.60.0",
+        "lock_entries": (
+            "node_modules/@playwright/test",
+            "node_modules/playwright",
+            "node_modules/playwright-core",
+        ),
+        "binary": ROOT / "node_modules/.bin/playwright",
+        "source": "repository package-lock.json",
+    },
+}
+MANAGED_PYTHON_RECIPES: dict[str, dict[str, Any]] = {
+    "mitmdump": {
+        "version": "12.2.3",
+        "wheel_url": "https://files.pythonhosted.org/packages/e0/56/0df365a56624472c397b45788b64a5c10ecabf0de3858bf538b42875a268/mitmproxy-12.2.3-py3-none-any.whl",
+        "wheel_sha256": "df75ccd15ccb39ab55ce9dd4130312270e8ba208eb927a7cbe50cb52678ec722",
+        "entrypoint": "mitmdump",
+        "python_min": (3, 12),
+        "source": "PyPI mitmproxy 12.2.3 exact wheel",
+    },
+}
+SYSTEM_DEPENDENCIES: dict[str, dict[str, str]] = {
+    "tshark": {
+        "source": "host Wireshark/tshark package",
+        "not_applicable_reason": "host_capture_dependency_not_installed; installer does not perform privileged package or capture-permission mutation",
+    },
 }
 
 
@@ -491,7 +602,20 @@ def _bounded_run(argv: list[str], *, timeout_seconds: int, max_output_bytes: int
     }
 
 
+MANAGED_BINARY_NAMES: dict[str, str] = {
+    "owasp-zap": "zap.sh",
+    "nats-cli": "nats",
+}
+
+
+def _managed_candidate(tool_id: str) -> Path:
+    return MANAGED_ROOT / "bin" / MANAGED_BINARY_NAMES.get(tool_id, tool_id)
+
+
 def _candidate(tool_id: str) -> Path | None:
+    managed = _managed_candidate(tool_id)
+    if managed.is_file() and os.access(managed, os.X_OK):
+        return managed
     for path in LOCAL_CANDIDATES.get(tool_id, ()):
         if path.is_file() and os.access(path, os.X_OK):
             return path
@@ -552,7 +676,7 @@ def _promote_source(
     expected_checksum: str | None = None,
     expected_checksums: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
-    target = MANAGED_ROOT / "bin" / ("zap.sh" if tool_id == "owasp-zap" else tool_id)
+    target = _managed_candidate(tool_id)
     target.parent.mkdir(parents=True, exist_ok=True)
     temporary = target.with_name(f".{target.name}.{os.getpid()}.link")
     temporary.unlink(missing_ok=True)
@@ -602,28 +726,142 @@ def _load_existing_receipt(tool_id: str) -> dict[str, Any]:
     return data if isinstance(data, dict) else {}
 
 
-def _safe_extract_zip(archive: Path, destination: Path) -> None:
-    base = destination.resolve()
-    with zipfile.ZipFile(archive) as bundle:
-        for member in bundle.infolist():
-            target = (destination / member.filename).resolve()
-            if target != base and base not in target.parents:
-                raise RuntimeError("tool_archive_path_traversal_rejected")
-        bundle.extractall(destination)
+def _repository_dependency_metadata(tool_id: str) -> dict[str, Any]:
+    recipe = REPOSITORY_DEPENDENCIES[tool_id]
+    try:
+        package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
+        lock = json.loads((ROOT / "package-lock.json").read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return {"status": "FAILED", "failure_code": "repository_dependency_lock_invalid", "sanitized": True}
+    requested = str(((package.get("devDependencies") or {}).get(recipe["package"]) or ""))
+    packages = lock.get("packages") if isinstance(lock, dict) else {}
+    rows: dict[str, Any] = {}
+    if not requested or not isinstance(packages, dict):
+        return {"status": "FAILED", "failure_code": "repository_dependency_lock_invalid", "sanitized": True}
+    for name in recipe["lock_entries"]:
+        row = packages.get(name)
+        if not isinstance(row, dict):
+            return {"status": "FAILED", "failure_code": "repository_dependency_lock_invalid", "sanitized": True}
+        rows[name] = {
+            "version": str(row.get("version") or ""),
+            "integrity_present": bool(row.get("integrity")),
+        }
+    versions = {row["version"] for row in rows.values()}
+    if versions != {str(recipe["version"])} or not all(row["integrity_present"] for row in rows.values()):
+        return {"status": "FAILED", "failure_code": "repository_dependency_lock_mismatch", "sanitized": True}
+    return {
+        "status": "READY",
+        "version": str(recipe["version"]),
+        "requested": requested,
+        "package_lock_sha256": f"sha256:{_sha256_file(ROOT / 'package-lock.json')}",
+        "lock_entries": rows,
+        "browser_payload_install": False,
+        "sanitized": True,
+    }
 
 
-def _safe_extract_tar(archive: Path, destination: Path) -> None:
-    base = destination.resolve()
-    with tarfile.open(archive) as bundle:
-        for member in bundle.getmembers():
-            target = (destination / member.name).resolve()
-            if target != base and base not in target.parents:
-                raise RuntimeError("tool_archive_path_traversal_rejected")
-        if sys.version_info >= (3, 12):
-            bundle.extractall(destination, filter="data")
-        else:  # pragma: no cover - current DEV PC is Python 3.14
-            bundle.extractall(destination)
+def _installer_classification(tool_id: str, spec: Mapping[str, Any]) -> str:
+    lane = str(spec.get("execution_lane") or "")
+    if lane == "server_phone_worker":
+        return "server_worker_owned"
+    if tool_id in REPOSITORY_ADAPTERS:
+        return "repository_owned_adapter"
+    if tool_id in REPOSITORY_DEPENDENCIES:
+        return "repository_dependency"
+    if tool_id in MANAGED_PYTHON_RECIPES:
+        return "managed_python_tool"
+    if tool_id in APT_RECIPES:
+        return "fixed_apt_package"
+    if tool_id in GITHUB_RECIPES:
+        return "fixed_release_asset"
+    if tool_id in SYSTEM_DEPENDENCIES:
+        return "approved_system_dependency"
+    return "approved_existing_tool"
 
+
+def _fixed_recipe_provenance_ok(tool_id: str, receipt: Mapping[str, Any]) -> bool:
+    if tool_id in GITHUB_RECIPES:
+        return str(receipt.get("expected_checksum") or "") == f"sha256:{GITHUB_RECIPES[tool_id]['sha256']}"
+    if tool_id in APT_RECIPES:
+        expected = {
+            name: f"sha256:{value['sha256']}"
+            for name, value in (APT_RECIPES[tool_id].get("packages") or {}).items()
+        }
+        return bool(expected) and dict(receipt.get("expected_checksums") or {}) == expected
+    if tool_id in MANAGED_PYTHON_RECIPES:
+        return str(receipt.get("expected_checksum") or "") == f"sha256:{MANAGED_PYTHON_RECIPES[tool_id]['wheel_sha256']}"
+    return bool(receipt.get("actual_checksum"))
+
+
+def _release_architecture_supported(recipe: Mapping[str, Any]) -> bool:
+    allowed = {str(value).casefold() for value in recipe.get("architectures") or []}
+    if not allowed:
+        return True
+    machine = (os.uname().machine if hasattr(os, "uname") else "").casefold()
+    aliases = {"x86_64": {"x86_64", "amd64"}, "amd64": {"x86_64", "amd64"}}
+    observed = aliases.get(machine, {machine})
+    return bool(observed & allowed)
+
+
+def _safe_archive_name(name: str) -> bool:
+    path = Path(name)
+    return bool(name) and "\\" not in name and not path.is_absolute() and ".." not in path.parts
+
+
+def _extract_fixed_binary(archive: Path, archive_kind: str, binary_name: str, destination: Path) -> Path:
+    destination.mkdir(parents=True, exist_ok=True)
+    target = destination / binary_name
+    temporary = target.with_name(f".{target.name}.{os.getpid()}.tmp")
+    temporary.unlink(missing_ok=True)
+    try:
+        if archive_kind == "raw":
+            if archive.stat().st_size > 256 * 1024 * 1024:
+                raise RuntimeError("tool_archive_member_size_limit")
+            shutil.copyfile(archive, temporary)
+        elif archive_kind == "zip":
+            with zipfile.ZipFile(archive) as bundle:
+                members = bundle.infolist()
+                for member in members:
+                    if not _safe_archive_name(member.filename):
+                        raise RuntimeError("tool_archive_path_traversal_rejected")
+                    mode = (member.external_attr >> 16) & 0xFFFF
+                    if stat.S_IFMT(mode) == stat.S_IFLNK:
+                        raise RuntimeError("tool_archive_link_rejected")
+                matches = [member for member in members if not member.is_dir() and Path(member.filename).name == binary_name]
+                if len(matches) != 1:
+                    raise RuntimeError("tool_archive_binary_not_unique")
+                member = matches[0]
+                if member.file_size > 256 * 1024 * 1024:
+                    raise RuntimeError("tool_archive_member_size_limit")
+                with bundle.open(member) as source, temporary.open("wb") as handle:
+                    shutil.copyfileobj(source, handle, length=1024 * 1024)
+        elif archive_kind == "tar.gz":
+            with tarfile.open(archive, mode="r:gz") as bundle:
+                members = bundle.getmembers()
+                for member in members:
+                    if not _safe_archive_name(member.name):
+                        raise RuntimeError("tool_archive_path_traversal_rejected")
+                    if member.issym() or member.islnk() or member.isdev():
+                        raise RuntimeError("tool_archive_link_rejected")
+                matches = [member for member in members if member.isfile() and Path(member.name).name == binary_name]
+                if len(matches) != 1:
+                    raise RuntimeError("tool_archive_binary_not_unique")
+                member = matches[0]
+                if member.size > 256 * 1024 * 1024:
+                    raise RuntimeError("tool_archive_member_size_limit")
+                source = bundle.extractfile(member)
+                if source is None:
+                    raise RuntimeError("tool_archive_binary_missing")
+                with source, temporary.open("wb") as handle:
+                    shutil.copyfileobj(source, handle, length=1024 * 1024)
+        else:
+            raise RuntimeError("tool_archive_type_unsupported")
+        temporary.chmod(0o755)
+        os.replace(temporary, target)
+        target.chmod(0o755)
+        return target
+    finally:
+        temporary.unlink(missing_ok=True)
 
 def _download_fixed(url: str, expected_sha256: str, destination: Path) -> None:
     if not url.startswith("https://github.com/"):
@@ -650,23 +888,22 @@ def _download_fixed(url: str, expected_sha256: str, destination: Path) -> None:
 
 def _install_github(tool_id: str) -> dict[str, Any]:
     recipe = GITHUB_RECIPES[tool_id]
+    if not _release_architecture_supported(recipe):
+        raise RuntimeError("tool_release_architecture_unsupported")
     version_root = MANAGED_ROOT / "packages" / tool_id / recipe["version"]
     archive = version_root / Path(recipe["url"]).name
     version_root.mkdir(parents=True, exist_ok=True)
     if not archive.exists() or _sha256_file(archive) != recipe["sha256"]:
         _download_fixed(recipe["url"], recipe["sha256"], archive)
-    extract_root = version_root / "extracted"
-    if not extract_root.exists():
-        extract_root.mkdir(parents=True)
-        if recipe["archive"] == "zip":
-            _safe_extract_zip(archive, extract_root)
-        else:
-            _safe_extract_tar(archive, extract_root)
-    binaries = [path for path in extract_root.rglob(recipe["binary_name"]) if path.is_file()]
-    if len(binaries) != 1:
-        raise RuntimeError("tool_archive_binary_not_unique")
-    binary = binaries[0]
-    binary.chmod(binary.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    binary = _extract_fixed_binary(
+        archive,
+        str(recipe["archive"]),
+        str(recipe["binary_name"]),
+        version_root / "extracted",
+    )
+    probe = _probe_version(tool_id, binary)
+    if probe.get("status") != "READY":
+        raise RuntimeError("fixed_release_version_probe_failed")
     return _promote_source(
         tool_id,
         binary,
@@ -675,6 +912,70 @@ def _install_github(tool_id: str) -> dict[str, Any]:
         expected_checksum=f"sha256:{recipe['sha256']}",
     )
 
+def _install_managed_python(tool_id: str) -> dict[str, Any]:
+    recipe = MANAGED_PYTHON_RECIPES[tool_id]
+    if sys.version_info[:2] < tuple(recipe["python_min"]):
+        raise RuntimeError("managed_python_version_unsupported")
+    version_root = MANAGED_ROOT / "venvs" / tool_id / str(recipe["version"])
+    entrypoint = version_root / "bin" / str(recipe["entrypoint"])
+    staging = MANAGED_ROOT / "tmp" / f"python-{tool_id}-{os.getpid()}"
+    shutil.rmtree(staging, ignore_errors=True)
+    staging.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        create = _bounded_run(
+            [sys.executable, "-m", "venv", str(staging)],
+            timeout_seconds=120,
+            max_output_bytes=32 * 1024,
+            env=_fixed_env(tool_id=tool_id),
+        )
+        if create.get("status") != "PASS":
+            raise RuntimeError("managed_python_venv_create_failed")
+        python = staging / "bin" / "python"
+        requirement = f"{recipe['wheel_url']}#sha256={recipe['wheel_sha256']}"
+        install = _bounded_run(
+            [
+                str(python), "-m", "pip", "install",
+                "--disable-pip-version-check", "--no-input", "--no-cache-dir",
+                "--only-binary=:all:", requirement,
+            ],
+            timeout_seconds=600,
+            max_output_bytes=64 * 1024,
+            env=_fixed_env(tool_id=tool_id),
+        )
+        if install.get("status") != "PASS":
+            raise RuntimeError("managed_python_install_failed")
+        candidate = staging / "bin" / str(recipe["entrypoint"])
+        if not candidate.is_file():
+            raise RuntimeError("managed_python_entrypoint_missing")
+        probe = _probe_version(tool_id, candidate)
+        if probe.get("status") != "READY":
+            raise RuntimeError("managed_python_version_mismatch")
+        version_root.parent.mkdir(parents=True, exist_ok=True)
+        backup = version_root.with_name(f".{version_root.name}.{os.getpid()}.old")
+        shutil.rmtree(backup, ignore_errors=True)
+        had_existing = version_root.exists()
+        if had_existing:
+            os.replace(version_root, backup)
+        try:
+            os.replace(staging, version_root)
+        except OSError:
+            if had_existing and backup.exists() and not version_root.exists():
+                os.replace(backup, version_root)
+            raise
+        shutil.rmtree(backup, ignore_errors=True)
+        receipt = _promote_source(
+            tool_id,
+            entrypoint,
+            source_label=str(recipe["source"]),
+            signature_status="pypi_exact_wheel_sha256",
+            expected_checksum=f"sha256:{recipe['wheel_sha256']}",
+        )
+        receipt["python_environment"] = "isolated_managed_venv"
+        receipt["browser_payload_install"] = False
+        _write_json(_receipt_path(tool_id), receipt)
+        return receipt
+    finally:
+        shutil.rmtree(staging, ignore_errors=True)
 
 def _install_apt(tool_id: str) -> dict[str, Any]:
     recipe = APT_RECIPES[tool_id]
@@ -726,6 +1027,9 @@ def _install_apt(tool_id: str) -> dict[str, Any]:
         source_label = "Ubuntu archive fixed nmap+nmap-common packages"
     else:
         source_label = "Ubuntu archive fixed testssl.sh package"
+    probe = _probe_version(tool_id, binary)
+    if probe.get("status") != "READY":
+        raise RuntimeError("fixed_apt_version_probe_failed")
     receipt = _promote_source(
         tool_id,
         binary,
@@ -745,9 +1049,11 @@ def _install_apt(tool_id: str) -> dict[str, Any]:
 
 def _check_one(tool_id: str, spec: Mapping[str, Any]) -> dict[str, Any]:
     lane = str(spec.get("execution_lane") or "")
+    classification = _installer_classification(tool_id, spec)
     base = {
         "tool_id": tool_id,
         "execution_lane": lane,
+        "installer_classification": classification,
         "harness_status": str(spec.get("harness_status") or ""),
         "fixed_target": str(spec.get("fixed_target") or ""),
         "command_id": str(spec.get("command_id") or ""),
@@ -761,11 +1067,54 @@ def _check_one(tool_id: str, spec: Mapping[str, Any]) -> dict[str, Any]:
     if lane == "server_phone_worker":
         base.update({"status": "READY", "version": "runtime-reported", "version_status": "worker_owned_contract", "installation_source": "server_owned_worker_registry", "checksum_status": "server_runtime_receipt", "signature_status": "server_runtime_receipt"})
         return base
+
+    dependency = _repository_dependency_metadata(tool_id) if tool_id in REPOSITORY_DEPENDENCIES else None
+    if dependency is not None and dependency.get("status") != "READY":
+        base.update({
+            "failure_code": str(dependency.get("failure_code") or "repository_dependency_lock_invalid"),
+            "status_detail": "repository package-lock identity is not qualified",
+            "repository_dependency": dependency,
+        })
+        return base
+
     binary = _candidate(tool_id)
     if binary is None:
+        if tool_id in SYSTEM_DEPENDENCIES:
+            base.update({
+                "status": "NOT_APPLICABLE",
+                "version_status": "host_dependency_unavailable",
+                "installation_source": SYSTEM_DEPENDENCIES[tool_id]["source"],
+                "checksum_status": "host_package_integrity",
+                "signature_status": "host_package_integrity",
+                "status_detail": SYSTEM_DEPENDENCIES[tool_id]["not_applicable_reason"],
+            })
+            return base
+        if dependency is not None:
+            base.update({
+                "failure_code": "repository_dependency_not_installed",
+                "status_detail": "run the repository's normal npm dependency installation; browser payload download is not performed by assurance installer",
+                "repository_dependency": dependency,
+            })
+            return base
         base.update({"failure_code": "qualified_executable_not_found", "status_detail": "no approved local executable"})
         return base
+
     version = _probe_version(tool_id, binary)
+    if dependency is not None:
+        base.update({
+            "binary_path": _display_path(binary),
+            "status": version["status"],
+            "version": version["version"],
+            "expected_version": dependency["version"],
+            "version_status": version["version_status"],
+            "version_output_summary": version["version_output_summary"],
+            "checksum_status": "package_lock_integrity",
+            "signature_status": "package_lock_integrity",
+            "installation_source": REPOSITORY_DEPENDENCIES[tool_id]["source"],
+            "repository_dependency": dependency,
+        })
+        return base
+
     receipt = _load_receipt(tool_id)
     actual_checksum = f"sha256:{_sha256_file(binary)}"
     receipt_checksum = str(receipt.get("actual_checksum") or "")
@@ -777,18 +1126,17 @@ def _check_one(tool_id: str, spec: Mapping[str, Any]) -> dict[str, Any]:
         "expected_version": version["expected_version"],
         "version_status": version["version_status"],
         "version_output_summary": version["version_output_summary"],
-        "checksum_status": str(receipt.get("checksum_status") or "not_managed") if receipt else "not_managed",
+        "checksum_status": str(receipt.get("checksum_status") or "not_managed") if receipt else ("host_package_integrity" if tool_id in SYSTEM_DEPENDENCIES else "not_managed"),
         "actual_checksum": actual_checksum,
         "checksum_matches_receipt": checksum_matches,
-        "signature_status": str(receipt.get("signature_status") or "not_applicable"),
-        "installation_source": str(receipt.get("installation_source") or base["installation_source"]),
+        "signature_status": str(receipt.get("signature_status") or ("host_package_integrity" if tool_id in SYSTEM_DEPENDENCIES else "not_applicable")),
+        "installation_source": str(receipt.get("installation_source") or (SYSTEM_DEPENDENCIES.get(tool_id) or {}).get("source") or base["installation_source"]),
     })
     if not checksum_matches:
         base.update({"failure_code": "qualified_binary_checksum_mismatch", "status_detail": "promoted executable changed after receipt"})
     if tool_id == "cosign" and not COSIGN_ARTIFACT_MANIFEST.exists() and base["status"] == "READY":
         base.update({"status": "NOT_APPLICABLE", "status_detail": "no signed artifact registered for this revision"})
     return base
-
 
 def check_toolchain() -> dict[str, Any]:
     registry = _registry()
@@ -809,68 +1157,117 @@ def install_toolchain() -> dict[str, Any]:
     registry = _registry()
     results: list[dict[str, Any]] = []
     for tool_id, spec in sorted(registry["toolchain"].items()):
-        lane = str(spec.get("execution_lane") or "")
-        if lane == "server_phone_worker":
-            results.append({"tool_id": tool_id, "status": "READY", "action": "server_worker_owned", "sanitized": True})
+        classification = _installer_classification(tool_id, spec)
+
+        if classification == "server_worker_owned":
+            results.append({"tool_id": tool_id, "installer_classification": classification, "status": "READY", "action": "server_worker_owned", "sanitized": True})
             continue
-        if tool_id in {"pocketlab-runtime-360", "playwright-runtime"}:
+
+        if classification == "repository_owned_adapter":
             checked = _check_one(tool_id, spec)
             results.append({
                 "tool_id": tool_id,
+                "installer_classification": classification,
                 "action": "repository_owned_adapter",
                 "check": checked,
                 "status": "PASS" if checked.get("status") in {"READY", "NOT_APPLICABLE"} else "FAIL",
                 "sanitized": True,
             })
             continue
-        source = _candidate(tool_id)
+
+        if classification == "repository_dependency":
+            checked = _check_one(tool_id, spec)
+            results.append({
+                "tool_id": tool_id,
+                "installer_classification": classification,
+                "action": "repository_dependency",
+                "check": checked,
+                "status": "PASS" if checked.get("status") == "READY" else "FAIL",
+                "browser_payload_install": False,
+                "sanitized": True,
+            })
+            continue
+
+        if classification == "approved_system_dependency":
+            checked = _check_one(tool_id, spec)
+            action = "approved_system_dependency" if checked.get("status") == "READY" else "not_applicable_system_dependency"
+            results.append({
+                "tool_id": tool_id,
+                "installer_classification": classification,
+                "action": action,
+                "check": checked,
+                "status": "PASS" if checked.get("status") in {"READY", "NOT_APPLICABLE"} else "FAIL",
+                "sanitized": True,
+            })
+            continue
+
         try:
+            source = _candidate(tool_id)
             current = _check_one(tool_id, spec) if source is not None else None
             receipt = _load_receipt(tool_id)
-            fixed_recipe = tool_id in APT_RECIPES or tool_id in GITHUB_RECIPES
-            provenance_present = bool(receipt.get("expected_checksum") or receipt.get("expected_checksums"))
-            testssl_support_ready = tool_id != "testssl.sh" or (
-                (MANAGED_ROOT / "bin" / "dig").is_file()
-                and all(
-                    (
-                        MANAGED_ROOT
-                        / "packages"
-                        / "testssl.sh"
-                        / str(APT_RECIPES["testssl.sh"]["version"])
-                        / package
-                        / "usr/lib/x86_64-linux-gnu"
-                    ).is_dir()
-                    for package in ("bind9-libs", "libuv1t64", "liburcu8t64", "libmaxminddb0", "liblmdb0")
-                )
-            )
-            needs_fixed_repair = bool(
+            qualified = bool(
                 current
-                and fixed_recipe
-                and (
-                    current.get("status") == "FAILED"
-                    or not provenance_present
-                    or not testssl_support_ready
-                )
+                and current.get("status") in {"READY", "NOT_APPLICABLE"}
+                and _fixed_recipe_provenance_ok(tool_id, receipt)
             )
-            if (source is None or needs_fixed_repair) and tool_id in APT_RECIPES:
+            if qualified:
+                results.append({
+                    "tool_id": tool_id,
+                    "installer_classification": classification,
+                    "action": "already_qualified",
+                    "receipt": receipt,
+                    "check": current,
+                    "status": "PASS",
+                    "sanitized": True,
+                })
+                continue
+
+            if classification == "fixed_apt_package":
                 receipt = _install_apt(tool_id)
                 action = "installed_fixed_apt_package"
-            elif (source is None or needs_fixed_repair) and tool_id in GITHUB_RECIPES:
+            elif classification == "fixed_release_asset":
                 receipt = _install_github(tool_id)
                 action = "installed_fixed_release_asset"
-            elif source is None:
-                raise RuntimeError("no_approved_install_recipe")
-            else:
+            elif classification == "managed_python_tool":
+                receipt = _install_managed_python(tool_id)
+                action = "installed_managed_python_tool"
+            elif classification == "approved_existing_tool":
+                if source is None:
+                    raise RuntimeError("approved_existing_tool_unavailable")
+                if current is None or current.get("status") not in {"READY", "NOT_APPLICABLE"}:
+                    raise RuntimeError("approved_existing_tool_unqualified")
                 label, signature = _source_label(tool_id, source)
                 receipt = _promote_source(tool_id, source, source_label=label, signature_status=signature)
                 action = "promoted_existing_qualified_tool"
-            checked = _check_one(tool_id, spec)
-            results.append({"tool_id": tool_id, "action": action, "receipt": receipt, "check": checked, "status": "PASS" if checked.get("status") in {"READY", "NOT_APPLICABLE"} else "FAIL", "sanitized": True})
-        except (OSError, RuntimeError, ValueError) as exc:
-            results.append({"tool_id": tool_id, "status": "FAIL", "failure_code": _sanitize_text(str(exc), 120), "sanitized": True})
-    successful = {"PASS", "READY"}
-    return {"status": "PASS" if all(row.get("status") in successful for row in results) else "PARTIAL", "captured_at": _now(), "registry_sha256": registry["hash"], "tools": results, "sanitized": True}
+            else:
+                raise RuntimeError("installer_classification_unhandled")
 
+            checked = _check_one(tool_id, spec)
+            results.append({
+                "tool_id": tool_id,
+                "installer_classification": classification,
+                "action": action,
+                "receipt": receipt,
+                "check": checked,
+                "status": "PASS" if checked.get("status") in {"READY", "NOT_APPLICABLE"} else "FAIL",
+                "sanitized": True,
+            })
+        except (OSError, RuntimeError, ValueError) as exc:
+            results.append({
+                "tool_id": tool_id,
+                "installer_classification": classification,
+                "status": "FAIL",
+                "failure_code": _sanitize_text(str(exc), 120),
+                "sanitized": True,
+            })
+    successful = {"PASS", "READY"}
+    return {
+        "status": "PASS" if all(row.get("status") in successful for row in results) else "PARTIAL",
+        "captured_at": _now(),
+        "registry_sha256": registry["hash"],
+        "tools": results,
+        "sanitized": True,
+    }
 
 def _tool_context(tool_id: str, workspace: Path) -> tuple[Path | None, dict[str, str]]:
     binary = _candidate(tool_id)

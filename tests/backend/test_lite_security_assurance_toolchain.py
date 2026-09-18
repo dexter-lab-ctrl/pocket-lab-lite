@@ -1,8 +1,14 @@
 from __future__ import annotations
 
+import inspect
+import io
 import json
+import os
 import sys
+import zipfile
 from pathlib import Path
+
+import pytest
 
 from pocket_lab_test_utils import ensure_runtime_path
 
@@ -372,3 +378,295 @@ def test_webauthn_human_review_never_auto_promotes_to_pass():
 
     assert target["status"] == "PARTIAL"
     assert target["human_review_required"] is True
+
+def test_installer_classifies_all_registered_tools_without_generic_fallback():
+    toolchain = _module()
+    registry = toolchain._registry()["toolchain"]
+    allowed = {
+        "server_worker_owned",
+        "repository_owned_adapter",
+        "repository_dependency",
+        "managed_python_tool",
+        "fixed_apt_package",
+        "fixed_release_asset",
+        "approved_system_dependency",
+        "approved_existing_tool",
+    }
+    classifications = {
+        tool_id: toolchain._installer_classification(tool_id, spec)
+        for tool_id, spec in registry.items()
+    }
+    assert len(classifications) == 31
+    assert set(classifications.values()) <= allowed
+    assert classifications["pocketlab-runtime-360"] == "repository_owned_adapter"
+    assert classifications["playwright-runtime"] == "repository_owned_adapter"
+    assert classifications["playwright"] == "repository_dependency"
+    assert classifications["mitmdump"] == "managed_python_tool"
+    assert classifications["tshark"] == "approved_system_dependency"
+    assert "no_approved_install_recipe" not in inspect.getsource(toolchain.install_toolchain)
+
+
+def test_all_active_dev_pc_tools_have_deterministic_installer_classification():
+    toolchain = _module()
+    registry = toolchain._registry()["toolchain"]
+    dev_pc = {
+        tool_id
+        for tool_id, spec in registry.items()
+        if spec.get("execution_lane") in {"dev_pc_static", "dev_pc_live_runtime"}
+        and spec.get("harness_status") == "ACTIVE"
+    }
+    assert dev_pc == set(toolchain.TOOL_EXECUTION_ORDER)
+    assert all(toolchain._installer_classification(tool_id, registry[tool_id]) for tool_id in dev_pc)
+
+
+def test_server_phone_tools_remain_server_owned():
+    toolchain = _module()
+    registry = toolchain._registry()["toolchain"]
+    for tool_id in toolchain.PHONE_WORKER_TOOLS:
+        assert toolchain._installer_classification(tool_id, registry[tool_id]) == "server_worker_owned"
+        assert toolchain._check_one(tool_id, registry[tool_id])["status"] == "READY"
+
+
+def test_repository_owned_adapters_cannot_reach_promotion(monkeypatch):
+    toolchain = _module()
+    registry = toolchain._registry()
+    registry["toolchain"] = {
+        key: value for key, value in registry["toolchain"].items()
+        if key in toolchain.REPOSITORY_ADAPTERS
+    }
+    monkeypatch.setattr(toolchain, "_registry", lambda: registry)
+    monkeypatch.setattr(
+        toolchain,
+        "_check_one",
+        lambda tool_id, spec: {"tool_id": tool_id, "status": "READY"},
+    )
+    monkeypatch.setattr(
+        toolchain,
+        "_promote_source",
+        lambda *args, **kwargs: pytest.fail("repository-owned adapter was promoted"),
+    )
+    result = toolchain.install_toolchain()
+    assert result["status"] == "PASS"
+    assert {row["action"] for row in result["tools"]} == {"repository_owned_adapter"}
+
+
+def test_playwright_is_bound_to_repository_package_lock_and_does_not_install_browsers():
+    toolchain = _module()
+    metadata = toolchain._repository_dependency_metadata("playwright")
+    registry = toolchain._registry()["toolchain"]["playwright"]
+    assert metadata["status"] == "READY"
+    assert metadata["version"] == "1.60.0"
+    assert metadata["browser_payload_install"] is False
+    assert registry["version_pin"] == "1.60.0"
+    assert registry["installation_source"] == "repository_package_lock"
+    assert toolchain._installer_classification("playwright", registry) == "repository_dependency"
+    source = inspect.getsource(toolchain.install_toolchain)
+    assert "playwright install" not in source
+    assert "chromium" not in source.casefold()
+
+
+def test_fixed_release_recipes_are_exact_pinned_and_checksum_bound():
+    toolchain = _module()
+    expected = {
+        "hurl": "8.0.1",
+        "k6": "2.2.0",
+        "websocat": "1.14.1",
+        "katana": "1.7.0",
+        "httpx": "1.12.0",
+        "tlsx": "1.4.0",
+        "ffuf": "2.3.0",
+        "nats-cli": "0.5.0",
+    }
+    registry = toolchain._registry()["toolchain"]
+    for tool_id, version in expected.items():
+        recipe = toolchain.GITHUB_RECIPES[tool_id]
+        assert recipe["version"] == version
+        assert registry[tool_id]["version_pin"] == version
+        assert recipe["url"].startswith("https://github.com/")
+        assert "/latest/" not in recipe["url"]
+        assert len(recipe["sha256"]) == 64
+        int(recipe["sha256"], 16)
+
+
+def test_managed_python_recipe_is_exact_and_outside_repository():
+    toolchain = _module()
+    recipe = toolchain.MANAGED_PYTHON_RECIPES["mitmdump"]
+    assert recipe["version"] == "12.2.3"
+    assert recipe["wheel_url"].startswith("https://files.pythonhosted.org/")
+    assert len(recipe["wheel_sha256"]) == 64
+    int(recipe["wheel_sha256"], 16)
+    assert toolchain._installer_classification(
+        "mitmdump", toolchain._registry()["toolchain"]["mitmdump"]
+    ) == "managed_python_tool"
+    assert not str(toolchain.MANAGED_ROOT.resolve()).startswith(str(toolchain.ROOT.resolve()) + os.sep)
+
+
+def test_fixed_archive_extraction_rejects_traversal_and_missing_binary(tmp_path: Path):
+    toolchain = _module()
+    malicious = tmp_path / "malicious.zip"
+    with zipfile.ZipFile(malicious, "w") as bundle:
+        bundle.writestr("../hurl", b"bad")
+    with pytest.raises(RuntimeError, match="path_traversal"):
+        toolchain._extract_fixed_binary(malicious, "zip", "hurl", tmp_path / "out-a")
+
+    missing = tmp_path / "missing.zip"
+    with zipfile.ZipFile(missing, "w") as bundle:
+        bundle.writestr("README.txt", b"safe")
+    with pytest.raises(RuntimeError, match="binary_not_unique"):
+        toolchain._extract_fixed_binary(missing, "zip", "hurl", tmp_path / "out-b")
+
+
+def test_fixed_download_checksum_mismatch_fails_closed_and_cleans_partial(tmp_path: Path, monkeypatch):
+    toolchain = _module()
+
+    class Response:
+        def __init__(self):
+            self._stream = io.BytesIO(b"not-the-qualified-asset")
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            return False
+        def read(self, size=-1):
+            return self._stream.read(size)
+
+    class Opener:
+        def open(self, request, timeout=60):
+            return Response()
+
+    monkeypatch.setattr(toolchain.urllib.request, "build_opener", lambda *args, **kwargs: Opener())
+    destination = tmp_path / "asset.zip"
+    with pytest.raises(RuntimeError, match="checksum_mismatch"):
+        toolchain._download_fixed(
+            "https://github.com/example/tool/releases/download/v1/tool.zip",
+            "0" * 64,
+            destination,
+        )
+    assert not destination.exists()
+    assert not list(tmp_path.glob("*.part"))
+
+
+def test_failed_release_install_does_not_write_success_receipt(tmp_path: Path, monkeypatch):
+    toolchain = _module()
+    toolchain.MANAGED_ROOT = tmp_path / "managed"
+    recipe = {
+        "version": "1.0.0",
+        "url": "https://github.com/example/hurl/releases/download/v1.0.0/hurl.zip",
+        "sha256": "1" * 64,
+        "archive": "zip",
+        "binary_name": "hurl",
+        "architectures": [os.uname().machine],
+        "source": "example fixed release",
+        "signature_status": "test_checksum",
+    }
+    monkeypatch.setitem(toolchain.GITHUB_RECIPES, "hurl", recipe)
+
+    def fake_download(url, expected_sha256, destination):
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        with zipfile.ZipFile(destination, "w") as bundle:
+            bundle.writestr("README.txt", b"no binary")
+
+    monkeypatch.setattr(toolchain, "_download_fixed", fake_download)
+    with pytest.raises(RuntimeError, match="binary_not_unique"):
+        toolchain._install_github("hurl")
+    assert not toolchain._receipt_path("hurl").exists()
+
+
+def test_healthy_fixed_tool_is_idempotent_and_not_reinstalled(tmp_path: Path, monkeypatch):
+    toolchain = _module()
+    toolchain.MANAGED_ROOT = tmp_path / "managed"
+    binary = toolchain._managed_candidate("hurl")
+    binary.parent.mkdir(parents=True)
+    binary.write_text("#!/bin/sh\necho 'hurl 8.0.1'\n", encoding="utf-8")
+    binary.chmod(0o755)
+    receipt = {
+        "actual_checksum": f"sha256:{toolchain._sha256_file(binary)}",
+        "expected_checksum": f"sha256:{toolchain.GITHUB_RECIPES['hurl']['sha256']}",
+        "checksum_status": "verified_archive_checksum",
+        "signature_status": "github_release_asset_sha256",
+        "installation_source": "fixed test release",
+    }
+    toolchain._write_json(toolchain._receipt_path("hurl"), receipt)
+    registry = toolchain._registry()
+    registry["toolchain"] = {"hurl": registry["toolchain"]["hurl"]}
+    monkeypatch.setattr(toolchain, "_registry", lambda: registry)
+    monkeypatch.setattr(
+        toolchain,
+        "_install_github",
+        lambda tool_id: pytest.fail("healthy qualified tool was reinstalled"),
+    )
+    result = toolchain.install_toolchain()
+    assert result["status"] == "PASS"
+    assert result["tools"][0]["action"] == "already_qualified"
+
+
+def test_fixed_recipe_repairs_only_missing_or_invalid_provenance(tmp_path: Path, monkeypatch):
+    toolchain = _module()
+    registry = toolchain._registry()
+    registry["toolchain"] = {"hurl": registry["toolchain"]["hurl"]}
+    monkeypatch.setattr(toolchain, "_registry", lambda: registry)
+    monkeypatch.setattr(toolchain, "_candidate", lambda tool_id: Path(sys.executable))
+    monkeypatch.setattr(
+        toolchain,
+        "_check_one",
+        lambda tool_id, spec: {"tool_id": tool_id, "status": "READY"},
+    )
+    state = {"receipt": {}, "installs": 0}
+    monkeypatch.setattr(toolchain, "_load_receipt", lambda tool_id: dict(state["receipt"]))
+
+    def install(tool_id):
+        state["installs"] += 1
+        state["receipt"] = {
+            "expected_checksum": f"sha256:{toolchain.GITHUB_RECIPES['hurl']['sha256']}",
+            "actual_checksum": "sha256:test",
+        }
+        return dict(state["receipt"])
+
+    monkeypatch.setattr(toolchain, "_install_github", install)
+    first = toolchain.install_toolchain()
+    second = toolchain.install_toolchain()
+    assert first["tools"][0]["action"] == "installed_fixed_release_asset"
+    assert second["tools"][0]["action"] == "already_qualified"
+    assert state["installs"] == 1
+
+
+@pytest.mark.parametrize("flag", ["--url", "--version", "--argv", "--target", "--subject"])
+def test_installer_cli_rejects_caller_controlled_provisioning_inputs(flag: str):
+    toolchain = _module()
+    with pytest.raises(SystemExit):
+        toolchain.main(["install", flag, "attacker-controlled"])
+
+
+def test_installer_source_contains_no_privileged_or_shell_true_and_managed_paths_are_external():
+    toolchain = _module()
+    source = inspect.getsource(toolchain)
+    assert "shell=True" not in source
+    assert "sudo " not in source
+    assert "| sh" not in source
+    assert "| bash" not in source
+    assert not str(toolchain.MANAGED_ROOT.resolve()).startswith(str(toolchain.ROOT.resolve()) + os.sep)
+
+
+def test_tshark_is_explicit_host_dependency_not_privileged_auto_install(monkeypatch):
+    toolchain = _module()
+    registry = toolchain._registry()["toolchain"]
+    monkeypatch.setattr(toolchain, "_candidate", lambda tool_id: None)
+    result = toolchain._check_one("tshark", registry["tshark"])
+    assert result["status"] == "NOT_APPLICABLE"
+    assert result["installer_classification"] == "approved_system_dependency"
+    assert "/home/" not in json.dumps(result)
+
+
+def test_registry_versions_and_installer_sources_match_source_owned_recipes():
+    toolchain = _module()
+    registry = toolchain._registry()["toolchain"]
+    for tool_id, recipe in toolchain.GITHUB_RECIPES.items():
+        assert registry[tool_id]["version_pin"] == str(recipe["version"])
+    for tool_id, recipe in toolchain.MANAGED_PYTHON_RECIPES.items():
+        assert registry[tool_id]["version_pin"] == str(recipe["version"])
+    non_worker = {
+        tool_id for tool_id, spec in registry.items()
+        if spec.get("execution_lane") != "server_phone_worker"
+    }
+    assert non_worker == set(toolchain.TOOL_EXECUTION_ORDER)
+    assert non_worker <= set(toolchain.VERSION_ARGS)
+
