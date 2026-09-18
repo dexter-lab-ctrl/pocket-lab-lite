@@ -20,6 +20,7 @@ profiles:
     allowed_safety_classes: [PASSIVE, SAFE_ACTIVE]
     required_capabilities: [security.assurance.read, security.assurance.passive, security.assurance.runtime, security.assurance.sca, security.assurance.threat_scenario, security.assurance.report]
     scenarios: [harness-default-off, harness-auth-boundary, caddy-proof-strip, runtime-readiness, control-plane-ownership, evidence-redaction, security-projection, threat-model-integrity]
+    dev_pc_scenarios: []
   standard:
     purpose: Normal runtime qualification with the existing Quick scanner, API boundary probes, policy readiness, and threat coverage.
     target_seconds: 900
@@ -30,6 +31,7 @@ profiles:
     allowed_safety_classes: [PASSIVE, SAFE_ACTIVE]
     required_capabilities: [security.assurance.read, security.assurance.passive, security.assurance.sast, security.assurance.sca, security.assurance.api, security.assurance.runtime, security.assurance.threat_scenario, security.assurance.report, security.assurance.baseline]
     scenarios: [harness-default-off, harness-auth-boundary, caddy-proof-strip, runtime-readiness, control-plane-ownership, evidence-redaction, security-projection, policy-readiness, source-boundaries, threat-model-integrity, attack-path-inventory]
+    dev_pc_scenarios: [browser-origin-control-plane-bypass, cross-origin-session-abuse, csrf-protected-mutation, owner-session-lifecycle, authorization-resource-boundary, websocket-auth-boundary, pwa-offline-secret-retention, browser-network-egress-contract, cookie-security-posture, tailnet-service-exposure, proxy-header-trust-confusion, device-invite-replay-and-misbinding, malformed-api-state-machine, tls-identity-drift, remote-access-truthfulness, security-evidence-poisoning, unicode-log-and-ui-injection, runtime-env-secret-boundary]
   deep:
     purpose: Manual-only extended assurance profile; approved heavyweight tools execute through the fixed DEV-PC lanes and the existing worker-owned Security path.
     target_seconds: 3600
@@ -40,6 +42,7 @@ profiles:
     allowed_safety_classes: [PASSIVE, SAFE_ACTIVE]
     required_capabilities: [security.assurance.read, security.assurance.passive, security.assurance.sast, security.assurance.sca, security.assurance.api, security.assurance.runtime, security.assurance.threat_scenario, security.assurance.report, security.assurance.baseline]
     scenarios: [harness-default-off, harness-auth-boundary, caddy-proof-strip, runtime-readiness, control-plane-ownership, evidence-redaction, security-projection, policy-readiness, source-boundaries, threat-model-integrity, attack-path-inventory]
+    dev_pc_scenarios: [browser-origin-control-plane-bypass, cross-origin-session-abuse, csrf-protected-mutation, owner-session-lifecycle, authorization-resource-boundary, websocket-auth-boundary, pwa-offline-secret-retention, browser-network-egress-contract, cookie-security-posture, webauthn-origin-rpid-mismatch, tailnet-service-exposure, proxy-header-trust-confusion, device-invite-replay-and-misbinding, malformed-api-state-machine, nats-command-replay-integrity, hidden-route-and-debug-surface, tls-identity-drift, remote-access-truthfulness, rate-limit-and-admission-resilience, slow-client-resource-exhaustion, duplicate-operation-flood, release-artifact-tamper, dependency-confusion-lock-integrity, security-evidence-poisoning, unicode-log-and-ui-injection, service-worker-version-integrity, runtime-env-secret-boundary, backup-confidentiality-integrity, restore-transaction-integrity, policy-known-good-recovery, approval-continuation-replay, temporary-exception-scope-bypass]
   adversarial:
     purpose: Qualification-only reviewed adversarial checks limited to fixed local control-boundary requests.
     target_seconds: 180
@@ -50,3 +53,4 @@ profiles:
     allowed_safety_classes: [PASSIVE, SAFE_ACTIVE]
     required_capabilities: [security.assurance.read, security.assurance.api, security.assurance.runtime, security.assurance.threat_scenario, security.assurance.report]
     scenarios: [harness-auth-boundary, caddy-proof-strip, runtime-readiness, evidence-redaction, source-boundaries, adversarial-negative-auth-probes]
+    dev_pc_scenarios: [browser-origin-control-plane-bypass, cross-origin-session-abuse, csrf-protected-mutation, owner-session-lifecycle, authorization-resource-boundary, websocket-auth-boundary, pwa-offline-secret-retention, webauthn-origin-rpid-mismatch, tailnet-service-exposure, proxy-header-trust-confusion, device-invite-replay-and-misbinding, malformed-api-state-machine, nats-command-replay-integrity, hidden-route-and-debug-surface, tls-identity-drift, rate-limit-and-admission-resilience, slow-client-resource-exhaustion, duplicate-operation-flood, release-artifact-tamper, security-evidence-poisoning, unicode-log-and-ui-injection, service-worker-version-integrity, backup-confidentiality-integrity, restore-transaction-integrity, policy-known-good-recovery, approval-continuation-replay, temporary-exception-scope-bypass]
