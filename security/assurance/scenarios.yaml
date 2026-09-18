@@ -425,3 +425,773 @@ scenarios:
       - id: scanner-not-attack-path
         threat: A new tool is incorrectly modeled as a new attack path.
         expected_invariant: AP identifiers describe threat paths, not scanners.
+
+  # 360-degree real-world DEV-PC live-runtime assurance scenarios.
+  - id: browser-origin-control-plane-bypass
+    title: "Browser origin cannot bypass the FastAPI control plane"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.api
+    suites: ["standard", "deep", "adversarial"]
+    stride: ["Spoofing", "Tampering", "Elevation of Privilege"]
+    owasp: ["A01", "A05", "A07"]
+    controls: ["CTRL-BROWSER-NATS", "CTRL-BROWSER-SHELL", "CTRL-API-CONTROL"]
+    attack_paths: ["AP-01", "AP-02", "AP-07"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Exercise a real Chromium session against the fixed Caddy runtime and observe only registered browser network destinations."
+    expected_invariant: "Real browser JavaScript cannot reach NATS, OPA, shell, harness, or unregistered destinations outside the same-origin Caddy/FastAPI boundary."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["playwright", "mitmdump", "tshark"]
+    coverage_cases:
+      - id: browser-origin-control-plane-bypass-realworld
+        threat: "Browser origin cannot bypass the FastAPI control plane"
+        expected_invariant: "Real browser JavaScript cannot reach NATS, OPA, shell, harness, or unregistered destinations outside the same-origin Caddy/FastAPI boundary."
+
+  - id: cross-origin-session-abuse
+    title: "Hostile origin cannot read or reuse Pocket Lab session authority"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.api
+    suites: ["standard", "deep", "adversarial"]
+    stride: ["Spoofing", "Information Disclosure", "Elevation of Privilege"]
+    owasp: ["A01", "A05", "A07"]
+    controls: ["CTRL-HUMAN-SESSION-CSRF", "CTRL-API-CONTROL"]
+    attack_paths: ["AP-01", "AP-09"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Load a fixed hostile browser origin and attempt bounded credentialed cross-origin reads against the fixed Caddy runtime."
+    expected_invariant: "Cross-origin JavaScript cannot read protected Pocket Lab responses or inherit authenticated authority."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["playwright", "owasp-zap"]
+    coverage_cases:
+      - id: cross-origin-session-abuse-realworld
+        threat: "Hostile origin cannot read or reuse Pocket Lab session authority"
+        expected_invariant: "Cross-origin JavaScript cannot read protected Pocket Lab responses or inherit authenticated authority."
+
+  - id: csrf-protected-mutation
+    title: "Cross-site requests cannot perform a protected mutation"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.api
+    suites: ["standard", "deep", "adversarial"]
+    stride: ["Spoofing", "Tampering", "Elevation of Privilege"]
+    owasp: ["A01", "A07"]
+    controls: ["CTRL-HUMAN-SESSION-CSRF", "CTRL-OPA-FAIL-CLOSED"]
+    attack_paths: ["AP-09", "AP-11"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Send only fixed hostile-origin and missing-CSRF mutation-shaped requests to qualification-safe protected endpoints."
+    expected_invariant: "Cross-site or missing-proof requests are rejected before any protected mutation is admitted."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["playwright", "hurl"]
+    coverage_cases:
+      - id: csrf-protected-mutation-realworld
+        threat: "Cross-site requests cannot perform a protected mutation"
+        expected_invariant: "Cross-site or missing-proof requests are rejected before any protected mutation is admitted."
+
+  - id: owner-session-lifecycle
+    title: "Session authority ends on logout or revocation"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.api
+    suites: ["standard", "deep", "adversarial"]
+    stride: ["Spoofing", "Repudiation", "Elevation of Privilege"]
+    owasp: ["A01", "A07", "A09"]
+    controls: ["CTRL-HUMAN-SESSION-CSRF", "CTRL-WEBAUTHN-ASSURANCE"]
+    attack_paths: ["AP-09"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Inspect real browser cookie/storage/session lifecycle using only sanitized metadata and registered logout/revocation behavior."
+    expected_invariant: "Expired, logged-out, or revoked browser authority cannot continue protected HTTP or browser-event access."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["playwright"]
+    coverage_cases:
+      - id: owner-session-lifecycle-realworld
+        threat: "Session authority ends on logout or revocation"
+        expected_invariant: "Expired, logged-out, or revoked browser authority cannot continue protected HTTP or browser-event access."
+
+  - id: authorization-resource-boundary
+    title: "User-controlled identifiers cannot bypass resource authorization"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.api
+    suites: ["standard", "deep", "adversarial"]
+    stride: ["Tampering", "Elevation of Privilege"]
+    owasp: ["A01", "A03"]
+    controls: ["CTRL-API-CONTROL", "CTRL-OPA-FAIL-CLOSED", "CTRL-ENTERPRISE-ROLE-FINAL-OWNER"]
+    attack_paths: ["AP-10", "AP-11", "AP-13"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Run fixed invalid-resource and authorization-negative sequences using synthetic qualification identities only."
+    expected_invariant: "Server-side authorization remains independent of user-controlled identifiers, URLs, and frontend visibility."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["schemathesis", "hurl", "opa"]
+    coverage_cases:
+      - id: authorization-resource-boundary-realworld
+        threat: "User-controlled identifiers cannot bypass resource authorization"
+        expected_invariant: "Server-side authorization remains independent of user-controlled identifiers, URLs, and frontend visibility."
+
+  - id: websocket-auth-boundary
+    title: "WebSocket event streams enforce authentication and origin boundaries"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.api
+    suites: ["standard", "deep", "adversarial"]
+    stride: ["Spoofing", "Information Disclosure", "Elevation of Privilege"]
+    owasp: ["A01", "A05", "A07"]
+    controls: ["CTRL-HUMAN-SESSION-CSRF", "CTRL-API-CONTROL"]
+    attack_paths: ["AP-01", "AP-09"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Attempt fixed unauthenticated and hostile-origin WebSocket connections to the registered event endpoint."
+    expected_invariant: "Unauthenticated, forged-origin, expired, or revoked clients cannot receive protected event-stream data."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["playwright", "websocat"]
+    coverage_cases:
+      - id: websocket-auth-boundary-realworld
+        threat: "WebSocket event streams enforce authentication and origin boundaries"
+        expected_invariant: "Unauthenticated, forged-origin, expired, or revoked clients cannot receive protected event-stream data."
+
+  - id: pwa-offline-secret-retention
+    title: "PWA offline stores do not retain privileged material"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: PASSIVE
+    required_capability: security.assurance.api
+    suites: ["standard", "deep", "adversarial"]
+    stride: ["Information Disclosure", "Repudiation"]
+    owasp: ["A02", "A05", "A09"]
+    controls: ["CTRL-EVIDENCE-SANITIZE", "CTRL-HUMAN-SESSION-CSRF"]
+    attack_paths: ["AP-06", "AP-09"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Inspect only browser storage key names, cache request metadata, and service-worker scope after live runtime use."
+    expected_invariant: "Service-worker, Cache API, IndexedDB, and browser storage do not preserve reusable privileged authority or protected API bodies."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["playwright"]
+    coverage_cases:
+      - id: pwa-offline-secret-retention-realworld
+        threat: "PWA offline stores do not retain privileged material"
+        expected_invariant: "Service-worker, Cache API, IndexedDB, and browser storage do not preserve reusable privileged authority or protected API bodies."
+
+  - id: browser-network-egress-contract
+    title: "Browser egress remains same-origin and Pocket Lab owned"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: PASSIVE
+    required_capability: security.assurance.passive
+    suites: ["standard", "deep"]
+    stride: ["Information Disclosure", "Tampering"]
+    owasp: ["A02", "A05"]
+    controls: ["CTRL-BROWSER-NATS", "CTRL-API-CONTROL"]
+    attack_paths: ["AP-01", "AP-07"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Observe a fixed Chromium navigation and bounded loopback packet metadata without retaining payloads."
+    expected_invariant: "The deployed browser communicates only with the approved Caddy origin and never directly with NATS, OPA, or arbitrary third parties."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["playwright", "tshark"]
+    coverage_cases:
+      - id: browser-network-egress-contract-realworld
+        threat: "Browser egress remains same-origin and Pocket Lab owned"
+        expected_invariant: "The deployed browser communicates only with the approved Caddy origin and never directly with NATS, OPA, or arbitrary third parties."
+
+  - id: cookie-security-posture
+    title: "Browser session cookies retain secure scope and lifecycle flags"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: PASSIVE
+    required_capability: security.assurance.api
+    suites: ["standard", "deep"]
+    stride: ["Spoofing", "Information Disclosure"]
+    owasp: ["A02", "A07"]
+    controls: ["CTRL-HUMAN-SESSION-CSRF"]
+    attack_paths: ["AP-09"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Inspect cookie names and security attributes only; never persist cookie values."
+    expected_invariant: "Session-bearing cookies are Secure, HttpOnly where applicable, SameSite-scoped, and not over-broad in path/domain."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["playwright", "owasp-zap"]
+    coverage_cases:
+      - id: cookie-security-posture-realworld
+        threat: "Browser session cookies retain secure scope and lifecycle flags"
+        expected_invariant: "Session-bearing cookies are Secure, HttpOnly where applicable, SameSite-scoped, and not over-broad in path/domain."
+
+  - id: webauthn-origin-rpid-mismatch
+    title: "WebAuthn origin and RP-ID assurance remains explicit"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: PASSIVE
+    required_capability: security.assurance.threat_scenario
+    suites: ["deep", "adversarial"]
+    stride: ["Spoofing", "Elevation of Privilege"]
+    owasp: ["A01", "A07"]
+    controls: ["CTRL-WEBAUTHN-ASSURANCE"]
+    attack_paths: ["AP-09", "AP-10", "AP-13"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Check whether the exact qualified runtime exposes an automatable WebAuthn ceremony and retain HUMAN_REVIEW_REQUIRED when it does not."
+    expected_invariant: "WebAuthn origin/RP-ID binding is never inferred PASS from unrelated browser or password-login evidence."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["playwright"]
+    coverage_cases:
+      - id: webauthn-origin-rpid-mismatch-realworld
+        threat: "WebAuthn origin and RP-ID assurance remains explicit"
+        expected_invariant: "WebAuthn origin/RP-ID binding is never inferred PASS from unrelated browser or password-login evidence."
+
+  - id: tailnet-service-exposure
+    title: "Private-network service exposure matches the registered contract"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: PASSIVE
+    required_capability: security.assurance.runtime
+    suites: ["standard", "deep", "adversarial"]
+    stride: ["Information Disclosure", "Denial of Service", "Elevation of Privilege"]
+    owasp: ["A01", "A05"]
+    controls: ["CTRL-API-CONTROL", "CTRL-EXECUTION-OWNERS"]
+    attack_paths: ["AP-07"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Derive the Server Phone private-network address only from the fixed runtime readiness projection and probe the registered service set."
+    expected_invariant: "OPA, NATS monitor, and direct FastAPI remain internal while only explicitly approved private-network services are reachable."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["nmap", "httpx", "tlsx"]
+    coverage_cases:
+      - id: tailnet-service-exposure-realworld
+        threat: "Private-network service exposure matches the registered contract"
+        expected_invariant: "OPA, NATS monitor, and direct FastAPI remain internal while only explicitly approved private-network services are reachable."
+
+  - id: proxy-header-trust-confusion
+    title: "Caddy forwarding metadata cannot create identity or authority"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.api
+    suites: ["standard", "deep", "adversarial"]
+    stride: ["Spoofing", "Tampering", "Elevation of Privilege"]
+    owasp: ["A01", "A05", "A07"]
+    controls: ["CTRL-API-CONTROL", "CTRL-HUMAN-SESSION-CSRF"]
+    attack_paths: ["AP-01", "AP-07", "AP-09"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Send a fixed matrix of Host, forwarding, duplicate, client-IP, and proof-shaped headers through the fixed Caddy endpoint."
+    expected_invariant: "Proxy metadata is never confused with trusted identity, qualification proof, or direct-loopback transport."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["hurl", "mitmdump"]
+    coverage_cases:
+      - id: proxy-header-trust-confusion-realworld
+        threat: "Caddy forwarding metadata cannot create identity or authority"
+        expected_invariant: "Proxy metadata is never confused with trusted identity, qualification proof, or direct-loopback transport."
+
+  - id: device-invite-replay-and-misbinding
+    title: "Device invites resist replay and identity misbinding"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.api
+    suites: ["standard", "deep", "adversarial"]
+    stride: ["Spoofing", "Tampering", "Elevation of Privilege"]
+    owasp: ["A01", "A07"]
+    controls: ["CTRL-API-CONTROL", "CTRL-EXECUTION-OWNERS"]
+    attack_paths: ["AP-03", "AP-09"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Exercise only fixed invalid/replayed invite-shaped requests and synthetic qualification device identities."
+    expected_invariant: "Invites remain one-time and identity-bound; mismatch fails closed without environment overwrite or process restart."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["hurl"]
+    coverage_cases:
+      - id: device-invite-replay-and-misbinding-realworld
+        threat: "Device invites resist replay and identity misbinding"
+        expected_invariant: "Invites remain one-time and identity-bound; mismatch fails closed without environment overwrite or process restart."
+
+  - id: malformed-api-state-machine
+    title: "Invalid API state sequences fail closed"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.api
+    suites: ["standard", "deep", "adversarial"]
+    stride: ["Tampering", "Repudiation", "Elevation of Privilege"]
+    owasp: ["A01", "A03", "A08"]
+    controls: ["CTRL-API-CONTROL", "CTRL-OPA-FAIL-CLOSED", "CTRL-INDEPENDENT-APPROVAL-CONTINUATION"]
+    attack_paths: ["AP-04", "AP-08", "AP-12", "AP-13"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Issue fixed replay, duplicate, stale-revision, and out-of-order request sequences against qualification-safe routes."
+    expected_invariant: "Security decisions hold across workflow state transitions rather than only on isolated requests."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["schemathesis", "hurl"]
+    coverage_cases:
+      - id: malformed-api-state-machine-realworld
+        threat: "Invalid API state sequences fail closed"
+        expected_invariant: "Security decisions hold across workflow state transitions rather than only on isolated requests."
+
+  - id: nats-command-replay-integrity
+    title: "NATS command execution resists replay and target tampering"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.runtime
+    suites: ["deep", "adversarial"]
+    stride: ["Tampering", "Repudiation", "Denial of Service"]
+    owasp: ["A01", "A08", "A09"]
+    controls: ["CTRL-API-CONTROL", "CTRL-EXECUTION-OWNERS"]
+    attack_paths: ["AP-04"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Observe fixed NATS/JetStream health and exercise only repository-owned duplicate/replay qualification envelopes."
+    expected_invariant: "Commands remain idempotent, target-bound, and server-constructed; callers never gain arbitrary subject or payload authority."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["nats-cli", "hurl"]
+    coverage_cases:
+      - id: nats-command-replay-integrity-realworld
+        threat: "NATS command execution resists replay and target tampering"
+        expected_invariant: "Commands remain idempotent, target-bound, and server-constructed; callers never gain arbitrary subject or payload authority."
+
+  - id: hidden-route-and-debug-surface
+    title: "Deployed runtime exposes no unintended debug or administrative surface"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: PASSIVE
+    required_capability: security.assurance.api
+    suites: ["deep", "adversarial"]
+    stride: ["Information Disclosure", "Elevation of Privilege"]
+    owasp: ["A01", "A05"]
+    controls: ["CTRL-API-CONTROL"]
+    attack_paths: ["AP-01", "AP-07"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Crawl and probe only the fixed Pocket Lab origin with bounded depth, rate, and a repository-owned tiny wordlist."
+    expected_invariant: "Observed external routes match intended Caddy/FastAPI/PWA surfaces and do not expose harness or unexpected debug authority."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["katana", "httpx", "ffuf", "nuclei"]
+    coverage_cases:
+      - id: hidden-route-and-debug-surface-realworld
+        threat: "Deployed runtime exposes no unintended debug or administrative surface"
+        expected_invariant: "Observed external routes match intended Caddy/FastAPI/PWA surfaces and do not expose harness or unexpected debug authority."
+
+  - id: tls-identity-drift
+    title: "TLS identity and protocol posture remain bound to the qualified runtime"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: PASSIVE
+    required_capability: security.assurance.api
+    suites: ["standard", "deep", "adversarial"]
+    stride: ["Spoofing", "Information Disclosure"]
+    owasp: ["A02", "A05"]
+    controls: ["CTRL-API-CONTROL"]
+    attack_paths: ["AP-07"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Probe only the fixed Caddy TLS tunnel and server-owned certificate identity."
+    expected_invariant: "Certificate identity, protocol posture, and HTTPS endpoint remain consistent with the qualified Caddy runtime."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["testssl.sh", "tlsx", "httpx"]
+    coverage_cases:
+      - id: tls-identity-drift-realworld
+        threat: "TLS identity and protocol posture remain bound to the qualified runtime"
+        expected_invariant: "Certificate identity, protocol posture, and HTTPS endpoint remain consistent with the qualified Caddy runtime."
+
+  - id: remote-access-truthfulness
+    title: "Remote access readiness reflects actual private-network reachability"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: PASSIVE
+    required_capability: security.assurance.runtime
+    suites: ["standard", "deep"]
+    stride: ["Information Disclosure", "Denial of Service"]
+    owasp: ["A05"]
+    controls: ["CTRL-API-CONTROL", "CTRL-EXECUTION-OWNERS"]
+    attack_paths: ["AP-07", "AP-12"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Compare the fixed runtime remote-access readiness projection with bounded live service observations."
+    expected_invariant: "The UI/API never reports remote access ready when the required Tailscale identity or registered services are unavailable."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["playwright", "httpx", "nmap"]
+    coverage_cases:
+      - id: remote-access-truthfulness-realworld
+        threat: "Remote access readiness reflects actual private-network reachability"
+        expected_invariant: "The UI/API never reports remote access ready when the required Tailscale identity or registered services are unavailable."
+
+  - id: rate-limit-and-admission-resilience
+    title: "Bounded abusive request rates cannot trivially exhaust the control plane"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.runtime
+    suites: ["deep", "adversarial"]
+    stride: ["Denial of Service"]
+    owasp: ["A04", "A05"]
+    controls: ["CTRL-API-CONTROL", "CTRL-OPA-FAIL-CLOSED"]
+    attack_paths: ["AP-04", "AP-07", "AP-11"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Run a repository-owned low-power-safe concurrency profile against fixed read/negative-auth endpoints only."
+    expected_invariant: "Admission, duplicate-operation, and resource controls preserve readiness under the approved bounded request rate."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["k6"]
+    coverage_cases:
+      - id: rate-limit-and-admission-resilience-realworld
+        threat: "Bounded abusive request rates cannot trivially exhaust the control plane"
+        expected_invariant: "Admission, duplicate-operation, and resource controls preserve readiness under the approved bounded request rate."
+
+  - id: slow-client-resource-exhaustion
+    title: "Slow clients do not collapse Caddy or FastAPI readiness"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.runtime
+    suites: ["deep", "adversarial"]
+    stride: ["Denial of Service"]
+    owasp: ["A04", "A05"]
+    controls: ["CTRL-API-CONTROL"]
+    attack_paths: ["AP-07", "AP-11"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Use only the fixed low-concurrency slow-response profile with strict duration and virtual-user caps."
+    expected_invariant: "Caddy/FastAPI remain ready and bounded under deliberately slow but low-power-safe clients."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["k6"]
+    coverage_cases:
+      - id: slow-client-resource-exhaustion-realworld
+        threat: "Slow clients do not collapse Caddy or FastAPI readiness"
+        expected_invariant: "Caddy/FastAPI remain ready and bounded under deliberately slow but low-power-safe clients."
+
+  - id: duplicate-operation-flood
+    title: "Duplicate operations remain idempotent and bounded"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.runtime
+    suites: ["deep", "adversarial"]
+    stride: ["Tampering", "Repudiation", "Denial of Service"]
+    owasp: ["A01", "A04", "A09"]
+    controls: ["CTRL-API-CONTROL", "CTRL-EXECUTION-OWNERS", "CTRL-INDEPENDENT-APPROVAL-CONTINUATION"]
+    attack_paths: ["AP-04", "AP-13"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Repeat only fixed negative/duplicate qualification-safe requests within a strict low request budget."
+    expected_invariant: "Duplicate submissions cannot create unbounded parallel work, replay approved continuations, or bypass idempotency."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["k6", "hurl"]
+    coverage_cases:
+      - id: duplicate-operation-flood-realworld
+        threat: "Duplicate operations remain idempotent and bounded"
+        expected_invariant: "Duplicate submissions cannot create unbounded parallel work, replay approved continuations, or bypass idempotency."
+
+  - id: release-artifact-tamper
+    title: "Release artifacts remain distinguishable from qualified source"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: PASSIVE
+    required_capability: security.assurance.sca
+    suites: ["deep", "adversarial"]
+    stride: ["Tampering", "Elevation of Privilege"]
+    owasp: ["A06", "A08"]
+    controls: ["CTRL-SUPPLY-CHAIN", "CTRL-EXPLICIT-PROMOTION"]
+    attack_paths: ["AP-05"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Verify only registered release/SBOM identities and fixed integrity metadata; never sign or download at execution time."
+    expected_invariant: "A modified release artifact or mismatched provenance cannot be represented as the exact qualified release."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["cosign", "syft", "grype"]
+    coverage_cases:
+      - id: release-artifact-tamper-realworld
+        threat: "Release artifacts remain distinguishable from qualified source"
+        expected_invariant: "A modified release artifact or mismatched provenance cannot be represented as the exact qualified release."
+
+  - id: dependency-confusion-lock-integrity
+    title: "Installed dependency evidence matches locked qualified inputs"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: PASSIVE
+    required_capability: security.assurance.sca
+    suites: ["deep"]
+    stride: ["Tampering", "Elevation of Privilege"]
+    owasp: ["A06", "A08"]
+    controls: ["CTRL-SUPPLY-CHAIN"]
+    attack_paths: ["AP-05"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Correlate fixed lockfiles, requirements, and generated SBOM evidence without caller-selected registries."
+    expected_invariant: "The installed/qualified dependency graph does not silently diverge from repository-owned lock and requirements inputs."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["osv-scanner", "pip-audit", "npm-audit", "syft"]
+    coverage_cases:
+      - id: dependency-confusion-lock-integrity-realworld
+        threat: "Installed dependency evidence matches locked qualified inputs"
+        expected_invariant: "The installed/qualified dependency graph does not silently diverge from repository-owned lock and requirements inputs."
+
+  - id: security-evidence-poisoning
+    title: "Malformed evidence cannot fabricate security conclusions"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: PASSIVE
+    required_capability: security.assurance.passive
+    suites: ["standard", "deep", "adversarial"]
+    stride: ["Tampering", "Repudiation", "Information Disclosure"]
+    owasp: ["A02", "A08", "A09"]
+    controls: ["CTRL-EVIDENCE-SANITIZE", "CTRL-EXPLICIT-PROMOTION"]
+    attack_paths: ["AP-06"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Feed only checked-in synthetic malicious evidence fixtures through existing normalization/redaction paths."
+    expected_invariant: "Scanner/tool output cannot inject secrets, markup, control data, or synthetic PASS/finding fields into authoritative assurance evidence."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["hurl", "semgrep"]
+    coverage_cases:
+      - id: security-evidence-poisoning-realworld
+        threat: "Malformed evidence cannot fabricate security conclusions"
+        expected_invariant: "Scanner/tool output cannot inject secrets, markup, control data, or synthetic PASS/finding fields into authoritative assurance evidence."
+
+  - id: unicode-log-and-ui-injection
+    title: "Untrusted labels cannot corrupt UI, logs, reports, or audit meaning"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.api
+    suites: ["standard", "deep", "adversarial"]
+    stride: ["Tampering", "Repudiation", "Information Disclosure"]
+    owasp: ["A03", "A09"]
+    controls: ["CTRL-EVIDENCE-SANITIZE", "CTRL-HUMAN-SESSION-CSRF"]
+    attack_paths: ["AP-06", "AP-09"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Render only synthetic fixed Unicode/control-character labels in bounded test fixtures and inspect sanitized presentation metadata."
+    expected_invariant: "Control characters, HTML-like content, and terminal escapes cannot forge UI/audit/report structure or execute script."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["playwright", "semgrep"]
+    coverage_cases:
+      - id: unicode-log-and-ui-injection-realworld
+        threat: "Untrusted labels cannot corrupt UI, logs, reports, or audit meaning"
+        expected_invariant: "Control characters, HTML-like content, and terminal escapes cannot forge UI/audit/report structure or execute script."
+
+  - id: service-worker-version-integrity
+    title: "Service-worker caches do not preserve obsolete privileged authority"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: PASSIVE
+    required_capability: security.assurance.api
+    suites: ["deep", "adversarial"]
+    stride: ["Tampering", "Information Disclosure"]
+    owasp: ["A05", "A08"]
+    controls: ["CTRL-SUPPLY-CHAIN", "CTRL-HUMAN-SESSION-CSRF"]
+    attack_paths: ["AP-05", "AP-09"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Inspect live service-worker registration and cache version metadata across the qualified frontend revision."
+    expected_invariant: "Old cached frontend/API state cannot silently retain obsolete authority semantics after revision change or logout."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["playwright"]
+    coverage_cases:
+      - id: service-worker-version-integrity-realworld
+        threat: "Service-worker caches do not preserve obsolete privileged authority"
+        expected_invariant: "Old cached frontend/API state cannot silently retain obsolete authority semantics after revision change or logout."
+
+  - id: runtime-env-secret-boundary
+    title: "Runtime and frontend projections do not expose backend secrets"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: PASSIVE
+    required_capability: security.assurance.sast
+    suites: ["standard", "deep"]
+    stride: ["Information Disclosure"]
+    owasp: ["A02", "A05"]
+    controls: ["CTRL-EVIDENCE-SANITIZE", "CTRL-API-CONTROL"]
+    attack_paths: ["AP-05", "AP-06"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Correlate source secret scanning with browser-visible configuration/storage metadata without retaining values."
+    expected_invariant: "Backend credentials, NATS material, invite secrets, and qualification credentials remain absent from bundles and browser-visible runtime state."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["gitleaks", "playwright"]
+    coverage_cases:
+      - id: runtime-env-secret-boundary-realworld
+        threat: "Runtime and frontend projections do not expose backend secrets"
+        expected_invariant: "Backend credentials, NATS material, invite secrets, and qualification credentials remain absent from bundles and browser-visible runtime state."
+
+  - id: backup-confidentiality-integrity
+    title: "Recovery backup identity and integrity remain protected"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.api
+    suites: ["deep", "adversarial"]
+    stride: ["Tampering", "Information Disclosure", "Repudiation"]
+    owasp: ["A01", "A02", "A08"]
+    controls: ["CTRL-EVIDENCE-SANITIZE", "CTRL-EXPLICIT-PROMOTION", "CTRL-API-CONTROL"]
+    attack_paths: ["AP-08"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Use fixed foreign/stale/nonexistent backup identifiers against non-destructive verify/preview boundaries only."
+    expected_invariant: "Foreign, stale, or tampered backup identities cannot be read, verified, previewed, or promoted without proper authority and integrity checks."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["hurl"]
+    coverage_cases:
+      - id: backup-confidentiality-integrity-realworld
+        threat: "Recovery backup identity and integrity remain protected"
+        expected_invariant: "Foreign, stale, or tampered backup identities cannot be read, verified, previewed, or promoted without proper authority and integrity checks."
+
+  - id: restore-transaction-integrity
+    title: "Interrupted or replayed restore state cannot become trusted"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.api
+    suites: ["deep", "adversarial"]
+    stride: ["Tampering", "Repudiation", "Denial of Service"]
+    owasp: ["A01", "A08", "A09"]
+    controls: ["CTRL-EXPLICIT-PROMOTION", "CTRL-API-CONTROL"]
+    attack_paths: ["AP-08"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Exercise fixed stale/nonexistent preview and restore identifiers without performing a destructive restore."
+    expected_invariant: "Restore state remains preview-bound, single-use where required, and cannot become trusted after interruption or replay."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["hurl"]
+    coverage_cases:
+      - id: restore-transaction-integrity-realworld
+        threat: "Interrupted or replayed restore state cannot become trusted"
+        expected_invariant: "Restore state remains preview-bound, single-use where required, and cannot become trusted after interruption or replay."
+
+  - id: policy-known-good-recovery
+    title: "Policy lifecycle fails closed and preserves known-good recovery"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.api
+    suites: ["deep", "adversarial"]
+    stride: ["Tampering", "Repudiation", "Denial of Service", "Elevation of Privilege"]
+    owasp: ["A01", "A08"]
+    controls: ["CTRL-POLICY-REVISION-LIFECYCLE", "CTRL-OPA-FAIL-CLOSED"]
+    attack_paths: ["AP-11", "AP-12"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Exercise fixed stale/unknown policy-revision requests and read-only OPA revision evidence."
+    expected_invariant: "Unknown, stale, or unavailable policy revisions cannot become active authority and known-good recovery remains explicit."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["hurl", "opa"]
+    coverage_cases:
+      - id: policy-known-good-recovery-realworld
+        threat: "Policy lifecycle fails closed and preserves known-good recovery"
+        expected_invariant: "Unknown, stale, or unavailable policy revisions cannot become active authority and known-good recovery remains explicit."
+
+  - id: approval-continuation-replay
+    title: "Approved continuations cannot be replayed or rebound"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.api
+    suites: ["deep", "adversarial"]
+    stride: ["Spoofing", "Tampering", "Repudiation", "Elevation of Privilege"]
+    owasp: ["A01", "A07", "A09"]
+    controls: ["CTRL-INDEPENDENT-APPROVAL-CONTINUATION", "CTRL-WEBAUTHN-ASSURANCE"]
+    attack_paths: ["AP-13"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Send only fixed unknown/replayed continuation identifiers and altered target/revision shapes through qualification-safe paths."
+    expected_invariant: "Approval is bound to exact action, target, revision, reviewer eligibility, and one-use continuation semantics."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["hurl", "opa"]
+    coverage_cases:
+      - id: approval-continuation-replay-realworld
+        threat: "Approved continuations cannot be replayed or rebound"
+        expected_invariant: "Approval is bound to exact action, target, revision, reviewer eligibility, and one-use continuation semantics."
+
+  - id: temporary-exception-scope-bypass
+    title: "Temporary exceptions cannot outlive or escape approved scope"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.api
+    suites: ["deep", "adversarial"]
+    stride: ["Tampering", "Elevation of Privilege"]
+    owasp: ["A01", "A05"]
+    controls: ["CTRL-TEMPORARY-EXCEPTION-SCOPE", "CTRL-OPA-FAIL-CLOSED"]
+    attack_paths: ["AP-14"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Use fixed expired/unknown exception identifiers and out-of-scope request shapes only."
+    expected_invariant: "Expired, revoked, or differently scoped exceptions cannot authorize another action, target, app, or revision."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["hurl", "opa"]
+    coverage_cases:
+      - id: temporary-exception-scope-bypass-realworld
+        threat: "Temporary exceptions cannot outlive or escape approved scope"
+        expected_invariant: "Expired, revoked, or differently scoped exceptions cannot authorize another action, target, app, or revision."
+
