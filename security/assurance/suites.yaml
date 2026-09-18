@@ -50,6 +50,26 @@ profiles:
       - recovery-object-authorization
       - app-install-authority-boundary
       - remote-access-truthfulness
+    external_execution_lane: dev_pc_live_runtime
+    external_scenarios:
+      - browser-origin-control-plane-bypass
+      - cross-origin-session-abuse
+      - csrf-protected-mutation
+      - owner-session-lifecycle
+      - authorization-resource-boundary
+      - websocket-auth-boundary
+      - pwa-offline-secret-retention
+      - browser-network-egress-contract
+      - service-worker-version-integrity
+      - tailnet-service-exposure
+      - proxy-header-trust-confusion
+      - malformed-api-state-machine
+      - device-invite-replay-and-misbinding
+      - tls-identity-drift
+      - audit-event-attribution
+      - recovery-object-authorization
+      - app-install-authority-boundary
+      - remote-access-truthfulness
   deep:
     purpose: Manual-only extended assurance profile; approved heavyweight tools execute through the fixed DEV-PC lanes and the existing worker-owned Security path.
     target_seconds: 3600
@@ -98,6 +118,44 @@ profiles:
       - approval-continuation-replay
       - temporary-exception-scope-bypass
       - policy-known-good-recovery
+    external_execution_lane: dev_pc_live_runtime
+    external_scenarios:
+      - browser-origin-control-plane-bypass
+      - cross-origin-session-abuse
+      - csrf-protected-mutation
+      - owner-session-lifecycle
+      - authorization-resource-boundary
+      - websocket-auth-boundary
+      - pwa-offline-secret-retention
+      - browser-network-egress-contract
+      - webauthn-challenge-boundary
+      - service-worker-version-integrity
+      - tailnet-service-exposure
+      - proxy-header-trust-confusion
+      - malformed-api-state-machine
+      - device-invite-replay-and-misbinding
+      - nats-command-replay-integrity
+      - worker-reconnect-command-integrity
+      - tls-identity-drift
+      - audit-event-attribution
+      - recovery-object-authorization
+      - app-install-authority-boundary
+      - remote-access-truthfulness
+      - rate-limit-and-admission-resilience
+      - slow-client-resource-exhaustion
+      - release-artifact-tamper
+      - dependency-confusion-and-lock-integrity
+      - security-evidence-poisoning
+      - unicode-log-and-ui-injection
+      - backup-confidentiality-integrity
+      - restore-transaction-integrity
+      - app-package-provenance
+      - android-termux-host-hardening
+      - runtime-env-secret-boundary
+      - hidden-route-and-debug-surface
+      - approval-continuation-replay
+      - temporary-exception-scope-bypass
+      - policy-known-good-recovery
   adversarial:
     purpose: Qualification-only reviewed adversarial checks limited to fixed local control-boundary requests.
     target_seconds: 180
@@ -108,6 +166,37 @@ profiles:
     allowed_safety_classes: [PASSIVE, SAFE_ACTIVE]
     required_capabilities: [security.assurance.read, security.assurance.api, security.assurance.runtime, security.assurance.threat_scenario, security.assurance.report]
     scenarios: [harness-auth-boundary, caddy-proof-strip, runtime-readiness, evidence-redaction, source-boundaries, adversarial-negative-auth-probes]
+    external_execution_lane: dev_pc_live_runtime
+    external_scenarios:
+      - browser-origin-control-plane-bypass
+      - cross-origin-session-abuse
+      - csrf-protected-mutation
+      - owner-session-lifecycle
+      - authorization-resource-boundary
+      - websocket-auth-boundary
+      - pwa-offline-secret-retention
+      - browser-network-egress-contract
+      - webauthn-challenge-boundary
+      - service-worker-version-integrity
+      - tailnet-service-exposure
+      - proxy-header-trust-confusion
+      - malformed-api-state-machine
+      - device-invite-replay-and-misbinding
+      - nats-command-replay-integrity
+      - worker-reconnect-command-integrity
+      - tls-identity-drift
+      - recovery-object-authorization
+      - app-install-authority-boundary
+      - rate-limit-and-admission-resilience
+      - slow-client-resource-exhaustion
+      - security-evidence-poisoning
+      - unicode-log-and-ui-injection
+      - backup-confidentiality-integrity
+      - restore-transaction-integrity
+      - hidden-route-and-debug-surface
+      - approval-continuation-replay
+      - temporary-exception-scope-bypass
+      - policy-known-good-recovery
     external_execution_lane: dev_pc_live_runtime
     external_scenarios:
       - browser-origin-control-plane-bypass
