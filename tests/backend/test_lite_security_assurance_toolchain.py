@@ -547,6 +547,62 @@ def test_fixed_deb_extraction_uses_nonprivileged_dpkg_deb(tmp_path: Path, monkey
     assert "sudo" not in " ".join(calls[0])
 
 
+def test_hurl_libxml2_abi_gate_is_explicit_and_never_shims_incompatible_soname(tmp_path: Path, monkeypatch):
+    toolchain = _module()
+    legacy = tmp_path / "libxml2.so.2"
+    modern = tmp_path / "libxml2.so.16"
+    monkeypatch.setattr(toolchain, "HURL_LIBXML2_LEGACY_PATHS", (legacy,))
+    monkeypatch.setattr(toolchain, "HURL_LIBXML2_MODERN_PATHS", (modern,))
+
+    modern.write_bytes(b"modern")
+    incompatible = toolchain._hurl_runtime_compatibility()
+    assert incompatible["status"] == "NOT_APPLICABLE"
+    assert incompatible["required_abi"] == "libxml2.so.2"
+    assert incompatible["observed_abi"] == "libxml2.so.16"
+    assert "installer_does_not_modify_or_shim_host_runtime" in incompatible["reason"]
+
+    legacy.write_bytes(b"legacy")
+    compatible = toolchain._hurl_runtime_compatibility()
+    assert compatible["status"] == "READY"
+    assert compatible["observed_abi"] == "libxml2.so.2"
+
+
+def test_hurl_incompatible_host_converges_as_not_applicable_without_install(monkeypatch):
+    toolchain = _module()
+    registry = toolchain._registry()
+    registry["toolchain"] = {"hurl": registry["toolchain"]["hurl"]}
+    monkeypatch.setattr(toolchain, "_registry", lambda: registry)
+    monkeypatch.setattr(toolchain, "_candidate", lambda tool_id: None)
+    monkeypatch.setattr(
+        toolchain,
+        "_hurl_runtime_compatibility",
+        lambda: {
+            "status": "NOT_APPLICABLE",
+            "required_abi": "libxml2.so.2",
+            "observed_abi": "libxml2.so.16",
+            "reason": (
+                "host_libxml2_abi_incompatible; hurl_8_0_1_requires_libxml2_so_2; "
+                "installer_does_not_modify_or_shim_host_runtime"
+            ),
+            "sanitized": True,
+        },
+    )
+    monkeypatch.setattr(
+        toolchain,
+        "_install_github",
+        lambda tool_id: pytest.fail("incompatible Hurl host attempted installation"),
+    )
+
+    checked = toolchain._check_one("hurl", registry["toolchain"]["hurl"])
+    assert checked["status"] == "NOT_APPLICABLE"
+    assert checked["version_status"] == "host_runtime_incompatible"
+
+    installed = toolchain.install_toolchain()
+    assert installed["status"] == "PASS"
+    assert installed["tools"][0]["action"] == "not_applicable_host_runtime"
+    assert installed["tools"][0]["status"] == "PASS"
+
+
 def test_managed_python_entrypoint_is_relocated_after_atomic_venv_move(tmp_path: Path):
     toolchain = _module()
     staging = tmp_path / "staging"
