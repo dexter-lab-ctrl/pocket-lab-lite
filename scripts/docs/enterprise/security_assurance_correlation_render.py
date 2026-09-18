@@ -3,7 +3,10 @@ from __future__ import annotations
 import html, json, re
 from collections import defaultdict
 from typing import Any, Iterable, Mapping
-from security_assurance_correlation_data import SUITE_ORDER, WALKTHROUGHS
+try:
+    from .security_assurance_correlation_data import SUITE_ORDER, WALKTHROUGHS
+except ImportError:  # direct script execution compatibility
+    from security_assurance_correlation_data import SUITE_ORDER, WALKTHROUGHS
 
 def stable(v:Any):return json.dumps(v,ensure_ascii=False,sort_keys=True,indent=2,separators=(',',': '))+'\n'
 def anchor(v:str):return re.sub(r'[^a-z0-9-]+','-',v.lower()).strip('-')
@@ -91,7 +94,7 @@ def owasp(m):
 def correlation_page(m):
     out=['# Model ↔ Assurance Evidence','','Generated join view over canonical IDs and sanitized report JSON. It is not a second threat, scenario, control, or risk database.','']
     for a in m.get('attack_paths') or []:
-        out += [f'<a id="{anchor(a["id"])}"></a>',f'### {a["id"]} — {a.get("name")}','',f'**Trust boundaries:** {", ".join(a.get("boundaries") or []) or "—"}  ',f'**Controls:** {", ".join(a.get("controls") or []) or "—"}  ',f'**Scenarios:** {", ".join(a.get("scenarios") or []) or "—"}  ',f'**STRIDE:** {", ".join(a.get("stride") or []) or "—"}','']
+        out += [f'<a id="{anchor(a["id"])}"></a>',f'### {a["id"]} — {a.get("name")}','',f'**Trust boundaries:** {", ".join(a.get("boundaries") or []) or "—"}',f'**Controls:** {", ".join(a.get("controls") or []) or "—"}',f'**Scenarios:** {", ".join(a.get("scenarios") or []) or "—"}',f'**STRIDE:** {", ".join(a.get("stride") or []) or "—"}','']
         ev=a.get('latest_evidence') or []; out += [table(['Suite','Runtime SHA','Automation class','Automated result','Qualification','Human decision','Findings','Report'],[(e.get('suite'),str(e.get('runtime_sha') or '')[:10],e.get('automation_classification'),e.get('automated_result'),e.get('qualification_status'),e.get('human_assurance_decision'),', '.join(e.get('findings') or []) or 'none',f'[open](reports/{e.get("report_id")}.md)') for e in ev]) if ev else 'No published assurance evidence currently correlates to this path.','',f'[Open {a["id"]} in Security Atlas](../../threat-model/catalog.md?atlas-attack-path={a["id"]}#security-atlas)','']
     out += ['## Controls','',table(['Control','Boundaries','APs','Scenarios','Model posture'],[(c.get('id'),c.get('boundaries'),c.get('attack_paths'),c.get('scenarios'),c.get('model_status')) for c in m.get('controls') or []])]
     return fm('Model ↔ Assurance Evidence','AP, control, scenario, qualification, SHA, finding, and human-review correlation.')+'\n'.join(out)+'\n'

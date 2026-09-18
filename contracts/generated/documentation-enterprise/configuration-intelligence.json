@@ -241,7 +241,8 @@
         "performance/parity/edge-readonly.js",
         "performance/parity/wsl-readonly.js",
         "playwright.config.ts",
-        "scripts/docs/lite/generate_docs.py"
+        "scripts/docs/lite/generate_docs.py",
+        "tests/backend/test_lite_security_assurance_scenario_contracts.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -3859,6 +3860,29 @@
     },
     {
       "affected_components": [
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "NATS_MONITOR_PORT",
+      "owner": "repository tooling",
+      "purpose": "NATS/JetStream connection or runtime configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "scripts/dev/lite/security_assurance_360.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
         "bootstrap/runtime"
       ],
       "affects_release": true,
@@ -3877,6 +3901,29 @@
       "secret": true,
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "NATS_PORT",
+      "owner": "repository tooling",
+      "purpose": "NATS/JetStream connection or runtime configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "scripts/dev/lite/security_assurance_360.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -3949,6 +3996,7 @@
       "source": [
         "Taskfile.yml",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh",
+        "scripts/dev/lite/security_assurance_runtime_probe.py",
         "scripts/docs/lite/generate_docs.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -7294,6 +7342,30 @@
       "source": [
         "scripts/dev/check-faults.sh",
         "scripts/docs/run_validation_release_gates.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_FIXED_CADDY_HOST",
+      "owner": "repository tooling",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "scripts/dev/lite/security_assurance_toolchain.py",
+        "security/assurance/runtime-resilience.js"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -23942,7 +24014,8 @@
     },
     {
       "affected_components": [
-        "documentation"
+        "documentation",
+        "repository tooling"
       ],
       "affects_release": false,
       "affects_runtime": false,
@@ -23959,6 +24032,7 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
+        "scripts/dev/lite/security_assurance_runtime_tunnel.py",
         "scripts/docs/runtime/runtime_ssh_candidates.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -24006,6 +24080,30 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-tailscale.sh"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "TAILSCALE_IPV4",
+      "owner": "repository tooling",
+      "purpose": "Remote access/Tailnet runtime configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "scripts/dev/lite/security_assurance_runtime_tunnel.py",
+        "tests/backend/test_lite_security_assurance_360.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

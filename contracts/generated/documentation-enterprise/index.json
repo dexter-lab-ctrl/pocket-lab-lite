@@ -2384,7 +2384,8 @@
           "performance/parity/edge-readonly.js",
           "performance/parity/wsl-readonly.js",
           "playwright.config.ts",
-          "scripts/docs/lite/generate_docs.py"
+          "scripts/docs/lite/generate_docs.py",
+          "tests/backend/test_lite_security_assurance_scenario_contracts.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -6002,6 +6003,29 @@
       },
       {
         "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "NATS_MONITOR_PORT",
+        "owner": "repository tooling",
+        "purpose": "NATS/JetStream connection or runtime configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/lite/security_assurance_360.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "bootstrap/runtime"
         ],
         "affects_release": true,
@@ -6020,6 +6044,29 @@
         "secret": true,
         "source": [
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "NATS_PORT",
+        "owner": "repository tooling",
+        "purpose": "NATS/JetStream connection or runtime configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/lite/security_assurance_360.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -6092,6 +6139,7 @@
         "source": [
           "Taskfile.yml",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh",
+          "scripts/dev/lite/security_assurance_runtime_probe.py",
           "scripts/docs/lite/generate_docs.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -9437,6 +9485,30 @@
         "source": [
           "scripts/dev/check-faults.sh",
           "scripts/docs/run_validation_release_gates.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_FIXED_CADDY_HOST",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/lite/security_assurance_toolchain.py",
+          "security/assurance/runtime-resilience.js"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -26085,7 +26157,8 @@
       },
       {
         "affected_components": [
-          "documentation"
+          "documentation",
+          "repository tooling"
         ],
         "affects_release": false,
         "affects_runtime": false,
@@ -26102,6 +26175,7 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
+          "scripts/dev/lite/security_assurance_runtime_tunnel.py",
           "scripts/docs/runtime/runtime_ssh_candidates.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -26149,6 +26223,30 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-tailscale.sh"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "TAILSCALE_IPV4",
+        "owner": "repository tooling",
+        "purpose": "Remote access/Tailnet runtime configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/lite/security_assurance_runtime_tunnel.py",
+          "tests/backend/test_lite_security_assurance_360.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -27782,7 +27880,7 @@
         "security_classification": "internal metadata",
         "source_owner": [
           "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:134",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2910",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:2956",
           "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:29",
           "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:562",
           "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:665",
@@ -44621,10 +44719,10 @@
       "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
-        "asyncapi": "d4aa20ac97b514d88bff3a4d9e8e41ba5fb9582975e0546240ad3a790ab4c175",
-        "documentation": "03e2f51a511d65a143986098927a68a86830a01c8644b3036111f844ba492fde",
+        "asyncapi": "76550871c0c838682b419bc6ab073c16abc0633b76a991965ff30e8f57a41a5a",
+        "documentation": "0ae9cf6be2a96d68937fb875577a11fdc4780e74a660150f3ad5dcc259256a12",
         "openapi": "73df089dcb595eacedd99de1797a42e2eedbe4df044eebb8a6fc323fd9c2d1c4",
-        "operational_health": "d140668f25f52ff0dd417d70ff7b3661c5f703194828e53d43fbbc16798ed1e2"
+        "operational_health": "5d310a98dac11b51988673f83e2fd8e927d59604cd0f688994a190c93c154331"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -86866,6 +86964,8 @@
         "lite:security:assurance:tools:check",
         "lite:security:assurance:tools:install",
         "lite:security:assurance:tools:run",
+        "lite:security:assurance:tunnel:check",
+        "lite:security:assurance:tunnel:hold",
         "lite:test:redaction"
       ]
     },
@@ -92410,7 +92510,7 @@
         "name": "lite:security:assurance:qualify:full",
         "outputs": [],
         "promotes_evidence": false,
-        "purpose": "Run phone qualification plus the fixed DEV-PC Standard and Deep tool lanes",
+        "purpose": "Run phone qualification plus the fixed DEV-PC Standard, Adversarial, and Deep 360-degree tool lanes",
         "related_tasks": [],
         "repository_mutation": true,
         "requires_termux": false,
@@ -92851,6 +92951,86 @@
         "outputs": [],
         "promotes_evidence": false,
         "purpose": "Run one fixed DEV-PC assurance tool lane for a registered suite",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Security-analysis loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/dev/lite/security_assurance_runtime_tunnel.py check"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:security:assurance:tunnel:check",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/security_assurance_runtime_tunnel.py"
+        ],
+        "name": "lite:security:assurance:tunnel:check",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Discover fixed Server Phone/Tailnet runtime facts through the managed SSH alias without printing address values",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Security-analysis loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/dev/lite/security_assurance_runtime_tunnel.py hold"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:security:assurance:tunnel:hold",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/security_assurance_runtime_tunnel.py"
+        ],
+        "name": "lite:security:assurance:tunnel:hold",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Hold the fixed DEV-PC Runtime Security Assurance SSH forwards using runtime-derived phone and Tailnet addresses",
         "related_tasks": [],
         "repository_mutation": false,
         "requires_termux": false,
@@ -114503,5 +114683,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "f43d70e7557117aa9523ac909664d9103cda96b9f9270ec65fe083d3695b0c87"
+  "source_fingerprint": "211d847de202a40f034ebe949248b3aafdc39d50f4c07efacf086db07ef463a9"
 }

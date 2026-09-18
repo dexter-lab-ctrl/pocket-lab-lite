@@ -217,3 +217,97 @@ def test_external_scenarios_never_add_arbitrary_caller_inputs():
         "rule:", "path:", "host:", "wordlist:", "scanner:", "script:", "fixture:",
     )
     assert all(item not in request_block for item in forbidden)
+
+
+def test_consolidated_360_runtime_expansion_is_fixed_and_dev_pc_owned():
+    tools = {
+        item["id"]: item
+        for item in _yaml(TOOLS)["toolchain"]
+    }
+    expected = {
+        "playwright",
+        "mitmdump",
+        "hurl",
+        "k6",
+        "websocat",
+        "katana",
+        "httpx",
+        "tlsx",
+        "tshark",
+        "ffuf",
+        "nats-cli",
+        "playwright-runtime",
+        "pocketlab-runtime-360",
+    }
+    assert len(tools) == 31
+    assert expected.issubset(tools)
+
+    for tool_id in expected:
+        item = tools[tool_id]
+        assert item["execution_lane"] == "dev_pc_live_runtime"
+        assert item["harness_status"] == "ACTIVE"
+        rendered = " ".join(
+            str(value)
+            for value in item.get("fixed_argv") or []
+        ).casefold()
+        for forbidden in (
+            "caller_url",
+            "caller_host",
+            "caller_port",
+            "caller_argv",
+            "caller_subject",
+        ):
+            assert forbidden not in rendered
+
+    profiles = _yaml(SUITES)["profiles"]
+
+    assert "dev_pc_scenarios" not in profiles["standard"]
+    assert "dev_pc_scenarios" not in profiles["deep"]
+    assert "dev_pc_scenarios" not in profiles["adversarial"]
+
+    assert profiles["standard"]["external_execution_lane"] == "dev_pc_live_runtime"
+    assert profiles["deep"]["external_execution_lane"] == "dev_pc_live_runtime"
+    assert profiles["adversarial"]["external_execution_lane"] == "dev_pc_live_runtime"
+
+    assert {
+        "cookie-security-posture",
+    }.issubset(set(profiles["standard"]["external_scenarios"]))
+
+    assert {
+        "webauthn-origin-rpid-mismatch",
+        "duplicate-operation-flood",
+    }.issubset(set(profiles["deep"]["external_scenarios"]))
+
+    assert {
+        "webauthn-origin-rpid-mismatch",
+        "duplicate-operation-flood",
+    }.issubset(set(profiles["adversarial"]["external_scenarios"]))
+
+
+def test_consolidated_runtime_probe_cli_has_no_arbitrary_target_options():
+    probe = (
+        ROOT
+        / "scripts/dev/lite/security_assurance_runtime_probe.py"
+    ).read_text(encoding="utf-8")
+
+    assert (
+        'choices=("websocket","mitmproxy","tshark","nats","tailnet")'
+        in probe
+    )
+
+    for forbidden in (
+        'add_argument("--url"',
+        'add_argument("--host"',
+        'add_argument("--port"',
+        'add_argument("--argv"',
+        'add_argument("--subject"',
+    ):
+        assert forbidden not in probe
+
+    config = (
+        ROOT / "playwright.security.config.ts"
+    ).read_text(encoding="utf-8")
+
+    assert "LITE_BASE_URL" not in config
+    assert "caddy-sni" in config
+    assert "--host-resolver-rules=MAP" in config

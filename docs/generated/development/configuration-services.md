@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: f0268c1e8d90db610930f84b10075892613f79090cb8ce81bc16bed425f0751b
+source_fingerprint: e46460a61880b39efb9331272fbdbc3b9d02cd737b030e725b9fc1b5cf3df3e9
 schema_revision: 1
 validation_status: generated
 ---
@@ -72,7 +72,9 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `NATS_CONTAINER`
 - `NATS_HARDENING_REPORT`
 - `NATS_HEALTH_URL`
+- `NATS_MONITOR_PORT`
 - `NATS_ONLY_REPORT`
+- `NATS_PORT`
 - `NATS_SERVICE`
 - `NATS_STATUS_URL`
 - `NATS_SUBJECT_NOT_IN_ASYNCAPI`
@@ -83,6 +85,8 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `PLAYWRIGHT_MCP_VERSION`
 - `PLAYWRIGHT_REPORT`
 - `PLAYWRIGHT_SCRATCH`
+- `PLAYWRIGHT_SECURITY_CONFIG`
+- `PLAYWRIGHT_SECURITY_SPEC`
 - `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD`
 - `POCKETLAB_ACTIVE_CODE_SCAN_EXCLUDES`
 - `POCKETLAB_ALLOW_LOCAL_SCANCODE`
@@ -114,6 +118,7 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_ENVIRONMENT`
 - `POCKETLAB_EVENTS`
 - `POCKETLAB_FAULTS_WORKERS`
+- `POCKETLAB_FIXED_CADDY_HOST`
 - `POCKETLAB_FLAKES_REPEAT`
 - `POCKETLAB_FLAKES_WORKERS`
 - `POCKETLAB_FLAKE_ROUNDS`
@@ -268,11 +273,6 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_PLAYWRIGHT_CHANNEL`
 - `POCKETLAB_PLAYWRIGHT_REPORT_PATH`
 - `POCKETLAB_PLAYWRIGHT_VIDEO`
-- `POCKETLAB_PROFILE`
-- `POCKETLAB_PROXY_BASE`
-- `POCKETLAB_QUALIFICATION_OWNER`
-- `POCKETLAB_READY_ATTEMPTS`
-- `POCKETLAB_READY_CONNECT_TIMEOUT`
 
 ## Process roles
 

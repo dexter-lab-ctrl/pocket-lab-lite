@@ -29,9 +29,9 @@ Threat-model `human-review-required` is a human security-model/residual-risk dec
 ## Latest-suite compatibility
 | Suite | Result | Runtime SHA | Qualification | Completed UTC | Registry relationship |
 | --- | --- | --- | --- | --- | --- |
-| Smoke | PASS | 66ed279c01 | assurance-2a29076a8244411daed1b0a5ca0c1d1a | 2026-09-17T11:30:42Z | current registries |
-| Standard | PASS | 66ed279c01 | assurance-b798f7e3a4c64b8b8c780a6c737b9e23 | 2026-09-17T11:37:52Z | current registries |
-| Adversarial | PASS | 66ed279c01 | assurance-de72eb1604ed4b619c498bb2bc40e8b3 | 2026-09-17T11:39:34Z | current registries |
-| Deep | PARTIAL | 66ed279c01 | assurance-3d7968589ce447f18454d1caf69a10e3 | 2026-09-17T11:51:07Z | current registries |
+| Smoke | PASS | 66ed279c01 | assurance-2a29076a8244411daed1b0a5ca0c1d1a | 2026-09-17T11:30:42Z | historical registry |
+| Standard | PASS | 66ed279c01 | assurance-b798f7e3a4c64b8b8c780a6c737b9e23 | 2026-09-17T11:37:52Z | historical registry |
+| Adversarial | PASS | 66ed279c01 | assurance-de72eb1604ed4b619c498bb2bc40e8b3 | 2026-09-17T11:39:34Z | historical registry |
+| Deep | PARTIAL | 66ed279c01 | assurance-3d7968589ce447f18454d1caf69a10e3 | 2026-09-17T11:51:07Z | historical registry |
 
 Latest suite evidence currently spans **one runtime SHA**.

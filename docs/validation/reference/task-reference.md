@@ -60,11 +60,13 @@ Use only IDs listed in the current registries.
 | `lite:security:assurance:report:publish` | `security_assurance_report.py publish --qualification-id` | approved DEV PC/client with report capability | stages, redaction-checks and atomically publishes Markdown + sanitized companion JSON + index |
 | `lite:security:assurance:reports:index` | `security_assurance_report.py index` | DEV PC/CI | deterministically rebuilds only the generated report index from sanitized companion JSON |
 | `lite:security:assurance:compare` | `security_assurance.py compare <run-id>` | authenticated report/baseline capability | read normalized baseline delta |
+| `lite:security:assurance:tunnel:check` | `security_assurance_runtime_tunnel.py check` | DEV PC using managed SSH alias | validates fixed runtime-derived Server Phone and Tailnet tunnel facts |
+| `lite:security:assurance:tunnel:hold` | `security_assurance_runtime_tunnel.py hold` | DEV PC using managed SSH alias | holds fixed assurance forwards using runtime-derived addresses |
 | `lite:security:assurance:tools:install` | `security_assurance_toolchain.py install` | DEV PC operator | installs/checks fixed managed tools outside Git |
 | `lite:security:assurance:tools:check` | `security_assurance_toolchain.py check` | DEV PC | reports each tool as READY, NOT_APPLICABLE, or FAILED |
 | `lite:security:assurance:tools:run` | `security_assurance_toolchain.py run <suite>` | DEV PC and approved phone tunnel | runs fixed static/live tool lane; no arbitrary args |
 | `lite:security:assurance:qualify` | `security_assurance.py qualify ... --sync-policy ...` | approved client with key-bound startup | coordinated phone Smoke/Standard/Adversarial workflow with renewal/cleanup |
-| `lite:security:assurance:qualify:full` | same workflow plus `--full` | approved client; explicit full intent | adds fixed DEV-PC Standard/Deep lanes |
+| `lite:security:assurance:qualify:full` | same workflow plus `--full` | approved client; explicit full intent | adds fixed DEV-PC Standard/Adversarial/Deep lanes |
 
 Report publication is repository-owned and must not be used to edit tracked
 source on the Server Phone. The report publisher consumes the existing

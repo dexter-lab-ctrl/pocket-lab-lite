@@ -19,7 +19,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 | Documentation loop | 55 |
 | API-validation loop | 12 |
 | Runtime-evidence loop | 26 |
-| Security-analysis loop | 32 |
+| Security-analysis loop | 34 |
 | Release loop | 19 |
 | Recovery-diagnostics loop | 6 |
 
@@ -4630,7 +4630,7 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 ## `lite:security:assurance:qualify:full`
 
-**Purpose:** Run phone qualification plus the fixed DEV-PC Standard and Deep tool lanes
+**Purpose:** Run phone qualification plus the fixed DEV-PC Standard, Adversarial, and Deep 360-degree tool lanes
 
 **Audience:** developer
 
@@ -5035,6 +5035,74 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:security:assurance:tools:run`
+
+## `lite:security:assurance:tunnel:check`
+
+**Purpose:** Discover fixed Server Phone/Tailnet runtime facts through the managed SSH alias without printing address values
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance_runtime_tunnel.py check`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance_runtime_tunnel.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:security:assurance:tunnel:check`
+
+## `lite:security:assurance:tunnel:hold`
+
+**Purpose:** Hold the fixed DEV-PC Runtime Security Assurance SSH forwards using runtime-derived phone and Tailnet addresses
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/security_assurance_runtime_tunnel.py hold`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/security_assurance_runtime_tunnel.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:security:assurance:tunnel:hold`
 
 ## `lite:setup`
 

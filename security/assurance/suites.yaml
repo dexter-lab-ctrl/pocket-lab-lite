@@ -50,6 +50,10 @@ profiles:
       - recovery-object-authorization
       - app-install-authority-boundary
       - remote-access-truthfulness
+      - security-evidence-poisoning
+      - unicode-log-and-ui-injection
+      - runtime-env-secret-boundary
+      - cookie-security-posture
   deep:
     purpose: Manual-only extended assurance profile; approved heavyweight tools execute through the fixed DEV-PC lanes and the existing worker-owned Security path.
     target_seconds: 3600
@@ -98,6 +102,9 @@ profiles:
       - approval-continuation-replay
       - temporary-exception-scope-bypass
       - policy-known-good-recovery
+      - webauthn-origin-rpid-mismatch
+      - duplicate-operation-flood
+      - cookie-security-posture
   adversarial:
     purpose: Qualification-only reviewed adversarial checks limited to fixed local control-boundary requests.
     target_seconds: 180
@@ -131,6 +138,7 @@ profiles:
       - app-install-authority-boundary
       - rate-limit-and-admission-resilience
       - slow-client-resource-exhaustion
+      - release-artifact-tamper
       - security-evidence-poisoning
       - unicode-log-and-ui-injection
       - backup-confidentiality-integrity
@@ -139,3 +147,5 @@ profiles:
       - approval-continuation-replay
       - temporary-exception-scope-bypass
       - policy-known-good-recovery
+      - webauthn-origin-rpid-mismatch
+      - duplicate-operation-flood

@@ -17,7 +17,7 @@ def _module():
 def test_tool_registry_promotes_all_required_tools_to_fixed_harness_contracts():
     toolchain = _module()
     registry = toolchain._registry()
-    assert len(registry["toolchain"]) == 20
+    assert len(registry["toolchain"]) == 31
     assert all(item.get("harness_status") == "ACTIVE" for item in registry["toolchain"].values())
     assert all(item.get("execution_lane") in {"server_phone_worker", "dev_pc_static", "dev_pc_live_runtime"} for item in registry["toolchain"].values())
     assert all(item.get("command_id") and item.get("fixed_target") for item in registry["toolchain"].values())
@@ -29,7 +29,7 @@ def test_check_status_uses_only_terminal_toolchain_vocabulary():
     toolchain = _module()
     result = toolchain.check_toolchain()
     assert result["required_status_vocabulary"] == ["READY", "NOT_APPLICABLE", "FAILED"]
-    assert len(result["tools"]) == 20
+    assert len(result["tools"]) == 31
     assert {item["status"] for item in result["tools"]} <= {"READY", "NOT_APPLICABLE", "FAILED"}
     assert all("binary_path" not in item or not str(item["binary_path"]).startswith("/home/") for item in result["tools"])
 
@@ -282,3 +282,93 @@ def test_repository_owned_adapters_are_not_promoted_as_scanner_binaries(monkeypa
     result = toolchain.install_toolchain()
     assert result["status"] == "PASS"
     assert {row["action"] for row in result["tools"]} == {"repository_owned_adapter"}
+
+
+def test_consolidated_expansion_tools_are_registered():
+    toolchain = _module()
+    registry = toolchain._registry()["toolchain"]
+
+    expected = {
+        "playwright",
+        "mitmdump",
+        "hurl",
+        "k6",
+        "websocat",
+        "katana",
+        "httpx",
+        "tlsx",
+        "tshark",
+        "ffuf",
+        "nats-cli",
+        "playwright-runtime",
+        "pocketlab-runtime-360",
+    }
+
+    assert len(registry) == 31
+    assert expected.issubset(registry)
+
+
+def test_consolidated_high_live_finding_is_scenario_fail():
+    toolchain = _module()
+
+    rows = toolchain._aggregate_external_scenarios(
+        "standard",
+        [
+            {
+                "tool_id": "playwright",
+                "status": "PASS",
+                "findings": [
+                    {
+                        "finding_id": "x",
+                        "severity": "high",
+                    }
+                ],
+            },
+            {
+                "tool_id": "playwright-runtime",
+                "status": "PASS",
+                "findings": [],
+                "scenario_results": {
+                    "browser-origin-control-plane-bypass": {
+                        "status": "PASS",
+                        "evidence": "fixed browser observation",
+                        "reason": None,
+                    }
+                },
+            },
+        ],
+    )
+
+    target = next(
+        row
+        for row in rows
+        if row["scenario_id"]
+        == "browser-origin-control-plane-bypass"
+    )
+
+    assert target["status"] == "FAIL"
+
+
+def test_webauthn_human_review_never_auto_promotes_to_pass():
+    toolchain = _module()
+
+    rows = toolchain._aggregate_external_scenarios(
+        "deep",
+        [
+            {
+                "tool_id": "playwright",
+                "status": "PASS",
+                "findings": [],
+            }
+        ],
+    )
+
+    target = next(
+        row
+        for row in rows
+        if row["scenario_id"]
+        == "webauthn-origin-rpid-mismatch"
+    )
+
+    assert target["status"] == "PARTIAL"
+    assert target["human_review_required"] is True

@@ -14,6 +14,7 @@ secret matches, cookies, credentials or user media.
 from __future__ import annotations
 
 import hashlib
+import ipaddress
 import json
 import os
 import re
@@ -49,14 +50,22 @@ except ImportError:  # pragma: no cover - direct script execution
 
 ROOT = Path(__file__).resolve().parents[3]
 TOOLS_REGISTRY = ROOT / "security/assurance/tools.yaml"
+SCENARIOS_REGISTRY = ROOT / "security/assurance/scenarios.yaml"
+SUITES_REGISTRY = ROOT / "security/assurance/suites.yaml"
+
+BROWSER_360_SCRIPT = ROOT / "scripts/dev/lite/security_assurance_browser.mjs"
+
+LIVE_360_SCRIPT = ROOT / "scripts/dev/lite/security_assurance_360.py"
+RUNTIME_PROBE = ROOT / "scripts/dev/lite/security_assurance_runtime_probe.py"
+PLAYWRIGHT_SECURITY_CONFIG = ROOT / "playwright.security.config.ts"
+PLAYWRIGHT_SECURITY_SPEC = ROOT / "tests/e2e/lite-security-runtime.spec.ts"
+HURL_SECURITY_FILE = ROOT / "security/assurance/runtime-http-security.hurl"
+K6_SECURITY_FILE = ROOT / "security/assurance/runtime-resilience.js"
+FFUF_WORDLIST = ROOT / "security/assurance/runtime-route-wordlist.txt"
 SEMgrep_RULES = ROOT / "security/assurance/semgrep-rules.yml"
 NUCLEI_TEMPLATES = ROOT / "security/assurance/nuclei-safe-templates"
 OPENAPI_SCHEMA = ROOT / "contracts/generated/lite-openapi.json"
 GITLEAKS_CONFIG = ROOT / "security/static-analysis/gitleaks.toml"
-SCENARIOS_REGISTRY = ROOT / "security/assurance/scenarios.yaml"
-SUITES_REGISTRY = ROOT / "security/assurance/suites.yaml"
-LIVE_360_SCRIPT = ROOT / "scripts/dev/lite/security_assurance_360.py"
-BROWSER_360_SCRIPT = ROOT / "scripts/dev/lite/security_assurance_browser.mjs"
 MANAGED_ROOT = Path.home() / ".pocketlab-lite" / "tools" / "security-assurance"
 EVIDENCE_ROOT = Path.home() / ".pocketlab-lite" / "evidence" / "runtime-security-assurance"
 API_BASE = "http://127.0.0.1:18080"
@@ -85,23 +94,34 @@ MAX_SUITE_OUTPUT_BYTES = 1_048_576
 MAX_VERSION_OUTPUT_BYTES = 32_768
 
 VERSION_ARGS: dict[str, tuple[str, ...]] = {
-    "bandit": ("--version",),
-    "gitleaks": ("version",),
-    "pip-audit": ("--version",),
-    "npm-audit": ("--version",),
-    "opa": ("version",),
-    "schemathesis": ("--version",),
-    "cosign": ("version",),
-    "semgrep": ("--version",),
-    "osv-scanner": ("--version",),
-    "syft": ("version",),
-    "grype": ("version",),
-    "testssl.sh": ("--version",),
-    "nuclei": ("-version",),
-    "nmap": ("--version",),
-    "owasp-zap": ("-version",),
-    "pocketlab-runtime-360": (str(LIVE_360_SCRIPT), "--version"),
-    "playwright-runtime": (str(BROWSER_360_SCRIPT), "--version"),
+    'bandit': ('--version',),
+    'gitleaks': ('version',),
+    'pip-audit': ('--version',),
+    'npm-audit': ('--version',),
+    'opa': ('version',),
+    'schemathesis': ('--version',),
+    'cosign': ('version',),
+    'semgrep': ('--version',),
+    'osv-scanner': ('--version',),
+    'syft': ('version',),
+    'grype': ('version',),
+    'testssl.sh': ('--version',),
+    'nuclei': ('-version',),
+    'nmap': ('--version',),
+    'owasp-zap': ('-version',),
+    'playwright': ('--version',),
+    'mitmdump': ('--version',),
+    'hurl': ('--version',),
+    'k6': ('version',),
+    'websocat': ('--version',),
+    'katana': ('-version',),
+    'httpx': ('-version',),
+    'tlsx': ('-version',),
+    'tshark': ('--version',),
+    'ffuf': ('-V',),
+    'nats-cli': ('--version',),
+    'pocketlab-runtime-360': (str(LIVE_360_SCRIPT), '--version'),
+    'playwright-runtime': (str(BROWSER_360_SCRIPT), '--version'),
 }
 
 # These are the only local paths considered by the manager.  In particular,
@@ -120,33 +140,34 @@ APPROVED_PATH_DIRS = (
 )
 
 LOCAL_CANDIDATES: dict[str, tuple[Path, ...]] = {
-    "bandit": (ROOT / ".venv/bin/bandit",),
-    "gitleaks": (ROOT / ".pocketlab-dev/tools/documentation-security/bin/gitleaks",),
-    "pip-audit": (ROOT / ".venv/bin/pip-audit",),
-    "npm-audit": (Path.home() / ".nvm/versions/node/v24.16.0/bin/npm",),
-    "schemathesis": (
-        ROOT / ".pocketlab-dev/tools/parity/bin/schemathesis",
-        ROOT / ".pocketlab-dev/tools/parity/schemathesis-venv/bin/schemathesis",
-    ),
-    "cosign": (ROOT / ".pocketlab-dev/tools/documentation-security/bin/cosign",),
-    "semgrep": (
-        ROOT / ".pocketlab-dev/tools/documentation-security/bin/semgrep",
-        ROOT / ".pocketlab-dev/tools/documentation-security/venvs/semgrep/bin/semgrep",
-    ),
-    "osv-scanner": (ROOT / ".pocketlab-dev/tools/documentation-security/bin/osv-scanner",),
-    "syft": (ROOT / ".pocketlab-dev/tools/documentation-security/bin/syft",),
-    "grype": (ROOT / ".pocketlab-dev/tools/documentation-security/bin/grype",),
-    "opa": (Path("/usr/local/bin/opa"), Path("/usr/bin/opa")),
-    "testssl.sh": (MANAGED_ROOT / "bin/testssl.sh", Path("/usr/bin/testssl"), Path("/usr/bin/testssl.sh")),
-    "nuclei": (MANAGED_ROOT / "bin/nuclei", Path("/usr/local/bin/nuclei"), Path("/usr/bin/nuclei")),
-    "nmap": (MANAGED_ROOT / "bin/nmap", Path("/usr/bin/nmap")),
-    "owasp-zap": (MANAGED_ROOT / "bin/zap.sh", Path("/opt/zaproxy/zap.sh"), Path("/usr/share/zaproxy/zap.sh")),
-    "pocketlab-runtime-360": (ROOT / ".venv/bin/python", Path(sys.executable)),
-    "playwright-runtime": (
-        Path.home() / ".nvm/versions/node/v24.16.0/bin/node",
-        Path("/usr/bin/node"),
-        Path("/usr/local/bin/node"),
-    ),
+    'bandit': (ROOT / '.venv/bin/bandit',),
+    'gitleaks': (ROOT / '.pocketlab-dev/tools/documentation-security/bin/gitleaks',),
+    'pip-audit': (ROOT / '.venv/bin/pip-audit',),
+    'npm-audit': (Path.home() / '.nvm/versions/node/v24.16.0/bin/npm',),
+    'schemathesis': (ROOT / '.pocketlab-dev/tools/parity/bin/schemathesis', ROOT / '.pocketlab-dev/tools/parity/schemathesis-venv/bin/schemathesis'),
+    'cosign': (ROOT / '.pocketlab-dev/tools/documentation-security/bin/cosign',),
+    'semgrep': (ROOT / '.pocketlab-dev/tools/documentation-security/bin/semgrep', ROOT / '.pocketlab-dev/tools/documentation-security/venvs/semgrep/bin/semgrep'),
+    'osv-scanner': (ROOT / '.pocketlab-dev/tools/documentation-security/bin/osv-scanner',),
+    'syft': (ROOT / '.pocketlab-dev/tools/documentation-security/bin/syft',),
+    'grype': (ROOT / '.pocketlab-dev/tools/documentation-security/bin/grype',),
+    'opa': (Path('/usr/local/bin/opa'), Path('/usr/bin/opa')),
+    'testssl.sh': (MANAGED_ROOT / 'bin/testssl.sh', Path('/usr/bin/testssl'), Path('/usr/bin/testssl.sh')),
+    'nuclei': (MANAGED_ROOT / 'bin/nuclei', Path('/usr/local/bin/nuclei'), Path('/usr/bin/nuclei')),
+    'nmap': (MANAGED_ROOT / 'bin/nmap', Path('/usr/bin/nmap')),
+    'owasp-zap': (MANAGED_ROOT / 'bin/zap.sh', Path('/opt/zaproxy/zap.sh'), Path('/usr/share/zaproxy/zap.sh')),
+    'playwright': (ROOT / 'node_modules/.bin/playwright',),
+    'mitmdump': (MANAGED_ROOT / 'bin/mitmdump', ROOT / '.venv/bin/mitmdump', Path('/usr/local/bin/mitmdump'), Path('/usr/bin/mitmdump')),
+    'hurl': (MANAGED_ROOT / 'bin/hurl', Path('/usr/local/bin/hurl'), Path('/usr/bin/hurl')),
+    'k6': (MANAGED_ROOT / 'bin/k6', Path('/usr/local/bin/k6'), Path('/usr/bin/k6')),
+    'websocat': (MANAGED_ROOT / 'bin/websocat', Path('/usr/local/bin/websocat'), Path('/usr/bin/websocat')),
+    'katana': (MANAGED_ROOT / 'bin/katana', Path('/usr/local/bin/katana'), Path('/usr/bin/katana')),
+    'httpx': (MANAGED_ROOT / 'bin/httpx', Path('/usr/local/bin/httpx'), Path('/usr/bin/httpx')),
+    'tlsx': (MANAGED_ROOT / 'bin/tlsx', Path('/usr/local/bin/tlsx'), Path('/usr/bin/tlsx')),
+    'tshark': (Path('/usr/bin/tshark'), Path('/usr/local/bin/tshark')),
+    'ffuf': (MANAGED_ROOT / 'bin/ffuf', Path('/usr/local/bin/ffuf'), Path('/usr/bin/ffuf')),
+    'nats-cli': (MANAGED_ROOT / 'bin/nats', Path('/usr/local/bin/nats'), Path('/usr/bin/nats')),
+    'pocketlab-runtime-360': (ROOT / '.venv/bin/python', Path(sys.executable)),
+    'playwright-runtime': (Path.home() / '.nvm/versions/node/v24.16.0/bin/node', Path('/usr/bin/node'), Path('/usr/local/bin/node')),
 }
 
 PHONE_WORKER_TOOLS = frozenset({"pocketlab-security", "trivy", "lynis", "opa"})
@@ -155,21 +176,32 @@ COSIGN_ARTIFACT_MANIFEST = ROOT / "security/release/signed-artifacts.json"
 # orchestration dependency graph.  In particular, Grype consumes the SBOM
 # produced by Syft and must never be launched before that checkpoint exists.
 TOOL_EXECUTION_ORDER = (
-    "bandit",
-    "gitleaks",
-    "pip-audit",
-    "npm-audit",
-    "osv-scanner",
-    "semgrep",
-    "syft",
-    "grype",
-    "playwright-runtime",
-    "pocketlab-runtime-360",
-    "schemathesis",
-    "testssl.sh",
-    "nuclei",
-    "nmap",
-    "owasp-zap",
+    'bandit',
+    'gitleaks',
+    'pip-audit',
+    'npm-audit',
+    'osv-scanner',
+    'semgrep',
+    'syft',
+    'grype',
+    'schemathesis',
+    'testssl.sh',
+    'nuclei',
+    'nmap',
+    'owasp-zap',
+    'playwright',
+    'mitmdump',
+    'hurl',
+    'websocat',
+    'httpx',
+    'tlsx',
+    'tshark',
+    'katana',
+    'ffuf',
+    'nats-cli',
+    'k6',
+    'playwright-runtime',
+    'pocketlab-runtime-360',
 )
 
 # Fixed package/release recipes.  These values are source-owned and are not
@@ -299,7 +331,7 @@ def _registry() -> dict[str, Any]:
         if not isinstance(item, dict) or not re.fullmatch(r"[a-z0-9][a-z0-9._-]{1,63}", str(item.get("id") or "")):
             raise RuntimeError("assurance_tool_registry_invalid")
         result[str(item["id"])] = item
-    if len(result) != 20:
+    if len(result) != 31:
         raise RuntimeError("assurance_tool_registry_incomplete")
     return {"schema_version": data["schema_version"], "toolchain": result, "hash": _sha256_file(TOOLS_REGISTRY)}
 
@@ -330,13 +362,12 @@ def _fixed_env(*, tool_id: str | None = None, nmap_data: Path | None = None) -> 
         # The fixed target is an IP-based local tunnel.  Avoid DNS helpers
         # and any network discovery outside that tunnel.
         env["NODNS"] = "none"
+    if tool_id == "k6":
+        sni = _fixed_tls_sni()
+        if sni:
+            env["POCKETLAB_FIXED_CADDY_HOST"] = sni
     if nmap_data is not None:
         env["NMAPDIR"] = str(nmap_data)
-    if tool_id == "playwright-runtime":
-        # Playwright browsers are installed by the repo-owned DEV-PC/CI setup.
-        # Keep discovery fixed to the operator's standard Playwright cache;
-        # callers cannot override this path through the assurance API.
-        env["PLAYWRIGHT_BROWSERS_PATH"] = str(Path.home() / ".cache" / "ms-playwright")
     if tool_id == "nmap":
         nmap_recipe = APT_RECIPES["nmap"]
         nmap_version = str(next(iter(nmap_recipe["packages"].values()))["version"])
@@ -941,6 +972,40 @@ def _parse_findings(
 ) -> list[dict[str, Any]]:
     findings: list[dict[str, Any]] = []
     payload = artifact_payload if artifact_payload is not None else _parse_json(stdout)
+    if tool_id in {"mitmdump", "websocat", "tshark", "nats-cli", "httpx"} and isinstance(payload, dict):
+        for item in payload.get("security_findings") or []:
+            if isinstance(item, Mapping):
+                finding = _base_finding(
+                    tool_id=tool_id,
+                    suite_id=suite_id,
+                    identity=str(item.get("id") or "runtime-probe"),
+                    title=str(item.get("id") or "Runtime security invariant violation"),
+                    severity=str(item.get("severity") or "high"),
+                    summary=str(item.get("summary") or "A fixed live-runtime invariant failed."),
+                    component="live runtime",
+                )
+                finding["attack_paths"] = [str(value) for value in item.get("attack_paths") or finding.get("attack_paths") or []]
+                findings.append(finding)
+        return findings
+    if tool_id == "playwright" and isinstance(payload, dict):
+        stats = payload.get("stats") if isinstance(payload.get("stats"), Mapping) else {}
+        unexpected = int(stats.get("unexpected") or 0)
+        if unexpected:
+            findings.append(_base_finding(tool_id=tool_id, suite_id=suite_id, identity=f"playwright-unexpected-{unexpected}", title="Live browser security assertion failed", severity="high", summary=f"{unexpected} fixed browser security assertion(s) failed against the qualified runtime.", component="browser/PWA runtime"))
+        return findings
+    if tool_id == "katana":
+        if any("/api/lite/harness" in line or "/debug" in line or "/admin" in line for line in stdout.splitlines()):
+            findings.append(_base_finding(tool_id=tool_id, suite_id=suite_id, identity="unexpected-route-surface", title="Unexpected privileged route discovered", severity="high", summary="Bounded route discovery observed a harness/debug/admin route on the external Caddy surface.", component="Caddy external surface"))
+        return findings
+    if tool_id == "ffuf" and isinstance(payload, dict):
+        for row in payload.get("results") or []:
+            if not isinstance(row, Mapping):
+                continue
+            url = str(row.get("url") or "")
+            status = int(row.get("status") or 0)
+            if status < 400 and any(token in url for token in ("/api/lite/harness", "/debug", "/admin", "/metrics")):
+                findings.append(_base_finding(tool_id=tool_id, suite_id=suite_id, identity=f"{status}|{url.rsplit('/',1)[-1]}", title="Unexpected privileged route reachable", severity="high", summary="A fixed tiny-wordlist probe observed a privileged/debug route with a non-error response.", component="Caddy external surface"))
+        return findings
     if tool_id == "bandit" and isinstance(payload, dict):
         for row in payload.get("results") or []:
             if isinstance(row, dict):
@@ -1045,33 +1110,67 @@ def _parse_findings(
         for row in payload.get("findings") or []:
             if not isinstance(row, dict):
                 continue
-            scenario_id = str(row.get("scenario_id") or "runtime-360")
+            scenario_id = str(
+                row.get("scenario_id") or "runtime-360"
+            )
             finding = _base_finding(
                 tool_id=tool_id,
                 suite_id=suite_id,
-                identity=f"{scenario_id}|{row.get('title') or 'finding'}",
-                title=str(row.get("title") or "Runtime assurance finding"),
-                severity=str(row.get("severity") or "medium"),
-                summary=str(row.get("summary") or "A fixed runtime assurance invariant did not hold."),
+                identity=(
+                    f"{scenario_id}|"
+                    f"{row.get('title') or 'finding'}"
+                ),
+                title=str(
+                    row.get("title")
+                    or "Runtime assurance finding"
+                ),
+                severity=str(
+                    row.get("severity") or "medium"
+                ),
+                summary=str(
+                    row.get("summary")
+                    or "A fixed runtime assurance invariant did not hold."
+                ),
                 component="approved Pocket Lab runtime",
             )
             finding["scenario_id"] = scenario_id[:80]
             try:
-                scenarios_payload = yaml.safe_load(SCENARIOS_REGISTRY.read_text(encoding="utf-8")) or {}
+                scenarios_payload = yaml.safe_load(
+                    SCENARIOS_REGISTRY.read_text(
+                        encoding="utf-8"
+                    )
+                ) or {}
                 definition = next(
                     (
-                        item for item in scenarios_payload.get("scenarios") or []
-                        if isinstance(item, dict) and str(item.get("id") or "") == scenario_id
+                        item
+                        for item in scenarios_payload.get(
+                            "scenarios", []
+                        )
+                        if isinstance(item, dict)
+                        and str(item.get("id") or "")
+                        == scenario_id
                     ),
                     {},
                 )
             except (OSError, yaml.YAMLError):
                 definition = {}
             if isinstance(definition, dict):
-                finding["stride"] = [str(value) for value in definition.get("stride") or []][:8]
-                finding["owasp"] = [str(value) for value in definition.get("owasp") or []][:10]
-                finding["attack_paths"] = [str(value) for value in definition.get("attack_paths") or []][:16]
-                finding["controls"] = [str(value) for value in definition.get("controls") or []][:16]
+                finding["stride"] = [
+                    str(value)
+                    for value in definition.get("stride") or []
+                ][:8]
+                finding["owasp"] = [
+                    str(value)
+                    for value in definition.get("owasp") or []
+                ][:10]
+                finding["attack_paths"] = [
+                    str(value)
+                    for value in definition.get("attack_paths") or []
+                ][:16]
+                finding["controls"] = [
+                    str(value)
+                    for value in definition.get("controls") or []
+                ][:16]
             findings.append(finding)
     elif tool_id == "owasp-zap":
         # ``-quickout *.json`` is preferred because it gives the adapter a
@@ -1204,8 +1303,31 @@ def _dependency_source(workspace: Path) -> Path:
 
 
 def _live_target_probe(tool_id: str) -> dict[str, Any]:
-    """Prove only the fixed DEV-PC tunnel target required by this tool."""
-    if tool_id in {"playwright-runtime", "testssl.sh"}:
+    """Prove only the fixed DEV-PC runtime target required by this tool."""
+    caddy_tools = {
+        "playwright-runtime",
+        "testssl.sh",
+        "playwright",
+        "mitmdump",
+        "hurl",
+        "k6",
+        "websocat",
+        "katana",
+        "tlsx",
+        "tshark",
+        "ffuf",
+    }
+    api_tools = {
+        "schemathesis",
+        "nuclei",
+        "nmap",
+        "owasp-zap",
+        "pocketlab-runtime-360",
+        "nats-cli",
+        "httpx",
+    }
+
+    if tool_id in caddy_tools:
         sni = _fixed_tls_sni()
         if sni is None:
             return {
@@ -1216,8 +1338,14 @@ def _live_target_probe(tool_id: str) -> dict[str, Any]:
             }
         context = ssl.create_default_context()
         try:
-            with socket.create_connection(("127.0.0.1", 18443), timeout=3) as raw:
-                with context.wrap_socket(raw, server_hostname=sni) as tls:
+            with socket.create_connection(
+                ("127.0.0.1", 18443),
+                timeout=3,
+            ) as raw:
+                with context.wrap_socket(
+                    raw,
+                    server_hostname=sni,
+                ) as tls:
                     return {
                         "available": bool(tls.version()),
                         "target": "fixed_caddy_tls_tunnel",
@@ -1233,11 +1361,15 @@ def _live_target_probe(tool_id: str) -> dict[str, Any]:
                 "sanitized": True,
             }
 
-    api_tools = {"schemathesis", "nuclei", "nmap", "owasp-zap", "pocketlab-runtime-360"}
     if tool_id in api_tools:
         try:
-            request = urllib.request.Request(f"{API_BASE}/health", headers={"Accept": "application/json"})
-            opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+            request = urllib.request.Request(
+                f"{API_BASE}/health",
+                headers={"Accept": "application/json"},
+            )
+            opener = urllib.request.build_opener(
+                urllib.request.ProxyHandler({})
+            )
             with opener.open(request, timeout=3) as response:
                 healthy = int(response.status) == 200
         except urllib.error.HTTPError as exc:
@@ -1255,6 +1387,7 @@ def _live_target_probe(tool_id: str) -> dict[str, Any]:
                 "failure_code": "runtime_target_unavailable",
                 "sanitized": True,
             }
+
         if not healthy:
             return {
                 "available": False,
@@ -1262,6 +1395,7 @@ def _live_target_probe(tool_id: str) -> dict[str, Any]:
                 "failure_code": "runtime_target_unhealthy",
                 "sanitized": True,
             }
+
         if tool_id == "pocketlab-runtime-360":
             caddy = _live_target_probe("playwright-runtime")
             if caddy.get("available") is not True:
@@ -1273,13 +1407,277 @@ def _live_target_probe(tool_id: str) -> dict[str, Any]:
                 "tls_hostname_verified": True,
                 "sanitized": True,
             }
+
         return {
             "available": True,
             "target": "fixed_api_tunnel",
             "http_status": 200,
             "sanitized": True,
         }
-    return {"available": True, "target": "fixed_registered_target", "sanitized": True}
+
+    return {
+        "available": True,
+        "target": "fixed_registered_target",
+        "sanitized": True,
+    }
+
+
+def _fixed_tailnet_ip() -> str | None:
+    """Derive the private-network IPv4 only from the fixed runtime readiness API."""
+    try:
+        request = urllib.request.Request(f"{API_BASE}/api/lite/remote-access/readiness", headers={"Accept": "application/json", "Cache-Control": "no-cache"})
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        with opener.open(request, timeout=3) as response:
+            if int(response.status) != 200:
+                return None
+            payload = json.loads(response.read(64 * 1024).decode("utf-8"))
+    except (OSError, urllib.error.URLError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    values: list[str] = []
+    def walk(value: Any) -> None:
+        if isinstance(value, Mapping):
+            for child in value.values():
+                walk(child)
+        elif isinstance(value, list):
+            for child in value:
+                walk(child)
+        elif isinstance(value, str):
+            values.append(value.strip())
+    walk(payload)
+    network = ipaddress.ip_network("100.64.0.0/10")
+    for raw in values:
+        try:
+            address = ipaddress.ip_address(raw)
+        except ValueError:
+            continue
+        if address.version == 4 and address in network:
+            return str(address)
+    return None
+
+
+def _external_scenario_definitions(suite_id: str) -> list[dict[str, Any]]:
+    try:
+        suites = yaml.safe_load(
+            SUITES_REGISTRY.read_text(encoding="utf-8")
+        ) or {}
+        scenarios = yaml.safe_load(
+            SCENARIOS_REGISTRY.read_text(encoding="utf-8")
+        ) or {}
+    except (OSError, yaml.YAMLError) as exc:
+        raise RuntimeError(
+            "assurance_external_scenario_registry_invalid"
+        ) from exc
+
+    profile = (
+        (suites.get("profiles") or {}).get(suite_id)
+        if isinstance(suites, dict)
+        else None
+    )
+    refs = (
+        list((profile or {}).get("external_scenarios") or [])
+        if isinstance(profile, dict)
+        else []
+    )
+    by_id = {
+        str(item.get("id") or ""): item
+        for item in scenarios.get("scenarios") or []
+        if isinstance(item, dict)
+    }
+
+    result: list[dict[str, Any]] = []
+    for ref in refs:
+        item = by_id.get(str(ref))
+        if not isinstance(item, dict):
+            raise RuntimeError(
+                "assurance_external_scenario_registry_invalid"
+            )
+        result.append(dict(item))
+    return result
+
+
+def _aggregate_external_scenarios(
+    suite_id: str,
+    tool_results: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    registry = _registry()["toolchain"]
+    by_tool = {
+        str(item.get("tool_id") or ""): item
+        for item in tool_results
+        if isinstance(item, dict)
+    }
+
+    precedence = {
+        "FAIL": 6,
+        "PARTIAL": 5,
+        "BLOCKED": 5,
+        "NOT_ASSESSED": 4,
+        "PASS": 3,
+        "NOT_APPLICABLE": 2,
+    }
+
+    rows: list[dict[str, Any]] = []
+
+    for definition in _external_scenario_definitions(suite_id):
+        scenario_id = str(definition.get("id") or "")
+        observations: list[dict[str, Any]] = []
+
+        # Scenario-specific observations from repository-owned adapters.
+        for tool in tool_results:
+            values = tool.get("scenario_results")
+            if (
+                isinstance(values, dict)
+                and isinstance(values.get(scenario_id), dict)
+            ):
+                observations.append({
+                    "tool": str(tool.get("tool_id") or ""),
+                    **dict(values[scenario_id]),
+                })
+
+        # Expansion tools are associated through evidence_tools.
+        requested = [
+            str(value)
+            for value in definition.get("evidence_tools") or []
+        ]
+        external_tools = [
+            tool_id
+            for tool_id in requested
+            if str(
+                (registry.get(tool_id) or {}).get(
+                    "execution_lane"
+                )
+                or ""
+            )
+            != "server_phone_worker"
+        ]
+
+        evidence = [
+            by_tool[tool_id]
+            for tool_id in external_tools
+            if tool_id in by_tool
+        ]
+        missing = sorted(
+            set(external_tools) - set(by_tool)
+        )
+
+        findings = [
+            finding
+            for item in evidence
+            for finding in item.get("findings") or []
+            if isinstance(finding, Mapping)
+        ]
+        severe = [
+            finding
+            for finding in findings
+            if str(
+                finding.get("severity") or ""
+            ).casefold()
+            in {"critical", "high"}
+        ]
+
+        incomplete = [
+            item
+            for item in evidence
+            if str(item.get("status") or "")
+            in {"FAILED", "PARTIAL", "BLOCKED", "NOT_RUN"}
+        ]
+
+        human_review = scenario_id in {
+            "webauthn-origin-rpid-mismatch",
+        }
+
+        candidates: list[tuple[str, str | None]] = []
+
+        for observation in observations:
+            status = str(
+                observation.get("status")
+                or "NOT_ASSESSED"
+            ).upper()
+            reason = (
+                str(observation.get("reason"))
+                if observation.get("reason")
+                else None
+            )
+            candidates.append((status, reason))
+
+        if severe:
+            candidates.append(
+                ("FAIL", "security_invariant_violation")
+            )
+        elif not observations:
+            if missing:
+                candidates.append(
+                    ("BLOCKED", "required_live_tool_unavailable")
+                )
+            elif incomplete:
+                candidates.append(
+                    ("PARTIAL", "runtime_evidence_incomplete")
+                )
+            elif evidence:
+                candidates.append(("PASS", None))
+
+        if human_review and not any(
+            status == "FAIL"
+            for status, _ in candidates
+        ):
+            candidates.append(
+                ("PARTIAL", "human_review_required")
+            )
+
+        if not candidates:
+            final_status = "NOT_ASSESSED"
+            failure_code = "no_safe_runtime_evidence"
+        else:
+            final_status, failure_code = max(
+                candidates,
+                key=lambda item: precedence.get(
+                    item[0],
+                    0,
+                ),
+            )
+
+        rows.append({
+            "scenario_id": scenario_id,
+            "title": str(
+                definition.get("title") or ""
+            )[:200],
+            "status": final_status,
+            "failure_code": failure_code,
+            "required_tools": external_tools,
+            "tool_status": {
+                str(item.get("tool_id")): str(
+                    item.get("status")
+                )
+                for item in evidence
+            },
+            "finding_ids": [
+                str(item.get("finding_id") or "")
+                for item in findings
+            ][:64],
+            "human_review_required": human_review,
+            "attack_paths": [
+                str(value)
+                for value in definition.get("attack_paths")
+                or []
+            ],
+            "observations": [
+                {
+                    "tool": str(item.get("tool") or ""),
+                    "status": str(
+                        item.get("status")
+                        or "NOT_ASSESSED"
+                    ),
+                    "reason": (
+                        str(item.get("reason"))
+                        if item.get("reason")
+                        else None
+                    ),
+                }
+                for item in observations
+            ],
+            "sanitized": True,
+        })
+
+    return rows
 
 
 def _run_command_for_tool(tool_id: str, suite_id: str, binary: Path, workspace: Path, env: dict[str, str]) -> tuple[list[str], Path | None]:
@@ -1287,6 +1685,41 @@ def _run_command_for_tool(tool_id: str, suite_id: str, binary: Path, workspace: 
         return [str(binary), str(LIVE_360_SCRIPT), suite_id], None
     if tool_id == "playwright-runtime":
         return [str(binary), str(BROWSER_360_SCRIPT), suite_id], None
+    if tool_id == "playwright":
+        return [str(binary), "test", "--config", str(PLAYWRIGHT_SECURITY_CONFIG), str(PLAYWRIGHT_SECURITY_SPEC), "--project", "security-runtime", "--reporter=json"], None
+    if tool_id == "mitmdump":
+        return [sys.executable, str(RUNTIME_PROBE), "mitmproxy"], None
+    if tool_id == "hurl":
+        sni = _fixed_tls_sni()
+        if sni is None:
+            raise RuntimeError("runtime_tls_identity_unavailable")
+        return [str(binary), "--test", "--insecure", "--variable", f"host={sni}", str(HURL_SECURITY_FILE)], None
+    if tool_id == "k6":
+        return [str(binary), "run", "--vus", "2", "--duration", "8s", str(K6_SECURITY_FILE)], None
+    if tool_id == "websocat":
+        return [sys.executable, str(RUNTIME_PROBE), "websocket"], None
+    if tool_id == "tshark":
+        return [sys.executable, str(RUNTIME_PROBE), "tshark"], None
+    if tool_id == "nats-cli":
+        return [sys.executable, str(RUNTIME_PROBE), "nats"], None
+    if tool_id == "httpx":
+        return [sys.executable, str(RUNTIME_PROBE), "tailnet"], None
+    if tool_id == "tlsx":
+        sni = _fixed_tls_sni()
+        if sni is None:
+            raise RuntimeError("runtime_tls_identity_unavailable")
+        return [str(binary), "-u", TLS_TARGET, "-sni", sni, "-json", "-silent"], None
+    if tool_id == "katana":
+        sni = _fixed_tls_sni()
+        if sni is None:
+            raise RuntimeError("runtime_tls_identity_unavailable")
+        return [str(binary), "-u", f"https://127.0.0.1:18443", "-H", f"Host: {sni}", "-d", "1", "-c", "1", "-rl", "2", "-timeout", "5", "-jc", "-silent"], None
+    if tool_id == "ffuf":
+        sni = _fixed_tls_sni()
+        if sni is None:
+            raise RuntimeError("runtime_tls_identity_unavailable")
+        report = workspace / "ffuf.json"
+        return [str(binary), "-w", str(FFUF_WORDLIST), "-u", "https://127.0.0.1:18443/FUZZ", "-H", f"Host: {sni}", "-k", "-t", "1", "-rate", "2", "-maxtime", "20", "-of", "json", "-o", str(report), "-s"], report
     if tool_id == "bandit":
         return [str(binary), "-r", str(ROOT / "pocket-lab-final-structure/runtime"), "--format", "json", "--quiet", "--exclude", str(ROOT / ".venv"), "--exclude", str(ROOT / ".pocketlab-dev")], None
     if tool_id == "gitleaks":
@@ -1462,6 +1895,8 @@ def _tool_result(tool_id: str, suite_id: str, binary: Path | None, workspace: Pa
         if artifact_meta.get("status") != "PASS" and completed.get("status") == "PASS":
             completed = {**completed, "status": "PARTIAL", "failure_code": str(artifact_meta.get("failure_code") or "artifact_invalid")}
     findings = _parse_findings(tool_id, suite_id, stdout, stderr, workspace, artifact_payload=artifact_payload)
+    if tool_id in {"hurl", "k6"} and completed.get("status") == "FAIL" and not findings:
+        findings.append(_base_finding(tool_id=tool_id, suite_id=suite_id, identity=f"{tool_id}-assertion-failed", title=f"{tool_id} runtime security assertion failed", severity="high", summary="A fixed repository-owned runtime security assertion failed.", component="live runtime"))
     if artifact is not None and artifact.name == "syft.cdx.json" and isinstance(artifact_payload, dict):
         payload = artifact_payload
         result["component_count"] = len(payload.get("components") or []) if isinstance(payload, dict) else None
@@ -1479,9 +1914,22 @@ def _tool_result(tool_id: str, suite_id: str, binary: Path | None, workspace: Pa
             if isinstance(scenario_results, dict):
                 result["scenario_results"] = {
                     str(key)[:80]: {
-                        "status": str(value.get("status") or "NOT_ASSESSED")[:32],
-                        "evidence": _sanitize_text(value.get("evidence"), 300),
-                        "reason": _sanitize_text(value.get("reason"), 240) if value.get("reason") else None,
+                        "status": str(
+                            value.get("status")
+                            or "NOT_ASSESSED"
+                        )[:32],
+                        "evidence": _sanitize_text(
+                            value.get("evidence"),
+                            300,
+                        ),
+                        "reason": (
+                            _sanitize_text(
+                                value.get("reason"),
+                                240,
+                            )
+                            if value.get("reason")
+                            else None
+                        ),
                     }
                     for key, value in scenario_results.items()
                     if isinstance(value, dict)
@@ -1505,59 +1953,6 @@ def _tool_result(tool_id: str, suite_id: str, binary: Path | None, workspace: Pa
         "resource": {"cpu": "UNAVAILABLE", "rss_bytes": "UNAVAILABLE", "battery": "UNAVAILABLE", "temperature_c": "UNAVAILABLE", "storage_delta_bytes": "UNAVAILABLE"},
     })
     return result
-
-
-def _external_scenario_definitions(suite_id: str) -> list[dict[str, Any]]:
-    try:
-        suites = yaml.safe_load(SUITES_REGISTRY.read_text(encoding="utf-8")) or {}
-        scenarios = yaml.safe_load(SCENARIOS_REGISTRY.read_text(encoding="utf-8")) or {}
-    except (OSError, yaml.YAMLError) as exc:
-        raise RuntimeError("assurance_external_scenario_registry_invalid") from exc
-    profile = (suites.get("profiles") or {}).get(suite_id) if isinstance(suites, dict) else None
-    refs = list((profile or {}).get("external_scenarios") or []) if isinstance(profile, dict) else []
-    by_id = {
-        str(item.get("id") or ""): item
-        for item in (scenarios.get("scenarios") or [])
-        if isinstance(item, dict)
-    }
-    result = []
-    for ref in refs:
-        item = by_id.get(str(ref))
-        if not isinstance(item, dict):
-            raise RuntimeError("assurance_external_scenario_registry_invalid")
-        result.append(item)
-    return result
-
-
-def _aggregate_external_scenarios(suite_id: str, tool_results: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    precedence = {"FAIL": 5, "PARTIAL": 4, "BLOCKED": 4, "PASS": 3, "NOT_ASSESSED": 2, "NOT_APPLICABLE": 1}
-    rows: list[dict[str, Any]] = []
-    for definition in _external_scenario_definitions(suite_id):
-        scenario_id = str(definition.get("id") or "")
-        observations = []
-        for tool in tool_results:
-            values = tool.get("scenario_results")
-            if isinstance(values, dict) and isinstance(values.get(scenario_id), dict):
-                observations.append({
-                    "tool": str(tool.get("tool_id") or ""),
-                    **dict(values[scenario_id]),
-                })
-        if observations:
-            chosen = max(observations, key=lambda item: precedence.get(str(item.get("status") or "").upper(), 0))
-            status = str(chosen.get("status") or "NOT_ASSESSED").upper()
-        else:
-            status = "NOT_ASSESSED"
-        rows.append({
-            "scenario_id": scenario_id,
-            "status": status,
-            "execution": str(definition.get("execution") or ""),
-            "evidence_tools": [str(value) for value in definition.get("evidence_tools") or []],
-            "observations": observations,
-            "attack_paths": [str(value) for value in definition.get("attack_paths") or []],
-            "controls": [str(value) for value in definition.get("controls") or []],
-            "sanitized": True,
-        })
-    return rows
 
 
 def run_suite(suite_id: str) -> dict[str, Any]:
@@ -1691,7 +2086,7 @@ def main(argv: list[str] | None = None) -> int:
     commands.add_parser("check", help="check all fixed tool contracts")
     commands.add_parser("install", help="promote/install only fixed approved tool recipes")
     run = commands.add_parser("run", help="run one registered bounded suite")
-    run.add_argument("suite", choices=("smoke", "standard", "deep"))
+    run.add_argument("suite", choices=("smoke", "standard", "deep", "adversarial"))
     args = parser.parse_args(argv)
     try:
         if args.command == "check":

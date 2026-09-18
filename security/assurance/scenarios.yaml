@@ -32,7 +32,6 @@ scenarios:
       - id: destructive-gate-default-off
         threat: Destructive qualification is enabled by default.
         expected_invariant: Destructive gate remains disabled unless explicitly selected.
-
   - id: harness-auth-boundary
     title: Synthetic Ed25519 session and capability boundary
     execution: authenticated_admission_posture
@@ -70,7 +69,6 @@ scenarios:
       - id: session-expiry-independent-run
         threat: Expired client session corrupts an already-admitted durable run.
         expected_invariant: Admitted execution lease remains independent while new authority still requires a live session.
-
   - id: caddy-proof-strip
     title: Caddy never forwards qualification proof into FastAPI authority
     execution: fixed_caddy_probe
@@ -109,7 +107,6 @@ scenarios:
       - id: unexpected-debug-route-boundary
         threat: Development/diagnostic routes unexpectedly become harness authority surfaces.
         expected_invariant: Checked debug/documentation routes never accept harness proof.
-
   - id: runtime-readiness
     title: API health/readiness and PM2 readiness distinction
     execution: fixed_local_health_probe
@@ -145,7 +142,6 @@ scenarios:
       - id: remote-access-not-ready-truthfulness
         threat: Remote access is presented as ready when required local control-plane readiness is absent.
         expected_invariant: Readiness remains evidence-backed and fail-closed.
-
   - id: control-plane-ownership
     title: Assurance execution remains FastAPI to NATS to worker owned
     execution: worker_execution_receipt
@@ -177,7 +173,6 @@ scenarios:
       - id: duplicate-operation-boundary
         threat: Duplicate client submissions create unbounded parallel assurance work.
         expected_invariant: Admission/idempotency remains server-owned and one-active-run bounded.
-
   - id: evidence-redaction
     title: Assurance evidence contains only normalized sanitized output
     execution: redaction_contract
@@ -212,7 +207,6 @@ scenarios:
       - id: nats-credential-redaction
         threat: NATS credential-shaped fields leak through nested metadata.
         expected_invariant: NATS credentials are recursively redacted.
-
   - id: security-projection
     title: Existing Security projection and scanner lifecycle are available
     execution: existing_security_projection
@@ -251,7 +245,6 @@ scenarios:
       - id: scanner-output-malformed
         threat: Malformed/incomplete scanner results are treated as healthy evidence.
         expected_invariant: Missing, partial, timed-out, and failed tool states remain explicit and never become PASS silently.
-
   - id: policy-readiness
     title: OPA loopback readiness and policy revision consistency
     execution: existing_opa_status
@@ -284,7 +277,6 @@ scenarios:
       - id: protected-target-policy-bypass
         threat: Browser/external transport bypasses OPA-protected control API policy.
         expected_invariant: Policy engine remains internal and API-owned.
-
   - id: source-boundaries
     title: Canonical source preserves browser, shell, NATS, and user-media boundaries
     execution: bounded_source_assertions
@@ -317,7 +309,6 @@ scenarios:
       - id: caddy-harness-header-strip-source
         threat: Proxy configuration stops stripping harness authority headers.
         expected_invariant: Checked Caddy source markers continue to enforce direct-loopback harness authority.
-
   - id: adversarial-negative-auth-probes
     title: Fixed malformed authentication and input probes remain denied
     execution: fixed_negative_auth_probes
@@ -367,7 +358,6 @@ scenarios:
       - id: unauthorized-cancel
         threat: Unauthenticated caller cancels another principal's run.
         expected_invariant: Cancel requires bound principal authority.
-
   - id: threat-model-integrity
     title: Current canonical threat model is complete and executable statuses are explicit
     execution: canonical_threat_model_check
@@ -399,7 +389,6 @@ scenarios:
       - id: unknown-control-mapping
         threat: Scenario claims a mitigation that is not canonical.
         expected_invariant: Every referenced control exists in the canonical threat model.
-
   - id: attack-path-inventory
     title: Every current AP path has a bounded execution classification
     execution: attack_path_inventory
@@ -425,7 +414,6 @@ scenarios:
       - id: scanner-not-attack-path
         threat: A new tool is incorrectly modeled as a new attack path.
         expected_invariant: AP identifiers describe threat paths, not scanners.
-
   - id: browser-origin-control-plane-bypass
     title: "Real browser control-plane ownership"
     execution: dev_pc_browser_runtime_evidence
@@ -433,9 +421,9 @@ scenarios:
     required_capability: security.assurance.api
     suites: [standard, deep, adversarial]
     stride: [Spoofing, Tampering, Elevation of Privilege]
-    owasp: [A01, A05]
-    controls: [CTRL-BROWSER-NATS, CTRL-API-CONTROL]
-    attack_paths: [AP-01, AP-02]
+    owasp: [A01, A05, A07]
+    controls: [CTRL-BROWSER-NATS, CTRL-API-CONTROL, CTRL-BROWSER-SHELL]
+    attack_paths: [AP-01, AP-02, AP-07]
     precondition: "The fixed DEV-PC Chromium lane can reach the approved Caddy HTTPS identity."
     action: "Exercise the deployed PWA in real Chromium and observe all browser network requests plus browser-facing hardening metadata."
     expected_invariant: "Browser JavaScript communicates only through approved same-origin HTTP/WebSocket surfaces and never directly reaches NATS, OPA, shell, or internal service ports."
@@ -444,7 +432,7 @@ scenarios:
     blocked_condition: "Caddy/browser runtime is unavailable; report NOT_ASSESSED or PARTIAL rather than PASS."
     cleanup: "Close the browser context and fixed hostile-origin listener."
     normalized_evidence: "Sanitized request-count/host-class/port-class metadata only; raw URLs and response bodies are not persisted."
-    evidence_tools: [playwright-runtime, pocketlab-runtime-360, owasp-zap]
+    evidence_tools: [playwright-runtime, pocketlab-runtime-360, owasp-zap, playwright, mitmdump, tshark]
     coverage_cases:
       - id: browser-internal-port-egress
         threat: "Real browser control-plane ownership — browser internal port egress"
@@ -452,7 +440,6 @@ scenarios:
       - id: browser-nonapproved-origin-egress
         threat: "Real browser control-plane ownership — browser nonapproved origin egress"
         expected_invariant: "Browser JavaScript communicates only through approved same-origin HTTP/WebSocket surfaces and never directly reaches NATS, OPA, shell, or internal service ports."
-
   - id: cross-origin-session-abuse
     title: "Hostile-origin browser session abuse"
     execution: dev_pc_browser_runtime_evidence
@@ -460,7 +447,7 @@ scenarios:
     required_capability: security.assurance.api
     suites: [standard, deep, adversarial]
     stride: [Spoofing, Information Disclosure, Elevation of Privilege]
-    owasp: [A01, A07]
+    owasp: [A01, A07, A05]
     controls: [CTRL-HUMAN-SESSION-CSRF, CTRL-API-CONTROL]
     attack_paths: [AP-01, AP-09]
     precondition: "A fixed hostile loopback origin and the approved Caddy origin are both reachable from DEV-PC Chromium."
@@ -471,7 +458,7 @@ scenarios:
     blocked_condition: "A disposable authenticated browser identity is not registered; authenticated-session cases remain explicitly NOT_ASSESSED."
     cleanup: "Close attacker page/server and browser context."
     normalized_evidence: "Boolean cross-origin readability, status class, and WebSocket-open result only."
-    evidence_tools: [playwright-runtime, pocketlab-runtime-360, owasp-zap]
+    evidence_tools: [playwright-runtime, pocketlab-runtime-360, owasp-zap, playwright]
     coverage_cases:
       - id: hostile-origin-fetch
         threat: "Hostile-origin browser session abuse — hostile origin fetch"
@@ -479,7 +466,6 @@ scenarios:
       - id: hostile-origin-session-websocket
         threat: "Hostile-origin browser session abuse — hostile origin websocket"
         expected_invariant: "A hostile origin cannot read protected Pocket Lab API responses or inherit browser authority."
-
   - id: csrf-protected-mutation
     title: "Cross-site protected mutation resistance"
     execution: dev_pc_live_runtime_evidence
@@ -488,7 +474,7 @@ scenarios:
     suites: [standard, deep, adversarial]
     stride: [Spoofing, Tampering, Elevation of Privilege]
     owasp: [A01, A07]
-    controls: [CTRL-HUMAN-SESSION-CSRF, CTRL-API-CONTROL]
+    controls: [CTRL-HUMAN-SESSION-CSRF, CTRL-API-CONTROL, CTRL-OPA-FAIL-CLOSED]
     attack_paths: [AP-09, AP-11]
     precondition: "The fixed Security Assurance mutation route is reachable through the approved runtime tunnel."
     action: "Send a repository-owned hostile-Origin mutation without authentication; authenticated Owner coverage requires a disposable browser identity fixture."
@@ -498,7 +484,7 @@ scenarios:
     blocked_condition: "No safe disposable authenticated browser identity is available."
     cleanup: "No mutation is admitted; no cleanup beyond socket/browser teardown."
     normalized_evidence: "HTTP status class and explicit authenticated-fixture coverage state."
-    evidence_tools: [pocketlab-runtime-360, playwright-runtime, owasp-zap]
+    evidence_tools: [pocketlab-runtime-360, playwright-runtime, owasp-zap, playwright, hurl]
     coverage_cases:
       - id: unauthenticated-hostile-mutation
         threat: "Cross-site protected mutation resistance — unauthenticated hostile mutation"
@@ -506,7 +492,6 @@ scenarios:
       - id: authenticated-csrf-fixture-required
         threat: "Cross-site protected mutation resistance — authenticated csrf fixture required"
         expected_invariant: "Cross-site unauthenticated mutation is rejected and authenticated CSRF coverage is never inferred without a real disposable identity."
-
   - id: owner-session-lifecycle
     title: "Owner session logout and revocation lifecycle"
     execution: dev_pc_browser_runtime_evidence
@@ -514,7 +499,7 @@ scenarios:
     required_capability: security.assurance.api
     suites: [standard, deep, adversarial]
     stride: [Spoofing, Repudiation, Elevation of Privilege]
-    owasp: [A01, A07]
+    owasp: [A01, A07, A09]
     controls: [CTRL-HUMAN-SESSION-CSRF, CTRL-WEBAUTHN-ASSURANCE]
     attack_paths: [AP-09, AP-10]
     precondition: "A disposable application identity explicitly approved for browser qualification exists."
@@ -525,7 +510,7 @@ scenarios:
     blocked_condition: "Disposable browser identity is not registered; report NOT_ASSESSED."
     cleanup: "Revoke/delete only the disposable qualification identity through its server-owned lifecycle."
     normalized_evidence: "Sanitized session-state booleans and rejection classes; no cookies or passkey material."
-    evidence_tools: [playwright-runtime]
+    evidence_tools: [playwright-runtime, playwright]
     coverage_cases:
       - id: logout-authority-loss
         threat: "Owner session logout and revocation lifecycle — logout authority loss"
@@ -533,7 +518,6 @@ scenarios:
       - id: revocation-authority-loss
         threat: "Owner session logout and revocation lifecycle — revocation authority loss"
         expected_invariant: "HTTP, UI and WebSocket authority disappear promptly after logout or revocation."
-
   - id: authorization-resource-boundary
     title: "Server-side resource authorization boundary"
     execution: dev_pc_live_runtime_evidence
@@ -541,9 +525,9 @@ scenarios:
     required_capability: security.assurance.runtime
     suites: [standard, deep, adversarial]
     stride: [Tampering, Elevation of Privilege]
-    owasp: [A01]
-    controls: [CTRL-API-CONTROL, CTRL-OPA-FAIL-CLOSED]
-    attack_paths: [AP-10, AP-11]
+    owasp: [A01, A03]
+    controls: [CTRL-API-CONTROL, CTRL-OPA-FAIL-CLOSED, CTRL-ENTERPRISE-ROLE-FINAL-OWNER]
+    attack_paths: [AP-10, AP-11, AP-13]
     precondition: "A bounded lower-authority synthetic application identity is registered by the server."
     action: "Use only repository-owned object identifiers and negative authorization fixtures."
     expected_invariant: "Authorization decisions remain server-side and independent of caller-controlled IDs or UI restrictions."
@@ -552,7 +536,7 @@ scenarios:
     blocked_condition: "No synthetic application identity fixture exists; report NOT_ASSESSED."
     cleanup: "Delete/revoke only the disposable qualification fixture."
     normalized_evidence: "Status/reason-code and policy-decision metadata only."
-    evidence_tools: [pocketlab-runtime-360, schemathesis, opa]
+    evidence_tools: [pocketlab-runtime-360, schemathesis, opa, hurl]
     coverage_cases:
       - id: horizontal-resource-substitution
         threat: "Server-side resource authorization boundary — horizontal resource substitution"
@@ -560,7 +544,6 @@ scenarios:
       - id: vertical-authority-substitution
         threat: "Server-side resource authorization boundary — vertical authority substitution"
         expected_invariant: "Authorization decisions remain server-side and independent of caller-controlled IDs or UI restrictions."
-
   - id: websocket-auth-boundary
     title: "WebSocket authentication, Origin and revocation boundary"
     execution: dev_pc_browser_runtime_evidence
@@ -568,7 +551,7 @@ scenarios:
     required_capability: security.assurance.api
     suites: [standard, deep, adversarial]
     stride: [Spoofing, Information Disclosure, Elevation of Privilege]
-    owasp: [A01, A07]
+    owasp: [A01, A07, A05]
     controls: [CTRL-HUMAN-SESSION-CSRF, CTRL-API-CONTROL]
     attack_paths: [AP-01, AP-09]
     precondition: "The fixed /ws/events route is reachable through the approved runtime boundary."
@@ -579,7 +562,7 @@ scenarios:
     blocked_condition: "Route is unavailable; report PARTIAL rather than PASS."
     cleanup: "Close each socket immediately after handshake outcome."
     normalized_evidence: "Handshake status and boolean open/reject classification only."
-    evidence_tools: [playwright-runtime, pocketlab-runtime-360]
+    evidence_tools: [playwright-runtime, pocketlab-runtime-360, playwright, websocat]
     coverage_cases:
       - id: hostile-origin-websocket
         threat: "WebSocket authentication, Origin and revocation boundary — hostile origin websocket"
@@ -587,15 +570,14 @@ scenarios:
       - id: unauthenticated-websocket
         threat: "WebSocket authentication, Origin and revocation boundary — unauthenticated websocket"
         expected_invariant: "Event-stream authority follows the intended browser authorization and Origin policy."
-
   - id: pwa-offline-secret-retention
     title: "PWA storage and offline secret retention"
     execution: dev_pc_browser_runtime_evidence
     safety_class: SAFE_ACTIVE
     required_capability: security.assurance.api
     suites: [standard, deep, adversarial]
-    stride: [Information Disclosure, Tampering]
-    owasp: [A02, A07]
+    stride: [Information Disclosure, Tampering, Repudiation]
+    owasp: [A02, A07, A05, A09]
     controls: [CTRL-EVIDENCE-SANITIZE, CTRL-HUMAN-SESSION-CSRF]
     attack_paths: [AP-06, AP-09]
     precondition: "The deployed PWA loads in fixed Chromium."
@@ -606,7 +588,7 @@ scenarios:
     blocked_condition: "No authenticated disposable browser identity exists for logout testing."
     cleanup: "Delete only test-context browser storage by closing the isolated context."
     normalized_evidence: "Counts and sanitized key classifications; stored values are never read."
-    evidence_tools: [playwright-runtime]
+    evidence_tools: [playwright-runtime, playwright]
     coverage_cases:
       - id: browser-secret-key-inventory
         threat: "PWA storage and offline secret retention — browser secret key inventory"
@@ -614,7 +596,6 @@ scenarios:
       - id: offline-logout-fixture-required
         threat: "PWA storage and offline secret retention — offline logout fixture required"
         expected_invariant: "Browser persistence does not expose secret-shaped material and logout-specific claims require an authenticated disposable fixture."
-
   - id: browser-network-egress-contract
     title: "Browser network egress contract"
     execution: dev_pc_browser_runtime_evidence
@@ -633,7 +614,7 @@ scenarios:
     blocked_condition: "Chromium cannot start or Caddy is unavailable."
     cleanup: "Close browser context; raw URLs are not retained."
     normalized_evidence: "Request counts, host class, protocol and forbidden-port count."
-    evidence_tools: [playwright-runtime, nmap]
+    evidence_tools: [playwright-runtime, nmap, playwright, tshark]
     coverage_cases:
       - id: browser-approved-egress
         threat: "Browser network egress contract — browser approved egress"
@@ -641,7 +622,6 @@ scenarios:
       - id: browser-internal-service-egress
         threat: "Browser network egress contract — browser internal service egress"
         expected_invariant: "The browser contacts only approved Caddy/same-origin destinations plus the fixed local hostile-origin fixture."
-
   - id: webauthn-challenge-boundary
     title: "WebAuthn challenge, RP and origin boundary"
     execution: dev_pc_browser_runtime_evidence
@@ -668,7 +648,6 @@ scenarios:
       - id: webauthn-origin-rpid-mismatch
         threat: "WebAuthn challenge, RP and origin boundary — webauthn origin rpid mismatch"
         expected_invariant: "Passkey assertions remain challenge-, origin-, RP- and session-bound."
-
   - id: service-worker-version-integrity
     title: "Service-worker and cached-version integrity"
     execution: dev_pc_browser_runtime_evidence
@@ -677,7 +656,7 @@ scenarios:
     suites: [standard, deep, adversarial]
     stride: [Tampering, Information Disclosure]
     owasp: [A05, A08]
-    controls: [CTRL-SUPPLY-CHAIN, CTRL-API-CONTROL]
+    controls: [CTRL-SUPPLY-CHAIN, CTRL-API-CONTROL, CTRL-HUMAN-SESSION-CSRF]
     attack_paths: [AP-05, AP-09]
     precondition: "The production PWA service-worker layer is available to isolated Chromium."
     action: "Inspect service-worker script origins and cache metadata; Deep may compare release identity through provenance tools."
@@ -687,7 +666,7 @@ scenarios:
     blocked_condition: "No active service worker exists; classify as NOT_APPLICABLE rather than infer failure."
     cleanup: "Close the isolated browser context."
     normalized_evidence: "Service-worker/cache counts and same-origin booleans only."
-    evidence_tools: [playwright-runtime]
+    evidence_tools: [playwright-runtime, playwright]
     coverage_cases:
       - id: service-worker-origin
         threat: "Service-worker and cached-version integrity — service worker origin"
@@ -695,14 +674,13 @@ scenarios:
       - id: cached-version-authority
         threat: "Service-worker and cached-version integrity — cached version authority"
         expected_invariant: "Service workers remain same-origin and stale cached code never broadens authority semantics."
-
   - id: tailnet-service-exposure
     title: "Private-network and Tailnet service exposure"
     execution: dev_pc_live_runtime_evidence
     safety_class: PASSIVE
     required_capability: security.assurance.runtime
     suites: [standard, deep, adversarial]
-    stride: [Spoofing, Information Disclosure, Denial of Service]
+    stride: [Spoofing, Information Disclosure, Denial of Service, Elevation of Privilege]
     owasp: [A01, A05]
     controls: [CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS]
     attack_paths: [AP-07]
@@ -714,7 +692,7 @@ scenarios:
     blocked_condition: "Tailnet peer-side reachability is unavailable; tunnel-only evidence is marked PARTIAL."
     cleanup: "None; read-only socket probes."
     normalized_evidence: "Fixed listener booleans, port labels and readiness classes."
-    evidence_tools: [pocketlab-runtime-360, nmap, testssl.sh]
+    evidence_tools: [pocketlab-runtime-360, nmap, testssl.sh, httpx, tlsx]
     coverage_cases:
       - id: owned-listener-contract
         threat: "Private-network and Tailnet service exposure — owned listener contract"
@@ -722,7 +700,6 @@ scenarios:
       - id: internal-service-exposure
         threat: "Private-network and Tailnet service exposure — internal service exposure"
         expected_invariant: "Only intended services are reachable in their registered scope; OPA/NATS monitor/harness remain internal as designed."
-
   - id: proxy-header-trust-confusion
     title: "Reverse-proxy header trust confusion"
     execution: dev_pc_live_runtime_evidence
@@ -731,7 +708,7 @@ scenarios:
     suites: [standard, deep, adversarial]
     stride: [Spoofing, Tampering, Elevation of Privilege]
     owasp: [A01, A05, A07]
-    controls: [CTRL-API-CONTROL]
+    controls: [CTRL-API-CONTROL, CTRL-HUMAN-SESSION-CSRF]
     attack_paths: [AP-01, AP-07, AP-09]
     precondition: "Caddy/FastAPI are reachable on fixed registered runtime endpoints."
     action: "Send only repository-owned forged forwarding, qualification, client-IP and duplicate trust-marker requests."
@@ -741,7 +718,7 @@ scenarios:
     blocked_condition: "Required runtime endpoint unavailable."
     cleanup: "None; negative HTTP requests only."
     normalized_evidence: "HTTP status class and marker-acceptance booleans."
-    evidence_tools: [pocketlab-runtime-360, owasp-zap, nuclei]
+    evidence_tools: [pocketlab-runtime-360, owasp-zap, nuclei, hurl, mitmdump]
     coverage_cases:
       - id: forwarded-identity-confusion
         threat: "Reverse-proxy header trust confusion — forwarded identity confusion"
@@ -749,17 +726,16 @@ scenarios:
       - id: qualification-header-confusion
         threat: "Reverse-proxy header trust confusion — qualification header confusion"
         expected_invariant: "Proxy metadata never becomes application identity or qualification authority."
-
   - id: malformed-api-state-machine
     title: "Malformed and invalid API state-machine sequences"
     execution: dev_pc_live_runtime_evidence
     safety_class: SAFE_ACTIVE
     required_capability: security.assurance.runtime
     suites: [standard, deep, adversarial]
-    stride: [Tampering, Repudiation, Denial of Service]
-    owasp: [A01, A04, A05]
-    controls: [CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS]
-    attack_paths: [AP-04, AP-11]
+    stride: [Tampering, Repudiation, Denial of Service, Elevation of Privilege]
+    owasp: [A01, A04, A05, A03, A08]
+    controls: [CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS, CTRL-OPA-FAIL-CLOSED, CTRL-INDEPENDENT-APPROVAL-CONTINUATION]
+    attack_paths: [AP-04, AP-11, AP-08, AP-12, AP-13]
     precondition: "Fixed safe API routes and registered negative fixtures are available."
     action: "Exercise invalid order/replay/stale-revision/unsupported-method cases only through repository-owned schemas and fixtures."
     expected_invariant: "Multi-step APIs reject invalid state transitions and replay without arbitrary mutation targets."
@@ -768,7 +744,7 @@ scenarios:
     blocked_condition: "A required safe fixture is unavailable."
     cleanup: "Existing harness cleanup owns any admitted synthetic run."
     normalized_evidence: "Status/reason-code and idempotency metadata only."
-    evidence_tools: [pocketlab-runtime-360, schemathesis, owasp-zap]
+    evidence_tools: [pocketlab-runtime-360, schemathesis, owasp-zap, hurl]
     coverage_cases:
       - id: duplicate-submit
         threat: "Malformed and invalid API state-machine sequences — duplicate submit"
@@ -776,7 +752,6 @@ scenarios:
       - id: stale-transition
         threat: "Malformed and invalid API state-machine sequences — stale transition"
         expected_invariant: "Multi-step APIs reject invalid state transitions and replay without arbitrary mutation targets."
-
   - id: device-invite-replay-and-misbinding
     title: "Device invite replay and identity misbinding"
     execution: dev_pc_live_runtime_evidence
@@ -786,7 +761,7 @@ scenarios:
     stride: [Spoofing, Tampering, Elevation of Privilege]
     owasp: [A01, A07]
     controls: [CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS]
-    attack_paths: [AP-03]
+    attack_paths: [AP-03, AP-09]
     precondition: "A disposable server-owned device identity/invite fixture is explicitly provisioned."
     action: "Attempt replay and wrong-device consumption only through the fixed qualification fixture."
     expected_invariant: "Invites are one-time and identity-bound; mismatch causes no env overwrite or PM2 restart."
@@ -795,7 +770,7 @@ scenarios:
     blocked_condition: "Disposable invite/device fixture is absent; report NOT_ASSESSED."
     cleanup: "Server-owned fixture cleanup removes only synthetic records."
     normalized_evidence: "Reason codes, mutation booleans and audit-event identifiers; no invite token persists."
-    evidence_tools: [pocketlab-runtime-360]
+    evidence_tools: [pocketlab-runtime-360, hurl]
     coverage_cases:
       - id: invite-replay
         threat: "Device invite replay and identity misbinding — invite replay"
@@ -803,7 +778,6 @@ scenarios:
       - id: enrolled-device-misbinding
         threat: "Device invite replay and identity misbinding — enrolled device misbinding"
         expected_invariant: "Invites are one-time and identity-bound; mismatch causes no env overwrite or PM2 restart."
-
   - id: nats-command-replay-integrity
     title: "NATS command replay and target integrity"
     execution: dev_pc_live_runtime_evidence
@@ -822,7 +796,7 @@ scenarios:
     blocked_condition: "No registered server-owned replay fixture exists; DEV-PC direct NATS access is forbidden and status is NOT_ASSESSED."
     cleanup: "Harness cleanup owns synthetic command state."
     normalized_evidence: "Operation IDs, delivery counts and sanitized reason codes only."
-    evidence_tools: [pocketlab-runtime-360]
+    evidence_tools: [pocketlab-runtime-360, nats-cli, hurl]
     coverage_cases:
       - id: command-envelope-replay
         threat: "NATS command replay and target integrity — command envelope replay"
@@ -830,7 +804,6 @@ scenarios:
       - id: command-target-tamper
         threat: "NATS command replay and target integrity — command target tamper"
         expected_invariant: "Duplicate delivery is idempotent/target-bound and callers never select NATS subjects or envelopes."
-
   - id: worker-reconnect-command-integrity
     title: "Worker reconnect and command delivery integrity"
     execution: dev_pc_live_runtime_evidence
@@ -857,7 +830,6 @@ scenarios:
       - id: jetstream-idempotency
         threat: "Worker reconnect and command delivery integrity — jetstream idempotency"
         expected_invariant: "Commands are not lost, duplicated or reordered across worker reconnect; acknowledgements remain truthful."
-
   - id: tls-identity-drift
     title: "TLS identity and transport posture drift"
     execution: dev_pc_live_runtime_evidence
@@ -876,7 +848,7 @@ scenarios:
     blocked_condition: "Approved SNI marker or TLS tunnel missing; report NOT_ASSESSED/BLOCKED."
     cleanup: "None; read-only TLS handshakes."
     normalized_evidence: "Protocol/cipher class, identity validation boolean and normalized TLS findings."
-    evidence_tools: [pocketlab-runtime-360, testssl.sh]
+    evidence_tools: [pocketlab-runtime-360, testssl.sh, tlsx, httpx]
     coverage_cases:
       - id: tls-sni-identity
         threat: "TLS identity and transport posture drift — tls sni identity"
@@ -884,7 +856,6 @@ scenarios:
       - id: tls-protocol-posture
         threat: "TLS identity and transport posture drift — tls protocol posture"
         expected_invariant: "The runtime presents the intended certificate identity and approved transport posture."
-
   - id: audit-event-attribution
     title: "Security-sensitive audit attribution"
     execution: dev_pc_live_runtime_evidence
@@ -911,7 +882,6 @@ scenarios:
       - id: audit-secret-boundary
         threat: "Security-sensitive audit attribution — audit secret boundary"
         expected_invariant: "Protected operations remain attributable without leaking credentials or raw identity secrets."
-
   - id: recovery-object-authorization
     title: "Recovery object authorization boundary"
     execution: dev_pc_live_runtime_evidence
@@ -938,7 +908,6 @@ scenarios:
       - id: stale-preview-id
         threat: "Recovery object authorization boundary — stale preview id"
         expected_invariant: "Recovery objects cannot be read or operated across authorization boundaries."
-
   - id: app-install-authority-boundary
     title: "App installation control-plane authority"
     execution: dev_pc_live_runtime_evidence
@@ -965,7 +934,6 @@ scenarios:
       - id: install-execution-ownership
         threat: "App installation control-plane authority — install execution ownership"
         expected_invariant: "Install authority remains FastAPI → policy → NATS/worker owned and callers cannot choose argv/subjects."
-
   - id: remote-access-truthfulness
     title: "Remote access readiness truthfulness"
     execution: dev_pc_live_runtime_evidence
@@ -974,8 +942,8 @@ scenarios:
     suites: [standard, deep]
     stride: [Information Disclosure, Denial of Service]
     owasp: [A05]
-    controls: [CTRL-API-CONTROL]
-    attack_paths: [AP-07]
+    controls: [CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS]
+    attack_paths: [AP-07, AP-12]
     precondition: "Runtime status and fixed owned-listener evidence are available."
     action: "Compare remote-access status with required API/NATS/Tailscale readiness evidence without starting services."
     expected_invariant: "Remote access is shown ready only when all required evidence is actually ready."
@@ -984,7 +952,7 @@ scenarios:
     blocked_condition: "Tailnet CLI evidence unavailable; tunnel-only result is PARTIAL."
     cleanup: "None; read-only checks."
     normalized_evidence: "Readiness booleans and fixed listener classifications."
-    evidence_tools: [pocketlab-runtime-360, nmap]
+    evidence_tools: [pocketlab-runtime-360, nmap, playwright, httpx]
     coverage_cases:
       - id: remote-ready-evidence
         threat: "Remote access readiness truthfulness — remote ready evidence"
@@ -992,7 +960,6 @@ scenarios:
       - id: remote-not-ready-failclosed
         threat: "Remote access readiness truthfulness — remote not ready failclosed"
         expected_invariant: "Remote access is shown ready only when all required evidence is actually ready."
-
   - id: rate-limit-and-admission-resilience
     title: "Bounded admission and duplicate-operation resilience"
     execution: dev_pc_live_runtime_evidence
@@ -1001,8 +968,8 @@ scenarios:
     suites: [deep, adversarial]
     stride: [Denial of Service, Repudiation]
     owasp: [A04, A05]
-    controls: [CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS]
-    attack_paths: [AP-04, AP-07]
+    controls: [CTRL-API-CONTROL, CTRL-EXECUTION-OWNERS, CTRL-OPA-FAIL-CLOSED]
+    attack_paths: [AP-04, AP-07, AP-11]
     precondition: "Health endpoint and admission controls are reachable on the fixed runtime tunnel."
     action: "Issue exactly eight fixed health requests with maximum concurrency two; authenticated duplicate-operation stress remains server-owned."
     expected_invariant: "Low-power runtime remains responsive and server-owned admission/idempotency prevents unbounded duplicate work."
@@ -1011,7 +978,7 @@ scenarios:
     blocked_condition: "Runtime target unavailable."
     cleanup: "Wait for all fixed requests to finish; no background load remains."
     normalized_evidence: "Request count, max concurrency, status classes and duration only."
-    evidence_tools: [pocketlab-runtime-360, owasp-zap]
+    evidence_tools: [pocketlab-runtime-360, owasp-zap, k6]
     coverage_cases:
       - id: bounded-health-burst
         threat: "Bounded admission and duplicate-operation resilience — bounded health burst"
@@ -1019,7 +986,6 @@ scenarios:
       - id: duplicate-operation-admission
         threat: "Bounded admission and duplicate-operation resilience — duplicate operation admission"
         expected_invariant: "Low-power runtime remains responsive and server-owned admission/idempotency prevents unbounded duplicate work."
-
   - id: slow-client-resource-exhaustion
     title: "Bounded slow-client resilience"
     execution: dev_pc_live_runtime_evidence
@@ -1027,9 +993,9 @@ scenarios:
     required_capability: security.assurance.runtime
     suites: [deep, adversarial]
     stride: [Denial of Service]
-    owasp: [A05]
+    owasp: [A05, A04]
     controls: [CTRL-API-CONTROL]
-    attack_paths: [AP-07]
+    attack_paths: [AP-07, AP-11]
     precondition: "FastAPI/Caddy runtime tunnel is reachable."
     action: "Hold exactly two partial HTTP connections for 250ms while probing health."
     expected_invariant: "Two bounded slow clients do not make the control API unavailable."
@@ -1038,7 +1004,7 @@ scenarios:
     blocked_condition: "Target unavailable before the probe."
     cleanup: "Close both sockets in a finally block."
     normalized_evidence: "Connection count, hold duration and concurrent health status only."
-    evidence_tools: [pocketlab-runtime-360]
+    evidence_tools: [pocketlab-runtime-360, k6]
     coverage_cases:
       - id: two-slow-clients
         threat: "Bounded slow-client resilience — two slow clients"
@@ -1046,13 +1012,12 @@ scenarios:
       - id: health-under-slow-client
         threat: "Bounded slow-client resilience — health under slow client"
         expected_invariant: "Two bounded slow clients do not make the control API unavailable."
-
   - id: release-artifact-tamper
     title: "Release artifact tamper and provenance detection"
     execution: dev_pc_deep_provenance_evidence
     safety_class: PASSIVE
     required_capability: security.assurance.sca
-    suites: [deep]
+    suites: [deep, adversarial]
     stride: [Tampering, Elevation of Privilege]
     owasp: [A06, A08]
     controls: [CTRL-SUPPLY-CHAIN, CTRL-EXPLICIT-PROMOTION]
@@ -1065,7 +1030,7 @@ scenarios:
     blocked_condition: "No registered artifact is present; report NOT_ASSESSED."
     cleanup: "None; read-only artifact inspection."
     normalized_evidence: "Artifact-presence, digest and signature/provenance status only."
-    evidence_tools: [pocketlab-runtime-360, cosign, syft]
+    evidence_tools: [pocketlab-runtime-360, cosign, syft, grype]
     coverage_cases:
       - id: dist-hash-integrity
         threat: "Release artifact tamper and provenance detection — dist hash integrity"
@@ -1073,14 +1038,13 @@ scenarios:
       - id: release-signature-integrity
         threat: "Release artifact tamper and provenance detection — release signature integrity"
         expected_invariant: "A modified artifact cannot masquerade as the exact qualified release."
-
   - id: dependency-confusion-and-lock-integrity
     title: "Dependency lock and resolved graph integrity"
     execution: dev_pc_deep_provenance_evidence
     safety_class: PASSIVE
     required_capability: security.assurance.sca
     suites: [deep]
-    stride: [Tampering, Information Disclosure]
+    stride: [Tampering, Information Disclosure, Elevation of Privilege]
     owasp: [A06, A08]
     controls: [CTRL-SUPPLY-CHAIN]
     attack_paths: [AP-05]
@@ -1100,13 +1064,12 @@ scenarios:
       - id: sbom-lock-correlation
         threat: "Dependency lock and resolved graph integrity — sbom lock correlation"
         expected_invariant: "Installed/qualified dependency evidence stays bound to repository-owned lock inputs."
-
   - id: security-evidence-poisoning
     title: "Security evidence poisoning resistance"
     execution: dev_pc_deep_provenance_evidence
     safety_class: PASSIVE
     required_capability: security.assurance.sca
-    suites: [deep, adversarial]
+    suites: [deep, adversarial, standard]
     stride: [Tampering, Repudiation, Information Disclosure]
     owasp: [A02, A08, A09]
     controls: [CTRL-EVIDENCE-SANITIZE, CTRL-EXPLICIT-PROMOTION]
@@ -1119,7 +1082,7 @@ scenarios:
     blocked_condition: "Required sanitizer fixture unavailable."
     cleanup: "Synthetic values are in-memory/temp only."
     normalized_evidence: "Leak counts, schema/reason codes and normalized finding metadata."
-    evidence_tools: [pocketlab-runtime-360, gitleaks, semgrep]
+    evidence_tools: [pocketlab-runtime-360, gitleaks, semgrep, hurl]
     coverage_cases:
       - id: fake-pass-payload
         threat: "Security evidence poisoning resistance — fake pass payload"
@@ -1127,17 +1090,16 @@ scenarios:
       - id: secret-and-markup-injection
         threat: "Security evidence poisoning resistance — secret and markup injection"
         expected_invariant: "Tool output cannot fabricate PASS, inject raw secrets/markup, or become authoritative outside its schema."
-
   - id: unicode-log-and-ui-injection
     title: "Unicode, terminal and UI injection resistance"
     execution: dev_pc_deep_provenance_evidence
     safety_class: PASSIVE
     required_capability: security.assurance.sca
-    suites: [deep, adversarial]
+    suites: [deep, adversarial, standard]
     stride: [Tampering, Repudiation, Information Disclosure]
     owasp: [A03, A09]
-    controls: [CTRL-EVIDENCE-SANITIZE, CTRL-API-CONTROL]
-    attack_paths: [AP-06]
+    controls: [CTRL-EVIDENCE-SANITIZE, CTRL-API-CONTROL, CTRL-HUMAN-SESSION-CSRF]
+    attack_paths: [AP-06, AP-09]
     precondition: "Repository-owned hostile-name fixtures exist or browser/source sanitization can inspect the relevant sinks."
     action: "Exercise fixed control-character/HTML/terminal-escape fixtures without accepting caller payloads."
     expected_invariant: "Untrusted names/evidence cannot create executable HTML or misleading terminal/audit records."
@@ -1146,7 +1108,7 @@ scenarios:
     blocked_condition: "No synthetic untrusted-name fixture exists; report NOT_ASSESSED/PARTIAL."
     cleanup: "Delete only fixture records/browser context."
     normalized_evidence: "Escaping booleans and sanitized render classification only."
-    evidence_tools: [playwright-runtime, pocketlab-runtime-360, semgrep]
+    evidence_tools: [playwright-runtime, pocketlab-runtime-360, semgrep, playwright]
     coverage_cases:
       - id: terminal-escape-injection
         threat: "Unicode, terminal and UI injection resistance — terminal escape injection"
@@ -1154,16 +1116,15 @@ scenarios:
       - id: html-name-injection
         threat: "Unicode, terminal and UI injection resistance — html name injection"
         expected_invariant: "Untrusted names/evidence cannot create executable HTML or misleading terminal/audit records."
-
   - id: backup-confidentiality-integrity
     title: "Backup confidentiality and integrity"
     execution: dev_pc_deep_provenance_evidence
     safety_class: PASSIVE
     required_capability: security.assurance.sca
     suites: [deep, adversarial]
-    stride: [Information Disclosure, Tampering]
-    owasp: [A02, A08]
-    controls: [CTRL-EVIDENCE-SANITIZE, CTRL-EXPLICIT-PROMOTION]
+    stride: [Information Disclosure, Tampering, Repudiation]
+    owasp: [A02, A08, A01]
+    controls: [CTRL-EVIDENCE-SANITIZE, CTRL-EXPLICIT-PROMOTION, CTRL-API-CONTROL]
     attack_paths: [AP-08]
     precondition: "A registered synthetic Recovery backup fixture exists."
     action: "Verify only server-owned backup metadata, integrity markers and authorization outcome; never read arbitrary backup paths."
@@ -1173,7 +1134,7 @@ scenarios:
     blocked_condition: "No synthetic Recovery fixture is registered; report NOT_ASSESSED."
     cleanup: "Remove only synthetic fixture."
     normalized_evidence: "Integrity/auth booleans and reason codes; no backup payload persisted."
-    evidence_tools: [pocketlab-runtime-360]
+    evidence_tools: [pocketlab-runtime-360, hurl]
     coverage_cases:
       - id: backup-integrity-marker
         threat: "Backup confidentiality and integrity — backup integrity marker"
@@ -1181,7 +1142,6 @@ scenarios:
       - id: backup-confidentiality-boundary
         threat: "Backup confidentiality and integrity — backup confidentiality boundary"
         expected_invariant: "Backup contents remain confidential and tampering is detected before restore admission."
-
   - id: restore-transaction-integrity
     title: "Restore transaction and interruption integrity"
     execution: dev_pc_deep_provenance_evidence
@@ -1189,7 +1149,7 @@ scenarios:
     required_capability: security.assurance.sca
     suites: [deep, adversarial]
     stride: [Tampering, Repudiation, Denial of Service]
-    owasp: [A08, A09]
+    owasp: [A08, A09, A01]
     controls: [CTRL-EXPLICIT-PROMOTION, CTRL-API-CONTROL]
     attack_paths: [AP-08]
     precondition: "A registered non-production Recovery fixture and fault control are explicitly enabled."
@@ -1200,7 +1160,7 @@ scenarios:
     blocked_condition: "Recovery fault fixture absent; report NOT_ASSESSED."
     cleanup: "Server-owned Recovery cleanup restores known-good synthetic state."
     normalized_evidence: "Checkpoint/journal/status metadata only."
-    evidence_tools: [pocketlab-runtime-360]
+    evidence_tools: [pocketlab-runtime-360, hurl]
     coverage_cases:
       - id: restore-interruption
         threat: "Restore transaction and interruption integrity — restore interruption"
@@ -1208,7 +1168,6 @@ scenarios:
       - id: restore-known-good-recovery
         threat: "Restore transaction and interruption integrity — restore known good recovery"
         expected_invariant: "Interrupted restore cannot expose partially trusted active state and recovery remains deterministic."
-
   - id: app-package-provenance
     title: "App package and catalog provenance"
     execution: dev_pc_deep_provenance_evidence
@@ -1235,7 +1194,6 @@ scenarios:
       - id: catalog-source-binding
         threat: "App package and catalog provenance — catalog source binding"
         expected_invariant: "App installation input is distinguishable from tampered/unqualified artifacts."
-
   - id: android-termux-host-hardening
     title: "Android/Termux runtime host hardening"
     execution: dev_pc_deep_provenance_evidence
@@ -1262,13 +1220,12 @@ scenarios:
       - id: termux-host-posture
         threat: "Android/Termux runtime host hardening — termux host posture"
         expected_invariant: "Runtime files/services/listeners preserve least exposure and known hardening posture for Termux constraints."
-
   - id: runtime-env-secret-boundary
     title: "Runtime environment and frontend secret boundary"
     execution: dev_pc_deep_provenance_evidence
     safety_class: PASSIVE
     required_capability: security.assurance.sca
-    suites: [deep]
+    suites: [deep, standard]
     stride: [Information Disclosure, Tampering]
     owasp: [A02, A05]
     controls: [CTRL-EVIDENCE-SANITIZE, CTRL-API-CONTROL]
@@ -1281,7 +1238,7 @@ scenarios:
     blocked_condition: "Required scanner/tool unavailable; report PARTIAL."
     cleanup: "Existing scanner cleanup; raw matches are never persisted."
     normalized_evidence: "Finding metadata and redaction booleans only."
-    evidence_tools: [pocketlab-runtime-360, gitleaks, trivy]
+    evidence_tools: [pocketlab-runtime-360, gitleaks, trivy, playwright]
     coverage_cases:
       - id: frontend-secret-boundary
         threat: "Runtime environment and frontend secret boundary — frontend secret boundary"
@@ -1289,7 +1246,6 @@ scenarios:
       - id: generated-evidence-secret-boundary
         threat: "Runtime environment and frontend secret boundary — generated evidence secret boundary"
         expected_invariant: "Backend secrets never become frontend bundles, generated docs, normalized evidence, or browser-readable config."
-
   - id: hidden-route-and-debug-surface
     title: "Hidden route and debug surface discovery"
     execution: dev_pc_live_runtime_evidence
@@ -1308,7 +1264,7 @@ scenarios:
     blocked_condition: "Target unavailable."
     cleanup: "None; GET-only/curated safe probes."
     normalized_evidence: "Route labels/status classes and normalized safe-template findings."
-    evidence_tools: [pocketlab-runtime-360, nuclei, owasp-zap]
+    evidence_tools: [pocketlab-runtime-360, nuclei, owasp-zap, katana, httpx, ffuf]
     coverage_cases:
       - id: fixed-debug-route-list
         threat: "Hidden route and debug surface discovery — fixed debug route list"
@@ -1316,7 +1272,6 @@ scenarios:
       - id: safe-template-discovery
         threat: "Hidden route and debug surface discovery — safe template discovery"
         expected_invariant: "Unexpected debug/admin/metrics surfaces are not externally reachable."
-
   - id: approval-continuation-replay
     title: "Approval continuation replay and exact-binding integrity"
     execution: dev_pc_live_runtime_evidence
@@ -1324,7 +1279,7 @@ scenarios:
     required_capability: security.assurance.runtime
     suites: [deep, adversarial]
     stride: [Spoofing, Tampering, Repudiation, Elevation of Privilege]
-    owasp: [A01, A07, A08]
+    owasp: [A01, A07, A08, A09]
     controls: [CTRL-WEBAUTHN-ASSURANCE, CTRL-INDEPENDENT-APPROVAL-CONTINUATION]
     attack_paths: [AP-13]
     precondition: "A disposable enterprise qualification request/approval fixture is registered."
@@ -1335,7 +1290,7 @@ scenarios:
     blocked_condition: "No disposable enterprise approval fixture exists; report NOT_ASSESSED."
     cleanup: "Delete only synthetic request/approval records."
     normalized_evidence: "Reason codes, actor classes, binding booleans and continuation-use count."
-    evidence_tools: [pocketlab-runtime-360, opa]
+    evidence_tools: [pocketlab-runtime-360, opa, hurl]
     coverage_cases:
       - id: requester-self-approval
         threat: "Approval continuation replay and exact-binding integrity — requester self approval"
@@ -1343,7 +1298,6 @@ scenarios:
       - id: continuation-double-use
         threat: "Approval continuation replay and exact-binding integrity — continuation double use"
         expected_invariant: "Approval remains independent, exact-action-bound and single-use."
-
   - id: temporary-exception-scope-bypass
     title: "Temporary exception scope, expiry and revocation"
     execution: dev_pc_live_runtime_evidence
@@ -1351,7 +1305,7 @@ scenarios:
     required_capability: security.assurance.runtime
     suites: [deep, adversarial]
     stride: [Tampering, Elevation of Privilege]
-    owasp: [A01, A08]
+    owasp: [A01, A08, A05]
     controls: [CTRL-TEMPORARY-EXCEPTION-SCOPE, CTRL-OPA-FAIL-CLOSED]
     attack_paths: [AP-14]
     precondition: "A disposable temporary-exception qualification fixture is registered."
@@ -1362,7 +1316,7 @@ scenarios:
     blocked_condition: "No disposable exception fixture exists; report NOT_ASSESSED."
     cleanup: "Delete/revoke synthetic exception fixture."
     normalized_evidence: "Scope/time/revocation decision metadata and reason codes only."
-    evidence_tools: [pocketlab-runtime-360, opa]
+    evidence_tools: [pocketlab-runtime-360, opa, hurl]
     coverage_cases:
       - id: exception-out-of-scope
         threat: "Temporary exception scope, expiry and revocation — exception out of scope"
@@ -1370,15 +1324,14 @@ scenarios:
       - id: exception-expired-revoked
         threat: "Temporary exception scope, expiry and revocation — exception expired revoked"
         expected_invariant: "Temporary exceptions cannot widen beyond approved action/target/time and fail closed after expiry/revocation."
-
   - id: policy-known-good-recovery
     title: "Policy known-good recovery integrity"
     execution: dev_pc_live_runtime_evidence
     safety_class: SAFE_ACTIVE
     required_capability: security.assurance.runtime
     suites: [deep, adversarial]
-    stride: [Tampering, Repudiation, Denial of Service]
-    owasp: [A05, A08]
+    stride: [Tampering, Repudiation, Denial of Service, Elevation of Privilege]
+    owasp: [A05, A08, A01]
     controls: [CTRL-POLICY-REVISION-LIFECYCLE, CTRL-OPA-FAIL-CLOSED]
     attack_paths: [AP-11, AP-12]
     precondition: "Qualification-only policy fixture/fault control and known-good revision are registered."
@@ -1389,7 +1342,7 @@ scenarios:
     blocked_condition: "Policy fault fixture unavailable; report NOT_ASSESSED."
     cleanup: "Server-owned policy lifecycle restores the known-good synthetic revision."
     normalized_evidence: "Revision IDs/hashes, readiness and recovery reason codes only."
-    evidence_tools: [pocketlab-runtime-360, opa]
+    evidence_tools: [pocketlab-runtime-360, opa, hurl]
     coverage_cases:
       - id: stale-policy-activation
         threat: "Policy known-good recovery integrity — stale policy activation"
@@ -1397,3 +1350,72 @@ scenarios:
       - id: known-good-policy-recovery
         threat: "Policy known-good recovery integrity — known good policy recovery"
         expected_invariant: "Bad/stale policy cannot become silently authoritative and known-good recovery remains auditable/fail-closed."
+  - id: webauthn-origin-rpid-mismatch
+    title: "WebAuthn origin and RP-ID assurance remains explicit"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: PASSIVE
+    required_capability: security.assurance.threat_scenario
+    suites: ["deep", "adversarial"]
+    stride: ["Spoofing", "Elevation of Privilege"]
+    owasp: ["A01", "A07"]
+    controls: ["CTRL-WEBAUTHN-ASSURANCE"]
+    attack_paths: ["AP-09", "AP-10", "AP-13"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Check whether the exact qualified runtime exposes an automatable WebAuthn ceremony and retain HUMAN_REVIEW_REQUIRED when it does not."
+    expected_invariant: "WebAuthn origin/RP-ID binding is never inferred PASS from unrelated browser or password-login evidence."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["playwright"]
+    coverage_cases:
+      - id: webauthn-origin-rpid-mismatch-realworld
+        threat: "WebAuthn origin and RP-ID assurance remains explicit"
+        expected_invariant: "WebAuthn origin/RP-ID binding is never inferred PASS from unrelated browser or password-login evidence."
+  - id: duplicate-operation-flood
+    title: "Duplicate operations remain idempotent and bounded"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: SAFE_ACTIVE
+    required_capability: security.assurance.runtime
+    suites: ["deep", "adversarial"]
+    stride: ["Tampering", "Repudiation", "Denial of Service"]
+    owasp: ["A01", "A04", "A09"]
+    controls: ["CTRL-API-CONTROL", "CTRL-EXECUTION-OWNERS", "CTRL-INDEPENDENT-APPROVAL-CONTINUATION"]
+    attack_paths: ["AP-04", "AP-13"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Repeat only fixed negative/duplicate qualification-safe requests within a strict low request budget."
+    expected_invariant: "Duplicate submissions cannot create unbounded parallel work, replay approved continuations, or bypass idempotency."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["k6", "hurl"]
+    coverage_cases:
+      - id: duplicate-operation-flood-realworld
+        threat: "Duplicate operations remain idempotent and bounded"
+        expected_invariant: "Duplicate submissions cannot create unbounded parallel work, replay approved continuations, or bypass idempotency."
+  - id: cookie-security-posture
+    title: "Browser session cookies retain secure scope and lifecycle flags"
+    execution: dev_pc_live_runtime_evidence
+    safety_class: PASSIVE
+    required_capability: security.assurance.api
+    suites: ["standard", "deep"]
+    stride: ["Spoofing", "Information Disclosure"]
+    owasp: ["A02", "A07"]
+    controls: ["CTRL-HUMAN-SESSION-CSRF"]
+    attack_paths: ["AP-09"]
+    precondition: "The exact qualified runtime is reachable only through repository-owned fixed DEV-PC tunnels or fixed worker/harness controls; required tools are qualified."
+    action: "Inspect cookie names and security attributes only; never persist cookie values."
+    expected_invariant: "Session-bearing cookies are Secure, HttpOnly where applicable, SameSite-scoped, and not over-broad in path/domain."
+    pass_condition: "All required fixed evidence tools complete and the registered invariant is observed without a high/critical security finding."
+    fail_condition: "A required real-world security invariant is violated or a high/critical normalized finding is produced."
+    blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
+    cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
+    normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
+    evidence_tools: ["playwright"]
+    coverage_cases:
+      - id: cookie-security-posture-realworld
+        threat: "Browser session cookies retain secure scope and lifecycle flags"
+        expected_invariant: "Session-bearing cookies are Secure, HttpOnly where applicable, SameSite-scoped, and not over-broad in path/domain."

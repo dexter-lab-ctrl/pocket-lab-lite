@@ -1063,7 +1063,11 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
                     try:
                         import security_assurance_toolchain
 
-                        for tool_suite in ("standard", "adversarial", "deep"):
+                        tool_suites = ["standard"]
+                        if not args.skip_adversarial:
+                            tool_suites.append("adversarial")
+                        tool_suites.append("deep")
+                        for tool_suite in tool_suites:
                             workflow_phase = f"dev_pc_{tool_suite}"
                             tool_result = security_assurance_toolchain.run_suite(tool_suite)
                             toolchain_suites[tool_suite] = tool_result
