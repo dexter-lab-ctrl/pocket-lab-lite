@@ -489,6 +489,11 @@ def test_fixed_release_recipes_are_exact_pinned_and_checksum_bound():
         assert len(recipe["sha256"]) == 64
         int(recipe["sha256"], 16)
 
+    hurl = toolchain.GITHUB_RECIPES["hurl"]
+    assert hurl["url"].endswith("/hurl_8.0.1_amd64.deb")
+    assert hurl["sha256"] == "e76e6c0957f83f9b761416452871554d0f068384b6cd004bff82dd8795c62225"
+    assert hurl["archive"] == "deb"
+
 
 def test_managed_python_recipe_is_exact_and_outside_repository():
     toolchain = _module()
@@ -516,6 +521,50 @@ def test_fixed_archive_extraction_rejects_traversal_and_missing_binary(tmp_path:
         bundle.writestr("README.txt", b"safe")
     with pytest.raises(RuntimeError, match="binary_not_unique"):
         toolchain._extract_fixed_binary(missing, "zip", "hurl", tmp_path / "out-b")
+
+
+def test_fixed_deb_extraction_uses_nonprivileged_dpkg_deb(tmp_path: Path, monkeypatch):
+    toolchain = _module()
+    archive = tmp_path / "hurl.deb"
+    archive.write_bytes(b"fixed-deb-payload")
+    destination = tmp_path / "out"
+    calls = []
+
+    def fake_run(argv, **kwargs):
+        calls.append(list(argv))
+        extracted = Path(argv[3])
+        binary = extracted / "usr/bin/hurl"
+        binary.parent.mkdir(parents=True, exist_ok=True)
+        binary.write_text("#!/bin/sh\necho 'hurl 8.0.1'\n", encoding="utf-8")
+        binary.chmod(0o755)
+        return {"status": "PASS", "exit_code": 0}
+
+    monkeypatch.setattr(toolchain, "_bounded_run", fake_run)
+    binary = toolchain._extract_fixed_binary(archive, "deb", "hurl", destination)
+    assert binary == destination / "hurl"
+    assert binary.is_file()
+    assert calls == [["/usr/bin/dpkg-deb", "--extract", str(archive), calls[0][3]]]
+    assert "sudo" not in " ".join(calls[0])
+
+
+def test_managed_python_entrypoint_is_relocated_after_atomic_venv_move(tmp_path: Path):
+    toolchain = _module()
+    staging = tmp_path / "staging"
+    version_root = tmp_path / "final"
+    entrypoint = version_root / "bin/mitmdump"
+    entrypoint.parent.mkdir(parents=True)
+    entrypoint.write_text(
+        f"#!{staging}/bin/python\nfrom mitmproxy.tools.main import mitmdump\n",
+        encoding="utf-8",
+    )
+    entrypoint.chmod(0o755)
+
+    toolchain._relocate_managed_python_entrypoint(entrypoint, staging, version_root)
+
+    content = entrypoint.read_text(encoding="utf-8")
+    assert content.startswith(f"#!{version_root}/bin/python\n")
+    assert str(staging) not in content
+    assert os.access(entrypoint, os.X_OK)
 
 
 def test_fixed_download_checksum_mismatch_fails_closed_and_cleans_partial(tmp_path: Path, monkeypatch):
