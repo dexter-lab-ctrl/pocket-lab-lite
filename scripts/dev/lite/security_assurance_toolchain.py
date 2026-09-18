@@ -20,6 +20,7 @@ import re
 import selectors
 import shutil
 import socket
+import ssl
 import stat
 import subprocess
 import sys
@@ -29,6 +30,7 @@ import time
 import urllib.error
 import urllib.request
 import zipfile
+from contextlib import ExitStack
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping
@@ -37,6 +39,12 @@ try:
     import yaml
 except ImportError as exc:  # pragma: no cover - repository venv supplies PyYAML
     raise SystemExit("PyYAML is required for the assurance tool manager") from exc
+
+
+try:
+    from . import security_assurance_runtime_tunnel
+except ImportError:  # pragma: no cover - direct script execution
+    import security_assurance_runtime_tunnel
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -1196,27 +1204,81 @@ def _dependency_source(workspace: Path) -> Path:
 
 
 def _live_target_probe(tool_id: str) -> dict[str, Any]:
-    """Prove the fixed DEV-PC tunnel reaches the Pocket Lab target."""
-    if tool_id in {"schemathesis", "nuclei", "nmap", "owasp-zap", "pocketlab-runtime-360", "playwright-runtime"}:
+    """Prove only the fixed DEV-PC tunnel target required by this tool."""
+    if tool_id in {"playwright-runtime", "testssl.sh"}:
+        sni = _fixed_tls_sni()
+        if sni is None:
+            return {
+                "available": False,
+                "target": "fixed_caddy_tls_tunnel",
+                "failure_code": "runtime_tls_identity_unavailable",
+                "sanitized": True,
+            }
+        context = ssl.create_default_context()
+        try:
+            with socket.create_connection(("127.0.0.1", 18443), timeout=3) as raw:
+                with context.wrap_socket(raw, server_hostname=sni) as tls:
+                    return {
+                        "available": bool(tls.version()),
+                        "target": "fixed_caddy_tls_tunnel",
+                        "tls_identity_configured": True,
+                        "tls_hostname_verified": True,
+                        "sanitized": True,
+                    }
+        except (OSError, ssl.SSLError):
+            return {
+                "available": False,
+                "target": "fixed_caddy_tls_tunnel",
+                "failure_code": "runtime_tls_target_unavailable",
+                "sanitized": True,
+            }
+
+    api_tools = {"schemathesis", "nuclei", "nmap", "owasp-zap", "pocketlab-runtime-360"}
+    if tool_id in api_tools:
         try:
             request = urllib.request.Request(f"{API_BASE}/health", headers={"Accept": "application/json"})
             opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
             with opener.open(request, timeout=3) as response:
                 healthy = int(response.status) == 200
-            return {"available": healthy, "target": "fixed_api_tunnel", "http_status": 200 if healthy else None, "sanitized": True}
         except urllib.error.HTTPError as exc:
-            return {"available": False, "target": "fixed_api_tunnel", "http_status": int(exc.code), "failure_code": "runtime_target_unhealthy", "sanitized": True}
+            return {
+                "available": False,
+                "target": "fixed_api_tunnel",
+                "http_status": int(exc.code),
+                "failure_code": "runtime_target_unhealthy",
+                "sanitized": True,
+            }
         except (OSError, urllib.error.URLError):
-            return {"available": False, "target": "fixed_api_tunnel", "failure_code": "runtime_target_unavailable", "sanitized": True}
-    if tool_id == "testssl.sh":
-        sni = _fixed_tls_sni()
-        if sni is None:
-            return {"available": False, "target": "fixed_caddy_tls_tunnel", "failure_code": "runtime_tls_identity_unavailable", "sanitized": True}
-        try:
-            with socket.create_connection(("127.0.0.1", 18443), timeout=3):
-                return {"available": True, "target": "fixed_caddy_tls_tunnel", "tls_identity_configured": True, "sanitized": True}
-        except OSError:
-            return {"available": False, "target": "fixed_caddy_tls_tunnel", "failure_code": "runtime_target_unavailable", "sanitized": True}
+            return {
+                "available": False,
+                "target": "fixed_api_tunnel",
+                "failure_code": "runtime_target_unavailable",
+                "sanitized": True,
+            }
+        if not healthy:
+            return {
+                "available": False,
+                "target": "fixed_api_tunnel",
+                "failure_code": "runtime_target_unhealthy",
+                "sanitized": True,
+            }
+        if tool_id == "pocketlab-runtime-360":
+            caddy = _live_target_probe("playwright-runtime")
+            if caddy.get("available") is not True:
+                return caddy
+            return {
+                "available": True,
+                "target": "fixed_api_and_caddy_tunnels",
+                "http_status": 200,
+                "tls_hostname_verified": True,
+                "sanitized": True,
+            }
+        return {
+            "available": True,
+            "target": "fixed_api_tunnel",
+            "http_status": 200,
+            "sanitized": True,
+        }
     return {"available": True, "target": "fixed_registered_target", "sanitized": True}
 
 
@@ -1508,7 +1570,9 @@ def run_suite(suite_id: str) -> dict[str, Any]:
     run_root.mkdir(parents=True, exist_ok=True)
     (MANAGED_ROOT / "tmp").mkdir(parents=True, exist_ok=True)
     tool_results: list[dict[str, Any]] = []
-    with tempfile.TemporaryDirectory(prefix=f"{qualification_id}-", dir=MANAGED_ROOT / "tmp") as temporary:
+    tunnel_summary: dict[str, Any] = {"status": "NOT_REQUIRED", "sanitized": True}
+    tunnel_error: str | None = None
+    with tempfile.TemporaryDirectory(prefix=f"{qualification_id}-", dir=MANAGED_ROOT / "tmp") as temporary, ExitStack() as stack:
         workspace = Path(temporary)
         ordered_ids = TOOL_EXECUTION_ORDER + tuple(
             tool_id for tool_id in sorted(registry["toolchain"]) if tool_id not in TOOL_EXECUTION_ORDER
@@ -1517,7 +1581,8 @@ def run_suite(suite_id: str) -> dict[str, Any]:
             spec = registry["toolchain"].get(tool_id) or {}
             if suite_id not in (spec.get("suite_membership") or []):
                 continue
-            if str(spec.get("execution_lane") or "") == "server_phone_worker":
+            lane = str(spec.get("execution_lane") or "")
+            if lane == "server_phone_worker":
                 tool_results.append({
                     "tool_id": tool_id,
                     "suite": suite_id,
@@ -1528,6 +1593,31 @@ def run_suite(suite_id: str) -> dict[str, Any]:
                     "checksum_status": "server_runtime_receipt",
                     "signature_status": "server_runtime_receipt",
                     "status_detail": "result is attached by authenticated Server Phone assurance run",
+                    "sanitized": True,
+                })
+                continue
+            if lane == "dev_pc_live_runtime" and tunnel_summary.get("status") == "NOT_REQUIRED" and tunnel_error is None:
+                try:
+                    tunnel_state = stack.enter_context(security_assurance_runtime_tunnel.fixed_runtime_tunnel())
+                    tunnel_summary = security_assurance_runtime_tunnel.sanitized_tunnel_summary(tunnel_state)
+                except (OSError, RuntimeError, ValueError) as exc:
+                    tunnel_error = str(exc)[:120] or "runtime_tunnel_unavailable"
+                    tunnel_summary = {
+                        "status": "BLOCKED",
+                        "failure_code": tunnel_error,
+                        "raw_addresses_persisted_in_assurance_evidence": False,
+                        "sanitized": True,
+                    }
+            if lane == "dev_pc_live_runtime" and tunnel_error is not None:
+                tool_results.append({
+                    "tool_id": tool_id,
+                    "suite": suite_id,
+                    "execution_lane": lane,
+                    "status": "BLOCKED",
+                    "version": "UNAVAILABLE",
+                    "findings": [],
+                    "failure_code": tunnel_error,
+                    "status_detail": "fixed runtime tunnel was not admitted",
                     "sanitized": True,
                 })
                 continue
@@ -1551,6 +1641,7 @@ def run_suite(suite_id: str) -> dict[str, Any]:
         "completed_at": _now(),
         "status": status,
         "tools": tool_results,
+        "runtime_tunnel": tunnel_summary,
         "scenarios": external_scenarios,
         "findings": findings,
         "finding_count": len(findings),
@@ -1563,6 +1654,7 @@ def run_suite(suite_id: str) -> dict[str, Any]:
     }
     _write_json(run_root / "manifest.json", {key: report[key] for key in ("schema_version", "qualification_id", "suite", "source_sha", "registry_sha256", "started_at", "completed_at", "status", "raw_output_persisted", "sanitized")})
     _write_json(run_root / "toolchain.json", {"tools": tool_results, "sanitized": True})
+    _write_json(run_root / "runtime-tunnel.json", tunnel_summary)
     _write_json(run_root / "scenarios.json", {"scenarios": external_scenarios, "sanitized": True})
     _write_json(run_root / "findings.json", {"findings": findings, "sanitized": True})
     _write_json(run_root / "delta.json", delta)
@@ -1572,6 +1664,7 @@ def run_suite(suite_id: str) -> dict[str, Any]:
         {
             "manifest": f"sha256:{_sha256_file(run_root / 'manifest.json')}",
             "toolchain": f"sha256:{_sha256_file(run_root / 'toolchain.json')}",
+            "runtime_tunnel": f"sha256:{_sha256_file(run_root / 'runtime-tunnel.json')}",
             "scenarios": f"sha256:{_sha256_file(run_root / 'scenarios.json')}",
             "findings": f"sha256:{_sha256_file(run_root / 'findings.json')}",
             "sanitized": True,
