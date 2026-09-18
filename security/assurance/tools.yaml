@@ -576,3 +576,347 @@ toolchain:
     max_attempts: 1
     checksum_policy: qualified_tool_receipt
     signature_policy: receipt_or_release_checksum
+
+  # 360-degree DEV-PC live-runtime evidence tools. Commands and targets are repository-owned.
+  - id: playwright
+    version_pin: "runtime-discovered"
+    installation_source: approved_existing_dev_pc_toolchain
+    purpose: "Fixed real-world runtime security evidence for registered 360-degree assurance scenarios."
+    execution: managed_external_tool
+    execution_lane: dev_pc_live_runtime
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED only when discovered through the approved DEV-PC toolchain
+    harness_status: ACTIVE
+    resource_class: heavy
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.api
+    suite_membership: ["standard", "deep", "adversarial"]
+    binary_discovery: managed_tool_receipt_or_approved_path
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: runtime.playwright_security
+    fixed_target: approved_server_phone_caddy_tls_tunnel
+    fixed_argv: ["test", "--config", "playwright.security.config.ts", "tests/e2e/lite-security-runtime.spec.ts", "--project", "security-runtime"]
+    parser: normalized_runtime_security_result
+    sanitizer: redacted_runtime_security_summary
+    timeout_seconds: 900
+    max_output_bytes: 1048576
+    ruleset: "tests/e2e/lite-security-runtime.spec.ts"
+    template_allowlist: "tests/e2e/lite-security-runtime.spec.ts"
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt_or_observed_binary_checksum
+    signature_policy: receipt_or_package_integrity
+  - id: mitmdump
+    version_pin: "runtime-discovered"
+    installation_source: approved_existing_dev_pc_toolchain
+    purpose: "Fixed real-world runtime security evidence for registered 360-degree assurance scenarios."
+    execution: managed_external_tool
+    execution_lane: dev_pc_live_runtime
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED only when discovered through the approved DEV-PC toolchain
+    harness_status: ACTIVE
+    resource_class: medium
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.api
+    suite_membership: ["standard", "deep", "adversarial"]
+    binary_discovery: managed_tool_receipt_or_approved_path
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: runtime.mitmdump_fixed_proxy
+    fixed_target: approved_server_phone_api_tunnel
+    fixed_argv: ["fixed_wrapper", "mitmproxy"]
+    parser: normalized_runtime_security_result
+    sanitizer: redacted_runtime_security_summary
+    timeout_seconds: 180
+    max_output_bytes: 524288
+    ruleset: "scripts/dev/lite/security_assurance_runtime_probe.py"
+    template_allowlist: "scripts/dev/lite/security_assurance_runtime_probe.py"
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt_or_observed_binary_checksum
+    signature_policy: receipt_or_package_integrity
+  - id: hurl
+    version_pin: "runtime-discovered"
+    installation_source: approved_existing_dev_pc_toolchain
+    purpose: "Fixed real-world runtime security evidence for registered 360-degree assurance scenarios."
+    execution: managed_external_tool
+    execution_lane: dev_pc_live_runtime
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED only when discovered through the approved DEV-PC toolchain
+    harness_status: ACTIVE
+    resource_class: medium
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.api
+    suite_membership: ["standard", "deep", "adversarial"]
+    binary_discovery: managed_tool_receipt_or_approved_path
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: runtime.hurl_security_sequences
+    fixed_target: approved_server_phone_caddy_tls_tunnel
+    fixed_argv: ["--test", "--insecure", "security/assurance/runtime-http-security.hurl"]
+    parser: normalized_runtime_security_result
+    sanitizer: redacted_runtime_security_summary
+    timeout_seconds: 180
+    max_output_bytes: 524288
+    ruleset: "security/assurance/runtime-http-security.hurl"
+    template_allowlist: "security/assurance/runtime-http-security.hurl"
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt_or_observed_binary_checksum
+    signature_policy: receipt_or_package_integrity
+  - id: k6
+    version_pin: "runtime-discovered"
+    installation_source: approved_existing_dev_pc_toolchain
+    purpose: "Fixed real-world runtime security evidence for registered 360-degree assurance scenarios."
+    execution: managed_external_tool
+    execution_lane: dev_pc_live_runtime
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED only when discovered through the approved DEV-PC toolchain
+    harness_status: ACTIVE
+    resource_class: heavy
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.runtime
+    suite_membership: ["deep", "adversarial"]
+    binary_discovery: managed_tool_receipt_or_approved_path
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: runtime.k6_bounded_resilience
+    fixed_target: approved_server_phone_caddy_tls_tunnel
+    fixed_argv: ["run", "--vus", "2", "--duration", "8s", "security/assurance/runtime-resilience.js"]
+    parser: normalized_runtime_security_result
+    sanitizer: redacted_runtime_security_summary
+    timeout_seconds: 900
+    max_output_bytes: 1048576
+    ruleset: "security/assurance/runtime-resilience.js"
+    template_allowlist: "security/assurance/runtime-resilience.js"
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt_or_observed_binary_checksum
+    signature_policy: receipt_or_package_integrity
+  - id: websocat
+    version_pin: "runtime-discovered"
+    installation_source: approved_existing_dev_pc_toolchain
+    purpose: "Fixed real-world runtime security evidence for registered 360-degree assurance scenarios."
+    execution: managed_external_tool
+    execution_lane: dev_pc_live_runtime
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED only when discovered through the approved DEV-PC toolchain
+    harness_status: ACTIVE
+    resource_class: small
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.api
+    suite_membership: ["standard", "deep", "adversarial"]
+    binary_discovery: managed_tool_receipt_or_approved_path
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: runtime.websocat_auth_boundary
+    fixed_target: approved_server_phone_api_tunnel
+    fixed_argv: ["fixed_wrapper", "websocket"]
+    parser: normalized_runtime_security_result
+    sanitizer: redacted_runtime_security_summary
+    timeout_seconds: 180
+    max_output_bytes: 524288
+    ruleset: "scripts/dev/lite/security_assurance_runtime_probe.py"
+    template_allowlist: "scripts/dev/lite/security_assurance_runtime_probe.py"
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt_or_observed_binary_checksum
+    signature_policy: receipt_or_package_integrity
+  - id: katana
+    version_pin: "runtime-discovered"
+    installation_source: approved_existing_dev_pc_toolchain
+    purpose: "Fixed real-world runtime security evidence for registered 360-degree assurance scenarios."
+    execution: managed_external_tool
+    execution_lane: dev_pc_live_runtime
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED only when discovered through the approved DEV-PC toolchain
+    harness_status: ACTIVE
+    resource_class: medium
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.api
+    suite_membership: ["deep", "adversarial"]
+    binary_discovery: managed_tool_receipt_or_approved_path
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: runtime.katana_route_inventory
+    fixed_target: approved_server_phone_caddy_tls_tunnel
+    fixed_argv: ["-u", "fixed_caddy_origin", "-d", "1", "-c", "1", "-rl", "2"]
+    parser: normalized_runtime_security_result
+    sanitizer: redacted_runtime_security_summary
+    timeout_seconds: 180
+    max_output_bytes: 524288
+    ruleset: "fixed_external_route_inventory"
+    template_allowlist: "fixed_external_route_inventory"
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt_or_observed_binary_checksum
+    signature_policy: receipt_or_package_integrity
+  - id: httpx
+    version_pin: "runtime-discovered"
+    installation_source: approved_existing_dev_pc_toolchain
+    purpose: "Fixed real-world runtime security evidence for registered 360-degree assurance scenarios."
+    execution: managed_external_tool
+    execution_lane: dev_pc_live_runtime
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED only when discovered through the approved DEV-PC toolchain
+    harness_status: ACTIVE
+    resource_class: small
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.runtime
+    suite_membership: ["standard", "deep", "adversarial"]
+    binary_discovery: managed_tool_receipt_or_approved_path
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: runtime.httpx_exposure
+    fixed_target: approved_server_phone_api_tunnel
+    fixed_argv: ["-u", "fixed_runtime_endpoint", "-status-code", "-silent"]
+    parser: normalized_runtime_security_result
+    sanitizer: redacted_runtime_security_summary
+    timeout_seconds: 180
+    max_output_bytes: 524288
+    ruleset: "fixed_runtime_exposure_contract"
+    template_allowlist: "fixed_runtime_exposure_contract"
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt_or_observed_binary_checksum
+    signature_policy: receipt_or_package_integrity
+  - id: tlsx
+    version_pin: "runtime-discovered"
+    installation_source: approved_existing_dev_pc_toolchain
+    purpose: "Fixed real-world runtime security evidence for registered 360-degree assurance scenarios."
+    execution: managed_external_tool
+    execution_lane: dev_pc_live_runtime
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED only when discovered through the approved DEV-PC toolchain
+    harness_status: ACTIVE
+    resource_class: small
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.api
+    suite_membership: ["standard", "deep", "adversarial"]
+    binary_discovery: managed_tool_receipt_or_approved_path
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: runtime.tlsx_identity
+    fixed_target: approved_server_phone_caddy_tls_tunnel
+    fixed_argv: ["-u", "fixed_caddy_tls_tunnel", "-sni", "fixed_caddy_identity", "-json"]
+    parser: normalized_runtime_security_result
+    sanitizer: redacted_runtime_security_summary
+    timeout_seconds: 180
+    max_output_bytes: 524288
+    ruleset: "fixed_tls_identity_contract"
+    template_allowlist: "fixed_tls_identity_contract"
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt_or_observed_binary_checksum
+    signature_policy: receipt_or_package_integrity
+  - id: tshark
+    version_pin: "runtime-discovered"
+    installation_source: approved_existing_dev_pc_toolchain
+    purpose: "Fixed real-world runtime security evidence for registered 360-degree assurance scenarios."
+    execution: managed_external_tool
+    execution_lane: dev_pc_live_runtime
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED only when discovered through the approved DEV-PC toolchain
+    harness_status: ACTIVE
+    resource_class: medium
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.passive
+    suite_membership: ["standard", "deep"]
+    binary_discovery: managed_tool_receipt_or_approved_path
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: runtime.tshark_observer
+    fixed_target: approved_loopback_listener_set
+    fixed_argv: ["fixed_wrapper", "tshark"]
+    parser: normalized_runtime_security_result
+    sanitizer: redacted_runtime_security_summary
+    timeout_seconds: 180
+    max_output_bytes: 524288
+    ruleset: "scripts/dev/lite/security_assurance_runtime_probe.py"
+    template_allowlist: "scripts/dev/lite/security_assurance_runtime_probe.py"
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt_or_observed_binary_checksum
+    signature_policy: receipt_or_package_integrity
+  - id: ffuf
+    version_pin: "runtime-discovered"
+    installation_source: approved_existing_dev_pc_toolchain
+    purpose: "Fixed real-world runtime security evidence for registered 360-degree assurance scenarios."
+    execution: managed_external_tool
+    execution_lane: dev_pc_live_runtime
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED only when discovered through the approved DEV-PC toolchain
+    harness_status: ACTIVE
+    resource_class: medium
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.api
+    suite_membership: ["deep", "adversarial"]
+    binary_discovery: managed_tool_receipt_or_approved_path
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: runtime.ffuf_tiny_wordlist
+    fixed_target: approved_server_phone_caddy_tls_tunnel
+    fixed_argv: ["-w", "security/assurance/runtime-route-wordlist.txt", "-u", "fixed_caddy_origin/FUZZ", "-t", "1", "-rate", "2"]
+    parser: normalized_runtime_security_result
+    sanitizer: redacted_runtime_security_summary
+    timeout_seconds: 180
+    max_output_bytes: 524288
+    ruleset: "security/assurance/runtime-route-wordlist.txt"
+    template_allowlist: "security/assurance/runtime-route-wordlist.txt"
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt_or_observed_binary_checksum
+    signature_policy: receipt_or_package_integrity
+  - id: nats-cli
+    version_pin: "runtime-discovered"
+    installation_source: approved_existing_dev_pc_toolchain
+    purpose: "Fixed real-world runtime security evidence for registered 360-degree assurance scenarios."
+    execution: managed_external_tool
+    execution_lane: dev_pc_live_runtime
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED only when discovered through the approved DEV-PC toolchain
+    harness_status: ACTIVE
+    resource_class: small
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.runtime
+    suite_membership: ["deep", "adversarial"]
+    binary_discovery: managed_tool_receipt_or_approved_path
+    version_command: fixed_binary_version_probe
+    version_source: qualified_tool_receipt
+    command_id: runtime.nats_fixed_observer
+    fixed_target: approved_loopback_listener_set
+    fixed_argv: ["fixed_wrapper", "nats"]
+    parser: normalized_runtime_security_result
+    sanitizer: redacted_runtime_security_summary
+    timeout_seconds: 180
+    max_output_bytes: 524288
+    ruleset: "scripts/dev/lite/security_assurance_runtime_probe.py"
+    template_allowlist: "scripts/dev/lite/security_assurance_runtime_probe.py"
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: qualified_tool_receipt_or_observed_binary_checksum
+    signature_policy: receipt_or_package_integrity
+
