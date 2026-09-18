@@ -41,12 +41,20 @@ def _field_names(value):
 
 
 def _safe_request(_method, path, **_kwargs):
-    status = 404 if path in {
+    if path in {
+        "/api/lite/harness/security-assurance/capabilities",
+        "/api/lite/harness/security-assurance/runs",
+    }:
+        status = 403
+    elif path in {
         "/debug",
         "/metrics",
         "/api/docs",
         "/api/lite/harness",
-    } else 200
+    }:
+        status = 404
+    else:
+        status = 200
     return {
         "status": status,
         "headers": {},
@@ -190,16 +198,18 @@ def test_browser_adapter_exposes_only_registered_suite_cli_and_fixed_targets():
     assert 'throw new Error("runtime_tls_identity_unavailable")' in text
     assert "ignoreHTTPSErrors: false" in text
     assert 'caddy_identity: "fixed_operator_approved_identity"' in text
+    # Match exact caller-facing argv tokens, not fixed Chromium implementation
+    # flags such as --host-resolver-rules.
     for forbidden in (
-        "--target",
-        "--url",
-        "--host",
-        "--port",
-        "--argv",
-        "--subject",
-        "--wordlist",
-        "--script",
-        "--fixture",
+        '"--target"',
+        '"--url"',
+        '"--host"',
+        '"--port"',
+        '"--argv"',
+        '"--subject"',
+        '"--wordlist"',
+        '"--script"',
+        '"--fixture"',
     ):
         assert forbidden not in text
 
