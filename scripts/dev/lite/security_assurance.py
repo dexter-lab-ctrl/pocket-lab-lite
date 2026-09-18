@@ -358,10 +358,19 @@ def _write_unified_manifest(*, qualification_id: str, started_at: str, principal
     tool_reports = {}
     for name, value in (toolchain.get("suites") or {}).items() if isinstance(toolchain, dict) else ():
         if isinstance(value, dict):
+            scenario_rows = value.get("scenarios") if isinstance(value.get("scenarios"), list) else []
+            scenario_status_counts: dict[str, int] = {}
+            for row in scenario_rows:
+                if not isinstance(row, dict):
+                    continue
+                status = str(row.get("status") or "NOT_ASSESSED").upper()
+                scenario_status_counts[status] = scenario_status_counts.get(status, 0) + 1
             tool_reports[name] = {
                 "status": value.get("status"),
                 "qualification_id": value.get("qualification_id"),
                 "finding_count": value.get("finding_count"),
+                "scenario_count": len(scenario_rows),
+                "scenario_status_counts": scenario_status_counts,
                 "evidence_dir": value.get("evidence_dir"),
                 "registry_sha256": value.get("registry_sha256"),
             }
