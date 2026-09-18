@@ -69,7 +69,10 @@ def tshark():
     p=subprocess.Popen(argv,stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=False,start_new_session=True,env=os.environ.copy()); time.sleep(.5)
     try: fixed_get("/health")
     except Exception: pass
-    out,_=p.communicate(timeout=5); ports=sorted({int(v) for v in out.decode("utf-8","replace").split() if v.isdigit() and int(v) in ALLOWED_PORTS})
+    out,err=p.communicate(timeout=5)
+    if p.returncode not in (0, None):
+        emit("PARTIAL",failure_code="packet_observer_unavailable",payload_persisted=False); return
+    ports=sorted({int(v) for v in out.decode("utf-8","replace").split() if v.isdigit() and int(v) in ALLOWED_PORTS})
     emit("PASS",observed_fixed_ports=ports,payload_persisted=False)
 def nats():
     code,_,_,duration=run([tool("nats"),"--server",NATS_URL,"server","ping","--count","1"],6)
@@ -83,9 +86,20 @@ def tailnet():
         try:
             with socket.create_connection((ip,port),timeout=.8): observed[port]=True
         except OSError: observed[port]=False
-    bad=[p for p in TAILNET_FORBIDDEN if observed.get(p)]
-    findings=[{"id":"unexpected-tailnet-service-exposure","severity":"high","attack_paths":["AP-07"],"summary":"An internal-only Pocket Lab service was reachable on the private-network address."}] if bad else []
-    emit("FAIL" if findings else "PASS",findings,remote_access_ready=True,expected_service_reachability={str(p):observed.get(p,False) for p in sorted(TAILNET_EXPECTED)},internal_only_exposed_count=len(bad))
+    httpx=tool("httpx")
+    code,out,_,_=run([httpx,"-u",f"http://{ip}:8080/health","-silent","-status-code","-no-color","-timeout","3","-retries","0"],6)
+    direct_api=bool(out.strip())
+    observed[8080]=observed.get(8080,False) or direct_api
+    bad=[port for port in TAILNET_FORBIDDEN if observed.get(port)]
+    missing=[port for port in TAILNET_EXPECTED if not observed.get(port)]
+    findings=[]
+    if bad:
+        findings.append({"id":"unexpected-tailnet-service-exposure","severity":"high","attack_paths":["AP-07"],"summary":"An internal-only Pocket Lab service was reachable on the private-network address."})
+    if missing:
+        findings.append({"id":"expected-tailnet-service-unavailable","severity":"medium","attack_paths":["AP-07"],"summary":"A registered private-network service was unavailable while remote access reported ready."})
+    emit("FAIL" if bad else "PARTIAL" if missing else "PASS",findings,remote_access_ready=True,
+         expected_service_reachability={str(port):observed.get(port,False) for port in sorted(TAILNET_EXPECTED)},
+         internal_only_exposed_count=len(bad),direct_api_http_observed=direct_api)
 def main():
     p=argparse.ArgumentParser(); p.add_argument("mode",choices=("websocket","mitmproxy","tshark","nats","tailnet")); mode=p.parse_args().mode
     {"websocket":websocket,"mitmproxy":mitmproxy,"tshark":tshark,"nats":nats,"tailnet":tailnet}[mode]()
