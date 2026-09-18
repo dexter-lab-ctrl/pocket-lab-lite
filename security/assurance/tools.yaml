@@ -278,7 +278,7 @@ toolchain:
     resource_class: heavy
     allowed_mode: fixed_registered_command
     required_capability: security.assurance.api
-    suite_membership: [standard, deep]
+    suite_membership: [standard, deep, adversarial]
     binary_discovery: managed_tool_receipt_or_parity_venv
     version_command: fixed_binary_version_probe
     version_source: qualified_tool_receipt
@@ -309,7 +309,7 @@ toolchain:
     resource_class: small
     allowed_mode: registered_artifact_only
     required_capability: security.assurance.sca
-    suite_membership: [standard, deep]
+    suite_membership: [standard, deep, adversarial]
     binary_discovery: managed_tool_receipt
     version_command: fixed_binary_version_probe
     version_source: qualified_tool_receipt
@@ -340,7 +340,7 @@ toolchain:
     resource_class: heavy
     allowed_mode: fixed_registered_command
     required_capability: security.assurance.sast
-    suite_membership: [standard, deep]
+    suite_membership: [standard, deep, adversarial]
     binary_discovery: managed_tool_receipt
     version_command: fixed_binary_version_probe
     version_source: qualified_tool_receipt
@@ -402,7 +402,7 @@ toolchain:
     resource_class: heavy
     allowed_mode: fixed_registered_command
     required_capability: security.assurance.sca
-    suite_membership: [deep]
+    suite_membership: [deep, adversarial]
     binary_discovery: managed_tool_receipt
     version_command: fixed_binary_version_probe
     version_source: qualified_tool_receipt
@@ -433,7 +433,7 @@ toolchain:
     resource_class: heavy
     allowed_mode: fixed_registered_command
     required_capability: security.assurance.sca
-    suite_membership: [deep]
+    suite_membership: [deep, adversarial]
     binary_discovery: managed_tool_receipt
     version_command: fixed_binary_version_probe
     version_source: qualified_tool_receipt
@@ -464,7 +464,7 @@ toolchain:
     resource_class: medium
     allowed_mode: fixed_registered_command
     required_capability: security.assurance.api
-    suite_membership: [standard, deep]
+    suite_membership: [standard, deep, adversarial]
     binary_discovery: managed_tool_receipt
     version_command: fixed_binary_version_probe
     version_source: qualified_tool_receipt
@@ -495,7 +495,7 @@ toolchain:
     resource_class: heavy
     allowed_mode: fixed_registered_command
     required_capability: security.assurance.api
-    suite_membership: [standard, deep]
+    suite_membership: [standard, deep, adversarial]
     binary_discovery: managed_tool_receipt
     version_command: fixed_binary_version_probe
     version_source: qualified_tool_receipt
@@ -526,7 +526,7 @@ toolchain:
     resource_class: medium
     allowed_mode: fixed_registered_command
     required_capability: security.assurance.passive
-    suite_membership: [standard, deep]
+    suite_membership: [standard, deep, adversarial]
     binary_discovery: managed_tool_receipt_or_system
     version_command: fixed_binary_version_probe
     version_source: qualified_tool_receipt
@@ -838,7 +838,7 @@ toolchain:
     resource_class: medium
     allowed_mode: fixed_registered_command
     required_capability: security.assurance.passive
-    suite_membership: ["standard", "deep"]
+    suite_membership: ["standard", "deep", adversarial]
     binary_discovery: managed_tool_receipt_or_approved_path
     version_command: fixed_binary_version_probe
     version_source: qualified_tool_receipt
