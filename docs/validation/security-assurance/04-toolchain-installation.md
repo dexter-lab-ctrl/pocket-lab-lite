@@ -81,6 +81,11 @@ from the caller.
 - Hurl 8.0.1 uses the immutable upstream `hurl_8.0.1_amd64.deb` asset with
   its fixed SHA-256 and extracts `usr/bin/hurl` using non-privileged
   `dpkg-deb --extract`; it does not install or modify a system package.
+  Upstream builds that Linux binary on Ubuntu 22.04 against the
+  `libxml2.so.2` ABI. Newer hosts that expose `libxml2.so.16` without
+  `libxml2.so.2` are therefore reported as explicit `NOT_APPLICABLE`
+  (`host_runtime_incompatible`) rather than failed or silently shimmed. The
+  installer never creates an ABI symlink or mutates the host library stack.
 - k6 2.2.0, websocat 1.14.1, Katana 1.7.0, httpx 1.12.0, tlsx 1.4.0,
   ffuf 2.3.0, and NATS CLI 0.5.0 use fixed official release assets and fixed
   SHA-256 values. Archives are path-checked and only the unique expected
