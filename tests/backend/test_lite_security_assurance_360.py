@@ -9,6 +9,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 MODULE = ROOT / "scripts/dev/lite/security_assurance_360.py"
 BROWSER = ROOT / "scripts/dev/lite/security_assurance_browser.mjs"
+TUNNEL = ROOT / "scripts/dev/lite/security_assurance_runtime_tunnel.py"
 
 
 def _module():
@@ -17,6 +18,26 @@ def _module():
     assert spec.loader
     spec.loader.exec_module(module)
     return module
+
+
+def _tunnel_module():
+    spec = importlib.util.spec_from_file_location("pocketlab_security_assurance_runtime_tunnel", TUNNEL)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader
+    spec.loader.exec_module(module)
+    return module
+
+
+def _field_names(value):
+    names = set()
+    if isinstance(value, dict):
+        for key, item in value.items():
+            names.add(str(key).casefold())
+            names.update(_field_names(item))
+    elif isinstance(value, list):
+        for item in value:
+            names.update(_field_names(item))
+    return names
 
 
 def _safe_request(_method, path, **_kwargs):
@@ -108,8 +129,8 @@ def test_runtime_360_reports_hostile_websocket_as_real_security_finding(monkeypa
     assert result["scenario_results"]["websocket-auth-boundary"]["status"] == "FAIL"
     finding = next(row for row in result["findings"] if row["scenario_id"] == "websocket-auth-boundary")
     assert finding["severity"] == "high"
-    assert "cookie" not in str(result).casefold()
-    assert "authorization" not in str(result).casefold()
+    sensitive_fields = {"authorization", "proxy-authorization", "cookie", "set-cookie", "x-api-key"}
+    assert not (sensitive_fields & _field_names(result))
 
 
 def test_runtime_360_deep_provenance_stays_fixed_and_explicit(monkeypatch):
@@ -165,6 +186,10 @@ def test_browser_adapter_exposes_only_registered_suite_cli_and_fixed_targets():
     assert "ATTACKER_PORT = 18991" in text
     assert "credentials_injected: false" in text
     assert "storage_values_read: false" in text
+    assert 'identity || "127.0.0.1"' not in text
+    assert 'throw new Error("runtime_tls_identity_unavailable")' in text
+    assert "ignoreHTTPSErrors: false" in text
+    assert 'caddy_identity: "fixed_operator_approved_identity"' in text
     for forbidden in (
         "--target",
         "--url",
@@ -175,5 +200,52 @@ def test_browser_adapter_exposes_only_registered_suite_cli_and_fixed_targets():
         "--wordlist",
         "--script",
         "--fixture",
+    ):
+        assert forbidden not in text
+
+
+def test_runtime_tunnel_uses_runtime_reported_server_and_tailnet_ips():
+    tunnel = _tunnel_module()
+    config = {
+        "hostname": "phone.example.ts.net",
+        "user": "u0_a123",
+        "port": "8022",
+        "batchmode": "yes",
+        "passwordauthentication": "no",
+        "kbdinteractiveauthentication": "no",
+        "stricthostkeychecking": "yes",
+        "userknownhostsfile": "/home/test/.ssh/known_hosts",
+    }
+    facts = tunnel._parse_runtime_facts(
+        "TERMUX_OK=1\n"
+        "SSH_CONNECTION=192.168.50.4 50123 192.168.50.20 8022\n"
+        "REMOTE_USER=u0_a123\n"
+        "TAILSCALE_IPV4=100.64.12.34\n",
+        config,
+        caddy_sni="pocket-lab.example.ts.net",
+    )
+    argv = tunnel.build_tunnel_argv(facts, config)
+    assert "Hostname=192.168.50.20" in argv
+    assert argv[argv.index("-p") + 1] == "8022"
+    assert argv[argv.index("-l") + 1] == "u0_a123"
+    assert "127.0.0.1:18443:100.64.12.34:443" in argv
+    assert argv[-1] == "pocketlab-termux"
+    assert facts["server_phone_ip_source"] == "SSH_CONNECTION"
+    assert facts["tailscale_ipv4_source"] == "tailscale_runtime_ip4"
+
+
+def test_runtime_tunnel_cli_has_no_caller_selected_network_inputs():
+    text = TUNNEL.read_text(encoding="utf-8")
+    assert 'SSH_ALIAS = "pocketlab-termux"' in text
+    assert '"-o", f"Hostname={server_ip}"' in text
+    assert 'f"127.0.0.1:{CADDY_LOCAL_PORT}:{tailscale_ip}:{CADDY_REMOTE_PORT}"' in text
+    for forbidden in (
+        'add_argument("--host"',
+        'add_argument("--port"',
+        'add_argument("--user"',
+        'add_argument("--target"',
+        'add_argument("--url"',
+        'add_argument("--forward"',
+        'add_argument("--sni"',
     ):
         assert forbidden not in text
