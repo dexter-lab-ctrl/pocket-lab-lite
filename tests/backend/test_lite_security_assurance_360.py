@@ -37,6 +37,7 @@ def _safe_request(_method, path, **_kwargs):
 def test_runtime_360_uses_only_fixed_runtime_targets(monkeypatch):
     probe = _module()
     monkeypatch.setattr(probe, "_request", _safe_request)
+    monkeypatch.setattr(probe, "_caddy_request", _safe_request)
     monkeypatch.setattr(
         probe,
         "_websocket_handshake",
@@ -66,6 +67,7 @@ def test_runtime_360_uses_only_fixed_runtime_targets(monkeypatch):
 def test_runtime_360_reports_hostile_websocket_as_real_security_finding(monkeypatch):
     probe = _module()
     monkeypatch.setattr(probe, "_request", _safe_request)
+    monkeypatch.setattr(probe, "_caddy_request", _safe_request)
     monkeypatch.setattr(
         probe,
         "_websocket_handshake",
@@ -113,6 +115,7 @@ def test_runtime_360_reports_hostile_websocket_as_real_security_finding(monkeypa
 def test_runtime_360_deep_provenance_stays_fixed_and_explicit(monkeypatch):
     probe = _module()
     monkeypatch.setattr(probe, "_request", _safe_request)
+    monkeypatch.setattr(probe, "_caddy_request", _safe_request)
     monkeypatch.setattr(
         probe,
         "_websocket_handshake",
