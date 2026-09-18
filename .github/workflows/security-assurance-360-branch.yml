@@ -20,6 +20,8 @@ jobs:
       PUPPETEER_SKIP_DOWNLOAD: '1'
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
@@ -49,9 +51,9 @@ jobs:
 
       - name: Syntax and fixed-adapter checks
         run: |
-          .venv/bin/python -m py_compile             scripts/dev/lite/security_assurance_360.py             scripts/dev/lite/security_assurance_toolchain.py             scripts/dev/lite/security_assurance.py             pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py
+          .venv/bin/python -m py_compile             scripts/dev/lite/security_assurance_360.py             scripts/dev/lite/security_assurance_runtime_tunnel.py             scripts/dev/lite/security_assurance_toolchain.py             scripts/dev/lite/security_assurance.py             pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py
           node --check scripts/dev/lite/security_assurance_browser.mjs
-          git diff --check HEAD^
+          git diff --check origin/main...HEAD
 
       - name: Focused Security Assurance tests
         env:
