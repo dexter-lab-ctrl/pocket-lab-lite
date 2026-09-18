@@ -122,6 +122,17 @@ FIXED_VERSION_ARGS = {
     "nuclei": ("-version",),
     "nmap": ("--version",),
     "owasp-zap": ("--version",),
+    "playwright": ("--version",),
+    "mitmdump": ("--version",),
+    "hurl": ("--version",),
+    "k6": ("version",),
+    "websocat": ("--version",),
+    "katana": ("-version",),
+    "httpx": ("-version",),
+    "tlsx": ("-version",),
+    "tshark": ("--version",),
+    "ffuf": ("-V",),
+    "nats-cli": ("--version",),
 }
 FIXED_BINARY_NAMES = {"npm-audit": "npm", "cosign": "cosign"}
 TOOL_EXECUTION_LANES = frozenset({
@@ -446,8 +457,11 @@ def validate_registries() -> dict[str, Any]:
         if not isinstance(required, list) or any(str(value) not in profile_caps for value in required):
             raise AssuranceRegistryError("assurance_registry_invalid", "An assurance suite requests an unregistered capability.", status_code=503)
         refs = item.get("scenarios") or []
-        if not isinstance(refs, list):
+        dev_pc_refs = item.get("dev_pc_scenarios") or []
+        if not isinstance(refs, list) or not isinstance(dev_pc_refs, list):
             raise AssuranceRegistryError("assurance_registry_invalid", "An assurance suite has invalid scenarios.", status_code=503)
+        if set(str(value) for value in refs) & set(str(value) for value in dev_pc_refs):
+            raise AssuranceRegistryError("assurance_registry_invalid", "Phone and DEV-PC scenario ownership must not overlap.", status_code=503)
         suite_map[identifier] = item
     scenario_map: dict[str, Mapping[str, Any]] = {}
     paths = _threat_paths(threat)
@@ -473,6 +487,15 @@ def validate_registries() -> dict[str, Any]:
             ref = str(scenario).casefold()
             if ref not in scenario_map:
                 raise AssuranceRegistryError("assurance_registry_invalid", f"Suite {suite_name} references an unknown scenario.", status_code=503)
+        for scenario in suite.get("dev_pc_scenarios") or []:
+            ref = str(scenario).casefold()
+            definition = scenario_map.get(ref)
+            if definition is None:
+                raise AssuranceRegistryError("assurance_registry_invalid", f"Suite {suite_name} references an unknown DEV-PC scenario.", status_code=503)
+            if str(definition.get("execution") or "") != "dev_pc_live_runtime_evidence":
+                raise AssuranceRegistryError("assurance_registry_invalid", f"Suite {suite_name} DEV-PC scenario is not live-runtime owned.", status_code=503)
+            if suite_name not in {str(value) for value in definition.get("suites") or []}:
+                raise AssuranceRegistryError("assurance_registry_invalid", f"DEV-PC scenario {ref} does not declare suite {suite_name}.", status_code=503)
     current_ap_ids = {str(item["id"]) for item in paths}
     if not current_ap_ids.issubset(scenario_refs):
         raise AssuranceRegistryError(
@@ -620,6 +643,7 @@ def list_suites() -> dict[str, Any]:
             "allowed_safety_classes": item.get("allowed_safety_classes") or [],
             "required_capabilities": item.get("required_capabilities") or [],
             "scenarios": item.get("scenarios") or [],
+            "dev_pc_scenarios": item.get("dev_pc_scenarios") or [],
             "active_tools": list(ACTIVE_TOOLS_BY_SUITE.get(identifier, ())),
             "registered_tools": registered_tools,
             "external_tools": external_tools,
@@ -4235,6 +4259,17 @@ def execute_run(
                         ),
                         failure_code=None if path else "attack_path_not_registered",
                         details=path or {},
+                        started_at=scenario_started,
+                    )
+                )
+            elif str(definition.get("execution") or "") == "dev_pc_live_runtime_evidence":
+                scenario_results.append(
+                    _scenario_result(
+                        definition,
+                        status="BLOCKED",
+                        observed="This registered scenario is owned by the fixed DEV-PC live-runtime lane and is not executed on the Server Phone worker.",
+                        failure_code="dev_pc_live_runtime_lane_required",
+                        details={"execution_lane": "dev_pc_live_runtime", "caller_inputs": False},
                         started_at=scenario_started,
                     )
                 )
