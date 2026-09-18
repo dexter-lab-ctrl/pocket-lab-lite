@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          fetch-depth: 0
+          fetch-depth: 50
 
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
@@ -53,6 +53,7 @@ jobs:
         run: |
           .venv/bin/python -m py_compile             scripts/dev/lite/security_assurance_360.py             scripts/dev/lite/security_assurance_runtime_tunnel.py             scripts/dev/lite/security_assurance_toolchain.py             scripts/dev/lite/security_assurance.py             pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py
           node --check scripts/dev/lite/security_assurance_browser.mjs
+          git fetch --no-tags --depth=1 origin main:refs/remotes/origin/main
           git diff --check origin/main...HEAD
 
       - name: Focused Security Assurance tests
