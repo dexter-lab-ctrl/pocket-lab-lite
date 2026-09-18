@@ -74,11 +74,17 @@ from the caller.
   payloads.
 - `mitmdump` is installed into a dedicated managed Python virtual environment
   from the exact mitmproxy 12.2.3 wheel URL with a fixed wheel SHA-256. The
-  repository virtual environment is not modified.
-- Hurl 8.0.1, k6 2.2.0, websocat 1.14.1, Katana 1.7.0, httpx 1.12.0,
-  tlsx 1.4.0, ffuf 2.3.0, and NATS CLI 0.5.0 use fixed official release
-  assets and fixed SHA-256 values. Archives are path-checked and only the
-  unique expected executable is extracted.
+  repository virtual environment is not modified. Because Python console-script
+  shebangs embed the creation path, the installer relocates the `mitmdump`
+  entrypoint after the atomic venv move and re-runs the version probe before a
+  success receipt is written.
+- Hurl 8.0.1 uses the immutable upstream `hurl_8.0.1_amd64.deb` asset with
+  its fixed SHA-256 and extracts `usr/bin/hurl` using non-privileged
+  `dpkg-deb --extract`; it does not install or modify a system package.
+- k6 2.2.0, websocat 1.14.1, Katana 1.7.0, httpx 1.12.0, tlsx 1.4.0,
+  ffuf 2.3.0, and NATS CLI 0.5.0 use fixed official release assets and fixed
+  SHA-256 values. Archives are path-checked and only the unique expected
+  executable is extracted.
 - `tshark` remains a host-owned Wireshark dependency. A qualified existing
   host binary is used when present. If it is absent, the tool is explicitly
   `NOT_APPLICABLE`; the installer does not use privileged package operations,
