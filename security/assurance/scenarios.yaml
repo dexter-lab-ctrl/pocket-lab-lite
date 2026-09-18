@@ -469,7 +469,7 @@ scenarios:
     blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
     cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
     normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
-    evidence_tools: ["playwright", "owasp-zap"]
+    evidence_tools: ["playwright"]
     coverage_cases:
       - id: cross-origin-session-abuse-realworld
         threat: "Hostile origin cannot read or reuse Pocket Lab session authority"
@@ -637,7 +637,7 @@ scenarios:
     blocked_condition: "The fixed runtime target, required tool, or safe prerequisite is unavailable; missing evidence never becomes PASS."
     cleanup: "DEV-PC executors use bounded process-group cleanup and ephemeral artifacts; no raw credentials, cookies, payloads, or user media are persisted."
     normalized_evidence: "Scenario status, fixed tool IDs, sanitized finding IDs, bounded runtime metadata, exact source/runtime SHA, and explicit unavailable/partial states."
-    evidence_tools: ["playwright", "owasp-zap"]
+    evidence_tools: ["playwright"]
     coverage_cases:
       - id: cookie-security-posture-realworld
         threat: "Browser session cookies retain secure scope and lifecycle flags"
