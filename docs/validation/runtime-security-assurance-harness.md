@@ -261,6 +261,25 @@ hostile loopback browser origin, safe Nuclei template, or registered loopback
 listener ports. Raw tool output is parsed in memory or
 kept in bounded disposable files and is not promoted to canonical evidence.
 
+The DEV-PC live-runtime lane can establish those fixed forwards itself through
+the already managed `pocketlab-termux` SSH alias. It does not accept an SSH
+destination from the caller. The phone reports the active SSH server endpoint
+from `SSH_CONNECTION` and its Tailnet IPv4 from
+`tailscale-cli ip -4` / `tailscale ip -4`; both are validated as private
+runtime facts before use. The resulting SSH argv retains the alias's key and
+known-hosts policy, overrides `Hostname` with the runtime-observed Server
+Phone IP, uses the runtime-observed SSH port/user, and forwards local 18443 to
+the runtime-observed Tailnet IPv4 on Caddy port 443.
+
+The operator-approved Caddy SNI remains a separate local marker. Chromium has
+no 127.0.0.1 identity fallback: the marker must be present and valid, the
+fixed SNI is mapped to the local 18443 tunnel, and normal TLS
+certificate/hostname verification must succeed. Raw runtime addresses are
+available to the assurance harness only in the ephemeral 0600
+`~/.pocketlab-lite/qualification/runtime-tunnel.json` state while the tunnel
+context is active. Normalized assurance evidence records only their provenance
+and readiness, not the address values.
+
 The DEV-PC capture records installation origin, pinned version, checksum or
 signature posture, fixed argv, bounded output, parser status, and sanitized
 findings. A tool is not described as native Server Phone execution merely
