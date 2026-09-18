@@ -42,7 +42,7 @@ def test_check_status_uses_only_terminal_toolchain_vocabulary():
 
 def test_fixed_runtime_commands_have_no_caller_target_or_argv_inputs(tmp_path: Path, monkeypatch):
     toolchain = _module()
-    toolchain.MANAGED_ROOT = tmp_path / "managed"
+    monkeypatch.setattr(toolchain, "MANAGED_ROOT", tmp_path / "managed")
     toolchain.MANAGED_ROOT.mkdir()
     sni_file = tmp_path / "caddy-sni"
     sni_file.write_text("qualification.example.test\n", encoding="ascii")
@@ -151,7 +151,7 @@ def test_gitleaks_uses_a_fixed_excluded_tracked_file_view(tmp_path: Path, monkey
 
 def test_bounded_runner_terminates_timeout_and_does_not_use_shell(tmp_path: Path, monkeypatch):
     toolchain = _module()
-    toolchain.MANAGED_ROOT = tmp_path / "managed"
+    monkeypatch.setattr(toolchain, "MANAGED_ROOT", tmp_path / "managed")
     calls = []
     real_popen = toolchain.subprocess.Popen
 
@@ -415,7 +415,9 @@ def test_all_active_dev_pc_tools_have_deterministic_installer_classification():
         if spec.get("execution_lane") in {"dev_pc_static", "dev_pc_live_runtime"}
         and spec.get("harness_status") == "ACTIVE"
     }
-    assert dev_pc == set(toolchain.TOOL_EXECUTION_ORDER)
+    assert "cosign" in dev_pc
+    assert "cosign" not in toolchain.TOOL_EXECUTION_ORDER
+    assert dev_pc - {"cosign"} == set(toolchain.TOOL_EXECUTION_ORDER)
     assert all(toolchain._installer_classification(tool_id, registry[tool_id]) for tool_id in dev_pc)
 
 
@@ -547,7 +549,7 @@ def test_fixed_download_checksum_mismatch_fails_closed_and_cleans_partial(tmp_pa
 
 def test_failed_release_install_does_not_write_success_receipt(tmp_path: Path, monkeypatch):
     toolchain = _module()
-    toolchain.MANAGED_ROOT = tmp_path / "managed"
+    monkeypatch.setattr(toolchain, "MANAGED_ROOT", tmp_path / "managed")
     recipe = {
         "version": "1.0.0",
         "url": "https://github.com/example/hurl/releases/download/v1.0.0/hurl.zip",
@@ -573,7 +575,7 @@ def test_failed_release_install_does_not_write_success_receipt(tmp_path: Path, m
 
 def test_healthy_fixed_tool_is_idempotent_and_not_reinstalled(tmp_path: Path, monkeypatch):
     toolchain = _module()
-    toolchain.MANAGED_ROOT = tmp_path / "managed"
+    monkeypatch.setattr(toolchain, "MANAGED_ROOT", tmp_path / "managed")
     binary = toolchain._managed_candidate("hurl")
     binary.parent.mkdir(parents=True)
     binary.write_text("#!/bin/sh\necho 'hurl 8.0.1'\n", encoding="utf-8")
@@ -667,6 +669,8 @@ def test_registry_versions_and_installer_sources_match_source_owned_recipes():
         tool_id for tool_id, spec in registry.items()
         if spec.get("execution_lane") != "server_phone_worker"
     }
-    assert non_worker == set(toolchain.TOOL_EXECUTION_ORDER)
+    assert "cosign" in non_worker
+    assert "cosign" not in toolchain.TOOL_EXECUTION_ORDER
+    assert non_worker - {"cosign"} == set(toolchain.TOOL_EXECUTION_ORDER)
     assert non_worker <= set(toolchain.VERSION_ARGS)
 
