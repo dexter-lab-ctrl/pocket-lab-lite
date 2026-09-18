@@ -1563,10 +1563,20 @@ def run_suite(suite_id: str) -> dict[str, Any]:
     }
     _write_json(run_root / "manifest.json", {key: report[key] for key in ("schema_version", "qualification_id", "suite", "source_sha", "registry_sha256", "started_at", "completed_at", "status", "raw_output_persisted", "sanitized")})
     _write_json(run_root / "toolchain.json", {"tools": tool_results, "sanitized": True})
+    _write_json(run_root / "scenarios.json", {"scenarios": external_scenarios, "sanitized": True})
     _write_json(run_root / "findings.json", {"findings": findings, "sanitized": True})
     _write_json(run_root / "delta.json", delta)
     _write_json(run_root / "sanitization.json", report["sanitization"])
-    _write_json(run_root / "checksums.json", {"manifest": f"sha256:{_sha256_file(run_root / 'manifest.json')}", "toolchain": f"sha256:{_sha256_file(run_root / 'toolchain.json')}", "findings": f"sha256:{_sha256_file(run_root / 'findings.json')}", "sanitized": True})
+    _write_json(
+        run_root / "checksums.json",
+        {
+            "manifest": f"sha256:{_sha256_file(run_root / 'manifest.json')}",
+            "toolchain": f"sha256:{_sha256_file(run_root / 'toolchain.json')}",
+            "scenarios": f"sha256:{_sha256_file(run_root / 'scenarios.json')}",
+            "findings": f"sha256:{_sha256_file(run_root / 'findings.json')}",
+            "sanitized": True,
+        },
+    )
     report["evidence_dir"] = f"QUALIFICATION_EVIDENCE_ROOT/{qualification_id}/{suite_id}"
     return report
 
