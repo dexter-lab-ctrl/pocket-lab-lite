@@ -1054,7 +1054,7 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
                     try:
                         import security_assurance_toolchain
 
-                        for tool_suite in ("standard", "deep"):
+                        for tool_suite in ("standard", "adversarial", "deep"):
                             workflow_phase = f"dev_pc_{tool_suite}"
                             tool_result = security_assurance_toolchain.run_suite(tool_suite)
                             toolchain_suites[tool_suite] = tool_result
@@ -1206,7 +1206,11 @@ def _parser() -> argparse.ArgumentParser:
     qualify.add_argument("--max-poll-seconds", type=float, default=MAX_POLL_SECONDS)
     qualify.add_argument("--skip-standard", action="store_true")
     qualify.add_argument("--skip-adversarial", action="store_true")
-    qualify.add_argument("--full", action="store_true", help="run the fixed DEV-PC Standard and Deep tool lanes after phone Smoke")
+    qualify.add_argument(
+        "--full",
+        action="store_true",
+        help="run the fixed DEV-PC Standard, Adversarial, and Deep 360-degree tool lanes after phone Smoke",
+    )
     qualify.add_argument(
         "--fault-id",
         choices=("worker_restart_once", "nats_restart_once", "opa_restart_once", "nats_pause_probe_restore", "opa_pause_probe_restore"),
