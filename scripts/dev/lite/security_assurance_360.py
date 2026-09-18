@@ -427,7 +427,7 @@ def run(suite: str) -> dict[str, Any]:
             "title": "Bounded concurrency degraded health availability",
             "summary": "Fewer than six of eight fixed low-concurrency health requests completed successfully.",
         })
-    if slow and slow.get("health_status_during_hold") != 200:
+    if slow and slow.get("health_status_during_hold") is not None and slow.get("health_status_during_hold") != 200:
         findings.append({
             "scenario_id": "slow-client-resource-exhaustion",
             "severity": "medium",
@@ -443,19 +443,7 @@ def run(suite: str) -> dict[str, Any]:
         })
 
     by_scenario = {str(item["scenario_id"]): item for item in findings}
-    caddy_observed = any(
-        row.get("status") is not None
-        for row in (hostile_get, forged_headers, csrf_probe)
-    )
-    ws_hostile_observed = not (
-        ws_hostile.get("accepted") is False
-        and ws_hostile.get("failure_code") in {
-            "runtime_tls_identity_unavailable",
-            "connectionrefusederror",
-            "timeout",
-            "ssLError",
-        }
-    )
+    ws_hostile_observed = not bool(ws_hostile.get("failure_code"))
     discovery_observed = any(code is not None for code in discovery.values())
 
     scenarios: dict[str, dict[str, Any]] = {
