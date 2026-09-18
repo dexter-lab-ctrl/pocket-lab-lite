@@ -258,12 +258,12 @@ GITHUB_RECIPES: dict[str, dict[str, Any]] = {
     },
     "hurl": {
         "version": "8.0.1",
-        "url": "https://github.com/Orange-OpenSource/hurl/releases/download/8.0.1/hurl-8.0.1-x86_64-unknown-linux-gnu.tar.gz",
-        "sha256": "cac7c4670d69444db120edb21fe06c97ba8c80dcc52279957c8dd18f05fb0c06",
-        "archive": "tar.gz",
+        "url": "https://github.com/Orange-OpenSource/hurl/releases/download/8.0.1/hurl_8.0.1_amd64.deb",
+        "sha256": "e76e6c0957f83f9b761416452871554d0f068384b6cd004bff82dd8795c62225",
+        "archive": "deb",
         "binary_name": "hurl",
         "architectures": ["x86_64", "amd64"],
-        "source": "Orange-OpenSource/hurl:8.0.1 official release asset",
+        "source": "Orange-OpenSource/hurl:8.0.1 official Debian release asset",
         "signature_status": "github_release_asset_sha256",
     },
     "k6": {
@@ -854,6 +854,24 @@ def _extract_fixed_binary(archive: Path, archive_kind: str, binary_name: str, de
                     raise RuntimeError("tool_archive_binary_missing")
                 with source, temporary.open("wb") as handle:
                     shutil.copyfileobj(source, handle, length=1024 * 1024)
+        elif archive_kind == "deb":
+            with tempfile.TemporaryDirectory(prefix=".deb-extract-", dir=str(destination.parent)) as extracted_dir:
+                extracted = Path(extracted_dir)
+                result = _bounded_run(
+                    ["/usr/bin/dpkg-deb", "--extract", str(archive), str(extracted)],
+                    timeout_seconds=60,
+                    max_output_bytes=16 * 1024,
+                    env=_fixed_env(),
+                    cwd=destination.parent,
+                )
+                if result.get("status") != "PASS":
+                    raise RuntimeError("tool_deb_extract_failed")
+                source = extracted / "usr/bin" / binary_name
+                if not source.is_file() or source.is_symlink():
+                    raise RuntimeError("tool_archive_binary_not_unique")
+                if source.stat().st_size > 256 * 1024 * 1024:
+                    raise RuntimeError("tool_archive_member_size_limit")
+                shutil.copyfile(source, temporary)
         else:
             raise RuntimeError("tool_archive_type_unsupported")
         temporary.chmod(0o755)
@@ -912,6 +930,23 @@ def _install_github(tool_id: str) -> dict[str, Any]:
         expected_checksum=f"sha256:{recipe['sha256']}",
     )
 
+def _relocate_managed_python_entrypoint(entrypoint: Path, staging_root: Path, version_root: Path) -> None:
+    payload = entrypoint.read_bytes()
+    newline = payload.find(b"\n")
+    first_line = payload if newline < 0 else payload[:newline]
+    old_root = str(staging_root).encode("utf-8")
+    if first_line.startswith(b"#!") and old_root in first_line:
+        replacement = first_line.replace(old_root, str(version_root).encode("utf-8"), 1)
+        rewritten = replacement if newline < 0 else replacement + payload[newline:]
+        temporary = entrypoint.with_name(f".{entrypoint.name}.{os.getpid()}.relocate")
+        try:
+            temporary.write_bytes(rewritten)
+            temporary.chmod(entrypoint.stat().st_mode & 0o777)
+            os.replace(temporary, entrypoint)
+        finally:
+            temporary.unlink(missing_ok=True)
+
+
 def _install_managed_python(tool_id: str) -> dict[str, Any]:
     recipe = MANAGED_PYTHON_RECIPES[tool_id]
     if sys.version_info[:2] < tuple(recipe["python_min"]):
@@ -958,8 +993,13 @@ def _install_managed_python(tool_id: str) -> dict[str, Any]:
             os.replace(version_root, backup)
         try:
             os.replace(staging, version_root)
-        except OSError:
-            if had_existing and backup.exists() and not version_root.exists():
+            _relocate_managed_python_entrypoint(entrypoint, staging, version_root)
+            relocated_probe = _probe_version(tool_id, entrypoint)
+            if relocated_probe.get("status") != "READY":
+                raise RuntimeError("managed_python_relocated_version_mismatch")
+        except (OSError, RuntimeError):
+            shutil.rmtree(version_root, ignore_errors=True)
+            if had_existing and backup.exists():
                 os.replace(backup, version_root)
             raise
         shutil.rmtree(backup, ignore_errors=True)
