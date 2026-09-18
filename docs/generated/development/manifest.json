@@ -35,7 +35,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "e46460a61880b39efb9331272fbdbc3b9d02cd737b030e725b9fc1b5cf3df3e9",
+  "source_fingerprint": "ff38bd1510c4f8d79b8017bda029665ad4c7e5f193a5c3771ca84250098a69aa",
   "source_fingerprints": {
     ".github/workflows/docs-security-supply-chain.yml": "b5ce9661a2c0673d9e9c2a3be9b19e958b4046543816728556a581a2f338fa27",
     ".github/workflows/lite-quality.yml": "d44ad5b2dfc481c7a7e4d02c131cb09b3afe47fb7db94833bc541525393b1a9f",
@@ -71,7 +71,7 @@
     "scripts/dev/lite/security_assurance_report_core.py": "05f28a87607ca4bafad133bcac995082f47569c39d333211373d26e2a015f714",
     "scripts/dev/lite/security_assurance_runtime_probe.py": "d6a1005828480e8b22ded59607c1cc1f23c5ee9a40fc56a3d6c93baba686d4c0",
     "scripts/dev/lite/security_assurance_runtime_tunnel.py": "a7d61562c65d7920b506adb89b5c92e80198e91b880f9f1ea98769471fbe94b4",
-    "scripts/dev/lite/security_assurance_toolchain.py": "172fe7c1564da18cf500aaa08920659ff508e8ff5a2f866a673f3e18b2c11c7e",
+    "scripts/dev/lite/security_assurance_toolchain.py": "8fe351367fabe7119b8dd29f9c5c090d86bac0adc57a71704c19e8d6a8cf92c3",
     "scripts/dev/lite/serve-docs.sh": "d3026ce84c5d83efc8b3e9e39e175961587a961800f09a1eaeb738b6fa4e5927",
     "scripts/dev/lite/setup-architecture-icons.sh": "0d81b57af59460b24f9b879c02c1860a97a8ef7db8a8f24c446506efa9fac6bf",
     "scripts/dev/lite/setup-check.sh": "777a6a78eafe1fbb06864518743930fbb9c89db5489255ebd60bb4a49d05e2d8",
