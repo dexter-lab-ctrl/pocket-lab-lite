@@ -358,10 +358,16 @@ def _write_unified_manifest(*, qualification_id: str, started_at: str, principal
     tool_reports = {}
     for name, value in (toolchain.get("suites") or {}).items() if isinstance(toolchain, dict) else ():
         if isinstance(value, dict):
+            scenario_rows = value.get("scenarios") if isinstance(value.get("scenarios"), list) else []
             tool_reports[name] = {
                 "status": value.get("status"),
                 "qualification_id": value.get("qualification_id"),
                 "finding_count": value.get("finding_count"),
+                "scenario_count": value.get("scenario_count"),
+                "scenario_statuses": {
+                    status: sum(1 for row in scenario_rows if isinstance(row, dict) and str(row.get("status") or "") == status)
+                    for status in ("PASS", "PARTIAL", "BLOCKED", "FAIL")
+                },
                 "evidence_dir": value.get("evidence_dir"),
                 "registry_sha256": value.get("registry_sha256"),
             }
@@ -1054,7 +1060,11 @@ def cmd_qualify(args: argparse.Namespace) -> dict:
                     try:
                         import security_assurance_toolchain
 
-                        for tool_suite in ("standard", "deep"):
+                        tool_suites = ["standard"]
+                        if not args.skip_adversarial:
+                            tool_suites.append("adversarial")
+                        tool_suites.append("deep")
+                        for tool_suite in tool_suites:
                             workflow_phase = f"dev_pc_{tool_suite}"
                             tool_result = security_assurance_toolchain.run_suite(tool_suite)
                             toolchain_suites[tool_suite] = tool_result
