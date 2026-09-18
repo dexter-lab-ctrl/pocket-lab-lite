@@ -251,6 +251,7 @@ def _bounded_burst() -> dict[str, Any]:
         "max_concurrency": 2,
         "duration_ms": int((time.monotonic() - started) * 1000),
         "successful": sum(1 for value in statuses if value == 200),
+        "observed_responses": sum(1 for value in statuses if value is not None),
         "statuses": statuses,
     }
 
@@ -419,7 +420,7 @@ def run(suite: str) -> dict[str, Any]:
             "title": "Unexpected diagnostic route is externally reachable",
             "summary": "A fixed diagnostic route returned HTTP 200 through the approved runtime tunnel.",
         })
-    if burst and burst.get("successful", 0) < 6:
+    if burst and burst.get("observed_responses", 0) > 0 and burst.get("successful", 0) < 6:
         findings.append({
             "scenario_id": "rate-limit-and-admission-resilience",
             "severity": "medium",
@@ -442,29 +443,129 @@ def run(suite: str) -> dict[str, Any]:
         })
 
     by_scenario = {str(item["scenario_id"]): item for item in findings}
+    caddy_observed = any(
+        row.get("status") is not None
+        for row in (hostile_get, forged_headers, csrf_probe)
+    )
+    ws_hostile_observed = not (
+        ws_hostile.get("accepted") is False
+        and ws_hostile.get("failure_code") in {
+            "runtime_tls_identity_unavailable",
+            "connectionrefusederror",
+            "timeout",
+            "ssLError",
+        }
+    )
+    discovery_observed = any(code is not None for code in discovery.values())
+
     scenarios: dict[str, dict[str, Any]] = {
-        "cross-origin-session-abuse": _scenario("FAIL" if "cross-origin-session-abuse" in by_scenario else "PASS", "fixed hostile-Origin GET and response-header observation"),
-        "csrf-protected-mutation": _scenario("FAIL" if "csrf-protected-mutation" in by_scenario else "PASS", "fixed hostile-Origin unauthenticated mutation rejection"),
-        "websocket-auth-boundary": _scenario("FAIL" if "websocket-auth-boundary" in by_scenario else "PASS", "fixed hostile and same-origin WebSocket handshakes"),
-        "proxy-header-trust-confusion": _scenario("FAIL" if "proxy-header-trust-confusion" in by_scenario else "PASS", "fixed forged forwarding/qualification headers"),
+        "cross-origin-session-abuse": _scenario(
+            "FAIL"
+            if "cross-origin-session-abuse" in by_scenario
+            else "PASS"
+            if hostile_get.get("status") is not None
+            else "PARTIAL",
+            "fixed hostile-Origin GET and response-header observation",
+            reason=None if hostile_get.get("status") is not None else "Caddy HTTPS target was unavailable for the fixed hostile-origin request.",
+        ),
+        "csrf-protected-mutation": _scenario(
+            "FAIL"
+            if "csrf-protected-mutation" in by_scenario
+            else "PASS"
+            if csrf_probe.get("status") is not None
+            else "PARTIAL",
+            "fixed hostile-Origin unauthenticated mutation rejection",
+            reason=None if csrf_probe.get("status") is not None else "Caddy HTTPS target was unavailable for the fixed mutation probe.",
+        ),
+        "websocket-auth-boundary": _scenario(
+            "FAIL"
+            if "websocket-auth-boundary" in by_scenario
+            else "PASS"
+            if ws_hostile_observed
+            else "PARTIAL",
+            "fixed hostile and same-origin WebSocket handshakes through Caddy WSS",
+            reason=None if ws_hostile_observed else "Caddy WSS target was unavailable; no authorization conclusion was inferred.",
+        ),
+        "proxy-header-trust-confusion": _scenario(
+            "FAIL"
+            if "proxy-header-trust-confusion" in by_scenario
+            else "PASS"
+            if forged_headers.get("status") is not None
+            else "PARTIAL",
+            "fixed forged forwarding/qualification headers through Caddy HTTPS",
+            reason=None if forged_headers.get("status") is not None else "Caddy HTTPS target was unavailable for the fixed forged-header request.",
+        ),
         "tailnet-service-exposure": _scenario(
             "PARTIAL",
             "approved DEV-PC loopback tunnel listener inventory",
             reason="Tailnet peer-side reachability requires a separately registered runtime observation; loopback tunnels alone do not prove exposure.",
         ),
-        "tls-identity-drift": _scenario("FAIL" if "tls-identity-drift" in by_scenario else tls.get("status", "PARTIAL"), "fixed Caddy TLS tunnel and operator-approved SNI"),
-        "hidden-route-and-debug-surface": _scenario("FAIL" if "hidden-route-and-debug-surface" in by_scenario else "PASS", "tiny repository-owned diagnostic route allowlist"),
-        "malformed-api-state-machine": _scenario("PARTIAL", "negative auth/input probes are worker-owned; this lane adds fixed HTTP boundary observations", reason="stateful authenticated fixture remains server-owned"),
-        "nats-command-replay-integrity": _scenario("NOT_ASSESSED", "NATS replay must remain behind a registered server-owned harness executor", reason="no arbitrary NATS subject access is permitted from DEV-PC"),
-        "worker-reconnect-command-integrity": _scenario("NOT_ASSESSED", "requires repository-owned fault control and worker evidence", reason="fault execution remains server-owned"),
-        "device-invite-replay-and-misbinding": _scenario("NOT_ASSESSED", "requires disposable server-owned device identity fixture", reason="no invite credential is exposed to DEV-PC"),
-        "authorization-resource-boundary": _scenario("NOT_ASSESSED", "requires bounded synthetic application identity", reason="no privileged browser credential is injected into external tools"),
-        "audit-event-attribution": _scenario("PARTIAL", "runtime health and assurance evidence are observable; identity-bound mutation fixture required", reason="identity-bound mutation not executed by external lane"),
+        "tls-identity-drift": _scenario(
+            "FAIL" if "tls-identity-drift" in by_scenario else tls.get("status", "PARTIAL"),
+            "fixed Caddy TLS tunnel and operator-approved SNI",
+            reason=tls.get("reason") if tls.get("status") in {"NOT_ASSESSED", "PARTIAL"} else None,
+        ),
+        "hidden-route-and-debug-surface": _scenario(
+            "FAIL"
+            if "hidden-route-and-debug-surface" in by_scenario
+            else "PASS"
+            if discovery_observed
+            else "PARTIAL",
+            "tiny repository-owned diagnostic route allowlist through Caddy HTTPS",
+            reason=None if discovery_observed else "Caddy HTTPS target was unavailable for route discovery.",
+        ),
+        "malformed-api-state-machine": _scenario(
+            "PARTIAL",
+            "negative auth/input probes are worker-owned; this lane adds fixed HTTP boundary observations",
+            reason="stateful authenticated fixture remains server-owned",
+        ),
+        "nats-command-replay-integrity": _scenario(
+            "NOT_ASSESSED",
+            "NATS replay must remain behind a registered server-owned harness executor",
+            reason="no arbitrary NATS subject access is permitted from DEV-PC",
+        ),
+        "worker-reconnect-command-integrity": _scenario(
+            "NOT_ASSESSED",
+            "requires repository-owned fault control and worker evidence",
+            reason="fault execution remains server-owned",
+        ),
+        "device-invite-replay-and-misbinding": _scenario(
+            "NOT_ASSESSED",
+            "requires disposable server-owned device identity fixture",
+            reason="no invite credential is exposed to DEV-PC",
+        ),
+        "authorization-resource-boundary": _scenario(
+            "NOT_ASSESSED",
+            "requires bounded synthetic application identity",
+            reason="no privileged browser credential is injected into external tools",
+        ),
+        "audit-event-attribution": _scenario(
+            "PARTIAL",
+            "runtime health and assurance evidence are observable; identity-bound mutation fixture required",
+            reason="identity-bound mutation not executed by external lane",
+        ),
     }
     if burst is not None:
-        scenarios["rate-limit-and-admission-resilience"] = _scenario("FAIL" if "rate-limit-and-admission-resilience" in by_scenario else "PASS", "8 requests / max concurrency 2 / fixed /health")
+        scenarios["rate-limit-and-admission-resilience"] = _scenario(
+            "FAIL"
+            if "rate-limit-and-admission-resilience" in by_scenario
+            else "PASS"
+            if burst.get("observed_responses", 0) > 0
+            else "PARTIAL",
+            "8 requests / max concurrency 2 / fixed Caddy /health",
+            reason=None if burst.get("observed_responses", 0) > 0 else "No Caddy response was observed; resilience was not inferred.",
+        )
     if slow is not None:
-        scenarios["slow-client-resource-exhaustion"] = _scenario("FAIL" if "slow-client-resource-exhaustion" in by_scenario else "PASS", "2 partial connections held for 250ms with concurrent health check")
+        slow_observed = slow.get("health_status_during_hold") is not None
+        scenarios["slow-client-resource-exhaustion"] = _scenario(
+            "FAIL"
+            if "slow-client-resource-exhaustion" in by_scenario
+            else "PASS"
+            if slow_observed
+            else "PARTIAL",
+            "2 fixed Caddy TLS partial connections held for 250ms with concurrent health check",
+            reason=None if slow_observed else "Caddy target was unavailable during the bounded slow-client probe.",
+        )
     if provenance is not None:
         scenarios.update({
             "release-artifact-tamper": _scenario("PASS" if provenance.get("dist_present") and provenance.get("signed_artifact_manifest_present") else "NOT_ASSESSED", "fixed dist.zip and signed-artifact manifest hashes", reason=None if provenance.get("dist_present") else "dist.zip is not present in the source checkout"),
