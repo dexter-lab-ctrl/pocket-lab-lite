@@ -68,8 +68,103 @@ def _safe_text(value: Any, limit: int = 240) -> str:
     return " ".join(text.split())[:limit]
 
 
+def _fixed_sni() -> str | None:
+    try:
+        value = TLS_SNI_FILE.read_text(encoding="ascii").strip().casefold()
+    except (OSError, UnicodeDecodeError):
+        return None
+    if (
+        not value
+        or "." not in value
+        or ".." in value
+        or any(ch not in "abcdefghijklmnopqrstuvwxyz0123456789.-" for ch in value)
+    ):
+        return None
+    return value
+
+
+def _registered_path(path: str) -> bool:
+    return path in FIXED_ROUTES or path in DISCOVERY_ROUTES or path == "/api/lite/harness/security-assurance/runs"
+
+
+def _caddy_request(
+    method: str,
+    path: str,
+    *,
+    headers: dict[str, str] | None = None,
+    body: bytes | None = None,
+    timeout: float = 3.0,
+) -> dict[str, Any]:
+    """Send one fixed HTTPS request through the approved Caddy tunnel/SNI."""
+    if not _registered_path(path):
+        raise ValueError("fixed_route_not_registered")
+    sni = _fixed_sni()
+    if sni is None:
+        return {"status": None, "failure_code": "runtime_tls_identity_unavailable", "duration_ms": 0}
+    clean_headers = dict(headers or {})
+    if any(str(key).casefold() == "host" for key in clean_headers):
+        raise ValueError("host_header_is_server_owned")
+    payload = body or b""
+    lines = [
+        f"{method} {path} HTTP/1.1",
+        f"Host: {sni}",
+        "Connection: close",
+        "User-Agent: Pocket-Lab-Lite-security-assurance/1",
+    ]
+    if payload:
+        lines.append(f"Content-Length: {len(payload)}")
+    for key, value in clean_headers.items():
+        key_text = str(key)
+        value_text = str(value)
+        if "\r" in key_text or "\n" in key_text or "\r" in value_text or "\n" in value_text:
+            raise ValueError("unsafe_header_value")
+        lines.append(f"{key_text}: {value_text}")
+    request = ("\r\n".join(lines) + "\r\n\r\n").encode("ascii", errors="strict") + payload
+    started = time.monotonic()
+    context = ssl.create_default_context()
+    try:
+        with socket.create_connection((API_HOST, CADDY_PORT), timeout=timeout) as raw:
+            with context.wrap_socket(raw, server_hostname=sni) as tls:
+                tls.settimeout(timeout)
+                tls.sendall(request)
+                response = bytearray()
+                while len(response) < 8192:
+                    chunk = tls.recv(min(2048, 8192 - len(response)))
+                    if not chunk:
+                        break
+                    response.extend(chunk)
+                    if b"\r\n\r\n" in response and len(response) >= 4096:
+                        break
+    except (OSError, ssl.SSLError) as exc:
+        return {
+            "status": None,
+            "failure_code": type(exc).__name__.lower(),
+            "duration_ms": int((time.monotonic() - started) * 1000),
+        }
+    head, _, body_bytes = bytes(response).partition(b"\r\n\r\n")
+    lines = head.decode("latin-1", errors="replace").splitlines()
+    status = None
+    if lines:
+        parts = lines[0].split()
+        if len(parts) >= 2 and parts[1].isdigit():
+            status = int(parts[1])
+    response_headers: dict[str, str] = {}
+    for line in lines[1:]:
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        response_headers[key.strip().casefold()] = _safe_text(value.strip(), 160)
+    return {
+        "status": status,
+        "headers": response_headers,
+        "body_bytes_observed": len(body_bytes),
+        "duration_ms": int((time.monotonic() - started) * 1000),
+        "transport": "fixed_caddy_https",
+    }
+
+
 def _request(method: str, path: str, *, headers: dict[str, str] | None = None, body: bytes | None = None, timeout: float = 3.0) -> dict[str, Any]:
-    if path not in FIXED_ROUTES and path not in DISCOVERY_ROUTES and path != "/api/lite/harness/security-assurance/runs":
+    if not _registered_path(path):
         raise ValueError("fixed_route_not_registered")
     url = f"http://{API_HOST}:{API_PORT}{path}"
     request = urllib.request.Request(url, data=body, method=method, headers=headers or {})
@@ -110,32 +205,42 @@ def _tcp(port: int, timeout: float = 1.5) -> bool:
 
 
 def _websocket_handshake(*, hostile_origin: bool) -> dict[str, Any]:
+    sni = _fixed_sni()
+    if sni is None:
+        return {"accepted": False, "failure_code": "runtime_tls_identity_unavailable"}
     key = "UG9ja2V0TGFiRml4ZWRLZXk="
-    origin = ATTACKER_ORIGIN if hostile_origin else f"http://{API_HOST}:{API_PORT}"
+    origin = ATTACKER_ORIGIN if hostile_origin else f"https://{sni}:{CADDY_PORT}"
     request = (
         "GET /ws/events HTTP/1.1\r\n"
-        f"Host: {API_HOST}:{API_PORT}\r\n"
+        f"Host: {sni}\r\n"
         "Upgrade: websocket\r\n"
         "Connection: Upgrade\r\n"
         f"Origin: {origin}\r\n"
         "Sec-WebSocket-Version: 13\r\n"
         f"Sec-WebSocket-Key: {key}\r\n\r\n"
     ).encode("ascii")
+    context = ssl.create_default_context()
     try:
-        with socket.create_connection((API_HOST, API_PORT), timeout=2.0) as sock:
-            sock.settimeout(2.0)
-            sock.sendall(request)
-            response = sock.recv(2048).decode("latin-1", errors="replace")
-    except OSError as exc:
+        with socket.create_connection((API_HOST, CADDY_PORT), timeout=2.0) as raw:
+            with context.wrap_socket(raw, server_hostname=sni) as sock:
+                sock.settimeout(2.0)
+                sock.sendall(request)
+                response = sock.recv(2048).decode("latin-1", errors="replace")
+    except (OSError, ssl.SSLError) as exc:
         return {"accepted": False, "failure_code": type(exc).__name__.lower()}
     first = response.splitlines()[0] if response else ""
     accepted = " 101 " in first
-    return {"accepted": accepted, "status_line": _safe_text(first, 120), "origin_class": "hostile" if hostile_origin else "same-origin"}
+    return {
+        "accepted": accepted,
+        "status_line": _safe_text(first, 120),
+        "origin_class": "hostile" if hostile_origin else "same-origin",
+        "transport": "fixed_caddy_wss",
+    }
 
 
 def _bounded_burst() -> dict[str, Any]:
     def one(_: int) -> dict[str, Any]:
-        return _request("GET", "/health", headers={"Accept": "application/json"}, timeout=3.0)
+        return _caddy_request("GET", "/health", headers={"Accept": "application/json"}, timeout=3.0)
 
     started = time.monotonic()
     with ThreadPoolExecutor(max_workers=2, thread_name_prefix="pocketlab-assurance") as pool:
@@ -151,17 +256,35 @@ def _bounded_burst() -> dict[str, Any]:
 
 
 def _slow_client_probe() -> dict[str, Any]:
-    sockets: list[socket.socket] = []
+    sni = _fixed_sni()
+    if sni is None:
+        return {"slow_connections": 0, "hold_ms": 250, "failure_code": "runtime_tls_identity_unavailable"}
+    sockets: list[ssl.SSLSocket] = []
+    context = ssl.create_default_context()
     try:
         for _ in range(2):
-            sock = socket.create_connection((API_HOST, API_PORT), timeout=2.0)
-            sock.sendall(b"GET /health HTTP/1.1\r\nHost: 127.0.0.1\r\n")
+            raw = socket.create_connection((API_HOST, CADDY_PORT), timeout=2.0)
+            try:
+                sock = context.wrap_socket(raw, server_hostname=sni)
+            except Exception:
+                raw.close()
+                raise
+            sock.sendall(f"GET /health HTTP/1.1\r\nHost: {sni}\r\n".encode("ascii"))
             sockets.append(sock)
         time.sleep(0.25)
-        health = _request("GET", "/health", timeout=2.0)
-        return {"slow_connections": 2, "hold_ms": 250, "health_status_during_hold": health.get("status")}
-    except OSError as exc:
-        return {"slow_connections": len(sockets), "hold_ms": 250, "failure_code": type(exc).__name__.lower()}
+        health = _caddy_request("GET", "/health", timeout=2.0)
+        return {
+            "slow_connections": 2,
+            "hold_ms": 250,
+            "health_status_during_hold": health.get("status"),
+            "transport": "fixed_caddy_https",
+        }
+    except (OSError, ssl.SSLError) as exc:
+        return {
+            "slow_connections": len(sockets),
+            "hold_ms": 250,
+            "failure_code": type(exc).__name__.lower(),
+        }
     finally:
         for sock in sockets:
             try:
@@ -171,12 +294,9 @@ def _slow_client_probe() -> dict[str, Any]:
 
 
 def _tls_identity() -> dict[str, Any]:
-    try:
-        sni = TLS_SNI_FILE.read_text(encoding="ascii").strip().casefold()
-    except (OSError, UnicodeDecodeError):
+    sni = _fixed_sni()
+    if sni is None:
         return {"status": "NOT_ASSESSED", "reason": "fixed_tls_identity_unavailable"}
-    if not sni or "." not in sni or any(ch not in "abcdefghijklmnopqrstuvwxyz0123456789.-" for ch in sni):
-        return {"status": "NOT_ASSESSED", "reason": "fixed_tls_identity_invalid"}
     context = ssl.create_default_context()
     try:
         with socket.create_connection((API_HOST, CADDY_PORT), timeout=3.0) as raw:
@@ -231,12 +351,12 @@ def run(suite: str) -> dict[str, Any]:
 
     health = _request("GET", "/health", headers={"Accept": "application/json"})
     ready = _request("GET", "/ready", headers={"Accept": "application/json"})
-    hostile_get = _request(
+    hostile_get = _caddy_request(
         "GET",
         "/api/lite/status",
         headers={"Origin": ATTACKER_ORIGIN, "Referer": ATTACKER_ORIGIN + "/"},
     )
-    forged_headers = _request(
+    forged_headers = _caddy_request(
         "GET",
         "/api/lite/harness/security-assurance/capabilities",
         headers={
@@ -246,7 +366,7 @@ def run(suite: str) -> dict[str, Any]:
             "X-Pocket-Lab-Qualification": "forged",
         },
     )
-    csrf_probe = _request(
+    csrf_probe = _caddy_request(
         "POST",
         "/api/lite/harness/security-assurance/runs",
         headers={"Origin": ATTACKER_ORIGIN, "Content-Type": "application/json"},
@@ -258,7 +378,7 @@ def run(suite: str) -> dict[str, Any]:
     burst = _bounded_burst() if suite in {"deep", "adversarial"} else None
     slow = _slow_client_probe() if suite == "adversarial" else None
     tls = _tls_identity()
-    discovery = {route: _request("GET", route).get("status") for route in DISCOVERY_ROUTES}
+    discovery = {route: _caddy_request("GET", route).get("status") for route in DISCOVERY_ROUTES}
     provenance = _release_provenance() if suite == "deep" else None
 
     findings: list[dict[str, Any]] = []
@@ -327,7 +447,11 @@ def run(suite: str) -> dict[str, Any]:
         "csrf-protected-mutation": _scenario("FAIL" if "csrf-protected-mutation" in by_scenario else "PASS", "fixed hostile-Origin unauthenticated mutation rejection"),
         "websocket-auth-boundary": _scenario("FAIL" if "websocket-auth-boundary" in by_scenario else "PASS", "fixed hostile and same-origin WebSocket handshakes"),
         "proxy-header-trust-confusion": _scenario("FAIL" if "proxy-header-trust-confusion" in by_scenario else "PASS", "fixed forged forwarding/qualification headers"),
-        "tailnet-service-exposure": _scenario("PASS", "approved DEV-PC loopback tunnel listener inventory; Tailnet peer reachability remains a separate Server Phone observation"),
+        "tailnet-service-exposure": _scenario(
+            "PARTIAL",
+            "approved DEV-PC loopback tunnel listener inventory",
+            reason="Tailnet peer-side reachability requires a separately registered runtime observation; loopback tunnels alone do not prove exposure.",
+        ),
         "tls-identity-drift": _scenario("FAIL" if "tls-identity-drift" in by_scenario else tls.get("status", "PARTIAL"), "fixed Caddy TLS tunnel and operator-approved SNI"),
         "hidden-route-and-debug-surface": _scenario("FAIL" if "hidden-route-and-debug-surface" in by_scenario else "PASS", "tiny repository-owned diagnostic route allowlist"),
         "malformed-api-state-machine": _scenario("PARTIAL", "negative auth/input probes are worker-owned; this lane adds fixed HTTP boundary observations", reason="stateful authenticated fixture remains server-owned"),
