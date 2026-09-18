@@ -45,6 +45,10 @@ SEMgrep_RULES = ROOT / "security/assurance/semgrep-rules.yml"
 NUCLEI_TEMPLATES = ROOT / "security/assurance/nuclei-safe-templates"
 OPENAPI_SCHEMA = ROOT / "contracts/generated/lite-openapi.json"
 GITLEAKS_CONFIG = ROOT / "security/static-analysis/gitleaks.toml"
+SCENARIOS_REGISTRY = ROOT / "security/assurance/scenarios.yaml"
+SUITES_REGISTRY = ROOT / "security/assurance/suites.yaml"
+LIVE_360_SCRIPT = ROOT / "scripts/dev/lite/security_assurance_360.py"
+BROWSER_360_SCRIPT = ROOT / "scripts/dev/lite/security_assurance_browser.mjs"
 MANAGED_ROOT = Path.home() / ".pocketlab-lite" / "tools" / "security-assurance"
 EVIDENCE_ROOT = Path.home() / ".pocketlab-lite" / "evidence" / "runtime-security-assurance"
 API_BASE = "http://127.0.0.1:18080"
@@ -88,6 +92,8 @@ VERSION_ARGS: dict[str, tuple[str, ...]] = {
     "nuclei": ("-version",),
     "nmap": ("--version",),
     "owasp-zap": ("-version",),
+    "pocketlab-runtime-360": (str(LIVE_360_SCRIPT), "--version"),
+    "playwright-runtime": (str(BROWSER_360_SCRIPT), "--version"),
 }
 
 # These are the only local paths considered by the manager.  In particular,
@@ -127,6 +133,12 @@ LOCAL_CANDIDATES: dict[str, tuple[Path, ...]] = {
     "nuclei": (MANAGED_ROOT / "bin/nuclei", Path("/usr/local/bin/nuclei"), Path("/usr/bin/nuclei")),
     "nmap": (MANAGED_ROOT / "bin/nmap", Path("/usr/bin/nmap")),
     "owasp-zap": (MANAGED_ROOT / "bin/zap.sh", Path("/opt/zaproxy/zap.sh"), Path("/usr/share/zaproxy/zap.sh")),
+    "pocketlab-runtime-360": (ROOT / ".venv/bin/python", Path(sys.executable)),
+    "playwright-runtime": (
+        Path.home() / ".nvm/versions/node/v24.16.0/bin/node",
+        Path("/usr/bin/node"),
+        Path("/usr/local/bin/node"),
+    ),
 }
 
 PHONE_WORKER_TOOLS = frozenset({"pocketlab-security", "trivy", "lynis", "opa"})
@@ -143,6 +155,8 @@ TOOL_EXECUTION_ORDER = (
     "semgrep",
     "syft",
     "grype",
+    "playwright-runtime",
+    "pocketlab-runtime-360",
     "schemathesis",
     "testssl.sh",
     "nuclei",
@@ -277,7 +291,7 @@ def _registry() -> dict[str, Any]:
         if not isinstance(item, dict) or not re.fullmatch(r"[a-z0-9][a-z0-9._-]{1,63}", str(item.get("id") or "")):
             raise RuntimeError("assurance_tool_registry_invalid")
         result[str(item["id"])] = item
-    if len(result) != 18:
+    if len(result) != 20:
         raise RuntimeError("assurance_tool_registry_incomplete")
     return {"schema_version": data["schema_version"], "toolchain": result, "hash": _sha256_file(TOOLS_REGISTRY)}
 
@@ -310,6 +324,11 @@ def _fixed_env(*, tool_id: str | None = None, nmap_data: Path | None = None) -> 
         env["NODNS"] = "none"
     if nmap_data is not None:
         env["NMAPDIR"] = str(nmap_data)
+    if tool_id == "playwright-runtime":
+        # Playwright browsers are installed by the repo-owned DEV-PC/CI setup.
+        # Keep discovery fixed to the operator's standard Playwright cache;
+        # callers cannot override this path through the assurance API.
+        env["PLAYWRIGHT_BROWSERS_PATH"] = str(Path.home() / ".cache" / "ms-playwright")
     if tool_id == "nmap":
         nmap_recipe = APT_RECIPES["nmap"]
         nmap_version = str(next(iter(nmap_recipe["packages"].values()))["version"])
@@ -1004,6 +1023,38 @@ def _parse_findings(
                 info = row.get("info") if isinstance(row.get("info"), dict) else {}
                 template = str(row.get("template-id") or "unknown")
                 findings.append(_base_finding(tool_id=tool_id, suite_id=suite_id, identity=f"{template}|{row.get('matched-at')}", title=f"Nuclei safe template {template}", severity=str(info.get("severity") or "info"), summary="A curated non-destructive HTTP template matched the approved Pocket Lab endpoint.", component="approved Pocket Lab endpoint"))
+    elif tool_id in {"pocketlab-runtime-360", "playwright-runtime"} and isinstance(payload, dict):
+        for row in payload.get("findings") or []:
+            if not isinstance(row, dict):
+                continue
+            scenario_id = str(row.get("scenario_id") or "runtime-360")
+            finding = _base_finding(
+                tool_id=tool_id,
+                suite_id=suite_id,
+                identity=f"{scenario_id}|{row.get('title') or 'finding'}",
+                title=str(row.get("title") or "Runtime assurance finding"),
+                severity=str(row.get("severity") or "medium"),
+                summary=str(row.get("summary") or "A fixed runtime assurance invariant did not hold."),
+                component="approved Pocket Lab runtime",
+            )
+            finding["scenario_id"] = scenario_id[:80]
+            try:
+                scenarios_payload = yaml.safe_load(SCENARIOS_REGISTRY.read_text(encoding="utf-8")) or {}
+                definition = next(
+                    (
+                        item for item in scenarios_payload.get("scenarios") or []
+                        if isinstance(item, dict) and str(item.get("id") or "") == scenario_id
+                    ),
+                    {},
+                )
+            except (OSError, yaml.YAMLError):
+                definition = {}
+            if isinstance(definition, dict):
+                finding["stride"] = [str(value) for value in definition.get("stride") or []][:8]
+                finding["owasp"] = [str(value) for value in definition.get("owasp") or []][:10]
+                finding["attack_paths"] = [str(value) for value in definition.get("attack_paths") or []][:16]
+                finding["controls"] = [str(value) for value in definition.get("controls") or []][:16]
+            findings.append(finding)
     elif tool_id == "owasp-zap":
         # ``-quickout *.json`` is preferred because it gives the adapter a
         # structured alert stream without persisting ZAP's raw report.  Keep
@@ -1136,7 +1187,7 @@ def _dependency_source(workspace: Path) -> Path:
 
 def _live_target_probe(tool_id: str) -> dict[str, Any]:
     """Prove the fixed DEV-PC tunnel reaches the Pocket Lab target."""
-    if tool_id in {"schemathesis", "nuclei", "nmap", "owasp-zap"}:
+    if tool_id in {"schemathesis", "nuclei", "nmap", "owasp-zap", "pocketlab-runtime-360", "playwright-runtime"}:
         try:
             request = urllib.request.Request(f"{API_BASE}/health", headers={"Accept": "application/json"})
             opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
@@ -1160,6 +1211,10 @@ def _live_target_probe(tool_id: str) -> dict[str, Any]:
 
 
 def _run_command_for_tool(tool_id: str, suite_id: str, binary: Path, workspace: Path, env: dict[str, str]) -> tuple[list[str], Path | None]:
+    if tool_id == "pocketlab-runtime-360":
+        return [str(binary), str(LIVE_360_SCRIPT), suite_id], None
+    if tool_id == "playwright-runtime":
+        return [str(binary), str(BROWSER_360_SCRIPT), suite_id], None
     if tool_id == "bandit":
         return [str(binary), "-r", str(ROOT / "pocket-lab-final-structure/runtime"), "--format", "json", "--quiet", "--exclude", str(ROOT / ".venv"), "--exclude", str(ROOT / ".pocketlab-dev")], None
     if tool_id == "gitleaks":
@@ -1345,6 +1400,23 @@ def _tool_result(tool_id: str, suite_id: str, binary: Path | None, workspace: Pa
         result["template_hash"] = _sha256_file(NUCLEI_TEMPLATES / "pocketlab-health.yaml") if (NUCLEI_TEMPLATES / "pocketlab-health.yaml").is_file() else None
     if tool_id == "nmap":
         result["port_forward_map"] = dict(APPROVED_PORT_FORWARD_MAP)
+    if tool_id in {"pocketlab-runtime-360", "playwright-runtime"}:
+        payload = _parse_json(stdout)
+        if isinstance(payload, dict):
+            scenario_results = payload.get("scenario_results")
+            if isinstance(scenario_results, dict):
+                result["scenario_results"] = {
+                    str(key)[:80]: {
+                        "status": str(value.get("status") or "NOT_ASSESSED")[:32],
+                        "evidence": _sanitize_text(value.get("evidence"), 300),
+                        "reason": _sanitize_text(value.get("reason"), 240) if value.get("reason") else None,
+                    }
+                    for key, value in scenario_results.items()
+                    if isinstance(value, dict)
+                }
+            checks = payload.get("checks")
+            if isinstance(checks, dict):
+                result["runtime_check_count"] = len(checks)
     result.update({
         "execution_status": completed.get("status"),
         "security_result": "FINDINGS" if findings else "NO_FINDINGS",
@@ -1363,9 +1435,62 @@ def _tool_result(tool_id: str, suite_id: str, binary: Path | None, workspace: Pa
     return result
 
 
+def _external_scenario_definitions(suite_id: str) -> list[dict[str, Any]]:
+    try:
+        suites = yaml.safe_load(SUITES_REGISTRY.read_text(encoding="utf-8")) or {}
+        scenarios = yaml.safe_load(SCENARIOS_REGISTRY.read_text(encoding="utf-8")) or {}
+    except (OSError, yaml.YAMLError) as exc:
+        raise RuntimeError("assurance_external_scenario_registry_invalid") from exc
+    profile = (suites.get("profiles") or {}).get(suite_id) if isinstance(suites, dict) else None
+    refs = list((profile or {}).get("external_scenarios") or []) if isinstance(profile, dict) else []
+    by_id = {
+        str(item.get("id") or ""): item
+        for item in (scenarios.get("scenarios") or [])
+        if isinstance(item, dict)
+    }
+    result = []
+    for ref in refs:
+        item = by_id.get(str(ref))
+        if not isinstance(item, dict):
+            raise RuntimeError("assurance_external_scenario_registry_invalid")
+        result.append(item)
+    return result
+
+
+def _aggregate_external_scenarios(suite_id: str, tool_results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    precedence = {"FAIL": 5, "PARTIAL": 4, "BLOCKED": 4, "PASS": 3, "NOT_ASSESSED": 2, "NOT_APPLICABLE": 1}
+    rows: list[dict[str, Any]] = []
+    for definition in _external_scenario_definitions(suite_id):
+        scenario_id = str(definition.get("id") or "")
+        observations = []
+        for tool in tool_results:
+            values = tool.get("scenario_results")
+            if isinstance(values, dict) and isinstance(values.get(scenario_id), dict):
+                observations.append({
+                    "tool": str(tool.get("tool_id") or ""),
+                    **dict(values[scenario_id]),
+                })
+        if observations:
+            chosen = max(observations, key=lambda item: precedence.get(str(item.get("status") or "").upper(), 0))
+            status = str(chosen.get("status") or "NOT_ASSESSED").upper()
+        else:
+            status = "NOT_ASSESSED"
+        rows.append({
+            "scenario_id": scenario_id,
+            "status": status,
+            "execution": str(definition.get("execution") or ""),
+            "evidence_tools": [str(value) for value in definition.get("evidence_tools") or []],
+            "observations": observations,
+            "attack_paths": [str(value) for value in definition.get("attack_paths") or []],
+            "controls": [str(value) for value in definition.get("controls") or []],
+            "sanitized": True,
+        })
+    return rows
+
+
 def run_suite(suite_id: str) -> dict[str, Any]:
     registry = _registry()
-    if suite_id not in {"smoke", "standard", "deep"}:
+    if suite_id not in {"standard", "deep", "adversarial"}:
         raise ValueError("assurance_suite_unknown")
     started_at = _now()
     qualification_id = f"devpc-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{os.getpid()}"
@@ -1399,10 +1524,13 @@ def run_suite(suite_id: str) -> dict[str, Any]:
             binary, env = _tool_context(tool_id, workspace)
             tool_results.append(_tool_result(tool_id, suite_id, binary, workspace, env))
     findings = _correlate_findings([finding for row in tool_results for finding in row.get("findings") or []])
+    external_scenarios = _aggregate_external_scenarios(suite_id, tool_results)
     delta = _baseline_delta(findings)
     failures = [row for row in tool_results if row.get("status") in {"FAILED", "PARTIAL", "BLOCKED"}]
     severe = [row for row in findings if row.get("severity") in {"critical", "high"}]
-    status = "FAIL" if severe else "PARTIAL" if failures else "PASS"
+    scenario_failures = [row for row in external_scenarios if row.get("status") == "FAIL"]
+    scenario_incomplete = [row for row in external_scenarios if row.get("status") in {"PARTIAL", "BLOCKED", "NOT_ASSESSED"}]
+    status = "FAIL" if severe or scenario_failures else "PARTIAL" if failures or scenario_incomplete else "PASS"
     report = {
         "schema_version": "1.0.0",
         "qualification_id": qualification_id,
@@ -1413,6 +1541,7 @@ def run_suite(suite_id: str) -> dict[str, Any]:
         "completed_at": _now(),
         "status": status,
         "tools": tool_results,
+        "scenarios": external_scenarios,
         "findings": findings,
         "finding_count": len(findings),
         "delta": delta,
