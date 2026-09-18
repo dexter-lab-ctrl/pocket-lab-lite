@@ -1,0 +1,2713 @@
+{
+  "architecture_present": true,
+  "attack_paths": [
+    {
+      "boundaries": [
+        "browser",
+        "messaging-execution"
+      ],
+      "consequences": [
+        "unauthorized command injection",
+        "control-plane bypass",
+        "loss of expected audit/control ownership"
+      ],
+      "controls": [
+        "CTRL-BROWSER-NATS",
+        "CTRL-API-CONTROL"
+      ],
+      "entry_point": "browser",
+      "id": "AP-01",
+      "latest_evidence": [
+        {
+          "automated_result": "PASS",
+          "automation_classification": "PARTIALLY_EXECUTABLE",
+          "completed_at": "2026-09-17T11:30:42Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "qualification_status": "PASS",
+          "reason": "Caddy and harness admission are exercised; direct browser-to-NATS reachability remains source evidence.",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "smoke"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "PARTIALLY_EXECUTABLE",
+          "completed_at": "2026-09-17T11:37:52Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "qualification_status": "PASS",
+          "reason": "Caddy and harness admission are exercised; direct browser-to-NATS reachability remains source evidence.",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "standard"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "PARTIALLY_EXECUTABLE",
+          "completed_at": "2026-09-17T11:39:34Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "qualification_status": "PASS",
+          "reason": "Caddy and harness admission are exercised; direct browser-to-NATS reachability remains source evidence.",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "adversarial"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "PARTIALLY_EXECUTABLE",
+          "completed_at": "2026-09-17T11:51:07Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "qualification_status": "PARTIAL",
+          "reason": "Caddy and harness admission are exercised; direct browser-to-NATS reachability remains source evidence.",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "deep"
+        }
+      ],
+      "model_review_status": "human-review-required",
+      "model_status": "modeled",
+      "name": "Browser control-plane bypass",
+      "path_nodes": [
+        "browser",
+        "nats-jetstream",
+        "worker"
+      ],
+      "scenarios": [
+        "harness-default-off",
+        "harness-auth-boundary",
+        "caddy-proof-strip",
+        "control-plane-ownership",
+        "source-boundaries",
+        "adversarial-negative-auth-probes",
+        "threat-model-integrity",
+        "attack-path-inventory"
+      ],
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "target": "nats-jetstream"
+    },
+    {
+      "boundaries": [
+        "browser",
+        "control-api",
+        "server-host"
+      ],
+      "consequences": [
+        "host mutation",
+        "secret exposure",
+        "runtime integrity loss"
+      ],
+      "controls": [
+        "CTRL-BROWSER-SHELL",
+        "CTRL-API-CONTROL"
+      ],
+      "entry_point": "browser",
+      "id": "AP-02",
+      "latest_evidence": [
+        {
+          "automated_result": "PASS",
+          "automation_classification": "EXECUTABLE_NOW",
+          "completed_at": "2026-09-17T11:30:42Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "qualification_status": "PASS",
+          "reason": "Frontend and backend source boundary assertions are executed.",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "smoke"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "EXECUTABLE_NOW",
+          "completed_at": "2026-09-17T11:37:52Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "qualification_status": "PASS",
+          "reason": "Frontend and backend source boundary assertions are executed.",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "standard"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "EXECUTABLE_NOW",
+          "completed_at": "2026-09-17T11:39:34Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "qualification_status": "PASS",
+          "reason": "Frontend and backend source boundary assertions are executed.",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "adversarial"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "EXECUTABLE_NOW",
+          "completed_at": "2026-09-17T11:51:07Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "qualification_status": "PARTIAL",
+          "reason": "Frontend and backend source boundary assertions are executed.",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "deep"
+        }
+      ],
+      "model_review_status": "human-review-required",
+      "model_status": "modeled",
+      "name": "Browser shell execution",
+      "path_nodes": [
+        "browser",
+        "lite-api",
+        "server-host"
+      ],
+      "scenarios": [
+        "harness-default-off",
+        "harness-auth-boundary",
+        "caddy-proof-strip",
+        "control-plane-ownership",
+        "source-boundaries",
+        "adversarial-negative-auth-probes",
+        "threat-model-integrity",
+        "attack-path-inventory"
+      ],
+      "stride": [
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "target": "server-host"
+    },
+    {
+      "boundaries": [
+        "managed-device",
+        "control-api",
+        "messaging-execution"
+      ],
+      "consequences": [
+        "unauthorized device enrollment",
+        "command execution under a forged identity",
+        "audit attribution failure"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "entry_point": "managed-device",
+      "id": "AP-03",
+      "latest_evidence": [
+        {
+          "automated_result": "PASS",
+          "automation_classification": "STATIC_EVIDENCE_ONLY",
+          "completed_at": "2026-09-17T11:30:42Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "qualification_status": "PASS",
+          "reason": "Managed-device identity forgery is not performed against enrolled device state.",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "smoke"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "STATIC_EVIDENCE_ONLY",
+          "completed_at": "2026-09-17T11:37:52Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "qualification_status": "PASS",
+          "reason": "Managed-device identity forgery is not performed against enrolled device state.",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "standard"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "STATIC_EVIDENCE_ONLY",
+          "completed_at": "2026-09-17T11:39:34Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "qualification_status": "PASS",
+          "reason": "Managed-device identity forgery is not performed against enrolled device state.",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "adversarial"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "STATIC_EVIDENCE_ONLY",
+          "completed_at": "2026-09-17T11:51:07Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "qualification_status": "PARTIAL",
+          "reason": "Managed-device identity forgery is not performed against enrolled device state.",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "deep"
+        }
+      ],
+      "model_review_status": "human-review-required",
+      "model_status": "modeled",
+      "name": "Forged managed-device identity",
+      "path_nodes": [
+        "managed-device",
+        "lite-api",
+        "nats-jetstream",
+        "node-agent"
+      ],
+      "scenarios": [
+        "harness-default-off",
+        "harness-auth-boundary",
+        "adversarial-negative-auth-probes",
+        "threat-model-integrity",
+        "attack-path-inventory"
+      ],
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "target": "node-agent"
+    },
+    {
+      "boundaries": [
+        "control-api",
+        "messaging-execution",
+        "managed-device"
+      ],
+      "consequences": [
+        "incorrect or repeated device commands",
+        "loss of command integrity",
+        "device availability impact"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "entry_point": "lite-api",
+      "id": "AP-04",
+      "latest_evidence": [
+        {
+          "automated_result": "PASS",
+          "automation_classification": "PARTIALLY_EXECUTABLE",
+          "completed_at": "2026-09-17T11:30:42Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "qualification_status": "PASS",
+          "reason": "Worker ownership and durable command path are inspected; replay/tampering is not injected.",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "smoke"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "PARTIALLY_EXECUTABLE",
+          "completed_at": "2026-09-17T11:37:52Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "qualification_status": "PASS",
+          "reason": "Worker ownership and durable command path are inspected; replay/tampering is not injected.",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "standard"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "PARTIALLY_EXECUTABLE",
+          "completed_at": "2026-09-17T11:39:34Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "qualification_status": "PASS",
+          "reason": "Worker ownership and durable command path are inspected; replay/tampering is not injected.",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "adversarial"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "PARTIALLY_EXECUTABLE",
+          "completed_at": "2026-09-17T11:51:07Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "qualification_status": "PARTIAL",
+          "reason": "Worker ownership and durable command path are inspected; replay/tampering is not injected.",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "deep"
+        }
+      ],
+      "model_review_status": "human-review-required",
+      "model_status": "modeled",
+      "name": "Messaging command tampering or replay",
+      "path_nodes": [
+        "lite-api",
+        "nats-jetstream",
+        "worker",
+        "node-agent"
+      ],
+      "scenarios": [
+        "harness-auth-boundary",
+        "control-plane-ownership",
+        "security-projection",
+        "source-boundaries",
+        "adversarial-negative-auth-probes",
+        "threat-model-integrity",
+        "attack-path-inventory"
+      ],
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service"
+      ],
+      "target": "node-agent"
+    },
+    {
+      "boundaries": [
+        "external-release",
+        "server-host",
+        "application-container"
+      ],
+      "consequences": [
+        "compromised release execution",
+        "dependency or artifact integrity loss",
+        "misleading release posture"
+      ],
+      "controls": [
+        "CTRL-SUPPLY-CHAIN",
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-EVIDENCE-SANITIZE"
+      ],
+      "entry_point": "github-release",
+      "id": "AP-05",
+      "latest_evidence": [
+        {
+          "automated_result": "PASS",
+          "automation_classification": "STATIC_EVIDENCE_ONLY",
+          "completed_at": "2026-09-17T11:30:42Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "qualification_status": "PASS",
+          "reason": "Release and dependency controls are represented by existing Security evidence and source checks.",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "smoke"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "STATIC_EVIDENCE_ONLY",
+          "completed_at": "2026-09-17T11:37:52Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "qualification_status": "PASS",
+          "reason": "Release and dependency controls are represented by existing Security evidence and source checks.",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "standard"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "STATIC_EVIDENCE_ONLY",
+          "completed_at": "2026-09-17T11:39:34Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "qualification_status": "PASS",
+          "reason": "Release and dependency controls are represented by existing Security evidence and source checks.",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "adversarial"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "STATIC_EVIDENCE_ONLY",
+          "completed_at": "2026-09-17T11:51:07Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "qualification_status": "PARTIAL",
+          "reason": "Release and dependency controls are represented by existing Security evidence and source checks.",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "deep"
+        }
+      ],
+      "model_review_status": "human-review-required",
+      "model_status": "modeled",
+      "name": "Supply-chain artifact compromise",
+      "path_nodes": [
+        "github-release",
+        "release-artifacts",
+        "server-host"
+      ],
+      "scenarios": [
+        "evidence-redaction",
+        "security-projection",
+        "source-boundaries",
+        "threat-model-integrity",
+        "attack-path-inventory"
+      ],
+      "stride": [
+        "Tampering",
+        "Information Disclosure",
+        "Elevation of Privilege"
+      ],
+      "target": "server-host"
+    },
+    {
+      "boundaries": [
+        "external-release",
+        "durable-state",
+        "server-host"
+      ],
+      "consequences": [
+        "incorrect security posture",
+        "secret or private-path disclosure",
+        "loss of evidence trust"
+      ],
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION"
+      ],
+      "entry_point": "scanner-evidence",
+      "id": "AP-06",
+      "latest_evidence": [
+        {
+          "automated_result": "PASS",
+          "automation_classification": "EXECUTABLE_NOW",
+          "completed_at": "2026-09-17T11:30:42Z",
+          "findings": [
+            "assurance-2a29076a8244411daed1b0a5ca0c1d1a-15deb392776f0f7b27d15fb1"
+          ],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "qualification_status": "PASS",
+          "reason": "Normalized evidence redaction is exercised with secret-shaped fixtures.",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "smoke"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "EXECUTABLE_NOW",
+          "completed_at": "2026-09-17T11:37:52Z",
+          "findings": [
+            "assurance-b798f7e3a4c64b8b8c780a6c737b9e23-15deb392776f0f7b27d15fb1"
+          ],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "qualification_status": "PASS",
+          "reason": "Normalized evidence redaction is exercised with secret-shaped fixtures.",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "standard"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "EXECUTABLE_NOW",
+          "completed_at": "2026-09-17T11:39:34Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "qualification_status": "PASS",
+          "reason": "Normalized evidence redaction is exercised with secret-shaped fixtures.",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "adversarial"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "EXECUTABLE_NOW",
+          "completed_at": "2026-09-17T11:51:07Z",
+          "findings": [
+            "assurance-3d7968589ce447f18454d1caf69a10e3-15deb392776f0f7b27d15fb1"
+          ],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "qualification_status": "PARTIAL",
+          "reason": "Normalized evidence redaction is exercised with secret-shaped fixtures.",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "deep"
+        }
+      ],
+      "model_review_status": "human-review-required",
+      "model_status": "modeled",
+      "name": "Evidence poisoning",
+      "path_nodes": [
+        "scanner-evidence",
+        "promoted-evidence",
+        "documentation"
+      ],
+      "scenarios": [
+        "control-plane-ownership",
+        "evidence-redaction",
+        "security-projection",
+        "threat-model-integrity",
+        "attack-path-inventory"
+      ],
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Information Disclosure"
+      ],
+      "target": "documentation"
+    },
+    {
+      "boundaries": [
+        "private-network",
+        "control-api",
+        "server-host"
+      ],
+      "consequences": [
+        "unexpected control-plane reachability",
+        "service exposure",
+        "availability impact"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "entry_point": "private-network",
+      "id": "AP-07",
+      "latest_evidence": [
+        {
+          "automated_result": "PASS",
+          "automation_classification": "PARTIALLY_EXECUTABLE",
+          "completed_at": "2026-09-17T11:30:42Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "qualification_status": "PASS",
+          "reason": "Local listener and Caddy surface are bounded; no Tailnet peer or LAN scan is performed.",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "smoke"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "PARTIALLY_EXECUTABLE",
+          "completed_at": "2026-09-17T11:37:52Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "qualification_status": "PASS",
+          "reason": "Local listener and Caddy surface are bounded; no Tailnet peer or LAN scan is performed.",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "standard"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "PARTIALLY_EXECUTABLE",
+          "completed_at": "2026-09-17T11:39:34Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "qualification_status": "PASS",
+          "reason": "Local listener and Caddy surface are bounded; no Tailnet peer or LAN scan is performed.",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "adversarial"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "PARTIALLY_EXECUTABLE",
+          "completed_at": "2026-09-17T11:51:07Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "qualification_status": "PARTIAL",
+          "reason": "Local listener and Caddy surface are bounded; no Tailnet peer or LAN scan is performed.",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "deep"
+        }
+      ],
+      "model_review_status": "human-review-required",
+      "model_status": "modeled",
+      "name": "Tailnet/private-network exposure",
+      "path_nodes": [
+        "private-network",
+        "tailscale",
+        "caddy",
+        "lite-api"
+      ],
+      "scenarios": [
+        "caddy-proof-strip",
+        "runtime-readiness",
+        "source-boundaries",
+        "threat-model-integrity",
+        "attack-path-inventory"
+      ],
+      "stride": [
+        "Spoofing",
+        "Information Disclosure",
+        "Denial of Service"
+      ],
+      "target": "lite-api"
+    },
+    {
+      "boundaries": [
+        "durable-state",
+        "control-api"
+      ],
+      "consequences": [
+        "unsafe restore decisions",
+        "loss of recovery evidence integrity",
+        "recovery unavailability"
+      ],
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXPLICIT-PROMOTION",
+        "CTRL-API-CONTROL"
+      ],
+      "entry_point": "sqlite",
+      "id": "AP-08",
+      "latest_evidence": [
+        {
+          "automated_result": "PASS",
+          "automation_classification": "STATIC_EVIDENCE_ONLY",
+          "completed_at": "2026-09-17T11:30:42Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "qualification_status": "PASS",
+          "reason": "Recovery replacement/restore mutation is excluded from normal assurance.",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "smoke"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "STATIC_EVIDENCE_ONLY",
+          "completed_at": "2026-09-17T11:37:52Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "qualification_status": "PASS",
+          "reason": "Recovery replacement/restore mutation is excluded from normal assurance.",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "standard"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "STATIC_EVIDENCE_ONLY",
+          "completed_at": "2026-09-17T11:39:34Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "qualification_status": "PASS",
+          "reason": "Recovery replacement/restore mutation is excluded from normal assurance.",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "adversarial"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "STATIC_EVIDENCE_ONLY",
+          "completed_at": "2026-09-17T11:51:07Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "qualification_status": "PARTIAL",
+          "reason": "Recovery replacement/restore mutation is excluded from normal assurance.",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "deep"
+        }
+      ],
+      "model_review_status": "human-review-required",
+      "model_status": "modeled",
+      "name": "Recovery state tampering",
+      "path_nodes": [
+        "sqlite",
+        "recovery-state",
+        "lite-api"
+      ],
+      "scenarios": [
+        "evidence-redaction",
+        "security-projection",
+        "threat-model-integrity",
+        "attack-path-inventory"
+      ],
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service"
+      ],
+      "target": "recovery-state"
+    },
+    {
+      "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "consequences": [
+        "human or browser-session impersonation",
+        "unauthorized passkey or step-up assurance use",
+        "privileged mutation without intended purpose-bound assurance"
+      ],
+      "controls": [
+        "CTRL-HUMAN-SESSION-CSRF",
+        "CTRL-WEBAUTHN-ASSURANCE"
+      ],
+      "entry_point": "browser",
+      "id": "AP-09",
+      "latest_evidence": [
+        {
+          "automated_result": "PASS",
+          "automation_classification": "HUMAN_REVIEW_REQUIRED",
+          "completed_at": "2026-09-17T11:30:42Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "qualification_status": "PASS",
+          "reason": "Human WebAuthn ceremonies are not impersonated by the synthetic machine principal.",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "smoke"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "HUMAN_REVIEW_REQUIRED",
+          "completed_at": "2026-09-17T11:37:52Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "qualification_status": "PASS",
+          "reason": "Human WebAuthn ceremonies are not impersonated by the synthetic machine principal.",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "standard"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "HUMAN_REVIEW_REQUIRED",
+          "completed_at": "2026-09-17T11:39:34Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "qualification_status": "PASS",
+          "reason": "Human WebAuthn ceremonies are not impersonated by the synthetic machine principal.",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "adversarial"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "HUMAN_REVIEW_REQUIRED",
+          "completed_at": "2026-09-17T11:51:07Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "qualification_status": "PARTIAL",
+          "reason": "Human WebAuthn ceremonies are not impersonated by the synthetic machine principal.",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "deep"
+        }
+      ],
+      "model_review_status": "human-review-required",
+      "model_status": "modeled",
+      "name": "Human identity and WebAuthn assurance misuse",
+      "path_nodes": [
+        "browser",
+        "caddy",
+        "lite-api",
+        "sqlite"
+      ],
+      "scenarios": [
+        "harness-auth-boundary",
+        "caddy-proof-strip",
+        "adversarial-negative-auth-probes",
+        "threat-model-integrity",
+        "attack-path-inventory"
+      ],
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "target": "lite-api"
+    },
+    {
+      "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "consequences": [
+        "unauthorized enterprise role elevation",
+        "loss of final-Owner recovery authority",
+        "audit attribution failure"
+      ],
+      "controls": [
+        "CTRL-WEBAUTHN-ASSURANCE",
+        "CTRL-ENTERPRISE-ROLE-FINAL-OWNER"
+      ],
+      "entry_point": "browser",
+      "id": "AP-10",
+      "latest_evidence": [
+        {
+          "automated_result": "PASS",
+          "automation_classification": "HUMAN_REVIEW_REQUIRED",
+          "completed_at": "2026-09-17T11:30:42Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "qualification_status": "PASS",
+          "reason": "Enterprise membership and final-Owner review remain human-governed.",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "smoke"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "HUMAN_REVIEW_REQUIRED",
+          "completed_at": "2026-09-17T11:37:52Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "qualification_status": "PASS",
+          "reason": "Enterprise membership and final-Owner review remain human-governed.",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "standard"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "HUMAN_REVIEW_REQUIRED",
+          "completed_at": "2026-09-17T11:39:34Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "qualification_status": "PASS",
+          "reason": "Enterprise membership and final-Owner review remain human-governed.",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "adversarial"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "HUMAN_REVIEW_REQUIRED",
+          "completed_at": "2026-09-17T11:51:07Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "qualification_status": "PARTIAL",
+          "reason": "Enterprise membership and final-Owner review remain human-governed.",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "deep"
+        }
+      ],
+      "model_review_status": "human-review-required",
+      "model_status": "modeled",
+      "name": "Enterprise membership and final-Owner privilege escalation",
+      "path_nodes": [
+        "browser",
+        "caddy",
+        "lite-api",
+        "sqlite"
+      ],
+      "scenarios": [
+        "harness-auth-boundary",
+        "adversarial-negative-auth-probes",
+        "threat-model-integrity",
+        "attack-path-inventory"
+      ],
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Elevation of Privilege"
+      ],
+      "target": "sqlite"
+    },
+    {
+      "boundaries": [
+        "browser",
+        "control-api"
+      ],
+      "consequences": [
+        "protected mutation proceeds without valid policy admission",
+        "policy decision ambiguity",
+        "control-plane availability impact"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-OPA-FAIL-CLOSED"
+      ],
+      "entry_point": "browser",
+      "id": "AP-11",
+      "latest_evidence": [
+        {
+          "automated_result": "PASS",
+          "automation_classification": "PARTIALLY_EXECUTABLE",
+          "completed_at": "2026-09-17T11:30:42Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "qualification_status": "PASS",
+          "reason": "OPA readiness is checked where required; outage injection is not performed.",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "smoke"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "PARTIALLY_EXECUTABLE",
+          "completed_at": "2026-09-17T11:37:52Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "qualification_status": "PASS",
+          "reason": "OPA readiness is checked where required; outage injection is not performed.",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "standard"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "PARTIALLY_EXECUTABLE",
+          "completed_at": "2026-09-17T11:39:34Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "qualification_status": "PASS",
+          "reason": "OPA readiness is checked where required; outage injection is not performed.",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "adversarial"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "PARTIALLY_EXECUTABLE",
+          "completed_at": "2026-09-17T11:51:07Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "qualification_status": "PARTIAL",
+          "reason": "OPA readiness is checked where required; outage injection is not performed.",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "deep"
+        }
+      ],
+      "model_review_status": "human-review-required",
+      "model_status": "modeled",
+      "name": "OPA authorization decision integrity failure",
+      "path_nodes": [
+        "browser",
+        "caddy",
+        "lite-api"
+      ],
+      "scenarios": [
+        "runtime-readiness",
+        "policy-readiness",
+        "threat-model-integrity",
+        "attack-path-inventory"
+      ],
+      "stride": [
+        "Tampering",
+        "Elevation of Privilege",
+        "Denial of Service"
+      ],
+      "target": "lite-api"
+    },
+    {
+      "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "consequences": [
+        "wrong policy revision observed or activated",
+        "loss of known-good recovery integrity",
+        "governance availability locked in uncertain state"
+      ],
+      "controls": [
+        "CTRL-POLICY-REVISION-LIFECYCLE",
+        "CTRL-OPA-FAIL-CLOSED"
+      ],
+      "entry_point": "browser",
+      "id": "AP-12",
+      "latest_evidence": [
+        {
+          "automated_result": "PASS",
+          "automation_classification": "STATIC_EVIDENCE_ONLY",
+          "completed_at": "2026-09-17T11:30:42Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "qualification_status": "PASS",
+          "reason": "Policy revision activation/recovery is not mutated by this safe profile.",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "smoke"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "STATIC_EVIDENCE_ONLY",
+          "completed_at": "2026-09-17T11:37:52Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "qualification_status": "PASS",
+          "reason": "Policy revision activation/recovery is not mutated by this safe profile.",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "standard"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "STATIC_EVIDENCE_ONLY",
+          "completed_at": "2026-09-17T11:39:34Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "qualification_status": "PASS",
+          "reason": "Policy revision activation/recovery is not mutated by this safe profile.",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "adversarial"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "STATIC_EVIDENCE_ONLY",
+          "completed_at": "2026-09-17T11:51:07Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "qualification_status": "PARTIAL",
+          "reason": "Policy revision activation/recovery is not mutated by this safe profile.",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "deep"
+        }
+      ],
+      "model_review_status": "human-review-required",
+      "model_status": "modeled",
+      "name": "Policy revision activation and recovery integrity",
+      "path_nodes": [
+        "browser",
+        "caddy",
+        "lite-api",
+        "sqlite"
+      ],
+      "scenarios": [
+        "runtime-readiness",
+        "policy-readiness",
+        "threat-model-integrity",
+        "attack-path-inventory"
+      ],
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service"
+      ],
+      "target": "sqlite"
+    },
+    {
+      "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "consequences": [
+        "requester self-approval or ineligible review",
+        "exact action, target, or revision binding bypass",
+        "approved continuation replay or double-use"
+      ],
+      "controls": [
+        "CTRL-WEBAUTHN-ASSURANCE",
+        "CTRL-INDEPENDENT-APPROVAL-CONTINUATION"
+      ],
+      "entry_point": "browser",
+      "id": "AP-13",
+      "latest_evidence": [
+        {
+          "automated_result": "PASS",
+          "automation_classification": "HUMAN_REVIEW_REQUIRED",
+          "completed_at": "2026-09-17T11:30:42Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "qualification_status": "PASS",
+          "reason": "Independent approval and requester continuation require human review.",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "smoke"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "HUMAN_REVIEW_REQUIRED",
+          "completed_at": "2026-09-17T11:37:52Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "qualification_status": "PASS",
+          "reason": "Independent approval and requester continuation require human review.",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "standard"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "HUMAN_REVIEW_REQUIRED",
+          "completed_at": "2026-09-17T11:39:34Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "qualification_status": "PASS",
+          "reason": "Independent approval and requester continuation require human review.",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "adversarial"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "HUMAN_REVIEW_REQUIRED",
+          "completed_at": "2026-09-17T11:51:07Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "qualification_status": "PARTIAL",
+          "reason": "Independent approval and requester continuation require human review.",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "deep"
+        }
+      ],
+      "model_review_status": "human-review-required",
+      "model_status": "modeled",
+      "name": "Approval and continuation integrity",
+      "path_nodes": [
+        "browser",
+        "caddy",
+        "lite-api",
+        "sqlite"
+      ],
+      "scenarios": [
+        "threat-model-integrity",
+        "attack-path-inventory"
+      ],
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Repudiation",
+        "Elevation of Privilege"
+      ],
+      "target": "sqlite"
+    },
+    {
+      "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "consequences": [
+        "exception widened beyond approved scope",
+        "expired or revoked exception reused",
+        "unauthorized catalog install admission"
+      ],
+      "controls": [
+        "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+        "CTRL-OPA-FAIL-CLOSED"
+      ],
+      "entry_point": "browser",
+      "id": "AP-14",
+      "latest_evidence": [
+        {
+          "automated_result": "PASS",
+          "automation_classification": "HUMAN_REVIEW_REQUIRED",
+          "completed_at": "2026-09-17T11:30:42Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "qualification_status": "PASS",
+          "reason": "Temporary exception issuance and expiry bypass are not attempted.",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "smoke"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "HUMAN_REVIEW_REQUIRED",
+          "completed_at": "2026-09-17T11:37:52Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "qualification_status": "PASS",
+          "reason": "Temporary exception issuance and expiry bypass are not attempted.",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "standard"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "HUMAN_REVIEW_REQUIRED",
+          "completed_at": "2026-09-17T11:39:34Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "qualification_status": "PASS",
+          "reason": "Temporary exception issuance and expiry bypass are not attempted.",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "adversarial"
+        },
+        {
+          "automated_result": "PASS",
+          "automation_classification": "HUMAN_REVIEW_REQUIRED",
+          "completed_at": "2026-09-17T11:51:07Z",
+          "findings": [],
+          "human_assurance_decision": "HUMAN_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "qualification_status": "PARTIAL",
+          "reason": "Temporary exception issuance and expiry bypass are not attempted.",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "suite": "deep"
+        }
+      ],
+      "model_review_status": "human-review-required",
+      "model_status": "modeled",
+      "name": "Temporary-exception scope and expiry bypass",
+      "path_nodes": [
+        "browser",
+        "caddy",
+        "lite-api",
+        "sqlite"
+      ],
+      "scenarios": [
+        "policy-readiness",
+        "threat-model-integrity",
+        "attack-path-inventory"
+      ],
+      "stride": [
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "target": "sqlite"
+    }
+  ],
+  "authority": {
+    "architecture": "architecture/metadata/pocket-lab-architecture.json",
+    "model": "security/threat-model-scenarios.json",
+    "note": "Derived join layer only; canonical model, registries, and per-qualification reports retain authority.",
+    "qualification_evidence": "docs/generated/enterprise/hubs/security-assurance/reports/*.json",
+    "scenarios": "security/assurance/scenarios.yaml",
+    "suites": "security/assurance/suites.yaml",
+    "tools": "security/assurance/tools.yaml"
+  },
+  "controls": [
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-03",
+        "AP-04",
+        "AP-07",
+        "AP-08",
+        "AP-11"
+      ],
+      "boundaries": [],
+      "description": null,
+      "id": "CTRL-API-CONTROL",
+      "model_status": "source-derived-or-referenced",
+      "scenarios": [
+        "harness-default-off",
+        "harness-auth-boundary",
+        "caddy-proof-strip",
+        "runtime-readiness",
+        "control-plane-ownership",
+        "source-boundaries",
+        "adversarial-negative-auth-probes"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-01"
+      ],
+      "boundaries": [],
+      "description": null,
+      "id": "CTRL-BROWSER-NATS",
+      "model_status": "source-derived-or-referenced",
+      "scenarios": []
+    },
+    {
+      "attack_paths": [
+        "AP-02"
+      ],
+      "boundaries": [],
+      "description": null,
+      "id": "CTRL-BROWSER-SHELL",
+      "model_status": "source-derived-or-referenced",
+      "scenarios": []
+    },
+    {
+      "attack_paths": [
+        "AP-10"
+      ],
+      "boundaries": [
+        "control-api",
+        "durable-state"
+      ],
+      "description": "Enterprise authorization resolves active memberships server-side, restricts governance changes to authorized roles, invalidates affected authorization/session state, audits changes, and refuses removal or demotion of the final active Owner.",
+      "id": "CTRL-ENTERPRISE-ROLE-FINAL-OWNER",
+      "model_status": "mitigation-source-derived",
+      "scenarios": []
+    },
+    {
+      "attack_paths": [
+        "AP-05",
+        "AP-06",
+        "AP-08"
+      ],
+      "boundaries": [],
+      "description": null,
+      "id": "CTRL-EVIDENCE-SANITIZE",
+      "model_status": "source-derived-or-referenced",
+      "scenarios": [
+        "harness-default-off",
+        "evidence-redaction",
+        "security-projection",
+        "source-boundaries",
+        "threat-model-integrity",
+        "attack-path-inventory"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-03",
+        "AP-04",
+        "AP-07"
+      ],
+      "boundaries": [],
+      "description": null,
+      "id": "CTRL-EXECUTION-OWNERS",
+      "model_status": "source-derived-or-referenced",
+      "scenarios": [
+        "harness-auth-boundary",
+        "control-plane-ownership",
+        "security-projection",
+        "source-boundaries",
+        "adversarial-negative-auth-probes"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-05",
+        "AP-06",
+        "AP-08"
+      ],
+      "boundaries": [],
+      "description": null,
+      "id": "CTRL-EXPLICIT-PROMOTION",
+      "model_status": "source-derived-or-referenced",
+      "scenarios": []
+    },
+    {
+      "attack_paths": [
+        "AP-09"
+      ],
+      "boundaries": [],
+      "description": null,
+      "id": "CTRL-HUMAN-SESSION-CSRF",
+      "model_status": "source-derived-or-referenced",
+      "scenarios": []
+    },
+    {
+      "attack_paths": [
+        "AP-13"
+      ],
+      "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "description": "Approval must come from a different currently eligible Owner/Admin with purpose-bound passkey step-up and exact action/target/revision binding; approval does not execute the action, and the initiator retry atomically consumes one continuation with replay refusal.",
+      "id": "CTRL-INDEPENDENT-APPROVAL-CONTINUATION",
+      "model_status": "mitigation-source-derived",
+      "scenarios": []
+    },
+    {
+      "attack_paths": [
+        "AP-11",
+        "AP-12",
+        "AP-14"
+      ],
+      "boundaries": [],
+      "description": null,
+      "id": "CTRL-OPA-FAIL-CLOSED",
+      "model_status": "source-derived-or-referenced",
+      "scenarios": []
+    },
+    {
+      "attack_paths": [
+        "AP-12"
+      ],
+      "boundaries": [
+        "control-api",
+        "durable-state",
+        "server-host"
+      ],
+      "description": "Typed policy candidates produce deterministic immutable revisions and manifests; activation proves loopback OPA observed revision/readiness before durable convergence, with known-good rollback/quarantine and explicit recovery proof when state is uncertain.",
+      "id": "CTRL-POLICY-REVISION-LIFECYCLE",
+      "model_status": "mitigation-source-derived",
+      "scenarios": [
+        "policy-readiness"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-05"
+      ],
+      "boundaries": [],
+      "description": null,
+      "id": "CTRL-SUPPLY-CHAIN",
+      "model_status": "source-derived-or-referenced",
+      "scenarios": []
+    },
+    {
+      "attack_paths": [
+        "AP-14"
+      ],
+      "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "description": "Temporary exceptions are restricted to catalog.install and exact app/device/human/policy revision, reject wildcard/global scope, expire within at most 60 minutes and can be revoked; matching enforces active unexpired exact scope.",
+      "id": "CTRL-TEMPORARY-EXCEPTION-SCOPE",
+      "model_status": "mitigation-source-derived",
+      "scenarios": []
+    },
+    {
+      "attack_paths": [
+        "AP-09",
+        "AP-10",
+        "AP-13"
+      ],
+      "boundaries": [
+        "browser",
+        "control-api",
+        "durable-state"
+      ],
+      "description": "WebAuthn ceremonies bind short-lived server-owned challenges to purpose, origin and RP ID; passkey assertions update signer counters and purpose-bound step-up expires independently of the browser session.",
+      "id": "CTRL-WEBAUTHN-ASSURANCE",
+      "model_status": "mitigation-source-derived",
+      "scenarios": []
+    }
+  ],
+  "current_registry_hashes": {
+    "scenarios": "sha256:92310371d7c8ed9b2ff686ddb6116b471e3ba3c261988d3a66b65c15c68afbc1",
+    "suites": "sha256:407d1c893f8de7579f0fd3193e262da5b8f67c612bcb9d2c76308c3f36afd164",
+    "threat_model": "sha256:74442eb35bcd488a67b5fc995ca1d6f6f341343bb3f8c3a0663cb89e241a908c",
+    "tools": "sha256:38755b7f13c94ff9a37a0eccf4324455d7f05fcddc9c7dfa1b85f3fb8c657687"
+  },
+  "kind": "security-assurance-correlation",
+  "latest_by_suite": {
+    "adversarial": {
+      "completed_at": "2026-09-17T11:39:34Z",
+      "critical": 0,
+      "current_registry_match": true,
+      "hash_matches": {
+        "scenarios": true,
+        "suites": true,
+        "threat_model": true,
+        "tools": true
+      },
+      "high": 0,
+      "low": 0,
+      "medium": 0,
+      "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+      "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+      "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+      "scenario_coverage_percent": 100.0,
+      "status": "PASS"
+    },
+    "deep": {
+      "completed_at": "2026-09-17T11:51:07Z",
+      "critical": 0,
+      "current_registry_match": true,
+      "hash_matches": {
+        "scenarios": true,
+        "suites": true,
+        "threat_model": true,
+        "tools": true
+      },
+      "high": 0,
+      "low": 1,
+      "medium": 0,
+      "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+      "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+      "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+      "scenario_coverage_percent": 100.0,
+      "status": "PARTIAL"
+    },
+    "smoke": {
+      "completed_at": "2026-09-17T11:30:42Z",
+      "critical": 0,
+      "current_registry_match": true,
+      "hash_matches": {
+        "scenarios": true,
+        "suites": true,
+        "threat_model": true,
+        "tools": true
+      },
+      "high": 0,
+      "low": 1,
+      "medium": 0,
+      "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+      "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+      "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+      "scenario_coverage_percent": 100.0,
+      "status": "PASS"
+    },
+    "standard": {
+      "completed_at": "2026-09-17T11:37:52Z",
+      "critical": 0,
+      "current_registry_match": true,
+      "hash_matches": {
+        "scenarios": true,
+        "suites": true,
+        "threat_model": true,
+        "tools": true
+      },
+      "high": 0,
+      "low": 1,
+      "medium": 0,
+      "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+      "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+      "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+      "scenario_coverage_percent": 100.0,
+      "status": "PASS"
+    }
+  },
+  "latest_suite_runtime_shas": [
+    "66ed279c018d45cd9b2e577921b9cfc13ca7457f"
+  ],
+  "latest_suite_set_same_runtime_sha": true,
+  "published_report_count": 5,
+  "reports": [
+    {
+      "completed_at": "2026-09-16T17:33:02Z",
+      "current_registry_match": true,
+      "hash_matches": {
+        "scenarios": true,
+        "suites": true,
+        "threat_model": true,
+        "tools": true
+      },
+      "qualification_id": "assurance-eb3d0c1d7d5b437b9743c9961aa722f8",
+      "report_id": "security-assurance-20260916T173302Z-4199c1e3f1-assurance-eb3d0c1d7d5b437b9743c9961aa722f8",
+      "runtime_sha": "4199c1e3f12392e5895901c6946c2d554e4670c7",
+      "status": "PARTIAL",
+      "suite": "deep"
+    },
+    {
+      "completed_at": "2026-09-17T11:30:42Z",
+      "current_registry_match": true,
+      "hash_matches": {
+        "scenarios": true,
+        "suites": true,
+        "threat_model": true,
+        "tools": true
+      },
+      "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+      "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+      "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+      "status": "PASS",
+      "suite": "smoke"
+    },
+    {
+      "completed_at": "2026-09-17T11:37:52Z",
+      "current_registry_match": true,
+      "hash_matches": {
+        "scenarios": true,
+        "suites": true,
+        "threat_model": true,
+        "tools": true
+      },
+      "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+      "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+      "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+      "status": "PASS",
+      "suite": "standard"
+    },
+    {
+      "completed_at": "2026-09-17T11:39:34Z",
+      "current_registry_match": true,
+      "hash_matches": {
+        "scenarios": true,
+        "suites": true,
+        "threat_model": true,
+        "tools": true
+      },
+      "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+      "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+      "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+      "status": "PASS",
+      "suite": "adversarial"
+    },
+    {
+      "completed_at": "2026-09-17T11:51:07Z",
+      "current_registry_match": true,
+      "hash_matches": {
+        "scenarios": true,
+        "suites": true,
+        "threat_model": true,
+        "tools": true
+      },
+      "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+      "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+      "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+      "status": "PARTIAL",
+      "suite": "deep"
+    }
+  ],
+  "sanitized": true,
+  "scenarios": [
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-03"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EVIDENCE-SANITIZE"
+      ],
+      "execution": "configuration_posture",
+      "id": "harness-default-off",
+      "latest_results": [
+        {
+          "completed_at": "2026-09-17T11:30:42Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "smoke"
+        },
+        {
+          "completed_at": "2026-09-17T11:37:52Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "standard"
+        },
+        {
+          "completed_at": "2026-09-17T11:51:07Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "deep"
+        }
+      ],
+      "normalized_evidence": "Sanitized configuration booleans and startup reason codes only.",
+      "owasp": [
+        "A07",
+        "A01"
+      ],
+      "purpose": "Production/default-off state never enables harness, destructive, Owner, or test-bypass authority implicitly.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Spoofing",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "smoke",
+        "standard",
+        "deep"
+      ],
+      "title": "Harness default-off and production fail-closed state",
+      "tools": []
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-03",
+        "AP-04",
+        "AP-09",
+        "AP-10"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "execution": "authenticated_admission_posture",
+      "id": "harness-auth-boundary",
+      "latest_results": [
+        {
+          "completed_at": "2026-09-17T11:30:42Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "smoke"
+        },
+        {
+          "completed_at": "2026-09-17T11:37:52Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "standard"
+        },
+        {
+          "completed_at": "2026-09-17T11:39:34Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "adversarial"
+        },
+        {
+          "completed_at": "2026-09-17T11:51:07Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "deep"
+        }
+      ],
+      "normalized_evidence": "Sanitized binding booleans, profile name, target scope, and lifecycle classification.",
+      "owasp": [
+        "A07",
+        "A01"
+      ],
+      "purpose": "Synthetic assurance authority is purpose-bound, target-bound, runtime-bound, non-Owner, and non-destructive.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "smoke",
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "Synthetic Ed25519 session and capability boundary",
+      "tools": []
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-07",
+        "AP-09"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL"
+      ],
+      "execution": "fixed_caddy_probe",
+      "id": "caddy-proof-strip",
+      "latest_results": [
+        {
+          "completed_at": "2026-09-17T11:30:42Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "smoke"
+        },
+        {
+          "completed_at": "2026-09-17T11:37:52Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "standard"
+        },
+        {
+          "completed_at": "2026-09-17T11:39:34Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "adversarial"
+        },
+        {
+          "completed_at": "2026-09-17T11:51:07Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "deep"
+        }
+      ],
+      "normalized_evidence": "Status codes, bounded response metadata, marker-presence booleans, and route classifications.",
+      "owasp": [
+        "A07",
+        "A01",
+        "A05"
+      ],
+      "purpose": "Proxy-visible headers never become harness authority and harness routes remain direct-loopback only.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "smoke",
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "Caddy never forwards qualification proof into FastAPI authority",
+      "tools": [
+        "nuclei",
+        "owasp-zap",
+        "schemathesis",
+        "testssl.sh"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-07",
+        "AP-11",
+        "AP-12"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL"
+      ],
+      "execution": "fixed_local_health_probe",
+      "id": "runtime-readiness",
+      "latest_results": [
+        {
+          "completed_at": "2026-09-17T11:30:42Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "smoke"
+        },
+        {
+          "completed_at": "2026-09-17T11:37:52Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "standard"
+        },
+        {
+          "completed_at": "2026-09-17T11:39:34Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "adversarial"
+        },
+        {
+          "completed_at": "2026-09-17T11:51:07Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "deep"
+        }
+      ],
+      "normalized_evidence": "Boolean readiness checks, status codes, and sanitized failure classes.",
+      "owasp": [
+        "A05"
+      ],
+      "purpose": "Runtime readiness is based on API, message-bus, and worker truth rather than PM2 online alone.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Denial of Service",
+        "Information Disclosure"
+      ],
+      "suites": [
+        "smoke",
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "API health/readiness and PM2 readiness distinction",
+      "tools": [
+        "nmap",
+        "testssl.sh"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-04",
+        "AP-06"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "execution": "worker_execution_receipt",
+      "id": "control-plane-ownership",
+      "latest_results": [
+        {
+          "completed_at": "2026-09-17T11:30:42Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "smoke"
+        },
+        {
+          "completed_at": "2026-09-17T11:37:52Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "standard"
+        },
+        {
+          "completed_at": "2026-09-17T11:51:07Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "deep"
+        }
+      ],
+      "normalized_evidence": "Fixed subject/handler booleans and sanitized bus health only.",
+      "owasp": [
+        "A01",
+        "A08",
+        "A09"
+      ],
+      "purpose": "Browser clients cannot choose NATS subjects or commands; worker execution remains on the registered subject and domain handler.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "smoke",
+        "standard",
+        "deep"
+      ],
+      "title": "Assurance execution remains FastAPI to NATS to worker owned",
+      "tools": []
+    },
+    {
+      "attack_paths": [
+        "AP-05",
+        "AP-06",
+        "AP-08"
+      ],
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE"
+      ],
+      "execution": "redaction_contract",
+      "id": "evidence-redaction",
+      "latest_results": [
+        {
+          "completed_at": "2026-09-17T11:30:42Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "smoke"
+        },
+        {
+          "completed_at": "2026-09-17T11:37:52Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "standard"
+        },
+        {
+          "completed_at": "2026-09-17T11:39:34Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "adversarial"
+        },
+        {
+          "completed_at": "2026-09-17T11:51:07Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "deep"
+        }
+      ],
+      "normalized_evidence": "Canary count, leak count, redaction booleans, and sanitization markers.",
+      "owasp": [
+        "A02",
+        "A05",
+        "A08",
+        "A09"
+      ],
+      "purpose": "Secret-like values, credentials, private-key material, cookies, and NATS credential shapes never survive normalized persistence.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Repudiation",
+        "Information Disclosure",
+        "Tampering"
+      ],
+      "suites": [
+        "smoke",
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "Assurance evidence contains only normalized sanitized output",
+      "tools": []
+    },
+    {
+      "attack_paths": [
+        "AP-04",
+        "AP-05",
+        "AP-06",
+        "AP-08"
+      ],
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "execution": "existing_security_projection",
+      "id": "security-projection",
+      "latest_results": [
+        {
+          "completed_at": "2026-09-17T11:30:42Z",
+          "evidence_refs": [
+            "security/evidence/security-7f47c76330204ff79378253ab8a54396/summary.json",
+            "security/evidence/security-7f47c76330204ff79378253ab8a54396/lynis-normalized.json",
+            "security/evidence/security-7f47c76330204ff79378253ab8a54396/sbom.cdx.json",
+            "security/evidence/security-7f47c76330204ff79378253ab8a54396/trivy-normalized.json",
+            "security/evidence/security-7f47c76330204ff79378253ab8a54396/coverage-summary.json"
+          ],
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "smoke"
+        },
+        {
+          "completed_at": "2026-09-17T11:37:52Z",
+          "evidence_refs": [
+            "security/evidence/security-c04834011af848478018766c46f1707e/summary.json",
+            "security/evidence/security-c04834011af848478018766c46f1707e/lynis-normalized.json",
+            "security/evidence/security-c04834011af848478018766c46f1707e/sbom.cdx.json",
+            "security/evidence/security-c04834011af848478018766c46f1707e/trivy-normalized.json",
+            "security/evidence/security-c04834011af848478018766c46f1707e/coverage-summary.json"
+          ],
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "standard"
+        },
+        {
+          "completed_at": "2026-09-17T11:51:07Z",
+          "evidence_refs": [
+            "security/evidence/security-015550d9d9e84545b0177341814db796/summary.json",
+            "security/evidence/security-015550d9d9e84545b0177341814db796/lynis-normalized.json",
+            "security/evidence/security-015550d9d9e84545b0177341814db796/target-pocketlab-source-trivy.json",
+            "security/evidence/security-015550d9d9e84545b0177341814db796/target-pocketlab_source-sbom.cdx.json",
+            "security/evidence/security-015550d9d9e84545b0177341814db796/target-runtime-config.json",
+            "security/evidence/security-015550d9d9e84545b0177341814db796/resource-budget.json",
+            "security/evidence/security-015550d9d9e84545b0177341814db796/target-proot-ubuntu-trivy-1.json",
+            "security/evidence/security-015550d9d9e84545b0177341814db796/target-proot-ubuntu-trivy-2.json",
+            "security/evidence/security-015550d9d9e84545b0177341814db796/target-proot-ubuntu-trivy-3.json",
+            "security/evidence/security-015550d9d9e84545b0177341814db796/target-photoprism-trivy.json",
+            "security/evidence/security-015550d9d9e84545b0177341814db796/target-photoprism-config-secret.json",
+            "security/evidence/security-015550d9d9e84545b0177341814db796/target-photoprism_app_files-sbom.cdx.json",
+            "security/evidence/security-015550d9d9e84545b0177341814db796/target-backup-metadata.json",
+            "security/evidence/security-015550d9d9e84545b0177341814db796/trivy-normalized.json",
+            "security/evidence/security-015550d9d9e84545b0177341814db796/coverage-summary.json"
+          ],
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PARTIAL",
+          "suite": "deep"
+        }
+      ],
+      "normalized_evidence": "Registered tool results, normalized findings, bounded evidence references, baseline delta, and resource metrics.",
+      "owasp": [
+        "A05",
+        "A06",
+        "A08",
+        "A09"
+      ],
+      "purpose": "Scanner work remains worker-owned, sequential/resource-bounded, excludes user media, and produces normalized sanitized findings/evidence.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Tampering",
+        "Repudiation",
+        "Denial of Service",
+        "Information Disclosure"
+      ],
+      "suites": [
+        "smoke",
+        "standard",
+        "deep"
+      ],
+      "title": "Existing Security projection and scanner lifecycle are available",
+      "tools": [
+        "pocketlab-security",
+        "lynis",
+        "trivy"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-11",
+        "AP-12",
+        "AP-14"
+      ],
+      "controls": [
+        "CTRL-POLICY-REVISION-LIFECYCLE"
+      ],
+      "execution": "existing_opa_status",
+      "id": "policy-readiness",
+      "latest_results": [
+        {
+          "completed_at": "2026-09-17T11:37:52Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "standard"
+        },
+        {
+          "completed_at": "2026-09-17T11:51:07Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "deep"
+        }
+      ],
+      "normalized_evidence": "Ready/degraded status, loopback/browser exposure booleans, and sanitized reason code.",
+      "owasp": [
+        "A01",
+        "A08"
+      ],
+      "purpose": "Policy admission remains loopback-only, browser-hidden, revision-aware, and fail-closed when not ready.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Tampering",
+        "Denial of Service",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "standard",
+        "deep"
+      ],
+      "title": "OPA loopback readiness and policy revision consistency",
+      "tools": [
+        "opa"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-04",
+        "AP-05",
+        "AP-07"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS",
+        "CTRL-EVIDENCE-SANITIZE"
+      ],
+      "execution": "bounded_source_assertions",
+      "id": "source-boundaries",
+      "latest_results": [
+        {
+          "completed_at": "2026-09-17T11:37:52Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "standard"
+        },
+        {
+          "completed_at": "2026-09-17T11:39:34Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "adversarial"
+        },
+        {
+          "completed_at": "2026-09-17T11:51:07Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "deep"
+        }
+      ],
+      "normalized_evidence": "File/byte counts, match counts, fixed marker booleans, and no source excerpts.",
+      "owasp": [
+        "A01",
+        "A02",
+        "A05",
+        "A08"
+      ],
+      "purpose": "Frontend contains no direct NATS or shell execution surface and checked backend/Caddy evidence boundaries remain present.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Tampering",
+        "Information Disclosure",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "standard",
+        "deep",
+        "adversarial"
+      ],
+      "title": "Canonical source preserves browser, shell, NATS, and user-media boundaries",
+      "tools": [
+        "bandit",
+        "semgrep",
+        "gitleaks"
+      ]
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-03",
+        "AP-04",
+        "AP-09",
+        "AP-10"
+      ],
+      "controls": [
+        "CTRL-API-CONTROL",
+        "CTRL-EXECUTION-OWNERS"
+      ],
+      "execution": "fixed_negative_auth_probes",
+      "id": "adversarial-negative-auth-probes",
+      "latest_results": [
+        {
+          "completed_at": "2026-09-17T11:39:34Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "report_id": "security-assurance-20260917T113934Z-66ed279c01-assurance-de72eb1604ed4b619c498bb2bc40e8b3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "adversarial"
+        }
+      ],
+      "normalized_evidence": "Probe ID, fixed method/path identity, status code, rejection boolean, bounded response metadata, and duration.",
+      "owasp": [
+        "A01",
+        "A03",
+        "A07"
+      ],
+      "purpose": "Every fixed malformed/forged request is rejected without creating authority or intentional persistent mutation.",
+      "safety_class": "SAFE_ACTIVE",
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "adversarial"
+      ],
+      "title": "Fixed malformed authentication and input probes remain denied",
+      "tools": []
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-03",
+        "AP-04",
+        "AP-05",
+        "AP-06",
+        "AP-07",
+        "AP-08",
+        "AP-09",
+        "AP-10",
+        "AP-11",
+        "AP-12",
+        "AP-13",
+        "AP-14"
+      ],
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE"
+      ],
+      "execution": "canonical_threat_model_check",
+      "id": "threat-model-integrity",
+      "latest_results": [
+        {
+          "completed_at": "2026-09-17T11:30:42Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "report_id": "security-assurance-20260917T113042Z-66ed279c01-assurance-2a29076a8244411daed1b0a5ca0c1d1a",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "smoke"
+        },
+        {
+          "completed_at": "2026-09-17T11:37:52Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "standard"
+        },
+        {
+          "completed_at": "2026-09-17T11:51:07Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "deep"
+        }
+      ],
+      "normalized_evidence": "Registry hashes, canonical IDs, execution defaults, retry policy, and coverage lists.",
+      "owasp": [
+        "A08",
+        "A09"
+      ],
+      "purpose": "Every current AP path is classified by registered assurance coverage and every reference resolves to canonical source.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Tampering",
+        "Repudiation"
+      ],
+      "suites": [
+        "smoke",
+        "standard",
+        "deep"
+      ],
+      "title": "Current canonical threat model is complete and executable statuses are explicit",
+      "tools": []
+    },
+    {
+      "attack_paths": [
+        "AP-01",
+        "AP-02",
+        "AP-03",
+        "AP-04",
+        "AP-05",
+        "AP-06",
+        "AP-07",
+        "AP-08",
+        "AP-09",
+        "AP-10",
+        "AP-11",
+        "AP-12",
+        "AP-13",
+        "AP-14"
+      ],
+      "controls": [
+        "CTRL-EVIDENCE-SANITIZE"
+      ],
+      "execution": "attack_path_inventory",
+      "id": "attack-path-inventory",
+      "latest_results": [
+        {
+          "completed_at": "2026-09-17T11:37:52Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "report_id": "security-assurance-20260917T113752Z-66ed279c01-assurance-b798f7e3a4c64b8b8c780a6c737b9e23",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "standard"
+        },
+        {
+          "completed_at": "2026-09-17T11:51:07Z",
+          "evidence_refs": [],
+          "qualification_id": "assurance-3d7968589ce447f18454d1caf69a10e3",
+          "report_id": "security-assurance-20260917T115107Z-66ed279c01-assurance-3d7968589ce447f18454d1caf69a10e3",
+          "runtime_sha": "66ed279c018d45cd9b2e577921b9cfc13ca7457f",
+          "status": "PASS",
+          "suite": "deep"
+        }
+      ],
+      "normalized_evidence": "AP ID/name, classification, reason, STRIDE/OWASP mapping, controls, and human-review flag.",
+      "owasp": [
+        "A01",
+        "A02",
+        "A07",
+        "A08",
+        "A09"
+      ],
+      "purpose": "No current AP path is silently treated as tested; coverage limitations remain explicit.",
+      "safety_class": "PASSIVE",
+      "stride": [
+        "Spoofing",
+        "Tampering",
+        "Repudiation",
+        "Information Disclosure",
+        "Denial of Service",
+        "Elevation of Privilege"
+      ],
+      "suites": [
+        "standard",
+        "deep"
+      ],
+      "title": "Every current AP path has a bounded execution classification",
+      "tools": []
+    }
+  ],
+  "schema_version": "1.0.0",
+  "suite_definitions": {
+    "adversarial": {
+      "allowed_safety_classes": [
+        "PASSIVE",
+        "SAFE_ACTIVE"
+      ],
+      "existing_security_profile": null,
+      "explicit_only": true,
+      "maximum_seconds": 600,
+      "purpose": "Qualification-only reviewed adversarial checks limited to fixed local control-boundary requests.",
+      "qualification_only": true,
+      "required_capabilities": [
+        "security.assurance.read",
+        "security.assurance.api",
+        "security.assurance.runtime",
+        "security.assurance.threat_scenario",
+        "security.assurance.report"
+      ],
+      "scenarios": [
+        "harness-auth-boundary",
+        "caddy-proof-strip",
+        "runtime-readiness",
+        "evidence-redaction",
+        "source-boundaries",
+        "adversarial-negative-auth-probes"
+      ],
+      "target_seconds": 180
+    },
+    "deep": {
+      "allowed_safety_classes": [
+        "PASSIVE",
+        "SAFE_ACTIVE"
+      ],
+      "existing_security_profile": "full",
+      "explicit_only": true,
+      "maximum_seconds": 7200,
+      "purpose": "Manual-only extended assurance profile; approved heavyweight tools execute through the fixed DEV-PC lanes and the existing worker-owned Security path.",
+      "qualification_only": false,
+      "required_capabilities": [
+        "security.assurance.read",
+        "security.assurance.passive",
+        "security.assurance.sast",
+        "security.assurance.sca",
+        "security.assurance.api",
+        "security.assurance.runtime",
+        "security.assurance.threat_scenario",
+        "security.assurance.report",
+        "security.assurance.baseline"
+      ],
+      "scenarios": [
+        "harness-default-off",
+        "harness-auth-boundary",
+        "caddy-proof-strip",
+        "runtime-readiness",
+        "control-plane-ownership",
+        "evidence-redaction",
+        "security-projection",
+        "policy-readiness",
+        "source-boundaries",
+        "threat-model-integrity",
+        "attack-path-inventory"
+      ],
+      "target_seconds": 3600
+    },
+    "smoke": {
+      "allowed_safety_classes": [
+        "PASSIVE",
+        "SAFE_ACTIVE"
+      ],
+      "existing_security_profile": "quick",
+      "explicit_only": false,
+      "maximum_seconds": 1200,
+      "purpose": "Fast bounded runtime assurance using existing low-power Security and critical control-boundary checks.",
+      "qualification_only": false,
+      "required_capabilities": [
+        "security.assurance.read",
+        "security.assurance.passive",
+        "security.assurance.runtime",
+        "security.assurance.sca",
+        "security.assurance.threat_scenario",
+        "security.assurance.report"
+      ],
+      "scenarios": [
+        "harness-default-off",
+        "harness-auth-boundary",
+        "caddy-proof-strip",
+        "runtime-readiness",
+        "control-plane-ownership",
+        "evidence-redaction",
+        "security-projection",
+        "threat-model-integrity"
+      ],
+      "target_seconds": 180
+    },
+    "standard": {
+      "allowed_safety_classes": [
+        "PASSIVE",
+        "SAFE_ACTIVE"
+      ],
+      "existing_security_profile": "quick",
+      "explicit_only": false,
+      "maximum_seconds": 1800,
+      "purpose": "Normal runtime qualification with the existing Quick scanner, API boundary probes, policy readiness, and threat coverage.",
+      "qualification_only": false,
+      "required_capabilities": [
+        "security.assurance.read",
+        "security.assurance.passive",
+        "security.assurance.sast",
+        "security.assurance.sca",
+        "security.assurance.api",
+        "security.assurance.runtime",
+        "security.assurance.threat_scenario",
+        "security.assurance.report",
+        "security.assurance.baseline"
+      ],
+      "scenarios": [
+        "harness-default-off",
+        "harness-auth-boundary",
+        "caddy-proof-strip",
+        "runtime-readiness",
+        "control-plane-ownership",
+        "evidence-redaction",
+        "security-projection",
+        "policy-readiness",
+        "source-boundaries",
+        "threat-model-integrity",
+        "attack-path-inventory"
+      ],
+      "target_seconds": 900
+    }
+  },
+  "tool_registry_name": "pocketlab-runtime-security-assurance-tools",
+  "truth_boundaries": {
+    "coverage": "Evidence coverage ratio; never a security score.",
+    "human_review": "Human-governed review remains separate from automated checks and cannot be auto-promoted to PASS.",
+    "partial": "Valid evidence exists but coverage or resulting condition is incomplete.",
+    "pass": "The registered invariant held for the observed qualification evidence; not proof it can never fail.",
+    "qualification": "Bounded evidence for one exact qualification and runtime SHA; not a universal security claim.",
+    "scenario": "Registered invariant and safe execution definition; not a scanner product.",
+    "threat_model": "Saved modeled threats and controls; not live monitoring."
+  }
+}
