@@ -278,7 +278,7 @@ toolchain:
     resource_class: heavy
     allowed_mode: fixed_registered_command
     required_capability: security.assurance.api
-    suite_membership: [standard, deep]
+    suite_membership: [standard, deep, adversarial]
     binary_discovery: managed_tool_receipt_or_parity_venv
     version_command: fixed_binary_version_probe
     version_source: qualified_tool_receipt
@@ -464,7 +464,7 @@ toolchain:
     resource_class: medium
     allowed_mode: fixed_registered_command
     required_capability: security.assurance.api
-    suite_membership: [standard, deep]
+    suite_membership: [standard, deep, adversarial]
     binary_discovery: managed_tool_receipt
     version_command: fixed_binary_version_probe
     version_source: qualified_tool_receipt
@@ -495,7 +495,7 @@ toolchain:
     resource_class: heavy
     allowed_mode: fixed_registered_command
     required_capability: security.assurance.api
-    suite_membership: [standard, deep]
+    suite_membership: [standard, deep, adversarial]
     binary_discovery: managed_tool_receipt
     version_command: fixed_binary_version_probe
     version_source: qualified_tool_receipt
@@ -526,7 +526,7 @@ toolchain:
     resource_class: medium
     allowed_mode: fixed_registered_command
     required_capability: security.assurance.passive
-    suite_membership: [standard, deep]
+    suite_membership: [standard, deep, adversarial]
     binary_discovery: managed_tool_receipt_or_system
     version_command: fixed_binary_version_probe
     version_source: qualified_tool_receipt
@@ -548,7 +548,7 @@ toolchain:
   - id: owasp-zap
     version_pin: "2.17.0"
     installation_source: official_zap_release_receipt
-    purpose: Deep-only bounded API baseline against the approved Pocket Lab endpoint and route allow-list.
+    purpose: Explicit bounded API baseline against the approved Pocket Lab endpoint and route allow-list.
     execution: managed_external_tool
     execution_lane: dev_pc_live_runtime
     supported_platforms: [ubuntu-wsl2]
@@ -557,7 +557,7 @@ toolchain:
     resource_class: heavy
     allowed_mode: fixed_registered_command
     required_capability: security.assurance.api
-    suite_membership: [deep]
+    suite_membership: [deep, adversarial]
     binary_discovery: managed_tool_receipt_or_java
     version_command: fixed_binary_version_probe
     version_source: qualified_tool_receipt
@@ -576,3 +576,65 @@ toolchain:
     max_attempts: 1
     checksum_policy: qualified_tool_receipt
     signature_policy: receipt_or_release_checksum
+  - id: pocketlab-runtime-360
+    version_pin: "1.0.0"
+    installation_source: repository_development_venv
+    purpose: Fixed low-impact HTTP, WebSocket, listener, TLS, resilience, and provenance probes against approved Pocket Lab runtime tunnels.
+    execution: managed_external_tool
+    execution_lane: dev_pc_live_runtime
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED repository-owned DEV-PC live-runtime adapter
+    harness_status: ACTIVE
+    resource_class: medium
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.runtime
+    suite_membership: [standard, deep, adversarial]
+    binary_discovery: repository_development_venv_python
+    version_command: fixed_adapter_version_probe
+    version_source: repository_revision
+    command_id: runtime.pocketlab_360
+    fixed_target: fixed_server_phone_runtime_tunnels
+    fixed_argv: [scripts/dev/lite/security_assurance_360.py, registered_suite_only]
+    parser: pocketlab_runtime_360_json
+    sanitizer: normalized_sanitized_assurance_finding
+    timeout_seconds: 120
+    max_output_bytes: 524288
+    ruleset: security/assurance/scenarios.yaml
+    template_allowlist: fixed_routes_ports_and_profiles_only
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: repository_revision
+    signature_policy: repository_revision
+  - id: playwright-runtime
+    version_pin: "1.0.0"
+    installation_source: repository_node_dependencies
+    purpose: Real Chromium hostile-origin, CORS, WebSocket, browser storage, service-worker, and network-egress assurance against fixed Caddy HTTPS.
+    execution: managed_external_tool
+    execution_lane: dev_pc_live_runtime
+    supported_platforms: [ubuntu-wsl2]
+    native_status: VERIFIED repository-owned Playwright Chromium adapter when repo browser setup is ready
+    harness_status: ACTIVE
+    resource_class: medium
+    allowed_mode: fixed_registered_command
+    required_capability: security.assurance.api
+    suite_membership: [standard, deep, adversarial]
+    binary_discovery: approved_node_toolchain
+    version_command: fixed_adapter_version_probe
+    version_source: repository_revision
+    command_id: runtime.playwright_browser
+    fixed_target: fixed_caddy_browser_runtime
+    fixed_argv: [scripts/dev/lite/security_assurance_browser.mjs, registered_suite_only]
+    parser: pocketlab_playwright_runtime_json
+    sanitizer: normalized_sanitized_assurance_finding
+    timeout_seconds: 180
+    max_output_bytes: 524288
+    ruleset: security/assurance/scenarios.yaml
+    template_allowlist: fixed_caddy_origin_and_hostile_origin_only
+    retry_safe: true
+    resume_supported: false
+    checkpoint_supported: true
+    max_attempts: 1
+    checksum_policy: repository_revision
+    signature_policy: package_lock_and_repository_revision
