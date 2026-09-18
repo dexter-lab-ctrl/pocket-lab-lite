@@ -84,7 +84,7 @@ def _run(argv: list[str], *, timeout: int = 12) -> subprocess.CompletedProcess[s
             stderr=subprocess.PIPE,
             text=True,
             timeout=max(1, timeout),
-            env={"PATH": "/usr/bin:/bin", "LC_ALL": "C", "LANG": "C"},
+            env={"PATH": "/usr/bin:/bin", "HOME": str(Path.home()), "LC_ALL": "C", "LANG": "C"},
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
         raise RuntimeTunnelError("runtime_ssh_command_failed") from exc
@@ -124,6 +124,7 @@ def _ssh_config() -> dict[str, str]:
         "passwordauthentication": "no",
         "kbdinteractiveauthentication": "no",
         "stricthostkeychecking": "yes",
+        "identitiesonly": "yes",
     }
     if any(config.get(k, "").casefold() != v for k, v in required.items()):
         raise RuntimeTunnelError("runtime_ssh_alias_policy_unsafe")
@@ -220,6 +221,11 @@ def discover_runtime_facts() -> tuple[dict[str, Any], dict[str, str]]:
         "-o", "StrictHostKeyChecking=yes",
         "-o", "ConnectTimeout=8",
         "-o", "ConnectionAttempts=1",
+        "-o", "ProxyCommand=none",
+        "-o", "ProxyJump=none",
+        "-o", "IdentitiesOnly=yes",
+        "-o", "PreferredAuthentications=publickey",
+        "-o", "PermitLocalCommand=no",
         SSH_ALIAS,
         REMOTE_DISCOVERY,
     ])
@@ -247,6 +253,11 @@ def build_tunnel_argv(facts: Mapping[str, Any], config: Mapping[str, str]) -> li
         "-o", "ExitOnForwardFailure=yes",
         "-o", "ConnectTimeout=8",
         "-o", "ConnectionAttempts=1",
+        "-o", "ProxyCommand=none",
+        "-o", "ProxyJump=none",
+        "-o", "IdentitiesOnly=yes",
+        "-o", "PreferredAuthentications=publickey",
+        "-o", "PermitLocalCommand=no",
         "-o", f"Hostname={server_ip}",
         "-o", f"HostKeyAlias={host_key_alias}",
         "-p", str(server_port),
@@ -344,7 +355,7 @@ def fixed_runtime_tunnel() -> Iterator[dict[str, Any]]:
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 start_new_session=True,
-                env={"PATH": "/usr/bin:/bin", "LC_ALL": "C", "LANG": "C"},
+                env={"PATH": "/usr/bin:/bin", "HOME": str(Path.home()), "LC_ALL": "C", "LANG": "C"},
             )
             created = True
             deadline = time.monotonic() + 10.0
