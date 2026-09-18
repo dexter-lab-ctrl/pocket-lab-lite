@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 98bb3dab003839cbf88b7e2155ff4cdbc7920e61d5841fd969f9f70874f3fcbf
+source_fingerprint: f0268c1e8d90db610930f84b10075892613f79090cb8ce81bc16bed425f0751b
 schema_revision: 1
 validation_status: generated
 ---
@@ -21,6 +21,10 @@ validation_status: generated
 
 CI uses the Lite task surface rather than reintroducing full-product workflows.
 
+- `correlation-generate-once.yml: task lite:docs:check`
+- `correlation-generate-once.yml: task lite:docs:enterprise:check`
+- `correlation-generate-once.yml: task lite:docs:generate`
+- `correlation-generate-once.yml: task lite:docs:ia:check`
 - `lite-quality.yml: task lite:check:quick`
 - `lite-quality.yml: task lite:docs:check`
 - `lite-quality.yml: task lite:docs:generate`

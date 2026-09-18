@@ -505,6 +505,114 @@
     },
     {
       "evidence": [
+        "scripts/docs/enterprise/security_assurance_correlation.py",
+        "contracts/generated/documentation-enterprise/security-assurance-correlation.json"
+      ],
+      "id": "link:hub:security-assurance:correlation:how-to-read",
+      "label": "How To Read",
+      "relation_type": "explains-security-docs",
+      "source": "page:generated/enterprise/hubs/security-assurance",
+      "target": "page:generated/enterprise/hubs/security-assurance/how-to-read",
+      "target_type": "page"
+    },
+    {
+      "evidence": [
+        "scripts/docs/enterprise/security_assurance_correlation.py",
+        "contracts/generated/documentation-enterprise/security-assurance-correlation.json"
+      ],
+      "id": "link:hub:security-assurance:correlation:model-and-evidence",
+      "label": "Model And Evidence",
+      "relation_type": "explains-truth-layers",
+      "source": "page:generated/enterprise/hubs/security-assurance",
+      "target": "page:generated/enterprise/hubs/security-assurance/model-and-evidence",
+      "target_type": "page"
+    },
+    {
+      "evidence": [
+        "scripts/docs/enterprise/security_assurance_correlation.py",
+        "contracts/generated/documentation-enterprise/security-assurance-correlation.json"
+      ],
+      "id": "link:hub:security-assurance:correlation:model-assurance-evidence",
+      "label": "Model Assurance Evidence",
+      "relation_type": "correlates-model-evidence",
+      "source": "page:generated/enterprise/hubs/security-assurance",
+      "target": "page:generated/enterprise/hubs/security-assurance/model-assurance-evidence",
+      "target_type": "page"
+    },
+    {
+      "evidence": [
+        "scripts/docs/enterprise/security_assurance_correlation.py",
+        "contracts/generated/documentation-enterprise/security-assurance-correlation.json"
+      ],
+      "id": "link:hub:security-assurance:correlation:owasp-evidence",
+      "label": "Owasp Evidence",
+      "relation_type": "classifies-owasp-evidence",
+      "source": "page:generated/enterprise/hubs/security-assurance",
+      "target": "page:generated/enterprise/hubs/security-assurance/owasp-evidence",
+      "target_type": "page"
+    },
+    {
+      "evidence": [
+        "scripts/docs/enterprise/security_assurance_correlation.py",
+        "contracts/generated/documentation-enterprise/security-assurance-correlation.json"
+      ],
+      "id": "link:hub:security-assurance:correlation:reports",
+      "label": "Reports",
+      "relation_type": "qualification-evidence",
+      "source": "page:generated/enterprise/hubs/security-assurance",
+      "target": "page:generated/enterprise/hubs/security-assurance/reports/index",
+      "target_type": "page"
+    },
+    {
+      "evidence": [
+        "scripts/docs/enterprise/security_assurance_correlation.py",
+        "contracts/generated/documentation-enterprise/security-assurance-correlation.json"
+      ],
+      "id": "link:hub:security-assurance:correlation:scenario-model",
+      "label": "Scenario Model",
+      "relation_type": "correlates-scenario-model",
+      "source": "page:generated/enterprise/hubs/security-assurance",
+      "target": "page:generated/enterprise/hubs/security-assurance/scenario-model",
+      "target_type": "page"
+    },
+    {
+      "evidence": [
+        "scripts/docs/enterprise/security_assurance_correlation.py",
+        "contracts/generated/documentation-enterprise/security-assurance-correlation.json"
+      ],
+      "id": "link:hub:security-assurance:correlation:scenario-walkthroughs",
+      "label": "Scenario Walkthroughs",
+      "relation_type": "walks-model-evidence",
+      "source": "page:generated/enterprise/hubs/security-assurance",
+      "target": "page:generated/enterprise/hubs/security-assurance/scenario-walkthroughs",
+      "target_type": "page"
+    },
+    {
+      "evidence": [
+        "scripts/docs/enterprise/security_assurance_correlation.py",
+        "contracts/generated/documentation-enterprise/security-assurance-correlation.json"
+      ],
+      "id": "link:hub:security-assurance:correlation:stride-evidence",
+      "label": "Stride Evidence",
+      "relation_type": "classifies-stride-evidence",
+      "source": "page:generated/enterprise/hubs/security-assurance",
+      "target": "page:generated/enterprise/hubs/security-assurance/stride-evidence",
+      "target_type": "page"
+    },
+    {
+      "evidence": [
+        "scripts/docs/enterprise/security_assurance_correlation.py",
+        "contracts/generated/documentation-enterprise/security-assurance-correlation.json"
+      ],
+      "id": "link:hub:security-assurance:correlation:threat-model-assurance",
+      "label": "Threat Model Assurance",
+      "relation_type": "reverse-model-evidence-link",
+      "source": "page:generated/enterprise/hubs/security-assurance",
+      "target": "page:generated/enterprise/threat-model/assurance-evidence",
+      "target_type": "page"
+    },
+    {
+      "evidence": [
         "scripts/docs/enterprise/documentation_ia.py"
       ],
       "id": "link:hub:security-assurance:page:generated/development/intelligence/evidence-coverage",

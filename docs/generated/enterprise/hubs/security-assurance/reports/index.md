@@ -1,6 +1,6 @@
 # Security Assurance Reports
 
-Generated reports are sanitized assurance evidence, not security certifications. Each report is one exact qualification bound to its recorded runtime SHA. The newest report is listed first.
+Generated reports are sanitized assurance evidence, not security certifications. The newest report is listed first.
 
 | Completed UTC | Runtime SHA | Qualification | Result | Critical | High | Medium | Low | Info | Suite | Coverage % | Report |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -23,6 +23,6 @@ This is a latest-per-suite view, not a synthetic cross-suite qualification verdi
 
 Historical qualification artifacts outside the latest-per-suite set: **1**.
 
-Latest suite evidence uses one runtime SHA: `66ed279c01…`. The older Deep qualification on `4199c1e3f1…` remains historical evidence and is not merged into the latest set.
+Latest suite evidence uses one runtime SHA.
 
-[Open Model ↔ Assurance Evidence](../model-assurance-evidence.md) · [How the Security Model and Assurance Evidence Fit Together](../model-and-evidence.md) · [How to Read Security Documentation](../how-to-read.md)
+[Open Model ↔ Assurance Evidence](../model-assurance-evidence.md) · [How the pieces fit together](../model-and-evidence.md)

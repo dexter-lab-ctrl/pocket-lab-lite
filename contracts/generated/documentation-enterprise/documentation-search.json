@@ -112,6 +112,32 @@
     },
     {
       "aliases": [
+        "attack path evidence",
+        "model to evidence",
+        "security evidence correlation",
+        "threat model evidence"
+      ],
+      "canonical": "model assurance evidence",
+      "destinations": [
+        "generated/enterprise/hubs/security-assurance/model-assurance-evidence.md",
+        "generated/enterprise/threat-model/assurance-evidence.md"
+      ],
+      "intent_priority": "canonical-reference"
+    },
+    {
+      "aliases": [
+        "owasp assurance",
+        "owasp evidence",
+        "owasp top 10 qualification"
+      ],
+      "canonical": "owasp qualification evidence",
+      "destinations": [
+        "generated/enterprise/hubs/security-assurance/owasp-evidence.md"
+      ],
+      "intent_priority": "canonical-reference"
+    },
+    {
+      "aliases": [
         "release delta",
         "upgrade impact",
         "what changed"
@@ -155,6 +181,33 @@
     },
     {
       "aliases": [
+        "assurance report",
+        "latest security qualification",
+        "qualification evidence",
+        "security qualification"
+      ],
+      "canonical": "security assurance report",
+      "destinations": [
+        "generated/enterprise/hubs/security-assurance/reports/index.md",
+        "generated/enterprise/hubs/security-assurance/model-and-evidence.md"
+      ],
+      "intent_priority": "canonical-reference"
+    },
+    {
+      "aliases": [
+        "automated pass human review",
+        "human review required",
+        "residual security review"
+      ],
+      "canonical": "security human review",
+      "destinations": [
+        "generated/enterprise/hubs/security-assurance/how-to-read.md",
+        "generated/enterprise/threat-model/evidence.md"
+      ],
+      "intent_priority": "canonical-reference"
+    },
+    {
+      "aliases": [
         "lynis",
         "safety check",
         "security check",
@@ -166,6 +219,18 @@
         "generated/production/security.md"
       ],
       "intent_priority": "operator-diagnostic"
+    },
+    {
+      "aliases": [
+        "stride assurance",
+        "stride evidence",
+        "threat category qualification"
+      ],
+      "canonical": "stride qualification evidence",
+      "destinations": [
+        "generated/enterprise/hubs/security-assurance/stride-evidence.md"
+      ],
+      "intent_priority": "canonical-reference"
     },
     {
       "aliases": [

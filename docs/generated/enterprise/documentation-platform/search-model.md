@@ -17,6 +17,6 @@ Search remains local/static. No hosted search, vector database, RAG service, or 
 
 ## Alias groups
 
-13 task-oriented alias groups are emitted into the machine contract and surfaced in hub content so MkDocs local search can discover operator/user entry points before deep implementation pages where practical.
+18 task-oriented alias groups are emitted into the machine contract and surfaced in hub content so MkDocs local search can discover operator/user entry points before deep implementation pages where practical.
 
 Machine contract: `contracts/generated/documentation-enterprise/documentation-search.json`.

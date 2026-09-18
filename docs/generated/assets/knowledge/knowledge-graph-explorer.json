@@ -13473,6 +13473,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/docs/test_security_assurance_correlation.py",
+      "name": "tests/docs/test_security_assurance_correlation.py",
+      "source_refs": [
+        "tests/docs/test_security_assurance_correlation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/docs/test_security_assurance_playbooks.py",
       "name": "tests/docs/test_security_assurance_playbooks.py",
       "source_refs": [
@@ -15905,6 +15916,20 @@
       "source": "domain:control_plane",
       "target": "table:webauthn_credentials",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_security_assurance_correlation.py"
+      ],
+      "id": "rel:0532baca04997861",
+      "source": "domain:documentation",
+      "target": "test:tests/docs/test_security_assurance_correlation.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -46231,6 +46256,20 @@
       "source": "component:proot-ubuntu",
       "target": "boundary:application-container",
       "type": "protected_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_security_assurance_correlation.py"
+      ],
+      "id": "rel:9bd96dec67d89cac",
+      "source": "domain:security",
+      "target": "test:tests/docs/test_security_assurance_correlation.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
