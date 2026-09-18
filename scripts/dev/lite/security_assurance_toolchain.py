@@ -369,6 +369,42 @@ SYSTEM_DEPENDENCIES: dict[str, dict[str, str]] = {
     },
 }
 
+# Hurl 8.0.1 Linux release assets are built on Ubuntu 22.04 and require the
+# libxml2.so.2 ABI. Newer Ubuntu releases (including Questing-era WSL2
+# environments) ship libxml2.so.16 instead. Those SONAMEs are not ABI
+# compatible, so never paper over the mismatch with a symlink or a privileged
+# host package mutation.
+HURL_LIBXML2_LEGACY_PATHS = (
+    Path("/usr/lib/x86_64-linux-gnu/libxml2.so.2"),
+    Path("/lib/x86_64-linux-gnu/libxml2.so.2"),
+)
+HURL_LIBXML2_MODERN_PATHS = (
+    Path("/usr/lib/x86_64-linux-gnu/libxml2.so.16"),
+    Path("/lib/x86_64-linux-gnu/libxml2.so.16"),
+)
+
+
+def _hurl_runtime_compatibility() -> dict[str, Any]:
+    legacy = next((path for path in HURL_LIBXML2_LEGACY_PATHS if path.is_file()), None)
+    if legacy is not None:
+        return {
+            "status": "READY",
+            "required_abi": "libxml2.so.2",
+            "observed_abi": "libxml2.so.2",
+            "sanitized": True,
+        }
+    modern = next((path for path in HURL_LIBXML2_MODERN_PATHS if path.is_file()), None)
+    return {
+        "status": "NOT_APPLICABLE",
+        "required_abi": "libxml2.so.2",
+        "observed_abi": "libxml2.so.16" if modern is not None else "UNAVAILABLE",
+        "reason": (
+            "host_libxml2_abi_incompatible; hurl_8_0_1_requires_libxml2_so_2; "
+            "installer_does_not_modify_or_shim_host_runtime"
+        ),
+        "sanitized": True,
+    }
+
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
@@ -921,7 +957,9 @@ def _install_github(tool_id: str) -> dict[str, Any]:
     )
     probe = _probe_version(tool_id, binary)
     if probe.get("status") != "READY":
-        raise RuntimeError("fixed_release_version_probe_failed")
+        detail = "; ".join(probe.get("version_output_summary") or [])
+        suffix = f":{_sanitize_text(detail, 96)}" if detail else ""
+        raise RuntimeError(f"fixed_release_version_probe_failed{suffix}")
     return _promote_source(
         tool_id,
         binary,
@@ -1119,6 +1157,19 @@ def _check_one(tool_id: str, spec: Mapping[str, Any]) -> dict[str, Any]:
 
     binary = _candidate(tool_id)
     if binary is None:
+        if tool_id == "hurl":
+            compatibility = _hurl_runtime_compatibility()
+            if compatibility.get("status") == "NOT_APPLICABLE":
+                base.update({
+                    "status": "NOT_APPLICABLE",
+                    "version_status": "host_runtime_incompatible",
+                    "installation_source": GITHUB_RECIPES["hurl"]["source"],
+                    "checksum_status": "not_checked_host_runtime_incompatible",
+                    "signature_status": "not_applicable_host_runtime",
+                    "status_detail": compatibility["reason"],
+                    "runtime_compatibility": compatibility,
+                })
+                return base
         if tool_id in SYSTEM_DEPENDENCIES:
             base.update({
                 "status": "NOT_APPLICABLE",
@@ -1240,6 +1291,19 @@ def install_toolchain() -> dict[str, Any]:
                 "sanitized": True,
             })
             continue
+
+        if tool_id == "hurl" and _candidate(tool_id) is None:
+            checked = _check_one(tool_id, spec)
+            if checked.get("status") == "NOT_APPLICABLE":
+                results.append({
+                    "tool_id": tool_id,
+                    "installer_classification": classification,
+                    "action": "not_applicable_host_runtime",
+                    "check": checked,
+                    "status": "PASS",
+                    "sanitized": True,
+                })
+                continue
 
         try:
             source = _candidate(tool_id)
