@@ -20,6 +20,10 @@ const SECRET_KEY_RE = /(authorization|cookie|token|password|passwd|secret|api.?k
 
 function fixedIdentity() {
   try {
+    const metadata = fs.lstatSync(SNI_FILE);
+    if (!metadata.isFile() || metadata.isSymbolicLink() || (metadata.mode & 0o022) !== 0) {
+      return null;
+    }
     const value = fs.readFileSync(SNI_FILE, "ascii").trim().toLowerCase();
     if (!/^[a-z0-9](?:[a-z0-9.-]{0,252}[a-z0-9])?$/.test(value) || !value.includes(".") || value.includes("..")) {
       return null;
@@ -51,7 +55,10 @@ async function run(suite) {
   }
   const { chromium } = await import("playwright");
   const identity = fixedIdentity();
-  const targetHost = identity || "127.0.0.1";
+  if (!identity) {
+    throw new Error("runtime_tls_identity_unavailable");
+  }
+  const targetHost = identity;
   const base = `https://${targetHost}:${CADDY_PORT}`;
   const attackerOrigin = `http://127.0.0.1:${ATTACKER_PORT}`;
 
@@ -94,9 +101,9 @@ window.__pocketlab = {fetchReadable:null, fetchStatus:null, websocketOpened:null
     server.listen(ATTACKER_PORT, "127.0.0.1", resolve);
   });
 
-  const launchArgs = identity ? [`--host-resolver-rules=MAP ${identity} 127.0.0.1`] : [];
+  const launchArgs = [`--host-resolver-rules=MAP ${identity} 127.0.0.1`];
   const browser = await chromium.launch({ headless: true, args: launchArgs });
-  const context = await browser.newContext({ ignoreHTTPSErrors: true });
+  const context = await browser.newContext({ ignoreHTTPSErrors: false });
   const page = await context.newPage();
   const requests = [];
   page.on("request", request => {
@@ -255,7 +262,7 @@ window.__pocketlab = {fetchReadable:null, fetchStatus:null, websocketOpened:null
     version: VERSION,
     suite,
     target: "fixed_caddy_https_runtime",
-    caddy_identity: identity ? "fixed_operator_approved_identity" : "fixed_loopback_identity",
+    caddy_identity: "fixed_operator_approved_identity",
     checks,
     scenario_results: scenarios,
     findings,
