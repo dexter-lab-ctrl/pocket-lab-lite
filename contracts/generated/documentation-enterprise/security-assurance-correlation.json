@@ -1754,7 +1754,7 @@
     "scenarios": "sha256:d90875e664dcd7dfcf6a1cd0392b1cefb0ff12fd1a0663b0c9cf46bbb405869d",
     "suites": "sha256:017df0a53275d69a213abdf7a605424a1fc4b37fddf66dcf67fb1599c446d2a3",
     "threat_model": "sha256:74442eb35bcd488a67b5fc995ca1d6f6f341343bb3f8c3a0663cb89e241a908c",
-    "tools": "sha256:6789301f2b6752a336ad9290fbcb0bfd64350ecb5d81fcac7f70ed401119a777"
+    "tools": "sha256:f9531892fe00b4748a8c57f3c544f69eaa572c721137f61151a7a10ea87fcbb5"
   },
   "kind": "security-assurance-correlation",
   "latest_by_suite": {

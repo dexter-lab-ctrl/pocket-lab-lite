@@ -27,23 +27,23 @@ source-owned and caller input cannot broaden them.
 | `owasp-zap` | 2.17.0 | `dev_pc_live_runtime` | deep, adversarial | heavy | `runtime.zap_api_baseline` | `approved_server_phone_api_tunnel` | official_zap_release_receipt |
 | `pocketlab-runtime-360` | 1.0.0 | `dev_pc_live_runtime` | standard, deep, adversarial | medium | `runtime.pocketlab_360` | `fixed_server_phone_runtime_tunnels` | repository_development_venv |
 | `playwright-runtime` | 1.0.0 | `dev_pc_live_runtime` | standard, deep, adversarial | medium | `runtime.playwright_browser` | `fixed_caddy_browser_runtime` | repository_node_dependencies |
-| `playwright` | runtime-discovered | `dev_pc_live_runtime` | standard, deep, adversarial | heavy | `runtime.playwright_security` | `approved_server_phone_caddy_tls_tunnel` | approved_existing_dev_pc_toolchain |
-| `mitmdump` | runtime-discovered | `dev_pc_live_runtime` | standard, deep, adversarial | medium | `runtime.mitmdump_fixed_proxy` | `approved_server_phone_api_tunnel` | approved_existing_dev_pc_toolchain |
-| `hurl` | runtime-discovered | `dev_pc_live_runtime` | standard, deep, adversarial | medium | `runtime.hurl_security_sequences` | `approved_server_phone_caddy_tls_tunnel` | approved_existing_dev_pc_toolchain |
-| `k6` | runtime-discovered | `dev_pc_live_runtime` | deep, adversarial | heavy | `runtime.k6_bounded_resilience` | `approved_server_phone_caddy_tls_tunnel` | approved_existing_dev_pc_toolchain |
-| `websocat` | runtime-discovered | `dev_pc_live_runtime` | standard, deep, adversarial | small | `runtime.websocat_auth_boundary` | `approved_server_phone_api_tunnel` | approved_existing_dev_pc_toolchain |
-| `katana` | runtime-discovered | `dev_pc_live_runtime` | deep, adversarial | medium | `runtime.katana_route_inventory` | `approved_server_phone_caddy_tls_tunnel` | approved_existing_dev_pc_toolchain |
-| `httpx` | runtime-discovered | `dev_pc_live_runtime` | standard, deep, adversarial | small | `runtime.httpx_exposure` | `approved_server_phone_api_tunnel` | approved_existing_dev_pc_toolchain |
-| `tlsx` | runtime-discovered | `dev_pc_live_runtime` | standard, deep, adversarial | small | `runtime.tlsx_identity` | `approved_server_phone_caddy_tls_tunnel` | approved_existing_dev_pc_toolchain |
-| `tshark` | runtime-discovered | `dev_pc_live_runtime` | standard, deep, adversarial | medium | `runtime.tshark_observer` | `approved_loopback_listener_set` | approved_existing_dev_pc_toolchain |
-| `ffuf` | runtime-discovered | `dev_pc_live_runtime` | deep, adversarial | medium | `runtime.ffuf_tiny_wordlist` | `approved_server_phone_caddy_tls_tunnel` | approved_existing_dev_pc_toolchain |
-| `nats-cli` | runtime-discovered | `dev_pc_live_runtime` | deep, adversarial | small | `runtime.nats_fixed_observer` | `approved_loopback_listener_set` | approved_existing_dev_pc_toolchain |
+| `playwright` | 1.60.0 | `dev_pc_live_runtime` | standard, deep, adversarial | heavy | `runtime.playwright_security` | `approved_server_phone_caddy_tls_tunnel` | repository_package_lock |
+| `mitmdump` | 12.2.3 | `dev_pc_live_runtime` | standard, deep, adversarial | medium | `runtime.mitmdump_fixed_proxy` | `approved_server_phone_api_tunnel` | pypi_exact_wheel_managed_venv |
+| `hurl` | 8.0.1 | `dev_pc_live_runtime` | standard, deep, adversarial | medium | `runtime.hurl_security_sequences` | `approved_server_phone_caddy_tls_tunnel` | official_hurl_release_receipt |
+| `k6` | 2.2.0 | `dev_pc_live_runtime` | deep, adversarial | heavy | `runtime.k6_bounded_resilience` | `approved_server_phone_caddy_tls_tunnel` | official_grafana_k6_release_receipt |
+| `websocat` | 1.14.1 | `dev_pc_live_runtime` | standard, deep, adversarial | small | `runtime.websocat_auth_boundary` | `approved_server_phone_api_tunnel` | official_websocat_release_receipt |
+| `katana` | 1.7.0 | `dev_pc_live_runtime` | deep, adversarial | medium | `runtime.katana_route_inventory` | `approved_server_phone_caddy_tls_tunnel` | official_katana_release_receipt |
+| `httpx` | 1.12.0 | `dev_pc_live_runtime` | standard, deep, adversarial | small | `runtime.httpx_exposure` | `approved_server_phone_api_tunnel` | official_httpx_release_receipt |
+| `tlsx` | 1.4.0 | `dev_pc_live_runtime` | standard, deep, adversarial | small | `runtime.tlsx_identity` | `approved_server_phone_caddy_tls_tunnel` | official_tlsx_release_receipt |
+| `tshark` | runtime-discovered | `dev_pc_live_runtime` | standard, deep, adversarial | medium | `runtime.tshark_observer` | `approved_loopback_listener_set` | approved_system_wireshark_dependency |
+| `ffuf` | 2.3.0 | `dev_pc_live_runtime` | deep, adversarial | medium | `runtime.ffuf_tiny_wordlist` | `approved_server_phone_caddy_tls_tunnel` | official_ffuf_release_receipt |
+| `nats-cli` | 0.5.0 | `dev_pc_live_runtime` | deep, adversarial | small | `runtime.nats_fixed_observer` | `approved_loopback_listener_set` | official_nats_cli_release_receipt |
 
 ## Safety contract
 
 Runtime tools remain restricted to repository-owned fixed DEV-PC tunnels,
 registered Server Phone worker/harness controls and the operator-approved Caddy TLS identity.
-`pocketlab-runtime-360` and `playwright-runtime` are repository-owned adapters and are not promoted as third-party scanner binaries.
+`pocketlab-runtime-360` and `playwright-runtime` are repository-owned adapters and are not promoted as third-party scanner binaries. Playwright itself is qualified from the repository package-lock, and the installer does not download browser payloads. `tshark` is a host-owned dependency and is explicitly `NOT_APPLICABLE` when unavailable rather than triggering privileged installation.
 
 ```bash
 task lite:security:assurance:tools:install
