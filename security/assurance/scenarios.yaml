@@ -476,7 +476,7 @@ scenarios:
       - id: hostile-origin-fetch
         threat: "Hostile-origin browser session abuse — hostile origin fetch"
         expected_invariant: "A hostile origin cannot read protected Pocket Lab API responses or inherit browser authority."
-      - id: hostile-origin-websocket
+      - id: hostile-origin-session-websocket
         threat: "Hostile-origin browser session abuse — hostile origin websocket"
         expected_invariant: "A hostile origin cannot read protected Pocket Lab API responses or inherit browser authority."
 
