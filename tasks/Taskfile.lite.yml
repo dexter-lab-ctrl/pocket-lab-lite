@@ -245,6 +245,17 @@ tasks:
     cmds:
       - '{{.PYTHON}} scripts/dev/lite/security_assurance.py compare "{{.RUN_ID}}"'
 
+
+  lite:security:assurance:tunnel:check:
+    desc: Discover fixed Server Phone/Tailnet runtime facts through the managed SSH alias without printing address values
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance_runtime_tunnel.py check'
+
+  lite:security:assurance:tunnel:hold:
+    desc: Hold the fixed DEV-PC Runtime Security Assurance SSH forwards using runtime-derived phone and Tailnet addresses
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/security_assurance_runtime_tunnel.py hold'
+
   lite:security:assurance:tools:install:
     desc: Install or promote the fixed DEV-PC Runtime Security Assurance toolchain outside Git
     cmds:
@@ -277,7 +288,7 @@ tasks:
         --policy-sync-wait-seconds "{{.POLICY_SYNC_WAIT_SECONDS}}"
 
   lite:security:assurance:qualify:full:
-    desc: Run phone qualification plus the fixed DEV-PC Standard and Deep tool lanes
+    desc: Run phone qualification plus the fixed DEV-PC Standard, Adversarial, and Deep 360-degree tool lanes
     vars:
       PRINCIPAL_ID: '{{default "codex-security-assurance" .PRINCIPAL_ID}}'
       KEY_FILE: '{{default "~/.pocketlab-qualification/codex-security-assurance.key" .KEY_FILE}}'
