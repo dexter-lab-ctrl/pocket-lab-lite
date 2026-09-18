@@ -29,6 +29,9 @@ EXECUTIONS = {
     "fixed_negative_auth_probes",
     "canonical_threat_model_check",
     "attack_path_inventory",
+    "dev_pc_browser_runtime_evidence",
+    "dev_pc_live_runtime_evidence",
+    "dev_pc_deep_provenance_evidence",
 }
 LIFECYCLE = {
     "precondition", "action", "expected_invariant", "pass_condition", "fail_condition",
@@ -89,6 +92,15 @@ def test_all_suite_scenario_references_exist_and_safety_classes_are_allowed():
         for scenario_id in suite["scenarios"]:
             assert scenario_id in scenario_map, (suite_id, scenario_id)
             assert scenario_map[scenario_id]["safety_class"] in allowed
+        external = suite.get("external_scenarios", [])
+        if external:
+            assert suite.get("external_execution_lane") == "dev_pc_live_runtime"
+        for scenario_id in external:
+            assert scenario_id in scenario_map, (suite_id, scenario_id)
+            scenario = scenario_map[scenario_id]
+            assert scenario["safety_class"] in allowed
+            assert suite_id in scenario["suites"]
+            assert str(scenario["execution"]).startswith("dev_pc_")
 
 
 def test_caller_request_model_has_no_arbitrary_execution_inputs():
@@ -117,7 +129,7 @@ def test_tool_backed_scenarios_remain_fixed_and_bounded():
     assert "-p-" not in joined_nmap
     zap = tools["owasp-zap"]
     assert zap["execution_lane"] == "dev_pc_live_runtime"
-    assert zap["suite_membership"] == ["deep"]
+    assert zap["suite_membership"] == ["deep", "adversarial"]
     assert zap["ruleset"] == "fixed_api_baseline_profile"
     assert zap["template_allowlist"] == "fixed_safe_api_routes"
     schemathesis = tools["schemathesis"]
@@ -127,8 +139,81 @@ def test_tool_backed_scenarios_remain_fixed_and_bounded():
     assert testssl["fixed_target"] == "approved_server_phone_caddy_tls_tunnel"
     assert "--fast" in testssl["fixed_argv"]
 
+    runtime360 = tools["pocketlab-runtime-360"]
+    assert runtime360["execution_lane"] == "dev_pc_live_runtime"
+    assert runtime360["fixed_target"] == "fixed_server_phone_runtime_tunnels"
+    assert runtime360["fixed_argv"] == [
+        "scripts/dev/lite/security_assurance_360.py",
+        "registered_suite_only",
+    ]
+    browser = tools["playwright-runtime"]
+    assert browser["execution_lane"] == "dev_pc_live_runtime"
+    assert browser["fixed_target"] == "fixed_caddy_browser_runtime"
+    assert browser["fixed_argv"] == [
+        "scripts/dev/lite/security_assurance_browser.mjs",
+        "registered_suite_only",
+    ]
+    assert {"standard", "deep", "adversarial"} <= set(browser["suite_membership"])
+
 
 def test_scenario_evidence_tool_references_are_registered():
     tools = {item["id"] for item in _yaml(TOOLS)["toolchain"]}
     for scenario in _yaml(SCENARIOS)["scenarios"]:
         assert set(scenario.get("evidence_tools", [])).issubset(tools)
+
+
+def test_360_suite_shape_covers_browser_control_plane_resilience_and_provenance():
+    profiles = _yaml(SUITES)["profiles"]
+
+    standard = set(profiles["standard"]["external_scenarios"])
+    assert {
+        "browser-origin-control-plane-bypass",
+        "cross-origin-session-abuse",
+        "csrf-protected-mutation",
+        "websocket-auth-boundary",
+        "pwa-offline-secret-retention",
+        "browser-network-egress-contract",
+        "tailnet-service-exposure",
+        "proxy-header-trust-confusion",
+        "device-invite-replay-and-misbinding",
+        "recovery-object-authorization",
+        "remote-access-truthfulness",
+    } <= standard
+
+    adversarial = set(profiles["adversarial"]["external_scenarios"])
+    assert {
+        "webauthn-challenge-boundary",
+        "nats-command-replay-integrity",
+        "worker-reconnect-command-integrity",
+        "rate-limit-and-admission-resilience",
+        "slow-client-resource-exhaustion",
+        "approval-continuation-replay",
+        "temporary-exception-scope-bypass",
+        "policy-known-good-recovery",
+    } <= adversarial
+
+    deep = set(profiles["deep"]["external_scenarios"])
+    assert {
+        "release-artifact-tamper",
+        "dependency-confusion-and-lock-integrity",
+        "security-evidence-poisoning",
+        "backup-confidentiality-integrity",
+        "restore-transaction-integrity",
+        "app-package-provenance",
+        "android-termux-host-hardening",
+        "runtime-env-secret-boundary",
+        "hidden-route-and-debug-surface",
+    } <= deep
+    assert len(standard) >= 18
+    assert len(adversarial) >= 29
+    assert len(deep) >= 36
+
+
+def test_external_scenarios_never_add_arbitrary_caller_inputs():
+    text = ROUTER.read_text(encoding="utf-8")
+    request_block = text.split("class AssuranceRunRequest", 1)[1].split("class FaultControlRequest", 1)[0]
+    forbidden = (
+        "url:", "method:", "target:", "port:", "argv:", "subject:", "template:",
+        "rule:", "path:", "host:", "wordlist:", "scanner:", "script:", "fixture:",
+    )
+    assert all(item not in request_block for item in forbidden)
