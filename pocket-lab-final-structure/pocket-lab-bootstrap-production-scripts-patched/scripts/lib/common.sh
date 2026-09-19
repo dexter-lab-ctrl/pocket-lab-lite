@@ -293,8 +293,6 @@ value = (sys.argv[1] or "").replace("\r", " ").replace("\n", " ").strip()
 value = re.sub(r"\s+", " ", value)
 if not value or value.lower() in {"n/a", "na", "unknown", "none", "null"}:
     raise SystemExit(1)
-if len(value) > 96:
-    value = value[:96]
 print(value)
 PY
 }
@@ -359,7 +357,9 @@ pm2_ensure_versioned_process() {
   require_cmd pm2 python3 sha256sum
   version="$(pm2_normalize_service_version "$version")" || die "PM2 service $name does not have an exact installed version"
   projected_exec="$(pm2_prepare_versioned_exec "$name" "$version" "$source_exec")"
-  POCKETLAB_SERVICE_VERSION="$version" pm2_ensure_process "$name" "$projected_exec" "$@"
+  local POCKETLAB_SERVICE_VERSION="$version"
+  export POCKETLAB_SERVICE_VERSION
+  pm2_ensure_process "$name" "$projected_exec" "$@"
 }
 
 pm2_process_snapshot() {
