@@ -29,6 +29,7 @@ for file in "${shell_files[@]}"; do
   [[ -f "$file" ]] || { echo "ERROR missing $file" >&2; exit 1; }
   bash -n "$file"
 done
+bash -n scripts/dev/check-lite-runtime-resilience-server-phone.sh
 echo "PASS runtime resilience shell syntax"
 
 "$PYTHON" -m py_compile \
