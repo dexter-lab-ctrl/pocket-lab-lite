@@ -88,3 +88,42 @@ def test_remote_access_loss_does_not_restart_control_plane():
         {"installed": True, "daemon_running": True, "ipv4_ready": True},
         {"installed": True, "daemon_running": True, "ipv4_ready": False},
     ) == ["tailscale_ready_transition"]
+
+
+
+def test_pm2_version_projection_drift_is_repairable():
+    _load("pocketlab_runtime_registry")
+    reconciler = _load("pocketlab_runtime_reconciler")
+
+    healthy = [{
+        "name": "pocket-api",
+        "pm2_env": {
+            "status": "online",
+            "version": "1.0.0+sha.123456789abc",
+            "POCKETLAB_SERVICE_VERSION": "1.0.0+sha.123456789abc",
+        },
+    }]
+    versions, reasons = reconciler.pm2_version_projection(healthy)
+    assert versions["pocket-api"] == "1.0.0+sha.123456789abc"
+    assert reasons == []
+
+    missing = [{
+        "name": "pocket-api",
+        "pm2_env": {
+            "status": "online",
+            "version": "N/A",
+        },
+    }]
+    _, reasons = reconciler.pm2_version_projection(missing)
+    assert reasons == ["pm2_version_projection:pocket-api"]
+
+    mismatch = [{
+        "name": "pocket-api",
+        "pm2_env": {
+            "status": "online",
+            "version": "1.0.0+sha.old",
+            "POCKETLAB_SERVICE_VERSION": "1.0.0+sha.new",
+        },
+    }]
+    _, reasons = reconciler.pm2_version_projection(mismatch)
+    assert reasons == ["pm2_version_projection:pocket-api"]
