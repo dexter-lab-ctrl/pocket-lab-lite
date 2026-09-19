@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-ROOT="$(cd "$(dirname "\${BASH_SOURCE[0]}")/../.." && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
-PYTHON="\${POCKETLAB_DEV_PYTHON:-\${PYTHON:-.venv/bin/python}}"
+PYTHON="${POCKETLAB_DEV_PYTHON:-${PYTHON:-.venv/bin/python}}"
 if [[ ! -x "$PYTHON" ]]; then
   PYTHON=python3
 fi
@@ -25,7 +25,7 @@ shell_files=(
   "$BOOT/lite/restart-caddy-proxy.sh"
 )
 
-for file in "\${shell_files[@]}"; do
+for file in "${shell_files[@]}"; do
   [[ -f "$file" ]] || { echo "ERROR missing $file" >&2; exit 1; }
   bash -n "$file"
 done
