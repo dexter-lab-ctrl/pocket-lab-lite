@@ -59,6 +59,7 @@ CORE_SERVICES: tuple[ServiceSpec, ...] = (
     ServiceSpec("pocket-worker", "worker", True),
     ServiceSpec("pocket-opa", "policy", True),
     ServiceSpec("caddy-proxy", "proxy", True),
+    ServiceSpec("pocket-node-agent", "server-host-agent", True),
     ServiceSpec("pocket-telemetry", "telemetry", False),
 )
 
@@ -963,6 +964,17 @@ class LiteCoreSupervisor:
 
             if not is_online(statuses.get("pocket-worker", "missing")):
                 actions.append(self.restart_pm2("pocket-worker", "worker_pm2_not_online"))
+
+        agent_status = statuses.get("pocket-node-agent", "missing")
+        if agent_status == "missing":
+            self._append_event({
+                "event": "server_agent_definition_missing",
+                "service": "pocket-node-agent",
+                "reason": "runtime_reconciler_owns_missing_definition_repair",
+                "acted": False,
+            })
+        elif not is_online(agent_status):
+            actions.append(self.restart_pm2("pocket-node-agent", "server_agent_pm2_not_online"))
 
         caddy_status = statuses.get("caddy-proxy", "missing")
         caddy_tcp_reachable = bool(observed["checks"].get("caddy_tcp_reachable"))

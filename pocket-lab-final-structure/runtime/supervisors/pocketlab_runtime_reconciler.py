@@ -80,6 +80,55 @@ def repair_reasons(statuses: dict[str, str]) -> list[str]:
     return reasons
 
 
+def tailscale_state() -> dict[str, bool]:
+    cli = ""
+    for candidate in ("tailscale-cli", "tailscale"):
+        try:
+            if _run(["sh", "-lc", f"command -v {candidate}"], timeout=3).returncode == 0:
+                cli = candidate
+                break
+        except Exception:
+            pass
+    daemon_running = False
+    try:
+        daemon_running = _run(["sh", "-lc", "pgrep -f tailscaled >/dev/null 2>&1"], timeout=3).returncode == 0
+    except Exception:
+        daemon_running = False
+
+    ipv4_ready = False
+    if daemon_running and cli:
+        try:
+            result = _run([cli, "ip", "-4"], timeout=5)
+            ipv4_ready = result.returncode == 0 and bool(result.stdout.strip())
+        except Exception:
+            ipv4_ready = False
+    return {
+        "installed": bool(cli),
+        "daemon_running": daemon_running,
+        "ipv4_ready": ipv4_ready,
+    }
+
+
+def remote_reconcile_reasons(current: dict[str, bool], previous: dict[str, Any] | None) -> list[str]:
+    """Distinguish network loss from repairable remote-access drift.
+
+    A running Tailscale daemon with no current IPv4 may simply reflect Wi-Fi or
+    upstream loss. That state is observable but must not restart Pocket Lab.
+    """
+    reasons: list[str] = []
+    if current.get("installed") and not current.get("daemon_running"):
+        reasons.append("tailscaled_missing")
+        return reasons
+    prior = previous if isinstance(previous, dict) else {}
+    if (
+        current.get("daemon_running")
+        and current.get("ipv4_ready")
+        and prior.get("ipv4_ready") is False
+    ):
+        reasons.append("tailscale_ready_transition")
+    return reasons
+
+
 class RuntimeReconciler:
     def __init__(self) -> None:
         self.interval = max(10, int(os.environ.get("POCKETLAB_RUNTIME_RECONCILE_SECONDS", DEFAULT_INTERVAL_SECONDS)))
@@ -101,6 +150,13 @@ class RuntimeReconciler:
             / "lite"
             / "reconcile-runtime.sh"
         )
+
+    def _load_previous(self) -> dict[str, Any]:
+        try:
+            value = json.loads(self.state_file.read_text(encoding="utf-8"))
+            return value if isinstance(value, dict) else {}
+        except Exception:
+            return {}
 
     def _write_json(self, payload: dict[str, Any]) -> None:
         self.state_dir.mkdir(parents=True, exist_ok=True)
@@ -163,18 +219,23 @@ class RuntimeReconciler:
         return event
 
     def tick(self) -> dict[str, Any]:
+        previous = self._load_previous()
         statuses = pm2_statuses(load_pm2_processes())
+        remote = tailscale_state()
         reasons = repair_reasons(statuses)
+        reasons.extend(remote_reconcile_reasons(remote, previous.get("remote_access")))
         actions: list[dict[str, Any]] = []
         if reasons:
             actions.append(self._repair(reasons))
             statuses = pm2_statuses(load_pm2_processes())
+            remote = tailscale_state()
         legacy_present = sorted(name for name in statuses if name in LEGACY_LITE_SERVICES)
         payload = {
             "reconciler": "pocketlab-runtime-reconciler",
             "version": VERSION,
             "status": "degraded" if reasons else "healthy",
             "services": {spec.name: statuses.get(spec.name, "missing") for spec in CONTROL_PLANE_SERVICES},
+            "remote_access": remote,
             "drift_reasons": reasons,
             "actions": actions,
             "legacy_lite_services_present": legacy_present,

@@ -652,8 +652,24 @@ EOF
 EOF
 }
 
+record_caddy_config_change(){
+  local before="$1" after=""
+  if [[ -f "$CADDYFILE" ]] && have sha256sum; then
+    after="$(sha256sum "$CADDYFILE" | awk '{print $1}')"
+  fi
+  if [[ -z "$before" || -z "$after" || "$before" != "$after" ]]; then
+    CADDY_CONFIG_CHANGED=1
+  else
+    CADDY_CONFIG_CHANGED=0
+  fi
+}
+
 write_caddyfile(){
-  local fqdn tailscale_fqdn cert_dir tls_block
+  local fqdn tailscale_fqdn cert_dir tls_block old_hash=""
+  CADDY_CONFIG_CHANGED=0
+  if [[ -f "$CADDYFILE" ]] && have sha256sum; then
+    old_hash="$(sha256sum "$CADDYFILE" | awk '{print $1}')"
+  fi
   log INFO "Writing Caddyfile idempotently"
 
   if is_lite_profile; then
@@ -680,6 +696,7 @@ write_caddyfile(){
         write_caddy_site "$tailscale_fqdn" "$tls_block"
       fi
     } | atomic_write "$CADDYFILE" 0644
+    record_caddy_config_change "$old_hash"
     return
   fi
 
@@ -695,6 +712,7 @@ write_caddyfile(){
       write_caddy_site ":${DASH_PORT}"
     } | atomic_write "$CADDYFILE" 0644
   fi
+  record_caddy_config_change "$old_hash"
 }
 
 
@@ -918,6 +936,17 @@ pm2_runtime_process(){
   fi
 }
 
+reload_caddy_if_config_changed(){
+  is_lite_profile || return 0
+  [[ "${CADDY_CONFIG_CHANGED:-0}" == "1" ]] || return 0
+  log INFO "Lite Caddy configuration changed; reloading the running proxy"
+  if caddy reload --config "$CADDYFILE" >/dev/null 2>&1; then
+    return 0
+  fi
+  log WARN "Caddy reload failed; restarting only caddy-proxy"
+  pm2 restart caddy-proxy --update-env >/dev/null 2>&1 || return 1
+}
+
 start_pm2_daemons(){
   log INFO "Converging dashboard services with PM2"
   configure_lite_runtime_limits
@@ -947,6 +976,7 @@ start_pm2_daemons(){
   wait_for_lite_api_ready
   validate_caddyfile
   pm2_runtime_process caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
+  reload_caddy_if_config_changed
   if is_lite_profile; then
     POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS="${POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS:-45}" POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS="${POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS:-120}" pm2_runtime_process pocketlab-core-supervisor "$CORE_SUPERVISOR_SERVER" --interpreter python3 --update-env
     POCKETLAB_RUNTIME_RECONCILE_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_SECONDS:-45}" POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS:-120}" pm2_runtime_process pocketlab-runtime-reconciler "$RUNTIME_RECONCILER_SERVER" --interpreter python3 --update-env
@@ -979,6 +1009,7 @@ start_caddy_only(){
   write_caddyfile
   validate_caddyfile
   pm2_runtime_process caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
+  reload_caddy_if_config_changed
   pm2 save >/dev/null || true
   log INFO "Caddy proxy configuration is updated and safe to rerun"
 }

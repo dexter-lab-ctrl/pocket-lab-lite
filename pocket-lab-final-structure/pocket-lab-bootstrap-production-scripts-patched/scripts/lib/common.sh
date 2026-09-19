@@ -278,7 +278,9 @@ pm2_process_spec_hash() {
   {
     printf 'argv\\0'
     printf '%s\\0' "$@"
-    env | LC_ALL=C sort | grep -E '^(POCKETLAB_|API_PORT=|DASH_PORT=|MALLOC_ARENA_MAX=|OMP_NUM_THREADS=|OPENBLAS_NUM_THREADS=|NUMEXPR_NUM_THREADS=)' || true
+    env | LC_ALL=C sort \
+      | grep -E '^(POCKETLAB_|API_PORT=|DASH_PORT=|MALLOC_ARENA_MAX=|OMP_NUM_THREADS=|OPENBLAS_NUM_THREADS=|NUMEXPR_NUM_THREADS=)' \
+      | grep -Ev '^POCKETLAB_(RECONCILE_ONLY|RECONCILER_CHILD|RENDER_CADDY_ONLY|BOOTSTRAP_DRY_RUN|PROCESS_SPEC_HASH)=' || true
   } | sha256sum | awk '{print $1}'
 }
 

@@ -66,3 +66,25 @@ def test_lite_bootstrap_skips_legacy_runtime_stages():
     ).read_text()
     assert "packages+=(mariadb gitea)" in packages
     assert "if ! is_lite_profile; then" in packages
+
+
+
+def test_remote_access_loss_does_not_restart_control_plane():
+    _load("pocketlab_runtime_registry")
+    reconciler = _load("pocketlab_runtime_reconciler")
+
+    # Network loss: daemon remains running but Tailnet IPv4 is temporarily absent.
+    assert reconciler.remote_reconcile_reasons(
+        {"installed": True, "daemon_running": True, "ipv4_ready": False},
+        {"installed": True, "daemon_running": True, "ipv4_ready": True},
+    ) == []
+
+    assert reconciler.remote_reconcile_reasons(
+        {"installed": True, "daemon_running": False, "ipv4_ready": False},
+        {"installed": True, "daemon_running": True, "ipv4_ready": True},
+    ) == ["tailscaled_missing"]
+
+    assert reconciler.remote_reconcile_reasons(
+        {"installed": True, "daemon_running": True, "ipv4_ready": True},
+        {"installed": True, "daemon_running": True, "ipv4_ready": False},
+    ) == ["tailscale_ready_transition"]

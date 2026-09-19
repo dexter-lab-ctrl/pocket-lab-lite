@@ -222,3 +222,10 @@ def test_supervisor_requires_consecutive_caddy_tcp_failures(monkeypatch, tmp_pat
     assert third["actions"][0]["service"] == "caddy-proxy"
     assert calls == [("caddy-proxy", "caddy_tcp_unreachable_confirmed")]
     assert supervisor.caddy_tcp_failure_streak == 0
+
+
+
+def test_core_supervisor_tracks_server_host_node_agent():
+    supervisor = load_supervisor_module()
+    names = {spec.name for spec in supervisor.CORE_SERVICES}
+    assert "pocket-node-agent" in names
