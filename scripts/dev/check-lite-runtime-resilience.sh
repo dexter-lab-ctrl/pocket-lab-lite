@@ -44,7 +44,8 @@ PYTHONPATH="tests:$RUNTIME" PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 "$PYTHON" -m pytest
   tests/backend/test_lite_boot_recovery.py \
   tests/backend/test_lite_core_supervisor.py \
   tests/backend/test_lite_photoprism_runtime_resilience.py \
-  tests/backend/test_lite_pm2_idempotency.py
+  tests/backend/test_lite_pm2_idempotency.py \
+  tests/backend/test_lite_pm2_version_projection.py
 
 bash scripts/dev/check-lite-bootstrap.sh
 
