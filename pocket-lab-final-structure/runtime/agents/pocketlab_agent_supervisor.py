@@ -10,6 +10,7 @@ secrets.
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import os
 import logging
@@ -17,6 +18,7 @@ import random
 import re
 import shlex
 import signal
+import shutil
 import socket
 import subprocess
 import time
@@ -85,6 +87,58 @@ def _pm2_available() -> bool:
         return False
 
 
+def _source_version(path: Path) -> str:
+    version = "0.0.0"
+    for parent in (path.parent, *path.parents):
+        package_json = parent / "package.json"
+        if not package_json.is_file():
+            continue
+        try:
+            payload = json.loads(package_json.read_text(encoding="utf-8"))
+            version = str(payload.get("version") or version)
+        except Exception:
+            pass
+        break
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()[:12]
+    return f"{version}+sha.{digest}"
+
+
+def _prepare_versioned_python_exec(process_name: str, version: str) -> str:
+    python3 = shutil.which("python3")
+    if not python3:
+        raise RuntimeError("python3_missing")
+    safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", process_name)
+    root = Path.home() / ".pocket_lab" / "pm2-versioned" / safe_name
+    root.mkdir(parents=True, exist_ok=True)
+    try:
+        root.chmod(0o700)
+    except Exception:
+        pass
+    package = root / "package.json"
+    temp = root / "package.json.tmp"
+    temp.write_text(
+        json.dumps(
+            {
+                "name": f"pocketlab-pm2-{safe_name}",
+                "private": True,
+                "version": version,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    temp.replace(package)
+    link = root / "exec"
+    try:
+        link.unlink()
+    except FileNotFoundError:
+        pass
+    link.symlink_to(python3)
+    return str(link)
+
+
 class LiteAgentSupervisor:
     def __init__(self) -> None:
         self.home = Path.home()
@@ -140,23 +194,36 @@ class LiteAgentSupervisor:
         except Exception:
             return []
 
-    def _agent_process_status(self) -> str:
+    def _agent_process_state(self) -> tuple[str, str]:
         for item in self._pm2_processes():
             if str(item.get("name") or "") != self.agent_process:
                 continue
             env = item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}
-            status = str(env.get("status") or item.get("status") or "unknown").lower()
-            return status or "unknown"
-        return "missing"
+            status = str(env.get("status") or item.get("status") or "unknown").lower() or "unknown"
+            version = str(env.get("version") or "").strip()
+            return status, version
+        return "missing", ""
 
-    def _start_or_restart_agent(self, process_status: str) -> bool:
+    def _agent_process_status(self) -> str:
+        return self._agent_process_state()[0]
+
+    def _start_or_restart_agent(self, process_status: str, *, force_recreate: bool = False) -> bool:
         if not _pm2_available() or not self.agent_file.exists():
             return False
         env = self._process_env()
+        expected_version = _source_version(self.agent_file)
+        try:
+            python_exec = _prepare_versioned_python_exec(self.agent_process, expected_version)
+        except Exception:
+            return False
+
         started = False
-        if process_status == "missing":
+        if process_status == "missing" or force_recreate:
+            if process_status != "missing":
+                _run(["pm2", "delete", self.agent_process], env=env, timeout=20)
+            env["POCKETLAB_SERVICE_VERSION"] = expected_version
             result = _run(
-                ["pm2", "start", "python3", "--name", self.agent_process, "--update-env", "--", str(self.agent_file)],
+                ["pm2", "start", python_exec, "--name", self.agent_process, "--update-env", "--", str(self.agent_file)],
                 env=env,
                 timeout=20,
             )
@@ -165,8 +232,9 @@ class LiteAgentSupervisor:
             result = _run(["pm2", "restart", self.agent_process, "--update-env"], env=env, timeout=20)
             started = result.returncode == 0
             if not started:
+                env["POCKETLAB_SERVICE_VERSION"] = expected_version
                 fallback = _run(
-                    ["pm2", "start", "python3", "--name", self.agent_process, "--update-env", "--", str(self.agent_file)],
+                    ["pm2", "start", python_exec, "--name", self.agent_process, "--update-env", "--", str(self.agent_file)],
                     env=env,
                     timeout=20,
                 )
@@ -298,7 +366,9 @@ class LiteAgentSupervisor:
             return False
 
     async def tick(self) -> Dict[str, Any]:
-        process_status = self._agent_process_status()
+        process_status, process_version = self._agent_process_state()
+        expected_version = _source_version(self.agent_file) if self.agent_file.exists() else ""
+        version_drift = bool(expected_version and process_version != expected_version)
         repair_attempted = False
         repaired = False
         repair_started_at = ""
@@ -306,15 +376,15 @@ class LiteAgentSupervisor:
         repair_reason_code = ""
         supervisor_status = "healthy"
 
-        if process_status in {"missing", "stopped", "errored", "error", "stopping", "stopped"}:
+        if process_status in {"missing", "stopped", "errored", "error", "stopping", "stopped"} or version_drift:
             repair_attempted = True
             repair_started_at = _now_iso()
-            repair_reason_code = "agent_process_not_running"
-            repaired = self._start_or_restart_agent(process_status)
+            repair_reason_code = "agent_version_drift" if version_drift and process_status == "online" else "agent_process_not_running"
+            repaired = self._start_or_restart_agent(process_status, force_recreate=version_drift)
             repair_completed_at = _now_iso()
             supervisor_status = "repairing" if repaired else "degraded"
             if repaired:
-                process_status = self._agent_process_status()
+                process_status, process_version = self._agent_process_state()
 
         nats_reachable = self._nats_reachable()
         if process_status in {"stopped", "errored", "error", "missing"}:
@@ -337,6 +407,8 @@ class LiteAgentSupervisor:
             "agent_status": agent_status,
             "agent_process": self.agent_process,
             "agent_process_status": process_status,
+            "agent_process_version": process_version or "unavailable",
+            "agent_expected_version": expected_version or "unavailable",
             "supervisor_process": self.supervisor_process,
             "supervisor_process_status": "online",
             "supervisor_status": supervisor_status,
