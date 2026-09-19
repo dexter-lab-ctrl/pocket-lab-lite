@@ -26,7 +26,12 @@ record python-compile "$PYTHON" -m py_compile \
   scripts/dev/lite/har_tool.py \
   scripts/dev/lite/redaction_check.py \
   scripts/dev/lite/validation_evidence.py \
-  scripts/dev/lite/release_artifact_check.py
+  scripts/dev/lite/release_artifact_check.py \
+  pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_registry.py \
+  pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_reconciler.py \
+  pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py \
+  pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py
+record runtime-resilience-contract bash scripts/dev/check-lite-runtime-resilience.sh
 record focused-backend bash -lc "PYTHONPATH=tests:pocket-lab-final-structure/runtime PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 '$PYTHON' -m pytest -q tests/backend/test_lite_api.py -k 'status or catalog or fleet or security or recovery or identity or policy'"
 record frontend-unit npm run test:unit
 record contracts bash scripts/dev/lite/check-contracts.sh
