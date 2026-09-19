@@ -58,18 +58,33 @@ import os
 
 items = json.loads(os.environ["PM2_JSON"])
 statuses = {}
+versions = {}
+declared_versions = {}
 for item in items if isinstance(items, list) else []:
     name = str(item.get("name") or "")
     env = item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}
     statuses[name] = str(env.get("status") or item.get("status") or "unknown").lower()
+    versions[name] = str(env.get("version") or "").strip()
+    declared_versions[name] = str(env.get("POCKETLAB_SERVICE_VERSION") or "").strip()
 
-missing = [name for name in os.environ["REQUIRED"].split() if statuses.get(name) != "online"]
+required = os.environ["REQUIRED"].split()
+missing = [name for name in required if statuses.get(name) != "online"]
 legacy = [name for name in os.environ["LEGACY"].split() if name in statuses]
+bad_versions = [
+    name
+    for name in required
+    if not versions.get(name)
+    or versions.get(name, "").lower() in {"n/a", "na", "unknown"}
+    or versions.get(name) != declared_versions.get(name)
+]
 if missing:
     raise SystemExit("required Lite PM2 services not online: " + ",".join(missing))
 if legacy:
     raise SystemExit("legacy PM2 services present in Lite runtime: " + ",".join(legacy))
+if bad_versions:
+    raise SystemExit("Lite PM2 version projection mismatch: " + ",".join(bad_versions))
 print("PASS required Lite PM2 topology online")
+print("PASS every required Lite PM2 service projects its exact installed version")
 print("PASS legacy Pocket Lab PM2 services absent")
 PY
 
@@ -112,10 +127,15 @@ for item in items if isinstance(items, list) else []:
     if item.get("name") != "pocketlab-app-photoprism":
         continue
     env = item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}
-    if str(env.get("status") or item.get("status") or "").lower() == "online":
-        print("PASS PhotoPrism PM2 ownership online")
-        raise SystemExit(0)
-raise SystemExit("PhotoPrism is installed but its PM2 process is not online")
+    if str(env.get("status") or item.get("status") or "").lower() != "online":
+        raise SystemExit("PhotoPrism PM2 process is not online")
+    version = str(env.get("version") or "").strip()
+    declared = str(env.get("POCKETLAB_SERVICE_VERSION") or "").strip()
+    if not version or version.lower() in {"n/a", "na", "unknown"} or version != declared:
+        raise SystemExit("PhotoPrism PM2 version projection mismatch")
+    print("PASS PhotoPrism PM2 ownership and exact version projection online")
+    raise SystemExit(0)
+raise SystemExit("PhotoPrism is installed but its PM2 process is missing")
 PY
 
   curl -fsS --connect-timeout 1 --max-time 5 \
