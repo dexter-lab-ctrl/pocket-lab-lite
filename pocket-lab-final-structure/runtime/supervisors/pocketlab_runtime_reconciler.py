@@ -129,6 +129,29 @@ def remote_reconcile_reasons(current: dict[str, bool], previous: dict[str, Any] 
     return reasons
 
 
+def photoprism_expected() -> bool:
+    root = Path(os.environ.get("POCKETLAB_PHOTOPRISM_ROOT", Path.home() / ".pocket_lab/lite/apps/photoprism")).expanduser()
+    return (root / "config" / "photoprism.env").is_file() or (root / "config" / "install-manifest.json").is_file()
+
+
+def proot_ubuntu_ready() -> bool:
+    try:
+        return _run(["proot-distro", "login", "ubuntu", "--", "true"], timeout=8).returncode == 0
+    except Exception:
+        return False
+
+
+def photoprism_reconcile_reasons(statuses: dict[str, str]) -> list[str]:
+    if not photoprism_expected():
+        return []
+    if not proot_ubuntu_ready():
+        return ["proot_ubuntu_unavailable"]
+    status = str(statuses.get("pocketlab-app-photoprism") or "missing").lower()
+    if status in REPAIRABLE_PM2_STATUSES:
+        return [f"photoprism_process:{status}"]
+    return []
+
+
 class RuntimeReconciler:
     def __init__(self) -> None:
         self.interval = max(10, int(os.environ.get("POCKETLAB_RUNTIME_RECONCILE_SECONDS", DEFAULT_INTERVAL_SECONDS)))
@@ -224,6 +247,7 @@ class RuntimeReconciler:
         remote = tailscale_state()
         reasons = repair_reasons(statuses)
         reasons.extend(remote_reconcile_reasons(remote, previous.get("remote_access")))
+        reasons.extend(photoprism_reconcile_reasons(statuses))
         actions: list[dict[str, Any]] = []
         if reasons:
             actions.append(self._repair(reasons))

@@ -109,10 +109,10 @@ def action_readiness() -> dict[str, dict[str, Any]]:
             "reason": "Update check not ready yet." if is_installed else "Install PhotoPrism first.",
         },
         "repair_app": {
-            "enabled": False,
+            "enabled": is_installed,
             "label": "Repair",
-            "summary": "Refresh PhotoPrism routing and health checks.",
-            "reason": "Repair app is prepared, but backend repair execution is not enabled yet." if is_installed else "Install PhotoPrism first.",
+            "summary": "Reconcile the existing PhotoPrism runtime, routing, and health without reinstalling or updating the app.",
+            "reason": None if is_installed else "Install PhotoPrism first.",
         },
         "remove_app": {
             "enabled": is_installed,

@@ -86,6 +86,16 @@ main() {
 
   log INFO "Reconciling Pocket Lab Lite runtime mode=$MODE reason=$REASON"
   if bash "$DASHBOARD" --lite --reconcile-only; then
+    local photoprism="$SCRIPT_DIR/install-photoprism-proot.sh"
+    local photoprism_env="$HOME/.pocket_lab/lite/apps/photoprism/config/photoprism.env"
+    local photoprism_manifest="$HOME/.pocket_lab/lite/apps/photoprism/config/install-manifest.json"
+    if [[ -s "$photoprism_env" || -s "$photoprism_manifest" ]]; then
+      log INFO "Installed PhotoPrism state detected; reconciling runtime without install/update work"
+      bash "$photoprism" reconcile || {
+        write_evidence "degraded"
+        die "PhotoPrism runtime did not converge"
+      }
+    fi
     pm2 save >/dev/null 2>&1 || true
     write_evidence "converged"
     log INFO "Pocket Lab Lite runtime converged"
