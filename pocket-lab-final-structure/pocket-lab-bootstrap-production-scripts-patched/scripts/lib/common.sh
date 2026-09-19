@@ -284,6 +284,84 @@ pm2_process_spec_hash() {
   } | sha256sum | awk '{print $1}'
 }
 
+pm2_normalize_service_version() {
+  local raw="${1:-}"
+  python3 - "$raw" <<'PY'
+import re
+import sys
+value = (sys.argv[1] or "").replace("\r", " ").replace("\n", " ").strip()
+value = re.sub(r"\s+", " ", value)
+if not value or value.lower() in {"n/a", "na", "unknown", "none", "null"}:
+    raise SystemExit(1)
+if len(value) > 96:
+    value = value[:96]
+print(value)
+PY
+}
+
+pocketlab_source_version() {
+  local source_path="${1:-}"
+  local package_json version digest
+  package_json="$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../../../.." && pwd)/package.json"
+  [[ -f "$source_path" ]] || die "Cannot version missing Pocket Lab source: $source_path"
+  version="$(python3 - "$package_json" <<'PY'
+import json, sys
+try:
+    data=json.load(open(sys.argv[1], encoding="utf-8"))
+except Exception:
+    data={}
+print(str(data.get("version") or "0.0.0"))
+PY
+)"
+  digest="$(sha256sum "$source_path" | awk '{print substr($1,1,12)}')"
+  pm2_normalize_service_version "${version}+sha.${digest}"
+}
+
+pm2_prepare_versioned_exec() {
+  local name="$1" version="$2" source_exec="$3"
+  local resolved safe_name dir link
+  [[ -n "$name" ]] || die "PM2 version projection requires a process name"
+  version="$(pm2_normalize_service_version "$version")" || die "PM2 version projection for $name is missing or invalid"
+  if [[ "$source_exec" == */* ]]; then
+    resolved="$source_exec"
+  else
+    resolved="$(command -v "$source_exec" 2>/dev/null || true)"
+  fi
+  [[ -n "$resolved" && -e "$resolved" ]] || die "PM2 version projection cannot resolve executable for $name: $source_exec"
+
+  safe_name="${name//[^A-Za-z0-9_.-]/_}"
+  dir="$STATE_DIR/pm2-versioned/$safe_name"
+  link="$dir/exec"
+  mkdir -p "$dir"
+  chmod 700 "$STATE_DIR/pm2-versioned" "$dir" 2>/dev/null || true
+
+  python3 - "$dir/package.json" "$safe_name" "$version" <<'PY'
+import json, sys
+from pathlib import Path
+path=Path(sys.argv[1])
+payload={
+    "name": "pocketlab-pm2-" + sys.argv[2],
+    "private": True,
+    "version": sys.argv[3],
+}
+tmp=path.with_suffix(".tmp")
+tmp.write_text(json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8")
+tmp.replace(path)
+PY
+  ln -sfn "$resolved" "$link"
+  printf '%s\n' "$link"
+}
+
+pm2_ensure_versioned_process() {
+  local name="$1" version="$2" source_exec="$3"
+  shift 3
+  local projected_exec
+  require_cmd pm2 python3 sha256sum
+  version="$(pm2_normalize_service_version "$version")" || die "PM2 service $name does not have an exact installed version"
+  projected_exec="$(pm2_prepare_versioned_exec "$name" "$version" "$source_exec")"
+  POCKETLAB_SERVICE_VERSION="$version" pm2_ensure_process "$name" "$projected_exec" "$@"
+}
+
 pm2_process_snapshot() {
   local name="$1"
   pm2 jlist 2>/dev/null | python3 -c '
