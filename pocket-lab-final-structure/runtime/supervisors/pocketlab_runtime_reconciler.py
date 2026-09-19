@@ -65,6 +65,24 @@ def pm2_statuses(processes: Iterable[dict[str, Any]]) -> dict[str, str]:
     return values
 
 
+def pm2_version_projection(processes: Iterable[dict[str, Any]]) -> tuple[dict[str, str], list[str]]:
+    tracked = {spec.name for spec in CONTROL_PLANE_SERVICES}
+    tracked.add("pocketlab-app-photoprism")
+    versions: dict[str, str] = {}
+    reasons: list[str] = []
+    for item in processes:
+        name = str(item.get("name") or "").strip()
+        if name not in tracked:
+            continue
+        env = item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}
+        version = str(env.get("version") or "").strip()
+        declared = str(env.get("POCKETLAB_SERVICE_VERSION") or "").strip()
+        versions[name] = version or "unavailable"
+        if not version or version.lower() in {"n/a", "na", "unknown"} or version != declared:
+            reasons.append(f"pm2_version_projection:{name}")
+    return versions, reasons
+
+
 def repair_reasons(statuses: dict[str, str]) -> list[str]:
     """Return only reconstruction-class drift.
 
@@ -243,15 +261,20 @@ class RuntimeReconciler:
 
     def tick(self) -> dict[str, Any]:
         previous = self._load_previous()
-        statuses = pm2_statuses(load_pm2_processes())
+        processes = load_pm2_processes()
+        statuses = pm2_statuses(processes)
+        versions, version_reasons = pm2_version_projection(processes)
         remote = tailscale_state()
         reasons = repair_reasons(statuses)
+        reasons.extend(version_reasons)
         reasons.extend(remote_reconcile_reasons(remote, previous.get("remote_access")))
         reasons.extend(photoprism_reconcile_reasons(statuses))
         actions: list[dict[str, Any]] = []
         if reasons:
             actions.append(self._repair(reasons))
-            statuses = pm2_statuses(load_pm2_processes())
+            processes = load_pm2_processes()
+            statuses = pm2_statuses(processes)
+            versions, _ = pm2_version_projection(processes)
             remote = tailscale_state()
         legacy_present = sorted(name for name in statuses if name in LEGACY_LITE_SERVICES)
         payload = {
@@ -259,6 +282,7 @@ class RuntimeReconciler:
             "version": VERSION,
             "status": "degraded" if reasons else "healthy",
             "services": {spec.name: statuses.get(spec.name, "missing") for spec in CONTROL_PLANE_SERVICES},
+            "service_versions": {name: versions.get(name, "unavailable") for name in statuses if name in versions},
             "remote_access": remote,
             "drift_reasons": reasons,
             "actions": actions,
