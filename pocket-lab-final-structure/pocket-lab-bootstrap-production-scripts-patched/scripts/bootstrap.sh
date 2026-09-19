@@ -103,6 +103,10 @@ stage_should_skip() {
     install_proot_ubuntu)
       [[ "$BOOTSTRAP_PROFILE" == "lite" && "${POCKETLAB_LITE_ENABLE_PROOT:-0}" != "1" ]]
       ;;
+    init_vault|init_mariadb|start_gitea|seed_gitops_repo)
+      # These are legacy Pocket Lab services and are not part of Pocket Lab Lite.
+      [[ "$BOOTSTRAP_PROFILE" == "lite" ]]
+      ;;
     *)
       return 1
       ;;

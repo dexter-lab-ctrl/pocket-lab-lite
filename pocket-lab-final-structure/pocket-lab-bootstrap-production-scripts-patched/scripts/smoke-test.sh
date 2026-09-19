@@ -30,14 +30,15 @@ main(){
     fi
   }
 
-  check "Vault health" curl_quiet "${VAULT_ADDR}/v1/sys/health?standbyok=true"
-  if have vault && have jq; then
-    check "Vault status JSON" bash -lc "vault status -format=json | jq -e '.initialized == true and .sealed == false' >/dev/null"
-  else
-    log WARN "Skipping Vault JSON check; vault/jq missing"
+  if ! is_lite_profile; then
+    check "Vault health" curl_quiet "${VAULT_ADDR}/v1/sys/health?standbyok=true"
+    if have vault && have jq; then
+      check "Vault status JSON" bash -lc "vault status -format=json | jq -e '.initialized == true and .sealed == false' >/dev/null"
+    else
+      log WARN "Skipping Vault JSON check; vault/jq missing"
+    fi
+    check "Gitea HTTP" curl_quiet "$GITEA_URL"
   fi
-
-  check "Gitea HTTP" curl_quiet "$GITEA_URL"
   check "Dashboard HTTP" curl_quiet "$DASHBOARD_URL"
   check "FastAPI/NATS event bus status" curl_quiet "$API_URL/api/events/status"
   check "Worker status endpoint" curl_quiet "$API_URL/api/workers/status"
@@ -54,14 +55,16 @@ main(){
     check "Gatus status API" curl_quiet "$GATUS_URL/api/v1/endpoints/statuses"
   fi
 
-  if have mariadb; then
-    check "MariaDB socket" bash -lc "mariadb --protocol=socket -uroot -S '${PREFIX}/var/run/mysqld/mysqld.sock' -e 'SELECT 1;' >/dev/null"
-  else
-    log WARN "Skipping MariaDB check; client missing"
-  fi
+  if ! is_lite_profile; then
+    if have mariadb; then
+      check "MariaDB socket" bash -lc "mariadb --protocol=socket -uroot -S '${PREFIX}/var/run/mysqld/mysqld.sock' -e 'SELECT 1;' >/dev/null"
+    else
+      log WARN "Skipping MariaDB check; client missing"
+    fi
 
-  if [[ -f "$STATE_DIR/service-secrets.env" ]]; then
-    check "Gitea API auth" bash -lc "source '$STATE_DIR/service-secrets.env'; curl -fsS -o /dev/null -u \"pocket_admin:\${GITEA_UI_PASS}\" '$GITEA_URL/api/v1/version'"
+    if [[ -f "$STATE_DIR/service-secrets.env" ]]; then
+      check "Gitea API auth" bash -lc "source '$STATE_DIR/service-secrets.env'; curl -fsS -o /dev/null -u \"pocket_admin:\${GITEA_UI_PASS}\" '$GITEA_URL/api/v1/version'"
+    fi
   fi
 
   if have tailscale-cli; then

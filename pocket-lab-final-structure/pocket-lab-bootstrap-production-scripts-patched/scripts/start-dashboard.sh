@@ -7,6 +7,7 @@ source "$SCRIPT_DIR/lib/common.sh"
 
 parse_start_dashboard_args(){
   export POCKETLAB_RENDER_CADDY_ONLY="${POCKETLAB_RENDER_CADDY_ONLY:-0}"
+  export POCKETLAB_RECONCILE_ONLY="${POCKETLAB_RECONCILE_ONLY:-0}"
   while [[ "$#" -gt 0 ]]; do
     case "$1" in
       --profile)
@@ -27,6 +28,12 @@ parse_start_dashboard_args(){
         ;;
       --caddy-only)
         export POCKETLAB_RENDER_CADDY_ONLY=1
+        shift
+        ;;
+      --reconcile-only)
+        export POCKETLAB_PROFILE="lite"
+        export POCKETLAB_LITE=1
+        export POCKETLAB_RECONCILE_ONLY=1
         shift
         ;;
       *)
@@ -72,6 +79,7 @@ FASTAPI_SERVER="$SCRIPT_DIR/../../runtime/api_fastapi/pocket_lab_fastapi_server.
 WORKER_SERVER="$SCRIPT_DIR/../../runtime/workers/pocketlab_worker.py"
 AGENT_SERVER="$SCRIPT_DIR/../../runtime/agents/pocketlab_node_agent.py"
 CORE_SUPERVISOR_SERVER="$SCRIPT_DIR/../../runtime/supervisors/pocketlab_core_supervisor.py"
+RUNTIME_RECONCILER_SERVER="$SCRIPT_DIR/../../runtime/supervisors/pocketlab_runtime_reconciler.py"
 OPA_POLICY_PREP="$SCRIPT_DIR/lite/prepare-opa-policy.sh"
 OPA_RUNTIME_START="$SCRIPT_DIR/lite/start-opa-runtime.sh"
 API_SERVER="${API_SERVER:-$FASTAPI_SERVER}"
@@ -216,6 +224,7 @@ ensure_assets(){
   [[ -f "$AGENT_SERVER" ]] || log WARN "Missing NATS-backed fleet agent; multi-device live fleet status will be unavailable: $AGENT_SERVER"
   if is_lite_profile; then
     [[ -f "$CORE_SUPERVISOR_SERVER" ]] || die "Missing Lite core supervisor: $CORE_SUPERVISOR_SERVER"
+    [[ -f "$RUNTIME_RECONCILER_SERVER" ]] || die "Missing Lite runtime reconciler: $RUNTIME_RECONCILER_SERVER"
   fi
   have nats-server || die "nats-server is required; production FastAPI/NATS mode does not allow memory fallback"
   python3 - <<'PYCHECK' || die "FastAPI runtime missing; run install-binaries.sh to install fastapi, uvicorn, pydantic, and nats-py"
@@ -901,12 +910,20 @@ configure_lite_runtime_limits(){
   export POCKETLAB_WORKFLOW_MEMORY_MIN_AVAILABLE_PERCENT="${POCKETLAB_WORKFLOW_MEMORY_MIN_AVAILABLE_PERCENT:-8}"
 }
 
+pm2_runtime_process(){
+  if is_lite_profile; then
+    pm2_ensure_process "$@"
+  else
+    pm2_start_or_restart "$@"
+  fi
+}
+
 start_pm2_daemons(){
-  log INFO "Starting/restarting dashboard services with PM2"
+  log INFO "Converging dashboard services with PM2"
   configure_lite_runtime_limits
-  pm2_start_or_restart pocket-telemetry "$HARDWARE_DAEMON" --interpreter python3 --exp-backoff-restart-delay 100
+  pm2_runtime_process pocket-telemetry "$HARDWARE_DAEMON" --interpreter python3 --exp-backoff-restart-delay 100
   write_nats_config
-  pm2_start_or_restart pocket-nats nats-server -- -c "$POCKETLAB_NATS_CONFIG"
+  pm2_runtime_process pocket-nats nats-server -- -c "$POCKETLAB_NATS_CONFIG"
   wait_for_nats_ready
   if is_lite_profile; then
     require_cmd opa
@@ -917,34 +934,35 @@ start_pm2_daemons(){
       bash "$OPA_RUNTIME_START"
   fi
   if [[ "${POCKETLAB_DISABLE_WORKER:-0}" != "1" ]]; then
-    POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_EVENT_FANOUT=0 POCKETLAB_NATS_USER="$POCKETLAB_NATS_WORKER_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_WORKER_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-worker POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" pm2_start_or_restart pocket-worker "$WORKER_SERVER" --interpreter python3 --update-env --max-memory-restart "${POCKETLAB_WORKER_MAX_MEMORY_RESTART:-320M}" --exp-backoff-restart-delay 250
+    POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_EVENT_FANOUT=0 POCKETLAB_NATS_USER="$POCKETLAB_NATS_WORKER_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_WORKER_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-worker POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" pm2_runtime_process pocket-worker "$WORKER_SERVER" --interpreter python3 --update-env --max-memory-restart "${POCKETLAB_WORKER_MAX_MEMORY_RESTART:-320M}" --exp-backoff-restart-delay 250
   else
     die "POCKETLAB_DISABLE_WORKER=1 is not allowed in production NATS mode"
   fi
   if [[ -f "$AGENT_SERVER" && "${POCKETLAB_DISABLE_FLEET_AGENT:-0}" != "1" ]]; then
-    POCKETLAB_NODE_ID="${POCKETLAB_SERVER_NODE_ID:-pocket-lab-lite-server}" POCKETLAB_NODE_NAME="${POCKETLAB_DEVICE_NAME:-Pocket Lab Lite Server}" POCKETLAB_NODE_ROLE=server_host POCKETLAB_IS_CONTROL_PLANE=1 POCKETLAB_NATS_USER="$POCKETLAB_NATS_AGENT_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-node-agent pm2_start_or_restart pocket-node-agent "$AGENT_SERVER" --interpreter python3 --update-env
+    POCKETLAB_NODE_ID="${POCKETLAB_SERVER_NODE_ID:-pocket-lab-lite-server}" POCKETLAB_NODE_NAME="${POCKETLAB_DEVICE_NAME:-Pocket Lab Lite Server}" POCKETLAB_NODE_ROLE=server_host POCKETLAB_IS_CONTROL_PLANE=1 POCKETLAB_NATS_USER="$POCKETLAB_NATS_AGENT_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-node-agent pm2_runtime_process pocket-node-agent "$AGENT_SERVER" --interpreter python3 --update-env
   else
     log WARN "Pocket Lab node agent not started; this control plane will not publish NATS fleet heartbeats"
   fi
-  POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_USER="$POCKETLAB_NATS_API_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_API_PASSWORD" POCKETLAB_AGENT_NATS_USER="$POCKETLAB_NATS_AGENT_USER" POCKETLAB_AGENT_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-fastapi POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" pm2_start_or_restart pocket-api "$API_SERVER" --interpreter python3 --update-env --max-memory-restart "${POCKETLAB_API_MAX_MEMORY_RESTART:-384M}" --exp-backoff-restart-delay 250
+  POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_USER="$POCKETLAB_NATS_API_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_API_PASSWORD" POCKETLAB_AGENT_NATS_USER="$POCKETLAB_NATS_AGENT_USER" POCKETLAB_AGENT_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-fastapi POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" pm2_runtime_process pocket-api "$API_SERVER" --interpreter python3 --update-env --max-memory-restart "${POCKETLAB_API_MAX_MEMORY_RESTART:-384M}" --exp-backoff-restart-delay 250
   wait_for_lite_api_ready
   validate_caddyfile
-  pm2_start_or_restart caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
+  pm2_runtime_process caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
   if is_lite_profile; then
-    POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS="${POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS:-45}" POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS="${POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS:-120}" pm2_start_or_restart pocketlab-core-supervisor "$CORE_SUPERVISOR_SERVER" --interpreter python3 --update-env
-    log INFO "Lite profile: started Pocket Lab Lite core supervisor"
+    POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS="${POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS:-45}" POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS="${POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS:-120}" pm2_runtime_process pocketlab-core-supervisor "$CORE_SUPERVISOR_SERVER" --interpreter python3 --update-env
+    POCKETLAB_RUNTIME_RECONCILE_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_SECONDS:-45}" POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS:-120}" pm2_runtime_process pocketlab-runtime-reconciler "$RUNTIME_RECONCILER_SERVER" --interpreter python3 --update-env
+    log INFO "Lite profile: started Pocket Lab Lite core supervisor and desired-state reconciler"
     log INFO "Lite profile: skipping Gatus, Loki, Promtail, Prometheus, and Grafana PM2 services"
   else
     if have gatus; then
-      pm2_start_or_restart pocket-gatus bash -- -c "GATUS_CONFIG_PATH=$OBS_DIR/gatus-config.yaml gatus"
+      pm2_runtime_process pocket-gatus bash -- -c "GATUS_CONFIG_PATH=$OBS_DIR/gatus-config.yaml gatus"
     else
       log WARN "gatus missing; health UI will use API fallback"
     fi
     if proot_ubuntu_ready; then
-      pm2_start_or_restart loki-kms bash -- -c "proot-distro login ubuntu -- /usr/local/bin/loki -config.file=$OBS_DIR/loki-config.yaml" || true
-      pm2_start_or_restart promtail-agent bash -- -c "proot-distro login ubuntu -- /usr/local/bin/promtail -config.file=$OBS_DIR/promtail-config.yaml" || true
-      pm2_start_or_restart prometheus-db bash -- -c "proot-distro login ubuntu -- /usr/local/bin/prometheus --config.file=$OBS_DIR/prometheus.yml --storage.tsdb.path=$OBS_DIR/prom_data --web.listen-address=127.0.0.1:9090" || true
-      pm2_start_or_restart grafana-ui bash -- -c "proot-distro login ubuntu -- bash -c 'cd /opt/grafana && ./bin/grafana-server --homepath=/opt/grafana --config=$OBS_DIR/custom.ini'" || true
+      pm2_runtime_process loki-kms bash -- -c "proot-distro login ubuntu -- /usr/local/bin/loki -config.file=$OBS_DIR/loki-config.yaml" || true
+      pm2_runtime_process promtail-agent bash -- -c "proot-distro login ubuntu -- /usr/local/bin/promtail -config.file=$OBS_DIR/promtail-config.yaml" || true
+      pm2_runtime_process prometheus-db bash -- -c "proot-distro login ubuntu -- /usr/local/bin/prometheus --config.file=$OBS_DIR/prometheus.yml --storage.tsdb.path=$OBS_DIR/prom_data --web.listen-address=127.0.0.1:9090" || true
+      pm2_runtime_process grafana-ui bash -- -c "proot-distro login ubuntu -- bash -c 'cd /opt/grafana && ./bin/grafana-server --homepath=/opt/grafana --config=$OBS_DIR/custom.ini'" || true
     else
       log WARN "PRoot Ubuntu unavailable; skipping Loki/Promtail/Prometheus/Grafana PM2 processes"
     fi
@@ -960,12 +978,35 @@ start_caddy_only(){
   start_tailscale_if_missing
   write_caddyfile
   validate_caddyfile
-  pm2_start_or_restart caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
+  pm2_runtime_process caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
   pm2 save >/dev/null || true
   log INFO "Caddy proxy configuration is updated and safe to rerun"
 }
 
+reconcile_lite_runtime(){
+  SCRIPT_NAME="start-dashboard.sh"
+  acquire_lock "$SCRIPT_NAME"
+  ensure_root_dirs
+  require_termux
+  require_cmd python3 caddy curl pm2 jq nats-server
+  [[ -f "$API_SERVER" ]] || die "Missing Lite API runtime: $API_SERVER"
+  [[ -f "$WORKER_SERVER" ]] || die "Missing Lite worker runtime: $WORKER_SERVER"
+  [[ -f "$CORE_SUPERVISOR_SERVER" ]] || die "Missing Lite core supervisor: $CORE_SUPERVISOR_SERVER"
+  [[ -f "$RUNTIME_RECONCILER_SERVER" ]] || die "Missing Lite runtime reconciler: $RUNTIME_RECONCILER_SERVER"
+  [[ -f "$PWA_CURRENT_LINK/index.html" ]] || die "Lite PWA is not installed; runtime reconciliation never installs UI assets"
+  start_tailscale_if_missing
+  write_hardware_daemon
+  write_caddyfile
+  start_pm2_daemons
+  verify_lite_remote_nats
+  log INFO "Lite runtime desired state converged without bootstrap/install work"
+}
+
 main(){
+  if [[ "${POCKETLAB_RECONCILE_ONLY:-0}" == "1" ]]; then
+    reconcile_lite_runtime
+    return
+  fi
   if [[ "${POCKETLAB_RENDER_CADDY_ONLY:-0}" == "1" ]]; then
     start_caddy_only
     return

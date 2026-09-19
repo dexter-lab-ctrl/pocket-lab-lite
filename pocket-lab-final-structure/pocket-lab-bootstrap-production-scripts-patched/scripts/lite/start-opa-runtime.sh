@@ -46,7 +46,7 @@ stage_repository_candidate() {
 }
 
 start_opa_process() {
-  pm2_start_or_restart pocket-opa "$(command -v opa)" \
+  pm2_ensure_process pocket-opa "$(command -v opa)" \
     --interpreter bash -- run --server --addr=127.0.0.1:8181 \
     "$POCKETLAB_OPA_ACTIVE_POLICY_DIR"
 }

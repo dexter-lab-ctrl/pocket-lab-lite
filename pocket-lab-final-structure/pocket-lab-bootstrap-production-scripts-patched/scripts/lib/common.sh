@@ -274,6 +274,81 @@ pm2_start_or_restart() {
   fi
 }
 
+pm2_process_spec_hash() {
+  {
+    printf 'argv\\0'
+    printf '%s\\0' "$@"
+    env | LC_ALL=C sort | grep -E '^(POCKETLAB_|API_PORT=|DASH_PORT=|MALLOC_ARENA_MAX=|OMP_NUM_THREADS=|OPENBLAS_NUM_THREADS=|NUMEXPR_NUM_THREADS=)' || true
+  } | sha256sum | awk '{print $1}'
+}
+
+pm2_process_snapshot() {
+  local name="$1"
+  pm2 jlist 2>/dev/null | python3 -c '
+import json, sys
+name=sys.argv[1]
+try:
+    items=json.load(sys.stdin)
+except Exception:
+    items=[]
+for item in items if isinstance(items,list) else []:
+    if str(item.get("name") or "") != name:
+        continue
+    env=item.get("pm2_env") if isinstance(item.get("pm2_env"),dict) else {}
+    print(str(env.get("status") or item.get("status") or "unknown").lower())
+    print(str(env.get("POCKETLAB_PROCESS_SPEC_HASH") or ""))
+    raise SystemExit(0)
+raise SystemExit(1)
+' "$name"
+}
+
+pm2_ensure_process() {
+  local name="$1"
+  shift
+  require_cmd pm2 python3 sha256sum
+
+  local before_sep=()
+  local after_sep=()
+  local seen_sep=0
+  local arg
+  for arg in "$@"; do
+    if [[ "$arg" == "--" && "$seen_sep" -eq 0 ]]; then
+      seen_sep=1
+      continue
+    fi
+    if [[ "$seen_sep" -eq 1 ]]; then after_sep+=("$arg"); else before_sep+=("$arg"); fi
+  done
+
+  local spec_hash snapshot status current_hash
+  spec_hash="$(pm2_process_spec_hash "$@")"
+  snapshot="$(pm2_process_snapshot "$name" 2>/dev/null || true)"
+  status="$(printf '%s\\n' "$snapshot" | sed -n '1p')"
+  current_hash="$(printf '%s\\n' "$snapshot" | sed -n '2p')"
+
+  if [[ -n "$status" && "$current_hash" == "$spec_hash" ]]; then
+    if [[ "$status" == "online" ]]; then
+      log INFO "PM2 process already converged: $name"
+      return 0
+    fi
+    log INFO "Restarting existing converged PM2 process: $name status=$status"
+    POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 restart "$name" --update-env >/dev/null
+    return 0
+  fi
+
+  if [[ -n "$status" ]]; then
+    log INFO "Replacing drifted PM2 process definition: $name"
+    pm2 delete "$name" >/dev/null 2>&1 || true
+  else
+    log INFO "Creating missing PM2 process definition: $name"
+  fi
+
+  if [[ "${#after_sep[@]}" -gt 0 ]]; then
+    POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "${before_sep[@]}" --name "$name" -- "${after_sep[@]}"
+  else
+    POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "${before_sep[@]}" --name "$name"
+  fi
+}
+
 cleanup_pidfile() { local pidfile="$1" pid=""; [[ -f "$pidfile" ]] || return 0; pid="$(cat "$pidfile" 2>/dev/null || true)"; [[ -n "$pid" ]] && kill "$pid" >/dev/null 2>&1 || true; rm -f "$pidfile"; }
 
 json_get() { jq -r "$1" "${2:--}"; }
