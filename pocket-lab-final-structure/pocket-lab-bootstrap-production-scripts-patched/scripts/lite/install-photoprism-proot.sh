@@ -166,6 +166,17 @@ package_digest(){
   proot-distro login ubuntu -- bash -lc 'cat /tmp/photoprism-package.sha256 2>/dev/null | head -1' 2>/dev/null | tr -cd '0-9a-fA-F' | head -c64
 }
 
+photoprism_pm2_version(){
+  local raw build
+  raw="$(photoprism_version)"
+  build="$(printf '%s\n' "$raw" | sed -nE 's/^.*[Bb]uild[[:space:]]+([^[:space:]]+).*$/\1/p' | head -1)"
+  if [[ -n "$build" ]]; then
+    pm2_normalize_service_version "$build"
+  else
+    pm2_normalize_service_version "$raw"
+  fi
+}
+
 write_install_manifest(){
   local version="$1" digest="${2:-}"
   mkdir -p "$CONFIG_DIR"
@@ -295,8 +306,7 @@ ensure_pm2_ownership(){
   fi
   local version
   env_revision="$(sha256sum "$ENV_FILE" | awk '{print $1}')"
-  version="$(photoprism_version)"
-  version="$(pm2_normalize_service_version "$version")" || fail_safe "PhotoPrism did not report an installed version."
+  version="$(photoprism_pm2_version)" || fail_safe "PhotoPrism did not report an installed version."
   command="exec proot-distro login ubuntu -- bash -lc 'set -a; source \"$ENV_FILE\"; set +a; exec photoprism start'"
   POCKETLAB_PHOTOPRISM_ENV_REVISION="$env_revision" pm2_ensure_versioned_process "$PROCESS_NAME" "$version" bash -- -lc "$command"
 }
