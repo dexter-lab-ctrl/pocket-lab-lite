@@ -293,9 +293,12 @@ ensure_pm2_ownership(){
   if local_health_ready && [[ "$status" == "missing" ]]; then
     fail_safe "PhotoPrism is responding outside Pocket Lab PM2 ownership. Automatic adoption is blocked."
   fi
+  local version
   env_revision="$(sha256sum "$ENV_FILE" | awk '{print $1}')"
+  version="$(photoprism_version)"
+  version="$(pm2_normalize_service_version "$version")" || fail_safe "PhotoPrism did not report an installed version."
   command="exec proot-distro login ubuntu -- bash -lc 'set -a; source \"$ENV_FILE\"; set +a; exec photoprism start'"
-  POCKETLAB_PHOTOPRISM_ENV_REVISION="$env_revision" pm2_ensure_process "$PROCESS_NAME" bash -- -lc "$command"
+  POCKETLAB_PHOTOPRISM_ENV_REVISION="$env_revision" pm2_ensure_versioned_process "$PROCESS_NAME" "$version" bash -- -lc "$command"
 }
 
 refresh_caddy(){
