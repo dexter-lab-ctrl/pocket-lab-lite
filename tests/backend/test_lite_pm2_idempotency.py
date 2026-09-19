@@ -28,7 +28,7 @@ export ACTION_FILE
 SPEC="$(pm2_process_spec_hash python3 -- demo.py)"
 export SPEC STATUS
 pm2() {
-  case "\${1:-}" in
+  case "${1:-}" in
     jlist)
       if [[ "$STATUS" == "missing" ]]; then
         printf '[]\\n'
