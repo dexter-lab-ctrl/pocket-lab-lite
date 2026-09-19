@@ -40,3 +40,11 @@ def test_bootstrap_has_lite_only_boot_recovery_stage():
     assert "13|install_lite_boot_recovery|lite/install-boot-recovery.sh" in bootstrap
     assert 'install_lite_boot_recovery)' in bootstrap
     assert '[[ "$BOOTSTRAP_PROFILE" != "lite" ]]' in bootstrap
+
+
+def test_guardian_checks_pm2_pid_without_cli_autostart():
+    guardian = (SCRIPTS / "lite" / "runtime-guardian.sh").read_text()
+    block = guardian[guardian.index("pm2_alive()"):guardian.index("pm2_reconciler_online()")]
+    assert "pm2.pid" in block
+    assert "kill -0" in block
+    assert "pm2 ping" not in block
