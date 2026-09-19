@@ -302,7 +302,7 @@ PY
 pocketlab_source_version() {
   local source_path="${1:-}"
   local package_json version digest
-  package_json="$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../../../.." && pwd)/package.json"
+  package_json="$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../../.." && pwd)/package.json"
   [[ -f "$source_path" ]] || die "Cannot version missing Pocket Lab source: $source_path"
   version="$(python3 - "$package_json" <<'PY'
 import json, sys
