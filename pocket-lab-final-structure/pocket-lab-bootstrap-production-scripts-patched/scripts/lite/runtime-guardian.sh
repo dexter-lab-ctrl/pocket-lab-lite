@@ -24,7 +24,13 @@ case "${1:-}" in
 esac
 
 pm2_alive() {
-  pm2 ping >/dev/null 2>&1
+  local pm2_home pid_file pid
+  pm2_home="${PM2_HOME:-$HOME/.pm2}"
+  pid_file="$pm2_home/pm2.pid"
+  [[ -s "$pid_file" ]] || return 1
+  pid="$(cat "$pid_file" 2>/dev/null || true)"
+  [[ "$pid" =~ ^[0-9]+$ ]] || return 1
+  kill -0 "$pid" >/dev/null 2>&1
 }
 
 pm2_reconciler_online() {
