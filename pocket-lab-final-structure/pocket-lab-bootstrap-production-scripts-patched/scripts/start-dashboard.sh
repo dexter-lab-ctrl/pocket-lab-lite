@@ -929,11 +929,28 @@ configure_lite_runtime_limits(){
 }
 
 pm2_runtime_process(){
+  local name="$1"
+  shift
   if is_lite_profile; then
-    pm2_ensure_process "$@"
+    local version="${POCKETLAB_PM2_SERVICE_VERSION:-}"
+    [[ -n "$version" ]] || die "Lite PM2 service $name is missing an exact installed version"
+    pm2_ensure_versioned_process "$name" "$version" "$@"
   else
-    pm2_start_or_restart "$@"
+    pm2_start_or_restart "$name" "$@"
   fi
+}
+
+nats_installed_version(){
+  local raw
+  raw="$(nats-server -v 2>/dev/null | head -1)"
+  raw="$(printf '%s\n' "$raw" | sed -E 's/^.*[[:space:]]v?([0-9][0-9A-Za-z.+_-]*).*$/\1/')"
+  pm2_normalize_service_version "$raw"
+}
+
+caddy_installed_version(){
+  local raw
+  raw="$(caddy version 2>/dev/null | head -1 | awk '{print $1}' | sed 's/^v//')"
+  pm2_normalize_service_version "$raw"
 }
 
 reload_caddy_if_config_changed(){
@@ -950,9 +967,9 @@ reload_caddy_if_config_changed(){
 start_pm2_daemons(){
   log INFO "Converging dashboard services with PM2"
   configure_lite_runtime_limits
-  pm2_runtime_process pocket-telemetry "$HARDWARE_DAEMON" --interpreter python3 --exp-backoff-restart-delay 100
+  POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$HARDWARE_DAEMON")" pm2_runtime_process pocket-telemetry "$HARDWARE_DAEMON" --interpreter python3 --exp-backoff-restart-delay 100
   write_nats_config
-  pm2_runtime_process pocket-nats nats-server -- -c "$POCKETLAB_NATS_CONFIG"
+  POCKETLAB_PM2_SERVICE_VERSION="$(nats_installed_version)" pm2_runtime_process pocket-nats nats-server -- -c "$POCKETLAB_NATS_CONFIG"
   wait_for_nats_ready
   if is_lite_profile; then
     require_cmd opa
@@ -963,23 +980,23 @@ start_pm2_daemons(){
       bash "$OPA_RUNTIME_START"
   fi
   if [[ "${POCKETLAB_DISABLE_WORKER:-0}" != "1" ]]; then
-    POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_EVENT_FANOUT=0 POCKETLAB_NATS_USER="$POCKETLAB_NATS_WORKER_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_WORKER_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-worker POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" pm2_runtime_process pocket-worker "$WORKER_SERVER" --interpreter python3 --update-env --max-memory-restart "${POCKETLAB_WORKER_MAX_MEMORY_RESTART:-320M}" --exp-backoff-restart-delay 250
+    POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_EVENT_FANOUT=0 POCKETLAB_NATS_USER="$POCKETLAB_NATS_WORKER_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_WORKER_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-worker POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$WORKER_SERVER")" pm2_runtime_process pocket-worker "$WORKER_SERVER" --interpreter python3 --update-env --max-memory-restart "${POCKETLAB_WORKER_MAX_MEMORY_RESTART:-320M}" --exp-backoff-restart-delay 250
   else
     die "POCKETLAB_DISABLE_WORKER=1 is not allowed in production NATS mode"
   fi
   if [[ -f "$AGENT_SERVER" && "${POCKETLAB_DISABLE_FLEET_AGENT:-0}" != "1" ]]; then
-    POCKETLAB_NODE_ID="${POCKETLAB_SERVER_NODE_ID:-pocket-lab-lite-server}" POCKETLAB_NODE_NAME="${POCKETLAB_DEVICE_NAME:-Pocket Lab Lite Server}" POCKETLAB_NODE_ROLE=server_host POCKETLAB_IS_CONTROL_PLANE=1 POCKETLAB_NATS_USER="$POCKETLAB_NATS_AGENT_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-node-agent pm2_runtime_process pocket-node-agent "$AGENT_SERVER" --interpreter python3 --update-env
+    POCKETLAB_NODE_ID="${POCKETLAB_SERVER_NODE_ID:-pocket-lab-lite-server}" POCKETLAB_NODE_NAME="${POCKETLAB_DEVICE_NAME:-Pocket Lab Lite Server}" POCKETLAB_NODE_ROLE=server_host POCKETLAB_IS_CONTROL_PLANE=1 POCKETLAB_NATS_USER="$POCKETLAB_NATS_AGENT_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-node-agent POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$AGENT_SERVER")" pm2_runtime_process pocket-node-agent "$AGENT_SERVER" --interpreter python3 --update-env
   else
     log WARN "Pocket Lab node agent not started; this control plane will not publish NATS fleet heartbeats"
   fi
-  POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_USER="$POCKETLAB_NATS_API_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_API_PASSWORD" POCKETLAB_AGENT_NATS_USER="$POCKETLAB_NATS_AGENT_USER" POCKETLAB_AGENT_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-fastapi POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" pm2_runtime_process pocket-api "$API_SERVER" --interpreter python3 --update-env --max-memory-restart "${POCKETLAB_API_MAX_MEMORY_RESTART:-384M}" --exp-backoff-restart-delay 250
+  POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_USER="$POCKETLAB_NATS_API_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_API_PASSWORD" POCKETLAB_AGENT_NATS_USER="$POCKETLAB_NATS_AGENT_USER" POCKETLAB_AGENT_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-fastapi POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$API_SERVER")" pm2_runtime_process pocket-api "$API_SERVER" --interpreter python3 --update-env --max-memory-restart "${POCKETLAB_API_MAX_MEMORY_RESTART:-384M}" --exp-backoff-restart-delay 250
   wait_for_lite_api_ready
   validate_caddyfile
-  pm2_runtime_process caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
+  POCKETLAB_PM2_SERVICE_VERSION="$(caddy_installed_version)" pm2_runtime_process caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
   reload_caddy_if_config_changed
   if is_lite_profile; then
-    POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS="${POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS:-45}" POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS="${POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS:-120}" pm2_runtime_process pocketlab-core-supervisor "$CORE_SUPERVISOR_SERVER" --interpreter python3 --update-env
-    POCKETLAB_RUNTIME_RECONCILE_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_SECONDS:-45}" POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS:-120}" pm2_runtime_process pocketlab-runtime-reconciler "$RUNTIME_RECONCILER_SERVER" --interpreter python3 --update-env
+    POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS="${POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS:-45}" POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS="${POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS:-120}" POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$CORE_SUPERVISOR_SERVER")" pm2_runtime_process pocketlab-core-supervisor "$CORE_SUPERVISOR_SERVER" --interpreter python3 --update-env
+    POCKETLAB_RUNTIME_RECONCILE_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_SECONDS:-45}" POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS:-120}" POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$RUNTIME_RECONCILER_SERVER")" pm2_runtime_process pocketlab-runtime-reconciler "$RUNTIME_RECONCILER_SERVER" --interpreter python3 --update-env
     log INFO "Lite profile: started Pocket Lab Lite core supervisor and desired-state reconciler"
     log INFO "Lite profile: skipping Gatus, Loki, Promtail, Prometheus, and Grafana PM2 services"
   else
@@ -1008,7 +1025,7 @@ start_caddy_only(){
   start_tailscale_if_missing
   write_caddyfile
   validate_caddyfile
-  pm2_runtime_process caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
+  POCKETLAB_PM2_SERVICE_VERSION="$(caddy_installed_version)" pm2_runtime_process caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
   reload_caddy_if_config_changed
   pm2 save >/dev/null || true
   log INFO "Caddy proxy configuration is updated and safe to rerun"
