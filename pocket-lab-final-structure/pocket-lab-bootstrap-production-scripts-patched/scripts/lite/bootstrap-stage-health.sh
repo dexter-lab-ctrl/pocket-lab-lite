@@ -87,6 +87,20 @@ raise SystemExit(0 if valid else 1)
       return 0
       ;;
 
+    install_lite_boot_recovery)
+      local boot_file="$HOME/.termux/boot/pocketlab-lite"
+      local guardian="$POCKET_LAB_BASE_DIR/pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/runtime-guardian.sh"
+      if [[ ! -x "$boot_file" ]]; then
+        POCKETLAB_LITE_STAGE_HEALTH_REASON="Termux boot recovery entry is missing"
+        return 1
+      fi
+      if [[ ! -x "$guardian" ]]; then
+        POCKETLAB_LITE_STAGE_HEALTH_REASON="external runtime guardian is missing"
+        return 1
+      fi
+      return 0
+      ;;
+
     *)
       return 0
       ;;
