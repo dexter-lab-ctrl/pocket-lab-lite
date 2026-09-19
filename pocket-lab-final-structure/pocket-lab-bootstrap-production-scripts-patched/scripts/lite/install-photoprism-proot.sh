@@ -340,16 +340,16 @@ reconcile_runtime(){
 }
 
 install_runtime(){
-  local url version digest
+  local url version digest=""
   ensure_ubuntu_for_install
   install_dependencies
   if ! binary_ready; then
     url="$(arch_package_url)" || fail_safe "PhotoPrism package is not available for this architecture."
     install_or_update_package "$url"
+    digest="$(package_digest)"
   fi
   create_env_file_for_install
   version="$(photoprism_version)"
-  digest="$(package_digest)"
   write_install_manifest "$version" "$digest"
   reconcile_runtime
 }
