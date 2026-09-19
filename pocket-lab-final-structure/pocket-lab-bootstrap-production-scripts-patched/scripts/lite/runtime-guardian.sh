@@ -44,7 +44,11 @@ for item in items if isinstance(items,list) else []:
     if item.get("name") != "pocketlab-runtime-reconciler":
         continue
     env=item.get("pm2_env") if isinstance(item.get("pm2_env"),dict) else {}
-    raise SystemExit(0 if str(env.get("status") or item.get("status") or "").lower()=="online" else 1)
+    status=str(env.get("status") or item.get("status") or "").lower()
+    version=str(env.get("version") or "").strip()
+    declared=str(env.get("POCKETLAB_SERVICE_VERSION") or "").strip()
+    healthy_version=bool(version and version.lower() not in {"n/a","na","unknown"} and version==declared)
+    raise SystemExit(0 if status=="online" and healthy_version else 1)
 raise SystemExit(1)
 '
 }
@@ -72,7 +76,7 @@ converge_if_needed() {
   if ! restore_pm2_if_needed; then
     reason="pm2_unavailable"
   elif ! pm2_reconciler_online; then
-    reason="runtime_reconciler_missing"
+    reason="runtime_reconciler_missing_or_version_drift"
   fi
 
   [[ -n "$reason" ]] || return 0
