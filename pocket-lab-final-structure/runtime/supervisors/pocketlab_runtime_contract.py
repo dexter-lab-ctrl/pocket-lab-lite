@@ -18,14 +18,24 @@ import time
 from typing import Any, Iterable, Mapping
 import urllib.request
 
-from pocketlab_runtime_registry import (
-    LEGACY_LITE_SERVICES,
-    PHOTOPRISM_PROCESS,
-    ServiceSpec,
-    managed_service_specs,
-    policy_for,
-    policy_match,
-)
+try:
+    from pocketlab_runtime_registry import (
+        LEGACY_LITE_SERVICES,
+        PHOTOPRISM_PROCESS,
+        ServiceSpec,
+        managed_service_specs,
+        policy_for,
+        policy_match,
+    )
+except ModuleNotFoundError:  # Package import from FastAPI/tests.
+    from .pocketlab_runtime_registry import (
+        LEGACY_LITE_SERVICES,
+        PHOTOPRISM_PROCESS,
+        ServiceSpec,
+        managed_service_specs,
+        policy_for,
+        policy_match,
+    )
 
 SCHEMA_VERSION = 1
 SCHEMA_ID = "pocketlab.pm2-runtime-contract/v1"
