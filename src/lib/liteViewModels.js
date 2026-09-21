@@ -1233,12 +1233,30 @@ export function selectDeviceOperationalStory(device = {}, { savedStateOnly = fal
   }
 
   if (protectedHost) {
+    const runtime = isObject(device?.runtime) ? device.runtime : {};
+    const runtimeState = normalizeDeviceStatus(runtime.state || '');
+    const generation = Math.max(0, Number(runtime.restart_generation || 0));
+    const recoveredAt = safeIso(runtime.recovered_at || '');
+    const runtimeRepairing = ['repairing', 'converging'].includes(runtimeState);
+    const runtimeChanged = ['degraded', 'policy_drift', 'restart_budget_exhausted'].includes(runtimeState);
     return {
-      state: 'protected',
-      tone: 'info',
-      headline: 'Pocket Lab server',
-      summary: 'This protected host runs your Pocket Lab control plane.',
-      consequence: 'It cannot be removed like a regular device.',
+      state: runtimeRepairing ? 'repairing' : runtimeChanged ? 'review' : 'protected',
+      tone: runtimeRepairing || runtimeChanged ? 'attention' : 'info',
+      headline: runtimeRepairing
+        ? 'Recovery in progress'
+        : runtimeChanged
+          ? 'Something changed'
+          : generation > 0 && recoveredAt
+            ? 'Recovered recently'
+            : 'System running normally',
+      summary: runtimeRepairing
+        ? 'Pocket Lab is restoring the protected server runtime and will confirm it only after stable checks pass.'
+        : runtimeChanged
+          ? 'The protected server runtime needs review. Remote access is shown separately.'
+          : generation > 0 && recoveredAt
+            ? 'The protected server runtime recovered and is stable again.'
+            : 'This protected host runs your Pocket Lab control plane.',
+      consequence: 'Remote access readiness remains a separate connection check.',
       connection_state: 'server',
       remote_access: remoteNotReady ? 'not_ready' : remoteReady ? 'ready' : 'unknown',
       next_action: null,
@@ -2702,6 +2720,22 @@ function isLiteRecoveryOperationLive(operation = {}) {
   );
 }
 
+function selectRuntimeRecoveryView(payload = {}) {
+  const runtime = isObject(payload?.runtime_recovery) ? payload.runtime_recovery : {};
+  const state = normalizeRecoveryStatus(runtime.state || 'unknown');
+  const services = (Array.isArray(runtime.recovered_services) ? runtime.recovered_services : []).slice(0, 8).map((item) => copySafeKeys(item, [
+    'role', 'status', 'recovered_at',
+  ]));
+  return {
+    state,
+    stable: runtime.stable === true,
+    summary: safeString(runtime.summary || (state === 'stable' ? 'System running normally' : 'Runtime status is being checked')),
+    reason_codes: safeList(runtime.reason_codes, []).slice(0, 12),
+    recovered_services: services,
+    observed_at: safeIso(runtime.observed_at || ''),
+  };
+}
+
 export function selectRecoverySummaryView(payload = {}) {
   const latestBackup = selectRecoveryLatestBackupView(payload);
   const latestPreview = selectRecoveryRestorePreviewView(payload);
@@ -2741,6 +2775,7 @@ export function selectRecoverySummaryView(payload = {}) {
     maintenance: isObject(payload?.maintenance)
       ? copySafeKeys(payload.maintenance, ['active', 'state', 'kind', 'started_at', 'updated_at', 'completed_at', 'writers_stopped', 'summary'])
       : null,
+    runtime_recovery: selectRuntimeRecoveryView(payload),
     live: isLiteRecoveryViewLive(payload),
   });
 }
