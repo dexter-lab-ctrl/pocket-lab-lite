@@ -252,7 +252,7 @@ def test_lite_caddy_generator_supports_app_route_registry():
 def test_lite_startup_waits_for_api_health_and_readiness_after_pm2_spawn():
     script = Path("pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh").read_text()
 
-    api_start = script.index("pm2_start_or_restart pocket-api")
+    api_start = script.index("pm2_runtime_process pocket-api")
     api_ready = script.index("wait_for_lite_api_ready", api_start)
     caddy_validation = script.index("validate_caddyfile", api_ready)
 
