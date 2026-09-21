@@ -132,13 +132,12 @@ def test_stale_pm2_version_projection_forces_controlled_recreation(tmp_path: Pat
 set -Eeuo pipefail
 export POCKET_LAB_ALLOW_NON_TERMUX=1
 export HOME="$TEST_HOME"
-export PREFIX="$TEST_PREFIX"
-source "$COMMON_PATH"
-
+    export PREFIX="$TEST_PREFIX"
+    source "$COMMON_PATH"
 pm2() {
-  case "${1:-}" in
+    case "${1:-}" in
     jlist)
-      if [[ -f "$STATE_FILE" ]]; then
+          if [[ -f "$STATE_FILE" ]]; then
         printf '%s\n' '[{"name":"caddy-proxy","pm2_env":{"status":"online","version":"N/A","POCKETLAB_SERVICE_VERSION":"1.0.0+sha.wrong","POCKETLAB_PROCESS_SPEC_HASH":"old"}}]'
       else
         printf '%s\n' '[]'
@@ -179,7 +178,7 @@ pm2_ensure_versioned_process caddy-proxy "2.10.2" "$SOURCE_EXEC" -- run --config
         capture_output=True,
         check=False,
     )
-    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.returncode == 0, completed.stdout + completed.stderr
     assert actions.read_text(encoding="utf-8").splitlines() == ["delete", "start"]
 
 

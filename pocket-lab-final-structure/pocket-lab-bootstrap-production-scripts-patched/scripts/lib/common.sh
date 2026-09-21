@@ -296,6 +296,17 @@ pm2_policy_fingerprint() {
   }
 }
 
+pm2_launch_fingerprint() {
+  local script="$1" interpreter="$2" cwd="$3" registry
+  registry="$(pm2_policy_registry_path)"
+  [[ -f "$registry" ]] || return 1
+  python3 "$registry" \
+    --launch-fingerprint \
+    --script "$script" \
+    --interpreter "$interpreter" \
+    --cwd "$cwd"
+}
+
 pm2_write_ecosystem_config() {
   local name="$1" script="$2" interpreter="$3" app_args_json="$4" destination="$5"
   local registry cwd
@@ -321,10 +332,10 @@ pm2_process_spec_hash() {
 }
 
 pm2_record_desired_process_spec_hash() {
-  local name="$1" hash="$2"
+  local name="$1" hash="$2" launch_hash="$3"
   local state_dir="${POCKETLAB_STATE_DIR:-${POCKET_LAB_BASE_DIR:-$HOME/pocket-lab-lite}/state}"
   local evidence_path="$state_dir/runtime/desired-process-specs.json"
-  python3 - "$evidence_path" "$name" "$hash" <<'PY'
+  python3 - "$evidence_path" "$name" "$hash" "$launch_hash" <<'PY'
 import fcntl
 import json
 import os
@@ -333,11 +344,13 @@ import re
 import sys
 
 path = Path(sys.argv[1])
-name, digest = sys.argv[2], sys.argv[3]
+name, digest, launch_digest = sys.argv[2], sys.argv[3], sys.argv[4]
 if not re.fullmatch(r"[A-Za-z0-9._-]{1,120}", name):
     raise SystemExit("invalid PM2 process name for desired-spec evidence")
 if not re.fullmatch(r"[0-9a-f]{64}", digest):
     raise SystemExit("invalid PM2 desired process-spec fingerprint")
+if not re.fullmatch(r"[0-9a-f]{64}", launch_digest):
+    raise SystemExit("invalid PM2 desired launch fingerprint")
 path.parent.mkdir(parents=True, exist_ok=True)
 lock_path = path.with_suffix(path.suffix + ".lock")
 with lock_path.open("a", encoding="utf-8") as lock:
@@ -349,13 +362,19 @@ with lock_path.open("a", encoding="utf-8") as lock:
         processes = current.get("processes")
         if not isinstance(processes, dict):
             raise SystemExit("invalid PM2 desired process-spec evidence")
+        launches = current.get("launches")
+        if not isinstance(launches, dict):
+            launches = {}
     else:
         processes = {}
+        launches = {}
     processes[name] = digest
+    launches[name] = launch_digest
     payload = {
         "schema": "pocketlab.pm2-desired-process-specs/v1",
         "schema_version": 1,
         "processes": dict(sorted(processes.items())),
+        "launches": dict(sorted(launches.items())),
         "sanitized": True,
     }
     temporary = path.with_name(path.name + f".{os.getpid()}.tmp")
@@ -499,8 +518,10 @@ for item in items if isinstance(items,list) else []:
     env=item.get("pm2_env") if isinstance(item.get("pm2_env"),dict) else {}
     print(str(env.get("status") or item.get("status") or "unknown").lower())
     print(str(env.get("POCKETLAB_PROCESS_SPEC_HASH") or ""))
+    print(str(env.get("pm_exec_path") or ""))
+    print(str(env.get("exec_interpreter") or ""))
     raise SystemExit(0)
-raise SystemExit(1)
+raise SystemExit(0)
 ' "$name"
 }
 
@@ -524,41 +545,6 @@ pm2_ensure_process() {
       before_sep+=("$arg")
     fi
   done
-  local policy_fingerprint spec_hash snapshot status current_hash
-  policy_fingerprint="$(pm2_policy_fingerprint "$name")"
-  local POCKETLAB_PM2_POLICY_FINGERPRINT="$policy_fingerprint"
-  export POCKETLAB_PM2_POLICY_FINGERPRINT
-
-  local effective_spec=("${before_sep[@]}")
-  if [[ "${#after_sep[@]}" -gt 0 ]]; then
-    effective_spec+=(-- "${after_sep[@]}")
-  fi
-  spec_hash="$(pm2_process_spec_hash "${effective_spec[@]}")"
-  if ! snapshot="$(pm2_process_snapshot "$name" 2>/dev/null)"; then
-    snapshot=""
-  fi
-  status="$(printf '%s\n' "$snapshot" | sed -n '1p')"
-  current_hash="$(printf '%s\n' "$snapshot" | sed -n '2p')"
-
-  if [[ -n "$status" && "$current_hash" == "$spec_hash" ]]; then
-    if [[ "$status" == "online" ]]; then
-      pm2_record_desired_process_spec_hash "$name" "$spec_hash"
-      log INFO "PM2 process already converged: $name"
-      return 0
-    fi
-    log INFO "Restarting existing converged PM2 process: $name status=$status"
-    POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 restart "$name" --update-env >/dev/null
-    pm2_record_desired_process_spec_hash "$name" "$spec_hash"
-    return 0
-  fi
-
-  if [[ -n "$status" ]]; then
-    log INFO "Replacing drifted PM2 process definition: $name"
-    pm2 delete "$name" >/dev/null 2>&1 || true
-  else
-    log INFO "Creating missing PM2 process definition: $name"
-  fi
-
   local process_script="${before_sep[0]:-}" process_interpreter="" index=1 arg
   [[ -n "$process_script" ]] || { log ERROR "PM2 process $name has no executable"; return 2; }
   while (( index < ${#before_sep[@]} )); do
@@ -583,6 +569,49 @@ pm2_ensure_process() {
         ;;
     esac
   done
+
+  local cwd launch_fingerprint policy_fingerprint spec_hash snapshot status current_hash current_script current_interpreter current_launch_fingerprint
+  cwd="$(pwd -P)"
+  launch_fingerprint="$(pm2_launch_fingerprint "$process_script" "$process_interpreter" "$cwd")"
+  policy_fingerprint="$(pm2_policy_fingerprint "$name")"
+  local POCKETLAB_PM2_POLICY_FINGERPRINT="$policy_fingerprint"
+  export POCKETLAB_PM2_POLICY_FINGERPRINT
+
+  local effective_spec=("${before_sep[@]}")
+  if [[ "${#after_sep[@]}" -gt 0 ]]; then
+    effective_spec+=(-- "${after_sep[@]}")
+  fi
+  spec_hash="$(pm2_process_spec_hash "${effective_spec[@]}")"
+  if ! snapshot="$(pm2_process_snapshot "$name" 2>/dev/null)"; then
+    snapshot=""
+  fi
+  status="$(printf '%s\n' "$snapshot" | sed -n '1p')"
+  current_hash="$(printf '%s\n' "$snapshot" | sed -n '2p')"
+  current_script="$(printf '%s\n' "$snapshot" | sed -n '3p')"
+  current_interpreter="$(printf '%s\n' "$snapshot" | sed -n '4p')"
+  current_launch_fingerprint=""
+  if [[ -n "$current_script" ]]; then
+    current_launch_fingerprint="$(pm2_launch_fingerprint "$current_script" "$current_interpreter" "$cwd" 2>/dev/null || true)"
+  fi
+
+  if [[ -n "$status" && "$current_hash" == "$spec_hash" && "$current_launch_fingerprint" == "$launch_fingerprint" ]]; then
+    if [[ "$status" == "online" ]]; then
+      pm2_record_desired_process_spec_hash "$name" "$spec_hash" "$launch_fingerprint"
+      log INFO "PM2 process already converged: $name"
+      return 0
+    fi
+    log INFO "Restarting existing converged PM2 process: $name status=$status"
+    POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 restart "$name" --update-env >/dev/null
+    pm2_record_desired_process_spec_hash "$name" "$spec_hash" "$launch_fingerprint"
+    return 0
+  fi
+
+  if [[ -n "$status" ]]; then
+    log INFO "Replacing drifted PM2 process definition: $name"
+    pm2 delete "$name" >/dev/null 2>&1 || true
+  else
+    log INFO "Creating missing PM2 process definition: $name"
+  fi
 
   local app_args_json state_dir ecosystem_dir ecosystem_file launch_status=0 old_umask
   app_args_json="$(python3 - "${after_sep[@]}" <<'PY'
@@ -613,7 +642,11 @@ PY
   if [[ "$launch_status" -ne 0 ]]; then
     return "$launch_status"
   fi
-  pm2_record_desired_process_spec_hash "$name" "$spec_hash"
+  # PM2 writes its jlist record asynchronously. The next reconciliation pass
+  # validates the recorded executable identity before treating this process as
+  # converged, avoiding a startup race while retaining fail-closed drift
+  # detection.
+  pm2_record_desired_process_spec_hash "$name" "$spec_hash" "$launch_fingerprint"
 }
 
 cleanup_pidfile() { local pidfile="$1" pid=""; [[ -f "$pidfile" ]] || return 0; pid="$(cat "$pidfile" 2>/dev/null || true)"; [[ -n "$pid" ]] && kill "$pid" >/dev/null 2>&1 || true; rm -f "$pidfile"; }

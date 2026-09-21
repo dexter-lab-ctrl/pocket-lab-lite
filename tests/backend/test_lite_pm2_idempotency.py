@@ -17,7 +17,7 @@ COMMON = (
 )
 
 
-def _run_case(tmp_path: Path, status: str) -> list[str]:
+def _run_case(tmp_path: Path, status: str, *, wrong_executable: bool = False) -> list[str]:
     actions = tmp_path / f"actions-{status}.log"
     shell = r"""
 set -Eeuo pipefail
@@ -26,17 +26,32 @@ export HOME="$TEST_HOME"
 export PREFIX="$TEST_PREFIX"
 export POCKETLAB_STATE_DIR="$TEST_HOME/pocket-lab-lite/state"
 source "$COMMON_PATH"
+EXPECTED_SCRIPT="$(pwd -P)/demo.py"
+EXPECTED_INTERPRETER="$(command -v python3)"
 export POCKETLAB_NATS_PASSWORD=test-secret-value
 export POCKETLAB_PM2_POLICY_FINGERPRINT="$(pm2_policy_fingerprint demo)"
 export ACTION_FILE
 SPEC="$(pm2_process_spec_hash demo.py --interpreter python3 -- some-argument)"
-export SPEC STATUS
+export SPEC STATUS EXPECTED_SCRIPT EXPECTED_INTERPRETER
 
 pm2_process_snapshot() {
-  if [[ "$STATUS" == "missing" ]]; then
-    return 1
+  if [[ -s "$START_SNAPSHOT" ]]; then
+    python3 - "$START_SNAPSHOT" <<'PY'
+import json
+from pathlib import Path
+import sys
+data = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+print(data["status"])
+print(data["spec"])
+print(data["script"])
+print(data["interpreter"])
+PY
+    return 0
   fi
-  printf '%s\n%s\n' "$STATUS" "$SPEC"
+  if [[ "$STATUS" == "missing" ]]; then
+    return 0
+  fi
+  printf '%s\n%s\n%s\n%s\n' "$STATUS" "$SPEC" "${SNAPSHOT_SCRIPT:-$EXPECTED_SCRIPT}" "$EXPECTED_INTERPRETER"
 }
 
 pm2() {
@@ -44,6 +59,24 @@ pm2() {
     restart|start|delete)
       if [[ "$1" == "start" ]]; then
         cp "$2" "$ECOSYSTEM_CAPTURE"
+        python3 - "$2" "$START_SNAPSHOT" "$POCKETLAB_PROCESS_SPEC_HASH" <<'PY'
+import json
+from pathlib import Path
+import sys
+source = Path(sys.argv[1]).read_text(encoding="utf-8")
+encoded = source.split("const app = ", 1)[1].split(";\napp.env", 1)[0]
+app = json.loads(encoded)
+script = app["script"]
+if not Path(script).is_absolute():
+    script = str((Path(app.get("cwd") or Path.cwd()) / script).resolve())
+payload = {
+    "status": "online",
+    "spec": sys.argv[3],
+    "script": script,
+    "interpreter": app.get("interpreter") or "node",
+}
+Path(sys.argv[2]).write_text(json.dumps(payload), encoding="utf-8")
+PY
       fi
       printf '%s\n' "$1" >>"$ACTION_FILE"
       ;;
@@ -62,6 +95,7 @@ payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 assert payload["schema"] == "pocketlab.pm2-desired-process-specs/v1"
 assert payload["schema_version"] == 1 and payload["sanitized"] is True
 assert payload["processes"]["demo"] == sys.argv[2]
+assert len(payload["launches"]["demo"]) == 64
 PY
 """
     env = os.environ.copy()
@@ -72,9 +106,12 @@ PY
             "COMMON_PATH": str(COMMON),
             "ACTION_FILE": str(actions),
             "ECOSYSTEM_CAPTURE": str(tmp_path / f"ecosystem-{status}.js"),
+            "START_SNAPSHOT": str(tmp_path / f"snapshot-{status}.json"),
             "STATUS": status,
         }
     )
+    if wrong_executable:
+        env["SNAPSHOT_SCRIPT"] = str(tmp_path / "wrong-executable")
     completed = subprocess.run(
         ["bash", "-lc", shell],
         cwd=ROOT,
@@ -99,6 +136,10 @@ def test_stopped_matching_process_restarts_without_delete_recreate(tmp_path):
 
 def test_missing_process_definition_is_created(tmp_path):
     assert _run_case(tmp_path, "missing") == ["start"]
+
+
+def test_wrong_executable_is_replaced_even_when_process_hash_matches(tmp_path):
+    assert _run_case(tmp_path, "online", wrong_executable=True) == ["delete", "start"]
 
 
 def test_process_start_uses_temporary_ecosystem_config_without_serializing_secrets(tmp_path):
@@ -192,7 +233,7 @@ source "$COMMON_PATH"
 pm2() {
   case "${1:-}" in
     jlist)
-      printf '%s\n' '[{"name":"demo","pm2_env":{"status":"online","POCKETLAB_PROCESS_SPEC_HASH":"abc123"}}]'
+      printf '%s\n' '[{"name":"demo","pm2_env":{"status":"online","POCKETLAB_PROCESS_SPEC_HASH":"abc123","pm_exec_path":"/opt/demo.py","exec_interpreter":"/usr/bin/python3"}}]'
       ;;
     *)
       return 0
@@ -203,6 +244,8 @@ pm2() {
 snapshot="$(pm2_process_snapshot demo)"
 test "$(printf '%s\n' "$snapshot" | sed -n '1p')" = "online"
 test "$(printf '%s\n' "$snapshot" | sed -n '2p')" = "abc123"
+test "$(printf '%s\n' "$snapshot" | sed -n '3p')" = "/opt/demo.py"
+test "$(printf '%s\n' "$snapshot" | sed -n '4p')" = "/usr/bin/python3"
 """
     env = os.environ.copy()
     env.update(
@@ -232,16 +275,24 @@ export PREFIX="$TEST_PREFIX"
 source "$COMMON_PATH"
 
 HASH_FILE="$TEST_HOME/hash.txt"
+SNAPSHOT_FILE="$TEST_HOME/snapshot.txt"
+EXPECTED_SCRIPT="$(pwd -P)/python3"
+EXPECTED_INTERPRETER="none"
 mkdir -p "$TEST_HOME"
 
 pm2_process_snapshot() {
-  return 1
+  if [[ -s "$SNAPSHOT_FILE" ]]; then
+    cat "$SNAPSHOT_FILE"
+    return 0
+  fi
+  return 0
 }
 
 pm2() {
   if [[ "${1:-}" == "start" ]]; then
     mkdir -p "$(dirname "$HASH_FILE")"
     printf '%s\n' "$POCKETLAB_PROCESS_SPEC_HASH" >"$HASH_FILE"
+    printf 'online\n%s\n%s\n%s\n' "$POCKETLAB_PROCESS_SPEC_HASH" "$EXPECTED_SCRIPT" "$EXPECTED_INTERPRETER" >"$SNAPSHOT_FILE"
   fi
 }
 

@@ -217,6 +217,32 @@ def policy_fingerprint(name: str, environ: Mapping[str, str] | None = None) -> s
     return policy.fingerprint() if policy else ""
 
 
+def effective_interpreter(script: str, interpreter: str = "") -> str:
+    """Return the interpreter PM2 will use for an ecosystem app."""
+    selected = str(interpreter or "").strip()
+    if selected:
+        return selected
+    if os.path.splitext(str(script or "").strip())[1].lower() in {".js", ".cjs", ".mjs"}:
+        return "node"
+    return "none"
+
+
+def launch_fingerprint(script: str, interpreter: str = "", cwd: str = "") -> str:
+    """Fingerprint the executable and interpreter without persisting their paths."""
+    executable = str(script or "").strip()
+    working_dir = str(cwd or "").strip()
+    if not executable or len(executable) > 4096 or len(working_dir) > 4096:
+        return ""
+    if not os.path.isabs(executable):
+        executable = os.path.abspath(os.path.join(working_dir or os.getcwd(), executable))
+    payload = {
+        "interpreter": effective_interpreter(executable, interpreter),
+        "script": executable,
+    }
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
 def _as_int(value: Any) -> int | None:
     try:
         return int(value)
@@ -338,6 +364,7 @@ def _main() -> int:
     parser = argparse.ArgumentParser(description="Pocket Lab Lite PM2 policy registry")
     parser.add_argument("--policy-json", metavar="PROCESS")
     parser.add_argument("--policy-fingerprint", metavar="PROCESS")
+    parser.add_argument("--launch-fingerprint", action="store_true")
     parser.add_argument("--ecosystem-js", metavar="PROCESS")
     parser.add_argument("--script")
     parser.add_argument("--interpreter", default="")
@@ -356,6 +383,12 @@ def _main() -> int:
         value = policy_fingerprint(args.policy_fingerprint)
         if not value:
             return 3
+        print(value)
+        return 0
+    if args.launch_fingerprint:
+        value = launch_fingerprint(args.script or "", args.interpreter, args.cwd)
+        if not value:
+            return 2
         print(value)
         return 0
     if args.ecosystem_js:

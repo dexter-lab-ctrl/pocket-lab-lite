@@ -29,6 +29,7 @@ def _load(name: str):
             state_root = Path(kwargs["state_root"])
             processes = list(kwargs["processes"])
             desired_specs_override = kwargs.pop("_test_desired_spec_hashes", None)
+            desired_launches_override = kwargs.pop("_test_desired_launch_hashes", None)
             evidence_path = state_root / "runtime" / "desired-process-specs.json"
             evidence_path.parent.mkdir(parents=True, exist_ok=True)
             desired_specs = (
@@ -39,10 +40,22 @@ def _load(name: str):
                     for item in processes
                 }
             )
+            desired_launches = (
+                desired_launches_override
+                if isinstance(desired_launches_override, dict)
+                else {
+                    str(item.get("name")): module.launch_fingerprint(
+                        str((item.get("pm2_env") or {}).get("pm_exec_path") or ""),
+                        str((item.get("pm2_env") or {}).get("exec_interpreter") or ""),
+                    )
+                    for item in processes
+                }
+            )
             evidence_path.write_text(json.dumps({
                 "schema": "pocketlab.pm2-desired-process-specs/v1",
                 "schema_version": 1,
                 "processes": desired_specs,
+                "launches": desired_launches,
                 "sanitized": True,
             }), encoding="utf-8")
             return original(processes=processes, **{key: value for key, value in kwargs.items() if key != "processes"})
@@ -61,6 +74,8 @@ def _managed_processes(registry, *, now: float, restart_time: int = 0):
             "version": "1.0.0+sha.test",
             "POCKETLAB_SERVICE_VERSION": "1.0.0+sha.test",
             "POCKETLAB_PROCESS_SPEC_HASH": hashlib.sha256(f"spec:{service.name}".encode()).hexdigest(),
+            "pm_exec_path": f"/opt/pocketlab/{service.name}/exec",
+            "exec_interpreter": "python3",
             "POCKETLAB_PM2_POLICY_FINGERPRINT": policy.fingerprint(),
             "min_uptime": policy.min_uptime_seconds * 1000,
             "max_restarts": policy.max_restarts,
@@ -226,6 +241,17 @@ def test_ecosystem_config_runs_termux_commands_as_binaries_without_node_interpre
         assert app["interpreter"] == "none"
     javascript = registry.ecosystem_config_for("demo", "worker.js")["apps"][0]
     assert "interpreter" not in javascript
+
+
+def test_launch_fingerprint_resolves_relative_script_and_tracks_interpreter(tmp_path):
+    registry = _load("pocketlab_runtime_registry")
+    relative = registry.launch_fingerprint("worker.py", "python3", str(tmp_path))
+    absolute = registry.launch_fingerprint(str(tmp_path / "worker.py"), "python3")
+    wrong_path = registry.launch_fingerprint(str(tmp_path / "other.py"), "python3")
+    wrong_interpreter = registry.launch_fingerprint(str(tmp_path / "worker.py"), "python")
+    assert relative == absolute
+    assert relative != wrong_path
+    assert relative != wrong_interpreter
 
 
 def test_ecosystem_javascript_uses_runtime_environment_without_serializing_it(tmp_path):
@@ -598,6 +624,36 @@ def test_runtime_contract_requires_current_desired_process_spec_hash(tmp_path, m
     )
     api = next(item for item in result["services"] if item["process"] == "pocket-api")
     assert api["desired_state_match"] is False
+    assert "desired_state_mismatch" in api["reason_codes"]
+    assert result["stable"] is False
+
+
+def test_runtime_contract_rejects_launch_path_drift_even_when_hash_matches(tmp_path, monkeypatch):
+    registry = _load("pocketlab_runtime_registry")
+    contract = _load("pocketlab_runtime_contract")
+    monkeypatch.setenv("PM2_HOME", str(tmp_path / "pm2"))
+    now = 1_700_275_000.0
+    processes = _managed_processes(registry, now=now)
+    desired_launches = {
+        item["name"]: registry.launch_fingerprint(
+            item["pm2_env"]["pm_exec_path"], item["pm2_env"]["exec_interpreter"]
+        )
+        for item in processes
+    }
+    api_process = next(item for item in processes if item["name"] == "pocket-api")
+    api_process["pm2_env"]["pm_exec_path"] = "/opt/pocketlab/pocketlab-runtime-reconciler/exec"
+
+    result = contract.build_runtime_contract(
+        processes=processes,
+        state_root=tmp_path / "state",
+        photoprism_expected=False,
+        now=now,
+        health=_healthy_probes(),
+        _test_desired_launch_hashes=desired_launches,
+    )
+    api = next(item for item in result["services"] if item["process"] == "pocket-api")
+    assert api["desired_state_match"] is False
+    assert api["launch_spec_match"] is False
     assert "desired_state_mismatch" in api["reason_codes"]
     assert result["stable"] is False
 

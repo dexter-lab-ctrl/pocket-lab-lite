@@ -25,6 +25,7 @@ try:
         LEGACY_LITE_SERVICES,
         PHOTOPRISM_PROCESS,
         ServiceSpec,
+        launch_fingerprint,
         managed_service_specs,
         policy_for,
         policy_match,
@@ -34,6 +35,7 @@ except ModuleNotFoundError:  # Package import from FastAPI/tests.
         LEGACY_LITE_SERVICES,
         PHOTOPRISM_PROCESS,
         ServiceSpec,
+        launch_fingerprint,
         managed_service_specs,
         policy_for,
         policy_match,
@@ -277,6 +279,25 @@ def _desired_process_spec_hashes(state_root: Path) -> dict[str, str]:
     }
 
 
+def _desired_process_launch_hashes(state_root: Path) -> dict[str, str]:
+    evidence = _read_json(state_root / "runtime" / "desired-process-specs.json")
+    if (
+        evidence.get("schema") != "pocketlab.pm2-desired-process-specs/v1"
+        or _int(evidence.get("schema_version"), 0) != 1
+        or evidence.get("sanitized") is not True
+    ):
+        return {}
+    launches = evidence.get("launches") if isinstance(evidence.get("launches"), dict) else {}
+    return {
+        str(name): str(digest)
+        for name, digest in launches.items()
+        if isinstance(name, str)
+        and isinstance(digest, str)
+        and len(digest) == 64
+        and all(character in "0123456789abcdef" for character in digest)
+    }
+
+
 def _update_restart_ledger(
     state_root: Path,
     process_items: Mapping[str, dict[str, Any]],
@@ -391,6 +412,7 @@ def _build_service_contracts(
     core_restart = _core_restart_state(state_root)
     core_services = core_restart.get("services") if isinstance(core_restart.get("services"), dict) else {}
     desired_spec_hashes = _desired_process_spec_hashes(state_root)
+    desired_launch_hashes = _desired_process_launch_hashes(state_root)
     core_limit = core_restart["max_restarts_per_window"]
 
     contracts: list[dict[str, Any]] = []
@@ -409,12 +431,21 @@ def _build_service_contracts(
         version_match = version != "unavailable" and version == declared_version
         spec_hash = str(env.get("POCKETLAB_PROCESS_SPEC_HASH") or "").strip().lower()
         desired_spec_hash = desired_spec_hashes.get(spec.name, "")
+        observed_launch_hash = launch_fingerprint(
+            str(env.get("pm_exec_path") or ""),
+            str(env.get("exec_interpreter") or ""),
+        )
+        desired_launch_hash = desired_launch_hashes.get(spec.name, "")
+        launch_spec_match = bool(
+            desired_launch_hash and observed_launch_hash == desired_launch_hash
+        )
         desired_state_match = bool(
             version_match
             and matches_policy
             and fingerprint_match
             and desired_spec_hash
             and spec_hash == desired_spec_hash
+            and launch_spec_match
         )
         uptime = _uptime_seconds(item, now)
         stable_uptime = bool(
@@ -511,6 +542,7 @@ def _build_service_contracts(
             "memory_ceiling_mb": memory_ceiling_mb,
             "memory_within_policy": memory_within_policy,
             "desired_state_match": desired_state_match,
+            "launch_spec_match": launch_spec_match,
             "pm2_policy_match": bool(matches_policy and fingerprint_match),
             "pm2_policy": policy.canonical() if policy else None,
             "health": semantic_health,

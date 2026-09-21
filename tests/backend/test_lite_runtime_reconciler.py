@@ -202,11 +202,15 @@ def test_runtime_reconciler_accepts_matching_canonical_pm2_policy():
 
 
 def test_runtime_reconciler_repairs_missing_and_drifted_desired_process_spec_hashes(tmp_path):
-    _load("pocketlab_runtime_registry")
+    registry = _load("pocketlab_runtime_registry")
     reconciler = _load("pocketlab_runtime_reconciler")
     process = {
         "name": "pocket-api",
-        "pm2_env": {"POCKETLAB_PROCESS_SPEC_HASH": "a" * 64},
+        "pm2_env": {
+            "POCKETLAB_PROCESS_SPEC_HASH": "a" * 64,
+            "pm_exec_path": "/opt/pocketlab/pocket-api/exec",
+            "exec_interpreter": "python3",
+        },
     }
     state_root = tmp_path / "state"
     assert reconciler.pm2_desired_spec_reasons([process], state_root=state_root) == [
@@ -218,12 +222,22 @@ def test_runtime_reconciler_repairs_missing_and_drifted_desired_process_spec_has
         "schema": "pocketlab.pm2-desired-process-specs/v1",
         "schema_version": 1,
         "processes": {"pocket-api": "a" * 64},
+        "launches": {
+            "pocket-api": registry.launch_fingerprint(
+                process["pm2_env"]["pm_exec_path"], process["pm2_env"]["exec_interpreter"]
+            )
+        },
         "sanitized": True,
     }), encoding="utf-8")
     assert reconciler.pm2_desired_spec_reasons([process], state_root=state_root) == []
     process["pm2_env"]["POCKETLAB_PROCESS_SPEC_HASH"] = "b" * 64
     assert reconciler.pm2_desired_spec_reasons([process], state_root=state_root) == [
         "pm2_desired_spec_mismatch:pocket-api"
+    ]
+    process["pm2_env"]["POCKETLAB_PROCESS_SPEC_HASH"] = "a" * 64
+    process["pm2_env"]["pm_exec_path"] = "/opt/pocketlab/pocketlab-runtime-reconciler/exec"
+    assert reconciler.pm2_desired_spec_reasons([process], state_root=state_root) == [
+        "pm2_desired_launch_mismatch:pocket-api"
     ]
 
 

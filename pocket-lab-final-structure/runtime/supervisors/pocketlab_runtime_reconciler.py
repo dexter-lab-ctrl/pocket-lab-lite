@@ -27,6 +27,7 @@ from pocketlab_runtime_registry import (
     PHOTOPRISM_SPEC,
     RECONCILER_SPEC,
     REPAIRABLE_PM2_STATUSES,
+    launch_fingerprint,
     policy_fingerprint,
     policy_match,
 )
@@ -153,6 +154,7 @@ def pm2_desired_spec_reasons(
     ):
         return ["pm2_desired_specs_invalid"]
     expected = evidence["processes"]
+    expected_launches = evidence.get("launches") if isinstance(evidence.get("launches"), dict) else {}
     observed = {
         str(item.get("name") or ""): str(
             (item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}).get(
@@ -166,6 +168,14 @@ def pm2_desired_spec_reasons(
     if include_photoprism:
         specs.append(PHOTOPRISM_SPEC)
     reasons: list[str] = []
+    observed_launches = {
+        str(item.get("name") or ""): launch_fingerprint(
+            str((item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}).get("pm_exec_path") or ""),
+            str((item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}).get("exec_interpreter") or ""),
+        )
+        for item in processes
+        if isinstance(item, dict)
+    }
     for spec in specs:
         if spec.name not in observed:
             continue
@@ -174,6 +184,12 @@ def pm2_desired_spec_reasons(
             reasons.append(f"pm2_desired_spec_missing:{spec.name}")
         elif observed[spec.name] != desired:
             reasons.append(f"pm2_desired_spec_mismatch:{spec.name}")
+        desired_launch = str(expected_launches.get(spec.name) or "").strip().lower()
+        observed_launch = observed_launches.get(spec.name, "")
+        if not desired_launch:
+            reasons.append(f"pm2_desired_launch_missing:{spec.name}")
+        elif observed_launch != desired_launch:
+            reasons.append(f"pm2_desired_launch_mismatch:{spec.name}")
     return reasons
 
 
