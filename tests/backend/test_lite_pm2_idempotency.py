@@ -31,7 +31,7 @@ pm2() {
   case "${1:-}" in
     jlist)
       if [[ "$STATUS" == "missing" ]]; then
-        printf '[]\\n'
+        printf '[]\n'
       else
         python3 - "$STATUS" "$SPEC" <<'PY'
 import json, sys
@@ -47,7 +47,7 @@ PY
       fi
       ;;
     restart|start|delete)
-      printf '%s\\n' "$1" >>"$ACTION_FILE"
+      printf '%s\n' "$1" >>"$ACTION_FILE"
       ;;
     *)
       return 0
