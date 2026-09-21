@@ -120,3 +120,71 @@ def test_runtime_reconciler_and_guardian_treat_version_metadata_as_desired_state
     assert "pm2_version_projection:" in reconciler
     assert "POCKETLAB_SERVICE_VERSION" in guardian
     assert "runtime_reconciler_missing_or_version_drift" in guardian
+
+
+def test_stale_pm2_version_projection_forces_controlled_recreation(tmp_path: Path):
+    actions = tmp_path / "actions.log"
+    state = tmp_path / "present"
+    state.write_text("1", encoding="utf-8")
+    shell = r"""
+set -Eeuo pipefail
+export POCKET_LAB_ALLOW_NON_TERMUX=1
+export HOME="$TEST_HOME"
+export PREFIX="$TEST_PREFIX"
+source "$COMMON_PATH"
+
+pm2() {
+  case "${1:-}" in
+    jlist)
+      if [[ -f "$STATE_FILE" ]]; then
+        printf '%s\n' '[{"name":"caddy-proxy","pm2_env":{"status":"online","version":"N/A","POCKETLAB_SERVICE_VERSION":"1.0.0+sha.wrong","POCKETLAB_PROCESS_SPEC_HASH":"old"}}]'
+      else
+        printf '%s\n' '[]'
+      fi
+      ;;
+    delete)
+      printf 'delete\n' >>"$ACTION_FILE"
+      rm -f "$STATE_FILE"
+      ;;
+    start)
+      printf 'start\n' >>"$ACTION_FILE"
+      ;;
+    *)
+      return 0
+      ;;
+  esac
+}
+
+pm2_ensure_versioned_process caddy-proxy "2.10.2" "$SOURCE_EXEC" -- run --config /tmp/Caddyfile
+"""
+    env = os.environ.copy()
+    env.update(
+        {
+            "POCKET_LAB_ALLOW_NON_TERMUX": "1",
+            "TEST_HOME": str(tmp_path / "home"),
+            "TEST_PREFIX": str(tmp_path / "prefix"),
+            "COMMON_PATH": str(COMMON),
+            "SOURCE_EXEC": shutil.which("sh") or "/bin/sh",
+            "ACTION_FILE": str(actions),
+            "STATE_FILE": str(state),
+        }
+    )
+    completed = subprocess.run(
+        ["bash", "-lc", shell],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert actions.read_text(encoding="utf-8").splitlines() == ["delete", "start"]
+
+
+def test_caddy_config_fallback_restart_preserves_projected_service_version():
+    source = DASHBOARD.read_text(encoding="utf-8")
+    start = source.index("reload_caddy_if_config_changed(){")
+    end = source.index("start_pm2_daemons(){", start)
+    block = source[start:end]
+    assert "pm2 restart caddy-proxy" in block
+    assert "pm2 restart caddy-proxy --update-env" not in block
