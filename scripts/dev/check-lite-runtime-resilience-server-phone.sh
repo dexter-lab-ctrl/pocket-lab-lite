@@ -249,7 +249,6 @@ runtime_dir="$HOME/pocket-lab-lite/state/runtime"
 python3 - "$runtime_contract" "$runtime_dir" "$pm2_home/logs" <<'PY'
 from datetime import datetime, timezone
 import json
-import os
 from pathlib import Path
 import stat
 import sys
@@ -893,11 +892,35 @@ trap cleanup EXIT
 
 pm2 delete "$crash_name" "$grace_name" "$memory_name" >/dev/null 2>&1 || true
 
+write_pm2_ecosystem() {
+  local config="$1" script="$2" name="$3" policy_json="$4" env_name="${5:-}" env_value="${6:-}"
+  python3 - "$config" "$script" "$name" "$policy_json" "$env_name" "$env_value" "$(command -v python3)" <<'PY'
+import json
+from pathlib import Path
+import sys
+
+config, script, name, policy_json, env_name, env_value, interpreter = sys.argv[1:]
+app = {
+    "name": name,
+    "script": script,
+    "interpreter": interpreter,
+    "exec_mode": "fork",
+    **json.loads(policy_json),
+}
+if env_name:
+    app["env"] = {env_name: env_value}
+path = Path(config)
+path.write_text(json.dumps({"apps": [app]}, sort_keys=True), encoding="utf-8")
+path.chmod(0o600)
+PY
+}
+
 cat >"$tmp_root/crash.py" <<'PY'
 raise SystemExit(23)
 PY
-pm2 start "$tmp_root/crash.py" --name "$crash_name" --interpreter python3 \
-  --min-uptime 2s --max-restarts 3 --kill-timeout 2000 --restart-delay 250 >/dev/null
+write_pm2_ecosystem "$tmp_root/crash.ecosystem.json" "$tmp_root/crash.py" "$crash_name" \
+  '{"autorestart":true,"min_uptime":"2s","max_restarts":3,"kill_timeout":2000,"restart_delay":250}'
+pm2 start "$tmp_root/crash.ecosystem.json" --only "$crash_name" >/dev/null
 crash_terminal=0
 for _ in $(seq 1 40); do
   if pm2 jlist | NAME="$crash_name" python3 -c '
@@ -940,8 +963,9 @@ while True:
     time.sleep(1)
 PY
 marker="$tmp_root/graceful.marker"
-GRACEFUL_MARKER="$marker" pm2 start "$tmp_root/graceful.py" --name "$grace_name" --interpreter python3 \
-  --no-autorestart --kill-timeout 3000 >/dev/null
+write_pm2_ecosystem "$tmp_root/graceful.ecosystem.json" "$tmp_root/graceful.py" "$grace_name" \
+  '{"autorestart":false,"kill_timeout":3000}' GRACEFUL_MARKER "$marker"
+pm2 start "$tmp_root/graceful.ecosystem.json" --only "$grace_name" >/dev/null
 sleep 2
 pm2 sendSignal SIGTERM "$grace_name" >/dev/null
 for _ in $(seq 1 15); do
@@ -961,8 +985,9 @@ payload = bytearray(48 * 1024 * 1024)
 while payload:
     time.sleep(1)
 PY
-  pm2 start "$tmp_root/memory.py" --name "$memory_name" --interpreter python3 \
-    --max-memory-restart 32M --min-uptime 2s --max-restarts 3 --kill-timeout 3000 >/dev/null
+  write_pm2_ecosystem "$tmp_root/memory.ecosystem.json" "$tmp_root/memory.py" "$memory_name" \
+    '{"autorestart":true,"max_memory_restart":"32M","min_uptime":"2s","max_restarts":3,"kill_timeout":3000}'
+  pm2 start "$tmp_root/memory.ecosystem.json" --only "$memory_name" >/dev/null
   memory_restarted=0
   for _ in $(seq 1 100); do
     if pm2 jlist | NAME="$memory_name" python3 -c '

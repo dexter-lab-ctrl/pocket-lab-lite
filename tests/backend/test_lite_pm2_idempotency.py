@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -25,9 +26,10 @@ export HOME="$TEST_HOME"
 export PREFIX="$TEST_PREFIX"
 export POCKETLAB_STATE_DIR="$TEST_HOME/pocket-lab-lite/state"
 source "$COMMON_PATH"
+export POCKETLAB_NATS_PASSWORD=test-secret-value
 export POCKETLAB_PM2_POLICY_FINGERPRINT="$(pm2_policy_fingerprint demo)"
 export ACTION_FILE
-SPEC="$(pm2_process_spec_hash python3 -- demo.py)"
+SPEC="$(pm2_process_spec_hash demo.py --interpreter python3 -- some-argument)"
 export SPEC STATUS
 
 pm2_process_snapshot() {
@@ -40,6 +42,9 @@ pm2_process_snapshot() {
 pm2() {
   case "${1:-}" in
     restart|start|delete)
+      if [[ "$1" == "start" ]]; then
+        cp "$2" "$ECOSYSTEM_CAPTURE"
+      fi
       printf '%s\n' "$1" >>"$ACTION_FILE"
       ;;
     *)
@@ -48,7 +53,7 @@ pm2() {
   esac
 }
 
-pm2_ensure_process demo python3 -- demo.py
+pm2_ensure_process demo demo.py --interpreter python3 -- some-argument
 python3 - "$TEST_HOME/pocket-lab-lite/state/runtime/desired-process-specs.json" "$SPEC" <<'PY'
 import json
 from pathlib import Path
@@ -66,6 +71,7 @@ PY
             "TEST_PREFIX": str(tmp_path / "prefix"),
             "COMMON_PATH": str(COMMON),
             "ACTION_FILE": str(actions),
+            "ECOSYSTEM_CAPTURE": str(tmp_path / f"ecosystem-{status}.js"),
             "STATUS": status,
         }
     )
@@ -93,6 +99,20 @@ def test_stopped_matching_process_restarts_without_delete_recreate(tmp_path):
 
 def test_missing_process_definition_is_created(tmp_path):
     assert _run_case(tmp_path, "missing") == ["start"]
+
+
+def test_process_start_uses_temporary_ecosystem_config_without_serializing_secrets(tmp_path):
+    assert _run_case(tmp_path, "missing") == ["start"]
+    source = (tmp_path / "ecosystem-missing.js").read_text(encoding="utf-8")
+    assert "app.env = process.env;" in source
+    assert "test-secret-value" not in source
+    encoded_app = source.split("const app = ", 1)[1].split(";\napp.env", 1)[0]
+    app = json.loads(encoded_app)
+    assert app["name"] == "demo"
+    assert app["script"] == "demo.py"
+    assert app["interpreter"].endswith("python3")
+    assert app["args"] == ["some-argument"]
+    assert "--min-uptime" not in source
 
 
 def test_transient_app_operation_variables_do_not_change_process_spec_hash(tmp_path):
@@ -129,6 +149,36 @@ test "$A" = "$B"
         capture_output=True,
     )
 
+
+def test_desired_policy_fingerprint_changes_process_spec_identity(tmp_path):
+    shell = r"""
+set -Eeuo pipefail
+export POCKET_LAB_ALLOW_NON_TERMUX=1
+export HOME="$TEST_HOME"
+export PREFIX="$TEST_PREFIX"
+source "$COMMON_PATH"
+export POCKETLAB_PM2_POLICY_FINGERPRINT=policy-one
+A="$(pm2_process_spec_hash demo.py --interpreter python3)"
+export POCKETLAB_PM2_POLICY_FINGERPRINT=policy-two
+B="$(pm2_process_spec_hash demo.py --interpreter python3)"
+test "$A" != "$B"
+"""
+    env = os.environ.copy()
+    env.update(
+        {
+            "TEST_HOME": str(tmp_path / "home"),
+            "TEST_PREFIX": str(tmp_path / "prefix"),
+            "COMMON_PATH": str(COMMON),
+        }
+    )
+    subprocess.run(
+        ["bash", "-lc", shell],
+        cwd=ROOT,
+        env=env,
+        check=True,
+        text=True,
+        capture_output=True,
+    )
 
 
 def test_pm2_process_snapshot_parses_jlist_json(tmp_path):

@@ -285,17 +285,6 @@ pm2_policy_registry_path() {
   printf '%s\n' "$final_root/runtime/supervisors/pocketlab_runtime_registry.py"
 }
 
-pm2_policy_args() {
-  local name="$1" registry rc
-  registry="$(pm2_policy_registry_path)"
-  [[ -f "$registry" ]] || return 0
-  python3 "$registry" --pm2-args "$name" 2>/dev/null || {
-    rc=$?
-    [[ "$rc" -eq 3 ]] && return 0
-    return "$rc"
-  }
-}
-
 pm2_policy_fingerprint() {
   local name="$1" registry rc
   registry="$(pm2_policy_registry_path)"
@@ -305,6 +294,20 @@ pm2_policy_fingerprint() {
     [[ "$rc" -eq 3 ]] && return 0
     return "$rc"
   }
+}
+
+pm2_write_ecosystem_config() {
+  local name="$1" script="$2" interpreter="$3" app_args_json="$4" destination="$5"
+  local registry cwd
+  registry="$(pm2_policy_registry_path)"
+  [[ -f "$registry" ]] || return 1
+  cwd="$(pwd -P)"
+  python3 "$registry" \
+    --ecosystem-js "$name" \
+    --script "$script" \
+    --interpreter "$interpreter" \
+    --cwd "$cwd" \
+    --app-args-json "$app_args_json" >"$destination"
 }
 
 pm2_process_spec_hash() {
@@ -506,12 +509,6 @@ pm2_ensure_process() {
   shift
   require_cmd pm2 python3 sha256sum
 
-  local policy_args=()
-  local policy_value=""
-  while IFS= read -r policy_value; do
-    [[ -n "$policy_value" ]] && policy_args+=("$policy_value")
-  done < <(pm2_policy_args "$name")
-
   local before_sep=()
   local after_sep=()
   local seen_sep=0
@@ -527,10 +524,6 @@ pm2_ensure_process() {
       before_sep+=("$arg")
     fi
   done
-  if [[ "${#policy_args[@]}" -gt 0 ]]; then
-    before_sep+=("${policy_args[@]}")
-  fi
-
   local policy_fingerprint spec_hash snapshot status current_hash
   policy_fingerprint="$(pm2_policy_fingerprint "$name")"
   local POCKETLAB_PM2_POLICY_FINGERPRINT="$policy_fingerprint"
@@ -566,10 +559,59 @@ pm2_ensure_process() {
     log INFO "Creating missing PM2 process definition: $name"
   fi
 
-  if [[ "${#after_sep[@]}" -gt 0 ]]; then
-    POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "${before_sep[@]}" --name "$name" -- "${after_sep[@]}"
+  local process_script="${before_sep[0]:-}" process_interpreter="" index=1 arg
+  [[ -n "$process_script" ]] || { log ERROR "PM2 process $name has no executable"; return 2; }
+  while (( index < ${#before_sep[@]} )); do
+    arg="${before_sep[$index]}"
+    case "$arg" in
+      --interpreter)
+        (( index + 1 < ${#before_sep[@]} )) || { log ERROR "PM2 process $name has an incomplete interpreter option"; return 2; }
+        arg="${before_sep[$((index + 1))]}"
+        if ! command -v "$arg" >/dev/null 2>&1; then
+          log ERROR "PM2 interpreter is unavailable for $name: $arg"
+          return 2
+        fi
+        process_interpreter="$(command -v "$arg")"
+        index=$((index + 2))
+        ;;
+      --update-env)
+        index=$((index + 1))
+        ;;
+      *)
+        log ERROR "Unsupported PM2 launch option for $name: $arg"
+        return 2
+        ;;
+    esac
+  done
+
+  local app_args_json state_dir ecosystem_dir ecosystem_file launch_status=0 old_umask
+  app_args_json="$(python3 - "${after_sep[@]}" <<'PY'
+import json
+import sys
+print(json.dumps(sys.argv[1:], separators=(",", ":")))
+PY
+)"
+  state_dir="${POCKETLAB_STATE_DIR:-${POCKET_LAB_BASE_DIR:-$HOME/pocket-lab-lite}/state}"
+  mkdir -p "$state_dir/runtime"
+  old_umask="$(umask)"
+  umask 077
+  ecosystem_dir="$(mktemp -d "$state_dir/runtime/.pm2-start.XXXXXX")"
+  umask "$old_umask"
+  ecosystem_file="$ecosystem_dir/ecosystem.config.js"
+  if ! pm2_write_ecosystem_config "$name" "$process_script" "$process_interpreter" "$app_args_json" "$ecosystem_file"; then
+    rm -f -- "$ecosystem_file"
+    rmdir -- "$ecosystem_dir" 2>/dev/null || true
+    return 1
+  fi
+  if POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$ecosystem_file" --only "$name" >/dev/null; then
+    launch_status=0
   else
-    POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "${before_sep[@]}" --name "$name"
+    launch_status=$?
+  fi
+  rm -f -- "$ecosystem_file"
+  rmdir -- "$ecosystem_dir" 2>/dev/null || true
+  if [[ "$launch_status" -ne 0 ]]; then
+    return "$launch_status"
   fi
   pm2_record_desired_process_spec_hash "$name" "$spec_hash"
 }

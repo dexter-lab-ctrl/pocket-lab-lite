@@ -190,8 +190,11 @@ def test_pm2_contract_fault_mode_is_explicitly_guarded_and_uses_bounded_canaries
     assert "POCKETLAB_RUNTIME_PM2_CONTRACT_FAULTS" in source
     assert "POCKETLAB_RUNTIME_MEMORY_FAULTS" in source
     assert "48 * 1024 * 1024" in source
-    assert "--max-memory-restart 32M" in source
-    assert "--max-restarts 3" in source
+    assert '"max_memory_restart":"32M"' in source
+    assert '"max_restarts":3' in source
+    assert 'pm2 start "$tmp_root/crash.ecosystem.json" --only "$crash_name"' in source
+    assert 'pm2 start "$tmp_root/memory.ecosystem.json" --only "$memory_name"' in source
+    assert "write_pm2_ecosystem()" in source
     assert "pm2 sendSignal SIGTERM" in source
     assert "pocketlab-qualification-crash-loop" in source
     assert "pocketlab-qualification-graceful-stop" in source

@@ -13,6 +13,7 @@ import hashlib
 import json
 import os
 import re
+import sys
 from typing import Any, Mapping, Tuple
 
 
@@ -43,21 +44,21 @@ class PM2Policy:
         encoded = json.dumps(self.canonical(), sort_keys=True, separators=(",", ":")).encode("utf-8")
         return hashlib.sha256(encoded).hexdigest()
 
-    def pm2_args(self) -> tuple[str, ...]:
-        args: list[str] = [
-            "--min-uptime", f"{self.min_uptime_seconds}s",
-            "--max-restarts", str(self.max_restarts),
-            "--kill-timeout", str(self.kill_timeout_ms),
-        ]
+    def ecosystem_fields(self) -> dict[str, Any]:
+        fields: dict[str, Any] = {
+            "autorestart": self.autorestart,
+            "exec_mode": "fork",
+            "kill_timeout": self.kill_timeout_ms,
+            "max_restarts": self.max_restarts,
+            "min_uptime": f"{self.min_uptime_seconds}s",
+        }
         if self.max_memory_restart_mb is not None:
-            args.extend(["--max-memory-restart", f"{self.max_memory_restart_mb}M"])
+            fields["max_memory_restart"] = f"{self.max_memory_restart_mb}M"
         if self.restart_delay_ms is not None:
-            args.extend(["--restart-delay", str(self.restart_delay_ms)])
+            fields["restart_delay"] = self.restart_delay_ms
         if self.exp_backoff_restart_delay_ms is not None:
-            args.extend(["--exp-backoff-restart-delay", str(self.exp_backoff_restart_delay_ms)])
-        if not self.autorestart:
-            args.append("--no-autorestart")
-        return tuple(args)
+            fields["exp_backoff_restart_delay"] = self.exp_backoff_restart_delay_ms
+        return fields
 
 
 @dataclass(frozen=True)
@@ -274,11 +275,74 @@ def policy_match(name: str, env: Mapping[str, Any], environ: Mapping[str, str] |
     return not mismatches, tuple(mismatches)
 
 
+def ecosystem_config_for(
+    name: str,
+    script: str,
+    *,
+    interpreter: str = "",
+    cwd: str = "",
+    app_args: list[str] | None = None,
+    environ: Mapping[str, str] | None = None,
+) -> dict[str, Any]:
+    """Build a bounded one-process PM2 ecosystem config.
+
+    Lifecycle options live in ecosystem fields because Termux PM2 releases do
+    not consistently accept them as CLI flags. The transient JS wrapper adds
+    the invoking environment at load time so credentials are not written to
+    the config artifact.
+    """
+    process_name = str(name or "").strip()
+    executable = str(script or "").strip()
+    interpreter = str(interpreter or "").strip()
+    cwd = str(cwd or "").strip()
+    if not process_name or len(process_name) > 120:
+        raise ValueError("invalid PM2 process name")
+    if not executable or len(executable) > 4096:
+        raise ValueError("invalid PM2 process script")
+    if len(interpreter) > 256 or len(cwd) > 4096:
+        raise ValueError("PM2 launch field exceeds its bound")
+    if cwd and not os.path.isabs(cwd):
+        raise ValueError("PM2 process cwd must be absolute")
+    arguments = [] if app_args is None else app_args
+    if (
+        not isinstance(arguments, list)
+        or len(arguments) > 128
+        or any(not isinstance(value, str) or len(value) > 8192 for value in arguments)
+        or sum(len(value) for value in arguments) > 65536
+    ):
+        raise ValueError("PM2 app arguments are invalid or exceed their bound")
+
+    app: dict[str, Any] = {
+        "name": process_name,
+        "script": executable,
+        "exec_mode": "fork",
+    }
+    policy = policy_for(process_name, environ)
+    if policy is not None:
+        app.update(policy.ecosystem_fields())
+    if interpreter:
+        app["interpreter"] = interpreter
+    elif os.path.splitext(executable)[1].lower() not in {".js", ".cjs", ".mjs"}:
+        # Bare Termux commands (NATS, OPA, Caddy, bash) are executables, not
+        # JavaScript entry points. PM2's ecosystem default is Node, so mark
+        # these explicitly as binaries when no interpreter was requested.
+        app["interpreter"] = "none"
+    if cwd:
+        app["cwd"] = cwd
+    if arguments:
+        app["args"] = arguments
+    return {"apps": [app]}
+
+
 def _main() -> int:
     parser = argparse.ArgumentParser(description="Pocket Lab Lite PM2 policy registry")
     parser.add_argument("--policy-json", metavar="PROCESS")
     parser.add_argument("--policy-fingerprint", metavar="PROCESS")
-    parser.add_argument("--pm2-args", metavar="PROCESS")
+    parser.add_argument("--ecosystem-js", metavar="PROCESS")
+    parser.add_argument("--script")
+    parser.add_argument("--interpreter", default="")
+    parser.add_argument("--cwd", default="")
+    parser.add_argument("--app-args-json", default="[]")
     parser.add_argument("--all-json", action="store_true")
     args = parser.parse_args()
 
@@ -294,12 +358,23 @@ def _main() -> int:
             return 3
         print(value)
         return 0
-    if args.pm2_args:
-        policy = policy_for(args.pm2_args)
-        if policy is None:
-            return 3
-        for value in policy.pm2_args():
-            print(value)
+    if args.ecosystem_js:
+        try:
+            app_args = json.loads(args.app_args_json)
+            payload = ecosystem_config_for(
+                args.ecosystem_js,
+                args.script or "",
+                interpreter=args.interpreter,
+                cwd=args.cwd,
+                app_args=app_args,
+            )
+        except (TypeError, ValueError, json.JSONDecodeError) as error:
+            print(f"invalid PM2 ecosystem request: {error}", file=sys.stderr)
+            return 2
+        app = json.dumps(payload["apps"][0], sort_keys=True, separators=(",", ":"))
+        print(f"const app = {app};")
+        print("app.env = process.env;")
+        print("module.exports = { apps: [app] };")
         return 0
     if args.all_json:
         payload = {

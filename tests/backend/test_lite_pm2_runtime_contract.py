@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import subprocess
 import sys
 
 import pytest
@@ -184,6 +185,79 @@ def test_policy_match_detects_pm2_drift():
     matches, fields = registry.policy_match("pocket-api", env)
     assert matches is False
     assert "kill_timeout_ms" in fields
+
+
+def test_ecosystem_config_maps_policy_without_serializing_environment_secrets(tmp_path):
+    registry = _load("pocketlab_runtime_registry")
+    config = registry.ecosystem_config_for(
+        "pocket-api",
+        "/opt/pocket-api/server.py",
+        interpreter="python3",
+        cwd=str(tmp_path),
+        app_args=["--safe-mode", "true"],
+        environ={"POCKETLAB_NATS_PASSWORD": "test-secret-value"},
+    )
+    app = config["apps"][0]
+    assert app["script"] == "/opt/pocket-api/server.py"
+    assert app["interpreter"] == "python3"
+    assert app["cwd"] == str(tmp_path)
+    assert app["args"] == ["--safe-mode", "true"]
+    assert app["min_uptime"] == "20s"
+    assert app["max_restarts"] == 6
+    assert app["kill_timeout"] == 15000
+    assert app["max_memory_restart"] == "384M"
+    assert app["exp_backoff_restart_delay"] == 250
+    assert "env" not in app
+    assert "test-secret-value" not in json.dumps(config)
+
+
+def test_ecosystem_config_bounds_process_arguments():
+    registry = _load("pocketlab_runtime_registry")
+    with pytest.raises(ValueError, match="arguments"):
+        registry.ecosystem_config_for("demo", "python3", app_args=["x"] * 129)
+    with pytest.raises(ValueError, match="cwd"):
+        registry.ecosystem_config_for("demo", "python3", cwd="relative/path")
+
+
+def test_ecosystem_config_runs_termux_commands_as_binaries_without_node_interpreter():
+    registry = _load("pocketlab_runtime_registry")
+    for executable in ("nats-server", "/data/data/com.termux/files/usr/bin/opa", "bash"):
+        app = registry.ecosystem_config_for("demo", executable)["apps"][0]
+        assert app["interpreter"] == "none"
+    javascript = registry.ecosystem_config_for("demo", "worker.js")["apps"][0]
+    assert "interpreter" not in javascript
+
+
+def test_ecosystem_javascript_uses_runtime_environment_without_serializing_it(tmp_path):
+    registry_path = SUPERVISORS / "pocketlab_runtime_registry.py"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(registry_path),
+            "--ecosystem-js",
+            "pocket-api",
+            "--script",
+            "/opt/pocket-api/server.py",
+            "--interpreter",
+            "python3",
+            "--cwd",
+            str(tmp_path),
+            "--app-args-json",
+            '["--serve"]',
+        ],
+        env={**os.environ, "POCKETLAB_NATS_PASSWORD": "test-secret-value"},
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert "app.env = process.env;" in completed.stdout
+    assert "test-secret-value" not in completed.stdout
+    encoded_app = completed.stdout.split("const app = ", 1)[1].split(";\napp.env", 1)[0]
+    app = json.loads(encoded_app)
+    assert app["name"] == "pocket-api"
+    assert app["min_uptime"] == "20s"
+    assert app["args"] == ["--serve"]
 
 
 def test_memory_overrides_are_bounded_and_do_not_cap_nats_or_photoprism():
