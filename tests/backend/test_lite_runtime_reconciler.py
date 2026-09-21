@@ -150,3 +150,48 @@ def test_runtime_reconciler_strips_stale_runtime_path_overrides_from_child_env()
 
     assert "for key in (" in repair
     assert "env.pop(key, None)" in repair
+
+
+def test_runtime_reconciler_detects_canonical_pm2_policy_drift():
+    registry = _load("pocketlab_runtime_registry")
+    reconciler = _load("pocketlab_runtime_reconciler")
+    policy = registry.policy_for("pocket-api")
+    process = {
+        "name": "pocket-api",
+        "pm2_env": {
+            "status": "online",
+            "min_uptime": policy.min_uptime_seconds * 1000,
+            "max_restarts": policy.max_restarts,
+            "kill_timeout": policy.kill_timeout_ms + 1,
+            "max_memory_restart": policy.max_memory_restart_mb * 1024 * 1024,
+            "restart_delay": policy.restart_delay_ms or 0,
+            "exp_backoff_restart_delay": policy.exp_backoff_restart_delay_ms or 0,
+            "autorestart": True,
+            "POCKETLAB_PM2_POLICY_FINGERPRINT": registry.policy_fingerprint("pocket-api"),
+        },
+    }
+    reasons = reconciler.pm2_policy_reasons([process])
+    assert reasons
+    assert reasons[0].startswith("pm2_policy:pocket-api:")
+    assert "kill_timeout_ms" in reasons[0]
+
+
+def test_runtime_reconciler_accepts_matching_canonical_pm2_policy():
+    registry = _load("pocketlab_runtime_registry")
+    reconciler = _load("pocketlab_runtime_reconciler")
+    policy = registry.policy_for("pocket-api")
+    process = {
+        "name": "pocket-api",
+        "pm2_env": {
+            "status": "online",
+            "min_uptime": policy.min_uptime_seconds * 1000,
+            "max_restarts": policy.max_restarts,
+            "kill_timeout": policy.kill_timeout_ms,
+            "max_memory_restart": policy.max_memory_restart_mb * 1024 * 1024,
+            "restart_delay": policy.restart_delay_ms or 0,
+            "exp_backoff_restart_delay": policy.exp_backoff_restart_delay_ms or 0,
+            "autorestart": True,
+            "POCKETLAB_PM2_POLICY_FINGERPRINT": registry.policy_fingerprint("pocket-api"),
+        },
+    }
+    assert reconciler.pm2_policy_reasons([process]) == []
