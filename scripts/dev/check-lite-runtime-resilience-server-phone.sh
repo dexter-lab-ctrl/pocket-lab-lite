@@ -933,7 +933,12 @@ for item in items:
     env=item.get("pm2_env") or {}
     status=str(env.get("status") or "").lower()
     restarts=int(env.get("unstable_restarts") or env.get("restart_time") or 0)
-    if status in {"errored","error","stopped"} and restarts >= 3:
+    pid=env.get("pid") or item.get("pid")
+    terminal_status = status in {"errored", "error", "stopped"}
+    # PM2 7 on Termux leaves a capped crash loop in `waiting restart` with no
+    # pid instead of translating it to `errored`; the restart budget is still
+    # enforced and the process is terminal for qualification purposes.
+    if (terminal_status or (status == "waiting restart" and not pid)) and restarts >= 3:
         raise SystemExit(0)
 raise SystemExit(1)
 '; then
