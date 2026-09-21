@@ -291,7 +291,11 @@ import re
 import sys
 value = (sys.argv[1] or "").replace("\r", " ").replace("\n", " ").strip()
 value = re.sub(r"\s+", " ", value)
-if not value or value.lower() in {"n/a", "na", "unknown", "none", "null"}:
+if (
+    not value
+    or value.lower() in {"n/a", "na", "unknown", "none", "null"}
+    or value.startswith("$")
+):
     raise SystemExit(1)
 print(value)
 PY
