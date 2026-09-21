@@ -147,3 +147,31 @@ def test_photoprism_qualification_refreshes_pm2_state_and_uses_adaptive_backoff(
     assert 'http://127.0.0.1:8443/apps/photoprism/' in block
     assert 'photoprism_backoff_seconds=$((photoprism_backoff_seconds * 2))' in block
     assert '[[ "$photoprism_stable" -ge 2 ]]' in block
+
+
+def test_server_phone_qualification_checks_stable_runtime_contract_and_log_policy():
+    source = PHONE_CHECK.read_text(encoding="utf-8")
+    assert "pm2-runtime-contract.json" in source
+    assert "pocketlab.pm2-runtime-contract/v1" in source
+    assert 'data.get("state") == "stable"' in source
+    assert 'int(data.get("stable_observations") or 0) >= 2' in source
+    assert 'item.get("pm2_policy_match") is True' in source
+    assert 'item.get("desired_state_match") is True' in source
+    assert 'log_policy.get("within_policy") is True' in source
+
+
+def test_pm2_contract_fault_mode_is_explicitly_guarded_and_uses_bounded_canaries():
+    source = PHONE_CHECK.read_text(encoding="utf-8")
+    assert "--pm2-contract-faults" in source
+    assert "POCKETLAB_RUNTIME_PM2_CONTRACT_FAULTS" in source
+    assert "POCKETLAB_RUNTIME_MEMORY_FAULTS" in source
+    assert "48 * 1024 * 1024" in source
+    assert "--max-memory-restart 32M" in source
+    assert "--max-restarts 3" in source
+    assert "pm2 sendSignal SIGTERM" in source
+    assert "pocketlab-qualification-crash-loop" in source
+    assert "pocketlab-qualification-graceful-stop" in source
+    assert "pocketlab-qualification-memory-ceiling" in source
+    assert "fault_pm2_service pocket-node-agent" in source
+    assert "fault_pm2_service caddy-proxy" in source
+    assert "fault_pm2_service pocket-nats" in source
