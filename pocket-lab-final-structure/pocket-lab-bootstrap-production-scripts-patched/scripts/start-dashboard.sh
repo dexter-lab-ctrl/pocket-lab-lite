@@ -941,15 +941,28 @@ pm2_runtime_process(){
 }
 
 nats_installed_version(){
-  local raw
-  raw="$(nats-server -v 2>/dev/null | head -1)"
-  raw="$(printf '%s\n' "$raw" | sed -E 's/^.*[[:space:]]v?([0-9][0-9A-Za-z.+_-]*).*$/\1/')"
+  local output raw
+  output="$(nats-server -v 2>&1 || true)"
+  raw="$(printf '%s\n' "$output" | python3 -c '
+import re, sys
+text=sys.stdin.read()
+match=re.search(r"(?<![0-9])v?([0-9]+(?:\\.[0-9]+){1,3}(?:[-+][0-9A-Za-z._-]+)?)", text)
+print(match.group(1) if match else "")
+')"
+  [[ -n "$raw" ]] || die "Could not determine installed NATS version"
   pm2_normalize_service_version "$raw"
 }
 
 caddy_installed_version(){
-  local raw
-  raw="$(caddy version 2>/dev/null | head -1 | awk '{print $1}' | sed 's/^v//')"
+  local output raw
+  output="$(caddy version 2>&1 || true)"
+  raw="$(printf '%s\n' "$output" | python3 -c '
+import re, sys
+text=sys.stdin.read()
+match=re.search(r"(?<![0-9])v?([0-9]+(?:\\.[0-9]+){1,3}(?:[-+][0-9A-Za-z._-]+)?)", text)
+print(match.group(1) if match else "")
+')"
+  [[ -n "$raw" ]] || die "Could not determine installed Caddy version"
   pm2_normalize_service_version "$raw"
 }
 
