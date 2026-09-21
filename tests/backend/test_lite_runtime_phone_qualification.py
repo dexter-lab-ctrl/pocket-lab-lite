@@ -78,7 +78,7 @@ def test_server_phone_qualification_waits_for_stable_pm2_and_photoprism_state():
     assert 'PhotoPrism PM2/local/same-origin runtime did not stabilize' in read_only
 
 
-def test_fault_waiter_streams_pm2_json_instead_of_using_environment_payload():
+def test_fault_waiter_uses_fresh_pm2_json_and_adaptive_stabilization():
     source = SCRIPT.read_text(encoding="utf-8")
     start = source.index("wait_pm2_service() {")
     end = source.index("fault_pm2_service() {", start)
@@ -89,6 +89,14 @@ def test_fault_waiter_streams_pm2_json_instead_of_using_environment_payload():
     assert 'pm2 jlist >"$json_file"' in waiter
     assert 'python3 - "$json_file"' in waiter
     assert 'rm -f "$json_file"' in waiter
+    assert 'POCKETLAB_PHONE_PM2_SERVICE_STABILIZATION_SECONDS' in waiter
+    assert 'POCKETLAB_PHONE_PM2_SERVICE_BACKOFF_MAX_SECONDS' in waiter
+    assert 'backoff_seconds=2' in waiter
+    assert 'stable=0' in waiter
+    assert '[[ "$stable" -ge 2 ]]' in waiter
+    assert 'backoff_seconds=$((backoff_seconds * 2))' in waiter
+    assert 'last_status=' in waiter
+    assert 'service did not reach stable online state within' in waiter
 
 
 def test_server_phone_qualification_uses_adaptive_api_stabilization():
