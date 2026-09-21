@@ -99,6 +99,19 @@ def test_fault_waiter_uses_fresh_pm2_json_and_adaptive_stabilization():
     assert 'service did not reach stable online state within' in waiter
 
 
+def test_fault_qualification_waits_for_contract_stability_and_generation_advancement():
+    source = SCRIPT.read_text(encoding="utf-8")
+    service_fault = source[source.index("fault_pm2_service() {"):source.index("wait_pm2_daemon_without_starting_it() {")]
+    daemon_fault = source[source.index("runtime_required_generation_csv() {"):source.index("run_faults() {")]
+    assert 'generation_before="$(ssh "$SSH_ALIAS" python3' in service_fault
+    assert 'assert generation_after > generation_before' in service_fault
+    assert 'item.get("health") == "ready"' in service_fault
+    assert 'stable.get("stable_observations")' in service_fault
+    assert 'runtime_required_generation_csv' in daemon_fault
+    assert 'wait_runtime_convergence_after_daemon_recovery' in daemon_fault
+    assert 'assert generation > previous_generation' in daemon_fault
+
+
 def test_server_phone_qualification_uses_adaptive_api_stabilization():
     source = SCRIPT.read_text(encoding="utf-8")
     start = source.index("remote_read_only() {")
@@ -150,7 +163,7 @@ def test_photoprism_qualification_refreshes_pm2_state_and_uses_adaptive_backoff(
 
 
 def test_server_phone_qualification_checks_stable_runtime_contract_and_log_policy():
-    source = PHONE_CHECK.read_text(encoding="utf-8")
+    source = SCRIPT.read_text(encoding="utf-8")
     assert "pm2-runtime-contract.json" in source
     assert "pocketlab.pm2-runtime-contract/v1" in source
     assert 'data.get("state") == "stable"' in source
@@ -158,10 +171,21 @@ def test_server_phone_qualification_checks_stable_runtime_contract_and_log_polic
     assert 'item.get("pm2_policy_match") is True' in source
     assert 'item.get("desired_state_match") is True' in source
     assert 'log_policy.get("within_policy") is True' in source
+    assert 'stable_path = runtime_dir / "stable-convergence.json"' in source
+    assert 'int(item.get("pm2_restart_budget_remaining") or 0) > 0' in source
+    assert 'item.get("version") == item.get("declared_version")' in source
+    assert 'log_policy.get("cleanup_interval_seconds")' in source
+    assert 'largest_file = max(largest_file, metadata.st_size)' in source
+    assert 'pm2-log-policy.json' in source
+    assert '"/api/lite/runtime"' in source
+    assert '"/api/lite/recovery/details"' in source
+    assert 'recovery.get("stable") is True' in source
+    assert 'socket.create_connection((sys.argv[1], port), timeout=3.0)' in source
+    assert 'telemetry.get("pm2_restart_budget_remaining")' in source
 
 
 def test_pm2_contract_fault_mode_is_explicitly_guarded_and_uses_bounded_canaries():
-    source = PHONE_CHECK.read_text(encoding="utf-8")
+    source = SCRIPT.read_text(encoding="utf-8")
     assert "--pm2-contract-faults" in source
     assert "POCKETLAB_RUNTIME_PM2_CONTRACT_FAULTS" in source
     assert "POCKETLAB_RUNTIME_MEMORY_FAULTS" in source
@@ -175,3 +199,6 @@ def test_pm2_contract_fault_mode_is_explicitly_guarded_and_uses_bounded_canaries
     assert "fault_pm2_service pocket-node-agent" in source
     assert "fault_pm2_service caddy-proxy" in source
     assert "fault_pm2_service pocket-nats" in source
+    assert "generation_before" in source
+    assert "generation_after > generation_before" in source
+    assert "Runtime Contract did not confirm stable recovery" in source

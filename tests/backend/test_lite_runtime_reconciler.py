@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
@@ -10,6 +11,9 @@ SUPERVISORS = ROOT / "pocket-lab-final-structure" / "runtime" / "supervisors"
 
 
 def _load(name: str):
+    if name == "pocketlab_runtime_reconciler":
+        _load("pocketlab_runtime_registry")
+        _load("pocketlab_runtime_contract")
     path = SUPERVISORS / f"{name}.py"
     spec = importlib.util.spec_from_file_location(name, path)
     assert spec and spec.loader
@@ -195,3 +199,43 @@ def test_runtime_reconciler_accepts_matching_canonical_pm2_policy():
         },
     }
     assert reconciler.pm2_policy_reasons([process]) == []
+
+
+def test_runtime_reconciler_repairs_missing_and_drifted_desired_process_spec_hashes(tmp_path):
+    _load("pocketlab_runtime_registry")
+    reconciler = _load("pocketlab_runtime_reconciler")
+    process = {
+        "name": "pocket-api",
+        "pm2_env": {"POCKETLAB_PROCESS_SPEC_HASH": "a" * 64},
+    }
+    state_root = tmp_path / "state"
+    assert reconciler.pm2_desired_spec_reasons([process], state_root=state_root) == [
+        "pm2_desired_specs_unavailable"
+    ]
+    evidence = state_root / "runtime" / "desired-process-specs.json"
+    evidence.parent.mkdir(parents=True)
+    evidence.write_text(json.dumps({
+        "schema": "pocketlab.pm2-desired-process-specs/v1",
+        "schema_version": 1,
+        "processes": {"pocket-api": "a" * 64},
+        "sanitized": True,
+    }), encoding="utf-8")
+    assert reconciler.pm2_desired_spec_reasons([process], state_root=state_root) == []
+    process["pm2_env"]["POCKETLAB_PROCESS_SPEC_HASH"] = "b" * 64
+    assert reconciler.pm2_desired_spec_reasons([process], state_root=state_root) == [
+        "pm2_desired_spec_mismatch:pocket-api"
+    ]
+
+
+def test_runtime_reconciler_environment_overrides_are_bounded_and_fail_safely(tmp_path, monkeypatch):
+    reconciler_module = _load("pocketlab_runtime_reconciler")
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path / "state"))
+    monkeypatch.setenv("POCKETLAB_RUNTIME_RECONCILE_SECONDS", "bad")
+    monkeypatch.setenv("POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS", "999999999")
+    monkeypatch.setenv("POCKETLAB_RUNTIME_RECONCILE_WINDOW_SECONDS", "1")
+    monkeypatch.setenv("POCKETLAB_RUNTIME_RECONCILE_MAX_REPAIRS", "-7")
+    reconciler = reconciler_module.RuntimeReconciler()
+    assert reconciler.interval == reconciler_module.DEFAULT_INTERVAL_SECONDS
+    assert reconciler.cooldown == reconciler_module.MAX_COOLDOWN_SECONDS
+    assert reconciler.window == 300
+    assert reconciler.max_repairs == 1

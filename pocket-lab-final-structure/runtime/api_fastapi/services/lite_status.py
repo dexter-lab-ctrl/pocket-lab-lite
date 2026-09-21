@@ -975,7 +975,7 @@ def _server_host_device(remote_access: dict[str, Any] | None = None) -> dict[str
     }
     agent_runtime = runtime_services.get("pocket-node-agent") or {}
     runtime_state = _public_text(runtime_contract.get("state") or "unknown", 32)
-    if runtime_state == "repairing":
+    if runtime_state in {"repairing", "converging"}:
         runtime_connection = "repairing"
     elif str(agent_runtime.get("status") or "") == "Something changed":
         runtime_connection = "agent_stopped"
@@ -1063,7 +1063,7 @@ def _server_host_device(remote_access: dict[str, Any] | None = None) -> dict[str
         "convergence": {
             "state": (
                 "repairing"
-                if runtime_state == "repairing"
+                if runtime_state in {"repairing", "converging"}
                 else "ready"
                 if profile_ready and supervisor_ready and runtime_contract.get("stable")
                 else "waiting_for_details"
@@ -1428,7 +1428,13 @@ def lite_fleet() -> dict[str, Any]:
                 incoming["id"] = server_id
                 incoming["name"] = server["name"]
                 incoming["is_current"] = True
-                devices_by_id[server_id] = _merge_lite_device(devices_by_id[server_id], incoming)
+                merged_server = _merge_lite_device(devices_by_id[server_id], incoming)
+                # The current-server record can enrich identity and last-seen
+                # fields, but it cannot replace the locally observed runtime
+                # recovery state with a generic healthy heartbeat.
+                for field in ("connection", "runtime", "convergence"):
+                    merged_server[field] = server[field]
+                devices_by_id[server_id] = merged_server
             continue
 
         device = _lite_device_from_node(item)
@@ -1499,13 +1505,33 @@ def lite_fleet() -> dict[str, Any]:
         profile_value = item.get("system_profile") if isinstance(item.get("system_profile"), dict) else {}
         profile_ready = bool(profile_value.get("technical_model") or profile_value.get("architecture_family") or profile_value.get("architecture"))
         supervisor_ready = bool(item.get("supervisor_status_freshness") == "fresh" and item.get("supervisor_status") in {"healthy", "online", "available", "repairing"})
-        item["convergence"] = {
-            "state": "ready" if profile_ready and supervisor_ready else "waiting_for_details",
-            "profile_ready": profile_ready,
-            "supervisor_ready": supervisor_ready,
-            "last_good_projection": bool(profile or supervisor),
-            "target_seconds": 45,
-        }
+        if item.get("role") == "server_host":
+            runtime = item.get("runtime") if isinstance(item.get("runtime"), dict) else {}
+            previous_convergence = item.get("convergence") if isinstance(item.get("convergence"), dict) else {}
+            runtime_state = str(runtime.get("state") or "unknown")
+            item["convergence"] = {
+                **previous_convergence,
+                "state": (
+                    "repairing"
+                    if runtime_state in {"repairing", "converging"}
+                    else "ready"
+                    if profile_ready and supervisor_ready and runtime.get("stable")
+                    else "waiting_for_details"
+                ),
+                "profile_ready": profile_ready,
+                "supervisor_ready": supervisor_ready,
+                "runtime_stable": bool(runtime.get("stable")),
+                "last_good_projection": bool(profile or supervisor or runtime.get("observed_at")),
+                "target_seconds": 45,
+            }
+        else:
+            item["convergence"] = {
+                "state": "ready" if profile_ready and supervisor_ready else "waiting_for_details",
+                "profile_ready": profile_ready,
+                "supervisor_ready": supervisor_ready,
+                "last_good_projection": bool(profile or supervisor),
+                "target_seconds": 45,
+            }
         item["field_freshness"] = {
             "heartbeat": {"reported_at": item.get("last_heartbeat_at") or item.get("last_seen_at"), "source": "agent_heartbeat"},
             "telemetry": {"reported_at": item.get("last_telemetry_at"), "source": "agent_telemetry"},
@@ -1523,9 +1549,31 @@ def lite_fleet() -> dict[str, Any]:
         commands = _effective_command_records(registry_commands, lifecycle_by_id)
     except Exception:
         commands = []
+    # Awareness enrichment evaluates heartbeat and supervisor evidence for all
+    # devices. The protected host also has reconciler-owned local runtime truth;
+    # keep that projection authoritative so a healthy API heartbeat cannot mask
+    # an in-progress PM2 recovery. Remote access remains independently enriched.
+    server_runtime_truth = {
+        str(item.get("id") or ""): {
+            field: item[field]
+            for field in ("connection", "runtime", "convergence")
+            if field in item
+        }
+        for item in merged_devices
+        if isinstance(item, dict)
+        and item.get("role") == "server_host"
+        and item.get("source") == "lite-server-canonical"
+    }
     merged_devices = lite_device_awareness.enrich_devices(
         merged_devices, remote_access=remote_access, commands=commands
     )
+    merged_devices = [
+        {**item, **server_runtime_truth[str(item.get("id") or "")]}
+        if isinstance(item, dict)
+        and str(item.get("id") or "") in server_runtime_truth
+        else item
+        for item in merged_devices
+    ]
     # Apply guarded recovery contracts only after awareness enrichment because
     # enrichment may rebuild/sanitize device dictionaries. Centralizing this
     # final overlay guarantees every returned device receives the same

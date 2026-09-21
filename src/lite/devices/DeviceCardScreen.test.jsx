@@ -46,7 +46,7 @@ describe('DeviceCard operational stories', () => {
       onOpenDetails={vi.fn()}
       onRemoveDevice={vi.fn()}
     />);
-    expect(screen.getByText('Pocket Lab server')).toBeTruthy();
+    expect(screen.getByText('System running normally')).toBeTruthy();
     expect(screen.queryByRole('button', { name: /remove device/i })).toBeNull();
   });
 });

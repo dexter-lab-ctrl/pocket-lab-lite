@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { selectRecoveryOperationalStoryView } from './liteViewModels.js';
+import { selectRecoveryOperationalStoryView, selectRecoverySummaryView } from './liteViewModels.js';
 
 const verifiedBackup = (overrides = {}) => ({
   latest_backup: {
@@ -53,5 +53,35 @@ describe('selectRecoveryOperationalStoryView', () => {
     expect(story.state).toBe('saved');
     expect(story.nextAction).toEqual({ id: 'refresh', label: 'Refresh Recovery' });
     expect(story.freshness.detail).toContain('cannot be confirmed');
+  });
+});
+
+describe('selectRecoverySummaryView runtime recovery projection', () => {
+  it('keeps runtime recovery bounded and drops unapproved service fields', () => {
+    const view = selectRecoverySummaryView({
+      runtime_recovery: {
+        state: 'stable',
+        stable: true,
+        summary: 'System running normally',
+        observed_at: '2026-09-20T10:00:00Z',
+        recovered_services: [{
+          role: 'control-api',
+          status: 'Recovered recently',
+          recovered_at: '2026-09-20T09:59:00Z',
+          password: 'must-not-project',
+        }],
+      },
+    });
+    expect(view.runtime_recovery).toMatchObject({
+      state: 'stable',
+      stable: true,
+      summary: 'System running normally',
+    });
+    expect(view.runtime_recovery.recovered_services).toEqual([{
+      role: 'control-api',
+      status: 'Recovered recently',
+      recovered_at: '2026-09-20T09:59:00Z',
+    }]);
+    expect(JSON.stringify(view)).not.toContain('must-not-project');
   });
 });

@@ -126,6 +126,8 @@ _LEGACY_MEMORY_ENV = {
     "pocket-api": "POCKETLAB_API_MAX_MEMORY_RESTART",
     "pocket-worker": "POCKETLAB_WORKER_MAX_MEMORY_RESTART",
 }
+_MIN_MEMORY_RESTART_MB = 64
+_MAX_MEMORY_RESTART_MB = 1024
 
 
 def control_plane_names() -> tuple[str, ...]:
@@ -155,7 +157,10 @@ def _parse_memory_mb(value: Any, default: int | None) -> int | None:
     match = re.fullmatch(r"(\d+)([KMG]?)B?", text)
     if not match:
         return default
-    amount = int(match.group(1))
+    try:
+        amount = int(match.group(1))
+    except (ValueError, OverflowError):
+        return default
     unit = match.group(2)
     if unit == "G":
         return amount * 1024
@@ -190,7 +195,13 @@ def policy_for(name: str, environ: Mapping[str, str] | None = None) -> PM2Policy
     raw_memory = env.get(memory_key)
     if raw_memory in (None, "") and legacy_key:
         raw_memory = env.get(legacy_key)
-    memory = _parse_memory_mb(raw_memory, base.max_memory_restart_mb)
+    # An uncapped service stays uncapped. In particular, operator environment
+    # overrides must not assign guessed ceilings to NATS or PhotoPrism.
+    memory = base.max_memory_restart_mb
+    if memory is not None and raw_memory not in (None, ""):
+        candidate_memory = _parse_memory_mb(raw_memory, None)
+        if candidate_memory is not None and _MIN_MEMORY_RESTART_MB <= candidate_memory <= _MAX_MEMORY_RESTART_MB:
+            memory = candidate_memory
     return replace(
         base,
         min_uptime_seconds=min_uptime,

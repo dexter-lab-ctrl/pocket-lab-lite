@@ -38,6 +38,17 @@ DEFAULT_INTERVAL_SECONDS = 45
 DEFAULT_COOLDOWN_SECONDS = 120
 DEFAULT_WINDOW_SECONDS = 1800
 DEFAULT_MAX_REPAIRS = 3
+MAX_INTERVAL_SECONDS = 3600
+MAX_COOLDOWN_SECONDS = 24 * 60 * 60
+MAX_WINDOW_SECONDS = 30 * 24 * 60 * 60
+
+
+def _bounded_env_int(name: str, default: int, minimum: int, maximum: int) -> int:
+    try:
+        value = int(os.environ.get(name, default))
+    except (TypeError, ValueError, OverflowError):
+        return default
+    return max(minimum, min(maximum, value))
 
 
 def _now_iso() -> str:
@@ -116,6 +127,53 @@ def pm2_policy_reasons(
         if not matches or not expected_fingerprint or observed_fingerprint != expected_fingerprint:
             detail = ",".join(fields) if fields else "fingerprint"
             reasons.append(f"pm2_policy:{spec.name}:{detail}")
+    return reasons
+
+
+def pm2_desired_spec_reasons(
+    processes: Iterable[dict[str, Any]],
+    *,
+    state_root: Path,
+    include_photoprism: bool = False,
+) -> list[str]:
+    """Detect a running PM2 definition that differs from startup's desired hash."""
+    evidence_path = state_root / "runtime" / "desired-process-specs.json"
+    try:
+        evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, json.JSONDecodeError):
+        return ["pm2_desired_specs_unavailable"]
+    if (
+        not isinstance(evidence, dict)
+        or evidence.get("schema") != "pocketlab.pm2-desired-process-specs/v1"
+        or not isinstance(evidence.get("schema_version"), int)
+        or isinstance(evidence.get("schema_version"), bool)
+        or evidence.get("schema_version") != 1
+        or evidence.get("sanitized") is not True
+        or not isinstance(evidence.get("processes"), dict)
+    ):
+        return ["pm2_desired_specs_invalid"]
+    expected = evidence["processes"]
+    observed = {
+        str(item.get("name") or ""): str(
+            (item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}).get(
+                "POCKETLAB_PROCESS_SPEC_HASH"
+            ) or ""
+        ).strip().lower()
+        for item in processes
+        if isinstance(item, dict)
+    }
+    specs = [*CONTROL_PLANE_SERVICES, RECONCILER_SPEC]
+    if include_photoprism:
+        specs.append(PHOTOPRISM_SPEC)
+    reasons: list[str] = []
+    for spec in specs:
+        if spec.name not in observed:
+            continue
+        desired = str(expected.get(spec.name) or "").strip().lower()
+        if not desired:
+            reasons.append(f"pm2_desired_spec_missing:{spec.name}")
+        elif observed[spec.name] != desired:
+            reasons.append(f"pm2_desired_spec_mismatch:{spec.name}")
     return reasons
 
 
@@ -208,10 +266,10 @@ def photoprism_reconcile_reasons(statuses: dict[str, str]) -> list[str]:
 
 class RuntimeReconciler:
     def __init__(self) -> None:
-        self.interval = max(10, int(os.environ.get("POCKETLAB_RUNTIME_RECONCILE_SECONDS", DEFAULT_INTERVAL_SECONDS)))
-        self.cooldown = max(30, int(os.environ.get("POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS", DEFAULT_COOLDOWN_SECONDS)))
-        self.window = max(300, int(os.environ.get("POCKETLAB_RUNTIME_RECONCILE_WINDOW_SECONDS", DEFAULT_WINDOW_SECONDS)))
-        self.max_repairs = max(1, min(10, int(os.environ.get("POCKETLAB_RUNTIME_RECONCILE_MAX_REPAIRS", DEFAULT_MAX_REPAIRS))))
+        self.interval = _bounded_env_int("POCKETLAB_RUNTIME_RECONCILE_SECONDS", DEFAULT_INTERVAL_SECONDS, 10, MAX_INTERVAL_SECONDS)
+        self.cooldown = _bounded_env_int("POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS", DEFAULT_COOLDOWN_SECONDS, 30, MAX_COOLDOWN_SECONDS)
+        self.window = _bounded_env_int("POCKETLAB_RUNTIME_RECONCILE_WINDOW_SECONDS", DEFAULT_WINDOW_SECONDS, 300, MAX_WINDOW_SECONDS)
+        self.max_repairs = _bounded_env_int("POCKETLAB_RUNTIME_RECONCILE_MAX_REPAIRS", DEFAULT_MAX_REPAIRS, 1, 10)
         base = Path(os.environ.get("POCKETLAB_STATE_DIR", Path.home() / "pocket-lab-lite" / "state")).expanduser()
         self.state_dir = base / "runtime-reconciler"
         self.state_file = self.state_dir / "state.json"
@@ -320,6 +378,11 @@ class RuntimeReconciler:
         reasons = repair_reasons(statuses)
         reasons.extend(version_reasons)
         reasons.extend(pm2_policy_reasons(processes, include_photoprism=photoprism_expected()))
+        reasons.extend(pm2_desired_spec_reasons(
+            processes,
+            state_root=self.state_dir.parent,
+            include_photoprism=photoprism_expected(),
+        ))
         reasons.extend(remote_reconcile_reasons(remote, previous.get("remote_access")))
         reasons.extend(photoprism_reconcile_reasons(statuses))
         actions: list[dict[str, Any]] = []

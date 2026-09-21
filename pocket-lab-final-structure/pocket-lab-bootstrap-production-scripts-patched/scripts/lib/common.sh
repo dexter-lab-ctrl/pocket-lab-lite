@@ -317,6 +317,55 @@ pm2_process_spec_hash() {
   } | sha256sum | awk '{print $1}'
 }
 
+pm2_record_desired_process_spec_hash() {
+  local name="$1" hash="$2"
+  local state_dir="${POCKETLAB_STATE_DIR:-${POCKET_LAB_BASE_DIR:-$HOME/pocket-lab-lite}/state}"
+  local evidence_path="$state_dir/runtime/desired-process-specs.json"
+  python3 - "$evidence_path" "$name" "$hash" <<'PY'
+import fcntl
+import json
+import os
+from pathlib import Path
+import re
+import sys
+
+path = Path(sys.argv[1])
+name, digest = sys.argv[2], sys.argv[3]
+if not re.fullmatch(r"[A-Za-z0-9._-]{1,120}", name):
+    raise SystemExit("invalid PM2 process name for desired-spec evidence")
+if not re.fullmatch(r"[0-9a-f]{64}", digest):
+    raise SystemExit("invalid PM2 desired process-spec fingerprint")
+path.parent.mkdir(parents=True, exist_ok=True)
+lock_path = path.with_suffix(path.suffix + ".lock")
+with lock_path.open("a", encoding="utf-8") as lock:
+    fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+    if path.exists():
+        current = json.loads(path.read_text(encoding="utf-8"))
+        if current.get("schema") != "pocketlab.pm2-desired-process-specs/v1":
+            raise SystemExit("unsupported PM2 desired process-spec evidence schema")
+        processes = current.get("processes")
+        if not isinstance(processes, dict):
+            raise SystemExit("invalid PM2 desired process-spec evidence")
+    else:
+        processes = {}
+    processes[name] = digest
+    payload = {
+        "schema": "pocketlab.pm2-desired-process-specs/v1",
+        "schema_version": 1,
+        "processes": dict(sorted(processes.items())),
+        "sanitized": True,
+    }
+    temporary = path.with_name(path.name + f".{os.getpid()}.tmp")
+    fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as handle:
+        json.dump(payload, handle, sort_keys=True, separators=(",", ":"))
+        handle.write("\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+    os.replace(temporary, path)
+PY
+}
+
 pm2_normalize_service_version() {
   local raw="${1:-}"
   python3 - "$raw" <<'PY'
@@ -500,11 +549,13 @@ pm2_ensure_process() {
 
   if [[ -n "$status" && "$current_hash" == "$spec_hash" ]]; then
     if [[ "$status" == "online" ]]; then
+      pm2_record_desired_process_spec_hash "$name" "$spec_hash"
       log INFO "PM2 process already converged: $name"
       return 0
     fi
     log INFO "Restarting existing converged PM2 process: $name status=$status"
     POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 restart "$name" --update-env >/dev/null
+    pm2_record_desired_process_spec_hash "$name" "$spec_hash"
     return 0
   fi
 
@@ -520,6 +571,7 @@ pm2_ensure_process() {
   else
     POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "${before_sep[@]}" --name "$name"
   fi
+  pm2_record_desired_process_spec_hash "$name" "$spec_hash"
 }
 
 cleanup_pidfile() { local pidfile="$1" pid=""; [[ -f "$pidfile" ]] || return 0; pid="$(cat "$pidfile" 2>/dev/null || true)"; [[ -n "$pid" ]] && kill "$pid" >/dev/null 2>&1 || true; rm -f "$pidfile"; }

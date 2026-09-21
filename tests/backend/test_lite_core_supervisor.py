@@ -60,6 +60,46 @@ def test_sanitize_redacts_sensitive_keys_and_urls():
     assert "user:pass" not in sanitized["nested"]["url"]
 
 
+def test_supervisor_restart_policy_overrides_are_bounded_and_fail_safely(tmp_path, monkeypatch):
+    supervisor_module = load_supervisor_module()
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path / "state"))
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS", "bad")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS", "999999999")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_CADDY_FAILURE_THRESHOLD", "999")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_RESTART_WINDOW_SECONDS", "1")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_MAX_RESTARTS_PER_WINDOW", "-7")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_MAX_RESTART_BACKOFF_SECONDS", "1")
+
+    supervisor = supervisor_module.LiteCoreSupervisor()
+
+    assert supervisor.interval == supervisor_module.DEFAULT_INTERVAL_SECONDS
+    assert supervisor.cooldown == supervisor_module.MAX_SUPERVISOR_COOLDOWN_SECONDS
+    assert supervisor.caddy_failure_threshold == 20
+    assert supervisor.restart_window_seconds == 300
+    assert supervisor.max_restarts_per_window == 1
+    assert supervisor.max_restart_backoff_seconds == supervisor.cooldown
+
+
+def test_supervisor_restart_policy_overrides_are_bounded_and_fail_safely(tmp_path, monkeypatch):
+    supervisor_module = load_supervisor_module()
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path / "state"))
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS", "bad")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS", "999999999")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_CADDY_FAILURE_THRESHOLD", "999")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_RESTART_WINDOW_SECONDS", "1")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_MAX_RESTARTS_PER_WINDOW", "-7")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_MAX_RESTART_BACKOFF_SECONDS", "1")
+
+    supervisor = supervisor_module.LiteCoreSupervisor()
+
+    assert supervisor.interval == supervisor_module.DEFAULT_INTERVAL_SECONDS
+    assert supervisor.cooldown == supervisor_module.MAX_SUPERVISOR_COOLDOWN_SECONDS
+    assert supervisor.caddy_failure_threshold == 20
+    assert supervisor.restart_window_seconds == 300
+    assert supervisor.max_restarts_per_window == 1
+    assert supervisor.max_restart_backoff_seconds == supervisor.cooldown
+
+
 def test_status_summary_reports_api_nats_health():
     supervisor = load_supervisor_module()
 

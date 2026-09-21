@@ -11,9 +11,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import json
+import math
 import os
 from pathlib import Path
 import socket
+import stat
 import time
 from typing import Any, Iterable, Mapping
 import urllib.request
@@ -46,7 +48,9 @@ DEFAULT_LOG_CEILING_BYTES = 64 * 1024 * 1024
 DEFAULT_LOG_FILE_CEILING_BYTES = 8 * 1024 * 1024
 DEFAULT_LOG_MAX_AGE_SECONDS = 7 * 24 * 60 * 60
 DEFAULT_LOG_CLEANUP_INTERVAL_SECONDS = 15 * 60
+MAX_RESTART_WINDOW_SECONDS = 30 * 24 * 60 * 60
 _MAX_RESTART_EVENTS = 16
+_MAX_PM2_LOG_FILES = 4096
 
 
 @dataclass(frozen=True)
@@ -118,8 +122,24 @@ def _read_json(path: Path) -> dict[str, Any]:
 def _int(value: Any, default: int = 0) -> int:
     try:
         return int(value)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return default
+
+
+def _bounded_int(value: Any, default: int, minimum: int, maximum: int) -> int:
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError, OverflowError):
+        return default
+    return max(minimum, min(maximum, parsed))
+
+
+def _finite_float(value: Any, default: float = 0.0) -> float:
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return default
+    return parsed if math.isfinite(parsed) else default
 
 
 def _safe_version(value: Any) -> str:
@@ -171,8 +191,11 @@ def _memory_mb(item: Mapping[str, Any] | None) -> float | None:
     monit = item.get("monit") if isinstance(item.get("monit"), dict) else {}
     value = monit.get("memory")
     try:
-        return round(max(0.0, float(value)) / (1024.0 * 1024.0), 1)
-    except (TypeError, ValueError):
+        parsed = float(value)
+        if not math.isfinite(parsed):
+            return None
+        return round(max(0.0, parsed) / (1024.0 * 1024.0), 1)
+    except (TypeError, ValueError, OverflowError):
         return None
 
 
@@ -188,7 +211,7 @@ def _http_ready(url: str, timeout: float = 1.0) -> bool:
     try:
         request = urllib.request.Request(url, method="GET")
         with urllib.request.urlopen(request, timeout=timeout) as response:  # nosec B310 - fixed loopback URLs only
-            return 200 <= int(response.status) < 500
+            return 200 <= int(response.status) < 300
     except Exception:
         return False
 
@@ -227,9 +250,30 @@ def _core_restart_state(state_root: Path) -> dict[str, Any]:
     policy = state.get("restart_policy") if isinstance(state.get("restart_policy"), dict) else {}
     services = policy.get("services") if isinstance(policy.get("services"), dict) else {}
     return {
-        "window_seconds": max(60, _int(policy.get("window_seconds"), DEFAULT_RESTART_WINDOW_SECONDS)),
-        "max_restarts_per_window": max(1, _int(policy.get("max_restarts_per_window"), 3)),
+        "window_seconds": _bounded_int(
+            policy.get("window_seconds"), DEFAULT_RESTART_WINDOW_SECONDS, 60, MAX_RESTART_WINDOW_SECONDS
+        ),
+        "max_restarts_per_window": _bounded_int(policy.get("max_restarts_per_window"), 3, 1, 10),
         "services": services,
+    }
+
+
+def _desired_process_spec_hashes(state_root: Path) -> dict[str, str]:
+    evidence = _read_json(state_root / "runtime" / "desired-process-specs.json")
+    if (
+        evidence.get("schema") != "pocketlab.pm2-desired-process-specs/v1"
+        or _int(evidence.get("schema_version"), 0) != 1
+        or evidence.get("sanitized") is not True
+    ):
+        return {}
+    processes = evidence.get("processes") if isinstance(evidence.get("processes"), dict) else {}
+    return {
+        str(name): str(digest)
+        for name, digest in processes.items()
+        if isinstance(name, str)
+        and isinstance(digest, str)
+        and len(digest) == 64
+        and all(character in "0123456789abcdef" for character in digest)
     }
 
 
@@ -243,9 +287,11 @@ def _update_restart_ledger(
     path = state_root / "runtime" / "restart-ledger.json"
     previous = _read_json(path)
     previous_services = previous.get("services") if isinstance(previous.get("services"), dict) else {}
-    window_seconds = max(
+    window_seconds = _bounded_int(
+        os.environ.get("POCKETLAB_RUNTIME_RESTART_WINDOW_SECONDS"),
+        DEFAULT_RESTART_WINDOW_SECONDS,
         300,
-        _int(os.environ.get("POCKETLAB_RUNTIME_RESTART_WINDOW_SECONDS"), DEFAULT_RESTART_WINDOW_SECONDS),
+        MAX_RESTART_WINDOW_SECONDS,
     )
     lower = now - window_seconds
     services: dict[str, Any] = {}
@@ -260,9 +306,9 @@ def _update_restart_ledger(
         old_started_ms = max(0, _int(old.get("pm_uptime_ms"), 0))
         generation = max(0, _int(old.get("restart_generation"), 0))
         events = [
-            float(value)
+            _finite_float(value, -1.0)
             for value in (old.get("recent_restart_epochs") or [])
-            if isinstance(value, (int, float)) and float(value) >= lower
+            if isinstance(value, (int, float)) and _finite_float(value, -1.0) >= lower
         ]
 
         delta = 0
@@ -344,7 +390,8 @@ def _build_service_contracts(
     ledger_services = ledger.get("services") if isinstance(ledger.get("services"), dict) else {}
     core_restart = _core_restart_state(state_root)
     core_services = core_restart.get("services") if isinstance(core_restart.get("services"), dict) else {}
-    core_limit = max(1, _int(core_restart.get("max_restarts_per_window"), 3))
+    desired_spec_hashes = _desired_process_spec_hashes(state_root)
+    core_limit = core_restart["max_restarts_per_window"]
 
     contracts: list[dict[str, Any]] = []
     ready_by_name: dict[str, str] = {}
@@ -360,8 +407,15 @@ def _build_service_contracts(
         version = _safe_version(env.get("version"))
         declared_version = _safe_version(env.get("POCKETLAB_SERVICE_VERSION"))
         version_match = version != "unavailable" and version == declared_version
-        spec_hash_present = bool(str(env.get("POCKETLAB_PROCESS_SPEC_HASH") or "").strip())
-        desired_state_match = bool(version_match and matches_policy and fingerprint_match and spec_hash_present)
+        spec_hash = str(env.get("POCKETLAB_PROCESS_SPEC_HASH") or "").strip().lower()
+        desired_spec_hash = desired_spec_hashes.get(spec.name, "")
+        desired_state_match = bool(
+            version_match
+            and matches_policy
+            and fingerprint_match
+            and desired_spec_hash
+            and spec_hash == desired_spec_hash
+        )
         uptime = _uptime_seconds(item, now)
         stable_uptime = bool(
             status == "online"
@@ -389,18 +443,13 @@ def _build_service_contracts(
         pm2_budget_remaining = max(0, observed_max_restarts - pm2_unstable_restarts)
         restart_budget_exhausted = bool(
             budget_remaining <= 0
-            or (
-                status in {"errored", "error", "stopped"}
-                and pm2_unstable_restarts >= observed_max_restarts
-            )
+            or pm2_budget_remaining <= 0
         )
 
         memory_mb = _memory_mb(item)
         memory_ceiling_mb = policy.max_memory_restart_mb if policy else None
-        memory_within_policy = (
-            True
-            if memory_ceiling_mb is None or memory_mb is None
-            else memory_mb <= float(memory_ceiling_mb)
+        memory_within_policy = memory_ceiling_mb is None or (
+            memory_mb is not None and memory_mb <= float(memory_ceiling_mb)
         )
         dependencies = {
             dependency: ready_by_name.get(dependency, "unknown")
@@ -427,7 +476,9 @@ def _build_service_contracts(
             reasons.append("minimum_stable_uptime_not_met")
         if restart_budget_exhausted:
             reasons.append("restart_budget_exhausted")
-        if not memory_within_policy:
+        if memory_ceiling_mb is not None and memory_mb is None:
+            reasons.append("memory_observation_unavailable")
+        elif not memory_within_policy:
             reasons.append("memory_policy_exceeded")
         if semantic_health != "ready":
             reasons.append("semantic_health_not_ready")
@@ -530,15 +581,15 @@ def _stable_convergence(
         if item.get("required") is True
     )
     previous_signature = str(previous.get("restart_signature") or "")
-    previous_at = float(previous.get("last_candidate_epoch") or 0.0)
+    previous_at = _finite_float(previous.get("last_candidate_epoch"), 0.0)
     previous_count = max(0, _int(previous.get("stable_observations"), 0))
     stable_observations = 0
     first_candidate_epoch: float | None = None
 
     if candidate_state == "candidate":
         if previous_signature == signature and previous_at > 0 and now - previous_at >= min_seconds:
-            stable_observations = previous_count + 1
-            first_candidate_epoch = float(previous.get("first_candidate_epoch") or previous_at)
+            stable_observations = min(required_observations, previous_count + 1)
+            first_candidate_epoch = _finite_float(previous.get("first_candidate_epoch"), previous_at)
         else:
             stable_observations = 1
             first_candidate_epoch = now
@@ -579,11 +630,35 @@ def _resolve_log_dir(pm2_home: Path | None = None) -> Path:
     return resolved_logs
 
 
+def _pm2_log_file_snapshot(logs: Path) -> tuple[list[tuple[Path, os.stat_result]], bool]:
+    """Read bounded metadata for regular files directly owned by PM2 logs."""
+    files: list[tuple[Path, os.stat_result]] = []
+    complete = True
+    try:
+        with os.scandir(logs) as entries:
+            for index, entry in enumerate(entries):
+                if index >= _MAX_PM2_LOG_FILES:
+                    complete = False
+                    break
+                try:
+                    metadata = entry.stat(follow_symlinks=False)
+                except OSError:
+                    complete = False
+                    continue
+                if not stat.S_ISREG(metadata.st_mode):
+                    continue
+                files.append((logs / entry.name, metadata))
+    except OSError:
+        return [], False
+    return files, complete
+
+
 def enforce_log_policy(
     state_root: Path,
     *,
     now: float | None = None,
     pm2_home: Path | None = None,
+    active_log_paths: Iterable[str | Path] = (),
     force: bool = False,
 ) -> dict[str, Any]:
     """Bound PM2-owned log storage without reading or copying log contents."""
@@ -592,7 +667,7 @@ def enforce_log_policy(
     policy = LogPolicy.from_env()
     evidence_path = state_root / "runtime" / "pm2-log-policy.json"
     previous = _read_json(evidence_path)
-    previous_epoch = float(previous.get("cleanup_epoch") or 0.0)
+    previous_epoch = _finite_float(previous.get("cleanup_epoch"), 0.0)
     cleanup_due = force or observed_now - previous_epoch >= policy.cleanup_interval_seconds
     if not cleanup_due and previous:
         # Do not stat or scan PM2 logs on every reconciler tick.  Reuse the last
@@ -603,61 +678,93 @@ def enforce_log_policy(
 
     logs = _resolve_log_dir(pm2_home)
 
-    files: list[Path] = []
-    for path in logs.iterdir():
-        try:
-            if path.is_symlink() or not path.is_file():
-                continue
-            if path.parent.resolve() != logs:
-                continue
-            files.append(path)
-        except OSError:
-            continue
+    files, scan_complete = _pm2_log_file_snapshot(logs)
 
     removed = 0
     truncated = 0
-    if cleanup_due:
-        for path in sorted(files, key=lambda item: item.stat().st_mtime if item.exists() else 0):
-            try:
-                stat = path.stat()
-            except OSError:
+    active_inodes: set[tuple[int, int]] = set()
+    for raw_path in active_log_paths:
+        try:
+            active_path = Path(raw_path).expanduser()
+            if active_path.is_symlink() or active_path.parent.resolve() != logs:
                 continue
-            if observed_now - stat.st_mtime > policy.max_age_seconds:
-                path.unlink(missing_ok=True)
-                removed += 1
+            active_stat = active_path.stat()
+            if stat.S_ISREG(active_stat.st_mode):
+                active_inodes.add((active_stat.st_dev, active_stat.st_ino))
+        except (OSError, TypeError, ValueError):
+            continue
+
+    def truncate_in_place(path: Path, expected: os.stat_result) -> bool:
+        flags = os.O_WRONLY | getattr(os, "O_NOFOLLOW", 0)
+        try:
+            fd = os.open(path, flags)
+        except OSError:
+            return False
+        try:
+            opened = os.fstat(fd)
+            if (
+                not stat.S_ISREG(opened.st_mode)
+                or (opened.st_dev, opened.st_ino) != (expected.st_dev, expected.st_ino)
+            ):
+                return False
+            os.ftruncate(fd, 0)
+            os.fsync(fd)
+            return True
+        except OSError:
+            return False
+        finally:
+            os.close(fd)
+
+    if cleanup_due and scan_complete:
+        for path, stat_result in sorted(files, key=lambda item: item[1].st_mtime):
+            if observed_now - stat_result.st_mtime > policy.max_age_seconds:
+                if (stat_result.st_dev, stat_result.st_ino) in active_inodes:
+                    if truncate_in_place(path, stat_result):
+                        truncated += 1
+                else:
+                    try:
+                        if path.parent.resolve() == logs and path.lstat().st_ino == stat_result.st_ino:
+                            path.unlink(missing_ok=True)
+                            removed += 1
+                    except OSError:
+                        continue
                 continue
-            if stat.st_size > policy.file_ceiling_bytes:
+            if stat_result.st_size > policy.file_ceiling_bytes:
                 # copytruncate semantics without copying: preserve the active
                 # inode PM2 already owns, discard old contents, and keep writes
                 # flowing into the same file.
-                with path.open("r+b") as handle:
-                    handle.truncate(0)
-                    handle.flush()
-                    os.fsync(handle.fileno())
-                truncated += 1
+                try:
+                    truncated_ok = truncate_in_place(path, stat_result)
+                except OSError:
+                    truncated_ok = False
+                if truncated_ok:
+                    truncated += 1
 
-        files = [
-            path for path in logs.iterdir()
-            if not path.is_symlink() and path.is_file() and path.parent.resolve() == logs
-        ]
-        total = sum(path.stat().st_size for path in files)
+        files, scan_complete = _pm2_log_file_snapshot(logs)
+        total = sum(metadata.st_size for _path, metadata in files)
         if total > policy.ceiling_bytes:
-            for path in sorted(files, key=lambda item: item.stat().st_mtime):
+            for path, expected_stat in sorted(files, key=lambda item: item[1].st_mtime):
                 if total <= policy.ceiling_bytes:
                     break
-                size = path.stat().st_size
-                with path.open("r+b") as handle:
-                    handle.truncate(0)
-                    handle.flush()
-                    os.fsync(handle.fileno())
-                total = max(0, total - size)
-                truncated += 1
+                size = expected_stat.st_size
+                if truncate_in_place(path, expected_stat):
+                    total = max(0, total - size)
+                    truncated += 1
 
-    files = [
-        path for path in logs.iterdir()
-        if not path.is_symlink() and path.is_file() and path.parent.resolve() == logs
-    ]
-    total = sum(path.stat().st_size for path in files)
+    files, final_scan_complete = _pm2_log_file_snapshot(logs)
+    scan_complete = scan_complete and final_scan_complete
+    total = sum(metadata.st_size for _path, metadata in files)
+    largest = max((metadata.st_size for _path, metadata in files), default=0)
+    oldest_age = max(
+        (max(0.0, observed_now - metadata.st_mtime) for _path, metadata in files),
+        default=0.0,
+    )
+    within_policy = bool(
+        scan_complete
+        and total <= policy.ceiling_bytes
+        and largest <= policy.file_ceiling_bytes
+        and oldest_age <= policy.max_age_seconds + policy.cleanup_interval_seconds
+    )
     payload = {
         "schema_version": SCHEMA_VERSION,
         "observed_at": now_iso(observed_now),
@@ -667,7 +774,11 @@ def enforce_log_policy(
         "pm2_log_ceiling_bytes": policy.ceiling_bytes,
         "pm2_log_file_ceiling_bytes": policy.file_ceiling_bytes,
         "pm2_log_max_age_seconds": policy.max_age_seconds,
-        "within_policy": total <= policy.ceiling_bytes,
+        "cleanup_interval_seconds": policy.cleanup_interval_seconds,
+        "pm2_log_largest_file_bytes": largest,
+        "pm2_log_oldest_file_age_seconds": int(oldest_age),
+        "scan_complete": scan_complete,
+        "within_policy": within_policy,
         "files_observed": len(files),
         "files_removed": removed,
         "files_truncated": truncated,
@@ -712,7 +823,17 @@ def build_runtime_contract(
         reason_codes=reasons,
         now=observed_now,
     )
-    log_policy = enforce_log_policy(state_root, now=observed_now)
+    active_log_paths = [
+        _pm2_env(item).get(key)
+        for item in process_items.values()
+        for key in ("pm_out_log_path", "pm_err_log_path")
+        if _pm2_env(item).get(key)
+    ]
+    log_policy = enforce_log_policy(
+        state_root,
+        now=observed_now,
+        active_log_paths=active_log_paths,
+    )
     remote = remote_access if isinstance(remote_access, Mapping) else {}
     payload = {
         "schema": SCHEMA_ID,
@@ -782,6 +903,7 @@ def public_projection(contract: Mapping[str, Any]) -> dict[str, Any]:
         })
 
     return {
+        "schema": SCHEMA_ID,
         "schema_version": contract.get("schema_version"),
         "state": state,
         "stable": bool(contract.get("stable")),

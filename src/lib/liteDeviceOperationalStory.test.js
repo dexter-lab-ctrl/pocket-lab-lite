@@ -46,12 +46,41 @@ describe('Devices operational story presentation', () => {
     });
     expect(selectDeviceOperationalStory({ role: 'server_host', status: 'online' })).toMatchObject({
       state: 'protected',
-      headline: 'Pocket Lab server',
+      headline: 'System running normally',
     });
     expect(selectDeviceOperationalStory({ status: 'online' }, { savedStateOnly: true })).toMatchObject({
       state: 'saved',
       tone: 'saved',
       next_action: null,
     });
+  });
+
+  it('shows protected-server runtime recovery separately from remote access', () => {
+    const repairing = selectDeviceOperationalStory({
+      role: 'server_host',
+      status: 'online',
+      remote_access: { ready: false, status: 'remote_access_not_ready' },
+      runtime: { state: 'repairing', stable: false },
+    });
+    expect(repairing).toMatchObject({
+      state: 'repairing',
+      headline: 'Recovery in progress',
+      remote_access: 'not_ready',
+      connection_state: 'server',
+    });
+
+    const recovered = selectDeviceOperationalStory({
+      role: 'server_host',
+      status: 'online',
+      remote_access: { ready: false, status: 'remote_access_not_ready' },
+      runtime: {
+        state: 'stable',
+        stable: true,
+        restart_generation: 2,
+        recovered_at: '2026-09-20T10:00:00Z',
+      },
+    });
+    expect(recovered.headline).toBe('Recovered recently');
+    expect(recovered.remote_access).toBe('not_ready');
   });
 });

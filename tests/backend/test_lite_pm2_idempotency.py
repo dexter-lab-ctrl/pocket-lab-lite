@@ -23,7 +23,9 @@ set -Eeuo pipefail
 export POCKET_LAB_ALLOW_NON_TERMUX=1
 export HOME="$TEST_HOME"
 export PREFIX="$TEST_PREFIX"
+export POCKETLAB_STATE_DIR="$TEST_HOME/pocket-lab-lite/state"
 source "$COMMON_PATH"
+export POCKETLAB_PM2_POLICY_FINGERPRINT="$(pm2_policy_fingerprint demo)"
 export ACTION_FILE
 SPEC="$(pm2_process_spec_hash python3 -- demo.py)"
 export SPEC STATUS
@@ -47,6 +49,15 @@ pm2() {
 }
 
 pm2_ensure_process demo python3 -- demo.py
+python3 - "$TEST_HOME/pocket-lab-lite/state/runtime/desired-process-specs.json" "$SPEC" <<'PY'
+import json
+from pathlib import Path
+import sys
+payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert payload["schema"] == "pocketlab.pm2-desired-process-specs/v1"
+assert payload["schema_version"] == 1 and payload["sanitized"] is True
+assert payload["processes"]["demo"] == sys.argv[2]
+PY
 """
     env = os.environ.copy()
     env.update(
@@ -179,6 +190,7 @@ pm2_process_snapshot() {
 
 pm2() {
   if [[ "${1:-}" == "start" ]]; then
+    mkdir -p "$(dirname "$HASH_FILE")"
     printf '%s\n' "$POCKETLAB_PROCESS_SPEC_HASH" >"$HASH_FILE"
   fi
 }

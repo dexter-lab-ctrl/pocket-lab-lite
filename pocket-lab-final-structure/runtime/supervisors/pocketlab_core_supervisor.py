@@ -31,6 +31,9 @@ SUPERVISOR_VERSION = "1.2.2-opa-readiness-proof"
 DEFAULT_INTERVAL_SECONDS = 45
 DEFAULT_COOLDOWN_SECONDS = 120
 DEFAULT_CADDY_FAILURE_THRESHOLD = 3
+MAX_SUPERVISOR_INTERVAL_SECONDS = 3600
+MAX_SUPERVISOR_COOLDOWN_SECONDS = 24 * 60 * 60
+MAX_SUPERVISOR_RESTART_WINDOW_SECONDS = 30 * 24 * 60 * 60
 DEFAULT_API_PORT = 8080
 DEFAULT_CADDY_PORT = 8443
 DEFAULT_NATS_PORT = 4222
@@ -44,6 +47,14 @@ SENSITIVE_KEY_RE = re.compile(
     r"(token|secret|password|passwd|api[_-]?key|private[_-]?key|credential|authorization|cookie)",
     re.IGNORECASE,
 )
+
+
+def _bounded_env_int(name: str, default: int, minimum: int, maximum: int) -> int:
+    try:
+        value = int(os.environ.get(name, default))
+    except (TypeError, ValueError, OverflowError):
+        return default
+    return max(minimum, min(maximum, value))
 
 
 @dataclass(frozen=True)
@@ -196,15 +207,21 @@ class LiteCoreSupervisor:
     # outage-window primitive into a general PM2 control surface.
     QUALIFICATION_PAUSE_SERVICES = frozenset({"pocket-nats", "pocket-opa"})
     def __init__(self) -> None:
-        self.interval = max(10, int(os.environ.get("POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS", DEFAULT_INTERVAL_SECONDS)))
-        self.cooldown = max(30, int(os.environ.get("POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS", DEFAULT_COOLDOWN_SECONDS)))
+        self.interval = _bounded_env_int(
+            "POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS", DEFAULT_INTERVAL_SECONDS, 10, MAX_SUPERVISOR_INTERVAL_SECONDS
+        )
+        self.cooldown = _bounded_env_int(
+            "POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS", DEFAULT_COOLDOWN_SECONDS, 30, MAX_SUPERVISOR_COOLDOWN_SECONDS
+        )
         self.api_port = int(os.environ.get("API_PORT", os.environ.get("POCKETLAB_API_PORT", DEFAULT_API_PORT)))
         self.caddy_port = int(os.environ.get("DASH_PORT", os.environ.get("POCKETLAB_DASH_PORT", DEFAULT_CADDY_PORT)))
         self.nats_port = int(os.environ.get("POCKETLAB_NATS_PORT", DEFAULT_NATS_PORT))
-        self.caddy_failure_threshold = max(2, int(os.environ.get(
+        self.caddy_failure_threshold = _bounded_env_int(
             "POCKETLAB_CORE_SUPERVISOR_CADDY_FAILURE_THRESHOLD",
             DEFAULT_CADDY_FAILURE_THRESHOLD,
-        )))
+            2,
+            20,
+        )
         self.caddy_tcp_failure_streak = 0
         self.state_root = self._state_root()
         self.evidence_dir = self.state_root / "core-supervisor"
@@ -213,15 +230,18 @@ class LiteCoreSupervisor:
         self.maintenance_file = self.state_root / "security" / "maintenance" / "maintenance-state.json"
         self.restore_transaction_root = self.state_root / "security" / "recovery" / "restore-transactions"
         self.last_actions: Dict[str, float] = self._load_last_actions()
-        self.restart_window_seconds = max(300, int(os.environ.get(
-            "POCKETLAB_CORE_SUPERVISOR_RESTART_WINDOW_SECONDS", "1800"
-        )))
-        self.max_restarts_per_window = max(1, min(10, int(os.environ.get(
-            "POCKETLAB_CORE_SUPERVISOR_MAX_RESTARTS_PER_WINDOW", "3"
-        ))))
-        self.max_restart_backoff_seconds = max(self.cooldown, int(os.environ.get(
-            "POCKETLAB_CORE_SUPERVISOR_MAX_RESTART_BACKOFF_SECONDS", "1800"
-        )))
+        self.restart_window_seconds = _bounded_env_int(
+            "POCKETLAB_CORE_SUPERVISOR_RESTART_WINDOW_SECONDS", 1800, 300, MAX_SUPERVISOR_RESTART_WINDOW_SECONDS
+        )
+        self.max_restarts_per_window = _bounded_env_int(
+            "POCKETLAB_CORE_SUPERVISOR_MAX_RESTARTS_PER_WINDOW", 3, 1, 10
+        )
+        self.max_restart_backoff_seconds = _bounded_env_int(
+            "POCKETLAB_CORE_SUPERVISOR_MAX_RESTART_BACKOFF_SECONDS",
+            1800,
+            self.cooldown,
+            MAX_SUPERVISOR_RESTART_WINDOW_SECONDS,
+        )
         self.opa_readiness_timeout = max(2.0, min(60.0, float(os.environ.get(
             "POCKETLAB_OPA_READINESS_TIMEOUT_SECONDS", DEFAULT_OPA_READINESS_TIMEOUT_SECONDS
         ))))
