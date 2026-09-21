@@ -127,3 +127,10 @@ def test_pm2_version_projection_drift_is_repairable():
     }]
     _, reasons = reconciler.pm2_version_projection(mismatch)
     assert reasons == ["pm2_version_projection:pocket-api"]
+
+
+def test_runtime_reconciler_strips_own_pm2_version_metadata_from_child_env():
+    source = (SUPERVISORS / "pocketlab_runtime_reconciler.py").read_text(encoding="utf-8")
+    repair = source[source.index("    def _repair("):source.index("    def tick(", source.index("    def _repair("))]
+    assert 'env.pop("POCKETLAB_SERVICE_VERSION", None)' in repair
+    assert 'env.pop("POCKETLAB_PM2_SERVICE_VERSION", None)' in repair
