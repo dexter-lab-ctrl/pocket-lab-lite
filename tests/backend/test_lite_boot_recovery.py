@@ -20,7 +20,9 @@ def test_boot_recovery_is_external_to_pm2_and_uses_resurrection_then_reconcile()
     assert "pm2 resurrect" in guardian
     assert "pocketlab-runtime-reconciler" in guardian
     assert "nohup" in installer
-    assert ".termux/boot/pocketlab-lite" in installer
+    assert 'BOOT_DIR="$HOME/.termux/boot"' in installer
+    assert 'BOOT_FILE="$BOOT_DIR/pocketlab-lite"' in installer
+    assert 'atomic_write "$BOOT_FILE" 0700' in installer
     assert "--reconcile-only" in reconcile
     assert "bootstrap.sh" not in reconcile
 
