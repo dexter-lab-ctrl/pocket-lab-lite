@@ -16,8 +16,7 @@ def test_server_phone_runtime_preflights_fail_with_explicit_diagnostics():
         "PM2 pid file missing or empty",
         "PM2 pid file does not contain a numeric PID",
         "PM2 daemon PID",
-        "Lite API /health is not reachable",
-        "Lite API /ready is not reachable",
+        "Lite API /health and /ready did not remain reachable",
         "pm2 jlist failed while reading Lite runtime topology",
         "Tailscale is installed but tailscaled is not running",
         "PhotoPrism is installed but proot-distro is unavailable",
@@ -88,3 +87,17 @@ def test_fault_waiter_streams_pm2_json_instead_of_using_environment_payload():
     assert 'pm2 jlist >"$json_file"' in waiter
     assert 'python3 - "$json_file"' in waiter
     assert 'rm -f "$json_file"' in waiter
+
+
+def test_server_phone_qualification_waits_for_stable_api_health_and_readiness():
+    source = SCRIPT.read_text(encoding="utf-8")
+    start = source.index("remote_read_only() {")
+    end = source.index("wait_pm2_service() {", start)
+    read_only = source[start:end]
+
+    assert 'api_stable=0' in read_only
+    assert 'POCKETLAB_PHONE_API_ATTEMPTS' in read_only
+    assert 'http://127.0.0.1:8080/health' in read_only
+    assert 'http://127.0.0.1:8080/ready' in read_only
+    assert '[[ "$api_stable" -ge 2 ]]' in read_only
+    assert 'Lite API /health and /ready did not remain reachable' in read_only
