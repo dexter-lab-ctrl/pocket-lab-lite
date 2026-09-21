@@ -65,12 +65,16 @@ curl -fsS --connect-timeout 1 --max-time 4 http://127.0.0.1:8080/ready >/dev/nul
   fail "Lite API /ready is not reachable on 127.0.0.1:8080"
 echo "PASS Lite API readiness reachable"
 
-pm2_json="$(pm2 jlist 2>/dev/null)" || fail "pm2 jlist failed while reading Lite runtime topology"
-PM2_JSON="$pm2_json" REQUIRED="$required" LEGACY="$legacy" python3 - <<'PY'
+pm2_json_file="$(mktemp "${TMPDIR:-$HOME/tmp}/pocketlab-pm2-jlist.XXXXXX.json")"
+trap 'rm -f "$pm2_json_file"' EXIT
+pm2 jlist >"$pm2_json_file" 2>/dev/null || fail "pm2 jlist failed while reading Lite runtime topology"
+REQUIRED="$required" LEGACY="$legacy" python3 - "$pm2_json_file" <<'PY'
 import json
 import os
+import sys
 
-items = json.loads(os.environ["PM2_JSON"])
+with open(sys.argv[1], encoding="utf-8") as handle:
+    items = json.load(handle)
 statuses = {}
 versions = {}
 declared_versions = {}
@@ -134,11 +138,12 @@ if [[ "$photoprism_expected" == "1" ]]; then
     fail "PhotoPrism is installed but Ubuntu PRoot is unavailable"
   echo "PASS PhotoPrism PRoot runtime available"
 
-  PM2_JSON="$pm2_json" python3 - <<'PY'
+  python3 - "$pm2_json_file" <<'PY'
 import json
-import os
+import sys
 
-items = json.loads(os.environ["PM2_JSON"])
+with open(sys.argv[1], encoding="utf-8") as handle:
+    items = json.load(handle)
 for item in items if isinstance(items, list) else []:
     if item.get("name") != "pocketlab-app-photoprism":
         continue
