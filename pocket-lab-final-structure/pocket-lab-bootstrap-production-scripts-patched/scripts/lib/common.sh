@@ -401,7 +401,9 @@ pm2_ensure_process() {
 
   local spec_hash snapshot status current_hash
   spec_hash="$(pm2_process_spec_hash "$@")"
-  snapshot="$(pm2_process_snapshot "$name" 2>/dev/null || true)"
+  if ! snapshot="$(pm2_process_snapshot "$name" 2>/dev/null)"; then
+    snapshot=""
+  fi
   status="$(printf '%s\n' "$snapshot" | sed -n '1p')"
   current_hash="$(printf '%s\n' "$snapshot" | sed -n '2p')"
 
