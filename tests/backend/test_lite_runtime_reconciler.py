@@ -134,3 +134,15 @@ def test_runtime_reconciler_strips_own_pm2_version_metadata_from_child_env():
     repair = source[source.index("    def _repair("):source.index("    def tick(", source.index("    def _repair("))]
     assert 'env.pop("POCKETLAB_SERVICE_VERSION", None)' in repair
     assert 'env.pop("POCKETLAB_PM2_SERVICE_VERSION", None)' in repair
+
+
+def test_runtime_reconciler_strips_stale_runtime_path_overrides_from_child_env():
+    source = (SUPERVISORS / "pocketlab_runtime_reconciler.py").read_text(encoding="utf-8")
+    repair = source[source.index("    def _repair("):source.index("    def tick(", source.index("    def _repair("))]
+    for key in (
+        "POCKETLAB_BASE_DIR",
+        "POCKETLAB_STATE_DIR",
+        "POCKETLAB_LITE_DB_PATH",
+        "POCKETLAB_OPA_ACTIVE_POLICY_DIR",
+    ):
+        assert f'env.pop("{key}", None)' in repair
