@@ -231,3 +231,38 @@ def test_core_supervisor_tracks_server_host_node_agent():
     supervisor = load_supervisor_module()
     names = {spec.name for spec in supervisor.CORE_SERVICES}
     assert "pocket-node-agent" in names
+
+
+def test_core_supervisor_restart_preserves_target_pm2_environment(monkeypatch, tmp_path):
+    _prepare_supervisor_runtime(tmp_path, monkeypatch)
+    supervisor_module = load_supervisor_module()
+    supervisor = supervisor_module.LiteCoreSupervisor()
+    calls = []
+
+    class Result:
+        returncode = 0
+
+    def fake_run_command(args, timeout=15.0, env=None):
+        calls.append((list(args), timeout, env))
+        return Result()
+
+    monkeypatch.setattr(supervisor_module, "run_command", fake_run_command)
+    event = supervisor.restart_pm2("caddy-proxy", "qualification")
+
+    assert event["acted"] is True
+    assert calls
+    assert calls[0][0] == ["pm2", "restart", "caddy-proxy"]
+    assert "--update-env" not in calls[0][0]
+
+
+def test_core_supervisor_source_never_updates_env_on_pm2_restart():
+    root = Path(__file__).resolve().parents[2]
+    source = (
+        root
+        / "pocket-lab-final-structure"
+        / "runtime"
+        / "supervisors"
+        / "pocketlab_core_supervisor.py"
+    ).read_text(encoding="utf-8")
+    restart = source[source.index("    def restart_pm2("):source.index("    def qualification_stop_pm2(", source.index("    def restart_pm2("))]
+    assert '"--update-env"' not in restart
