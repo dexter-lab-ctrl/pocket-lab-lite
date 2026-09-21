@@ -7415,7 +7415,8 @@
         "affected_components": [
           "FastAPI",
           "bootstrap/runtime",
-          "documentation"
+          "documentation",
+          "repository tooling"
         ],
         "affects_release": false,
         "affects_runtime": false,
@@ -7432,12 +7433,12 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/restart-caddy-proxy.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog_live.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py",
-          "scripts/docs/runtime/termux_runtime_probe.sh"
+          "scripts/docs/runtime/termux_runtime_probe.sh",
+          "tests/backend/conftest.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -19386,8 +19387,8 @@
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
-          "tests/backend/test_lite_identity_rules_authorization.py",
-          "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
+          "pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_reconciler.py",
+          "tests/backend/test_lite_identity_rules_authorization.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -20146,6 +20147,174 @@
       },
       {
         "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_PHONE_API_BACKOFF_MAX_SECONDS",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/check-lite-runtime-resilience-server-phone.sh",
+          "tests/backend/test_lite_runtime_phone_qualification.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_PHONE_API_STABILIZATION_SECONDS",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/check-lite-runtime-resilience-server-phone.sh",
+          "tests/backend/test_lite_runtime_phone_qualification.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_PHONE_PHOTOPRISM_BACKOFF_MAX_SECONDS",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/check-lite-runtime-resilience-server-phone.sh",
+          "tests/backend/test_lite_runtime_phone_qualification.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_PHONE_PHOTOPRISM_STABILIZATION_SECONDS",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/check-lite-runtime-resilience-server-phone.sh",
+          "tests/backend/test_lite_runtime_phone_qualification.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_PHONE_PM2_SERVICE_BACKOFF_MAX_SECONDS",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/check-lite-runtime-resilience-server-phone.sh",
+          "tests/backend/test_lite_runtime_phone_qualification.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_PHONE_PM2_SERVICE_STABILIZATION_SECONDS",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/check-lite-runtime-resilience-server-phone.sh",
+          "tests/backend/test_lite_runtime_phone_qualification.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_PHONE_TOPOLOGY_ATTEMPTS",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/check-lite-runtime-resilience-server-phone.sh",
+          "tests/backend/test_lite_runtime_phone_qualification.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "bootstrap/runtime"
         ],
         "affects_release": true,
@@ -20474,7 +20643,9 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
-          "tests/backend/test_lite_pm2_version_projection.py"
+          "pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_reconciler.py",
+          "tests/backend/test_lite_pm2_version_projection.py",
+          "tests/backend/test_lite_runtime_reconciler.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -20653,7 +20824,8 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh",
-          "tests/backend/test_lite_pm2_idempotency.py"
+          "tests/backend/test_lite_pm2_idempotency.py",
+          "tests/backend/test_lite_pm2_version_projection.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -24236,9 +24408,9 @@
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/runtime-guardian.sh",
           "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
+          "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py",
           "pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_reconciler.py",
-          "scripts/dev/check-lite-runtime-resilience-server-phone.sh",
-          "tests/backend/test_lite_pm2_version_projection.py"
+          "scripts/dev/check-lite-runtime-resilience-server-phone.sh"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -45231,7 +45403,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "930094fe5999c3ae9924ee910fc78c3a963b255efb785e686f7f0dee70157bc3",
-        "documentation": "700acd7cd6a42a418cae4db049d8344b9a1e2f0da6a760005dc7449928d62246",
+        "documentation": "15a01330fa1039a6c841dd715c937428948ecb9ff04ee057d5f380ebca8c6d56",
         "openapi": "73df089dcb595eacedd99de1797a42e2eedbe4df044eebb8a6fc323fd9c2d1c4",
         "operational_health": "21078eb527933304c0444fa19f05a1ec277677d8c528bda61569ad162f08ea4b"
       },
@@ -115394,5 +115566,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "e5aab440b069056c0df91983e0a2adc0649431857a7ffbf6c7b40a0bead00d65"
+  "source_fingerprint": "17535502ac09dc470855fe6949d5a83fa09036745016d44d4da658960d428997"
 }

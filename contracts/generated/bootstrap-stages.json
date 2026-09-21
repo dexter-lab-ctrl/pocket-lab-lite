@@ -421,7 +421,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "aa9075c9851bdb4226c5aafa2b4c786e5638344071c6a70ff14ab1be4f70e6f7",
+    "aggregate_fingerprint": "2358543d0b684deaafef2b523db0738e9ac728ce6b768ca53864827129ae693b",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -440,10 +440,10 @@
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-pwa-ui.sh": "32b789b732bee5784a4b154550bc79ded6ad4c3ec14fe98c905eb2f864a2d37b",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-tailscale.sh": "3e6a5ddcef8cb4cb3fbeae9daf381051fcbefc24686c08452723f06429605ba3",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-termux-packages.sh": "547e9b09be8cff62dfbdd2187261423557c8c6bae93e8dd8ddaaf01ef621c951",
-      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-boot-recovery.sh": "8ffb4c3b31cb7b0238bdfdac18f9766befe720b8361035c22c80e2fc0fbb8c85",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-boot-recovery.sh": "da0899864f8cdcc53cab48822e207e99856990d381d2184db71810d0371957bb",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/seed-gitops-repo.sh": "1905104bdba9ea90b6828be3e3b518bae8aabb2b57c08d6f880b4788984834ed",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/smoke-test.sh": "7fbb8e7bb70c7105703e0336480ebdf24703eb5da91739df605455a1eeb0bc3f",
-      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh": "ddc2c3fabe4aeb70b781a052adf30a8f9b1bbc76c4098b379da73fba7dea693a",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh": "2e75a5697eafe69d81f2829363b3c5b3f9d3232b40610d4abf9b676416a95993",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-gitea.sh": "129b2a066ceb0c10c67a29938cc9b06b901f6b31923415db1684782a2460d805",
       "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4"
     },

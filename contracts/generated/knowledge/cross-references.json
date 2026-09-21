@@ -10817,6 +10817,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_runtime_phone_qualification.py": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_security.py": [
         {
           "source": "component:photoprism",
@@ -21444,6 +21450,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_photoprism_backup.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_runtime_phone_qualification.py",
           "type": "verified_by"
         },
         {
@@ -32373,6 +32383,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "205b7fa21f362d51e7c4de48fe8576d9763a9f6c50f22bd1c8625e89d1fbf04b"
+    "source_fingerprint": "af9b1f0efac275ebb373a174def2b2d8839b3fa6e423b217ef97ffee698c6777"
   }
 }

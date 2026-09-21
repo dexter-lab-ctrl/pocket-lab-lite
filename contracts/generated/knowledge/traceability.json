@@ -2920,6 +2920,7 @@
         "test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py",
         "test:tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py",
         "test:tests/backend/test_lite_photoprism_backup.py",
+        "test:tests/backend/test_lite_runtime_phone_qualification.py",
         "test:tests/backend/test_lite_security.py",
         "test:tests/backend/test_lite_security_advanced_optimization.py",
         "test:tests/backend/test_lite_security_s7_saved_state_history.py",
@@ -4285,6 +4286,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "205b7fa21f362d51e7c4de48fe8576d9763a9f6c50f22bd1c8625e89d1fbf04b"
+    "source_fingerprint": "af9b1f0efac275ebb373a174def2b2d8839b3fa6e423b217ef97ffee698c6777"
   }
 }

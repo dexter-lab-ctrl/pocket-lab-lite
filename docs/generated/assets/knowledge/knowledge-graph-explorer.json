@@ -12538,6 +12538,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_runtime_phone_qualification.py",
+      "name": "tests/backend/test_lite_runtime_phone_qualification.py",
+      "source_refs": [
+        "tests/backend/test_lite_runtime_phone_qualification.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_runtime_reconciler.py",
       "name": "tests/backend/test_lite_runtime_reconciler.py",
       "source_refs": [
@@ -54314,6 +54325,20 @@
       "id": "rel:c4b5b920f1731077",
       "source": "journey:security-scan",
       "target": "test:tests/backend/test_lite_security_f11_events_contract.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_runtime_phone_qualification.py"
+      ],
+      "id": "rel:c4c8e9003ea2f81e",
+      "source": "component:photoprism",
+      "target": "test:tests/backend/test_lite_runtime_phone_qualification.py",
       "type": "verified_by"
     },
     {
