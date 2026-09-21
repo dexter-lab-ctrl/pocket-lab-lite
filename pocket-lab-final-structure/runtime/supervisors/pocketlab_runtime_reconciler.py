@@ -238,6 +238,12 @@ class RuntimeReconciler:
             self._event(event)
             return event
         env = os.environ.copy()
+        # Service-specific PM2 projection metadata belongs to this reconciler
+        # process only. Never leak it into child convergence, where --update-env
+        # or a process-spec hash could otherwise stamp another service with the
+        # reconciler's version identity.
+        env.pop("POCKETLAB_SERVICE_VERSION", None)
+        env.pop("POCKETLAB_PM2_SERVICE_VERSION", None)
         env["POCKETLAB_PROFILE"] = "lite"
         env["POCKETLAB_LITE"] = "1"
         env["POCKETLAB_RECONCILER_CHILD"] = "1"
