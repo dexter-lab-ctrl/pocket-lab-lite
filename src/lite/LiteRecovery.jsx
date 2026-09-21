@@ -137,6 +137,20 @@ export default function RecoveryScreen() {
 
   const data = summaryData || {};
   const details = detailsData || {};
+  const runtimeRecovery = data?.runtime_recovery || {};
+  const runtimeRecoveryState = String(runtimeRecovery?.state || 'unknown').toLowerCase();
+  const runtimeRecoveredRecently = Boolean(
+    runtimeRecovery?.stable
+    && Array.isArray(runtimeRecovery?.recovered_services)
+    && runtimeRecovery.recovered_services.length
+  );
+  const runtimeRecoveryLabel = runtimeRecovery?.stable
+    ? runtimeRecoveredRecently ? 'Recovered recently' : 'Running normally'
+    : ['repairing', 'converging'].includes(runtimeRecoveryState)
+      ? 'Recovery in progress'
+      : runtimeRecoveryState === 'unknown'
+        ? 'Checking'
+        : 'Something changed';
   const latestBackup = mergeOptional(
     details?.last_backup || details?.latest_backup,
     data?.last_backup || data?.latest_backup,
@@ -664,6 +678,14 @@ export default function RecoveryScreen() {
         story={recoveryStory}
         primaryAction={recoveryStory.nextAction?.id === 'backup' ? { label: 'Back Up Now', onClick: backup, disabled: Boolean(busy) || recoveryWriteBlocked, disabledReason: recoveryWriteBlockedReason } : recoveryStory.nextAction?.id === 'verify' ? { label: 'Verify Backup', onClick: verifyLatestBackup, disabled: Boolean(busy) || recoveryWriteBlocked, disabledReason: recoveryWriteBlockedReason } : recoveryStory.nextAction?.id === 'preview' ? { label: 'Preview Restore', onClick: previewLatestRestore, disabled: Boolean(busy) || recoveryWriteBlocked, disabledReason: recoveryWriteBlockedReason } : recoveryStory.nextAction?.id === 'refresh' ? { label: 'Refresh Recovery', onClick: refreshSummary } : recoveryStory.nextAction?.id === 'manage' ? { label: recoveryStory.nextAction.label, onClick: () => openRecoveryManage(recoveryStory.nextAction.section) } : null}
         manageAction={{ label: 'Manage Recovery', onClick: () => openRecoveryManage('backup') }}
+      />
+
+      <LiteActionRow
+        className="lite-recovery-runtime-row"
+        label="System recovery"
+        value={runtimeRecoveryLabel}
+        summary={runtimeRecovery?.summary || 'Pocket Lab is checking the protected server runtime.'}
+        attention={!runtimeRecovery?.stable}
       />
 
       <LiteActionRow
