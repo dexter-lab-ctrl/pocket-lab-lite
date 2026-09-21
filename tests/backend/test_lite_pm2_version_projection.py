@@ -405,3 +405,17 @@ caddy_installed_version
     assert result.returncode != 0
     assert result.stdout == ""
     assert "Could not determine installed Caddy version from binary or Termux package metadata" in result.stderr
+
+
+def test_lite_scripts_do_not_recreate_caddy_outside_version_aware_helper():
+    lite_scripts = (
+        ROOT
+        / "pocket-lab-final-structure"
+        / "pocket-lab-bootstrap-production-scripts-patched"
+        / "scripts"
+        / "lite"
+    )
+    for path in lite_scripts.glob("*.sh"):
+        source = path.read_text(encoding="utf-8")
+        assert "pm2 delete caddy-proxy" not in source, path
+        assert 'pm2 start "$(command -v caddy)" --name caddy-proxy' not in source, path
