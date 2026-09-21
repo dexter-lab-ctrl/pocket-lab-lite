@@ -57,3 +57,20 @@ def test_server_phone_pm2_topology_does_not_use_large_environment_payload():
     assert 'pm2 jlist >"$pm2_json_file"' in read_only
     assert 'python3 - "$pm2_json_file"' in read_only
     assert 'trap \'rm -f "$pm2_json_file"\' EXIT' in read_only
+
+
+def test_server_phone_qualification_waits_for_stable_pm2_and_caddy_state():
+    source = SCRIPT.read_text(encoding="utf-8")
+    start = source.index("remote_read_only() {")
+    end = source.index("wait_pm2_service() {", start)
+    read_only = source[start:end]
+
+    assert 'topology_stable=0' in read_only
+    assert 'POCKETLAB_PHONE_TOPOLOGY_ATTEMPTS' in read_only
+    assert '[[ "$topology_stable" -ge 2 ]]' in read_only
+    assert 'Lite runtime did not reach a stable PM2 topology/version projection' in read_only
+
+    assert 'caddy_route_stable=0' in read_only
+    assert 'POCKETLAB_PHONE_CADDY_ROUTE_ATTEMPTS' in read_only
+    assert '[[ "$caddy_route_stable" -ge 2 ]]' in read_only
+    assert 'PhotoPrism same-origin route did not remain reachable through Caddy' in read_only
