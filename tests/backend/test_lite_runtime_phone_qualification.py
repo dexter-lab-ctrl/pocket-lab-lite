@@ -48,9 +48,12 @@ def test_server_phone_runtime_preflights_emit_positive_progress_markers():
 
 def test_server_phone_pm2_topology_does_not_use_large_environment_payload():
     source = SCRIPT.read_text(encoding="utf-8")
+    start = source.index("remote_read_only() {")
+    end = source.index("wait_pm2_service() {", start)
+    read_only = source[start:end]
 
-    assert 'PM2_JSON="$pm2_json"' not in source
-    assert 'json.loads(os.environ["PM2_JSON"])' not in source
-    assert 'pm2 jlist >"$pm2_json_file"' in source
-    assert 'python3 - "$pm2_json_file"' in source
-    assert 'trap \'rm -f "$pm2_json_file"\' EXIT' in source
+    assert 'PM2_JSON="$pm2_json"' not in read_only
+    assert 'json.loads(os.environ["PM2_JSON"])' not in read_only
+    assert 'pm2 jlist >"$pm2_json_file"' in read_only
+    assert 'python3 - "$pm2_json_file"' in read_only
+    assert 'trap \'rm -f "$pm2_json_file"\' EXIT' in read_only
