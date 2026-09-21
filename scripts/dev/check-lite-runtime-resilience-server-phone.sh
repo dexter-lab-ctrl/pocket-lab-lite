@@ -18,6 +18,12 @@ case "$MODE" in
       exit 2
     }
     ;;
+  --pm2-contract-faults)
+    [[ "${POCKETLAB_RUNTIME_PM2_CONTRACT_FAULTS:-0}" == "1" ]] || {
+      echo "ERROR: --pm2-contract-faults requires POCKETLAB_RUNTIME_PM2_CONTRACT_FAULTS=1" >&2
+      exit 2
+    }
+    ;;
   --remote-access-fault)
     [[ "${POCKETLAB_ALLOW_REMOTE_ACCESS_FAULT:-0}" == "1" && "${POCKETLAB_SSH_OUT_OF_BAND:-0}" == "1" ]] || {
       echo "ERROR: remote-access fault requires POCKETLAB_ALLOW_REMOTE_ACCESS_FAULT=1 and POCKETLAB_SSH_OUT_OF_BAND=1" >&2
@@ -25,7 +31,7 @@ case "$MODE" in
     }
     ;;
   *)
-    echo "Usage: $0 [--read-only|--faults|--post-reboot|--remote-access-fault]" >&2
+    echo "Usage: $0 [--read-only|--faults|--pm2-contract-faults|--post-reboot|--remote-access-fault]" >&2
     exit 2
     ;;
 esac
@@ -184,6 +190,60 @@ if [[ "$topology_stable" -lt 2 ]]; then
   fail "Lite runtime did not reach a stable PM2 topology/version projection after $topology_attempts attempts: ${topology_error:-unknown topology error}"
 fi
 rm -f "$topology_check_file"
+
+runtime_contract="$HOME/pocket-lab-lite/state/runtime/pm2-runtime-contract.json"
+contract_budget_seconds="${POCKETLAB_PHONE_RUNTIME_CONTRACT_STABILIZATION_SECONDS:-600}"
+contract_started_at="$(date +%s)"
+contract_deadline=$((contract_started_at + contract_budget_seconds))
+contract_backoff=3
+contract_stable=0
+contract_error="runtime contract has not been written yet"
+while (( $(date +%s) <= contract_deadline )); do
+  if [[ -s "$runtime_contract" ]]; then
+    if contract_error="$(python3 - "$runtime_contract" <<'PY' 2>&1
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    data = json.load(handle)
+assert data.get("schema") == "pocketlab.pm2-runtime-contract/v1", data.get("schema")
+assert int(data.get("schema_version") or 0) == 1
+assert data.get("sanitized") is True
+assert data.get("legacy_lite_services_present") == []
+assert data.get("state") == "stable", data.get("state")
+assert data.get("stable") is True
+assert int(data.get("stable_observations") or 0) >= 2
+log_policy = data.get("log_policy") or {}
+assert log_policy.get("within_policy") is True
+services = [item for item in data.get("services") or [] if isinstance(item, dict)]
+required = [item for item in services if item.get("required") is True]
+assert required
+for item in required:
+    assert item.get("state") == "online", item
+    assert item.get("stable") is True, item
+    assert item.get("desired_state_match") is True, item
+    assert item.get("pm2_policy_match") is True, item
+    assert item.get("health") == "ready", item
+    assert int(item.get("restart_budget_remaining") or 0) > 0, item
+    assert item.get("memory_within_policy") is True, item
+print("PASS PM2 Runtime Contract reached stable convergence")
+print("PASS PM2 policy/version/health/dependency/restart-budget checks passed")
+print("PASS PM2 log usage is within the bounded retention policy")
+PY
+)"; then
+      contract_stable=1
+      printf '%s\n' "$contract_error"
+      break
+    fi
+  fi
+  now="$(date +%s)"
+  (( now >= contract_deadline )) && break
+  sleep "$contract_backoff"
+  (( contract_backoff < 20 )) && contract_backoff=$((contract_backoff + 3))
+done
+if [[ "$contract_stable" -ne 1 ]]; then
+  fail "PM2 Runtime Contract did not reach stable convergence within ${contract_budget_seconds}s: $contract_error"
+fi
 
 ts_cmd=""
 if command -v tailscale-cli >/dev/null 2>&1; then
@@ -449,6 +509,138 @@ run_faults() {
   fi
 }
 
+run_pm2_contract_faults() {
+  remote_read_only --read-only
+
+  echo "FAULT qualifying bounded PM2 crash-loop, graceful-stop, and memory-ceiling behavior with disposable canaries"
+  ssh "$SSH_ALIAS" bash -s -- "${POCKETLAB_RUNTIME_MEMORY_FAULTS:-0}" <<'REMOTE'
+set -Eeuo pipefail
+memory_faults="$1"
+tmp_root="${TMPDIR:-$HOME/tmp}/pocketlab-pm2-contract-qualification"
+mkdir -p "$tmp_root"
+chmod 700 "$tmp_root" 2>/dev/null || true
+crash_name="pocketlab-qualification-crash-loop"
+grace_name="pocketlab-qualification-graceful-stop"
+memory_name="pocketlab-qualification-memory-ceiling"
+
+cleanup() {
+  pm2 delete "$crash_name" "$grace_name" "$memory_name" >/dev/null 2>&1 || true
+  rm -rf "$tmp_root"
+}
+trap cleanup EXIT
+
+pm2 delete "$crash_name" "$grace_name" "$memory_name" >/dev/null 2>&1 || true
+
+cat >"$tmp_root/crash.py" <<'PY'
+raise SystemExit(23)
+PY
+pm2 start "$tmp_root/crash.py" --name "$crash_name" --interpreter python3 \
+  --min-uptime 2s --max-restarts 3 --kill-timeout 2000 --restart-delay 250 >/dev/null
+crash_terminal=0
+for _ in $(seq 1 40); do
+  if pm2 jlist | NAME="$crash_name" python3 -c '
+import json, os, sys
+items=json.load(sys.stdin)
+for item in items:
+    if item.get("name") != os.environ["NAME"]:
+        continue
+    env=item.get("pm2_env") or {}
+    status=str(env.get("status") or "").lower()
+    restarts=int(env.get("unstable_restarts") or env.get("restart_time") or 0)
+    if status in {"errored","error","stopped"} and restarts >= 3:
+        raise SystemExit(0)
+raise SystemExit(1)
+'; then
+    crash_terminal=1
+    break
+  fi
+  sleep 1
+done
+[[ "$crash_terminal" -eq 1 ]] || {
+  echo "ERROR: disposable PM2 crash loop did not stop at its restart budget" >&2
+  exit 1
+}
+echo "PASS PM2 crash-loop canary reached a bounded terminal state"
+
+cat >"$tmp_root/graceful.py" <<'PY'
+import os
+from pathlib import Path
+import signal
+import time
+
+marker=Path(os.environ["GRACEFUL_MARKER"])
+def stop(signum, _frame):
+    marker.write_text(str(signum), encoding="utf-8")
+    raise SystemExit(0)
+signal.signal(signal.SIGTERM, stop)
+signal.signal(signal.SIGINT, stop)
+while True:
+    time.sleep(1)
+PY
+marker="$tmp_root/graceful.marker"
+GRACEFUL_MARKER="$marker" pm2 start "$tmp_root/graceful.py" --name "$grace_name" --interpreter python3 \
+  --no-autorestart --kill-timeout 3000 >/dev/null
+sleep 2
+pm2 sendSignal SIGTERM "$grace_name" >/dev/null
+for _ in $(seq 1 15); do
+  [[ -s "$marker" ]] && break
+  sleep 1
+done
+[[ -s "$marker" ]] || {
+  echo "ERROR: disposable graceful-stop canary did not handle SIGTERM" >&2
+  exit 1
+}
+echo "PASS graceful SIGTERM was handled before the kill-timeout deadline"
+
+if [[ "$memory_faults" == "1" ]]; then
+  cat >"$tmp_root/memory.py" <<'PY'
+import time
+payload = bytearray(48 * 1024 * 1024)
+while payload:
+    time.sleep(1)
+PY
+  pm2 start "$tmp_root/memory.py" --name "$memory_name" --interpreter python3 \
+    --max-memory-restart 32M --min-uptime 2s --max-restarts 3 --kill-timeout 3000 >/dev/null
+  memory_restarted=0
+  for _ in $(seq 1 100); do
+    if pm2 jlist | NAME="$memory_name" python3 -c '
+import json, os, sys
+items=json.load(sys.stdin)
+for item in items:
+    if item.get("name") == os.environ["NAME"]:
+        env=item.get("pm2_env") or {}
+        raise SystemExit(0 if int(env.get("restart_time") or 0) >= 1 else 1)
+raise SystemExit(1)
+'; then
+      memory_restarted=1
+      break
+    fi
+    sleep 1
+  done
+  [[ "$memory_restarted" -eq 1 ]] || {
+    echo "ERROR: bounded memory canary did not cross the configured PM2 memory ceiling" >&2
+    exit 1
+  }
+  echo "PASS PM2 memory ceiling restarted a bounded 48 MiB canary without an OOM test"
+else
+  echo "SKIP memory-ceiling canary; set POCKETLAB_RUNTIME_MEMORY_FAULTS=1 to enable the bounded 48 MiB scenario"
+fi
+
+pm2 delete "$crash_name" "$grace_name" "$memory_name" >/dev/null 2>&1 || true
+echo "PASS disposable PM2 policy canaries cleaned up"
+REMOTE
+
+  # Re-run the existing real service-class recovery checks for a Python agent,
+  # Caddy proxy, and NATS binary daemon. Existing runtime owners perform the
+  # recovery; the harness never starts these services itself.
+  fault_pm2_service pocket-node-agent
+  fault_pm2_service caddy-proxy
+  fault_pm2_service pocket-nats
+
+  remote_read_only --read-only
+  echo "PASS PM2 Runtime Contract fault qualification completed and stable recovery reconfirmed"
+}
+
 run_remote_access_fault() {
   remote_read_only --read-only
   echo "FAULT stopping tailscaled over explicitly declared out-of-band SSH"
@@ -476,6 +668,9 @@ case "$MODE" in
     ;;
   --faults)
     run_faults
+    ;;
+  --pm2-contract-faults)
+    run_pm2_contract_faults
     ;;
   --remote-access-fault)
     run_remote_access_fault
