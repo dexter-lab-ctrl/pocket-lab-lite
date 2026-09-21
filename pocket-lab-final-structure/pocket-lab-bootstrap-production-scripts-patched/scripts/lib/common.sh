@@ -597,7 +597,7 @@ PY
   umask 077
   ecosystem_dir="$(mktemp -d "$state_dir/runtime/.pm2-start.XXXXXX")"
   umask "$old_umask"
-  ecosystem_file="$ecosystem_dir/ecosystem.config.js"
+  ecosystem_file="$ecosystem_dir/ecosystem.config.cjs"
   if ! pm2_write_ecosystem_config "$name" "$process_script" "$process_interpreter" "$app_args_json" "$ecosystem_file"; then
     rm -f -- "$ecosystem_file"
     rmdir -- "$ecosystem_dir" 2>/dev/null || true
