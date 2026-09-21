@@ -90,6 +90,7 @@ def test_supervisor_does_not_restart_api_for_transient_nats_client_probe(monkeyp
             "pocket-worker": "online",
             "pocket-opa": "online",
             "caddy-proxy": "online",
+            "pocket-node-agent": "online",
             "pocket-telemetry": "online",
         },
         "checks": {
@@ -160,6 +161,7 @@ def _healthy_observed(*, caddy_tcp=True, caddy_upstream=True):
             "pocket-worker": "online",
             "pocket-opa": "online",
             "caddy-proxy": "online",
+            "pocket-node-agent": "online",
             "pocket-telemetry": "online",
         },
         "checks": {
