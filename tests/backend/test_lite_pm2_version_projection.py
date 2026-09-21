@@ -119,7 +119,9 @@ def test_runtime_reconciler_and_guardian_treat_version_metadata_as_desired_state
     assert "POCKETLAB_SERVICE_VERSION" in reconciler
     assert "pm2_version_projection:" in reconciler
     assert "POCKETLAB_SERVICE_VERSION" in guardian
-    assert "runtime_reconciler_missing_or_version_drift" in guardian
+    assert "pm2_process_matches_source" in guardian
+    assert "runtime_reconciler_missing_or_source_drift" in guardian
+    assert "core_supervisor_missing_or_source_drift" in guardian
 
 
 def test_stale_pm2_version_projection_forces_controlled_recreation(tmp_path: Path):
