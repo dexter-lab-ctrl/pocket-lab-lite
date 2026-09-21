@@ -61,14 +61,14 @@ is_lite_profile() {
 
 handle_err() {
   local rc=$? line=${BASH_LINENO[0]:-unknown} cmd=${BASH_COMMAND:-unknown}
-  log FATAL "Unexpected error rc=$rc at line $line while running: $cmd"
+  log FATAL "Unexpected error rc=$rc at line $line while running: $cmd" >&2
   exit "$rc"
 }
 trap handle_err ERR
 
 timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
 log() { printf '[%s] [%s] [%s] %s\n' "$(timestamp)" "${1:-INFO}" "$SCRIPT_NAME" "${*:2}"; }
-die() { log FATAL "$*"; exit 1; }
+die() { log FATAL "$*" >&2; exit 1; }
 have() { command -v "$1" >/dev/null 2>&1; }
 
 ensure_root_dirs() {
