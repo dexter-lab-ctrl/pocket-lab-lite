@@ -57,7 +57,7 @@ def test_server_phone_pm2_topology_does_not_use_large_environment_payload():
     assert 'trap \'rm -f "$pm2_json_file" "${topology_check_file:-}"\' EXIT' in read_only
 
 
-def test_server_phone_qualification_waits_for_stable_pm2_and_caddy_state():
+def test_server_phone_qualification_waits_for_stable_pm2_and_photoprism_state():
     source = SCRIPT.read_text(encoding="utf-8")
     start = source.index("remote_read_only() {")
     end = source.index("wait_pm2_service() {", start)
@@ -69,10 +69,13 @@ def test_server_phone_qualification_waits_for_stable_pm2_and_caddy_state():
     assert '[[ "$topology_stable" -ge 2 ]]' in read_only
     assert 'Lite runtime did not reach a stable PM2 topology/version projection' in read_only
 
-    assert 'caddy_route_stable=0' in read_only
-    assert 'POCKETLAB_PHONE_CADDY_ROUTE_ATTEMPTS' in read_only
-    assert '[[ "$caddy_route_stable" -ge 2 ]]' in read_only
-    assert 'PhotoPrism same-origin route did not remain reachable through Caddy' in read_only
+    assert 'photoprism_stable=0' in read_only
+    assert 'POCKETLAB_PHONE_PHOTOPRISM_STABILIZATION_SECONDS' in read_only
+    assert 'pm2 jlist >"$pm2_json_file"' in read_only
+    assert 'http://127.0.0.1:2342/apps/photoprism/' in read_only
+    assert 'http://127.0.0.1:8443/apps/photoprism/' in read_only
+    assert '[[ "$photoprism_stable" -ge 2 ]]' in read_only
+    assert 'PhotoPrism PM2/local/same-origin runtime did not stabilize' in read_only
 
 
 def test_fault_waiter_streams_pm2_json_instead_of_using_environment_payload():
