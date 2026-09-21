@@ -23,7 +23,7 @@ def test_server_phone_runtime_preflights_fail_with_explicit_diagnostics():
         "PhotoPrism is installed but proot-distro is unavailable",
         "PhotoPrism is installed but Ubuntu PRoot is unavailable",
         "PhotoPrism local runtime is not reachable",
-        "PhotoPrism same-origin route is not reachable through Caddy",
+        "PhotoPrism same-origin route did not remain reachable through Caddy",
     )
 
     for message in expected:
@@ -56,7 +56,7 @@ def test_server_phone_pm2_topology_does_not_use_large_environment_payload():
     assert 'json.loads(os.environ["PM2_JSON"])' not in read_only
     assert 'pm2 jlist >"$pm2_json_file"' in read_only
     assert 'python3 - "$pm2_json_file"' in read_only
-    assert 'trap \'rm -f "$pm2_json_file"\' EXIT' in read_only
+    assert 'trap \'rm -f "$pm2_json_file" "${topology_check_file:-}"\' EXIT' in read_only
 
 
 def test_server_phone_qualification_waits_for_stable_pm2_and_caddy_state():
