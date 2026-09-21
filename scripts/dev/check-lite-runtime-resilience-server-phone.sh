@@ -325,11 +325,13 @@ REMOTE
 
 wait_pm2_service() {
   local service="$1"
-  local attempts="${2:-70}"
-  ssh "$SSH_ALIAS" bash -s -- "$service" "$attempts" <<'REMOTE'
+  local budget_seconds="${2:-${POCKETLAB_PHONE_PM2_SERVICE_STABILIZATION_SECONDS:-600}}"
+  local backoff_max="${POCKETLAB_PHONE_PM2_SERVICE_BACKOFF_MAX_SECONDS:-30}"
+  ssh "$SSH_ALIAS" bash -s -- "$service" "$budget_seconds" "$backoff_max" <<'REMOTE'
 set -Eeuo pipefail
 service="$1"
-attempts="$2"
+budget_seconds="$2"
+backoff_max="$3"
 
 pm2_status() {
   local name="$1" tmp_root json_file
@@ -362,12 +364,34 @@ PY
   return "$rc"
 }
 
-for _ in $(seq 1 "$attempts"); do
-  [[ "$(pm2_status "$service")" == "online" ]] && exit 0
-  sleep 3
+stable=0
+backoff_seconds=2
+started_at="$(date +%s)"
+deadline=$((started_at + budget_seconds))
+last_status="missing"
+
+while (( $(date +%s) <= deadline )); do
+  last_status="$(pm2_status "$service")"
+  if [[ "$last_status" == "online" ]]; then
+    stable=$((stable + 1))
+    [[ "$stable" -ge 2 ]] && exit 0
+  else
+    stable=0
+  fi
+
+  now="$(date +%s)"
+  (( now >= deadline )) && break
+  remaining=$((deadline - now))
+  sleep_for="$backoff_seconds"
+  (( sleep_for > remaining )) && sleep_for="$remaining"
+  (( sleep_for > 0 )) && sleep "$sleep_for"
+  if (( backoff_seconds < backoff_max )); then
+    backoff_seconds=$((backoff_seconds * 2))
+    (( backoff_seconds > backoff_max )) && backoff_seconds="$backoff_max"
+  fi
 done
 
-echo "ERROR: service did not recover: $service" >&2
+echo "ERROR: service did not reach stable online state within ${budget_seconds}s: $service (last_status=$last_status)" >&2
 exit 1
 REMOTE
 }
