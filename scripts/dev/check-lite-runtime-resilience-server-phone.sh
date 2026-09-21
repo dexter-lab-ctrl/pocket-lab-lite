@@ -934,11 +934,16 @@ for item in items:
     status=str(env.get("status") or "").lower()
     restarts=int(env.get("unstable_restarts") or env.get("restart_time") or 0)
     pid=env.get("pid") or item.get("pid")
+    configured_max=int(env.get("max_restarts") or 3)
+    # PM2 counts the initial launch separately from restart_time on Termux.
+    # A max_restarts=3 canary therefore reaches its terminal state at
+    # restart_time=2 after three total launch attempts.
+    restart_budget_exhausted = restarts >= max(1, configured_max - 1)
     terminal_status = status in {"errored", "error", "stopped"}
     # PM2 7 on Termux leaves a capped crash loop in `waiting restart` with no
     # pid instead of translating it to `errored`; the restart budget is still
     # enforced and the process is terminal for qualification purposes.
-    if (terminal_status or (status == "waiting restart" and not pid)) and restarts >= 3:
+    if (terminal_status or (status == "waiting restart" and not pid)) and restart_budget_exhausted:
         raise SystemExit(0)
 raise SystemExit(1)
 '; then

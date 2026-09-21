@@ -193,6 +193,7 @@ def test_pm2_contract_fault_mode_is_explicitly_guarded_and_uses_bounded_canaries
     assert '"max_memory_restart":"32M"' in source
     assert '"max_restarts":3' in source
     assert 'status == "waiting restart" and not pid' in source
+    assert 'restarts >= max(1, configured_max - 1)' in source
     assert 'pm2 start "$tmp_root/crash.ecosystem.json" --only "$crash_name"' in source
     assert 'pm2 start "$tmp_root/memory.ecosystem.json" --only "$memory_name"' in source
     assert "write_pm2_ecosystem()" in source
