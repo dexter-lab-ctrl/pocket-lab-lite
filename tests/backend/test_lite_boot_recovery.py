@@ -77,3 +77,13 @@ def test_boot_recovery_installer_restarts_existing_guardian_to_activate_current_
 
     assert 'pkill -f "[r]untime-guardian.sh"' in installer
     assert 'nohup "$GUARDIAN" --boot' in installer
+
+
+def test_guardian_forces_desired_state_convergence_after_pm2_resurrection():
+    guardian = (SCRIPTS / "lite" / "runtime-guardian.sh").read_text()
+
+    assert "PM2_RESTORED_THIS_PASS=0" in guardian
+    assert "PM2_RESTORED_THIS_PASS=1" in guardian
+    assert '[[ "${PM2_RESTORED_THIS_PASS:-0}" == "1" ]]' in guardian
+    assert 'reason="pm2_resurrected_requires_convergence"' in guardian
+    assert 'bash "$RECONCILE" --repair --reason "$reason"' in guardian
