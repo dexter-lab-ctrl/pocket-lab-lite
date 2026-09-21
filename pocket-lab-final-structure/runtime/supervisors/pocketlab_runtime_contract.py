@@ -193,10 +193,10 @@ def _http_ready(url: str, timeout: float = 1.0) -> bool:
         return False
 
 
-def local_health_snapshot() -> dict[str, str]:
-    """Cheap semantic readiness probes.  No remote-network probe is performed."""
+def local_health_snapshot(*, include_photoprism: bool = False) -> dict[str, str]:
+    """Cheap semantic readiness probes. No remote-network probe is performed."""
 
-    return {
+    snapshot = {
         "nats": "ready" if _tcp_ready(4222) else "not_ready",
         "opa": "ready" if _http_ready("http://127.0.0.1:8181/health") else "not_ready",
         "api": (
@@ -206,18 +206,20 @@ def local_health_snapshot() -> dict[str, str]:
             else "not_ready"
         ),
         "caddy": "ready" if _tcp_ready(8443) else "not_ready",
-        "photoprism_local": (
+    }
+    if include_photoprism:
+        snapshot["photoprism_local"] = (
             "ready"
             if _http_ready("http://127.0.0.1:2342/apps/photoprism/api/v1/status")
             or _http_ready("http://127.0.0.1:2342/apps/photoprism/")
             else "not_ready"
-        ),
-        "photoprism_route": (
+        )
+        snapshot["photoprism_route"] = (
             "ready"
             if _http_ready("http://127.0.0.1:8443/apps/photoprism/")
             else "not_ready"
-        ),
-    }
+        )
+    return snapshot
 
 
 def _core_restart_state(state_root: Path) -> dict[str, Any]:
@@ -419,6 +421,8 @@ def _build_service_contracts(
             reasons.append("version_drift")
         if not matches_policy or not fingerprint_match:
             reasons.append("pm2_policy_drift")
+        if not desired_state_match:
+            reasons.append("desired_state_mismatch")
         if not stable_uptime:
             reasons.append("minimum_stable_uptime_not_met")
         if restart_budget_exhausted:
@@ -687,7 +691,7 @@ def build_runtime_contract(
     observed_now = time.time() if now is None else float(now)
     specs = managed_service_specs(include_photoprism=photoprism_expected)
     process_items = _process_map(processes)
-    health_snapshot = dict(health or local_health_snapshot())
+    health_snapshot = dict(health or local_health_snapshot(include_photoprism=photoprism_expected))
     services, _ledger = _build_service_contracts(
         processes=process_items.values(),
         specs=specs,
