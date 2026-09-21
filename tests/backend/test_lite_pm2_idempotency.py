@@ -160,3 +160,86 @@ test "$(printf '%s\n' "$snapshot" | sed -n '2p')" = "abc123"
         check=False,
     )
     assert completed.returncode == 0, completed.stderr or completed.stdout
+
+
+def test_managed_process_spec_hash_changes_when_pm2_policy_changes(tmp_path):
+    shell = r"""
+set -Eeuo pipefail
+export POCKET_LAB_ALLOW_NON_TERMUX=1
+export HOME="$TEST_HOME"
+export PREFIX="$TEST_PREFIX"
+source "$COMMON_PATH"
+
+HASH_FILE="$TEST_HOME/hash.txt"
+mkdir -p "$TEST_HOME"
+
+pm2_process_snapshot() {
+  return 1
+}
+
+pm2() {
+  if [[ "${1:-}" == "start" ]]; then
+    printf '%s\n' "$POCKETLAB_PROCESS_SPEC_HASH" >"$HASH_FILE"
+  fi
+}
+
+pm2_ensure_process pocket-api python3 -- demo.py
+A="$(cat "$HASH_FILE")"
+export POCKETLAB_PM2_POCKET_API_KILL_TIMEOUT_MS=17000
+pm2_ensure_process pocket-api python3 -- demo.py
+B="$(cat "$HASH_FILE")"
+test -n "$A"
+test -n "$B"
+test "$A" != "$B"
+"""
+    env = os.environ.copy()
+    env.update(
+        {
+            "TEST_HOME": str(tmp_path / "home"),
+            "TEST_PREFIX": str(tmp_path / "prefix"),
+            "COMMON_PATH": str(COMMON),
+        }
+    )
+    completed = subprocess.run(
+        ["bash", "-lc", shell],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+
+
+def test_runtime_only_observation_variables_do_not_change_process_spec_hash(tmp_path):
+    shell = r"""
+set -Eeuo pipefail
+export POCKET_LAB_ALLOW_NON_TERMUX=1
+export HOME="$TEST_HOME"
+export PREFIX="$TEST_PREFIX"
+source "$COMMON_PATH"
+export POCKETLAB_RUNTIME_OBSERVED_RSS_MB=111
+export POCKETLAB_PM2_OBSERVED_RESTART_GENERATION=1
+A="$(pm2_process_spec_hash python3 -- demo.py)"
+export POCKETLAB_RUNTIME_OBSERVED_RSS_MB=999
+export POCKETLAB_PM2_OBSERVED_RESTART_GENERATION=77
+B="$(pm2_process_spec_hash python3 -- demo.py)"
+test "$A" = "$B"
+"""
+    env = os.environ.copy()
+    env.update(
+        {
+            "TEST_HOME": str(tmp_path / "home"),
+            "TEST_PREFIX": str(tmp_path / "prefix"),
+            "COMMON_PATH": str(COMMON),
+        }
+    )
+    completed = subprocess.run(
+        ["bash", "-lc", shell],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr or completed.stdout
