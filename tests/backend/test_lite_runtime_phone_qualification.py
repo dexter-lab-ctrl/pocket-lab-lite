@@ -65,6 +65,7 @@ def test_server_phone_qualification_waits_for_stable_pm2_and_caddy_state():
     end = source.index("wait_pm2_service() {", start)
     read_only = source[start:end]
 
+    assert 'topology_check_file="$pm2_tmp_root/pocketlab-pm2-topology-check.$"' in read_only
     assert 'topology_stable=0' in read_only
     assert 'POCKETLAB_PHONE_TOPOLOGY_ATTEMPTS' in read_only
     assert '[[ "$topology_stable" -ge 2 ]]' in read_only
