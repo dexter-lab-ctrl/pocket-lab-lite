@@ -84,6 +84,7 @@ reload_if_source_changed() {
 }
 
 restore_pm2_if_needed() {
+  PM2_RESTORED_THIS_PASS=0
   pm2_alive && return 0
   local now
   now="$(date +%s)"
@@ -98,13 +99,22 @@ restore_pm2_if_needed() {
     pm2 resurrect >/dev/null 2>&1 || true
   fi
   sleep 2
-  pm2_alive
+  if pm2_alive; then
+    PM2_RESTORED_THIS_PASS=1
+    return 0
+  fi
+  return 1
 }
 
 converge_if_needed() {
   local reason=""
   if ! restore_pm2_if_needed; then
     reason="pm2_unavailable"
+  elif [[ "${PM2_RESTORED_THIS_PASS:-0}" == "1" ]]; then
+    # A resurrected dump is only a bootstrap snapshot. Immediately reconcile
+    # current source-defined desired state so missing/stale supervisors and
+    # versioned process metadata are repaired in the same guardian pass.
+    reason="pm2_resurrected_requires_convergence"
   elif ! pm2_process_matches_source "pocketlab-runtime-reconciler" "$RUNTIME_RECONCILER_SERVER"; then
     reason="runtime_reconciler_missing_or_source_drift"
   elif ! pm2_process_matches_source "pocketlab-core-supervisor" "$CORE_SUPERVISOR_SERVER"; then
@@ -129,6 +139,7 @@ main() {
   require_cmd pm2 python3 sha256sum
   GUARDIAN_START_DIGEST="$(guardian_source_digest)"
   export GUARDIAN_START_DIGEST
+  PM2_RESTORED_THIS_PASS=0
 
   while true; do
     reload_if_source_changed
