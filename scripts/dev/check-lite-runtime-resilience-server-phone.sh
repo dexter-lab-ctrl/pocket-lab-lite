@@ -68,9 +68,15 @@ echo "PASS Lite API readiness reachable"
 pm2_tmp_root="${TMPDIR:-$HOME/tmp}"
 mkdir -p "$pm2_tmp_root"
 pm2_json_file="$(mktemp "$pm2_tmp_root/pocketlab-pm2-jlist.XXXXXX.json")"
-trap 'rm -f "$pm2_json_file"' EXIT
-pm2 jlist >"$pm2_json_file" 2>/dev/null || fail "pm2 jlist failed while reading Lite runtime topology"
-REQUIRED="$required" LEGACY="$legacy" python3 - "$pm2_json_file" <<'PY'
+trap 'rm -f "$pm2_json_file" "${topology_check_file:-}"' EXIT
+topology_check_file="$pm2_tmp_root/pocketlab-pm2-topology-check.$"
+topology_stable=0
+topology_attempts="${POCKETLAB_PHONE_TOPOLOGY_ATTEMPTS:-20}"
+for _ in $(seq 1 "$topology_attempts"); do
+  if ! pm2 jlist >"$pm2_json_file" 2>/dev/null; then
+    printf '%s\n' "pm2 jlist failed while reading Lite runtime topology" >"$topology_check_file"
+    topology_stable=0
+  elif REQUIRED="$required" LEGACY="$legacy" python3 - "$pm2_json_file" >"$topology_check_file" 2>&1 <<'PY'
 import json
 import os
 import sys
@@ -107,6 +113,23 @@ print("PASS required Lite PM2 topology online")
 print("PASS every required Lite PM2 service projects its exact installed version")
 print("PASS legacy Pocket Lab PM2 services absent")
 PY
+  then
+    topology_stable=$((topology_stable + 1))
+    if [[ "$topology_stable" -ge 2 ]]; then
+      cat "$topology_check_file"
+      break
+    fi
+  else
+    topology_stable=0
+  fi
+  sleep 3
+done
+if [[ "$topology_stable" -lt 2 ]]; then
+  topology_error="$(cat "$topology_check_file" 2>/dev/null || true)"
+  rm -f "$topology_check_file"
+  fail "Lite runtime did not reach a stable PM2 topology/version projection after $topology_attempts attempts: ${topology_error:-unknown topology error}"
+fi
+rm -f "$topology_check_file"
 
 ts_cmd=""
 if command -v tailscale-cli >/dev/null 2>&1; then
@@ -168,9 +191,20 @@ PY
       fail "PhotoPrism local runtime is not reachable on 127.0.0.1:2342"
   fi
 
-  curl -fsS --connect-timeout 1 --max-time 5 \
-    http://127.0.0.1:8443/apps/photoprism/ >/dev/null ||
-    fail "PhotoPrism same-origin route is not reachable through Caddy"
+  caddy_route_stable=0
+  caddy_route_attempts="${POCKETLAB_PHONE_CADDY_ROUTE_ATTEMPTS:-20}"
+  for _ in $(seq 1 "$caddy_route_attempts"); do
+    if curl -fsS --connect-timeout 1 --max-time 5 \
+      http://127.0.0.1:8443/apps/photoprism/ >/dev/null 2>&1; then
+      caddy_route_stable=$((caddy_route_stable + 1))
+      [[ "$caddy_route_stable" -ge 2 ]] && break
+    else
+      caddy_route_stable=0
+    fi
+    sleep 3
+  done
+  [[ "$caddy_route_stable" -ge 2 ]] ||
+    fail "PhotoPrism same-origin route did not remain reachable through Caddy after $caddy_route_attempts attempts"
 
   echo "PASS PhotoPrism PRoot/local/same-origin runtime ready"
 fi
