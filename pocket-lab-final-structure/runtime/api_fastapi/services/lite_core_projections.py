@@ -278,6 +278,35 @@ def quiesce_recovery_base_for_database_switch(*, timeout_seconds: float = 5.0) -
         return False
 
 
+def _runtime_recovery_projection() -> dict[str, Any]:
+    runtime = lite_status.lite_runtime_contract()
+    state = str(runtime.get("state") or "unknown")
+    if state == "stable":
+        summary = "System running normally"
+    elif state in {"converging", "repairing"}:
+        summary = "Recovery in progress"
+    else:
+        summary = "Something changed"
+    recovered = [
+        {
+            "role": item.get("role"),
+            "status": item.get("status"),
+            "recovered_at": item.get("recovered_at"),
+        }
+        for item in (runtime.get("services") or [])
+        if isinstance(item, dict) and item.get("recovered_at")
+    ][:8]
+    return {
+        "state": state,
+        "stable": bool(runtime.get("stable")),
+        "summary": summary,
+        "reason_codes": list(runtime.get("reason_codes") or [])[:12],
+        "recovered_services": recovered,
+        "observed_at": runtime.get("observed_at"),
+        "sanitized": True,
+    }
+
+
 def recovery_details_payload() -> dict[str, Any]:
     timings: dict[str, float] = {}
     state = _timed_stage(timings, "recovery_base", recovery_base_subprojection)
@@ -356,6 +385,7 @@ def recovery_details_payload() -> dict[str, Any]:
         timings, "database_protection", lite_recovery_subprojections.database_protection_details
     )
     state["maintenance"] = _timed_stage(timings, "maintenance", lite_recovery_subprojections.maintenance_state)
+    state["runtime_recovery"] = _timed_stage(timings, "runtime_recovery", _runtime_recovery_projection)
     state["__projection_stage_timing_ms"] = timings
     return state
 
@@ -367,6 +397,7 @@ def recovery_summary_payload() -> dict[str, Any]:
         timings, "database_protection_summary", lite_recovery_subprojections.database_protection_summary
     )
     state["maintenance"] = _timed_stage(timings, "maintenance", lite_recovery_subprojections.maintenance_state)
+    state["runtime_recovery"] = _timed_stage(timings, "runtime_recovery", _runtime_recovery_projection)
     state["__projection_stage_timing_ms"] = timings
     return state
 
