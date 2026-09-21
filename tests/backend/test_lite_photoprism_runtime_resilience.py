@@ -61,3 +61,13 @@ def test_backend_repair_uses_non_installing_photoprism_reconcile():
     section = source[source.index("def _restart_photoprism_if_safe"):source.index("def _wait_for_photoprism_health")]
     assert '"reconcile"' in section
     assert '["pm2", "restart"' not in section
+
+
+def test_photoprism_caddy_refresh_uses_canonical_version_aware_runtime_path():
+    helper = (LITE_SCRIPTS / "restart-caddy-proxy.sh").read_text()
+    photoprism = (LITE_SCRIPTS / "install-photoprism-proot.sh").read_text()
+
+    assert 'bash "$DASHBOARD" --lite --caddy-only' in helper
+    assert "pm2 delete caddy-proxy" not in helper
+    assert 'pm2 start "$(command -v caddy)" --name caddy-proxy' not in helper
+    assert 'restart-caddy-proxy.sh' in photoprism
