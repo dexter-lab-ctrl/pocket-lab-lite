@@ -72,6 +72,7 @@ def pm2_statuses(processes: Iterable[dict[str, Any]]) -> dict[str, str]:
 
 def pm2_version_projection(processes: Iterable[dict[str, Any]]) -> tuple[dict[str, str], list[str]]:
     tracked = {spec.name for spec in CONTROL_PLANE_SERVICES}
+    tracked.add(RECONCILER_SPEC.name)
     tracked.add("pocketlab-app-photoprism")
     versions: dict[str, str] = {}
     reasons: list[str] = []
