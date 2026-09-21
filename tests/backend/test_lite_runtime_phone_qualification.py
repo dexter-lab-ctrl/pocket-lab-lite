@@ -75,3 +75,16 @@ def test_server_phone_qualification_waits_for_stable_pm2_and_caddy_state():
     assert 'POCKETLAB_PHONE_CADDY_ROUTE_ATTEMPTS' in read_only
     assert '[[ "$caddy_route_stable" -ge 2 ]]' in read_only
     assert 'PhotoPrism same-origin route did not remain reachable through Caddy' in read_only
+
+
+def test_fault_waiter_streams_pm2_json_instead_of_using_environment_payload():
+    source = SCRIPT.read_text(encoding="utf-8")
+    start = source.index("wait_pm2_service() {")
+    end = source.index("fault_pm2_service() {", start)
+    waiter = source[start:end]
+
+    assert 'PM2_JSON="$data"' not in waiter
+    assert 'json.loads(os.environ["PM2_JSON"])' not in waiter
+    assert 'pm2 jlist >"$json_file"' in waiter
+    assert 'python3 - "$json_file"' in waiter
+    assert 'rm -f "$json_file"' in waiter
