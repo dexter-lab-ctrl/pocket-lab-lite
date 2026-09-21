@@ -851,7 +851,11 @@ wait_for_nats_ready(){
     fi
     sleep 1
   done
-  pm2 logs pocket-nats --lines 80 --nostream || true
+  if have timeout; then
+    timeout 15 pm2 logs pocket-nats --lines 80 --nostream || true
+  else
+    pm2 logs pocket-nats --lines 80 --nostream || true
+  fi
   die "NATS did not become ready at $url"
 }
 
