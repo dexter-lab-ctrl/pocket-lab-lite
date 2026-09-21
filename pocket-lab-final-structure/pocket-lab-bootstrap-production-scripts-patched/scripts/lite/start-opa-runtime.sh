@@ -51,9 +51,9 @@ opa_installed_version() {
   raw="$(printf '%s\n' "$output" | python3 -c '
 import re, sys
 text=sys.stdin.read()
-match=re.search(r"(?im)^Version:\\s*v?([^\\s]+)", text)
+match=re.search(r"(?im)^Version:\s*v?([^\s]+)", text)
 if not match:
-    match=re.search(r"(?<![0-9])v?([0-9]+(?:\\.[0-9]+){1,3}(?:[-+][0-9A-Za-z._-]+)?)", text)
+    match=re.search(r"(?<![0-9])v?([0-9]+(?:\.[0-9]+){1,3}(?:[-+][0-9A-Za-z._-]+)?)", text)
 print(match.group(1) if match else "")
 ')"
   [[ -n "$raw" ]] || die "Could not determine installed OPA version"
