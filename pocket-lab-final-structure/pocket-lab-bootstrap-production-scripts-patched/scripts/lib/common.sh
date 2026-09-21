@@ -632,7 +632,10 @@ PY
     rmdir -- "$ecosystem_dir" 2>/dev/null || true
     return 1
   fi
-  if POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$ecosystem_file" --only "$name" >/dev/null; then
+  # The temporary ecosystem contains exactly one app. PM2 7 on Termux can
+  # misapply --only against rapidly replaced temporary configs, so let the
+  # config's canonical app name select the single process directly.
+  if POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$ecosystem_file" >/dev/null; then
     launch_status=0
   else
     launch_status=$?
