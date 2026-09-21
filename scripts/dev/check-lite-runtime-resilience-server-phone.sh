@@ -57,12 +57,21 @@ pm2_pid="$(cat "$pm2_home/pm2.pid" 2>/dev/null || true)"
 kill -0 "$pm2_pid" >/dev/null 2>&1 || fail "PM2 daemon PID $pm2_pid is not running"
 echo "PASS PM2 daemon running"
 
-curl -fsS --connect-timeout 1 --max-time 4 http://127.0.0.1:8080/health >/dev/null ||
-  fail "Lite API /health is not reachable on 127.0.0.1:8080"
+api_stable=0
+api_attempts="${POCKETLAB_PHONE_API_ATTEMPTS:-30}"
+for _ in $(seq 1 "$api_attempts"); do
+  if curl -fsS --connect-timeout 1 --max-time 4 http://127.0.0.1:8080/health >/dev/null 2>&1 &&
+     curl -fsS --connect-timeout 1 --max-time 4 http://127.0.0.1:8080/ready >/dev/null 2>&1; then
+    api_stable=$((api_stable + 1))
+    [[ "$api_stable" -ge 2 ]] && break
+  else
+    api_stable=0
+  fi
+  sleep 3
+done
+[[ "$api_stable" -ge 2 ]] ||
+  fail "Lite API /health and /ready did not remain reachable on 127.0.0.1:8080 after $api_attempts attempts"
 echo "PASS Lite API health reachable"
-
-curl -fsS --connect-timeout 1 --max-time 4 http://127.0.0.1:8080/ready >/dev/null ||
-  fail "Lite API /ready is not reachable on 127.0.0.1:8080"
 echo "PASS Lite API readiness reachable"
 
 pm2_tmp_root="${TMPDIR:-$HOME/tmp}"
