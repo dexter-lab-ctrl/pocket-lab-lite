@@ -236,14 +236,21 @@ service="$1"
 attempts="$2"
 
 pm2_status() {
-  local name="$1" data
-  data="$(pm2 jlist 2>/dev/null || printf '[]')"
-  PM2_JSON="$data" SERVICE="$name" python3 - <<'PY'
+  local name="$1" tmp_root json_file
+  tmp_root="${TMPDIR:-$HOME/tmp}"
+  mkdir -p "$tmp_root"
+  json_file="$(mktemp "$tmp_root/pocketlab-pm2-status.XXXXXX.json")"
+  if ! pm2 jlist >"$json_file" 2>/dev/null; then
+    printf '[]\n' >"$json_file"
+  fi
+  SERVICE="$name" python3 - "$json_file" <<'PY'
 import json
 import os
+import sys
 
 try:
-    items = json.loads(os.environ["PM2_JSON"])
+    with open(sys.argv[1], encoding="utf-8") as handle:
+        items = json.load(handle)
 except Exception:
     items = []
 for item in items if isinstance(items, list) else []:
@@ -254,6 +261,9 @@ for item in items if isinstance(items, list) else []:
     raise SystemExit(0)
 print("missing")
 PY
+  rc=$?
+  rm -f "$json_file"
+  return "$rc"
 }
 
 for _ in $(seq 1 "$attempts"); do
