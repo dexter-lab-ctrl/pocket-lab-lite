@@ -132,13 +132,20 @@ def test_stale_pm2_version_projection_forces_controlled_recreation(tmp_path: Pat
 set -Eeuo pipefail
 export POCKET_LAB_ALLOW_NON_TERMUX=1
 export HOME="$TEST_HOME"
+export POCKETLAB_STATE_DIR="$TEST_HOME/pocket-lab-lite/state"
     export PREFIX="$TEST_PREFIX"
     source "$COMMON_PATH"
 pm2() {
     case "${1:-}" in
     jlist)
           if [[ -f "$STATE_FILE" ]]; then
-        printf '%s\n' '[{"name":"caddy-proxy","pm2_env":{"status":"online","version":"N/A","POCKETLAB_SERVICE_VERSION":"1.0.0+sha.wrong","POCKETLAB_PROCESS_SPEC_HASH":"old"}}]'
+            if [[ "$(cat "$STATE_FILE")" == "started" ]]; then
+                      projected="$STATE_DIR/pm2-versioned/caddy-proxy/exec"
+              printf '[{"name":"caddy-proxy","pm2_env":{"status":"online","version":"2.10.2","POCKETLAB_SERVICE_VERSION":"2.10.2","POCKETLAB_PROCESS_SPEC_HASH":"%s","pm_exec_path":"%s","exec_interpreter":"none"}}]\n' \
+                "$(cat "$HASH_FILE")" "$projected"
+        else
+          printf '%s\n' '[{"name":"caddy-proxy","pm2_env":{"status":"online","version":"N/A","POCKETLAB_SERVICE_VERSION":"1.0.0+sha.wrong","POCKETLAB_PROCESS_SPEC_HASH":"old"}}]'
+        fi
       else
         printf '%s\n' '[]'
       fi
@@ -149,6 +156,8 @@ pm2() {
       ;;
     start)
       printf 'start\n' >>"$ACTION_FILE"
+      printf 'started\n' >"$STATE_FILE"
+      printf '%s\n' "${POCKETLAB_PROCESS_SPEC_HASH:-}" >"$HASH_FILE"
       ;;
     *)
       return 0
@@ -168,6 +177,7 @@ pm2_ensure_versioned_process caddy-proxy "2.10.2" "$SOURCE_EXEC" -- run --config
             "SOURCE_EXEC": shutil.which("sh") or "/bin/sh",
             "ACTION_FILE": str(actions),
             "STATE_FILE": str(state),
+            "HASH_FILE": str(tmp_path / "hash"),
         }
     )
     completed = subprocess.run(

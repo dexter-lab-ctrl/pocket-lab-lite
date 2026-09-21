@@ -525,6 +525,19 @@ raise SystemExit(0)
 ' "$name"
 }
 
+pm2_process_launch_matches() {
+  local name="$1" expected_spec="$2" expected_launch="$3" cwd="$4"
+  local snapshot status current_hash current_script current_interpreter current_launch
+  snapshot="$(pm2_process_snapshot "$name" 2>/dev/null || true)"
+  status="$(printf '%s\n' "$snapshot" | sed -n '1p')"
+  current_hash="$(printf '%s\n' "$snapshot" | sed -n '2p')"
+  current_script="$(printf '%s\n' "$snapshot" | sed -n '3p')"
+  current_interpreter="$(printf '%s\n' "$snapshot" | sed -n '4p')"
+  [[ -n "$status" && "$current_hash" == "$expected_spec" && -n "$current_script" ]] || return 1
+  current_launch="$(pm2_launch_fingerprint "$current_script" "$current_interpreter" "$cwd" 2>/dev/null || true)"
+  [[ "$current_launch" == "$expected_launch" ]]
+}
+
 pm2_ensure_process() {
   local name="$1"
   shift
@@ -639,18 +652,35 @@ PY
   # this config contains exactly one canonical app, so its name selects the
   # process without a selector and avoids cross-process launch identity drift.
   mv -f -- "$ecosystem_tmp" "$ecosystem_file"
-  if POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$ecosystem_file" >/dev/null; then
-    launch_status=0
-  else
-    launch_status=$?
-  fi
+  local launch_attempt verify_attempt verify_ok
+  launch_status=1
+  for launch_attempt in 1 2 3; do
+    if [[ "$launch_attempt" -gt 1 ]]; then
+      log WARN "PM2 launch identity drift persisted for $name; replacing the queued definition (attempt=$launch_attempt)"
+      pm2 delete "$name" >/dev/null 2>&1 || true
+      sleep 1
+    fi
+    if POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$ecosystem_file" >/dev/null; then
+      launch_status=0
+    else
+      launch_status=$?
+      continue
+    fi
+    verify_ok=1
+    for verify_attempt in $(seq 1 12); do
+      if pm2_process_launch_matches "$name" "$spec_hash" "$launch_fingerprint" "$cwd"; then
+        verify_ok=0
+        break
+      fi
+      sleep 1
+    done
+    [[ "$verify_ok" -eq 0 ]] && break
+    launch_status=1
+  done
   if [[ "$launch_status" -ne 0 ]]; then
+    log ERROR "PM2 process $name did not publish the expected launch identity"
     return "$launch_status"
   fi
-  # PM2 writes its jlist record asynchronously. The next reconciliation pass
-  # validates the recorded executable identity before treating this process as
-  # converged, avoiding a startup race while retaining fail-closed drift
-  # detection.
   pm2_record_desired_process_spec_hash "$name" "$spec_hash" "$launch_fingerprint"
 }
 
