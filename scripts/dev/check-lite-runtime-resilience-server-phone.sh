@@ -249,6 +249,7 @@ runtime_dir="$HOME/pocket-lab-lite/state/runtime"
 python3 - "$runtime_contract" "$runtime_dir" "$pm2_home/logs" <<'PY'
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import stat
 import sys
