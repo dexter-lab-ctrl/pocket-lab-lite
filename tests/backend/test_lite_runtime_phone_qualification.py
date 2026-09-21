@@ -100,7 +100,8 @@ def test_server_phone_qualification_uses_adaptive_api_stabilization():
     assert 'POCKETLAB_PHONE_API_BACKOFF_MAX_SECONDS' in read_only
     assert 'api_backoff_seconds=2' in read_only
     assert 'api_backoff_seconds=$((api_backoff_seconds * 2))' in read_only
-    assert 'socket.connect(("127.0.0.1", 8080))' in read_only
+    assert 'sock = socket.socket()' in read_only
+    assert 'sock.connect(("127.0.0.1", 8080))' in read_only
     assert 'http://127.0.0.1:8080/health' in read_only
     assert 'http://127.0.0.1:8080/ready' in read_only
     assert '[[ "$api_stable" -ge 2 ]]' in read_only
