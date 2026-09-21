@@ -304,6 +304,11 @@ def test_caddy_version_resolver_falls_back_to_termux_package_metadata(tmp_path: 
     dpkg_query = bin_dir / "dpkg-query"
     dpkg_query.write_text(
         "#!/usr/bin/env bash\n"
+        "expected='-f=${Version}\\n'\n"
+        "if [[ \"${2:-}\" != \"$expected\" ]]; then\n"
+        "  printf 'unexpected format: %s\\n' \"${2:-}\" >&2\n"
+        "  exit 9\n"
+        "fi\n"
         "printf '1:2.10.2-1\\n'\n",
         encoding="utf-8",
     )
@@ -345,6 +350,12 @@ caddy_installed_version
     )
     assert result.returncode == 0, result.stderr
     assert result.stdout.strip() == "2.10.2-1"
+
+
+def test_service_version_normalizer_rejects_dollar_prefixed_values(tmp_path: Path):
+    result = _run_common(tmp_path, 'pm2_normalize_service_version "$2.11.4"')
+    assert result.returncode != 0
+    assert result.stdout == ""
 
 
 def test_caddy_version_resolver_fails_closed_without_binary_or_package_version(tmp_path: Path):
