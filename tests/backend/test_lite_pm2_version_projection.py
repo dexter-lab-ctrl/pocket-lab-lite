@@ -292,3 +292,103 @@ opa_installed_version
     )
     assert result.returncode == 0, result.stderr
     assert result.stdout.strip() == "1.19.0"
+
+
+def test_caddy_version_resolver_falls_back_to_termux_package_metadata(tmp_path: Path):
+    dashboard = DASHBOARD.read_text(encoding="utf-8")
+    start = dashboard.index("caddy_installed_version(){")
+    end = dashboard.index("reload_caddy_if_config_changed(){", start)
+    resolver = dashboard[start:end]
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir(parents=True)
+    dpkg_query = bin_dir / "dpkg-query"
+    dpkg_query.write_text(
+        "#!/usr/bin/env bash\n"
+        "printf '1:2.10.2-1\\n'\n",
+        encoding="utf-8",
+    )
+    dpkg_query.chmod(0o755)
+
+    shell = f"""
+set -Eeuo pipefail
+export POCKET_LAB_ALLOW_NON_TERMUX=1
+export HOME="$TEST_HOME"
+export PREFIX="$TEST_PREFIX"
+export PATH="$TEST_BIN:/usr/bin:/bin"
+source "$COMMON_PATH"
+{resolver}
+caddy() {{
+  if [[ "${{1:-}}" == "version" ]]; then
+    printf 'unknown\\n'
+    return 0
+  fi
+  return 1
+}}
+caddy_installed_version
+"""
+    env = os.environ.copy()
+    env.update(
+        {
+            "TEST_HOME": str(tmp_path / "home"),
+            "TEST_PREFIX": str(tmp_path / "prefix"),
+            "TEST_BIN": str(bin_dir),
+            "COMMON_PATH": str(COMMON),
+        }
+    )
+    result = subprocess.run(
+        ["bash", "-lc", shell],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "2.10.2-1"
+
+
+def test_caddy_version_resolver_fails_closed_without_binary_or_package_version(tmp_path: Path):
+    dashboard = DASHBOARD.read_text(encoding="utf-8")
+    start = dashboard.index("caddy_installed_version(){")
+    end = dashboard.index("reload_caddy_if_config_changed(){", start)
+    resolver = dashboard[start:end]
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir(parents=True)
+    dpkg_query = bin_dir / "dpkg-query"
+    dpkg_query.write_text("#!/usr/bin/env bash\nexit 1\n", encoding="utf-8")
+    dpkg_query.chmod(0o755)
+
+    shell = f"""
+set -Eeuo pipefail
+export POCKET_LAB_ALLOW_NON_TERMUX=1
+export HOME="$TEST_HOME"
+export PREFIX="$TEST_PREFIX"
+export PATH="$TEST_BIN:/usr/bin:/bin"
+source "$COMMON_PATH"
+{resolver}
+caddy() {{
+  [[ "${{1:-}}" == "version" ]] && printf 'unknown\\n' && return 0
+  return 1
+}}
+caddy_installed_version
+"""
+    env = os.environ.copy()
+    env.update(
+        {
+            "TEST_HOME": str(tmp_path / "home"),
+            "TEST_PREFIX": str(tmp_path / "prefix"),
+            "TEST_BIN": str(bin_dir),
+            "COMMON_PATH": str(COMMON),
+        }
+    )
+    result = subprocess.run(
+        ["bash", "-lc", shell],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode != 0
+    assert result.stdout == ""
+    assert "Could not determine installed Caddy version from binary or Termux package metadata" in result.stderr
