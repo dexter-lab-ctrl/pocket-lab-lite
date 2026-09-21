@@ -1207,6 +1207,14 @@ def get_lite_status(request: Request) -> Response:
     return response
 
 
+@router.get("/runtime")
+def get_lite_runtime_contract(request: Request) -> dict[str, Any]:
+    """Return the sanitized, read-only PM2 Runtime Contract projection."""
+
+    deps.require_auth(request)
+    return lite_status.lite_runtime_contract()
+
+
 @router.get("/system/health")
 def get_lite_system_health(request: Request) -> Response:
     deps.require_auth(request)
