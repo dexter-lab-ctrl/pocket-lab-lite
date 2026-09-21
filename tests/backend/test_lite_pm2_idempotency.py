@@ -59,6 +59,7 @@ pm2() {
     restart|start|delete)
       if [[ "$1" == "start" ]]; then
         cp "$2" "$ECOSYSTEM_CAPTURE"
+        printf '%s\n' "$2" >"$START_PATH"
         python3 - "$2" "$START_SNAPSHOT" "$POCKETLAB_PROCESS_SPEC_HASH" <<'PY'
 import json
 from pathlib import Path
@@ -106,6 +107,7 @@ PY
             "COMMON_PATH": str(COMMON),
             "ACTION_FILE": str(actions),
             "ECOSYSTEM_CAPTURE": str(tmp_path / f"ecosystem-{status}.js"),
+            "START_PATH": str(tmp_path / f"start-path-{status}.txt"),
             "START_SNAPSHOT": str(tmp_path / f"snapshot-{status}.json"),
             "STATUS": status,
         }
@@ -145,6 +147,9 @@ def test_wrong_executable_is_replaced_even_when_process_hash_matches(tmp_path):
 def test_process_start_uses_temporary_ecosystem_config_without_serializing_secrets(tmp_path):
     assert _run_case(tmp_path, "missing") == ["start"]
     source = (tmp_path / "ecosystem-missing.js").read_text(encoding="utf-8")
+    start_path = Path((tmp_path / "start-path-missing.txt").read_text(encoding="utf-8").strip())
+    assert start_path.name == "demo.config.cjs"
+    assert start_path.parent.name == "pm2-ecosystems"
     assert "app.env = process.env;" in source
     assert "test-secret-value" not in source
     encoded_app = source.split("const app = ", 1)[1].split(";\napp.env", 1)[0]

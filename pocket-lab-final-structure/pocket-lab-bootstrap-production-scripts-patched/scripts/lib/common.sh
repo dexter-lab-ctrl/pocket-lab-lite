@@ -613,7 +613,7 @@ pm2_ensure_process() {
     log INFO "Creating missing PM2 process definition: $name"
   fi
 
-  local app_args_json state_dir ecosystem_dir ecosystem_file launch_status=0 old_umask
+  local app_args_json state_dir ecosystem_dir ecosystem_file ecosystem_tmp launch_status=0 old_umask safe_name
   app_args_json="$(python3 - "${after_sep[@]}" <<'PY'
 import json
 import sys
@@ -622,26 +622,28 @@ PY
 )"
   state_dir="${POCKETLAB_STATE_DIR:-${POCKET_LAB_BASE_DIR:-$HOME/pocket-lab-lite}/state}"
   mkdir -p "$state_dir/runtime"
+  safe_name="${name//[^A-Za-z0-9_.-]/_}"
+  ecosystem_dir="$state_dir/runtime/pm2-ecosystems"
+  mkdir -p "$ecosystem_dir"
   old_umask="$(umask)"
   umask 077
-  ecosystem_dir="$(mktemp -d "$state_dir/runtime/.pm2-start.XXXXXX")"
+  ecosystem_file="$ecosystem_dir/$safe_name.config.cjs"
+  ecosystem_tmp="$ecosystem_file.$$.tmp"
   umask "$old_umask"
-  ecosystem_file="$ecosystem_dir/ecosystem.config.cjs"
-  if ! pm2_write_ecosystem_config "$name" "$process_script" "$process_interpreter" "$app_args_json" "$ecosystem_file"; then
-    rm -f -- "$ecosystem_file"
-    rmdir -- "$ecosystem_dir" 2>/dev/null || true
+  if ! pm2_write_ecosystem_config "$name" "$process_script" "$process_interpreter" "$app_args_json" "$ecosystem_tmp"; then
+    rm -f -- "$ecosystem_tmp"
     return 1
   fi
-  # The temporary ecosystem contains exactly one app. PM2 7 on Termux can
-  # misapply --only against rapidly replaced temporary configs, so let the
-  # config's canonical app name select the single process directly.
-  if POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$ecosystem_file" >/dev/null; then
+  # Keep a stable, process-specific ecosystem path. PM2 7 on Termux can cache
+  # rapidly replaced temporary configs and apply a later --only selection to
+  # the previous app definition. Atomic replacement preserves a deterministic
+  # path while ensuring PM2 reads the current canonical app.
+  mv -f -- "$ecosystem_tmp" "$ecosystem_file"
+  if POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$ecosystem_file" --only "$name" >/dev/null; then
     launch_status=0
   else
     launch_status=$?
   fi
-  rm -f -- "$ecosystem_file"
-  rmdir -- "$ecosystem_dir" 2>/dev/null || true
   if [[ "$launch_status" -ne 0 ]]; then
     return "$launch_status"
   fi
