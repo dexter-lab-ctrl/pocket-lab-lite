@@ -188,3 +188,107 @@ def test_caddy_config_fallback_restart_preserves_projected_service_version():
     block = source[start:end]
     assert "pm2 restart caddy-proxy" in block
     assert "pm2 restart caddy-proxy --update-env" not in block
+
+
+def test_invalid_service_version_never_returns_fatal_log_on_stdout(tmp_path: Path):
+    result = _run_common(
+        tmp_path,
+        'pm2_normalize_service_version ""',
+    )
+    assert result.returncode != 0
+    assert "[FATAL]" not in result.stdout
+    assert result.stdout == ""
+
+
+def test_fatal_helper_writes_stderr_not_stdout(tmp_path: Path):
+    result = _run_common(
+        tmp_path,
+        'die "version probe failed"',
+    )
+    assert result.returncode != 0
+    assert result.stdout == ""
+    assert "version probe failed" in result.stderr
+    assert "[FATAL]" in result.stderr
+
+
+def test_caddy_version_resolver_extracts_semver_from_combined_output(tmp_path: Path):
+    dashboard = DASHBOARD.read_text(encoding="utf-8")
+    start = dashboard.index("caddy_installed_version(){")
+    end = dashboard.index("reload_caddy_if_config_changed(){", start)
+    resolver = dashboard[start:end]
+    shell = f"""
+set -Eeuo pipefail
+export POCKET_LAB_ALLOW_NON_TERMUX=1
+export HOME="$TEST_HOME"
+export PREFIX="$TEST_PREFIX"
+source "$COMMON_PATH"
+{resolver}
+caddy() {{
+  if [[ "${{1:-}}" == "version" ]]; then
+    printf 'warning: termux build metadata follows\\n' >&2
+    printf 'v2.10.2 h1:testhash\\n' >&2
+    return 0
+  fi
+  return 1
+}}
+caddy_installed_version
+"""
+    env = os.environ.copy()
+    env.update(
+        {
+            "TEST_HOME": str(tmp_path / "home"),
+            "TEST_PREFIX": str(tmp_path / "prefix"),
+            "COMMON_PATH": str(COMMON),
+        }
+    )
+    result = subprocess.run(
+        ["bash", "-lc", shell],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "2.10.2"
+
+
+def test_opa_version_resolver_extracts_version_from_combined_output(tmp_path: Path):
+    source = OPA.read_text(encoding="utf-8")
+    start = source.index("opa_installed_version() {")
+    end = source.index("start_opa_process() {", start)
+    resolver = source[start:end]
+    shell = f"""
+set -Eeuo pipefail
+export POCKET_LAB_ALLOW_NON_TERMUX=1
+export HOME="$TEST_HOME"
+export PREFIX="$TEST_PREFIX"
+source "$COMMON_PATH"
+{resolver}
+opa() {{
+  if [[ "${{1:-}}" == "version" ]]; then
+    printf 'Version: 1.19.0\\nBuild Commit: test\\n' >&2
+    return 0
+  fi
+  return 1
+}}
+opa_installed_version
+"""
+    env = os.environ.copy()
+    env.update(
+        {
+            "TEST_HOME": str(tmp_path / "home"),
+            "TEST_PREFIX": str(tmp_path / "prefix"),
+            "COMMON_PATH": str(COMMON),
+        }
+    )
+    result = subprocess.run(
+        ["bash", "-lc", shell],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "1.19.0"
