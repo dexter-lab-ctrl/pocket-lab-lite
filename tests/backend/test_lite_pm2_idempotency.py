@@ -55,6 +55,7 @@ pm2_ensure_process demo python3 -- demo.py
             "TEST_PREFIX": str(tmp_path / "prefix"),
             "COMMON_PATH": str(COMMON),
             "ACTION_FILE": str(actions),
+            "STATUS": status,
         }
     )
     completed = subprocess.run(
