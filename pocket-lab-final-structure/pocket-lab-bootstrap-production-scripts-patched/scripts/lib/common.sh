@@ -274,6 +274,163 @@ pm2_start_or_restart() {
   fi
 }
 
+pm2_process_spec_hash() {
+  {
+    printf 'argv\\0'
+    printf '%s\\0' "$@"
+    env | LC_ALL=C sort \
+      | grep -E '^(POCKETLAB_|API_PORT=|DASH_PORT=|MALLOC_ARENA_MAX=|OMP_NUM_THREADS=|OPENBLAS_NUM_THREADS=|NUMEXPR_NUM_THREADS=)' \
+      | grep -Ev '^POCKETLAB_(RECONCILE_ONLY|RECONCILER_CHILD|RENDER_CADDY_ONLY|BOOTSTRAP_DRY_RUN|PROCESS_SPEC_HASH|LITE_APP_OPERATION_ID|PHOTOPRISM_PACKAGE_URL|LITE_SECURE_ORIGIN)=' || true
+  } | sha256sum | awk '{print $1}'
+}
+
+pm2_normalize_service_version() {
+  local raw="${1:-}"
+  python3 - "$raw" <<'PY'
+import re
+import sys
+value = (sys.argv[1] or "").replace("\r", " ").replace("\n", " ").strip()
+value = re.sub(r"\s+", " ", value)
+if not value or value.lower() in {"n/a", "na", "unknown", "none", "null"}:
+    raise SystemExit(1)
+print(value)
+PY
+}
+
+pocketlab_source_version() {
+  local source_path="${1:-}"
+  local package_json version digest
+  package_json="$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../../.." && pwd)/package.json"
+  [[ -f "$source_path" ]] || die "Cannot version missing Pocket Lab source: $source_path"
+  version="$(python3 - "$package_json" <<'PY'
+import json, sys
+try:
+    data=json.load(open(sys.argv[1], encoding="utf-8"))
+except Exception:
+    data={}
+print(str(data.get("version") or "0.0.0"))
+PY
+)"
+  digest="$(sha256sum "$source_path" | awk '{print substr($1,1,12)}')"
+  pm2_normalize_service_version "${version}+sha.${digest}"
+}
+
+pm2_prepare_versioned_exec() {
+  local name="$1" version="$2" source_exec="$3"
+  local resolved safe_name dir link
+  [[ -n "$name" ]] || die "PM2 version projection requires a process name"
+  version="$(pm2_normalize_service_version "$version")" || die "PM2 version projection for $name is missing or invalid"
+  if [[ "$source_exec" == */* ]]; then
+    resolved="$source_exec"
+  else
+    resolved="$(command -v "$source_exec" 2>/dev/null || true)"
+  fi
+  [[ -n "$resolved" && -e "$resolved" ]] || die "PM2 version projection cannot resolve executable for $name: $source_exec"
+
+  safe_name="${name//[^A-Za-z0-9_.-]/_}"
+  dir="$STATE_DIR/pm2-versioned/$safe_name"
+  link="$dir/exec"
+  mkdir -p "$dir"
+  chmod 700 "$STATE_DIR/pm2-versioned" "$dir" 2>/dev/null || true
+
+  python3 - "$dir/package.json" "$safe_name" "$version" <<'PY'
+import json, sys
+from pathlib import Path
+path=Path(sys.argv[1])
+payload={
+    "name": "pocketlab-pm2-" + sys.argv[2],
+    "private": True,
+    "version": sys.argv[3],
+}
+tmp=path.with_suffix(".tmp")
+tmp.write_text(json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8")
+tmp.replace(path)
+PY
+  ln -sfn "$resolved" "$link"
+  printf '%s\n' "$link"
+}
+
+pm2_ensure_versioned_process() {
+  local name="$1" version="$2" source_exec="$3"
+  shift 3
+  local projected_exec
+  require_cmd pm2 python3 sha256sum
+  version="$(pm2_normalize_service_version "$version")" || die "PM2 service $name does not have an exact installed version"
+  projected_exec="$(pm2_prepare_versioned_exec "$name" "$version" "$source_exec")"
+  local POCKETLAB_SERVICE_VERSION="$version"
+  export POCKETLAB_SERVICE_VERSION
+  pm2_ensure_process "$name" "$projected_exec" "$@"
+}
+
+pm2_process_snapshot() {
+  local name="$1"
+  pm2 jlist 2>/dev/null | python3 -c '
+import json, sys
+name=sys.argv[1]
+try:
+    items=json.load(sys.stdin)
+except Exception:
+    items=[]
+for item in items if isinstance(items,list) else []:
+    if str(item.get("name") or "") != name:
+        continue
+    env=item.get("pm2_env") if isinstance(item.get("pm2_env"),dict) else {}
+    print(str(env.get("status") or item.get("status") or "unknown").lower())
+    print(str(env.get("POCKETLAB_PROCESS_SPEC_HASH") or ""))
+    raise SystemExit(0)
+raise SystemExit(1)
+' "$name"
+}
+
+pm2_ensure_process() {
+  local name="$1"
+  shift
+  require_cmd pm2 python3 sha256sum
+
+  local before_sep=()
+  local after_sep=()
+  local seen_sep=0
+  local arg
+  for arg in "$@"; do
+    if [[ "$arg" == "--" && "$seen_sep" -eq 0 ]]; then
+      seen_sep=1
+      continue
+    fi
+    if [[ "$seen_sep" -eq 1 ]]; then after_sep+=("$arg"); else before_sep+=("$arg"); fi
+  done
+
+  local spec_hash snapshot status current_hash
+  spec_hash="$(pm2_process_spec_hash "$@")"
+  if ! snapshot="$(pm2_process_snapshot "$name" 2>/dev/null)"; then
+    snapshot=""
+  fi
+  status="$(printf '%s\n' "$snapshot" | sed -n '1p')"
+  current_hash="$(printf '%s\n' "$snapshot" | sed -n '2p')"
+
+  if [[ -n "$status" && "$current_hash" == "$spec_hash" ]]; then
+    if [[ "$status" == "online" ]]; then
+      log INFO "PM2 process already converged: $name"
+      return 0
+    fi
+    log INFO "Restarting existing converged PM2 process: $name status=$status"
+    POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 restart "$name" --update-env >/dev/null
+    return 0
+  fi
+
+  if [[ -n "$status" ]]; then
+    log INFO "Replacing drifted PM2 process definition: $name"
+    pm2 delete "$name" >/dev/null 2>&1 || true
+  else
+    log INFO "Creating missing PM2 process definition: $name"
+  fi
+
+  if [[ "${#after_sep[@]}" -gt 0 ]]; then
+    POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "${before_sep[@]}" --name "$name" -- "${after_sep[@]}"
+  else
+    POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "${before_sep[@]}" --name "$name"
+  fi
+}
+
 cleanup_pidfile() { local pidfile="$1" pid=""; [[ -f "$pidfile" ]] || return 0; pid="$(cat "$pidfile" 2>/dev/null || true)"; [[ -n "$pid" ]] && kill "$pid" >/dev/null 2>&1 || true; rm -f "$pidfile"; }
 
 json_get() { jq -r "$1" "${2:--}"; }

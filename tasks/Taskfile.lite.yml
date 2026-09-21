@@ -408,3 +408,29 @@ tasks:
     cmds:
       - task: lite:validation:evidence
       - '{{.PYTHON}} scripts/dev/lite/validation_evidence.py html --validation-dir "{{.VALIDATION_DIR}}" --output allure-report'
+
+
+  lite:runtime:resilience:check:
+    desc: Validate Lite desired-state, Android boot recovery, PM2 idempotency, and PhotoPrism runtime-only reconciliation on the DEV PC
+    cmds:
+      - bash scripts/dev/check-lite-runtime-resilience.sh
+
+  lite:runtime:resilience:phone:check:
+    desc: Read-only Server Phone qualification of PM2, guardian, control-plane, remote-access, PRoot, and PhotoPrism runtime health
+    cmds:
+      - bash scripts/dev/check-lite-runtime-resilience-server-phone.sh --read-only
+
+  lite:runtime:resilience:phone:faults:
+    desc: Run bounded Server Phone PM2/service recovery faults; requires POCKETLAB_RUNTIME_FAULTS=1
+    cmds:
+      - bash scripts/dev/check-lite-runtime-resilience-server-phone.sh --faults
+
+  lite:runtime:resilience:phone:post-reboot:
+    desc: Verify Lite runtime convergence after an operator-performed Android reboot
+    cmds:
+      - bash scripts/dev/check-lite-runtime-resilience-server-phone.sh --post-reboot
+
+  lite:runtime:resilience:phone:remote-access-fault:
+    desc: Fault tailscaled only with declared out-of-band SSH; requires two explicit safety gates
+    cmds:
+      - bash scripts/dev/check-lite-runtime-resilience-server-phone.sh --remote-access-fault

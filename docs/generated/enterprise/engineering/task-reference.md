@@ -18,7 +18,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 | Development loop | 55 |
 | Documentation loop | 55 |
 | API-validation loop | 12 |
-| Runtime-evidence loop | 26 |
+| Runtime-evidence loop | 31 |
 | Security-analysis loop | 34 |
 | Release loop | 19 |
 | Recovery-diagnostics loop | 6 |
@@ -4355,6 +4355,176 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:qualification:start:key-bound:faults`
+
+## `lite:runtime:resilience:check`
+
+**Purpose:** Validate Lite desired-state, Android boot recovery, PM2 idempotency, and PhotoPrism runtime-only reconciliation on the DEV PC
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `bash scripts/dev/check-lite-runtime-resilience.sh`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/check-lite-runtime-resilience.sh
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:runtime:resilience:check`
+
+## `lite:runtime:resilience:phone:check`
+
+**Purpose:** Read-only Server Phone qualification of PM2, guardian, control-plane, remote-access, PRoot, and PhotoPrism runtime health
+
+**Audience:** developer/operator
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `bash scripts/dev/check-lite-runtime-resilience-server-phone.sh --read-only`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/check-lite-runtime-resilience-server-phone.sh
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:runtime:resilience:phone:check`
+
+## `lite:runtime:resilience:phone:faults`
+
+**Purpose:** Run bounded Server Phone PM2/service recovery faults; requires POCKETLAB_RUNTIME_FAULTS=1
+
+**Audience:** developer/operator
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `bash scripts/dev/check-lite-runtime-resilience-server-phone.sh --faults`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/check-lite-runtime-resilience-server-phone.sh
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:runtime:resilience:phone:faults`
+
+## `lite:runtime:resilience:phone:post-reboot`
+
+**Purpose:** Verify Lite runtime convergence after an operator-performed Android reboot
+
+**Audience:** developer/operator
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `bash scripts/dev/check-lite-runtime-resilience-server-phone.sh --post-reboot`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/check-lite-runtime-resilience-server-phone.sh
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:runtime:resilience:phone:post-reboot`
+
+## `lite:runtime:resilience:phone:remote-access-fault`
+
+**Purpose:** Fault tailscaled only with declared out-of-band SSH; requires two explicit safety gates
+
+**Audience:** developer/operator
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `bash scripts/dev/check-lite-runtime-resilience-server-phone.sh --remote-access-fault`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/check-lite-runtime-resilience-server-phone.sh
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:runtime:resilience:phone:remote-access-fault`
 
 ## `lite:security:assurance:adversarial`
 

@@ -43,7 +43,8 @@ BOOTSTRAP_STAGES=(
   "9|install_pwa_ui|install-pwa-ui.sh|Install the production React/Vite PWA assets"
   "10|start_dashboard|start-dashboard.sh|Start NATS/JetStream, FastAPI, worker, node agent, Caddy, and profile-selected services"
   "11|install_fleet_agent|install-fleet-agent.sh|Install the local NATS-backed fleet agent wrapper using generated NATS credentials"
-  "12|smoke_test|smoke-test.sh|Run Day-0 smoke tests against Vault, Gitea, FastAPI, NATS, workflows, telemetry, MariaDB, and profile health"
+  "12|smoke_test|smoke-test.sh|Run profile-aware Day-0 smoke tests"
+  "13|install_lite_boot_recovery|lite/install-boot-recovery.sh|Install Pocket Lab Lite Android boot recovery and external PM2 guardian"
 )
 
 usage() {
@@ -102,6 +103,13 @@ stage_should_skip() {
   case "$id" in
     install_proot_ubuntu)
       [[ "$BOOTSTRAP_PROFILE" == "lite" && "${POCKETLAB_LITE_ENABLE_PROOT:-0}" != "1" ]]
+      ;;
+    init_vault|init_mariadb|start_gitea|seed_gitops_repo)
+      # These are legacy Pocket Lab services and are not part of Pocket Lab Lite.
+      [[ "$BOOTSTRAP_PROFILE" == "lite" ]]
+      ;;
+    install_lite_boot_recovery)
+      [[ "$BOOTSTRAP_PROFILE" != "lite" ]]
       ;;
     *)
       return 1

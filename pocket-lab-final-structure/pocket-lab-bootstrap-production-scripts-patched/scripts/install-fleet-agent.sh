@@ -33,7 +33,9 @@ export POCKETLAB_AGENT_HEARTBEAT_SECONDS="${POCKETLAB_AGENT_HEARTBEAT_SECONDS:-1
 export POCKETLAB_AGENT_TELEMETRY_SECONDS="${POCKETLAB_AGENT_TELEMETRY_SECONDS:-20}"
 EOF
   if have pm2 && [[ "${POCKETLAB_START_AGENT:-1}" == "1" ]]; then
-    pm2_start_or_restart pocket-node-agent bash -- -lc "source '$STATE_DIR/fleet-agent.env'; exec '$AGENT_DST'"
+    local agent_version
+    agent_version="$(pocketlab_source_version "$AGENT_DST")"
+    pm2_ensure_versioned_process pocket-node-agent "$agent_version" bash -- -lc "source '$STATE_DIR/fleet-agent.env'; exec '$AGENT_DST'"
     pm2 save >/dev/null || true
   fi
   mark_done fleet_agent_installed

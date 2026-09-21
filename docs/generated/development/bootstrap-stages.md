@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 01def700ffd73f2938682ed3d933e1fc5c3f2a2254d9a6f675a0a4b655eae177
+source_fingerprint: b8447b380cca6b0703c3371fb214f7f1dff351bf297e1846d16edf2b1de7809f
 schema_revision: 1
 validation_status: generated
 ---
@@ -35,4 +35,5 @@ Documentation generation inspects stage definitions only and never executes boot
 | 9 | `install_pwa_ui` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-pwa-ui.sh` | Install the production React/Vite PWA assets | yes | fail closed; later stages do not run |
 | 10 | `start_dashboard` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh` | Start NATS/JetStream, FastAPI, worker, node agent, Caddy, and profile-selected services | yes | fail closed; later stages do not run |
 | 11 | `install_fleet_agent` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh` | Install the local NATS-backed fleet agent wrapper using generated NATS credentials | yes | fail closed; later stages do not run |
-| 12 | `smoke_test` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/smoke-test.sh` | Run Day-0 smoke tests against Vault, Gitea, FastAPI, NATS, workflows, telemetry, MariaDB, and profile health | yes | fail closed; later stages do not run |
+| 12 | `smoke_test` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/smoke-test.sh` | Run profile-aware Day-0 smoke tests | yes | fail closed; later stages do not run |
+| 13 | `install_lite_boot_recovery` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-boot-recovery.sh` | Install Pocket Lab Lite Android boot recovery and external PM2 guardian | yes | fail closed; later stages do not run |

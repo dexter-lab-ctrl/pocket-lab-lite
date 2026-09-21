@@ -3620,7 +3620,7 @@
       "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
       "security_classification": "internal metadata",
       "source_owner": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:282"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:350"
       ],
       "tests": [],
       "ui_state": "FastAPI projection only; browser never subscribes to NATS"

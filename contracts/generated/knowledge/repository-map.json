@@ -2821,6 +2821,12 @@
     },
     {
       "entities": [
+        "test:tests/backend/test_lite_boot_recovery.py"
+      ],
+      "source": "tests/backend/test_lite_boot_recovery.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_lite_command_attention_audit_idempotency.py"
       ],
       "source": "tests/backend/test_lite_command_attention_audit_idempotency.py"
@@ -3151,9 +3157,27 @@
     },
     {
       "entities": [
+        "test:tests/backend/test_lite_photoprism_runtime_resilience.py"
+      ],
+      "source": "tests/backend/test_lite_photoprism_runtime_resilience.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_lite_platform_release_inventory_isolation.py"
       ],
       "source": "tests/backend/test_lite_platform_release_inventory_isolation.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_pm2_idempotency.py"
+      ],
+      "source": "tests/backend/test_lite_pm2_idempotency.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_pm2_version_projection.py"
+      ],
+      "source": "tests/backend/test_lite_pm2_version_projection.py"
     },
     {
       "entities": [
@@ -3250,6 +3274,12 @@
         "test:tests/backend/test_lite_revision_sync_n4_n5.py"
       ],
       "source": "tests/backend/test_lite_revision_sync_n4_n5.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_runtime_reconciler.py"
+      ],
+      "source": "tests/backend/test_lite_runtime_reconciler.py"
     },
     {
       "entities": [
@@ -4080,6 +4110,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "dceca679450745786aeb377926ccd5e25a9d3b8aa2c6e3044dd684e2c35db5cf"
+    "source_fingerprint": "205b7fa21f362d51e7c4de48fe8576d9763a9f6c50f22bd1c8625e89d1fbf04b"
   }
 }

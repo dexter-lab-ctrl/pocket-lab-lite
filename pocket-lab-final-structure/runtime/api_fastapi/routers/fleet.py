@@ -913,25 +913,30 @@ fi
 
 AGENT_FILE="$HOME/pocket-lab-lite/pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py"
 SUPERVISOR_FILE="$HOME/pocket-lab-lite/pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py"
+COMMON_FILE="$HOME/pocket-lab-lite/pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh"
 
 if [ -f "$AGENT_FILE" ]; then
   echo "Starting Pocket Lab Lite node agent..."
   if command -v pm2 >/dev/null 2>&1; then
+    if [ ! -f "$COMMON_FILE" ]; then
+      echo "Pocket Lab Lite PM2 version projection helper is missing."
+      exit 1
+    fi
+    # shellcheck disable=SC1090
+    . "$COMMON_FILE"
     for process_name in $(pm2 jlist 2>/dev/null | python3 -c 'import json,sys; data=json.load(sys.stdin); [print(p.get("name","")) for p in data if str(p.get("name","")).startswith("pocketlab-agent-") and not str(p.get("name","")).startswith("pocketlab-agent-supervisor-")]' 2>/dev/null || true); do
       pm2 delete "$process_name" >/dev/null 2>&1 || true
     done
     if command -v pkill >/dev/null 2>&1; then
       pkill -f 'pocketlab_node_agent.py' >/dev/null 2>&1 || true
     fi
-    pm2 start python3 --name "pocketlab-agent-$POCKETLAB_NODE_ID" --update-env -- "$AGENT_FILE"
-    echo "Device agent started with PM2: pocketlab-agent-$POCKETLAB_NODE_ID"
+    AGENT_VERSION="$(pocketlab_source_version "$AGENT_FILE")"
+    pm2_ensure_versioned_process "pocketlab-agent-$POCKETLAB_NODE_ID" "$AGENT_VERSION" python3 --update-env -- "$AGENT_FILE"
+    echo "Device agent started with PM2: pocketlab-agent-$POCKETLAB_NODE_ID (version $AGENT_VERSION)"
     if [ -f "$SUPERVISOR_FILE" ]; then
-      if pm2 describe "pocketlab-agent-supervisor-$POCKETLAB_NODE_ID" >/dev/null 2>&1; then
-        pm2 restart "pocketlab-agent-supervisor-$POCKETLAB_NODE_ID" --update-env >/dev/null 2>&1 || true
-      else
-        pm2 start python3 --name "pocketlab-agent-supervisor-$POCKETLAB_NODE_ID" --update-env -- "$SUPERVISOR_FILE"
-      fi
-      echo "Local supervisor started with PM2: pocketlab-agent-supervisor-$POCKETLAB_NODE_ID"
+      SUPERVISOR_VERSION="$(pocketlab_source_version "$SUPERVISOR_FILE")"
+      pm2_ensure_versioned_process "pocketlab-agent-supervisor-$POCKETLAB_NODE_ID" "$SUPERVISOR_VERSION" python3 --update-env -- "$SUPERVISOR_FILE"
+      echo "Local supervisor started with PM2: pocketlab-agent-supervisor-$POCKETLAB_NODE_ID (version $SUPERVISOR_VERSION)"
     fi
     pm2 save >/dev/null 2>&1 || true
   else

@@ -45,8 +45,14 @@ stage_repository_candidate() {
   return 0
 }
 
+opa_installed_version() {
+  local raw
+  raw="$(opa version 2>/dev/null | awk -F': ' '/^Version:/{print $2; exit}')"
+  pm2_normalize_service_version "$raw"
+}
+
 start_opa_process() {
-  pm2_start_or_restart pocket-opa "$(command -v opa)" \
+  pm2_ensure_versioned_process pocket-opa "$(opa_installed_version)" "$(command -v opa)" \
     --interpreter bash -- run --server --addr=127.0.0.1:8181 \
     "$POCKETLAB_OPA_ACTIVE_POLICY_DIR"
 }

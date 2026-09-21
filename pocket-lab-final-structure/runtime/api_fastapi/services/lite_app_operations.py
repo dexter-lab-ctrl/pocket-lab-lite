@@ -794,13 +794,24 @@ def _refresh_caddy_route_if_safe(route_needs_refresh: bool) -> tuple[str, bool]:
     return ("changed" if proc.returncode == 0 else "review"), proc.returncode == 0
 
 
+def _photoprism_runtime_script_path() -> Path:
+    return Path(__file__).resolve().parents[3] / "pocket-lab-bootstrap-production-scripts-patched" / "scripts" / "lite" / "install-photoprism-proot.sh"
+
+
 def _restart_photoprism_if_safe(health_failed: bool) -> tuple[str, bool]:
     if not health_failed:
         return "skipped", False
-    if shutil.which("pm2") is None:
+    helper = _photoprism_runtime_script_path()
+    if not helper.exists() or shutil.which("bash") is None:
         return "skipped", False
     try:
-        proc = subprocess.run(["pm2", "restart", "pocketlab-app-photoprism", "--update-env"], check=False, capture_output=True, text=True, timeout=20)
+        proc = subprocess.run(
+            ["bash", str(helper), "reconcile"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
     except Exception:
         return "review", False
     return ("changed" if proc.returncode == 0 else "review"), proc.returncode == 0
@@ -881,7 +892,7 @@ def execute_repair_app(command: dict[str, Any]) -> dict[str, Any]:
         _step("route_registry", "App route record checked", "changed" if route_changed else ("passed" if route_registry_status == "passed" else "review"), "Pocket Lab checked or refreshed the PhotoPrism route record.", technical=route_registry_detail),
         _step("caddy_route", "Secure app route refreshed", caddy_step_status if caddy_needs_refresh else ("passed" if caddy_status == "passed" else "skipped"), "Pocket Lab checked that the app route preserves /apps/photoprism/.", technical={**caddy_detail, "helper_used": caddy_changed}),
         _step("storage_mappings", "Photo storage connection checked", storage_step_status, "Pocket Lab checked managed storage mappings without touching source photos.", technical=storage_step_detail),
-        _step("app_restart", "App restart checked", restart_step_status, "Pocket Lab restarted only the app process when health was failing and PM2 was available." if restart_performed else "Pocket Lab did not restart the app process.", technical={"restart_performed": restart_performed}),
+        _step("app_restart", "App restart checked", restart_step_status, "Pocket Lab reconciled the existing app runtime without installing or updating software." if restart_performed else "Pocket Lab did not need to reconcile the app process.", technical={"restart_performed": restart_performed}),
         _step("app_health", "App health verified", "passed" if (local_health_after or route_health_after) else "review", "Pocket Lab verified PhotoPrism health after repair."),
     ]
     status = _repair_final_status(repair_steps, local_health_after=local_health_after, route_health_after=route_health_after)
@@ -890,7 +901,7 @@ def execute_repair_app(command: dict[str, Any]) -> dict[str, Any]:
         _proof("backend_worker_executed", "Backend worker executed", "passed", "The repair was handled by Pocket Lab Lite backend worker."),
         _proof("frontend_no_shell", "Browser did not run commands", "passed", "The browser only requested Repair through FastAPI."),
         _proof("browser_no_file_access", "Browser did not access files", "passed", "The browser did not read app files or storage."),
-        _proof("repair_bounded", "Repair was bounded", "passed", "Repair was limited to route, health, and managed storage checks."),
+        _proof("repair_bounded", "Repair was bounded", "passed", "Repair was limited to existing runtime, route, health, and managed storage checks; it did not install or update PhotoPrism."),
         _proof("media_preserved", "Media preserved", "passed", "No source photos were deleted or changed."),
         _proof("no_destructive_changes", "No destructive changes", "passed", "Repair did not reset the database, credentials, or media."),
         _proof("app_route_checked", "Secure route checked", "passed" if (route_health_after or caddy_status == "passed") else "review", "Pocket Lab checked or refreshed the app route."),
