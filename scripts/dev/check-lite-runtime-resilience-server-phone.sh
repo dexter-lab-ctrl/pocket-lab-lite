@@ -65,7 +65,9 @@ curl -fsS --connect-timeout 1 --max-time 4 http://127.0.0.1:8080/ready >/dev/nul
   fail "Lite API /ready is not reachable on 127.0.0.1:8080"
 echo "PASS Lite API readiness reachable"
 
-pm2_json_file="$(mktemp "${TMPDIR:-$HOME/tmp}/pocketlab-pm2-jlist.XXXXXX.json")"
+pm2_tmp_root="${TMPDIR:-$HOME/tmp}"
+mkdir -p "$pm2_tmp_root"
+pm2_json_file="$(mktemp "$pm2_tmp_root/pocketlab-pm2-jlist.XXXXXX.json")"
 trap 'rm -f "$pm2_json_file"' EXIT
 pm2 jlist >"$pm2_json_file" 2>/dev/null || fail "pm2 jlist failed while reading Lite runtime topology"
 REQUIRED="$required" LEGACY="$legacy" python3 - "$pm2_json_file" <<'PY'
