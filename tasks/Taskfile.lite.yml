@@ -425,6 +425,11 @@ tasks:
     cmds:
       - bash scripts/dev/check-lite-runtime-resilience-server-phone.sh --faults
 
+  lite:runtime:stability:phone:faults:
+    desc: Qualify bounded PM2 crash-loop, graceful-stop, memory-ceiling, and stable recovery behavior; requires explicit guards
+    cmds:
+      - bash scripts/dev/check-lite-runtime-resilience-server-phone.sh --pm2-contract-faults
+
   lite:runtime:resilience:phone:post-reboot:
     desc: Verify Lite runtime convergence after an operator-performed Android reboot
     cmds:
