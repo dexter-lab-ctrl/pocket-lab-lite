@@ -591,6 +591,13 @@ def enforce_log_policy(
     previous = _read_json(evidence_path)
     previous_epoch = float(previous.get("cleanup_epoch") or 0.0)
     cleanup_due = force or observed_now - previous_epoch >= policy.cleanup_interval_seconds
+    if not cleanup_due and previous:
+        # Do not stat or scan PM2 logs on every reconciler tick.  Reuse the last
+        # bounded metadata-only observation until the cleanup interval expires.
+        cached = dict(previous)
+        cached["cleanup_performed"] = False
+        return cached
+
     logs = _resolve_log_dir(pm2_home)
 
     files: list[Path] = []
