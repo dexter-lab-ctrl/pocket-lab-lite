@@ -411,7 +411,11 @@ class LiteCoreSupervisor:
             self._append_event(event)
             return event
         try:
-            result = run_command(["pm2", "restart", service, "--update-env"], timeout=30)
+            # Preserve the target service's PM2-owned environment exactly.
+            # The supervisor itself carries service-specific metadata such as
+            # POCKETLAB_SERVICE_VERSION; --update-env would stamp that metadata
+            # onto the restarted target and corrupt exact version projection.
+            result = run_command(["pm2", "restart", service], timeout=30)
             acted = result.returncode == 0
             attempted_at = epoch()
             self.mark_action(action)

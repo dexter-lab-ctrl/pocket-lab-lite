@@ -993,6 +993,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_runtime_phone_qualification.py",
+      "name": "tests/backend/test_lite_runtime_phone_qualification.py",
+      "source_refs": [
+        "tests/backend/test_lite_runtime_phone_qualification.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_runtime_reconciler.py",
       "name": "tests/backend/test_lite_runtime_reconciler.py",
       "source_refs": [
@@ -2377,6 +2387,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "205b7fa21f362d51e7c4de48fe8576d9763a9f6c50f22bd1c8625e89d1fbf04b"
+    "source_fingerprint": "af9b1f0efac275ebb373a174def2b2d8839b3fa6e423b217ef97ffee698c6777"
   }
 }

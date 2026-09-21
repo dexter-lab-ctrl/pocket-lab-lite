@@ -42,9 +42,17 @@ EOF
   chmod 700 "$BOOT_FILE"
   pm2 save >/dev/null 2>&1 || true
 
-  if ! pgrep -f "[r]untime-guardian.sh" >/dev/null 2>&1; then
-    nohup "$GUARDIAN" --boot >>"$BOOT_LOG" 2>&1 &
+  # Explicit installer reruns are also the activation boundary for guardian
+  # source updates. Stop any previously loaded guardian so the current checkout
+  # becomes the running external recovery implementation immediately.
+  if pgrep -f "[r]untime-guardian.sh" >/dev/null 2>&1; then
+    pkill -f "[r]untime-guardian.sh" >/dev/null 2>&1 || true
+    for _ in $(seq 1 20); do
+      pgrep -f "[r]untime-guardian.sh" >/dev/null 2>&1 || break
+      sleep 0.25
+    done
   fi
+  nohup "$GUARDIAN" --boot >>"$BOOT_LOG" 2>&1 &
 
   mark_done lite_boot_recovery_ready
   log INFO "Lite Android boot recovery installed. Termux:Boot will invoke the external PM2 guardian after Android boot."

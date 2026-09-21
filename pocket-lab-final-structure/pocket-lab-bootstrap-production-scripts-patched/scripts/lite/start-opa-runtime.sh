@@ -46,8 +46,17 @@ stage_repository_candidate() {
 }
 
 opa_installed_version() {
-  local raw
-  raw="$(opa version 2>/dev/null | awk -F': ' '/^Version:/{print $2; exit}')"
+  local output raw
+  output="$(opa version 2>&1 || true)"
+  raw="$(printf '%s\n' "$output" | python3 -c '
+import re, sys
+text=sys.stdin.read()
+match=re.search(r"(?im)^Version:\s*v?([^\s]+)", text)
+if not match:
+    match=re.search(r"(?<![0-9])v?([0-9]+(?:\.[0-9]+){1,3}(?:[-+][0-9A-Za-z._-]+)?)", text)
+print(match.group(1) if match else "")
+')"
+  [[ -n "$raw" ]] || die "Could not determine installed OPA version"
   pm2_normalize_service_version "$raw"
 }
 

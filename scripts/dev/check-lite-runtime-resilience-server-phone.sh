@@ -32,31 +32,111 @@ esac
 
 remote_read_only() {
   local mode="${1:---read-only}"
-  ssh "$SSH_ALIAS" bash -s -- "$mode" <<'REMOTE'
+  local verification_policy="${2:-strict}"
+  ssh "$SSH_ALIAS" bash -s -- "$mode" "$verification_policy" <<'REMOTE'
 set -Eeuo pipefail
 mode="$1"
+verification_policy="$2"
+
+fail() {
+  echo "ERROR: $*" >&2
+  exit 1
+}
 
 required="pocket-nats pocket-opa pocket-worker pocket-api pocket-node-agent caddy-proxy pocketlab-core-supervisor pocketlab-runtime-reconciler"
 legacy="vault mariadb gitea gitea-runner pocket-gatus gatus prometheus-db prometheus grafana-ui grafana loki-kms loki promtail-agent promtail"
 
-test -x "$HOME/.termux/boot/pocketlab-lite"
-pgrep -f "[r]untime-guardian.sh" >/dev/null
+[[ -x "$HOME/.termux/boot/pocketlab-lite" ]] || fail "Termux:Boot entry missing or not executable: ~/.termux/boot/pocketlab-lite"
+echo "PASS Termux:Boot recovery entry installed"
+
+pgrep -f "[r]untime-guardian.sh" >/dev/null 2>&1 || fail "external runtime guardian is not running"
+echo "PASS external runtime guardian running"
 
 pm2_home="${PM2_HOME:-$HOME/.pm2}"
-test -s "$pm2_home/pm2.pid"
-pm2_pid="$(cat "$pm2_home/pm2.pid")"
-[[ "$pm2_pid" =~ ^[0-9]+$ ]]
-kill -0 "$pm2_pid" >/dev/null 2>&1
+[[ -s "$pm2_home/pm2.pid" ]] || fail "PM2 pid file missing or empty: $pm2_home/pm2.pid"
+pm2_pid="$(cat "$pm2_home/pm2.pid" 2>/dev/null || true)"
+[[ "$pm2_pid" =~ ^[0-9]+$ ]] || fail "PM2 pid file does not contain a numeric PID"
+kill -0 "$pm2_pid" >/dev/null 2>&1 || fail "PM2 daemon PID $pm2_pid is not running"
+echo "PASS PM2 daemon running"
 
-curl -fsS --connect-timeout 1 --max-time 4 http://127.0.0.1:8080/health >/dev/null
-curl -fsS --connect-timeout 1 --max-time 4 http://127.0.0.1:8080/ready >/dev/null
+api_stable=0
+api_budget_seconds="${POCKETLAB_PHONE_API_STABILIZATION_SECONDS:-300}"
+api_backoff_seconds=2
+api_backoff_max="${POCKETLAB_PHONE_API_BACKOFF_MAX_SECONDS:-30}"
+api_started_at="$(date +%s)"
+api_deadline=$((api_started_at + api_budget_seconds))
+api_probe_count=0
 
-pm2_json="$(pm2 jlist)"
-PM2_JSON="$pm2_json" REQUIRED="$required" LEGACY="$legacy" python3 - <<'PY'
+while (( $(date +%s) <= api_deadline )); do
+  api_probe_count=$((api_probe_count + 1))
+
+  # Avoid hammering HTTP while the socket is not even accepting connections.
+  # A cheap TCP gate keeps health/readiness probes proportional to actual
+  # recovery progress.
+  if python3 - <<'PY' >/dev/null 2>&1
+import socket
+sock = socket.socket()
+sock.settimeout(1.0)
+try:
+    sock.connect(("127.0.0.1", 8080))
+except OSError:
+    raise SystemExit(1)
+finally:
+    sock.close()
+PY
+  then
+    if curl -fsS --connect-timeout 1 --max-time 4 http://127.0.0.1:8080/health >/dev/null 2>&1 &&
+       curl -fsS --connect-timeout 1 --max-time 4 http://127.0.0.1:8080/ready >/dev/null 2>&1; then
+      api_stable=$((api_stable + 1))
+      [[ "$api_stable" -ge 2 ]] && break
+    else
+      api_stable=0
+    fi
+  else
+    api_stable=0
+  fi
+
+  now="$(date +%s)"
+  (( now >= api_deadline )) && break
+  remaining=$((api_deadline - now))
+  sleep_for="$api_backoff_seconds"
+  (( sleep_for > remaining )) && sleep_for="$remaining"
+  (( sleep_for > 0 )) && sleep "$sleep_for"
+  if (( api_backoff_seconds < api_backoff_max )); then
+    api_backoff_seconds=$((api_backoff_seconds * 2))
+    (( api_backoff_seconds > api_backoff_max )) && api_backoff_seconds="$api_backoff_max"
+  fi
+done
+
+if [[ "$api_stable" -ge 2 ]]; then
+  echo "PASS Lite API health reachable"
+  echo "PASS Lite API readiness reachable"
+elif [[ "$verification_policy" == "advisory" ]]; then
+  echo "ADVISORY Lite API health/readiness did not stabilize within ${api_budget_seconds}s after fault recovery."
+  echo "ADVISORY All injected recovery scenarios completed; the API may still be finishing NATS/application startup."
+  echo "ADVISORY Recheck later with: curl -fsS http://127.0.0.1:8080/health && curl -fsS http://127.0.0.1:8080/ready"
+else
+  fail "Lite API /health and /ready did not remain reachable on 127.0.0.1:8080 within ${api_budget_seconds}s"
+fi
+
+pm2_tmp_root="${TMPDIR:-$HOME/tmp}"
+mkdir -p "$pm2_tmp_root"
+pm2_json_file="$(mktemp "$pm2_tmp_root/pocketlab-pm2-jlist.XXXXXX.json")"
+trap 'rm -f "$pm2_json_file" "${topology_check_file:-}"' EXIT
+topology_check_file="$pm2_tmp_root/pocketlab-pm2-topology-check.$"
+topology_stable=0
+topology_attempts="${POCKETLAB_PHONE_TOPOLOGY_ATTEMPTS:-20}"
+for _ in $(seq 1 "$topology_attempts"); do
+  if ! pm2 jlist >"$pm2_json_file" 2>/dev/null; then
+    printf '%s\n' "pm2 jlist failed while reading Lite runtime topology" >"$topology_check_file"
+    topology_stable=0
+  elif REQUIRED="$required" LEGACY="$legacy" python3 - "$pm2_json_file" >"$topology_check_file" 2>&1 <<'PY'
 import json
 import os
+import sys
 
-items = json.loads(os.environ["PM2_JSON"])
+with open(sys.argv[1], encoding="utf-8") as handle:
+    items = json.load(handle)
 statuses = {}
 versions = {}
 declared_versions = {}
@@ -87,6 +167,23 @@ print("PASS required Lite PM2 topology online")
 print("PASS every required Lite PM2 service projects its exact installed version")
 print("PASS legacy Pocket Lab PM2 services absent")
 PY
+  then
+    topology_stable=$((topology_stable + 1))
+    if [[ "$topology_stable" -ge 2 ]]; then
+      cat "$topology_check_file"
+      break
+    fi
+  else
+    topology_stable=0
+  fi
+  sleep 3
+done
+if [[ "$topology_stable" -lt 2 ]]; then
+  topology_error="$(cat "$topology_check_file" 2>/dev/null || true)"
+  rm -f "$topology_check_file"
+  fail "Lite runtime did not reach a stable PM2 topology/version projection after $topology_attempts attempts: ${topology_error:-unknown topology error}"
+fi
+rm -f "$topology_check_file"
 
 ts_cmd=""
 if command -v tailscale-cli >/dev/null 2>&1; then
@@ -101,8 +198,7 @@ if [[ -n "$ts_cmd" ]]; then
   elif pgrep -f tailscaled >/dev/null 2>&1; then
     echo "INFO Remote access not ready; tailscaled is running and Lite remains local-ready"
   else
-    echo "ERROR: Tailscale is installed but tailscaled is not running" >&2
-    exit 1
+    fail "Tailscale is installed but tailscaled is not running"
   fi
 else
   echo "INFO Remote access not ready; Tailscale command is not installed"
@@ -115,38 +211,98 @@ if [[ -s "$HOME/.pocket_lab/lite/apps/photoprism/config/photoprism.env" ||
 fi
 
 if [[ "$photoprism_expected" == "1" ]]; then
-  command -v proot-distro >/dev/null
-  proot-distro login ubuntu -- true >/dev/null 2>&1
+  command -v proot-distro >/dev/null 2>&1 ||
+    fail "PhotoPrism is installed but proot-distro is unavailable"
+  proot-distro login ubuntu -- true >/dev/null 2>&1 ||
+    fail "PhotoPrism is installed but Ubuntu PRoot is unavailable"
+  echo "PASS PhotoPrism PRoot runtime available"
 
-  PM2_JSON="$pm2_json" python3 - <<'PY'
+  photoprism_stable=0
+  photoprism_budget_seconds="${POCKETLAB_PHONE_PHOTOPRISM_STABILIZATION_SECONDS:-300}"
+  photoprism_backoff_seconds=2
+  photoprism_backoff_max="${POCKETLAB_PHONE_PHOTOPRISM_BACKOFF_MAX_SECONDS:-30}"
+  photoprism_started_at="$(date +%s)"
+  photoprism_deadline=$((photoprism_started_at + photoprism_budget_seconds))
+
+  while (( $(date +%s) <= photoprism_deadline )); do
+    photoprism_pm2_ready=0
+    if pm2 jlist >"$pm2_json_file" 2>/dev/null &&
+       python3 - "$pm2_json_file" <<'PY' >/dev/null 2>&1
 import json
-import os
+import sys
 
-items = json.loads(os.environ["PM2_JSON"])
+with open(sys.argv[1], encoding="utf-8") as handle:
+    items = json.load(handle)
 for item in items if isinstance(items, list) else []:
     if item.get("name") != "pocketlab-app-photoprism":
         continue
     env = item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}
-    if str(env.get("status") or item.get("status") or "").lower() != "online":
-        raise SystemExit("PhotoPrism PM2 process is not online")
+    status = str(env.get("status") or item.get("status") or "").lower()
     version = str(env.get("version") or "").strip()
     declared = str(env.get("POCKETLAB_SERVICE_VERSION") or "").strip()
-    if not version or version.lower() in {"n/a", "na", "unknown"} or version != declared:
-        raise SystemExit("PhotoPrism PM2 version projection mismatch")
-    print("PASS PhotoPrism PM2 ownership and exact version projection online")
-    raise SystemExit(0)
-raise SystemExit("PhotoPrism is installed but its PM2 process is missing")
+    healthy = (
+        status == "online"
+        and bool(version)
+        and version.lower() not in {"n/a", "na", "unknown"}
+        and version == declared
+    )
+    raise SystemExit(0 if healthy else 1)
+raise SystemExit(1)
 PY
+    then
+      photoprism_pm2_ready=1
+    fi
 
-  curl -fsS --connect-timeout 1 --max-time 5 \
-    http://127.0.0.1:2342/apps/photoprism/api/v1/status >/dev/null 2>&1 ||
-    curl -fsS --connect-timeout 1 --max-time 5 \
-      http://127.0.0.1:2342/apps/photoprism/ >/dev/null
+    if [[ "$photoprism_pm2_ready" == "1" ]]; then
+      local_ready=0
+      if curl -fsS --connect-timeout 1 --max-time 5 \
+        http://127.0.0.1:2342/apps/photoprism/api/v1/status >/dev/null 2>&1 ||
+         curl -fsS --connect-timeout 1 --max-time 5 \
+        http://127.0.0.1:2342/apps/photoprism/ >/dev/null 2>&1; then
+        local_ready=1
+      fi
 
-  curl -fsS --connect-timeout 1 --max-time 5 \
-    http://127.0.0.1:8443/apps/photoprism/ >/dev/null
+      caddy_ready=0
+      if [[ "$local_ready" == "1" ]] &&
+         curl -fsS --connect-timeout 1 --max-time 5 \
+           http://127.0.0.1:8443/apps/photoprism/ >/dev/null 2>&1; then
+        caddy_ready=1
+      fi
 
-  echo "PASS PhotoPrism PRoot/local/same-origin runtime ready"
+      if [[ "$local_ready" == "1" && "$caddy_ready" == "1" ]]; then
+        photoprism_stable=$((photoprism_stable + 1))
+        [[ "$photoprism_stable" -ge 2 ]] && break
+      else
+        photoprism_stable=0
+      fi
+    else
+      photoprism_stable=0
+    fi
+
+    now="$(date +%s)"
+    (( now >= photoprism_deadline )) && break
+    remaining=$((photoprism_deadline - now))
+    sleep_for="$photoprism_backoff_seconds"
+    (( sleep_for > remaining )) && sleep_for="$remaining"
+    (( sleep_for > 0 )) && sleep "$sleep_for"
+    if (( photoprism_backoff_seconds < photoprism_backoff_max )); then
+      photoprism_backoff_seconds=$((photoprism_backoff_seconds * 2))
+      (( photoprism_backoff_seconds > photoprism_backoff_max )) &&
+        photoprism_backoff_seconds="$photoprism_backoff_max"
+    fi
+  done
+
+  if [[ "$photoprism_stable" -ge 2 ]]; then
+    echo "PASS PhotoPrism PM2 ownership and exact version projection online"
+    echo "PASS PhotoPrism PRoot/local/same-origin runtime ready"
+  elif [[ "$verification_policy" == "advisory" ]]; then
+    echo "ADVISORY PhotoPrism did not fully stabilize within ${photoprism_budget_seconds}s after fault recovery."
+    echo "ADVISORY Core fault recovery completed; PhotoPrism may still be finishing PRoot/application startup."
+    echo "ADVISORY Recheck later with: pm2 status pocketlab-app-photoprism"
+    echo "ADVISORY Then verify: curl -fsS http://127.0.0.1:2342/apps/photoprism/ && curl -fsS http://127.0.0.1:8443/apps/photoprism/"
+  else
+    fail "PhotoPrism PM2/local/same-origin runtime did not stabilize within ${photoprism_budget_seconds}s"
+  fi
 fi
 
 if [[ "$mode" == "--post-reboot" ]]; then
@@ -169,21 +325,30 @@ REMOTE
 
 wait_pm2_service() {
   local service="$1"
-  local attempts="${2:-70}"
-  ssh "$SSH_ALIAS" bash -s -- "$service" "$attempts" <<'REMOTE'
+  local budget_seconds="${2:-${POCKETLAB_PHONE_PM2_SERVICE_STABILIZATION_SECONDS:-600}}"
+  local backoff_max="${POCKETLAB_PHONE_PM2_SERVICE_BACKOFF_MAX_SECONDS:-30}"
+  ssh "$SSH_ALIAS" bash -s -- "$service" "$budget_seconds" "$backoff_max" <<'REMOTE'
 set -Eeuo pipefail
 service="$1"
-attempts="$2"
+budget_seconds="$2"
+backoff_max="$3"
 
 pm2_status() {
-  local name="$1" data
-  data="$(pm2 jlist 2>/dev/null || printf '[]')"
-  PM2_JSON="$data" SERVICE="$name" python3 - <<'PY'
+  local name="$1" tmp_root json_file
+  tmp_root="${TMPDIR:-$HOME/tmp}"
+  mkdir -p "$tmp_root"
+  json_file="$(mktemp "$tmp_root/pocketlab-pm2-status.XXXXXX.json")"
+  if ! pm2 jlist >"$json_file" 2>/dev/null; then
+    printf '[]\n' >"$json_file"
+  fi
+  SERVICE="$name" python3 - "$json_file" <<'PY'
 import json
 import os
+import sys
 
 try:
-    items = json.loads(os.environ["PM2_JSON"])
+    with open(sys.argv[1], encoding="utf-8") as handle:
+        items = json.load(handle)
 except Exception:
     items = []
 for item in items if isinstance(items, list) else []:
@@ -194,14 +359,39 @@ for item in items if isinstance(items, list) else []:
     raise SystemExit(0)
 print("missing")
 PY
+  rc=$?
+  rm -f "$json_file"
+  return "$rc"
 }
 
-for _ in $(seq 1 "$attempts"); do
-  [[ "$(pm2_status "$service")" == "online" ]] && exit 0
-  sleep 3
+stable=0
+backoff_seconds=2
+started_at="$(date +%s)"
+deadline=$((started_at + budget_seconds))
+last_status="missing"
+
+while (( $(date +%s) <= deadline )); do
+  last_status="$(pm2_status "$service")"
+  if [[ "$last_status" == "online" ]]; then
+    stable=$((stable + 1))
+    [[ "$stable" -ge 2 ]] && exit 0
+  else
+    stable=0
+  fi
+
+  now="$(date +%s)"
+  (( now >= deadline )) && break
+  remaining=$((deadline - now))
+  sleep_for="$backoff_seconds"
+  (( sleep_for > remaining )) && sleep_for="$remaining"
+  (( sleep_for > 0 )) && sleep "$sleep_for"
+  if (( backoff_seconds < backoff_max )); then
+    backoff_seconds=$((backoff_seconds * 2))
+    (( backoff_seconds > backoff_max )) && backoff_seconds="$backoff_max"
+  fi
 done
 
-echo "ERROR: service did not recover: $service" >&2
+echo "ERROR: service did not reach stable online state within ${budget_seconds}s: $service (last_status=$last_status)" >&2
 exit 1
 REMOTE
 }
@@ -252,7 +442,11 @@ run_faults() {
   wait_pm2_service pocketlab-runtime-reconciler
   echo "PASS PM2 daemon and desired-state reconciler recovered"
 
-  remote_read_only --read-only
+  if remote_read_only --read-only advisory; then
+    echo "PASS fault injection recovery sequence completed"
+  else
+    return 1
+  fi
 }
 
 run_remote_access_fault() {

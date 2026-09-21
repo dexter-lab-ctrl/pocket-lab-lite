@@ -46,7 +46,44 @@ def test_bootstrap_has_lite_only_boot_recovery_stage():
 
 def test_guardian_checks_pm2_pid_without_cli_autostart():
     guardian = (SCRIPTS / "lite" / "runtime-guardian.sh").read_text()
-    block = guardian[guardian.index("pm2_alive()"):guardian.index("pm2_reconciler_online()")]
+    block = guardian[guardian.index("pm2_alive()"):guardian.index("pm2_process_matches_source()")]
     assert "pm2.pid" in block
     assert "kill -0" in block
     assert "pm2 ping" not in block
+
+
+def test_guardian_compares_running_supervisors_to_current_source_versions():
+    guardian = (SCRIPTS / "lite" / "runtime-guardian.sh").read_text()
+
+    assert 'pm2_process_matches_source()' in guardian
+    assert 'pocketlab_source_version "$source_path"' in guardian
+    assert '"pocketlab-runtime-reconciler" "$RUNTIME_RECONCILER_SERVER"' in guardian
+    assert '"pocketlab-core-supervisor" "$CORE_SUPERVISOR_SERVER"' in guardian
+    assert 'runtime_reconciler_missing_or_source_drift' in guardian
+    assert 'core_supervisor_missing_or_source_drift' in guardian
+
+
+def test_guardian_self_reloads_when_repository_source_changes():
+    guardian = (SCRIPTS / "lite" / "runtime-guardian.sh").read_text()
+
+    assert 'GUARDIAN_START_DIGEST="$(guardian_source_digest)"' in guardian
+    assert 'reload_if_source_changed' in guardian
+    assert 'Runtime guardian source changed; reloading current repository version' in guardian
+    assert 'exec bash "$0" --boot' in guardian
+
+
+def test_boot_recovery_installer_restarts_existing_guardian_to_activate_current_source():
+    installer = (SCRIPTS / "lite" / "install-boot-recovery.sh").read_text()
+
+    assert 'pkill -f "[r]untime-guardian.sh"' in installer
+    assert 'nohup "$GUARDIAN" --boot' in installer
+
+
+def test_guardian_forces_desired_state_convergence_after_pm2_resurrection():
+    guardian = (SCRIPTS / "lite" / "runtime-guardian.sh").read_text()
+
+    assert "PM2_RESTORED_THIS_PASS=0" in guardian
+    assert "PM2_RESTORED_THIS_PASS=1" in guardian
+    assert '[[ "${PM2_RESTORED_THIS_PASS:-0}" == "1" ]]' in guardian
+    assert 'reason="pm2_resurrected_requires_convergence"' in guardian
+    assert 'bash "$RECONCILE" --repair --reason "$reason"' in guardian

@@ -941,16 +941,47 @@ pm2_runtime_process(){
 }
 
 nats_installed_version(){
-  local raw
-  raw="$(nats-server -v 2>/dev/null | head -1)"
-  raw="$(printf '%s\n' "$raw" | sed -E 's/^.*[[:space:]]v?([0-9][0-9A-Za-z.+_-]*).*$/\1/')"
+  local output raw
+  output="$(nats-server -v 2>&1 || true)"
+  raw="$(printf '%s\n' "$output" | python3 -c '
+import re, sys
+text=sys.stdin.read()
+match=re.search(r"(?<![0-9])v?([0-9]+(?:\.[0-9]+){1,3}(?:[-+][0-9A-Za-z._-]+)?)", text)
+print(match.group(1) if match else "")
+')"
+  [[ -n "$raw" ]] || die "Could not determine installed NATS version"
   pm2_normalize_service_version "$raw"
 }
 
 caddy_installed_version(){
-  local raw
-  raw="$(caddy version 2>/dev/null | head -1 | awk '{print $1}' | sed 's/^v//')"
-  pm2_normalize_service_version "$raw"
+  local output raw package_version
+  output="$(caddy version 2>&1 || true)"
+  raw="$(printf '%s\n' "$output" | python3 -c '
+import re, sys
+text=sys.stdin.read()
+match=re.search(r"(?<![0-9])v?([0-9]+(?:\.[0-9]+){1,3}(?:[-+][0-9A-Za-z._-]+)?)", text)
+print(match.group(1) if match else "")
+')"
+  if [[ -n "$raw" ]]; then
+    pm2_normalize_service_version "$raw"
+    return 0
+  fi
+
+  # Termux's packaged Caddy may be built without embedded Go version metadata
+  # and legitimately report "unknown". The package database is authoritative
+  # for that install path, so fall back to its exact installed package version.
+  if command -v dpkg-query >/dev/null 2>&1; then
+    package_version="$(dpkg-query -W -f='${Version}\n' caddy 2>/dev/null | head -1 || true)"
+  elif command -v dpkg >/dev/null 2>&1; then
+    package_version="$(dpkg -s caddy 2>/dev/null | awk -F': ' '/^Version:/{print $2; exit}' || true)"
+  fi
+  package_version="$(printf '%s\n' "$package_version" | sed -E 's/^[0-9]+://')"
+  if [[ -n "$package_version" ]]; then
+    pm2_normalize_service_version "$package_version"
+    return 0
+  fi
+
+  die "Could not determine installed Caddy version from binary or Termux package metadata"
 }
 
 reload_caddy_if_config_changed(){
@@ -960,8 +991,8 @@ reload_caddy_if_config_changed(){
   if caddy reload --config "$CADDYFILE" >/dev/null 2>&1; then
     return 0
   fi
-  log WARN "Caddy reload failed; restarting only caddy-proxy"
-  pm2 restart caddy-proxy --update-env >/dev/null 2>&1 || return 1
+  log WARN "Caddy reload failed; restarting only caddy-proxy without importing caller service-version metadata"
+  pm2 restart caddy-proxy >/dev/null 2>&1 || return 1
 }
 
 start_pm2_daemons(){
