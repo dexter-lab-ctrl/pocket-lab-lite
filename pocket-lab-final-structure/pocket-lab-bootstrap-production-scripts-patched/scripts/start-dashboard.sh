@@ -971,7 +971,7 @@ print(match.group(1) if match else "")
   # and legitimately report "unknown". The package database is authoritative
   # for that install path, so fall back to its exact installed package version.
   if command -v dpkg-query >/dev/null 2>&1; then
-    package_version="$(dpkg-query -W -f='\${Version}\n' caddy 2>/dev/null | head -1 || true)"
+    package_version="$(dpkg-query -W -f='${Version}\n' caddy 2>/dev/null | head -1 || true)"
   elif command -v dpkg >/dev/null 2>&1; then
     package_version="$(dpkg -s caddy 2>/dev/null | awk -F': ' '/^Version:/{print $2; exit}' || true)"
   fi
