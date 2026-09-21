@@ -380,17 +380,16 @@ def _build_service_contracts(
         )
         budget_remaining = max(0, core_limit - recent_restarts)
         pm2_unstable_restarts = max(0, _int(env.get("unstable_restarts"), 0))
-        pm2_budget_remaining = (
-            max(0, policy.max_restarts - pm2_unstable_restarts)
-            if policy is not None
-            else None
+        observed_max_restarts = max(
+            1,
+            _int(env.get("max_restarts"), policy.max_restarts if policy is not None else 1),
         )
+        pm2_budget_remaining = max(0, observed_max_restarts - pm2_unstable_restarts)
         restart_budget_exhausted = bool(
             budget_remaining <= 0
             or (
-                policy is not None
-                and status in {"errored", "error", "stopped"}
-                and pm2_unstable_restarts >= policy.max_restarts
+                status in {"errored", "error", "stopped"}
+                and pm2_unstable_restarts >= observed_max_restarts
             )
         )
 
