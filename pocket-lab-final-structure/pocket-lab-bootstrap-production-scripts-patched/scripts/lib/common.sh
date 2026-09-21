@@ -350,15 +350,48 @@ PY
   printf '%s\n' "$link"
 }
 
+pm2_version_snapshot() {
+  local name="$1"
+  pm2 jlist 2>/dev/null | python3 -c '
+import json, sys
+name=sys.argv[1]
+try:
+    items=json.load(sys.stdin)
+except Exception:
+    items=[]
+for item in items if isinstance(items,list) else []:
+    if str(item.get("name") or "") != name:
+        continue
+    env=item.get("pm2_env") if isinstance(item.get("pm2_env"),dict) else {}
+    print(str(env.get("version") or ""))
+    print(str(env.get("POCKETLAB_SERVICE_VERSION") or ""))
+    raise SystemExit(0)
+raise SystemExit(1)
+' "$name"
+}
+
 pm2_ensure_versioned_process() {
   local name="$1" version="$2" source_exec="$3"
   shift 3
-  local projected_exec
+  local projected_exec version_snapshot current_version current_declared
   require_cmd pm2 python3 sha256sum
   version="$(pm2_normalize_service_version "$version")" || die "PM2 service $name does not have an exact installed version"
   projected_exec="$(pm2_prepare_versioned_exec "$name" "$version" "$source_exec")"
   local POCKETLAB_SERVICE_VERSION="$version"
   export POCKETLAB_SERVICE_VERSION
+
+  version_snapshot="$(pm2_version_snapshot "$name" 2>/dev/null || true)"
+  current_version="$(printf '%s\n' "$version_snapshot" | sed -n '1p')"
+  current_declared="$(printf '%s\n' "$version_snapshot" | sed -n '2p')"
+  if [[ -n "$current_version" ]] && {
+    [[ "$current_version" != "$version" ]] ||
+    [[ "$current_version" =~ ^([Nn]/?[Aa]|unknown)$ ]] ||
+    [[ "$current_declared" != "$version" ]]
+  }; then
+    log INFO "Replacing PM2 process with stale version projection: $name observed=${current_version:-missing} declared=${current_declared:-missing} expected=$version"
+    pm2 delete "$name" >/dev/null 2>&1 || true
+  fi
+
   pm2_ensure_process "$name" "$projected_exec" "$@"
 }
 
