@@ -21,8 +21,7 @@ def test_server_phone_runtime_preflights_fail_with_explicit_diagnostics():
         "Tailscale is installed but tailscaled is not running",
         "PhotoPrism is installed but proot-distro is unavailable",
         "PhotoPrism is installed but Ubuntu PRoot is unavailable",
-        "PhotoPrism local runtime is not reachable",
-        "PhotoPrism same-origin route did not remain reachable through Caddy",
+        "PhotoPrism PM2/local/same-origin runtime did not stabilize",
     )
 
     for message in expected:
@@ -95,7 +94,7 @@ def test_server_phone_qualification_uses_adaptive_api_stabilization():
     end = source.index("wait_pm2_service() {", start)
     read_only = source[start:end]
 
-    assert 'api_policy="${2:-strict}"' in read_only
+    assert 'verification_policy="${2:-strict}"' in read_only
     assert 'POCKETLAB_PHONE_API_STABILIZATION_SECONDS' in read_only
     assert 'POCKETLAB_PHONE_API_BACKOFF_MAX_SECONDS' in read_only
     assert 'api_backoff_seconds=2' in read_only
@@ -108,7 +107,7 @@ def test_server_phone_qualification_uses_adaptive_api_stabilization():
     assert 'Lite API /health and /ready did not remain reachable' in read_only
 
 
-def test_fault_mode_downgrades_only_final_api_stabilization_to_advisory():
+def test_fault_mode_downgrades_only_final_slow_service_stabilization_to_advisory():
     source = SCRIPT.read_text(encoding="utf-8")
     faults = source[source.index("run_faults() {"):source.index("run_remote_access_fault() {")]
 
@@ -116,4 +115,24 @@ def test_fault_mode_downgrades_only_final_api_stabilization_to_advisory():
     assert 'remote_read_only --read-only advisory' in faults
     assert 'PASS fault injection recovery sequence completed' in faults
     assert 'ADVISORY Lite API health/readiness did not stabilize' in source
+    assert 'ADVISORY PhotoPrism did not fully stabilize' in source
     assert 'All injected recovery scenarios completed' in source
+    assert 'Core fault recovery completed; PhotoPrism may still be finishing PRoot/application startup.' in source
+
+
+def test_photoprism_qualification_refreshes_pm2_state_and_uses_adaptive_backoff():
+    source = SCRIPT.read_text(encoding="utf-8")
+    start = source.index('if [[ "$photoprism_expected" == "1" ]]')
+    end = source.index('if [[ "$mode" == "--post-reboot" ]]', start)
+    block = source[start:end]
+
+    assert 'POCKETLAB_PHONE_PHOTOPRISM_STABILIZATION_SECONDS' in block
+    assert 'POCKETLAB_PHONE_PHOTOPRISM_BACKOFF_MAX_SECONDS' in block
+    assert 'photoprism_backoff_seconds=2' in block
+    assert 'pm2 jlist >"$pm2_json_file"' in block
+    assert 'status == "online"' in block
+    assert 'version == declared' in block
+    assert 'http://127.0.0.1:2342/apps/photoprism/' in block
+    assert 'http://127.0.0.1:8443/apps/photoprism/' in block
+    assert 'photoprism_backoff_seconds=$((photoprism_backoff_seconds * 2))' in block
+    assert '[[ "$photoprism_stable" -ge 2 ]]' in block
