@@ -36,22 +36,36 @@ remote_read_only() {
 set -Eeuo pipefail
 mode="$1"
 
+fail() {
+  echo "ERROR: $*" >&2
+  exit 1
+}
+
 required="pocket-nats pocket-opa pocket-worker pocket-api pocket-node-agent caddy-proxy pocketlab-core-supervisor pocketlab-runtime-reconciler"
 legacy="vault mariadb gitea gitea-runner pocket-gatus gatus prometheus-db prometheus grafana-ui grafana loki-kms loki promtail-agent promtail"
 
-test -x "$HOME/.termux/boot/pocketlab-lite"
-pgrep -f "[r]untime-guardian.sh" >/dev/null
+[[ -x "$HOME/.termux/boot/pocketlab-lite" ]] || fail "Termux:Boot entry missing or not executable: ~/.termux/boot/pocketlab-lite"
+echo "PASS Termux:Boot recovery entry installed"
+
+pgrep -f "[r]untime-guardian.sh" >/dev/null 2>&1 || fail "external runtime guardian is not running"
+echo "PASS external runtime guardian running"
 
 pm2_home="${PM2_HOME:-$HOME/.pm2}"
-test -s "$pm2_home/pm2.pid"
-pm2_pid="$(cat "$pm2_home/pm2.pid")"
-[[ "$pm2_pid" =~ ^[0-9]+$ ]]
-kill -0 "$pm2_pid" >/dev/null 2>&1
+[[ -s "$pm2_home/pm2.pid" ]] || fail "PM2 pid file missing or empty: $pm2_home/pm2.pid"
+pm2_pid="$(cat "$pm2_home/pm2.pid" 2>/dev/null || true)"
+[[ "$pm2_pid" =~ ^[0-9]+$ ]] || fail "PM2 pid file does not contain a numeric PID"
+kill -0 "$pm2_pid" >/dev/null 2>&1 || fail "PM2 daemon PID $pm2_pid is not running"
+echo "PASS PM2 daemon running"
 
-curl -fsS --connect-timeout 1 --max-time 4 http://127.0.0.1:8080/health >/dev/null
-curl -fsS --connect-timeout 1 --max-time 4 http://127.0.0.1:8080/ready >/dev/null
+curl -fsS --connect-timeout 1 --max-time 4 http://127.0.0.1:8080/health >/dev/null ||
+  fail "Lite API /health is not reachable on 127.0.0.1:8080"
+echo "PASS Lite API health reachable"
 
-pm2_json="$(pm2 jlist)"
+curl -fsS --connect-timeout 1 --max-time 4 http://127.0.0.1:8080/ready >/dev/null ||
+  fail "Lite API /ready is not reachable on 127.0.0.1:8080"
+echo "PASS Lite API readiness reachable"
+
+pm2_json="$(pm2 jlist 2>/dev/null)" || fail "pm2 jlist failed while reading Lite runtime topology"
 PM2_JSON="$pm2_json" REQUIRED="$required" LEGACY="$legacy" python3 - <<'PY'
 import json
 import os
@@ -101,8 +115,7 @@ if [[ -n "$ts_cmd" ]]; then
   elif pgrep -f tailscaled >/dev/null 2>&1; then
     echo "INFO Remote access not ready; tailscaled is running and Lite remains local-ready"
   else
-    echo "ERROR: Tailscale is installed but tailscaled is not running" >&2
-    exit 1
+    fail "Tailscale is installed but tailscaled is not running"
   fi
 else
   echo "INFO Remote access not ready; Tailscale command is not installed"
@@ -115,8 +128,11 @@ if [[ -s "$HOME/.pocket_lab/lite/apps/photoprism/config/photoprism.env" ||
 fi
 
 if [[ "$photoprism_expected" == "1" ]]; then
-  command -v proot-distro >/dev/null
-  proot-distro login ubuntu -- true >/dev/null 2>&1
+  command -v proot-distro >/dev/null 2>&1 ||
+    fail "PhotoPrism is installed but proot-distro is unavailable"
+  proot-distro login ubuntu -- true >/dev/null 2>&1 ||
+    fail "PhotoPrism is installed but Ubuntu PRoot is unavailable"
+  echo "PASS PhotoPrism PRoot runtime available"
 
   PM2_JSON="$pm2_json" python3 - <<'PY'
 import json
@@ -138,13 +154,16 @@ for item in items if isinstance(items, list) else []:
 raise SystemExit("PhotoPrism is installed but its PM2 process is missing")
 PY
 
-  curl -fsS --connect-timeout 1 --max-time 5 \
-    http://127.0.0.1:2342/apps/photoprism/api/v1/status >/dev/null 2>&1 ||
+  if ! curl -fsS --connect-timeout 1 --max-time 5 \
+    http://127.0.0.1:2342/apps/photoprism/api/v1/status >/dev/null 2>&1; then
     curl -fsS --connect-timeout 1 --max-time 5 \
-      http://127.0.0.1:2342/apps/photoprism/ >/dev/null
+      http://127.0.0.1:2342/apps/photoprism/ >/dev/null ||
+      fail "PhotoPrism local runtime is not reachable on 127.0.0.1:2342"
+  fi
 
   curl -fsS --connect-timeout 1 --max-time 5 \
-    http://127.0.0.1:8443/apps/photoprism/ >/dev/null
+    http://127.0.0.1:8443/apps/photoprism/ >/dev/null ||
+    fail "PhotoPrism same-origin route is not reachable through Caddy"
 
   echo "PASS PhotoPrism PRoot/local/same-origin runtime ready"
 fi
