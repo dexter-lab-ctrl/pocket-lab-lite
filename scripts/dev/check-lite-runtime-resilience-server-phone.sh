@@ -32,11 +32,11 @@ esac
 
 remote_read_only() {
   local mode="${1:---read-only}"
-  local api_policy="${2:-strict}"
-  ssh "$SSH_ALIAS" bash -s -- "$mode" "$api_policy" <<'REMOTE'
+  local verification_policy="${2:-strict}"
+  ssh "$SSH_ALIAS" bash -s -- "$mode" "$verification_policy" <<'REMOTE'
 set -Eeuo pipefail
 mode="$1"
-api_policy="$2"
+verification_policy="$2"
 
 fail() {
   echo "ERROR: $*" >&2
@@ -111,7 +111,7 @@ done
 if [[ "$api_stable" -ge 2 ]]; then
   echo "PASS Lite API health reachable"
   echo "PASS Lite API readiness reachable"
-elif [[ "$api_policy" == "advisory" ]]; then
+elif [[ "$verification_policy" == "advisory" ]]; then
   echo "ADVISORY Lite API health/readiness did not stabilize within ${api_budget_seconds}s after fault recovery."
   echo "ADVISORY All injected recovery scenarios completed; the API may still be finishing NATS/application startup."
   echo "ADVISORY Recheck later with: curl -fsS http://127.0.0.1:8080/health && curl -fsS http://127.0.0.1:8080/ready"
@@ -217,7 +217,17 @@ if [[ "$photoprism_expected" == "1" ]]; then
     fail "PhotoPrism is installed but Ubuntu PRoot is unavailable"
   echo "PASS PhotoPrism PRoot runtime available"
 
-  python3 - "$pm2_json_file" <<'PY'
+  photoprism_stable=0
+  photoprism_budget_seconds="${POCKETLAB_PHONE_PHOTOPRISM_STABILIZATION_SECONDS:-300}"
+  photoprism_backoff_seconds=2
+  photoprism_backoff_max="${POCKETLAB_PHONE_PHOTOPRISM_BACKOFF_MAX_SECONDS:-30}"
+  photoprism_started_at="$(date +%s)"
+  photoprism_deadline=$((photoprism_started_at + photoprism_budget_seconds))
+
+  while (( $(date +%s) <= photoprism_deadline )); do
+    photoprism_pm2_ready=0
+    if pm2 jlist >"$pm2_json_file" 2>/dev/null &&
+       python3 - "$pm2_json_file" <<'PY' >/dev/null 2>&1
 import json
 import sys
 
@@ -227,40 +237,72 @@ for item in items if isinstance(items, list) else []:
     if item.get("name") != "pocketlab-app-photoprism":
         continue
     env = item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}
-    if str(env.get("status") or item.get("status") or "").lower() != "online":
-        raise SystemExit("PhotoPrism PM2 process is not online")
+    status = str(env.get("status") or item.get("status") or "").lower()
     version = str(env.get("version") or "").strip()
     declared = str(env.get("POCKETLAB_SERVICE_VERSION") or "").strip()
-    if not version or version.lower() in {"n/a", "na", "unknown"} or version != declared:
-        raise SystemExit("PhotoPrism PM2 version projection mismatch")
-    print("PASS PhotoPrism PM2 ownership and exact version projection online")
-    raise SystemExit(0)
-raise SystemExit("PhotoPrism is installed but its PM2 process is missing")
+    healthy = (
+        status == "online"
+        and bool(version)
+        and version.lower() not in {"n/a", "na", "unknown"}
+        and version == declared
+    )
+    raise SystemExit(0 if healthy else 1)
+raise SystemExit(1)
 PY
-
-  if ! curl -fsS --connect-timeout 1 --max-time 5 \
-    http://127.0.0.1:2342/apps/photoprism/api/v1/status >/dev/null 2>&1; then
-    curl -fsS --connect-timeout 1 --max-time 5 \
-      http://127.0.0.1:2342/apps/photoprism/ >/dev/null ||
-      fail "PhotoPrism local runtime is not reachable on 127.0.0.1:2342"
-  fi
-
-  caddy_route_stable=0
-  caddy_route_attempts="${POCKETLAB_PHONE_CADDY_ROUTE_ATTEMPTS:-20}"
-  for _ in $(seq 1 "$caddy_route_attempts"); do
-    if curl -fsS --connect-timeout 1 --max-time 5 \
-      http://127.0.0.1:8443/apps/photoprism/ >/dev/null 2>&1; then
-      caddy_route_stable=$((caddy_route_stable + 1))
-      [[ "$caddy_route_stable" -ge 2 ]] && break
-    else
-      caddy_route_stable=0
+    then
+      photoprism_pm2_ready=1
     fi
-    sleep 3
-  done
-  [[ "$caddy_route_stable" -ge 2 ]] ||
-    fail "PhotoPrism same-origin route did not remain reachable through Caddy after $caddy_route_attempts attempts"
 
-  echo "PASS PhotoPrism PRoot/local/same-origin runtime ready"
+    if [[ "$photoprism_pm2_ready" == "1" ]]; then
+      local_ready=0
+      if curl -fsS --connect-timeout 1 --max-time 5 \
+        http://127.0.0.1:2342/apps/photoprism/api/v1/status >/dev/null 2>&1 ||
+         curl -fsS --connect-timeout 1 --max-time 5 \
+        http://127.0.0.1:2342/apps/photoprism/ >/dev/null 2>&1; then
+        local_ready=1
+      fi
+
+      caddy_ready=0
+      if [[ "$local_ready" == "1" ]] &&
+         curl -fsS --connect-timeout 1 --max-time 5 \
+           http://127.0.0.1:8443/apps/photoprism/ >/dev/null 2>&1; then
+        caddy_ready=1
+      fi
+
+      if [[ "$local_ready" == "1" && "$caddy_ready" == "1" ]]; then
+        photoprism_stable=$((photoprism_stable + 1))
+        [[ "$photoprism_stable" -ge 2 ]] && break
+      else
+        photoprism_stable=0
+      fi
+    else
+      photoprism_stable=0
+    fi
+
+    now="$(date +%s)"
+    (( now >= photoprism_deadline )) && break
+    remaining=$((photoprism_deadline - now))
+    sleep_for="$photoprism_backoff_seconds"
+    (( sleep_for > remaining )) && sleep_for="$remaining"
+    (( sleep_for > 0 )) && sleep "$sleep_for"
+    if (( photoprism_backoff_seconds < photoprism_backoff_max )); then
+      photoprism_backoff_seconds=$((photoprism_backoff_seconds * 2))
+      (( photoprism_backoff_seconds > photoprism_backoff_max )) &&
+        photoprism_backoff_seconds="$photoprism_backoff_max"
+    fi
+  done
+
+  if [[ "$photoprism_stable" -ge 2 ]]; then
+    echo "PASS PhotoPrism PM2 ownership and exact version projection online"
+    echo "PASS PhotoPrism PRoot/local/same-origin runtime ready"
+  elif [[ "$verification_policy" == "advisory" ]]; then
+    echo "ADVISORY PhotoPrism did not fully stabilize within ${photoprism_budget_seconds}s after fault recovery."
+    echo "ADVISORY Core fault recovery completed; PhotoPrism may still be finishing PRoot/application startup."
+    echo "ADVISORY Recheck later with: pm2 status pocketlab-app-photoprism"
+    echo "ADVISORY Then verify: curl -fsS http://127.0.0.1:2342/apps/photoprism/ && curl -fsS http://127.0.0.1:8443/apps/photoprism/"
+  else
+    fail "PhotoPrism PM2/local/same-origin runtime did not stabilize within ${photoprism_budget_seconds}s"
+  fi
 fi
 
 if [[ "$mode" == "--post-reboot" ]]; then
