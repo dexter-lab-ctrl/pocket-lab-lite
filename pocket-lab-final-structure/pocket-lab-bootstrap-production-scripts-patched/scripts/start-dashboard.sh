@@ -972,18 +972,13 @@ print(match.group(1) if match else "")
   # for that install path, so fall back to its exact installed package version.
   if command -v dpkg-query >/dev/null 2>&1; then
     package_version="$(dpkg-query -W -f='\${Version}\n' caddy 2>/dev/null | head -1 || true)"
-    package_version="$(printf '%s\n' "$package_version" | sed -E 's/^[0-9]+://')"
-    if [[ -n "$package_version" ]]; then
-      pm2_normalize_service_version "$package_version"
-      return 0
-    fi
   elif command -v dpkg >/dev/null 2>&1; then
-    package_version="$(dpkg-query -W -f='\${Version}\n' caddy 2>/dev/null | head -1 || true)"
-    package_version="$(printf '%s\n' "$package_version" | sed -E 's/^[0-9]+://')"
-    if [[ -n "$package_version" ]]; then
-      pm2_normalize_service_version "$package_version"
-      return 0
-    fi
+    package_version="$(dpkg -s caddy 2>/dev/null | awk -F': ' '/^Version:/{print $2; exit}' || true)"
+  fi
+  package_version="$(printf '%s\n' "$package_version" | sed -E 's/^[0-9]+://')"
+  if [[ -n "$package_version" ]]; then
+    pm2_normalize_service_version "$package_version"
+    return 0
   fi
 
   die "Could not determine installed Caddy version from binary or Termux package metadata"
