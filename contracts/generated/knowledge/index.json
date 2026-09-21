@@ -21293,7 +21293,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:282"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:350"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -26258,6 +26258,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_boot_recovery.py",
+      "name": "tests/backend/test_lite_boot_recovery.py",
+      "source_refs": [
+        "tests/backend/test_lite_boot_recovery.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_command_attention_audit_idempotency.py",
       "name": "tests/backend/test_lite_command_attention_audit_idempotency.py",
       "source_refs": [
@@ -26808,10 +26818,40 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_photoprism_runtime_resilience.py",
+      "name": "tests/backend/test_lite_photoprism_runtime_resilience.py",
+      "source_refs": [
+        "tests/backend/test_lite_photoprism_runtime_resilience.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_platform_release_inventory_isolation.py",
       "name": "tests/backend/test_lite_platform_release_inventory_isolation.py",
       "source_refs": [
         "tests/backend/test_lite_platform_release_inventory_isolation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_pm2_idempotency.py",
+      "name": "tests/backend/test_lite_pm2_idempotency.py",
+      "source_refs": [
+        "tests/backend/test_lite_pm2_idempotency.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_pm2_version_projection.py",
+      "name": "tests/backend/test_lite_pm2_version_projection.py",
+      "source_refs": [
+        "tests/backend/test_lite_pm2_version_projection.py"
       ],
       "type": "test"
     },
@@ -26972,6 +27012,16 @@
       "name": "tests/backend/test_lite_revision_sync_n4_n5.py",
       "source_refs": [
         "tests/backend/test_lite_revision_sync_n4_n5.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_runtime_reconciler.py",
+      "name": "tests/backend/test_lite_runtime_reconciler.py",
+      "source_refs": [
+        "tests/backend/test_lite_runtime_reconciler.py"
       ],
       "type": "test"
     },
@@ -31247,6 +31297,7 @@
         "test:tests/backend/test_lite_app_projection_deadline.py",
         "test:tests/backend/test_lite_app_runtime_reconciliation.py",
         "test:tests/backend/test_lite_backup_locations.py",
+        "test:tests/backend/test_lite_boot_recovery.py",
         "test:tests/backend/test_lite_command_attention_audit_idempotency.py",
         "test:tests/backend/test_lite_command_lifecycle_reconciliation.py",
         "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -31302,7 +31353,10 @@
         "test:tests/backend/test_lite_phase3c_system_aggregates.py",
         "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
         "test:tests/backend/test_lite_photoprism_backup.py",
+        "test:tests/backend/test_lite_photoprism_runtime_resilience.py",
         "test:tests/backend/test_lite_platform_release_inventory_isolation.py",
+        "test:tests/backend/test_lite_pm2_idempotency.py",
+        "test:tests/backend/test_lite_pm2_version_projection.py",
         "test:tests/backend/test_lite_policy_analysis_p2_3.py",
         "test:tests/backend/test_lite_policy_approvals_p3_1.py",
         "test:tests/backend/test_lite_policy_first_activation_recovery.py",
@@ -31319,6 +31373,7 @@
         "test:tests/backend/test_lite_recovery.py",
         "test:tests/backend/test_lite_recovery_r3_api_split.py",
         "test:tests/backend/test_lite_revision_sync_n4_n5.py",
+        "test:tests/backend/test_lite_runtime_reconciler.py",
         "test:tests/backend/test_lite_security.py",
         "test:tests/backend/test_lite_security_advanced_optimization.py",
         "test:tests/backend/test_lite_security_assurance.py",
@@ -32604,6 +32659,7 @@
         "test:tests/backend/test_lite_app_projection_deadline.py",
         "test:tests/backend/test_lite_app_runtime_reconciliation.py",
         "test:tests/backend/test_lite_backup_locations.py",
+        "test:tests/backend/test_lite_boot_recovery.py",
         "test:tests/backend/test_lite_command_attention_audit_idempotency.py",
         "test:tests/backend/test_lite_command_lifecycle_reconciliation.py",
         "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -32659,7 +32715,10 @@
         "test:tests/backend/test_lite_phase3c_system_aggregates.py",
         "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
         "test:tests/backend/test_lite_photoprism_backup.py",
+        "test:tests/backend/test_lite_photoprism_runtime_resilience.py",
         "test:tests/backend/test_lite_platform_release_inventory_isolation.py",
+        "test:tests/backend/test_lite_pm2_idempotency.py",
+        "test:tests/backend/test_lite_pm2_version_projection.py",
         "test:tests/backend/test_lite_policy_analysis_p2_3.py",
         "test:tests/backend/test_lite_policy_approvals_p3_1.py",
         "test:tests/backend/test_lite_policy_first_activation_recovery.py",
@@ -32676,6 +32735,7 @@
         "test:tests/backend/test_lite_recovery.py",
         "test:tests/backend/test_lite_recovery_r3_api_split.py",
         "test:tests/backend/test_lite_revision_sync_n4_n5.py",
+        "test:tests/backend/test_lite_runtime_reconciler.py",
         "test:tests/backend/test_lite_security.py",
         "test:tests/backend/test_lite_security_advanced_optimization.py",
         "test:tests/backend/test_lite_security_assurance.py",
@@ -75847,7 +75907,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:282"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:350"
       ],
       "id": "rel:4eb33eb8264509ea",
       "source": "component:agent-supervisor",
@@ -82204,7 +82264,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:282"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:350"
       ],
       "id": "rel:80315fb6ef5d20bf",
       "source": "component:agent-recovery",
@@ -98272,9 +98332,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "dceca679450745786aeb377926ccd5e25a9d3b8aa2c6e3044dd684e2c35db5cf",
+  "source_fingerprint": "205b7fa21f362d51e7c4de48fe8576d9763a9f6c50f22bd1c8625e89d1fbf04b",
   "statistics": {
-    "entity_count": 1276,
+    "entity_count": 1281,
     "entity_type_counts": {
       "adr": 6,
       "api": 218,
@@ -98291,7 +98351,7 @@
       "runtime-topology": 9,
       "subject": 210,
       "table": 78,
-      "test": 232,
+      "test": 237,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
@@ -98299,6 +98359,6 @@
       "vocabulary": 39
     },
     "relation_count": 3634,
-    "source_count": 269
+    "source_count": 274
   }
 }

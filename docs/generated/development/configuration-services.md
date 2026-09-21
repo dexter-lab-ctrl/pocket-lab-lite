@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: ff38bd1510c4f8d79b8017bda029665ad4c7e5f193a5c3771ca84250098a69aa
+source_fingerprint: 2000749d3a8ffce0390893bafaf58282232d78642d032887022c7e54953005ba
 schema_revision: 1
 validation_status: generated
 ---
@@ -68,6 +68,7 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `LITE_RUNTIME_MAX_AGE_DAYS`
 - `LITE_RUNTIME_MAX_CAPTURES`
 - `LITE_RUNTIME_PROMOTE`
+- `LITE_SERVICES`
 - `LITE_STORYBOOK_URL`
 - `NATS_CONTAINER`
 - `NATS_HARDENING_REPORT`
@@ -90,6 +91,7 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD`
 - `POCKETLAB_ACTIVE_CODE_SCAN_EXCLUDES`
 - `POCKETLAB_ALLOW_LOCAL_SCANCODE`
+- `POCKETLAB_ALLOW_REMOTE_ACCESS_FAULT`
 - `POCKETLAB_API_TOKEN`
 - `POCKETLAB_API_URL`
 - `POCKETLAB_AUDIT`
@@ -271,8 +273,6 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_PHASE3C_RUNTIME_MAX_TIME`
 - `POCKETLAB_PHASE3C_WARMUP_ATTEMPTS`
 - `POCKETLAB_PLAYWRIGHT_CHANNEL`
-- `POCKETLAB_PLAYWRIGHT_REPORT_PATH`
-- `POCKETLAB_PLAYWRIGHT_VIDEO`
 
 ## Process roles
 

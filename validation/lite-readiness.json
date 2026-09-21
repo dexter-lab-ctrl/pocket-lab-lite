@@ -123,6 +123,12 @@
         "result": "not evaluated in generated documentation"
       },
       {
+        "command": "bash scripts/dev/check-lite-runtime-resilience.sh",
+        "evidence_location": ".pocketlab-dev/validation/commands/runtime-resilience-contract.json",
+        "gate": "runtime-resilience-contract",
+        "result": "not evaluated in generated documentation"
+      },
+      {
         "command": "bash -lc 'find scripts/dev/lite -maxdepth 1 -type f -name \"*.sh\" -print0 | xargs -0 -r -n1 bash -n'",
         "evidence_location": ".pocketlab-dev/validation/commands/shell-syntax.json",
         "gate": "shell-syntax",
@@ -144,7 +150,7 @@
     "status": "validation contract documented; local PASS is not claimed"
   },
   "metadata": {
-    "aggregate_fingerprint": "8e4b21cd5ae87a0a017bb2d549afc8f05fb6acb15943a3c29af4cae802eb5e4c",
+    "aggregate_fingerprint": "d244f3128f52587f0585f1483fd2bf187366e39a8d27803ac1e433dbf2c91865",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -157,7 +163,7 @@
       "Taskfile.yml": "06a83a2f6039a645e6592bb77f81c8c0375bac541c3d6299f368f9cc8d4e8ecd",
       "contracts/metadata/documentation-platform.json": "54ea404fd374edcc6713400b2c076dc24b7c64f9c571e61a8854f518fd376ae2",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
-      "scripts/dev/lite/run-gate.sh": "8c0ee4015a9f604da6c7715313ea287674e07a9ad59c8b2419129ad63bba3198",
+      "scripts/dev/lite/run-gate.sh": "81b2d42dbbb265fbc31dc28ec7f87c77a863a4d3bfa9586a9875a4aeb30e7ee1",
       "scripts/dev/lite/validation_evidence.py": "bbca414f1a3fa1a505c2c36db88874eb728d146e03f87d0d2649e4791d2d98b8",
       "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4"
     },

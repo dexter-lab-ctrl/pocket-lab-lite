@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: a574bdf54bccac7d58285b972146f6a3440c6afd8224438a780cab6109b9ca5f
+source_fingerprint: c1fd031fa7262f289f3bda10684a892aef3da096a432220fc5074f0dd06d2f7c
 schema_revision: 1
 validation_status: generated
 ---
@@ -43,6 +43,7 @@ This page documents the available validation gates. It does not claim that the g
 | redaction | task lite:test:redaction | not evaluated in generated documentation | .pocketlab-dev/validation/commands/redaction.json |
 | release-dry-run | task lite:release:dry-run | not evaluated in generated documentation | .pocketlab-dev/validation/commands/release-dry-run.json |
 | runtime | task lite:test:runtime | not evaluated in generated documentation | .pocketlab-dev/validation/commands/runtime.json |
+| runtime-resilience-contract | bash scripts/dev/check-lite-runtime-resilience.sh | not evaluated in generated documentation | .pocketlab-dev/validation/commands/runtime-resilience-contract.json |
 | shell-syntax | bash -lc 'find scripts/dev/lite -maxdepth 1 -type f -name "*.sh" -print0 \| xargs -0 -r -n1 bash -n' | not evaluated in generated documentation | .pocketlab-dev/validation/commands/shell-syntax.json |
 | storybook | task lite:test:storybook | not evaluated in generated documentation | .pocketlab-dev/validation/commands/storybook.json |
 | visual | task lite:test:visual | not evaluated in generated documentation | .pocketlab-dev/validation/commands/visual.json |

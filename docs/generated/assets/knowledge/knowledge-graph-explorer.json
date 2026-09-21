@@ -9042,7 +9042,7 @@
       "name": "pocketlab.events.fleet.node_supervisor",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:282"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:350"
       ],
       "type": "subject"
     },
@@ -11702,6 +11702,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_boot_recovery.py",
+      "name": "tests/backend/test_lite_boot_recovery.py",
+      "source_refs": [
+        "tests/backend/test_lite_boot_recovery.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_command_attention_audit_idempotency.py",
       "name": "tests/backend/test_lite_command_attention_audit_idempotency.py",
       "source_refs": [
@@ -12307,10 +12318,43 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_photoprism_runtime_resilience.py",
+      "name": "tests/backend/test_lite_photoprism_runtime_resilience.py",
+      "source_refs": [
+        "tests/backend/test_lite_photoprism_runtime_resilience.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_platform_release_inventory_isolation.py",
       "name": "tests/backend/test_lite_platform_release_inventory_isolation.py",
       "source_refs": [
         "tests/backend/test_lite_platform_release_inventory_isolation.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_pm2_idempotency.py",
+      "name": "tests/backend/test_lite_pm2_idempotency.py",
+      "source_refs": [
+        "tests/backend/test_lite_pm2_idempotency.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_pm2_version_projection.py",
+      "name": "tests/backend/test_lite_pm2_version_projection.py",
+      "source_refs": [
+        "tests/backend/test_lite_pm2_version_projection.py"
       ],
       "type": "test"
     },
@@ -12487,6 +12531,17 @@
       "name": "tests/backend/test_lite_revision_sync_n4_n5.py",
       "source_refs": [
         "tests/backend/test_lite_revision_sync_n4_n5.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_runtime_reconciler.py",
+      "name": "tests/backend/test_lite_runtime_reconciler.py",
+      "source_refs": [
+        "tests/backend/test_lite_runtime_reconciler.py"
       ],
       "type": "test"
     },
@@ -31332,7 +31387,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:282"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:350"
       ],
       "id": "rel:4eb33eb8264509ea",
       "source": "component:agent-supervisor",
@@ -41199,7 +41254,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:282"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:350"
       ],
       "id": "rel:80315fb6ef5d20bf",
       "source": "component:agent-recovery",

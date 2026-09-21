@@ -17,6 +17,10 @@
         "title": "install_fleet_agent",
         "url": "../../docs/generated/development/bootstrap-stages.md#install-fleet-agent"
       },
+      "bootstrap:install_lite_boot_recovery": {
+        "title": "install_lite_boot_recovery",
+        "url": "../../docs/generated/development/bootstrap-stages.md#install-lite-boot-recovery"
+      },
       "bootstrap:install_proot_ubuntu": {
         "title": "install_proot_ubuntu",
         "url": "../../docs/generated/development/bootstrap-stages.md#install-proot-ubuntu"

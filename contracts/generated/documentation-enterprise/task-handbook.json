@@ -5201,6 +5201,206 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
+        "bash scripts/dev/check-lite-runtime-resilience.sh"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:runtime:resilience:check",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/check-lite-runtime-resilience.sh"
+      ],
+      "name": "lite:runtime:resilience:check",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Validate Lite desired-state, Android boot recovery, PM2 idempotency, and PhotoPrism runtime-only reconciliation on the DEV PC",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Runtime-evidence loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer/operator",
+      "captures_runtime": false,
+      "commands": [
+        "bash scripts/dev/check-lite-runtime-resilience-server-phone.sh --read-only"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:runtime:resilience:phone:check",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/check-lite-runtime-resilience-server-phone.sh"
+      ],
+      "name": "lite:runtime:resilience:phone:check",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Read-only Server Phone qualification of PM2, guardian, control-plane, remote-access, PRoot, and PhotoPrism runtime health",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Runtime-evidence loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer/operator",
+      "captures_runtime": false,
+      "commands": [
+        "bash scripts/dev/check-lite-runtime-resilience-server-phone.sh --faults"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:runtime:resilience:phone:faults",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/check-lite-runtime-resilience-server-phone.sh"
+      ],
+      "name": "lite:runtime:resilience:phone:faults",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run bounded Server Phone PM2/service recovery faults; requires POCKETLAB_RUNTIME_FAULTS=1",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Runtime-evidence loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer/operator",
+      "captures_runtime": false,
+      "commands": [
+        "bash scripts/dev/check-lite-runtime-resilience-server-phone.sh --post-reboot"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:runtime:resilience:phone:post-reboot",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/check-lite-runtime-resilience-server-phone.sh"
+      ],
+      "name": "lite:runtime:resilience:phone:post-reboot",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Verify Lite runtime convergence after an operator-performed Android reboot",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Runtime-evidence loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer/operator",
+      "captures_runtime": false,
+      "commands": [
+        "bash scripts/dev/check-lite-runtime-resilience-server-phone.sh --remote-access-fault"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:runtime:resilience:phone:remote-access-fault",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/check-lite-runtime-resilience-server-phone.sh"
+      ],
+      "name": "lite:runtime:resilience:phone:remote-access-fault",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Fault tailscaled only with declared out-of-band SSH; requires two explicit safety gates",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Runtime-evidence loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
         "{{.PYTHON}} scripts/dev/lite/security_assurance.py run adversarial"
       ],
       "dependencies": [],

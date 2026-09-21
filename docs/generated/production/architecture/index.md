@@ -70,7 +70,7 @@ The [generated Threat Model](../../enterprise/threat-model/index.md) is a securi
 
 **Architecture source fingerprint:** `f82d3e269a91212087e920fb458fe3869473b363b8e0a4874489074018141ec5`
 
-**Repository source inventory fingerprint:** `be38cd962ae87418e4e668ad5afe12cbbdf3ce163d3aeb9cadf01a5a9b7dd2a2`
+**Repository source inventory fingerprint:** `22107a8cef624594691e84703b7405cea67e9c80be8d3ad61a1962e1166a74f2`
 
 ## Operational guarantees
 

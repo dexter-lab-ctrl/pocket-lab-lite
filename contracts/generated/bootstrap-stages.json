@@ -291,11 +291,15 @@
         "POCKETLAB_NODE_NAME",
         "POCKETLAB_NODE_ROLE",
         "POCKETLAB_OPA_ACTIVE_POLICY_DIR",
+        "POCKETLAB_PM2_SERVICE_VERSION",
         "POCKETLAB_PROFILE",
         "POCKETLAB_PUBLIC_NATS_PORT",
         "POCKETLAB_QUALIFICATION_OWNER",
+        "POCKETLAB_RECONCILE_ONLY",
         "POCKETLAB_RELEASE_STABLE_INTERVAL_SECONDS",
         "POCKETLAB_RENDER_CADDY_ONLY",
+        "POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS",
+        "POCKETLAB_RUNTIME_RECONCILE_SECONDS",
         "POCKETLAB_SERVER_NODE_ID",
         "POCKETLAB_STATE_DIR",
         "POCKETLAB_TAILNET_IP",
@@ -326,56 +330,7 @@
       "rollback": "stage-specific manual recovery; do not clear evidence",
       "safe_retry": true,
       "secrets_handled": true,
-      "services_affected": [
-        [
-          "caddy-proxy",
-          ""
-        ],
-        [
-          "grafana-ui",
-          ""
-        ],
-        [
-          "loki-kms",
-          ""
-        ],
-        [
-          "pocket-api",
-          ""
-        ],
-        [
-          "pocket-gatus",
-          ""
-        ],
-        [
-          "pocket-nats",
-          ""
-        ],
-        [
-          "pocket-node-agent",
-          ""
-        ],
-        [
-          "pocket-telemetry",
-          ""
-        ],
-        [
-          "pocket-worker",
-          ""
-        ],
-        [
-          "pocketlab-core-supervisor",
-          ""
-        ],
-        [
-          "prometheus-db",
-          ""
-        ],
-        [
-          "promtail-agent",
-          ""
-        ]
-      ],
+      "services_affected": [],
       "side_effects": "source-defined system/runtime changes; generation does not execute the stage",
       "stage": "start_dashboard",
       "supported_platform": "Android/Termux; selected syntax and dry-run checks on Ubuntu/WSL2",
@@ -411,12 +366,7 @@
       "rollback": "stage-specific manual recovery; do not clear evidence",
       "safe_retry": true,
       "secrets_handled": true,
-      "services_affected": [
-        [
-          "pocket-node-agent",
-          ""
-        ]
-      ],
+      "services_affected": [],
       "side_effects": "source-defined system/runtime changes; generation does not execute the stage",
       "stage": "install_fleet_agent",
       "supported_platform": "Android/Termux; selected syntax and dry-run checks on Ubuntu/WSL2",
@@ -424,7 +374,7 @@
     },
     {
       "android_termux": true,
-      "description": "Run Day-0 smoke tests against Vault, Gitea, FastAPI, NATS, workflows, telemetry, MariaDB, and profile health",
+      "description": "Run profile-aware Day-0 smoke tests",
       "evidence_generated": [
         "bootstrap stage marker and logs"
       ],
@@ -443,10 +393,35 @@
       "stage": "smoke_test",
       "supported_platform": "Android/Termux; selected syntax and dry-run checks on Ubuntu/WSL2",
       "wsl2": "validation only unless explicitly allowed"
+    },
+    {
+      "android_termux": true,
+      "description": "Install Pocket Lab Lite Android boot recovery and external PM2 guardian",
+      "evidence_generated": [
+        "bootstrap stage marker and logs"
+      ],
+      "expected_output": "Completed stage 13/install_lite_boot_recovery",
+      "failure_behavior": "fail closed; later stages do not run",
+      "files_written": "source-defined; no paths executed during documentation generation",
+      "idempotency": "completion marker and stage-owned checks",
+      "index": 13,
+      "owning_script": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-boot-recovery.sh",
+      "required_environment": [
+        "POCKETLAB_LITE_BOOT_DELAY_SECONDS",
+        "POCKETLAB_LITE_BOOT_WAKE_LOCK"
+      ],
+      "rollback": "stage-specific manual recovery; do not clear evidence",
+      "safe_retry": true,
+      "secrets_handled": false,
+      "services_affected": [],
+      "side_effects": "source-defined system/runtime changes; generation does not execute the stage",
+      "stage": "install_lite_boot_recovery",
+      "supported_platform": "Android/Termux; selected syntax and dry-run checks on Ubuntu/WSL2",
+      "wsl2": "validation only unless explicitly allowed"
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "8997288a70c361fd7ac91794b6532fb1e68b0ee72130a850d4f97ed7f0ce105a",
+    "aggregate_fingerprint": "aa9075c9851bdb4226c5aafa2b4c786e5638344071c6a70ff14ab1be4f70e6f7",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -456,18 +431,19 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/bootstrap.sh": "552c8059f3056fd2c4d7ff8e10ae5a56fbcceb782f68fde18cde8f7385d5fb64",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/bootstrap.sh": "31e839effcc473edecc4b8866c47583a59e2d63d34921bc26347db86ceebfac3",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/init-mariadb.sh": "f9ff241fc75b02991c0ed2b2fd6e65fb46dc3e9b0c2b4269b3bc36314c37f225",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/init-vault.sh": "8115b6377276346c1263879b9b5e2b96e97f5ab6e8c18329b1af9359e783ca52",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-binaries.sh": "33db6551ca7e37b1f7b8fa76d8ae5b0717ef82f924bde9f96810a21318eb8856",
-      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh": "bbaf13b2ddc1fc624e27b8bd36e1bced0bb6f04fa92ada489407cbc54a60b3ef",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh": "30efe7f2d82d07e299295bc46c6fa2e52e3ca94db9736350c781ad3a534d37d2",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-proot-ubuntu.sh": "60baae5ced355da335e711167eb356ba930b1c339d5378d71b204d822fc0c245",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-pwa-ui.sh": "32b789b732bee5784a4b154550bc79ded6ad4c3ec14fe98c905eb2f864a2d37b",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-tailscale.sh": "3e6a5ddcef8cb4cb3fbeae9daf381051fcbefc24686c08452723f06429605ba3",
-      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-termux-packages.sh": "46c23f9497e9e268ab06b16bb1dd49bcb1e148de5611f4546c83857cf2e35af4",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-termux-packages.sh": "547e9b09be8cff62dfbdd2187261423557c8c6bae93e8dd8ddaaf01ef621c951",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-boot-recovery.sh": "8ffb4c3b31cb7b0238bdfdac18f9766befe720b8361035c22c80e2fc0fbb8c85",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/seed-gitops-repo.sh": "1905104bdba9ea90b6828be3e3b518bae8aabb2b57c08d6f880b4788984834ed",
-      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/smoke-test.sh": "ccb0edb3a71afb5be693f06c0041810cdb9116239e97438e5f1d4ffa8389f2ec",
-      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh": "b8a777d3d76140fcb71091f249937ed2db98fd4b9c582856c01ee942c500d1c8",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/smoke-test.sh": "7fbb8e7bb70c7105703e0336480ebdf24703eb5da91739df605455a1eeb0bc3f",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh": "ddc2c3fabe4aeb70b781a052adf30a8f9b1bbc76c4098b379da73fba7dea693a",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-gitea.sh": "129b2a066ceb0c10c67a29938cc9b06b901f6b31923415db1684782a2460d805",
       "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4"
     },

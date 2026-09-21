@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: e0261cf8206fe3bb5f9c29a0f6e20ecc221ca109e26ec3e4e76290eff8511ee9
+source_fingerprint: 437c5608cc48d1941cb66a65ce2a49429082db5f7afcaa23ed520dc7634c0d95
 schema_revision: 1
 validation_status: generated
 ---
@@ -118,7 +118,7 @@ Missing delivery metadata is explicitly marked `incomplete`; the generator does 
 | `pocketlab.events.fleet.node_left` | fleet | event | pocketlab_node_agent.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:646 |
 | `pocketlab.events.fleet.node_profile` | fleet | event | pocketlab_node_agent.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:399 |
 | `pocketlab.events.fleet.node_seen` | fleet | event | pocketlab_node_agent.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:384 |
-| `pocketlab.events.fleet.node_supervisor` | fleet | event | pocketlab_agent_supervisor.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:282 |
+| `pocketlab.events.fleet.node_supervisor` | fleet | event | pocketlab_agent_supervisor.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:350 |
 | `pocketlab.events.fleet.node_telemetry` | fleet | event | pocketlab_node_agent.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:539 |
 | `pocketlab.events.health.changed` | health | event | live_status.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:547 |
 | `pocketlab.events.health.check_completed` | health | event | domain_commands.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:340 |
