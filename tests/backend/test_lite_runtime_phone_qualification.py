@@ -89,15 +89,30 @@ def test_fault_waiter_streams_pm2_json_instead_of_using_environment_payload():
     assert 'rm -f "$json_file"' in waiter
 
 
-def test_server_phone_qualification_waits_for_stable_api_health_and_readiness():
+def test_server_phone_qualification_uses_adaptive_api_stabilization():
     source = SCRIPT.read_text(encoding="utf-8")
     start = source.index("remote_read_only() {")
     end = source.index("wait_pm2_service() {", start)
     read_only = source[start:end]
 
-    assert 'api_stable=0' in read_only
-    assert 'POCKETLAB_PHONE_API_ATTEMPTS' in read_only
+    assert 'api_policy="${2:-strict}"' in read_only
+    assert 'POCKETLAB_PHONE_API_STABILIZATION_SECONDS' in read_only
+    assert 'POCKETLAB_PHONE_API_BACKOFF_MAX_SECONDS' in read_only
+    assert 'api_backoff_seconds=2' in read_only
+    assert 'api_backoff_seconds=$((api_backoff_seconds * 2))' in read_only
+    assert 'socket.connect(("127.0.0.1", 8080))' in read_only
     assert 'http://127.0.0.1:8080/health' in read_only
     assert 'http://127.0.0.1:8080/ready' in read_only
     assert '[[ "$api_stable" -ge 2 ]]' in read_only
     assert 'Lite API /health and /ready did not remain reachable' in read_only
+
+
+def test_fault_mode_downgrades_only_final_api_stabilization_to_advisory():
+    source = SCRIPT.read_text(encoding="utf-8")
+    faults = source[source.index("run_faults() {"):source.index("run_remote_access_fault() {")]
+
+    assert 'remote_read_only --read-only' in faults
+    assert 'remote_read_only --read-only advisory' in faults
+    assert 'PASS fault injection recovery sequence completed' in faults
+    assert 'ADVISORY Lite API health/readiness did not stabilize' in source
+    assert 'All injected recovery scenarios completed' in source
