@@ -954,7 +954,7 @@ print(match.group(1) if match else "")
 }
 
 caddy_installed_version(){
-  local output raw
+  local output raw package_version
   output="$(caddy version 2>&1 || true)"
   raw="$(printf '%s\n' "$output" | python3 -c '
 import re, sys
@@ -962,8 +962,31 @@ text=sys.stdin.read()
 match=re.search(r"(?<![0-9])v?([0-9]+(?:\.[0-9]+){1,3}(?:[-+][0-9A-Za-z._-]+)?)", text)
 print(match.group(1) if match else "")
 ')"
-  [[ -n "$raw" ]] || die "Could not determine installed Caddy version"
-  pm2_normalize_service_version "$raw"
+  if [[ -n "$raw" ]]; then
+    pm2_normalize_service_version "$raw"
+    return 0
+  fi
+
+  # Termux's packaged Caddy may be built without embedded Go version metadata
+  # and legitimately report "unknown". The package database is authoritative
+  # for that install path, so fall back to its exact installed package version.
+  if command -v dpkg-query >/dev/null 2>&1; then
+    package_version="$(dpkg-query -W -f='\${Version}\n' caddy 2>/dev/null | head -1 || true)"
+    package_version="$(printf '%s\n' "$package_version" | sed -E 's/^[0-9]+://')"
+    if [[ -n "$package_version" ]]; then
+      pm2_normalize_service_version "$package_version"
+      return 0
+    fi
+  elif command -v dpkg >/dev/null 2>&1; then
+    package_version="$(dpkg-query -W -f='\${Version}\n' caddy 2>/dev/null | head -1 || true)"
+    package_version="$(printf '%s\n' "$package_version" | sed -E 's/^[0-9]+://')"
+    if [[ -n "$package_version" ]]; then
+      pm2_normalize_service_version "$package_version"
+      return 0
+    fi
+  fi
+
+  die "Could not determine installed Caddy version from binary or Termux package metadata"
 }
 
 reload_caddy_if_config_changed(){
