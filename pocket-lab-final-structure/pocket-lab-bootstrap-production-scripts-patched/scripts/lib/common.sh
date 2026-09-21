@@ -274,6 +274,39 @@ pm2_start_or_restart() {
   fi
 }
 
+pm2_policy_registry_path() {
+  if [[ -n "${POCKETLAB_PM2_POLICY_REGISTRY:-}" ]]; then
+    printf '%s\n' "$POCKETLAB_PM2_POLICY_REGISTRY"
+    return 0
+  fi
+  local common_dir final_root
+  common_dir="$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+  final_root="$(CDPATH='' cd -- "$common_dir/../../.." && pwd)"
+  printf '%s\n' "$final_root/runtime/supervisors/pocketlab_runtime_registry.py"
+}
+
+pm2_policy_args() {
+  local name="$1" registry rc
+  registry="$(pm2_policy_registry_path)"
+  [[ -f "$registry" ]] || return 0
+  python3 "$registry" --pm2-args "$name" 2>/dev/null || {
+    rc=$?
+    [[ "$rc" -eq 3 ]] && return 0
+    return "$rc"
+  }
+}
+
+pm2_policy_fingerprint() {
+  local name="$1" registry rc
+  registry="$(pm2_policy_registry_path)"
+  [[ -f "$registry" ]] || return 0
+  python3 "$registry" --policy-fingerprint "$name" 2>/dev/null || {
+    rc=$?
+    [[ "$rc" -eq 3 ]] && return 0
+    return "$rc"
+  }
+}
+
 pm2_process_spec_hash() {
   {
     printf 'argv\\0'
@@ -424,6 +457,12 @@ pm2_ensure_process() {
   shift
   require_cmd pm2 python3 sha256sum
 
+  local policy_args=()
+  local policy_value=""
+  while IFS= read -r policy_value; do
+    [[ -n "$policy_value" ]] && policy_args+=("$policy_value")
+  done < <(pm2_policy_args "$name")
+
   local before_sep=()
   local after_sep=()
   local seen_sep=0
@@ -433,11 +472,26 @@ pm2_ensure_process() {
       seen_sep=1
       continue
     fi
-    if [[ "$seen_sep" -eq 1 ]]; then after_sep+=("$arg"); else before_sep+=("$arg"); fi
+    if [[ "$seen_sep" -eq 1 ]]; then
+      after_sep+=("$arg")
+    else
+      before_sep+=("$arg")
+    fi
   done
+  if [[ "${#policy_args[@]}" -gt 0 ]]; then
+    before_sep+=("${policy_args[@]}")
+  fi
 
-  local spec_hash snapshot status current_hash
-  spec_hash="$(pm2_process_spec_hash "$@")"
+  local policy_fingerprint spec_hash snapshot status current_hash
+  policy_fingerprint="$(pm2_policy_fingerprint "$name")"
+  local POCKETLAB_PM2_POLICY_FINGERPRINT="$policy_fingerprint"
+  export POCKETLAB_PM2_POLICY_FINGERPRINT
+
+  local effective_spec=("${before_sep[@]}")
+  if [[ "${#after_sep[@]}" -gt 0 ]]; then
+    effective_spec+=(-- "${after_sep[@]}")
+  fi
+  spec_hash="$(pm2_process_spec_hash "${effective_spec[@]}")"
   if ! snapshot="$(pm2_process_snapshot "$name" 2>/dev/null)"; then
     snapshot=""
   fi
