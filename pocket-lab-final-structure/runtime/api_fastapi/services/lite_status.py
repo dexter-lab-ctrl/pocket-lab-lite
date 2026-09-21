@@ -224,6 +224,54 @@ def _service(name: str, status: Any, summary: str, **extra: Any) -> dict[str, An
     return item
 
 
+def lite_runtime_contract() -> dict[str, Any]:
+    """Read the reconciler-owned sanitized runtime contract for Lite projection."""
+
+    path = deps.settings().state_dir / "runtime" / "pm2-runtime-contract.json"
+    payload = deps.core.read_json_file(path, {})
+    if not isinstance(payload, dict) or not payload:
+        return {
+            "schema_version": 1,
+            "state": "unknown",
+            "stable": False,
+            "summary": "Runtime status is being checked",
+            "reason_codes": ["runtime_contract_unavailable"],
+            "services": [],
+            "remote_access": {},
+            "log_policy": {},
+            "sanitized": True,
+        }
+    try:
+        from supervisors.pocketlab_runtime_contract import public_projection
+
+        return public_projection(payload)
+    except Exception:
+        # Fail closed to a tiny, safe projection. Never expose raw contract
+        # internals if the projector cannot load during a mixed-version update.
+        state = _public_text(payload.get("state") or "unknown", 32)
+        summary = (
+            "System running normally"
+            if state == "stable"
+            else "Recovery in progress"
+            if state in {"converging", "repairing"}
+            else "Something changed"
+        )
+        return {
+            "schema_version": payload.get("schema_version") or 1,
+            "state": state,
+            "stable": bool(payload.get("stable")),
+            "summary": summary,
+            "reason_codes": [
+                _public_text(value, 96)
+                for value in (payload.get("reason_codes") or [])[:16]
+            ],
+            "services": [],
+            "remote_access": {},
+            "log_policy": {},
+            "sanitized": True,
+        }
+
+
 def _overall(services: list[dict[str, Any]]) -> str:
     statuses = {str(item.get("status") or "unknown") for item in services}
     if "unhealthy" in statuses:
@@ -444,6 +492,20 @@ def _build_lite_status_from_inputs(
     # evaluation material through the status projection.
     blocked_findings = [None] * blocked_count
 
+    runtime_contract = (
+        current_state.get("runtime_contract")
+        if isinstance(current_state.get("runtime_contract"), dict)
+        else {}
+    )
+    runtime_state = _public_text(runtime_contract.get("state") or "unknown", 32)
+    runtime_status = (
+        "healthy"
+        if runtime_state == "stable"
+        else "degraded"
+        if runtime_state in {"converging", "repairing", "policy_drift", "restart_budget_exhausted", "degraded"}
+        else "unknown"
+    )
+
     services = [
         _service(
             "Control API",
@@ -469,6 +531,12 @@ def _build_lite_status_from_inputs(
             "healthy" if live.get("running") else "degraded",
             "Worker heartbeat sampler is active" if live.get("running") else "Worker heartbeat is not active yet",
             source="FastAPI live status",
+        ),
+        _service(
+            "Runtime",
+            runtime_status,
+            runtime_contract.get("summary") or "Runtime status is being checked",
+            source="Pocket Lab runtime contract",
         ),
         _service(
             "App Catalog",
@@ -554,6 +622,7 @@ def _build_lite_status_from_inputs(
             "remote_access_ready": bool(remote_access.get("ready")),
         },
         "telemetry": _lite_telemetry(telemetry),
+        "runtime": runtime_contract,
         "system_current_state": current_state,
         "projection_only": True,
         "sanitized": True,
@@ -609,6 +678,15 @@ def default_lite_status_state() -> dict[str, Any]:
             "remote_access_ready": False,
         },
         "telemetry": {"status": "unknown"},
+        "runtime": {
+            "schema_version": 1,
+            "state": "unknown",
+            "stable": False,
+            "summary": "Runtime status is being checked",
+            "reason_codes": ["runtime_contract_unavailable"],
+            "services": [],
+            "sanitized": True,
+        },
         "system_current_state": {},
         "projection_only": True,
         "read_degraded": True,
@@ -726,6 +804,7 @@ def build_lite_status_projection() -> dict[str, Any]:
     )
     current_state = {
         "health": snapshots["system.health"],
+        "runtime_contract": lite_runtime_contract(),
         "processes": snapshots["system.processes"],
         "agent": snapshots["system.agent"],
         "supervisor": snapshots["system.supervisor"],
@@ -888,6 +967,20 @@ def _server_host_device(remote_access: dict[str, Any] | None = None) -> dict[str
     supervisor_version = _public_text(supervisor_record.get("supervisor_version") or system_profile.get("supervisor_version"), 80)
     profile_ready = bool(system_profile.get("technical_model") or system_profile.get("architecture_family") or system_profile.get("architecture"))
     supervisor_ready = bool(supervisor_status in {"healthy", "online", "available"} and supervisor_freshness == "fresh")
+    runtime_contract = lite_runtime_contract()
+    runtime_services = {
+        str(item.get("process") or ""): item
+        for item in (runtime_contract.get("services") or [])
+        if isinstance(item, dict)
+    }
+    agent_runtime = runtime_services.get("pocket-node-agent") or {}
+    runtime_state = _public_text(runtime_contract.get("state") or "unknown", 32)
+    if runtime_state == "repairing":
+        runtime_connection = "repairing"
+    elif str(agent_runtime.get("status") or "") == "Something changed":
+        runtime_connection = "agent_stopped"
+    else:
+        runtime_connection = "online"
 
     field_freshness = {
         "heartbeat": {"state": "current", "reported_at": now, "source": "protected_host_runtime"},
@@ -913,7 +1006,7 @@ def _server_host_device(remote_access: dict[str, Any] | None = None) -> dict[str
         "tailnet_ip_ready": bool(remote_access.get("ip")),
         "nats_tailnet_reachable": bool(remote_access.get("nats_reachable")),
         "tailnet_ip": remote_access.get("ip") if ready else None,
-        "connection": "online",
+        "connection": runtime_connection,
         "role": role_info["role"],
         "role_label": role_info["role_label"],
         "capabilities": lite_device_capabilities.capability_ids_for_role("server_host"),
@@ -957,11 +1050,28 @@ def _server_host_device(remote_access: dict[str, Any] | None = None) -> dict[str
         "system_profile": system_profile,
         "system_health": system_health,
         "field_freshness": field_freshness,
+        "runtime": {
+            "state": runtime_state,
+            "stable": bool(runtime_contract.get("stable")),
+            "summary": runtime_contract.get("summary") or "Runtime status is being checked",
+            "restart_generation": agent_runtime.get("restart_generation"),
+            "recent_restarts": agent_runtime.get("recent_restarts"),
+            "recovered_at": agent_runtime.get("recovered_at"),
+            "reason_codes": agent_runtime.get("reason_codes") or runtime_contract.get("reason_codes") or [],
+            "sanitized": True,
+        },
         "convergence": {
-            "state": "ready" if profile_ready and supervisor_ready else "waiting_for_details",
+            "state": (
+                "repairing"
+                if runtime_state == "repairing"
+                else "ready"
+                if profile_ready and supervisor_ready and runtime_contract.get("stable")
+                else "waiting_for_details"
+            ),
             "profile_ready": profile_ready,
             "supervisor_ready": supervisor_ready,
-            "last_good_projection": bool(profile_record or supervisor_record),
+            "runtime_stable": bool(runtime_contract.get("stable")),
+            "last_good_projection": bool(profile_record or supervisor_record or runtime_contract.get("observed_at")),
             "target_seconds": 45,
         },
         "is_current": True,
