@@ -60,6 +60,7 @@ pm2() {
       if [[ "$1" == "start" ]]; then
         cp "$2" "$ECOSYSTEM_CAPTURE"
         printf '%s\n' "$2" >"$START_PATH"
+        printf '%s\n' "$@" >"$START_ARGS"
         python3 - "$2" "$START_SNAPSHOT" "$POCKETLAB_PROCESS_SPEC_HASH" <<'PY'
 import json
 from pathlib import Path
@@ -108,6 +109,7 @@ PY
             "ACTION_FILE": str(actions),
             "ECOSYSTEM_CAPTURE": str(tmp_path / f"ecosystem-{status}.js"),
             "START_PATH": str(tmp_path / f"start-path-{status}.txt"),
+            "START_ARGS": str(tmp_path / f"start-args-{status}.txt"),
             "START_SNAPSHOT": str(tmp_path / f"snapshot-{status}.json"),
             "STATUS": status,
         }
@@ -150,6 +152,10 @@ def test_process_start_uses_temporary_ecosystem_config_without_serializing_secre
     start_path = Path((tmp_path / "start-path-missing.txt").read_text(encoding="utf-8").strip())
     assert start_path.name == "demo.config.cjs"
     assert start_path.parent.name == "pm2-ecosystems"
+    assert (tmp_path / "start-args-missing.txt").read_text(encoding="utf-8").splitlines() == [
+        "start",
+        str(start_path),
+    ]
     assert "app.env = process.env;" in source
     assert "test-secret-value" not in source
     encoded_app = source.split("const app = ", 1)[1].split(";\napp.env", 1)[0]

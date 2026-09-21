@@ -634,12 +634,12 @@ PY
     rm -f -- "$ecosystem_tmp"
     return 1
   fi
-  # Keep a stable, process-specific ecosystem path. PM2 7 on Termux can cache
-  # rapidly replaced temporary configs and apply a later --only selection to
-  # the previous app definition. Atomic replacement preserves a deterministic
-  # path while ensuring PM2 reads the current canonical app.
+  # Keep a stable, process-specific ecosystem path. PM2 7 on Termux can apply
+  # a queued --only selector to the previous app definition during recovery;
+  # this config contains exactly one canonical app, so its name selects the
+  # process without a selector and avoids cross-process launch identity drift.
   mv -f -- "$ecosystem_tmp" "$ecosystem_file"
-  if POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$ecosystem_file" --only "$name" >/dev/null; then
+  if POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$ecosystem_file" >/dev/null; then
     launch_status=0
   else
     launch_status=$?
