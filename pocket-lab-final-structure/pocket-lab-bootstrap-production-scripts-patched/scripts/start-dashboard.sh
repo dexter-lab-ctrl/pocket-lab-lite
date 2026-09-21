@@ -960,8 +960,8 @@ reload_caddy_if_config_changed(){
   if caddy reload --config "$CADDYFILE" >/dev/null 2>&1; then
     return 0
   fi
-  log WARN "Caddy reload failed; restarting only caddy-proxy"
-  pm2 restart caddy-proxy --update-env >/dev/null 2>&1 || return 1
+  log WARN "Caddy reload failed; restarting only caddy-proxy without importing caller service-version metadata"
+  pm2 restart caddy-proxy >/dev/null 2>&1 || return 1
 }
 
 start_pm2_daemons(){
