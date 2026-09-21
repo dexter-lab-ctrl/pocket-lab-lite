@@ -24,8 +24,13 @@ from typing import Any, Iterable
 from pocketlab_runtime_registry import (
     CONTROL_PLANE_SERVICES,
     LEGACY_LITE_SERVICES,
+    PHOTOPRISM_SPEC,
+    RECONCILER_SPEC,
     REPAIRABLE_PM2_STATUSES,
+    policy_fingerprint,
+    policy_match,
 )
+from pocketlab_runtime_contract import build_runtime_contract
 
 _STOP = False
 VERSION = "1.0.0-lite-desired-state"
@@ -81,6 +86,36 @@ def pm2_version_projection(processes: Iterable[dict[str, Any]]) -> tuple[dict[st
         if not version or version.lower() in {"n/a", "na", "unknown"} or version != declared:
             reasons.append(f"pm2_version_projection:{name}")
     return versions, reasons
+
+
+def pm2_policy_reasons(
+    processes: Iterable[dict[str, Any]],
+    *,
+    include_photoprism: bool = False,
+) -> list[str]:
+    """Return desired PM2 policy drift without exposing process environment."""
+
+    tracked = [*CONTROL_PLANE_SERVICES, RECONCILER_SPEC]
+    if include_photoprism:
+        tracked.append(PHOTOPRISM_SPEC)
+    by_name = {
+        str(item.get("name") or "").strip(): item
+        for item in processes
+        if isinstance(item, dict) and str(item.get("name") or "").strip()
+    }
+    reasons: list[str] = []
+    for spec in tracked:
+        item = by_name.get(spec.name)
+        if not item:
+            continue
+        env = item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}
+        matches, fields = policy_match(spec.name, env)
+        expected_fingerprint = policy_fingerprint(spec.name)
+        observed_fingerprint = str(env.get("POCKETLAB_PM2_POLICY_FINGERPRINT") or "").strip()
+        if not matches or not expected_fingerprint or observed_fingerprint != expected_fingerprint:
+            detail = ",".join(fields) if fields else "fingerprint"
+            reasons.append(f"pm2_policy:{spec.name}:{detail}")
+    return reasons
 
 
 def repair_reasons(statuses: dict[str, str]) -> list[str]:
@@ -283,6 +318,7 @@ class RuntimeReconciler:
         remote = tailscale_state()
         reasons = repair_reasons(statuses)
         reasons.extend(version_reasons)
+        reasons.extend(pm2_policy_reasons(processes, include_photoprism=photoprism_expected()))
         reasons.extend(remote_reconcile_reasons(remote, previous.get("remote_access")))
         reasons.extend(photoprism_reconcile_reasons(statuses))
         actions: list[dict[str, Any]] = []
@@ -293,6 +329,13 @@ class RuntimeReconciler:
             versions, _ = pm2_version_projection(processes)
             remote = tailscale_state()
         legacy_present = sorted(name for name in statuses if name in LEGACY_LITE_SERVICES)
+        runtime_contract = build_runtime_contract(
+            processes=processes,
+            state_root=self.state_dir.parent,
+            photoprism_expected=photoprism_expected(),
+            repairing=bool(reasons or actions),
+            remote_access=remote,
+        )
         payload = {
             "reconciler": "pocketlab-runtime-reconciler",
             "version": VERSION,
@@ -302,6 +345,13 @@ class RuntimeReconciler:
             "remote_access": remote,
             "drift_reasons": reasons,
             "actions": actions,
+            "runtime_contract": {
+                "schema_version": runtime_contract.get("schema_version"),
+                "state": runtime_contract.get("state"),
+                "stable": runtime_contract.get("stable"),
+                "reason_codes": runtime_contract.get("reason_codes"),
+                "observed_at": runtime_contract.get("observed_at"),
+            },
             "legacy_lite_services_present": legacy_present,
             "legacy_lite_services_allowed": False,
             "checked_at": _now_iso(),
