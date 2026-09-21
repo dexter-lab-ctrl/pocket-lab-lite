@@ -27,25 +27,16 @@ source "$COMMON_PATH"
 export ACTION_FILE
 SPEC="$(pm2_process_spec_hash python3 -- demo.py)"
 export SPEC STATUS
+
+pm2_process_snapshot() {
+  if [[ "$STATUS" == "missing" ]]; then
+    return 1
+  fi
+  printf '%s\n%s\n' "$STATUS" "$SPEC"
+}
+
 pm2() {
   case "${1:-}" in
-    jlist)
-      if [[ "$STATUS" == "missing" ]]; then
-        printf '[]\n'
-      else
-        python3 - "$STATUS" "$SPEC" <<'PY'
-import json, sys
-status, spec = sys.argv[1:3]
-print(json.dumps([{
-    "name": "demo",
-    "pm2_env": {
-        "status": status,
-        "POCKETLAB_PROCESS_SPEC_HASH": spec,
-    },
-}]))
-PY
-      fi
-      ;;
     restart|start|delete)
       printf '%s\n' "$1" >>"$ACTION_FILE"
       ;;
@@ -54,6 +45,7 @@ PY
       ;;
   esac
 }
+
 pm2_ensure_process demo python3 -- demo.py
 """
     env = os.environ.copy()
@@ -124,3 +116,46 @@ test "$A" = "$B"
         text=True,
         capture_output=True,
     )
+
+
+
+def test_pm2_process_snapshot_parses_jlist_json(tmp_path):
+    shell = r"""
+set -Eeuo pipefail
+export POCKET_LAB_ALLOW_NON_TERMUX=1
+export HOME="$TEST_HOME"
+export PREFIX="$TEST_PREFIX"
+source "$COMMON_PATH"
+
+pm2() {
+  case "${1:-}" in
+    jlist)
+      printf '%s\n' '[{"name":"demo","pm2_env":{"status":"online","POCKETLAB_PROCESS_SPEC_HASH":"abc123"}}]'
+      ;;
+    *)
+      return 0
+      ;;
+  esac
+}
+
+snapshot="$(pm2_process_snapshot demo)"
+test "$(printf '%s\n' "$snapshot" | sed -n '1p')" = "online"
+test "$(printf '%s\n' "$snapshot" | sed -n '2p')" = "abc123"
+"""
+    env = os.environ.copy()
+    env.update(
+        {
+            "TEST_HOME": str(tmp_path / "home"),
+            "TEST_PREFIX": str(tmp_path / "prefix"),
+            "COMMON_PATH": str(COMMON),
+        }
+    )
+    completed = subprocess.run(
+        ["bash", "-lc", shell],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr or completed.stdout
