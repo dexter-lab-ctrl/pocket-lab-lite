@@ -86,6 +86,22 @@ def test_runtime_reconciler_defers_repairs_during_dashboard_lifecycle(tmp_path, 
     assert reconciler.lifecycle_transition_active() is False
 
 
+def test_runtime_reconciler_allows_only_one_active_loop(tmp_path, monkeypatch):
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path / "state"))
+    reconciler_module = _load("pocketlab_runtime_reconciler")
+    first = reconciler_module.RuntimeReconciler()
+    second = reconciler_module.RuntimeReconciler()
+    first_handle = first._acquire_singleton()
+    assert first_handle is not None
+    try:
+        assert second._acquire_singleton() is None
+    finally:
+        first_handle.close()
+    released = second._acquire_singleton()
+    assert released is not None
+    released.close()
+
+
 def test_lite_bootstrap_skips_legacy_runtime_stages():
     bootstrap = (
         ROOT

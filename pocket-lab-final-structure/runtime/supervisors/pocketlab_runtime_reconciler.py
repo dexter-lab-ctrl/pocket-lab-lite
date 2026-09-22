@@ -389,6 +389,18 @@ class RuntimeReconciler:
             / "reconcile-runtime.sh"
         )
 
+    def _acquire_singleton(self):
+        """Keep only one reconciler loop active per Lite state directory."""
+
+        self.state_dir.mkdir(parents=True, exist_ok=True)
+        handle = (self.state_dir / "active.lock").open("a+", encoding="utf-8")
+        try:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            handle.close()
+            return None
+        return handle
+
     def _load_previous(self) -> dict[str, Any]:
         try:
             value = json.loads(self.state_file.read_text(encoding="utf-8"))
@@ -537,19 +549,28 @@ class RuntimeReconciler:
         return payload
 
     def run(self) -> None:
-        while not _STOP:
+        singleton = self._acquire_singleton()
+        if singleton is None:
+            return
+        try:
+            while not _STOP:
+                try:
+                    self.tick()
+                except Exception as exc:
+                    self._event(
+                        {
+                            "event": "runtime_reconcile_check_failed",
+                            "reason": type(exc).__name__,
+                            "acted": False,
+                            "result": "degraded",
+                        }
+                    )
+                time.sleep(self.interval)
+        finally:
             try:
-                self.tick()
-            except Exception as exc:
-                self._event(
-                    {
-                        "event": "runtime_reconcile_check_failed",
-                        "reason": type(exc).__name__,
-                        "acted": False,
-                        "result": "degraded",
-                    }
-                )
-            time.sleep(self.interval)
+                fcntl.flock(singleton.fileno(), fcntl.LOCK_UN)
+            finally:
+                singleton.close()
 
 
 def _stop(_signum: int, _frame: Any) -> None:
