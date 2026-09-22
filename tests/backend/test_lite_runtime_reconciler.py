@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -66,6 +67,19 @@ def test_runtime_reconcile_outer_lock_cannot_leak_into_pm2_children():
     assert 'if [[ "$name" == "reconcile-runtime.sh" ]]' in source
     assert 'ACTIVE_LOCK_DIR="$lockfile"' in source
     assert 'write_lock_metadata "$lockfile/metadata" "$name"' in source
+
+
+def test_runtime_reconciler_defers_repairs_during_dashboard_lifecycle(tmp_path, monkeypatch):
+    reconciler = _load("pocketlab_runtime_reconciler")
+    lock_path = tmp_path / ".pocket_lab" / "locks" / "start-dashboard.sh.lock"
+    lock_path.parent.mkdir(parents=True)
+    lock_path.write_text(f"pid={os.getpid()}\n", encoding="utf-8")
+    monkeypatch.setenv("HOME", str(tmp_path))
+
+    assert reconciler.lifecycle_transition_active() is True
+
+    lock_path.write_text("pid=999999\n", encoding="utf-8")
+    assert reconciler.lifecycle_transition_active() is False
 
 
 def test_lite_bootstrap_skips_legacy_runtime_stages():

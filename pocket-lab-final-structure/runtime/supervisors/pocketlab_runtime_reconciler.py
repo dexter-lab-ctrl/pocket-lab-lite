@@ -78,6 +78,43 @@ def _run(args: list[str], timeout: float = 15.0, env: dict[str, str] | None = No
     return subprocess.run(args, check=False, capture_output=True, text=True, timeout=timeout, env=env)
 
 
+def lifecycle_transition_active() -> bool:
+    """Return whether the repository-owned dashboard lifecycle is mutating PM2.
+
+    The startup/reconcile shell path holds this lock while it replaces or
+    reloads process definitions. PM2 7 on Termux can briefly report a sibling
+    definition as missing during that queue drain. A concurrent reconciler
+    repair must observe the transition and defer its own mutation until the
+    lifecycle owner has finished.
+    """
+
+    lock_path = Path(
+        os.environ.get(
+            "POCKETLAB_START_DASHBOARD_LOCK",
+            Path.home() / ".pocket_lab" / "locks" / "start-dashboard.sh.lock",
+        )
+    ).expanduser()
+    if not lock_path.exists():
+        return False
+    try:
+        metadata = lock_path / "metadata" if lock_path.is_dir() else lock_path
+        values: dict[str, str] = {}
+        for line in metadata.read_text(encoding="utf-8").splitlines():
+            key, separator, value = line.partition("=")
+            if separator:
+                values[key.strip()] = value.strip()
+        owner_pid = int(values.get("pid", "0"))
+    except (OSError, ValueError, TypeError):
+        return False
+    if owner_pid <= 0:
+        return False
+    try:
+        os.kill(owner_pid, 0)
+    except (OSError, ProcessLookupError):
+        return False
+    return True
+
+
 def load_pm2_processes() -> list[dict[str, Any]]:
     try:
         result = _run(["pm2", "jlist"], timeout=10)
@@ -435,11 +472,21 @@ class RuntimeReconciler:
         reasons.extend(photoprism_reconcile_reasons(statuses))
         actions: list[dict[str, Any]] = []
         if reasons:
-            actions.append(self._repair(reasons))
-            processes = load_pm2_processes()
-            statuses = pm2_statuses(processes)
-            versions, _ = pm2_version_projection(processes)
-            remote = tailscale_state()
+            if lifecycle_transition_active():
+                event = {
+                    "event": "runtime_reconcile_suppressed",
+                    "reason": "lifecycle_transition",
+                    "acted": False,
+                    "result": reasons[0],
+                }
+                self._event(event)
+                actions.append(event)
+            else:
+                actions.append(self._repair(reasons))
+                processes = load_pm2_processes()
+                statuses = pm2_statuses(processes)
+                versions, _ = pm2_version_projection(processes)
+                remote = tailscale_state()
         legacy_present = sorted(name for name in statuses if name in LEGACY_LITE_SERVICES)
         runtime_contract = build_runtime_contract(
             processes=processes,
