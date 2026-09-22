@@ -673,7 +673,7 @@ REMOTE
 
 fault_pm2_service() {
   local service="$1"
-  local generation_before started_epoch
+  local generation_before started_epoch pm2_id
   generation_before="$(ssh "$SSH_ALIAS" python3 - "$service" <<'REMOTE'
 import json
 from pathlib import Path
@@ -688,11 +688,48 @@ print(int(item.get("restart_generation") or 0))
 REMOTE
   )"
   started_epoch="$(ssh "$SSH_ALIAS" 'date +%s')"
-  echo "FAULT stopping $service (restart_generation=$generation_before)"
-  ssh "$SSH_ALIAS" bash -s -- "$service" <<'REMOTE'
+  # PM2 7 on Termux can resolve a mutable process name to a queued sibling
+  # while another lifecycle event is draining. Resolve the current numeric
+  # PM2 identity first so this fault targets exactly the requested service.
+  pm2_id="$(ssh "$SSH_ALIAS" bash -s -- "$service" <<'REMOTE'
 set -Eeuo pipefail
 service="$1"
-pm2 stop "$service" >/dev/null
+json_file="$(mktemp "${TMPDIR:-$HOME/tmp}/pocketlab-pm2-fault.XXXXXX.json")"
+trap 'rm -f "$json_file"' EXIT
+if ! pm2 jlist >"$json_file" 2>/dev/null; then
+  echo "ERROR: pm2 jlist failed while resolving fault identity for $service" >&2
+  exit 1
+fi
+python3 - "$json_file" "$service" <<'PY'
+import json
+import sys
+
+path, service = sys.argv[1:]
+items = json.loads(open(path, encoding="utf-8").read())
+for item in items if isinstance(items, list) else []:
+    if str(item.get("name") or "") != service:
+        continue
+    env = item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}
+    value = item.get("pm_id", env.get("pm_id", item.get("id", env.get("id"))))
+    if isinstance(value, bool):
+        break
+    try:
+        value = int(value)
+    except (TypeError, ValueError):
+        break
+    if value >= 0:
+        print(value)
+        raise SystemExit(0)
+raise SystemExit(f"PM2 numeric identity unavailable for {service}")
+PY
+REMOTE
+  )"
+  [[ "$pm2_id" =~ ^[0-9]+$ ]] || fail "PM2 fault identity was not numeric for $service"
+  echo "FAULT stopping $service (pm2_id=$pm2_id restart_generation=$generation_before)"
+  ssh "$SSH_ALIAS" bash -s -- "$pm2_id" <<'REMOTE'
+set -Eeuo pipefail
+pm2_id="$1"
+pm2 stop "$pm2_id" >/dev/null
 REMOTE
   wait_pm2_service "$service"
   ssh "$SSH_ALIAS" bash -s -- "$service" "$generation_before" "$started_epoch" <<'REMOTE'
