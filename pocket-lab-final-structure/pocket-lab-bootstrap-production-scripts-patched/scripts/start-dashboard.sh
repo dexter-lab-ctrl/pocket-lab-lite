@@ -28,6 +28,10 @@ parse_start_dashboard_args(){
         ;;
       --caddy-only)
         export POCKETLAB_RENDER_CADDY_ONLY=1
+        # Caddy refreshes can run from a runtime reconciliation child. Clear
+        # the inherited full-reconcile flag so this scoped path cannot recurse
+        # into another dashboard convergence pass.
+        export POCKETLAB_RECONCILE_ONLY=0
         shift
         ;;
       --reconcile-only)

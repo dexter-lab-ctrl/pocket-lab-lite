@@ -129,6 +129,8 @@ def test_nested_reconciler_dashboard_pass_reuses_outer_lock():
     assert "acquire_start_dashboard_lock" in source
     assert 'POCKETLAB_RECONCILER_CHILD:-0' in source
     assert '[[ "${POCKETLAB_RECONCILER_CHILD:-0}" == "1" ]] && return 0' in source
+    caddy_only = source[source.index("      --caddy-only)"):source.index("      --reconcile-only)")]
+    assert 'export POCKETLAB_RECONCILE_ONLY=0' in caddy_only
 
 
 def test_stale_pm2_version_projection_forces_controlled_recreation(tmp_path: Path):
