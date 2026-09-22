@@ -74,8 +74,12 @@ def test_node_agent_recovery_uses_scoped_runtime_path():
     ).read_text(encoding="utf-8")
     assert "--node-agent-only" in start_dashboard
     assert "POCKETLAB_NODE_AGENT_ONLY" in start_dashboard
+    assert "--runtime-reconciler-only" in start_dashboard
+    assert "POCKETLAB_RUNTIME_RECONCILER_ONLY" in start_dashboard
     assert 'if [[ "$REASON" == *pocket-node-agent* ]]' in reconcile
     assert 'bash "$DASHBOARD" --lite --node-agent-only' in reconcile
+    assert 'bash "$DASHBOARD" --lite --runtime-reconciler-only' in reconcile
+    assert 'if [[ "$REASON" == *runtime_reconciler*' in reconcile
     assert "without unrelated service convergence" in reconcile
 
 

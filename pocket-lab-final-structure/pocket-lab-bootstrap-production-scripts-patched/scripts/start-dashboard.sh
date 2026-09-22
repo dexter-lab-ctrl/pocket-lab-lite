@@ -39,6 +39,11 @@ parse_start_dashboard_args(){
         export POCKETLAB_RECONCILE_ONLY=0
         shift
         ;;
+      --runtime-reconciler-only)
+        export POCKETLAB_RUNTIME_RECONCILER_ONLY=1
+        export POCKETLAB_RECONCILE_ONLY=0
+        shift
+        ;;
       --reconcile-only)
         export POCKETLAB_PROFILE="lite"
         export POCKETLAB_LITE=1
@@ -1120,6 +1125,21 @@ start_node_agent_only(){
   log INFO "Lite node-agent runtime converged without unrelated service reconciliation"
 }
 
+start_runtime_reconciler_only(){
+  SCRIPT_NAME="start-dashboard.sh"
+  acquire_start_dashboard_lock "$SCRIPT_NAME"
+  ensure_root_dirs
+  require_termux
+  require_cmd python3 pm2
+  [[ -f "$RUNTIME_RECONCILER_SERVER" ]] || die "Missing Lite runtime reconciler: $RUNTIME_RECONCILER_SERVER"
+  POCKETLAB_RUNTIME_RECONCILE_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_SECONDS:-45}" \
+  POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS:-120}" \
+  POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$RUNTIME_RECONCILER_SERVER")" \
+    pm2_runtime_process pocketlab-runtime-reconciler "$RUNTIME_RECONCILER_SERVER" --interpreter python3 --update-env
+  pm2 save >/dev/null || true
+  log INFO "Lite runtime reconciler converged without unrelated service reconciliation"
+}
+
 reconcile_lite_runtime(){
   SCRIPT_NAME="start-dashboard.sh"
   acquire_start_dashboard_lock "$SCRIPT_NAME"
@@ -1142,6 +1162,10 @@ reconcile_lite_runtime(){
 main(){
   if [[ "${POCKETLAB_NODE_AGENT_ONLY:-0}" == "1" ]]; then
     start_node_agent_only
+    return
+  fi
+  if [[ "${POCKETLAB_RUNTIME_RECONCILER_ONLY:-0}" == "1" ]]; then
+    start_runtime_reconciler_only
     return
   fi
   if [[ "${POCKETLAB_RECONCILE_ONLY:-0}" == "1" ]]; then
