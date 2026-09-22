@@ -133,7 +133,20 @@ def test_nested_reconciler_dashboard_pass_reuses_outer_lock():
     assert '[[ "${POCKETLAB_RECONCILER_CHILD:-0}" == "1" ]] && return 0' in source
     caddy_only = source[source.index("      --caddy-only)"):source.index("      --reconcile-only)")]
     assert 'export POCKETLAB_RECONCILE_ONLY=0' in caddy_only
-    assert 'POCKETLAB_RECONCILER_CHILD=1 bash "$DASHBOARD" --lite --reconcile-only' in reconcile
+    assert 'bash "$DASHBOARD" --lite --reconcile-only' in reconcile
+    assert 'POCKETLAB_RECONCILER_CHILD=1 bash "$DASHBOARD" --lite --reconcile-only' not in reconcile
+
+
+def test_photoprism_repair_is_scoped_without_full_dashboard_convergence():
+    source = RUNTIME_RECONCILE.read_text(encoding="utf-8")
+    assert '[[ "$REASON" == *photoprism*' in source
+    assert 'bash "$photoprism" reconcile' in source
+    assert 'POCKETLAB_RECONCILER_CHILD=1' not in source
+
+
+def test_runtime_reconciler_does_not_propagate_child_lock_marker_to_pm2():
+    source = RUNTIME_RECONCILER.read_text(encoding="utf-8")
+    assert 'env["POCKETLAB_RECONCILER_CHILD"]' not in source
 
 
 def test_stale_pm2_version_projection_forces_controlled_recreation(tmp_path: Path):

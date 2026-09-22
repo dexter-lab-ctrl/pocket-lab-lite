@@ -366,7 +366,6 @@ class RuntimeReconciler:
             env.pop(key, None)
         env["POCKETLAB_PROFILE"] = "lite"
         env["POCKETLAB_LITE"] = "1"
-        env["POCKETLAB_RECONCILER_CHILD"] = "1"
         try:
             result = _run(["bash", str(self.reconcile_script), "--repair", "--reason", reason], timeout=240, env=env)
             acted = result.returncode == 0
