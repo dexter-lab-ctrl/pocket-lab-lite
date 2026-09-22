@@ -311,6 +311,10 @@ def test_core_supervisor_source_never_updates_env_on_pm2_restart():
 def test_core_supervisor_uses_shared_pm2_mutation_lock(monkeypatch, tmp_path):
     supervisor_module = load_supervisor_module()
     monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path / "state"))
+    monkeypatch.setenv(
+        "POCKETLAB_START_DASHBOARD_LOCK",
+        str(tmp_path / "locks" / "start-dashboard.sh.lock"),
+    )
     supervisor = supervisor_module.LiteCoreSupervisor()
     calls = []
 

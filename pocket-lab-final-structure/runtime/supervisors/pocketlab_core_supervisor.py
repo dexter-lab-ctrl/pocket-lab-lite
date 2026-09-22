@@ -110,18 +110,42 @@ def run_command(args: List[str], timeout: float = 15.0, env: Optional[Dict[str, 
 
 @contextlib.contextmanager
 def pm2_mutation_lock(timeout: float = 30.0):
-    """Serialize direct PM2 mutations with shell-owned convergence."""
+    """Serialize direct PM2 mutations with shell-owned convergence.
+
+    The shell convergence path holds the start-dashboard flock for its whole
+    reconciliation pass, then takes the PM2 mutation lock for each daemon
+    operation. Take that same flock first here so a core-supervisor restart
+    cannot interleave with a full Termux convergence pass and trigger PM2 7's
+    queued-definition name remapping.
+    """
 
     configured = os.environ.get("POCKETLAB_PM2_MUTATION_LOCK")
     state_root = Path(os.environ.get("POCKETLAB_STATE_DIR") or Path.home() / ".pocket_lab")
     path = Path(configured).expanduser() if configured else state_root / "runtime" / "pm2-mutation.lock"
     path.parent.mkdir(parents=True, exist_ok=True)
+    dashboard_lock_path = Path(
+        os.environ.get("POCKETLAB_START_DASHBOARD_LOCK")
+        or Path.home() / ".pocket_lab" / "locks" / "start-dashboard.sh.lock"
+    ).expanduser()
+    dashboard_lock_path.parent.mkdir(parents=True, exist_ok=True)
+    dashboard_lock = dashboard_lock_path.open("a+", encoding="utf-8")
+    dashboard_acquired = False
+    deadline = time.monotonic() + max(0.1, float(timeout))
+    while not dashboard_acquired:
+        try:
+            fcntl.flock(dashboard_lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            dashboard_acquired = True
+        except BlockingIOError:
+            if time.monotonic() >= deadline:
+                dashboard_lock.close()
+                yield False
+                return
+            time.sleep(0.1)
     if path.exists() and not path.is_dir():
         try:
             path.unlink()
         except OSError:
             pass
-    deadline = time.monotonic() + max(0.1, float(timeout))
     acquired = False
     while not acquired:
         try:
@@ -143,6 +167,8 @@ def pm2_mutation_lock(timeout: float = 30.0):
                     pass
                 continue
             if time.monotonic() >= deadline:
+                fcntl.flock(dashboard_lock.fileno(), fcntl.LOCK_UN)
+                dashboard_lock.close()
                 yield False
                 return
             time.sleep(0.1)
@@ -155,6 +181,8 @@ def pm2_mutation_lock(timeout: float = 30.0):
             path.rmdir()
         except OSError:
             pass
+        fcntl.flock(dashboard_lock.fileno(), fcntl.LOCK_UN)
+        dashboard_lock.close()
 
 
 def _pid_is_running(pid: int) -> bool:
