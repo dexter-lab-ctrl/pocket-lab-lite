@@ -58,10 +58,11 @@ pm2() {
     case "${1:-}" in
     restart|start|delete)
       if [[ "$1" == "start" ]]; then
-        cp "$2" "$ECOSYSTEM_CAPTURE"
-        printf '%s\n' "$2" >"$START_PATH"
-        printf '%s\n' "$@" >"$START_ARGS"
-        python3 - "$2" "$START_SNAPSHOT" "$POCKETLAB_PROCESS_SPEC_HASH" <<'PY'
+        if [[ "$2" == /* ]]; then
+          cp "$2" "$ECOSYSTEM_CAPTURE"
+          printf '%s\n' "$2" >"$START_PATH"
+          printf '%s\n' "$@" >"$START_ARGS"
+          python3 - "$2" "$START_SNAPSHOT" "$POCKETLAB_PROCESS_SPEC_HASH" <<'PY'
 import json
 from pathlib import Path
 import sys
@@ -79,6 +80,12 @@ payload = {
 }
 Path(sys.argv[2]).write_text(json.dumps(payload), encoding="utf-8")
 PY
+        else
+          # A stopped process is resumed by name.  Its already-verified
+          # definition does not need a new ecosystem file.
+          printf 'online\n%s\n%s\n%s\n' \
+            "$POCKETLAB_PROCESS_SPEC_HASH" "$EXPECTED_SCRIPT" "$EXPECTED_INTERPRETER" >"$START_SNAPSHOT"
+        fi
       fi
       if [[ "$1" == "delete" ]]; then
         STATUS=missing
@@ -138,8 +145,10 @@ def test_second_healthy_convergence_performs_zero_pm2_mutations(tmp_path):
     assert _run_case(tmp_path, "online") == []
 
 
-def test_stopped_matching_process_restarts_without_delete_recreate(tmp_path):
-    assert _run_case(tmp_path, "stopped") == ["restart"]
+def test_stopped_matching_process_starts_without_delete_recreate(tmp_path):
+    # PM2 7/Termux resumes a stopped definition more reliably with `start`;
+    # using `restart` can attach a queued sibling ecosystem definition.
+    assert _run_case(tmp_path, "stopped") == ["start"]
 
 
 def test_missing_process_definition_is_created(tmp_path):

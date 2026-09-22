@@ -689,8 +689,18 @@ pm2_ensure_process_unlocked() {
       log INFO "PM2 process already converged: $name"
       return 0
     fi
-    log INFO "Restarting existing converged PM2 process: $name status=$status"
-    POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 restart "$name" --update-env >/dev/null
+    # PM2 7 on Termux can attach a queued sibling ecosystem definition when
+    # `restart` is used to resume a deliberately stopped process.  `start`
+    # resumes the existing definition in place and preserves the process
+    # identity that was just verified above.  Keep restart for other lifecycle
+    # states where PM2 has not retained a stopped definition.
+    if [[ "$status" == "stopped" ]]; then
+      log INFO "Starting existing converged PM2 process: $name status=$status"
+      POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$name" >/dev/null
+    else
+      log INFO "Restarting existing converged PM2 process: $name status=$status"
+      POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 restart "$name" --update-env >/dev/null
+    fi
     pm2_record_desired_process_spec_hash "$name" "$spec_hash" "$launch_fingerprint"
     return 0
   fi
