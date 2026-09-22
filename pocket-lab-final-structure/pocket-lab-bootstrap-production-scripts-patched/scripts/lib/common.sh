@@ -644,11 +644,19 @@ pm2_process_launch_matches() {
 }
 
 pm2_wait_for_absent() {
-  local name="$1" attempts="${2:-30}" attempt snapshot status
+  local name="$1" attempts="${2:-30}" attempt snapshot status absent_streak=0
   for attempt in $(seq 1 "$attempts"); do
     snapshot="$(pm2_process_snapshot "$name" 2>/dev/null || true)"
     status="$(printf '%s\n' "$snapshot" | sed -n '1p')"
-    [[ -z "$status" ]] && return 0
+    if [[ -z "$status" ]]; then
+      absent_streak=$((absent_streak + 1))
+      # PM2 7 on Termux can publish a transiently absent name while a queued
+      # autorestart is still draining. Require consecutive empty projections
+      # before launching the replacement definition.
+      (( absent_streak >= 3 )) && return 0
+    else
+      absent_streak=0
+    fi
     sleep 1
   done
   return 1
@@ -772,7 +780,7 @@ PY
   # definition above prevents PM2 7 on Termux from applying a queued app
   # definition to a previous process during recovery.
   mv -f -- "$ecosystem_tmp" "$ecosystem_file"
-  local launch_attempt verify_attempt verify_ok
+  local launch_attempt verify_attempt verify_ok launch_stable
   launch_status=1
   for launch_attempt in 1 2 3; do
     if [[ "$launch_attempt" -gt 1 ]]; then
@@ -791,10 +799,16 @@ PY
       continue
     fi
     verify_ok=1
+    launch_stable=0
     for verify_attempt in $(seq 1 12); do
       if pm2_process_launch_matches "$name" "$spec_hash" "$launch_fingerprint" "$cwd"; then
-        verify_ok=0
-        break
+        launch_stable=$((launch_stable + 1))
+        if (( launch_stable >= 2 )); then
+          verify_ok=0
+          break
+        fi
+      else
+        launch_stable=0
       fi
       sleep 1
     done
