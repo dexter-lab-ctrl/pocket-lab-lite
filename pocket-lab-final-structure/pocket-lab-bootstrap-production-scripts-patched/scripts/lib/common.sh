@@ -662,9 +662,9 @@ PY
     rm -f -- "$ecosystem_tmp"
     return 1
   fi
-  # Keep a stable, process-specific ecosystem path and select the one canonical
-  # app explicitly. Waiting for a deleted definition above prevents PM2 7 on
-  # Termux from applying a queued selector to a previous app during recovery.
+  # Keep a stable, process-specific ecosystem path. Waiting for a deleted
+  # definition above prevents PM2 7 on Termux from applying a queued app
+  # definition to a previous process during recovery.
   mv -f -- "$ecosystem_tmp" "$ecosystem_file"
   local launch_attempt verify_attempt verify_ok
   launch_status=1
@@ -678,7 +678,7 @@ PY
         continue
       fi
     fi
-    if POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$ecosystem_file" --only "$name" >/dev/null; then
+    if POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$ecosystem_file" >/dev/null; then
       launch_status=0
     else
       launch_status=$?
