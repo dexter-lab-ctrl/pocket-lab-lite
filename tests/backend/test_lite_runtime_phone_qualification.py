@@ -109,7 +109,7 @@ def test_fault_qualification_waits_for_contract_stability_and_generation_advance
     assert 'stable.get("stable_observations")' in service_fault
     assert 'pm2 jlist >"$json_file"' in service_fault
     assert 'pm2_id="$(ssh "$SSH_ALIAS" bash -s -- "$service"' in service_fault
-    assert 'pm2 stop "$pm2_id"' in service_fault
+    assert 'pm2 delete "$pm2_id"' in service_fault
     assert 'PM2 fault identity was not numeric' in service_fault
     assert 'runtime_required_generation_csv' in daemon_fault
     assert 'wait_runtime_convergence_after_daemon_recovery' in daemon_fault

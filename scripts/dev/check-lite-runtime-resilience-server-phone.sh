@@ -725,11 +725,11 @@ PY
 REMOTE
   )"
   [[ "$pm2_id" =~ ^[0-9]+$ ]] || fail "PM2 fault identity was not numeric for $service"
-  echo "FAULT stopping $service (pm2_id=$pm2_id restart_generation=$generation_before)"
+  echo "FAULT deleting $service definition (pm2_id=$pm2_id restart_generation=$generation_before)"
   ssh "$SSH_ALIAS" bash -s -- "$pm2_id" <<'REMOTE'
 set -Eeuo pipefail
 pm2_id="$1"
-pm2 stop "$pm2_id" >/dev/null
+pm2 delete "$pm2_id" >/dev/null
 REMOTE
   wait_pm2_service "$service"
   ssh "$SSH_ALIAS" bash -s -- "$service" "$generation_before" "$started_epoch" <<'REMOTE'
