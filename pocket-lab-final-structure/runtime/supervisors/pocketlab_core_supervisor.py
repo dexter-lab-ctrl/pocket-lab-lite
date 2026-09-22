@@ -1104,7 +1104,14 @@ class LiteCoreSupervisor:
         caddy_upstream_http_reachable = bool(
             observed["checks"].get("caddy_upstream_http_reachable")
         )
-        if not is_online(caddy_status):
+        if caddy_status == "missing":
+            self._append_event({
+                "event": "caddy_definition_missing",
+                "service": "caddy-proxy",
+                "reason": "runtime_reconciler_owns_missing_definition_repair",
+                "acted": False,
+            })
+        elif not is_online(caddy_status):
             self.caddy_tcp_failure_streak = 0
             actions.append(self.restart_pm2("caddy-proxy", "caddy_pm2_not_online"))
         elif caddy_tcp_reachable:
