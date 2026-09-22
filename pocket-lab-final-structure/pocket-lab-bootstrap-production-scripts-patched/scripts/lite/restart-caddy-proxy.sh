@@ -20,7 +20,7 @@ log() {
 # installed-version projection, drift repair, PM2 save, and safe reload/restart.
 # A PhotoPrism reconcile can call this while the full dashboard lock is held;
 # in that scoped nested case the child reuses the parent's lock ownership.
-if [[ "${POCKETLAB_START_DASHBOARD_LOCK_HELD:-0}" == "1" ]]; then
+if [[ "${POCKETLAB_CADDY_REFRESH_NESTED:-0}" == "1" ]]; then
   POCKETLAB_RECONCILER_CHILD=1 bash "$DASHBOARD" --lite --caddy-only
 else
   bash "$DASHBOARD" --lite --caddy-only

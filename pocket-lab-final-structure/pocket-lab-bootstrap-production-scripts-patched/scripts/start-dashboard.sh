@@ -55,7 +55,6 @@ acquire_start_dashboard_lock() {
   # PM2 mutations overlap. Child passes reuse the parent lock explicitly.
   [[ "${POCKETLAB_RECONCILER_CHILD:-0}" == "1" ]] && return 0
   acquire_lock "${1:-start-dashboard.sh}"
-  export POCKETLAB_START_DASHBOARD_LOCK_HELD=1
 }
 prepare_lite_state_path(){
   is_lite_profile || return 0
@@ -1021,7 +1020,7 @@ reconcile_installed_photoprism(){
   [[ -s "$photoprism_env" || -s "$photoprism_manifest" ]] || return 0
   [[ -f "$PHOTOPRISM_RUNTIME" ]] || die "PhotoPrism runtime script is missing: $PHOTOPRISM_RUNTIME"
   log INFO "Reconciling installed PhotoPrism runtime before Lite supervisors"
-  bash "$PHOTOPRISM_RUNTIME" reconcile || die "Installed PhotoPrism runtime did not converge"
+  POCKETLAB_CADDY_REFRESH_NESTED=1 bash "$PHOTOPRISM_RUNTIME" reconcile || die "Installed PhotoPrism runtime did not converge"
 }
 
 start_pm2_daemons(){

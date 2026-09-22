@@ -155,8 +155,14 @@ def test_lite_startup_reconciles_installed_photoprism_before_supervisors():
     helper = RESTART_CADDY.read_text(encoding="utf-8")
     assert "reconcile_installed_photoprism" in source
     assert 'bash "$PHOTOPRISM_RUNTIME" reconcile' in source
-    assert 'POCKETLAB_START_DASHBOARD_LOCK_HELD' in helper
+    assert 'POCKETLAB_CADDY_REFRESH_NESTED' in helper
     assert 'POCKETLAB_RECONCILER_CHILD=1 bash "$DASHBOARD" --lite --caddy-only' in helper
+
+
+def test_caddy_fault_repair_uses_scoped_dashboard_path():
+    source = RUNTIME_RECONCILE.read_text(encoding="utf-8")
+    assert '[[ "$REASON" == *caddy-proxy*' in source
+    assert 'bash "$DASHBOARD" --lite --caddy-only' in source
 
 
 def test_stale_pm2_version_projection_forces_controlled_recreation(tmp_path: Path):

@@ -89,6 +89,19 @@ main() {
   local photoprism_env="$HOME/.pocket_lab/lite/apps/photoprism/config/photoprism.env"
   local photoprism_manifest="$HOME/.pocket_lab/lite/apps/photoprism/config/install-manifest.json"
 
+  # Caddy recovery is scoped to the proxy. A full dashboard convergence here
+  # can re-enter through optional application route refresh while PM2 is still
+  # draining the stopped proxy definition.
+  if [[ "$REASON" == *caddy-proxy* ]]; then
+    if bash "$DASHBOARD" --lite --caddy-only; then
+      write_evidence "converged"
+      log INFO "Pocket Lab Lite Caddy runtime converged"
+      return 0
+    fi
+    write_evidence "degraded"
+    die "Pocket Lab Lite Caddy runtime did not converge"
+  fi
+
   # PhotoPrism repair is intentionally scoped.  A full dashboard convergence
   # while only the optional app is missing can queue unrelated PM2 launches on
   # PM2 7/Termux and remap a process definition.  The PhotoPrism reconciler
