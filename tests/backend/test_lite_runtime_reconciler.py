@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import fcntl
 import importlib.util
 import json
 import os
@@ -76,7 +77,10 @@ def test_runtime_reconciler_defers_repairs_during_dashboard_lifecycle(tmp_path, 
     lock_path.write_text(f"pid={os.getpid()}\n", encoding="utf-8")
     monkeypatch.setenv("HOME", str(tmp_path))
 
-    assert reconciler.lifecycle_transition_active() is True
+    with lock_path.open("a+", encoding="utf-8") as handle:
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        assert reconciler.lifecycle_transition_active() is True
+        fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
 
     lock_path.write_text("pid=999999\n", encoding="utf-8")
     assert reconciler.lifecycle_transition_active() is False

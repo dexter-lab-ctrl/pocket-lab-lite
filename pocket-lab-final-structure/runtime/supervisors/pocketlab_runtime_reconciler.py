@@ -13,6 +13,7 @@ PM2 itself is supervised outside PM2 by the Termux boot/runtime guardian.
 """
 from __future__ import annotations
 
+import fcntl
 import json
 import os
 from pathlib import Path
@@ -96,6 +97,22 @@ def lifecycle_transition_active() -> bool:
     ).expanduser()
     if not lock_path.exists():
         return False
+    if not lock_path.is_dir():
+        try:
+            with lock_path.open("a+", encoding="utf-8") as handle:
+                try:
+                    fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                except BlockingIOError:
+                    # The lifecycle owner may have created the file before
+                    # writing metadata. The kernel lock is authoritative.
+                    return True
+                finally:
+                    try:
+                        fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+                    except OSError:
+                        pass
+        except OSError:
+            pass
     try:
         metadata = lock_path / "metadata" if lock_path.is_dir() else lock_path
         values: dict[str, str] = {}
