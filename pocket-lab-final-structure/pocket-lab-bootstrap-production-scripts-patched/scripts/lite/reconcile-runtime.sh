@@ -85,7 +85,10 @@ main() {
   export POCKETLAB_RECONCILE_ONLY=1
 
   log INFO "Reconciling Pocket Lab Lite runtime mode=$MODE reason=$REASON"
-  if bash "$DASHBOARD" --lite --reconcile-only; then
+  # The outer reconcile-runtime lock remains held while the dashboard
+  # convergence runs.  Mark the nested invocation so start-dashboard reuses
+  # that ownership instead of opening a second flock on the same lock path.
+  if POCKETLAB_RECONCILER_CHILD=1 bash "$DASHBOARD" --lite --reconcile-only; then
     local photoprism="$SCRIPT_DIR/install-photoprism-proot.sh"
     local photoprism_env="$HOME/.pocket_lab/lite/apps/photoprism/config/photoprism.env"
     local photoprism_manifest="$HOME/.pocket_lab/lite/apps/photoprism/config/install-manifest.json"
