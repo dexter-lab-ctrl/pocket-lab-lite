@@ -18,6 +18,7 @@ SCRIPTS = (
 COMMON = SCRIPTS / "lib" / "common.sh"
 DASHBOARD = SCRIPTS / "start-dashboard.sh"
 RUNTIME_RECONCILE = SCRIPTS / "lite" / "reconcile-runtime.sh"
+RESTART_CADDY = SCRIPTS / "lite" / "restart-caddy-proxy.sh"
 OPA = SCRIPTS / "lite" / "start-opa-runtime.sh"
 PHOTOPRISM = SCRIPTS / "lite" / "install-photoprism-proot.sh"
 FLEET_ROUTER = ROOT / "pocket-lab-final-structure" / "runtime" / "api_fastapi" / "routers" / "fleet.py"
@@ -147,6 +148,15 @@ def test_photoprism_repair_is_scoped_without_full_dashboard_convergence():
 def test_runtime_reconciler_does_not_propagate_child_lock_marker_to_pm2():
     source = RUNTIME_RECONCILER.read_text(encoding="utf-8")
     assert 'env["POCKETLAB_RECONCILER_CHILD"]' not in source
+
+
+def test_lite_startup_reconciles_installed_photoprism_before_supervisors():
+    source = DASHBOARD.read_text(encoding="utf-8")
+    helper = RESTART_CADDY.read_text(encoding="utf-8")
+    assert "reconcile_installed_photoprism" in source
+    assert 'bash "$PHOTOPRISM_RUNTIME" reconcile' in source
+    assert 'POCKETLAB_START_DASHBOARD_LOCK_HELD' in helper
+    assert 'POCKETLAB_RECONCILER_CHILD=1 bash "$DASHBOARD" --lite --caddy-only' in helper
 
 
 def test_stale_pm2_version_projection_forces_controlled_recreation(tmp_path: Path):

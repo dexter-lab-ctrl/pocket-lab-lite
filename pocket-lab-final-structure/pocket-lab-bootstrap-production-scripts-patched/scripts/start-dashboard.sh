@@ -55,6 +55,7 @@ acquire_start_dashboard_lock() {
   # PM2 mutations overlap. Child passes reuse the parent lock explicitly.
   [[ "${POCKETLAB_RECONCILER_CHILD:-0}" == "1" ]] && return 0
   acquire_lock "${1:-start-dashboard.sh}"
+  export POCKETLAB_START_DASHBOARD_LOCK_HELD=1
 }
 prepare_lite_state_path(){
   is_lite_profile || return 0
@@ -93,6 +94,7 @@ WORKER_SERVER="$SCRIPT_DIR/../../runtime/workers/pocketlab_worker.py"
 AGENT_SERVER="$SCRIPT_DIR/../../runtime/agents/pocketlab_node_agent.py"
 CORE_SUPERVISOR_SERVER="$SCRIPT_DIR/../../runtime/supervisors/pocketlab_core_supervisor.py"
 RUNTIME_RECONCILER_SERVER="$SCRIPT_DIR/../../runtime/supervisors/pocketlab_runtime_reconciler.py"
+PHOTOPRISM_RUNTIME="$SCRIPT_DIR/lite/install-photoprism-proot.sh"
 OPA_POLICY_PREP="$SCRIPT_DIR/lite/prepare-opa-policy.sh"
 OPA_RUNTIME_START="$SCRIPT_DIR/lite/start-opa-runtime.sh"
 API_SERVER="${API_SERVER:-$FASTAPI_SERVER}"
@@ -1012,6 +1014,16 @@ reload_caddy_if_config_changed(){
   pm2 restart caddy-proxy >/dev/null 2>&1 || return 1
 }
 
+reconcile_installed_photoprism(){
+  is_lite_profile || return 0
+  local photoprism_env="$HOME/.pocket_lab/lite/apps/photoprism/config/photoprism.env"
+  local photoprism_manifest="$HOME/.pocket_lab/lite/apps/photoprism/config/install-manifest.json"
+  [[ -s "$photoprism_env" || -s "$photoprism_manifest" ]] || return 0
+  [[ -f "$PHOTOPRISM_RUNTIME" ]] || die "PhotoPrism runtime script is missing: $PHOTOPRISM_RUNTIME"
+  log INFO "Reconciling installed PhotoPrism runtime before Lite supervisors"
+  bash "$PHOTOPRISM_RUNTIME" reconcile || die "Installed PhotoPrism runtime did not converge"
+}
+
 start_pm2_daemons(){
   log INFO "Converging dashboard services with PM2"
   configure_lite_runtime_limits
@@ -1042,6 +1054,7 @@ start_pm2_daemons(){
   validate_caddyfile
   POCKETLAB_PM2_SERVICE_VERSION="$(caddy_installed_version)" pm2_runtime_process caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
   reload_caddy_if_config_changed
+  reconcile_installed_photoprism
   if is_lite_profile; then
     POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS="${POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS:-45}" POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS="${POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS:-120}" POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$CORE_SUPERVISOR_SERVER")" pm2_runtime_process pocketlab-core-supervisor "$CORE_SUPERVISOR_SERVER" --interpreter python3 --update-env
     POCKETLAB_RUNTIME_RECONCILE_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_SECONDS:-45}" POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS:-120}" POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$RUNTIME_RECONCILER_SERVER")" pm2_runtime_process pocketlab-runtime-reconciler "$RUNTIME_RECONCILER_SERVER" --interpreter python3 --update-env
