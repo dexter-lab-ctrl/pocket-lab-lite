@@ -852,7 +852,7 @@ PY
     # Termux can apply a CLI --name override to a queued sibling definition;
     # omit the override so the process-specific file remains the sole launch
     # identity source.
-    if POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$ecosystem_file" >/dev/null; then
+    if POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$ecosystem_file" --only "$name" >/dev/null; then
       launch_status=0
     else
       launch_status=$?
