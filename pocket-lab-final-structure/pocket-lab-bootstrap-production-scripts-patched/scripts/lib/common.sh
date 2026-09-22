@@ -503,9 +503,16 @@ raise SystemExit(1)
 ' "$name"
 }
 
-pm2_ensure_versioned_process() {
+pm2_ensure_versioned_process() (
   local name="$1" version="$2" source_exec="$3"
   shift 3
+  # Version projection can require deleting a stale PM2 definition before the
+  # normal desired-state convergence path runs. Keep that delete, the wait for
+  # PM2's asynchronous removal, and the replacement launch in the same
+  # mutation critical section as every other PM2 operation. Otherwise PM2 7 on
+  # Termux can apply a queued ecosystem definition to the next process name.
+  pm2_mutation_lock_acquire
+  trap pm2_mutation_lock_release EXIT
   local projected_exec version_snapshot current_version current_declared
   require_cmd pm2 python3 sha256sum
   version="$(pm2_normalize_service_version "$version")" || die "PM2 service $name does not have an exact installed version"
@@ -523,10 +530,14 @@ pm2_ensure_versioned_process() {
   }; then
     log INFO "Replacing PM2 process with stale version projection: $name observed=${current_version:-missing} declared=${current_declared:-missing} expected=$version"
     pm2 delete "$name" >/dev/null 2>&1 || true
+    if ! pm2_wait_for_absent "$name"; then
+      log ERROR "PM2 process $name did not disappear after stale-version deletion"
+      return 1
+    fi
   fi
 
-  pm2_ensure_process "$name" "$projected_exec" "$@"
-}
+  pm2_ensure_process_unlocked "$name" "$projected_exec" "$@"
+)
 
 pm2_process_snapshot() {
   local name="$1"

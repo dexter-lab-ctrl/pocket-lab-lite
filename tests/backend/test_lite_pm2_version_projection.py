@@ -192,6 +192,96 @@ pm2_ensure_versioned_process caddy-proxy "2.10.2" "$SOURCE_EXEC" -- run --config
     assert actions.read_text(encoding="utf-8").splitlines() == ["delete", "start"]
 
 
+def test_stale_pm2_version_recreation_waits_for_async_delete(tmp_path: Path):
+    actions = tmp_path / "actions.log"
+    state = tmp_path / "present"
+    state.write_text("1", encoding="utf-8")
+    deleting = tmp_path / "deleting"
+    polls = tmp_path / "polls"
+    shell = r"""
+set -Eeuo pipefail
+export POCKET_LAB_ALLOW_NON_TERMUX=1
+export HOME="$TEST_HOME"
+export PREFIX="$TEST_PREFIX"
+export POCKETLAB_STATE_DIR="$TEST_HOME/pocket-lab-lite/state"
+source "$COMMON_PATH"
+EXPECTED_SCRIPT="$(pwd -P)/demo.py"
+EXPECTED_INTERPRETER="$(command -v python3)"
+export ACTION_FILE STATE_FILE DELETING POLLS
+HASH_FILE="$TEST_HOME/hash"
+
+pm2_process_snapshot() {
+  if [[ -f "$DELETING" ]]; then
+    count=0
+    [[ -f "$POLLS" ]] && count="$(cat "$POLLS")"
+    count=$((count + 1))
+    printf '%s\n' "$count" >"$POLLS"
+    if (( count < 3 )); then
+      printf '%s\n%s\n%s\n%s\n' stopping old old old
+      return 0
+    fi
+    rm -f "$DELETING" "$STATE_FILE"
+    return 0
+  fi
+  if [[ -f "$STATE_FILE" ]]; then
+    if [[ "$(cat "$STATE_FILE")" == started ]]; then
+      printf '%s\n%s\n%s\n%s\n' online "$(cat "$HASH_FILE")" "$EXPECTED_SCRIPT" "$EXPECTED_INTERPRETER"
+    else
+      printf '%s\n%s\n%s\n%s\n' online old old old
+    fi
+  fi
+}
+
+pm2_process_launch_matches() {
+  snapshot="$(pm2_process_snapshot "$1")"
+  [[ "$(printf '%s\n' "$snapshot" | sed -n '1p')" == online ]]
+  [[ "$(printf '%s\n' "$snapshot" | sed -n '2p')" == "$2" ]]
+}
+
+pm2() {
+  case "${1:-}" in
+    delete)
+      printf 'delete\n' >>"$ACTION_FILE"
+      : >"$DELETING"
+      ;;
+    start)
+      [[ ! -f "$DELETING" ]] || { echo "start happened before async delete completed" >&2; return 1; }
+      printf 'start\n' >>"$ACTION_FILE"
+      printf 'started\n' >"$STATE_FILE"
+      printf '%s\n' "${POCKETLAB_PROCESS_SPEC_HASH:-}" >"$HASH_FILE"
+      ;;
+    *) return 0 ;;
+  esac
+}
+
+pm2_ensure_versioned_process caddy-proxy "2.10.2" "$SOURCE_EXEC" -- run --config /tmp/Caddyfile
+"""
+    env = os.environ.copy()
+    env.update(
+        {
+            "TEST_HOME": str(tmp_path / "home"),
+            "TEST_PREFIX": str(tmp_path / "prefix"),
+            "COMMON_PATH": str(COMMON),
+            "SOURCE_EXEC": shutil.which("sh") or "/bin/sh",
+            "ACTION_FILE": str(actions),
+            "STATE_FILE": str(state),
+            "DELETING": str(deleting),
+            "POLLS": str(polls),
+        }
+    )
+    completed = subprocess.run(
+        ["bash", "-lc", shell],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    assert actions.read_text(encoding="utf-8").splitlines() == ["delete", "start"]
+    assert int(polls.read_text(encoding="utf-8")) >= 3
+
+
 def test_caddy_config_fallback_restart_preserves_projected_service_version():
     source = DASHBOARD.read_text(encoding="utf-8")
     start = source.index("reload_caddy_if_config_changed(){")
