@@ -126,6 +126,35 @@ acquire_lock() {
   local lockfile="$LOCK_DIR/${sanitized}.lock"
   local pid=""
 
+  # The runtime reconciler launches PM2-managed children while it holds its
+  # outer lock. A flock descriptor is inherited by those children on Android
+  # Termux, making the child appear to hold reconcile-runtime.sh.lock forever
+  # and blocking every later scoped repair. Use an ownership directory for
+  # this outer lock so the lock cannot leak through PM2 exec inheritance.
+  if [[ "$name" == "reconcile-runtime.sh" ]]; then
+    if [[ -e "$lockfile" && ! -d "$lockfile" ]]; then
+      pid="$(lock_owner_pid "$lockfile")"
+      if [[ -z "$pid" ]] || ! pid_is_running "$pid"; then
+        rm -f "$lockfile" 2>/dev/null || true
+      else
+        die "Another $name run is already active: $lockfile pid=$pid"
+      fi
+    fi
+    if ! mkdir "$lockfile" 2>/dev/null; then
+      pid="$(lock_owner_pid "$lockfile")"
+      if [[ -n "$pid" ]] && ! pid_is_running "$pid"; then
+        rm -rf "$lockfile" 2>/dev/null || true
+        mkdir "$lockfile" 2>/dev/null || die "Another $name run may be active: $lockfile"
+      else
+        die "Another $name run may be active: $lockfile${pid:+ pid=$pid}"
+      fi
+    fi
+    write_lock_metadata "$lockfile/metadata" "$name"
+    ACTIVE_LOCK_DIR="$lockfile"
+    trap release_lock EXIT
+    return 0
+  fi
+
   if have flock; then
     eval "exec ${LOCK_FD}>\"$lockfile\""
     if ! flock -n "$LOCK_FD"; then

@@ -54,6 +54,20 @@ def test_runtime_reconciler_repairs_only_missing_definitions():
     assert "pm2_definition_or_process:pocket-worker:missing" in reasons
 
 
+def test_runtime_reconcile_outer_lock_cannot_leak_into_pm2_children():
+    source = (
+        ROOT
+        / "pocket-lab-final-structure"
+        / "pocket-lab-bootstrap-production-scripts-patched"
+        / "scripts"
+        / "lib"
+        / "common.sh"
+    ).read_text(encoding="utf-8")
+    assert 'if [[ "$name" == "reconcile-runtime.sh" ]]' in source
+    assert 'ACTIVE_LOCK_DIR="$lockfile"' in source
+    assert 'write_lock_metadata "$lockfile/metadata" "$name"' in source
+
+
 def test_lite_bootstrap_skips_legacy_runtime_stages():
     bootstrap = (
         ROOT
