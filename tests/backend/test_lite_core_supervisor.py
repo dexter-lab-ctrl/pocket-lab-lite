@@ -326,4 +326,4 @@ def test_core_supervisor_uses_shared_pm2_mutation_lock(monkeypatch, tmp_path):
 
     assert event["acted"] is True
     assert calls == [["pm2", "restart", "pocket-node-agent"]]
-    assert (tmp_path / "state" / "runtime" / "pm2-mutation.lock").is_file()
+    assert not (tmp_path / "state" / "runtime" / "pm2-mutation.lock").exists()

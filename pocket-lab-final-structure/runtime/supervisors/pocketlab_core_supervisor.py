@@ -116,21 +116,50 @@ def pm2_mutation_lock(timeout: float = 30.0):
     state_root = Path(os.environ.get("POCKETLAB_STATE_DIR") or Path.home() / ".pocket_lab")
     path = Path(configured).expanduser() if configured else state_root / "runtime" / "pm2-mutation.lock"
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a+") as handle:
-        deadline = time.monotonic() + max(0.1, float(timeout))
-        while True:
-            try:
-                fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-                break
-            except BlockingIOError:
-                if time.monotonic() >= deadline:
-                    yield False
-                    return
-                time.sleep(0.1)
+    deadline = time.monotonic() + max(0.1, float(timeout))
+    acquired = False
+    while not acquired:
         try:
-            yield True
-        finally:
-            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            path.mkdir()
+            (path / "metadata").write_text(f"pid={os.getpid()}\n", encoding="utf-8")
+            acquired = True
+        except FileExistsError:
+            try:
+                metadata = (path / "metadata").read_text(encoding="utf-8")
+                owner = int(next(line.split("=", 1)[1] for line in metadata.splitlines() if line.startswith("pid=")))
+            except (OSError, StopIteration, ValueError):
+                owner = 0
+            if owner and not _pid_is_running(owner):
+                try:
+                    for child in path.iterdir():
+                        child.unlink()
+                    path.rmdir()
+                except OSError:
+                    pass
+                continue
+            if time.monotonic() >= deadline:
+                yield False
+                return
+            time.sleep(0.1)
+    try:
+        yield True
+    finally:
+        try:
+            for child in path.iterdir():
+                child.unlink()
+            path.rmdir()
+        except OSError:
+            pass
+
+
+def _pid_is_running(pid: int) -> bool:
+    if pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    return True
 
 
 def pm2_available() -> bool:

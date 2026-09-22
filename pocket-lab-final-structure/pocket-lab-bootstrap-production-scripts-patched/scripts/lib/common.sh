@@ -41,7 +41,6 @@ mkdir -p "$STATE_DIR" "$LOG_DIR" "$RUN_DIR" "$LOCK_DIR" "$MARKER_DIR" "$TMP_ROOT
 
 SCRIPT_NAME="${SCRIPT_NAME:-$(basename "${BASH_SOURCE[-1]:-$0}")}"
 LOCK_FD=200
-PM2_LOCK_FD=201
 
 NO_NETWORK="${POCKET_LAB_NO_NETWORK:-0}"
 ALLOW_NON_TERMUX="${POCKET_LAB_ALLOW_NON_TERMUX:-0}"
@@ -163,13 +162,26 @@ acquire_lock() {
 
 pm2_mutation_lock_acquire() {
   local lock_root="${POCKETLAB_STATE_DIR:-$STATE_DIR}"
-  local lock_file="$lock_root/runtime/pm2-mutation.lock"
-  mkdir -p "$(dirname "$lock_file")"
-  if ! have flock; then
-    die "Required command missing: flock"
-  fi
-  eval "exec ${PM2_LOCK_FD}>\"$lock_file\""
-  flock "$PM2_LOCK_FD"
+  local lock_dir="$lock_root/runtime/pm2-mutation.lock" owner_pid attempts=0
+  mkdir -p "$(dirname "$lock_dir")"
+  while ! mkdir "$lock_dir" 2>/dev/null; do
+    owner_pid="$(awk -F= '/^pid=/{print $2; exit}' "$lock_dir/metadata" 2>/dev/null || true)"
+    if [[ -n "$owner_pid" ]] && ! pid_is_running "$owner_pid"; then
+      rm -rf "$lock_dir"
+      continue
+    fi
+    attempts=$((attempts + 1))
+    (( attempts < 600 )) || die "Timed out waiting for PM2 mutation lock: $lock_dir"
+    sleep 0.1
+  done
+  printf 'pid=%s\n' "$$" >"$lock_dir/metadata"
+  PM2_MUTATION_LOCK_DIR="$lock_dir"
+}
+
+pm2_mutation_lock_release() {
+  [[ -n "${PM2_MUTATION_LOCK_DIR:-}" ]] || return 0
+  rm -rf "$PM2_MUTATION_LOCK_DIR" 2>/dev/null || true
+  PM2_MUTATION_LOCK_DIR=""
 }
 marker_path() { printf '%s/%s.done' "$MARKER_DIR" "${1//[^A-Za-z0-9_.-]/_}"; }
 is_done() { [[ -f "$(marker_path "$1")" ]]; }
@@ -719,6 +731,7 @@ pm2_ensure_process() (
   # supervisor restarts and ecosystem relaunches in one critical section so a
   # queued operation cannot attach another process's definition.
   pm2_mutation_lock_acquire
+  trap pm2_mutation_lock_release EXIT
   pm2_ensure_process_unlocked "$@"
 )
 
