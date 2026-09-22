@@ -43,6 +43,24 @@ MAX_INTERVAL_SECONDS = 3600
 MAX_COOLDOWN_SECONDS = 24 * 60 * 60
 MAX_WINDOW_SECONDS = 30 * 24 * 60 * 60
 
+# PM2 does not keep every projection field authoritative while a process is
+# stopped, errored, or transitioning between lifecycle states.  Treat those
+# observations as transient and let the lifecycle owner restore the process
+# before evaluating version, policy, or desired-spec metadata.  Rebuilding a
+# stopped definition from those transient fields can create a restart loop on
+# PM2 7/Termux and consume the bounded runtime restart budget.
+TRANSIENT_PM2_STATUSES = frozenset(
+    {
+        "missing",
+        "stopped",
+        "errored",
+        "error",
+        "stopping",
+        "launching",
+        "waiting restart",
+    }
+)
+
 
 def _bounded_env_int(name: str, default: int, minimum: int, maximum: int) -> int:
     try:
@@ -93,9 +111,12 @@ def pm2_version_projection(processes: Iterable[dict[str, Any]]) -> tuple[dict[st
         if name not in tracked:
             continue
         env = item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}
+        status = str(env.get("status") or item.get("status") or "unknown").strip().lower()
         version = str(env.get("version") or "").strip()
         declared = str(env.get("POCKETLAB_SERVICE_VERSION") or "").strip()
         versions[name] = version or "unavailable"
+        if status in TRANSIENT_PM2_STATUSES:
+            continue
         if not version or version.lower() in {"n/a", "na", "unknown"} or version != declared:
             reasons.append(f"pm2_version_projection:{name}")
     return versions, reasons
@@ -122,6 +143,9 @@ def pm2_policy_reasons(
         if not item:
             continue
         env = item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}
+        status = str(env.get("status") or item.get("status") or "unknown").strip().lower()
+        if status in TRANSIENT_PM2_STATUSES:
+            continue
         matches, fields = policy_match(spec.name, env)
         expected_fingerprint = policy_fingerprint(spec.name)
         observed_fingerprint = str(env.get("POCKETLAB_PM2_POLICY_FINGERPRINT") or "").strip()
@@ -155,14 +179,18 @@ def pm2_desired_spec_reasons(
         return ["pm2_desired_specs_invalid"]
     expected = evidence["processes"]
     expected_launches = evidence.get("launches") if isinstance(evidence.get("launches"), dict) else {}
+    observed_items = {
+        str(item.get("name") or ""): item
+        for item in processes
+        if isinstance(item, dict) and str(item.get("name") or "")
+    }
     observed = {
-        str(item.get("name") or ""): str(
+        name: str(
             (item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}).get(
                 "POCKETLAB_PROCESS_SPEC_HASH"
             ) or ""
         ).strip().lower()
-        for item in processes
-        if isinstance(item, dict)
+        for name, item in observed_items.items()
     }
     specs = [*CONTROL_PLANE_SERVICES, RECONCILER_SPEC]
     if include_photoprism:
@@ -173,11 +201,15 @@ def pm2_desired_spec_reasons(
             str((item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}).get("pm_exec_path") or ""),
             str((item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}).get("exec_interpreter") or ""),
         )
-        for item in processes
-        if isinstance(item, dict)
+        for item in observed_items.values()
     }
     for spec in specs:
         if spec.name not in observed:
+            continue
+        item = observed_items.get(spec.name)
+        env = item.get("pm2_env") if isinstance(item, dict) and isinstance(item.get("pm2_env"), dict) else {}
+        status = str(env.get("status") or (item or {}).get("status") or "unknown").strip().lower()
+        if status in TRANSIENT_PM2_STATUSES:
             continue
         desired = str(expected.get(spec.name) or "").strip().lower()
         if not desired:

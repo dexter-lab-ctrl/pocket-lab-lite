@@ -148,6 +148,19 @@ def test_pm2_version_projection_drift_is_repairable():
     _, reasons = reconciler.pm2_version_projection(mismatch)
     assert reasons == ["pm2_version_projection:pocket-api"]
 
+    # PM2 may report transient metadata while a definition is stopped.  That
+    # state is owned by lifecycle recovery; rebuilding it from a transient
+    # version field would create a restart loop and consume the bounded budget.
+    stopped = [{
+        "name": "pocket-api",
+        "pm2_env": {
+            "status": "stopped",
+            "version": "N/A",
+        },
+    }]
+    _, reasons = reconciler.pm2_version_projection(stopped)
+    assert reasons == []
+
 
 def test_runtime_reconciler_strips_own_pm2_version_metadata_from_child_env():
     source = (SUPERVISORS / "pocketlab_runtime_reconciler.py").read_text(encoding="utf-8")
@@ -215,6 +228,46 @@ def test_runtime_reconciler_accepts_matching_canonical_pm2_policy():
         },
     }
     assert reconciler.pm2_policy_reasons([process]) == []
+
+
+def test_transient_pm2_lifecycle_states_defer_metadata_repair(tmp_path):
+    registry = _load("pocketlab_runtime_registry")
+    reconciler = _load("pocketlab_runtime_reconciler")
+    policy = registry.policy_for("pocket-api")
+    stopped = {
+        "name": "pocket-api",
+        "pm2_env": {
+            "status": "stopped",
+            "min_uptime": 0,
+            "max_restarts": 0,
+            "kill_timeout": policy.kill_timeout_ms + 1,
+            "max_memory_restart": 0,
+            "restart_delay": 0,
+            "exp_backoff_restart_delay": 0,
+            "autorestart": False,
+            "POCKETLAB_PM2_POLICY_FINGERPRINT": "stale",
+            "POCKETLAB_PROCESS_SPEC_HASH": "b" * 64,
+            "pm_exec_path": "/opt/pocketlab/wrong/exec",
+            "exec_interpreter": "python3",
+        },
+    }
+    assert reconciler.pm2_policy_reasons([stopped]) == []
+
+    state_root = tmp_path / "state"
+    evidence = state_root / "runtime" / "desired-process-specs.json"
+    evidence.parent.mkdir(parents=True, exist_ok=True)
+    evidence.write_text(json.dumps({
+        "schema": "pocketlab.pm2-desired-process-specs/v1",
+        "schema_version": 1,
+        "processes": {"pocket-api": "a" * 64},
+        "launches": {
+            "pocket-api": registry.launch_fingerprint(
+                "/opt/pocketlab/pocket-api/exec", "python3"
+            )
+        },
+        "sanitized": True,
+    }), encoding="utf-8")
+    assert reconciler.pm2_desired_spec_reasons([stopped], state_root=state_root) == []
 
 
 def test_runtime_reconciler_repairs_missing_and_drifted_desired_process_spec_hashes(tmp_path):
