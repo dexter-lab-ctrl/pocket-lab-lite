@@ -1046,8 +1046,15 @@ class LiteCoreSupervisor:
         if policy_action is not None:
             actions.append(policy_action)
 
-        nats_unhealthy = not is_online(statuses.get("pocket-nats", "missing")) or not bool(observed["checks"]["nats_tcp_reachable"])
-        if nats_unhealthy:
+        nats_status = statuses.get("pocket-nats", "missing")
+        if nats_status == "missing":
+            self._append_event({
+                "event": "nats_definition_missing",
+                "service": "pocket-nats",
+                "reason": "runtime_reconciler_owns_missing_definition_repair",
+                "acted": False,
+            })
+        elif not is_online(nats_status) or not bool(observed["checks"]["nats_tcp_reachable"]):
             actions.append(self.restart_pm2("pocket-nats", "nats_unhealthy"))
             if self.wait_for_nats_tcp():
                 actions.append(self.restart_pm2("pocket-api", "nats_recovered_refresh_api_client"))

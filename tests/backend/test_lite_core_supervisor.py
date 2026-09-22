@@ -260,6 +260,31 @@ def test_supervisor_defers_missing_caddy_definition_to_runtime_reconciler(monkey
     assert "runtime_reconciler_owns_missing_definition_repair" in supervisor.events_file.read_text()
 
 
+def test_supervisor_defers_missing_nats_definition_to_runtime_reconciler(monkeypatch, tmp_path):
+    _prepare_supervisor_runtime(tmp_path, monkeypatch)
+    supervisor_module = load_supervisor_module()
+    supervisor = supervisor_module.LiteCoreSupervisor()
+    observed = _healthy_observed()
+    observed["services"]["pocket-nats"] = "missing"
+    observed["checks"]["nats_tcp_reachable"] = False
+    observed["checks"]["api_nats_connected"] = False
+    observed["api_nats_connected"] = False
+    monkeypatch.setattr(supervisor, "collect", lambda: observed)
+    monkeypatch.setattr(supervisor_module, "pm2_available", lambda: True)
+
+    def fail_restart(service, reason):
+        raise AssertionError(f"unexpected restart for {service}: {reason}")
+
+    monkeypatch.setattr(supervisor, "restart_pm2", fail_restart)
+    payload = supervisor.tick()
+
+    assert payload["actions"] == []
+    assert payload["supervisor_status"] == "degraded"
+    events = supervisor.events_file.read_text()
+    assert "nats_definition_missing" in events
+    assert "runtime_reconciler_owns_missing_definition_repair" in events
+
+
 def test_supervisor_requires_consecutive_caddy_tcp_failures(monkeypatch, tmp_path):
     _prepare_supervisor_runtime(tmp_path, monkeypatch)
     supervisor_module = load_supervisor_module()
