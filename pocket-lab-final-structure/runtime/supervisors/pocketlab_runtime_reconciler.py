@@ -62,6 +62,70 @@ TRANSIENT_PM2_STATUSES = frozenset(
     }
 )
 
+# PM2 7/Termux exposes the managed process projection in the child
+# environment. Passing those fields to another PM2 CLI invocation can make
+# the daemon reuse the current definition's executable for the next
+# ecosystem launch. Keep PM2_HOME so the child targets the same daemon, but
+# remove all other PM2 control metadata and lowercase PM2/app markers.
+PM2_CHILD_ENV_KEYS = frozenset(
+    {
+        "PM2_USAGE",
+        "PM2_JSON_PROCESSING",
+        "pm_id",
+        "name",
+        "unique_id",
+        "namespace",
+        "cwd",
+        "exec_interpreter",
+        "exec_mode",
+        "pm_cwd",
+        "pm_exec_path",
+        "pm_out_log_path",
+        "pm_err_log_path",
+        "pm_pid_path",
+        "pm_uptime",
+        "status",
+        "restart_time",
+        "unstable_restarts",
+        "version",
+        "max_memory_restart",
+        "exp_backoff_restart_delay",
+        "kill_timeout",
+        "max_restarts",
+        "min_uptime",
+        "autorestart",
+        "autostart",
+        "instances",
+        "instance_var",
+        "treekill",
+        "merge_logs",
+        "vizion",
+        "vizion_running",
+        "automation",
+        "pmx",
+        "io",
+        "km_link",
+        "username",
+        "windowsHide",
+        "kill_retry_time",
+        "created_at",
+    }
+)
+
+
+def _sanitize_child_environment(source: dict[str, str] | None = None) -> dict[str, str]:
+    """Remove PM2-owned launch metadata before invoking convergence scripts."""
+
+    environment = dict(os.environ if source is None else source)
+    for key in tuple(environment):
+        if (
+            key in PM2_CHILD_ENV_KEYS
+            or (key.startswith("PM2_") and key != "PM2_HOME")
+            or key[:1].islower()
+        ):
+            environment.pop(key, None)
+    return environment
+
 
 def _bounded_env_int(name: str, default: int, minimum: int, maximum: int) -> int:
     try:
@@ -446,7 +510,7 @@ class RuntimeReconciler:
             event = {"event": "runtime_reconcile_unavailable", "reason": "reconcile_script_missing", "acted": False, "result": "missing"}
             self._event(event)
             return event
-        env = os.environ.copy()
+        env = _sanitize_child_environment()
         # Service-specific PM2 projection metadata belongs to this reconciler
         # process only. Never leak it into child convergence, where --update-env
         # or a process-spec hash could otherwise stamp another service with the
@@ -461,13 +525,17 @@ class RuntimeReconciler:
             "POCKETLAB_STATE_DIR",
             "POCKETLAB_LITE_DB_PATH",
             "POCKETLAB_OPA_ACTIVE_POLICY_DIR",
-            # PM2 injects these fields into managed processes. Passing them
-            # into a child PM2 CLI invocation makes PM2 7/Termux treat the
-            # mutation as if it were issued by the current process and can
-            # rename that definition onto the next ecosystem launch.
+            # PM2 injects these path fields into managed processes. They are
+            # removed here as well as by the general PM2 metadata filter so
+            # this boundary remains explicit for future additions.
             "pm_id",
             "name",
             "unique_id",
+            "pm_exec_path",
+            "pm_cwd",
+            "pm_out_log_path",
+            "pm_err_log_path",
+            "pm_pid_path",
         ):
             env.pop(key, None)
         env["POCKETLAB_PROFILE"] = "lite"

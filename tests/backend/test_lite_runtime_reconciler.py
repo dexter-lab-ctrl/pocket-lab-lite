@@ -232,6 +232,40 @@ def test_runtime_reconciler_strips_own_pm2_version_metadata_from_child_env():
     assert '"unique_id"' in repair
 
 
+def test_runtime_reconciler_sanitizes_all_pm2_child_metadata():
+    reconciler = _load("pocketlab_runtime_reconciler")
+    source = {
+        "PM2_HOME": "/tmp/pm2",
+        "PM2_USAGE": "CLI",
+        "PM2_JSON_PROCESSING": "true",
+        "pm_id": "11",
+        "pm_exec_path": "/tmp/reconciler.py",
+        "pm_cwd": "/tmp",
+        "status": "online",
+        "name": "pocketlab-runtime-reconciler",
+        "unique_id": "secret-id",
+        "pocketlab-runtime-reconciler": "{}",
+        "POCKETLAB_NATS_PASSWORD": "preserve-for-runtime",
+        "POCKETLAB_LITE": "1",
+    }
+    sanitized = reconciler._sanitize_child_environment(source)
+    assert sanitized["PM2_HOME"] == "/tmp/pm2"
+    assert sanitized["POCKETLAB_NATS_PASSWORD"] == "preserve-for-runtime"
+    assert sanitized["POCKETLAB_LITE"] == "1"
+    for key in (
+        "PM2_USAGE",
+        "PM2_JSON_PROCESSING",
+        "pm_id",
+        "pm_exec_path",
+        "pm_cwd",
+        "status",
+        "name",
+        "unique_id",
+        "pocketlab-runtime-reconciler",
+    ):
+        assert key not in sanitized
+
+
 def test_runtime_reconciler_strips_stale_runtime_path_overrides_from_child_env():
     source = (SUPERVISORS / "pocketlab_runtime_reconciler.py").read_text(encoding="utf-8")
     repair = source[source.index("    def _repair("):source.index("    def tick(", source.index("    def _repair("))]
