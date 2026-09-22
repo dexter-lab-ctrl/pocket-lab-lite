@@ -809,6 +809,14 @@ pm2_ensure_process_unlocked() {
     fi
   else
     log INFO "Creating missing PM2 process definition: $name"
+    # PM2 7 on Termux can publish an empty snapshot while a queued delete is
+    # still draining.  Settle the absence before launching a replacement even
+    # when the first observation was already empty; otherwise the queued delete
+    # can remove the newly created definition immediately after pm2 start.
+    if ! pm2_wait_for_absent "$name"; then
+      log ERROR "PM2 process $name did not remain absent before launch"
+      return 1
+    fi
   fi
 
   local app_args_json state_dir ecosystem_dir ecosystem_file ecosystem_tmp launch_status=0 old_umask safe_name

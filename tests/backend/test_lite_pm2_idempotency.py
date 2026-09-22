@@ -163,6 +163,64 @@ def test_missing_process_definition_is_created(tmp_path):
     assert _run_case(tmp_path, "missing") == ["start"]
 
 
+def test_missing_process_waits_for_a_settled_empty_pm2_projection(tmp_path):
+    shell = r"""
+set -Eeuo pipefail
+export POCKET_LAB_ALLOW_NON_TERMUX=1
+export HOME="$TEST_HOME"
+export PREFIX="$TEST_PREFIX"
+source "$COMMON_PATH"
+mkdir -p "$TEST_HOME"
+EXPECTED_SCRIPT="$(pwd -P)/demo.py"
+EXPECTED_INTERPRETER="$(command -v python3)"
+export POCKETLAB_PM2_POLICY_FINGERPRINT="$(pm2_policy_fingerprint demo)"
+SPEC="$(pm2_process_spec_hash demo.py --interpreter python3)"
+SNAPSHOT_COUNT="$TEST_HOME/snapshot-count"
+STARTED_FILE="$TEST_HOME/started"
+printf '0\n' >"$SNAPSHOT_COUNT"
+
+pm2_process_snapshot() {
+  calls=$(( $(cat "$SNAPSHOT_COUNT") + 1 ))
+  printf '%s\n' "$calls" >"$SNAPSHOT_COUNT"
+  if [[ -s "$STARTED_FILE" ]]; then
+    printf 'online\n%s\n%s\n%s\n' "$SPEC" "$EXPECTED_SCRIPT" "$EXPECTED_INTERPRETER"
+  fi
+}
+
+pm2() {
+  if [[ "${1:-}" == "start" ]]; then
+    # The first launch must happen only after pm2_wait_for_absent has observed
+    # three consecutive empty projections beyond the initial snapshot.
+    snapshot_calls="$(cat "$SNAPSHOT_COUNT")"
+    (( snapshot_calls >= 4 )) || {
+      echo "launch raced an unsettled PM2 delete: snapshots=$snapshot_calls" >&2
+      return 1
+    }
+    printf '1\n' >"$STARTED_FILE"
+  fi
+}
+
+pm2_ensure_process demo demo.py --interpreter python3
+"""
+    env = os.environ.copy()
+    env.update(
+        {
+            "TEST_HOME": str(tmp_path / "home"),
+            "TEST_PREFIX": str(tmp_path / "prefix"),
+            "COMMON_PATH": str(COMMON),
+        }
+    )
+    completed = subprocess.run(
+        ["bash", "-lc", shell],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+
+
 def test_wrong_executable_is_replaced_even_when_process_hash_matches(tmp_path):
     assert _run_case(tmp_path, "online", wrong_executable=True) == ["delete", "start"]
 
