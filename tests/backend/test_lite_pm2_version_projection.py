@@ -124,6 +124,13 @@ def test_runtime_reconciler_and_guardian_treat_version_metadata_as_desired_state
     assert "core_supervisor_missing_or_source_drift" in guardian
 
 
+def test_nested_reconciler_dashboard_pass_reuses_outer_lock():
+    source = DASHBOARD.read_text(encoding="utf-8")
+    assert "acquire_start_dashboard_lock" in source
+    assert 'POCKETLAB_RECONCILER_CHILD:-0' in source
+    assert '[[ "${POCKETLAB_RECONCILER_CHILD:-0}" == "1" ]] && return 0' in source
+
+
 def test_stale_pm2_version_projection_forces_controlled_recreation(tmp_path: Path):
     actions = tmp_path / "actions.log"
     state = tmp_path / "present"

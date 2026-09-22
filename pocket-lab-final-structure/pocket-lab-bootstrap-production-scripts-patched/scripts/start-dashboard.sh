@@ -43,6 +43,15 @@ parse_start_dashboard_args(){
   done
 }
 parse_start_dashboard_args "$@"
+
+acquire_start_dashboard_lock() {
+  # Runtime reconciliation already owns the outer reconcile-runtime lock. Its
+  # nested Caddy refresh invokes this script again; reacquiring the same Bash
+  # flock through an inherited descriptor is re-entrant on Termux and can let
+  # PM2 mutations overlap. Child passes reuse the parent lock explicitly.
+  [[ "${POCKETLAB_RECONCILER_CHILD:-0}" == "1" ]] && return 0
+  acquire_lock "${1:-start-dashboard.sh}"
+}
 prepare_lite_state_path(){
   is_lite_profile || return 0
   # Normal Lite startup is an explicit production-safe default. Qualification
@@ -1053,7 +1062,7 @@ start_pm2_daemons(){
 }
 start_caddy_only(){
   SCRIPT_NAME="start-dashboard.sh"
-  acquire_lock "$SCRIPT_NAME"
+  acquire_start_dashboard_lock "$SCRIPT_NAME"
   ensure_root_dirs
   require_termux
   require_cmd python3 caddy pm2
@@ -1068,7 +1077,7 @@ start_caddy_only(){
 
 reconcile_lite_runtime(){
   SCRIPT_NAME="start-dashboard.sh"
-  acquire_lock "$SCRIPT_NAME"
+  acquire_start_dashboard_lock "$SCRIPT_NAME"
   ensure_root_dirs
   require_termux
   require_cmd python3 caddy curl pm2 jq nats-server
@@ -1094,7 +1103,7 @@ main(){
     start_caddy_only
     return
   fi
-  SCRIPT_NAME="start-dashboard.sh"; acquire_lock "$SCRIPT_NAME"; ensure_root_dirs; require_termux; require_cmd python3 caddy curl pm2 jq nats-server
+  SCRIPT_NAME="start-dashboard.sh"; acquire_start_dashboard_lock "$SCRIPT_NAME"; ensure_root_dirs; require_termux; require_cmd python3 caddy curl pm2 jq nats-server
   ensure_assets; start_tailscale_if_missing; write_hardware_daemon; write_caddyfile; write_observability_configs; start_pm2_daemons; verify_lite_remote_nats; mark_done dashboard_ready
   log INFO "Dashboard/control-plane services are ready and safe to rerun"
 }
