@@ -1119,8 +1119,7 @@ start_node_agent_only(){
   POCKETLAB_NATS_USER="$POCKETLAB_NATS_AGENT_USER" \
   POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" \
   POCKETLAB_NATS_NAME=pocketlab-node-agent \
-  POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$AGENT_SERVER")" \
-    pm2_runtime_process pocket-node-agent "$AGENT_SERVER" --interpreter python3 --update-env
+    POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$AGENT_SERVER")" pm2_runtime_process pocket-node-agent "$AGENT_SERVER" --interpreter python3 --update-env
   pm2 save >/dev/null || true
   log INFO "Lite node-agent runtime converged without unrelated service reconciliation"
 }
@@ -1134,8 +1133,7 @@ start_runtime_reconciler_only(){
   [[ -f "$RUNTIME_RECONCILER_SERVER" ]] || die "Missing Lite runtime reconciler: $RUNTIME_RECONCILER_SERVER"
   POCKETLAB_RUNTIME_RECONCILE_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_SECONDS:-45}" \
   POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS:-120}" \
-  POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$RUNTIME_RECONCILER_SERVER")" \
-    pm2_runtime_process pocketlab-runtime-reconciler "$RUNTIME_RECONCILER_SERVER" --interpreter python3 --update-env
+    POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$RUNTIME_RECONCILER_SERVER")" pm2_runtime_process pocketlab-runtime-reconciler "$RUNTIME_RECONCILER_SERVER" --interpreter python3 --update-env
   pm2 save >/dev/null || true
   log INFO "Lite runtime reconciler converged without unrelated service reconciliation"
 }
