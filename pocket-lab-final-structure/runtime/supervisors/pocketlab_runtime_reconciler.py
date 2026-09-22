@@ -197,13 +197,14 @@ def repair_reasons(statuses: dict[str, str]) -> list[str]:
     """Return only reconstruction-class drift.
 
     Health-level recovery remains owned by the existing core supervisor. This
-    avoids a second restart loop and intentionally ignores transient states such
-    as "waiting restart" when the process definition still exists.
+    avoids a second restart loop and intentionally ignores stopped/errored
+    states when the process definition still exists. The reconciler only
+    reconstructs a definition that PM2 no longer reports at all.
     """
     reasons: list[str] = []
     for spec in CONTROL_PLANE_SERVICES:
         status = str(statuses.get(spec.name) or "missing").lower()
-        if status in REPAIRABLE_PM2_STATUSES:
+        if status == "missing":
             reasons.append(f"pm2_definition_or_process:{spec.name}:{status}")
     return reasons
 

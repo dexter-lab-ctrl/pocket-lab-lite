@@ -38,7 +38,7 @@ def test_lite_registry_excludes_legacy_pocket_lab_services():
     assert names.isdisjoint(registry.LEGACY_LITE_SERVICES)
 
 
-def test_runtime_reconciler_repairs_only_missing_or_stopped_definitions():
+def test_runtime_reconciler_repairs_only_missing_definitions():
     registry = _load("pocketlab_runtime_registry")
     reconciler = _load("pocketlab_runtime_reconciler")
     healthy = {spec.name: "online" for spec in registry.CONTROL_PLANE_SERVICES}
@@ -48,8 +48,10 @@ def test_runtime_reconciler_repairs_only_missing_or_stopped_definitions():
     drifted["pocket-worker"] = "stopped"
     drifted["pocket-api"] = "waiting restart"
     reasons = reconciler.repair_reasons(drifted)
-    assert "pm2_definition_or_process:pocket-worker:stopped" in reasons
-    assert not any("pocket-api" in reason for reason in reasons)
+    assert reasons == []
+    drifted["pocket-worker"] = "missing"
+    reasons = reconciler.repair_reasons(drifted)
+    assert "pm2_definition_or_process:pocket-worker:missing" in reasons
 
 
 def test_lite_bootstrap_skips_legacy_runtime_stages():
