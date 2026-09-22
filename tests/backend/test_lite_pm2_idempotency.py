@@ -192,6 +192,47 @@ def test_process_start_uses_temporary_ecosystem_config_without_serializing_secre
     assert "--min-uptime" not in source
 
 
+def test_delete_drains_a_stale_pm2_child_before_relaunch(tmp_path):
+    script = tmp_path / "drain-stale-child.sh"
+    script.write_text(
+        f"""
+set -Eeuo pipefail
+export POCKET_LAB_ALLOW_NON_TERMUX=1
+export HOME={str(tmp_path / 'home')!r}
+export PREFIX={str(tmp_path / 'prefix')!r}
+source {str(COMMON)!r}
+child_pid="$1"
+pm2() {{
+  case "${{1:-}}" in
+    jlist) printf '[{{"name":"demo","pm_id":42,"pid":%s}}]\\n' "$child_pid" ;;
+    delete) : ;;
+    *) return 0 ;;
+  esac
+}}
+pm2_delete_process_unlocked demo
+if kill -0 "$child_pid" >/dev/null 2>&1; then
+  state="$(ps -o stat= -p "$child_pid" 2>/dev/null | tr -d '[:space:]' || true)"
+  [[ "$state" == Z* ]] || exit 1
+fi
+""",
+        encoding="utf-8",
+    )
+    child = subprocess.Popen(["sleep", "120"])
+    try:
+        completed = subprocess.run(
+            ["bash", str(script), str(child.pid)],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=45,
+        )
+        assert completed.returncode == 0, completed.stderr or completed.stdout
+    finally:
+        child.kill()
+        child.wait()
+
+
 def test_transient_app_operation_variables_do_not_change_process_spec_hash(tmp_path):
     shell = r"""
 set -Eeuo pipefail

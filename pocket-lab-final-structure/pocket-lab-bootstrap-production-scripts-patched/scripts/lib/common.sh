@@ -617,9 +617,58 @@ raise SystemExit(1)
 ' "$name"
 }
 
+pm2_process_pid() {
+  local name="$1"
+  pm2 jlist 2>/dev/null | python3 -c '
+import json, sys
+name=sys.argv[1]
+try:
+    items=json.load(sys.stdin)
+except Exception:
+    items=[]
+for item in items if isinstance(items,list) else []:
+    if str(item.get("name") or "") != name:
+        continue
+    env=item.get("pm2_env") if isinstance(item.get("pm2_env"),dict) else {}
+    value=item.get("pid", env.get("pid"))
+    if isinstance(value, bool):
+        raise SystemExit(1)
+    try:
+        value=int(value)
+    except (TypeError, ValueError):
+        raise SystemExit(1)
+    if value > 0:
+        print(value)
+        raise SystemExit(0)
+raise SystemExit(1)
+' "$name"
+}
+
+pm2_wait_for_pid_exit() {
+  local pid="$1" attempts="${2:-60}" attempt
+  local state
+  [[ "$pid" =~ ^[0-9]+$ ]] || return 0
+  for attempt in $(seq 1 "$attempts"); do
+    kill -0 "$pid" >/dev/null 2>&1 || return 0
+    state="$(ps -o stat= -p "$pid" 2>/dev/null | tr -d '[:space:]' || true)"
+    [[ "$state" == Z* ]] && return 0
+    sleep 0.5
+  done
+  kill "$pid" >/dev/null 2>&1 || true
+  for attempt in $(seq 1 10); do
+    kill -0 "$pid" >/dev/null 2>&1 || return 0
+    state="$(ps -o stat= -p "$pid" 2>/dev/null | tr -d '[:space:]' || true)"
+    [[ "$state" == Z* ]] && return 0
+    sleep 0.5
+  done
+  kill -KILL "$pid" >/dev/null 2>&1 || true
+  ! kill -0 "$pid" >/dev/null 2>&1 || [[ "$(ps -o stat= -p "$pid" 2>/dev/null | tr -d '[:space:]' || true)" == Z* ]]
+}
+
 pm2_delete_process_unlocked() {
-  local name="$1" process_id=""
+  local name="$1" process_id="" process_pid=""
   process_id="$(pm2_process_id "$name" 2>/dev/null || true)"
+  process_pid="$(pm2_process_pid "$name" 2>/dev/null || true)"
   if [[ "$process_id" =~ ^[0-9]+$ ]]; then
     pm2 delete "$process_id" >/dev/null 2>&1 || true
   else
@@ -627,6 +676,13 @@ pm2_delete_process_unlocked() {
     # fallback, but prefer the numeric identity whenever it is available so a
     # queued sibling definition cannot be deleted accidentally.
     pm2 delete "$name" >/dev/null 2>&1 || true
+  fi
+  # PM2 can leave a stale child alive while its asynchronous definition is
+  # being removed. Drain that exact PID before another ecosystem launch can
+  # reuse its definition identity; escalate only after the bounded SIGTERM
+  # window has elapsed.
+  if [[ "$process_pid" =~ ^[0-9]+$ ]]; then
+    pm2_wait_for_pid_exit "$process_pid" || true
   fi
 }
 
