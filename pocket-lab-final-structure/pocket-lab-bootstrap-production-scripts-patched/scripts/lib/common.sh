@@ -792,7 +792,11 @@ PY
         continue
       fi
     fi
-    if POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$ecosystem_file" --name "$name" >/dev/null; then
+    # The ecosystem file already carries the canonical process name. PM2 7 on
+    # Termux can apply a CLI --name override to a queued sibling definition;
+    # omit the override so the process-specific file remains the sole launch
+    # identity source.
+    if POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$ecosystem_file" >/dev/null; then
       launch_status=0
     else
       launch_status=$?
