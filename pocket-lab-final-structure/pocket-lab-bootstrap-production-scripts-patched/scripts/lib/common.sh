@@ -585,6 +585,7 @@ for item in items if isinstance(items,list) else []:
     print(str(env.get("POCKETLAB_PROCESS_SPEC_HASH") or ""))
     print(str(env.get("pm_exec_path") or ""))
     print(str(env.get("exec_interpreter") or ""))
+    print(str(env.get("pid") or item.get("pid") or ""))
     raise SystemExit(0)
 raise SystemExit(0)
 ' "$name"
@@ -688,13 +689,20 @@ pm2_delete_process_unlocked() {
 
 pm2_process_launch_matches() {
   local name="$1" expected_spec="$2" expected_launch="$3" cwd="$4"
-  local snapshot status current_hash current_script current_interpreter current_launch
+  local snapshot status current_hash current_script current_interpreter current_pid current_launch
   snapshot="$(pm2_process_snapshot "$name" 2>/dev/null || true)"
   status="$(printf '%s\n' "$snapshot" | sed -n '1p')"
   current_hash="$(printf '%s\n' "$snapshot" | sed -n '2p')"
   current_script="$(printf '%s\n' "$snapshot" | sed -n '3p')"
   current_interpreter="$(printf '%s\n' "$snapshot" | sed -n '4p')"
+  current_pid="$(printf '%s\n' "$snapshot" | sed -n '5p')"
   [[ -n "$status" && "$current_hash" == "$expected_spec" && -n "$current_script" ]] || return 1
+  # Older test doubles do not project a PID. Live PM2 projections do, and a
+  # stale online record must not count as converged after its child exited.
+  if [[ -n "$current_pid" ]]; then
+    [[ "$current_pid" =~ ^[0-9]+$ ]] || return 1
+    kill -0 "$current_pid" >/dev/null 2>&1 || return 1
+  fi
   current_launch="$(pm2_launch_fingerprint "$current_script" "$current_interpreter" "$cwd" 2>/dev/null || true)"
   [[ "$current_launch" == "$expected_launch" ]]
 }
@@ -789,9 +797,28 @@ pm2_ensure_process_unlocked() {
 
   if [[ -n "$status" && "$current_hash" == "$spec_hash" && "$current_launch_fingerprint" == "$launch_fingerprint" ]]; then
     if [[ "$status" == "online" ]]; then
-      pm2_record_desired_process_spec_hash "$name" "$spec_hash" "$launch_fingerprint"
-      log INFO "PM2 process already converged: $name"
-      return 0
+      # A queued PM2 delete can leave a stale online projection while the
+      # child is already gone. Require repeated live identity observations so
+      # that this path cannot accept a process which is about to disappear.
+      local online_streak=0 online_attempt
+      for online_attempt in $(seq 1 3); do
+        if pm2_process_launch_matches "$name" "$spec_hash" "$launch_fingerprint" "$cwd"; then
+          online_streak=$((online_streak + 1))
+          if (( online_streak >= 2 )); then
+            pm2_record_desired_process_spec_hash "$name" "$spec_hash" "$launch_fingerprint"
+            log INFO "PM2 process already converged: $name"
+            return 0
+          fi
+        else
+          online_streak=0
+        fi
+        sleep 1
+      done
+      if ! snapshot="$(pm2_process_snapshot "$name" 2>/dev/null)"; then
+        snapshot=""
+      fi
+      status="$(printf '%s\n' "$snapshot" | sed -n '1p')"
+      log WARN "PM2 process $name did not remain online; reconciling its current projection"
     fi
     # PM2 7 on Termux can attach a queued sibling ecosystem definition when
     # either `restart <name>` or `start <name>` resumes a stopped process.

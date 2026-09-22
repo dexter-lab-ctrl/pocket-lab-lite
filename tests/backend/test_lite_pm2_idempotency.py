@@ -370,7 +370,7 @@ source "$COMMON_PATH"
 pm2() {
   case "${1:-}" in
     jlist)
-      printf '%s\n' '[{"name":"demo","pm2_env":{"status":"online","POCKETLAB_PROCESS_SPEC_HASH":"abc123","pm_exec_path":"/opt/demo.py","exec_interpreter":"/usr/bin/python3"}}]'
+      printf '%s\n' '[{"name":"demo","pid":321,"pm2_env":{"status":"online","pid":321,"POCKETLAB_PROCESS_SPEC_HASH":"abc123","pm_exec_path":"/opt/demo.py","exec_interpreter":"/usr/bin/python3"}}]'
       ;;
     *)
       return 0
@@ -383,6 +383,7 @@ test "$(printf '%s\n' "$snapshot" | sed -n '1p')" = "online"
 test "$(printf '%s\n' "$snapshot" | sed -n '2p')" = "abc123"
 test "$(printf '%s\n' "$snapshot" | sed -n '3p')" = "/opt/demo.py"
 test "$(printf '%s\n' "$snapshot" | sed -n '4p')" = "/usr/bin/python3"
+test "$(printf '%s\n' "$snapshot" | sed -n '5p')" = "321"
 """
     env = os.environ.copy()
     env.update(
@@ -399,6 +400,70 @@ test "$(printf '%s\n' "$snapshot" | sed -n '4p')" = "/usr/bin/python3"
         text=True,
         capture_output=True,
         check=False,
+    )
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+
+
+def test_stale_online_projection_is_replaced_when_child_pid_is_gone(tmp_path):
+    shell = r"""
+set -Eeuo pipefail
+export POCKET_LAB_ALLOW_NON_TERMUX=1
+export HOME="$TEST_HOME"
+export PREFIX="$TEST_PREFIX"
+source "$COMMON_PATH"
+mkdir -p "$TEST_HOME"
+EXPECTED_SCRIPT="$(pwd -P)/demo.py"
+EXPECTED_INTERPRETER="$(command -v python3)"
+export POCKETLAB_PM2_POLICY_FINGERPRINT="$(pm2_policy_fingerprint demo)"
+SPEC="$(pm2_process_spec_hash demo.py --interpreter python3)"
+STATE="$TEST_HOME/state"
+ACTION_FILE="$TEST_HOME/actions"
+LIVE_PID_FILE="$TEST_HOME/live-pid"
+printf 'online\n' >"$STATE"
+trap 'if [[ -s "$LIVE_PID_FILE" ]]; then kill "$(cat "$LIVE_PID_FILE")" 2>/dev/null || true; fi' EXIT
+
+pm2_process_snapshot() {
+  if [[ -s "$LIVE_PID_FILE" ]]; then
+    printf 'online\n%s\n%s\n%s\n%s\n' "$SPEC" "$EXPECTED_SCRIPT" "$EXPECTED_INTERPRETER" "$(cat "$LIVE_PID_FILE")"
+  elif [[ "$(cat "$STATE")" == "online" ]]; then
+    # The stale projection has the right identity but no live child.
+    printf 'online\n%s\n%s\n%s\n999999\n' "$SPEC" "$EXPECTED_SCRIPT" "$EXPECTED_INTERPRETER"
+  fi
+}
+
+pm2() {
+  case "${1:-}" in
+    delete)
+      printf 'delete\n' >>"$ACTION_FILE"
+      printf 'missing\n' >"$STATE"
+      ;;
+    start)
+      sleep 120 &
+      printf '%s\n' "$!" >"$LIVE_PID_FILE"
+      printf 'start\n' >>"$ACTION_FILE"
+      ;;
+  esac
+}
+
+pm2_ensure_process demo demo.py --interpreter python3
+[[ "$(cat "$ACTION_FILE")" == $'delete\nstart' ]]
+"""
+    env = os.environ.copy()
+    env.update(
+        {
+            "TEST_HOME": str(tmp_path / "home"),
+            "TEST_PREFIX": str(tmp_path / "prefix"),
+            "COMMON_PATH": str(COMMON),
+        }
+    )
+    completed = subprocess.run(
+        ["bash", "-lc", shell],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=30,
     )
     assert completed.returncode == 0, completed.stderr or completed.stdout
 
