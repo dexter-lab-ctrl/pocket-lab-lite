@@ -108,6 +108,31 @@ def run_command(args: List[str], timeout: float = 15.0, env: Optional[Dict[str, 
     return subprocess.run(args, check=False, capture_output=True, text=True, timeout=timeout, env=env)
 
 
+@contextlib.contextmanager
+def pm2_mutation_lock(timeout: float = 30.0):
+    """Serialize direct PM2 mutations with shell-owned convergence."""
+
+    configured = os.environ.get("POCKETLAB_PM2_MUTATION_LOCK")
+    state_root = Path(os.environ.get("POCKETLAB_STATE_DIR") or Path.home() / ".pocket_lab")
+    path = Path(configured).expanduser() if configured else state_root / "runtime" / "pm2-mutation.lock"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a+") as handle:
+        deadline = time.monotonic() + max(0.1, float(timeout))
+        while True:
+            try:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except BlockingIOError:
+                if time.monotonic() >= deadline:
+                    yield False
+                    return
+                time.sleep(0.1)
+        try:
+            yield True
+        finally:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
 def pm2_available() -> bool:
     try:
         return run_command(["sh", "-lc", "command -v pm2"], timeout=4).returncode == 0
@@ -435,7 +460,19 @@ class LiteCoreSupervisor:
             # The supervisor itself carries service-specific metadata such as
             # POCKETLAB_SERVICE_VERSION; --update-env would stamp that metadata
             # onto the restarted target and corrupt exact version projection.
-            result = run_command(["pm2", "restart", service], timeout=30)
+            with pm2_mutation_lock(timeout=30) as locked:
+                if not locked:
+                    event = {
+                        "event": "restart_suppressed",
+                        "service": service,
+                        "reason": reason,
+                        "suppressed_reason": "pm2_mutation_lock_busy",
+                        "restart_generation": generation,
+                        "acted": False,
+                    }
+                    self._append_event(event)
+                    return event
+                result = run_command(["pm2", "restart", service], timeout=30)
             acted = result.returncode == 0
             attempted_at = epoch()
             self.mark_action(action)

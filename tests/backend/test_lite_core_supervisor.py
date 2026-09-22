@@ -306,3 +306,24 @@ def test_core_supervisor_source_never_updates_env_on_pm2_restart():
     ).read_text(encoding="utf-8")
     restart = source[source.index("    def restart_pm2("):source.index("    def qualification_stop_pm2(", source.index("    def restart_pm2("))]
     assert '"--update-env"' not in restart
+
+
+def test_core_supervisor_uses_shared_pm2_mutation_lock(monkeypatch, tmp_path):
+    supervisor_module = load_supervisor_module()
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path / "state"))
+    supervisor = supervisor_module.LiteCoreSupervisor()
+    calls = []
+
+    class Result:
+        returncode = 0
+
+    def fake_run_command(args, timeout=15.0, env=None):
+        calls.append(list(args))
+        return Result()
+
+    monkeypatch.setattr(supervisor_module, "run_command", fake_run_command)
+    event = supervisor.restart_pm2("pocket-node-agent", "qualification")
+
+    assert event["acted"] is True
+    assert calls == [["pm2", "restart", "pocket-node-agent"]]
+    assert (tmp_path / "state" / "runtime" / "pm2-mutation.lock").is_file()

@@ -41,6 +41,7 @@ mkdir -p "$STATE_DIR" "$LOG_DIR" "$RUN_DIR" "$LOCK_DIR" "$MARKER_DIR" "$TMP_ROOT
 
 SCRIPT_NAME="${SCRIPT_NAME:-$(basename "${BASH_SOURCE[-1]:-$0}")}"
 LOCK_FD=200
+PM2_LOCK_FD=201
 
 NO_NETWORK="${POCKET_LAB_NO_NETWORK:-0}"
 ALLOW_NON_TERMUX="${POCKET_LAB_ALLOW_NON_TERMUX:-0}"
@@ -158,6 +159,17 @@ acquire_lock() {
     ACTIVE_LOCK_DIR="$lockdir"
     trap release_lock EXIT
   fi
+}
+
+pm2_mutation_lock_acquire() {
+  local lock_root="${POCKETLAB_STATE_DIR:-$STATE_DIR}"
+  local lock_file="$lock_root/runtime/pm2-mutation.lock"
+  mkdir -p "$(dirname "$lock_file")"
+  if ! have flock; then
+    die "Required command missing: flock"
+  fi
+  eval "exec ${PM2_LOCK_FD}>\"$lock_file\""
+  flock "$PM2_LOCK_FD"
 }
 marker_path() { printf '%s/%s.done' "$MARKER_DIR" "${1//[^A-Za-z0-9_.-]/_}"; }
 is_done() { [[ -f "$(marker_path "$1")" ]]; }
@@ -549,7 +561,7 @@ pm2_wait_for_absent() {
   return 1
 }
 
-pm2_ensure_process() {
+pm2_ensure_process_unlocked() {
   local name="$1"
   shift
   require_cmd pm2 python3 sha256sum
@@ -678,7 +690,7 @@ PY
         continue
       fi
     fi
-    if POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$ecosystem_file" >/dev/null; then
+    if POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$ecosystem_file" --only "$name" >/dev/null; then
       launch_status=0
     else
       launch_status=$?
@@ -701,6 +713,14 @@ PY
   fi
   pm2_record_desired_process_spec_hash "$name" "$spec_hash" "$launch_fingerprint"
 }
+
+pm2_ensure_process() (
+  # PM2 7 on Termux serializes daemon mutations asynchronously. Keep direct
+  # supervisor restarts and ecosystem relaunches in one critical section so a
+  # queued operation cannot attach another process's definition.
+  pm2_mutation_lock_acquire
+  pm2_ensure_process_unlocked "$@"
+)
 
 cleanup_pidfile() { local pidfile="$1" pid=""; [[ -f "$pidfile" ]] || return 0; pid="$(cat "$pidfile" 2>/dev/null || true)"; [[ -n "$pid" ]] && kill "$pid" >/dev/null 2>&1 || true; rm -f "$pidfile"; }
 
