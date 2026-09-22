@@ -117,6 +117,17 @@ main() {
     die "Pocket Lab Lite PhotoPrism runtime did not converge"
   fi
 
+  if [[ "$REASON" == *pocket-node-agent* ]]; then
+    log INFO "Reconciling the node-agent runtime without unrelated service convergence"
+    if bash "$DASHBOARD" --lite --node-agent-only; then
+      write_evidence "converged"
+      log INFO "Pocket Lab Lite node-agent runtime converged"
+      return 0
+    fi
+    write_evidence "degraded"
+    die "Pocket Lab Lite node-agent runtime did not converge"
+  fi
+
   if bash "$DASHBOARD" --lite --reconcile-only; then
     if [[ -s "$photoprism_env" || -s "$photoprism_manifest" ]]; then
       log INFO "Installed PhotoPrism state detected; reconciling runtime without install/update work"

@@ -56,6 +56,29 @@ def test_runtime_reconciler_repairs_only_missing_definitions():
     assert "pm2_definition_or_process:pocket-worker:missing" in reasons
 
 
+def test_node_agent_recovery_uses_scoped_runtime_path():
+    start_dashboard = (
+        ROOT
+        / "pocket-lab-final-structure"
+        / "pocket-lab-bootstrap-production-scripts-patched"
+        / "scripts"
+        / "start-dashboard.sh"
+    ).read_text(encoding="utf-8")
+    reconcile = (
+        ROOT
+        / "pocket-lab-final-structure"
+        / "pocket-lab-bootstrap-production-scripts-patched"
+        / "scripts"
+        / "lite"
+        / "reconcile-runtime.sh"
+    ).read_text(encoding="utf-8")
+    assert "--node-agent-only" in start_dashboard
+    assert "POCKETLAB_NODE_AGENT_ONLY" in start_dashboard
+    assert 'if [[ "$REASON" == *pocket-node-agent* ]]' in reconcile
+    assert 'bash "$DASHBOARD" --lite --node-agent-only' in reconcile
+    assert "without unrelated service convergence" in reconcile
+
+
 def test_runtime_reconcile_outer_lock_cannot_leak_into_pm2_children():
     source = (
         ROOT

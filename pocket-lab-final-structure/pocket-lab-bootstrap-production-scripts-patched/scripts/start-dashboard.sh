@@ -34,6 +34,11 @@ parse_start_dashboard_args(){
         export POCKETLAB_RECONCILE_ONLY=0
         shift
         ;;
+      --node-agent-only)
+        export POCKETLAB_NODE_AGENT_ONLY=1
+        export POCKETLAB_RECONCILE_ONLY=0
+        shift
+        ;;
       --reconcile-only)
         export POCKETLAB_PROFILE="lite"
         export POCKETLAB_LITE=1
@@ -1091,6 +1096,30 @@ start_caddy_only(){
   log INFO "Caddy proxy configuration is updated and safe to rerun"
 }
 
+start_node_agent_only(){
+  SCRIPT_NAME="start-dashboard.sh"
+  acquire_start_dashboard_lock "$SCRIPT_NAME"
+  ensure_root_dirs
+  require_termux
+  require_cmd python3 pm2
+  [[ -f "$AGENT_SERVER" ]] || die "Missing Lite node agent runtime: $AGENT_SERVER"
+  # A node-agent repair must not re-enter full dashboard convergence. That
+  # path also probes optional PRoot applications and can queue unrelated PM2
+  # definitions while the disposable agent definition is absent.
+  ensure_nats_credentials
+  POCKETLAB_NODE_ID="${POCKETLAB_SERVER_NODE_ID:-pocket-lab-lite-server}" \
+  POCKETLAB_NODE_NAME="${POCKETLAB_DEVICE_NAME:-Pocket Lab Lite Server}" \
+  POCKETLAB_NODE_ROLE=server_host \
+  POCKETLAB_IS_CONTROL_PLANE=1 \
+  POCKETLAB_NATS_USER="$POCKETLAB_NATS_AGENT_USER" \
+  POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" \
+  POCKETLAB_NATS_NAME=pocketlab-node-agent \
+  POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$AGENT_SERVER")" \
+    pm2_runtime_process pocket-node-agent "$AGENT_SERVER" --interpreter python3 --update-env
+  pm2 save >/dev/null || true
+  log INFO "Lite node-agent runtime converged without unrelated service reconciliation"
+}
+
 reconcile_lite_runtime(){
   SCRIPT_NAME="start-dashboard.sh"
   acquire_start_dashboard_lock "$SCRIPT_NAME"
@@ -1111,6 +1140,10 @@ reconcile_lite_runtime(){
 }
 
 main(){
+  if [[ "${POCKETLAB_NODE_AGENT_ONLY:-0}" == "1" ]]; then
+    start_node_agent_only
+    return
+  fi
   if [[ "${POCKETLAB_RECONCILE_ONLY:-0}" == "1" ]]; then
     reconcile_lite_runtime
     return
