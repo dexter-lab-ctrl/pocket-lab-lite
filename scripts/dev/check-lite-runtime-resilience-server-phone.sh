@@ -671,6 +671,45 @@ exit 1
 REMOTE
 }
 
+wait_pm2_definition_absent() {
+  local service="$1" pm2_id="$2"
+  ssh "$SSH_ALIAS" bash -s -- "$service" "$pm2_id" <<'REMOTE'
+set -Eeuo pipefail
+service="$1"
+pm2_id="$2"
+absent_streak=0
+for _ in $(seq 1 30); do
+  json_file="$(mktemp "${TMPDIR:-$HOME/tmp}/pocketlab-pm2-absent.XXXXXX.json")"
+  if pm2 jlist >"$json_file" 2>/dev/null && python3 - "$json_file" "$service" "$pm2_id" <<'PY'
+import json
+import sys
+
+path, service, pm2_id = sys.argv[1:]
+items = json.loads(open(path, encoding="utf-8").read())
+for item in items if isinstance(items, list) else []:
+    env = item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}
+    value = item.get("pm_id", env.get("pm_id", item.get("id", env.get("id"))))
+    if str(item.get("name") or "") == service or str(value) == pm2_id:
+        raise SystemExit(1)
+raise SystemExit(0)
+PY
+  then
+    rm -f "$json_file"
+    absent_streak=$((absent_streak + 1))
+    if (( absent_streak >= 3 )); then
+      exit 0
+    fi
+  else
+    rm -f "$json_file"
+    absent_streak=0
+  fi
+  sleep 1
+done
+echo "ERROR: PM2 definition did not remain absent after deletion: $service (pm2_id=$pm2_id)" >&2
+exit 1
+REMOTE
+}
+
 fault_pm2_service() {
   local service="$1"
   local generation_before started_epoch pm2_id
@@ -731,6 +770,7 @@ set -Eeuo pipefail
 pm2_id="$1"
 pm2 delete "$pm2_id" >/dev/null
 REMOTE
+  wait_pm2_definition_absent "$service" "$pm2_id"
   wait_pm2_service "$service"
   ssh "$SSH_ALIAS" bash -s -- "$service" "$generation_before" "$started_epoch" <<'REMOTE'
 set -Eeuo pipefail
