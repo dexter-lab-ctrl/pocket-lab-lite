@@ -55,7 +55,7 @@ PY
 }
 
 pm2() {
-  case "${1:-}" in
+    case "${1:-}" in
     restart|start|delete)
       if [[ "$1" == "start" ]]; then
         cp "$2" "$ECOSYSTEM_CAPTURE"
@@ -79,6 +79,10 @@ payload = {
 }
 Path(sys.argv[2]).write_text(json.dumps(payload), encoding="utf-8")
 PY
+      fi
+      if [[ "$1" == "delete" ]]; then
+        STATUS=missing
+        export STATUS
       fi
       printf '%s\n' "$1" >>"$ACTION_FILE"
       ;;
@@ -144,6 +148,10 @@ def test_missing_process_definition_is_created(tmp_path):
 
 def test_wrong_executable_is_replaced_even_when_process_hash_matches(tmp_path):
     assert _run_case(tmp_path, "online", wrong_executable=True) == ["delete", "start"]
+
+
+def test_stopping_wrong_executable_waits_for_pm2_removal_before_restart(tmp_path):
+    assert _run_case(tmp_path, "stopping", wrong_executable=True) == ["delete", "start"]
 
 
 def test_process_start_uses_temporary_ecosystem_config_without_serializing_secrets(tmp_path):
@@ -300,6 +308,9 @@ pm2_process_snapshot() {
 }
 
 pm2() {
+  if [[ "${1:-}" == "delete" ]]; then
+    : >"$SNAPSHOT_FILE"
+  fi
   if [[ "${1:-}" == "start" ]]; then
     mkdir -p "$(dirname "$HASH_FILE")"
     printf '%s\n' "$POCKETLAB_PROCESS_SPEC_HASH" >"$HASH_FILE"

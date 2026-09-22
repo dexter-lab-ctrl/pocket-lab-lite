@@ -538,6 +538,17 @@ pm2_process_launch_matches() {
   [[ "$current_launch" == "$expected_launch" ]]
 }
 
+pm2_wait_for_absent() {
+  local name="$1" attempts="${2:-30}" attempt snapshot status
+  for attempt in $(seq 1 "$attempts"); do
+    snapshot="$(pm2_process_snapshot "$name" 2>/dev/null || true)"
+    status="$(printf '%s\n' "$snapshot" | sed -n '1p')"
+    [[ -z "$status" ]] && return 0
+    sleep 1
+  done
+  return 1
+}
+
 pm2_ensure_process() {
   local name="$1"
   shift
@@ -622,6 +633,10 @@ pm2_ensure_process() {
   if [[ -n "$status" ]]; then
     log INFO "Replacing drifted PM2 process definition: $name"
     pm2 delete "$name" >/dev/null 2>&1 || true
+    if ! pm2_wait_for_absent "$name"; then
+      log ERROR "PM2 process $name did not disappear after deletion"
+      return 1
+    fi
   else
     log INFO "Creating missing PM2 process definition: $name"
   fi
@@ -658,7 +673,11 @@ PY
     if [[ "$launch_attempt" -gt 1 ]]; then
       log WARN "PM2 launch identity drift persisted for $name; replacing the queued definition (attempt=$launch_attempt)"
       pm2 delete "$name" >/dev/null 2>&1 || true
-      sleep 1
+      if ! pm2_wait_for_absent "$name"; then
+        log ERROR "PM2 process $name did not disappear before retry"
+        launch_status=1
+        continue
+      fi
     fi
     if POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$ecosystem_file" >/dev/null; then
       launch_status=0
