@@ -228,6 +228,8 @@ def test_runtime_reconciler_strips_own_pm2_version_metadata_from_child_env():
     repair = source[source.index("    def _repair("):source.index("    def tick(", source.index("    def _repair("))]
     assert 'env.pop("POCKETLAB_SERVICE_VERSION", None)' in repair
     assert 'env.pop("POCKETLAB_PM2_SERVICE_VERSION", None)' in repair
+    assert '"pm_id"' in repair
+    assert '"unique_id"' in repair
 
 
 def test_runtime_reconciler_strips_stale_runtime_path_overrides_from_child_env():

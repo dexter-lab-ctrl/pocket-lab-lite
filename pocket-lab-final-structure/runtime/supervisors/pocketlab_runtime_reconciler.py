@@ -461,6 +461,13 @@ class RuntimeReconciler:
             "POCKETLAB_STATE_DIR",
             "POCKETLAB_LITE_DB_PATH",
             "POCKETLAB_OPA_ACTIVE_POLICY_DIR",
+            # PM2 injects these fields into managed processes. Passing them
+            # into a child PM2 CLI invocation makes PM2 7/Termux treat the
+            # mutation as if it were issued by the current process and can
+            # rename that definition onto the next ecosystem launch.
+            "pm_id",
+            "name",
+            "unique_id",
         ):
             env.pop(key, None)
         env["POCKETLAB_PROFILE"] = "lite"
