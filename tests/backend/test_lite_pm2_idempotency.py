@@ -163,6 +163,8 @@ def test_process_start_uses_temporary_ecosystem_config_without_serializing_secre
     assert (tmp_path / "start-args-missing.txt").read_text(encoding="utf-8").splitlines() == [
         "start",
         str(start_path),
+        "--only",
+        "demo",
     ]
     assert "app.env = process.env;" in source
     assert "test-secret-value" not in source
