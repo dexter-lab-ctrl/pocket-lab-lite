@@ -56,6 +56,9 @@ PY
 
 pm2() {
     case "${1:-}" in
+    jlist)
+      printf '%s\n' '[{"name":"demo","pm_id":42}]'
+      ;;
     restart|start|delete)
       if [[ "$1" == "start" ]]; then
         if [[ "$2" == /* ]]; then
@@ -81,8 +84,9 @@ payload = {
 Path(sys.argv[2]).write_text(json.dumps(payload), encoding="utf-8")
 PY
         else
-          # A stopped process is resumed by name.  Its already-verified
-          # definition does not need a new ecosystem file.
+          # Kept for callers that exercise the old name-based PM2 stub path;
+          # the production convergence path recreates stopped definitions from
+          # their process-specific ecosystem file.
           printf 'online\n%s\n%s\n%s\n' \
             "$POCKETLAB_PROCESS_SPEC_HASH" "$EXPECTED_SCRIPT" "$EXPECTED_INTERPRETER" >"$START_SNAPSHOT"
         fi
@@ -90,6 +94,7 @@ PY
       if [[ "$1" == "delete" ]]; then
         STATUS=missing
         export STATUS
+        printf '%s\n' "${2:-}" >"$DELETE_TARGET"
       fi
       printf '%s\n' "$1" >>"$ACTION_FILE"
       ;;
@@ -118,6 +123,7 @@ PY
             "TEST_PREFIX": str(tmp_path / "prefix"),
             "COMMON_PATH": str(COMMON),
             "ACTION_FILE": str(actions),
+            "DELETE_TARGET": str(tmp_path / f"delete-target-{status}.txt"),
             "ECOSYSTEM_CAPTURE": str(tmp_path / f"ecosystem-{status}.js"),
             "START_PATH": str(tmp_path / f"start-path-{status}.txt"),
             "START_ARGS": str(tmp_path / f"start-args-{status}.txt"),
@@ -145,10 +151,12 @@ def test_second_healthy_convergence_performs_zero_pm2_mutations(tmp_path):
     assert _run_case(tmp_path, "online") == []
 
 
-def test_stopped_matching_process_starts_without_delete_recreate(tmp_path):
-    # PM2 7/Termux resumes a stopped definition more reliably with `start`;
-    # using `restart` can attach a queued sibling ecosystem definition.
-    assert _run_case(tmp_path, "stopped") == ["start"]
+def test_stopped_matching_process_recreates_from_its_ecosystem_definition(tmp_path):
+    # PM2 7/Termux can attach a queued sibling definition when either `start`
+    # or `restart` resumes a stopped process by name. Recreate from the
+    # process-specific ecosystem file and verify its launch identity instead.
+    assert _run_case(tmp_path, "stopped") == ["delete", "start"]
+    assert (tmp_path / "delete-target-stopped.txt").read_text().strip() == "42"
 
 
 def test_missing_process_definition_is_created(tmp_path):

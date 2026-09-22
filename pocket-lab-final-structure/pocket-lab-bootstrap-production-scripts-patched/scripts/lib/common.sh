@@ -558,7 +558,7 @@ pm2_ensure_versioned_process() (
     [[ "$current_declared" != "$version" ]]
   }; then
     log INFO "Replacing PM2 process with stale version projection: $name observed=${current_version:-missing} declared=${current_declared:-missing} expected=$version"
-    pm2 delete "$name" >/dev/null 2>&1 || true
+    pm2_delete_process_unlocked "$name"
     if ! pm2_wait_for_absent "$name"; then
       log ERROR "PM2 process $name did not disappear after stale-version deletion"
       return 1
@@ -588,6 +588,46 @@ for item in items if isinstance(items,list) else []:
     raise SystemExit(0)
 raise SystemExit(0)
 ' "$name"
+}
+
+pm2_process_id() {
+  local name="$1"
+  pm2 jlist 2>/dev/null | python3 -c '
+import json, sys
+name=sys.argv[1]
+try:
+    items=json.load(sys.stdin)
+except Exception:
+    items=[]
+for item in items if isinstance(items,list) else []:
+    if str(item.get("name") or "") != name:
+        continue
+    env=item.get("pm2_env") if isinstance(item.get("pm2_env"),dict) else {}
+    value=item.get("pm_id", env.get("pm_id", item.get("id", env.get("id"))))
+    if isinstance(value, bool):
+        raise SystemExit(1)
+    try:
+        value=int(value)
+    except (TypeError, ValueError):
+        raise SystemExit(1)
+    if value >= 0:
+        print(value)
+        raise SystemExit(0)
+raise SystemExit(1)
+' "$name"
+}
+
+pm2_delete_process_unlocked() {
+  local name="$1" process_id=""
+  process_id="$(pm2_process_id "$name" 2>/dev/null || true)"
+  if [[ "$process_id" =~ ^[0-9]+$ ]]; then
+    pm2 delete "$process_id" >/dev/null 2>&1 || true
+  else
+    # Older PM2 projections may omit pm_id. Preserve the existing name-based
+    # fallback, but prefer the numeric identity whenever it is available so a
+    # queued sibling definition cannot be deleted accidentally.
+    pm2 delete "$name" >/dev/null 2>&1 || true
+  fi
 }
 
 pm2_process_launch_matches() {
@@ -690,24 +730,15 @@ pm2_ensure_process_unlocked() {
       return 0
     fi
     # PM2 7 on Termux can attach a queued sibling ecosystem definition when
-    # `restart` is used to resume a deliberately stopped process.  `start`
-    # resumes the existing definition in place and preserves the process
-    # identity that was just verified above.  Keep restart for other lifecycle
-    # states where PM2 has not retained a stopped definition.
-    if [[ "$status" == "stopped" ]]; then
-      log INFO "Starting existing converged PM2 process: $name status=$status"
-      POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$name" >/dev/null
-    else
-      log INFO "Restarting existing converged PM2 process: $name status=$status"
-      POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 restart "$name" --update-env >/dev/null
-    fi
-    pm2_record_desired_process_spec_hash "$name" "$spec_hash" "$launch_fingerprint"
-    return 0
+    # either `restart <name>` or `start <name>` resumes a stopped process.
+    # Recreate from the process-specific ecosystem file below instead. The
+    # exact PM2 id is removed first and every new launch is identity-verified.
+    log INFO "Recreating non-online PM2 process from its canonical definition: $name status=$status"
   fi
 
   if [[ -n "$status" ]]; then
     log INFO "Replacing drifted PM2 process definition: $name"
-    pm2 delete "$name" >/dev/null 2>&1 || true
+    pm2_delete_process_unlocked "$name"
     if ! pm2_wait_for_absent "$name"; then
       log ERROR "PM2 process $name did not disappear after deletion"
       return 1
@@ -746,7 +777,7 @@ PY
   for launch_attempt in 1 2 3; do
     if [[ "$launch_attempt" -gt 1 ]]; then
       log WARN "PM2 launch identity drift persisted for $name; replacing the queued definition (attempt=$launch_attempt)"
-      pm2 delete "$name" >/dev/null 2>&1 || true
+      pm2_delete_process_unlocked "$name"
       if ! pm2_wait_for_absent "$name"; then
         log ERROR "PM2 process $name did not disappear before retry"
         launch_status=1
