@@ -116,6 +116,11 @@ def pm2_mutation_lock(timeout: float = 30.0):
     state_root = Path(os.environ.get("POCKETLAB_STATE_DIR") or Path.home() / ".pocket_lab")
     path = Path(configured).expanduser() if configured else state_root / "runtime" / "pm2-mutation.lock"
     path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists() and not path.is_dir():
+        try:
+            path.unlink()
+        except OSError:
+            pass
     deadline = time.monotonic() + max(0.1, float(timeout))
     acquired = False
     while not acquired:

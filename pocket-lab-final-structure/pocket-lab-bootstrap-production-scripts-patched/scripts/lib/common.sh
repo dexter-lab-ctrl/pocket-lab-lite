@@ -164,6 +164,7 @@ pm2_mutation_lock_acquire() {
   local lock_root="${POCKETLAB_STATE_DIR:-$STATE_DIR}"
   local lock_dir="$lock_root/runtime/pm2-mutation.lock" owner_pid attempts=0
   mkdir -p "$(dirname "$lock_dir")"
+  [[ -e "$lock_dir" && ! -d "$lock_dir" ]] && rm -f "$lock_dir"
   while ! mkdir "$lock_dir" 2>/dev/null; do
     owner_pid="$(awk -F= '/^pid=/{print $2; exit}' "$lock_dir/metadata" 2>/dev/null || true)"
     if [[ -n "$owner_pid" ]] && ! pid_is_running "$owner_pid"; then
@@ -174,7 +175,7 @@ pm2_mutation_lock_acquire() {
     (( attempts < 600 )) || die "Timed out waiting for PM2 mutation lock: $lock_dir"
     sleep 0.1
   done
-  printf 'pid=%s\n' "$$" >"$lock_dir/metadata"
+  printf 'pid=%s\n' "${BASHPID:-$$}" >"$lock_dir/metadata"
   PM2_MUTATION_LOCK_DIR="$lock_dir"
 }
 
