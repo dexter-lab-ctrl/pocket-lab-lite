@@ -10,6 +10,7 @@ export const LITE_UI_PERFORMANCE_BUDGET = Object.freeze({
     maxSevereFrameRatio: 0.01,
     maxP95FrameMs: 20,
     maxLongTaskMs: 50,
+    maxLongAnimationFrameMs: 50,
     maxInpMs: 200,
     maxReactCommitP95Ms: 8,
     maxScreenTransitionCommitP95Ms: 12,
@@ -21,6 +22,7 @@ export const LITE_UI_PERFORMANCE_BUDGET = Object.freeze({
     maxSevereFrameRatio: 0.05,
     maxP95FrameMs: 24,
     maxLongTaskMs: 80,
+    maxLongAnimationFrameMs: 80,
     maxInpMs: 250,
     maxReactCommitP95Ms: 16,
     maxScreenTransitionCommitP95Ms: 24,
@@ -99,6 +101,7 @@ export function sanitizeLitePerformanceName(value = 'unknown') {
 
 export function summarizeLiteFrames(intervals = [], {
   longTasks = [],
+  longAnimationFrames = [],
   eventDurations = [],
   warmupFrames = 3,
 } = {}) {
@@ -107,6 +110,9 @@ export function summarizeLiteFrames(intervals = [], {
     .filter((value) => Number.isFinite(value) && value >= 0)
     .slice(Math.max(0, Math.floor(finite(warmupFrames))));
   const safeLongTasks = (Array.isArray(longTasks) ? longTasks : [])
+    .map((value) => finite(value, NaN))
+    .filter(Number.isFinite);
+  const safeLoaf = (Array.isArray(longAnimationFrames) ? longAnimationFrames : [])
     .map((value) => finite(value, NaN))
     .filter(Number.isFinite);
   const safeEvents = (Array.isArray(eventDurations) ? eventDurations : [])
@@ -128,6 +134,8 @@ export function summarizeLiteFrames(intervals = [], {
     gate_severe_frame_ratio: ratio((value) => value > gate.severeFrameThresholdMs),
     long_task_count: safeLongTasks.length,
     max_long_task_ms: round(Math.max(0, ...safeLongTasks)),
+    long_animation_frame_count: safeLoaf.length,
+    max_long_animation_frame_ms: round(Math.max(0, ...safeLoaf)),
     max_event_duration_ms: round(Math.max(0, ...safeEvents)),
   };
 
@@ -136,6 +144,7 @@ export function summarizeLiteFrames(intervals = [], {
   if (summary.target_smooth_frame_ratio < target.minSmoothFrameRatio) targetMisses.push('smooth_frame_ratio');
   if (summary.target_severe_frame_ratio > target.maxSevereFrameRatio) targetMisses.push('severe_frame_ratio');
   if (summary.max_long_task_ms > target.maxLongTaskMs) targetMisses.push('long_task_ms');
+  if (summary.max_long_animation_frame_ms > target.maxLongAnimationFrameMs) targetMisses.push('long_animation_frame_ms');
   if (summary.max_event_duration_ms > target.maxInpMs) targetMisses.push('event_duration_ms');
 
   const gateViolations = [];
@@ -143,6 +152,7 @@ export function summarizeLiteFrames(intervals = [], {
   if (summary.gate_smooth_frame_ratio < gate.minSmoothFrameRatio) gateViolations.push('smooth_frame_ratio');
   if (summary.gate_severe_frame_ratio > gate.maxSevereFrameRatio) gateViolations.push('severe_frame_ratio');
   if (summary.max_long_task_ms > gate.maxLongTaskMs) gateViolations.push('long_task_ms');
+  if (summary.max_long_animation_frame_ms > gate.maxLongAnimationFrameMs) gateViolations.push('long_animation_frame_ms');
   if (summary.max_event_duration_ms > gate.maxInpMs) gateViolations.push('event_duration_ms');
 
   return {

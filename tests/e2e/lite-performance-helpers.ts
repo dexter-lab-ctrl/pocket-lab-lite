@@ -13,6 +13,7 @@ type FrameSample = {
   interaction: string;
   intervals: number[];
   longTasks: number[];
+  longAnimationFrames: number[];
   eventDurations: number[];
 };
 
@@ -49,6 +50,7 @@ export async function installLiteFrameSampler(page: Page) {
       name: string;
       intervals: number[];
       longTasks: number[];
+      longAnimationFrames: number[];
       eventDurations: number[];
       previous: number | null;
       raf: number | null;
@@ -67,6 +69,7 @@ export async function installLiteFrameSampler(page: Page) {
           name: String(name || 'interaction').slice(0, 96),
           intervals: [] as number[],
           longTasks: [] as number[],
+          longAnimationFrames: [] as number[],
           eventDurations: [] as number[],
           previous: null as number | null,
           raf: null as number | null,
@@ -93,6 +96,15 @@ export async function installLiteFrameSampler(page: Page) {
             // Long Task API is optional.
           }
           try {
+            const loafObserver = new PerformanceObserver((list) => {
+              list.getEntries().forEach((entry) => sample.longAnimationFrames.push(Number(entry.duration) || 0));
+            });
+            loafObserver.observe({ type: 'long-animation-frame', buffered: false } as PerformanceObserverInit);
+            sample.observers.push(loafObserver);
+          } catch {
+            // Long Animation Frame API is optional.
+          }
+          try {
             const eventObserver = new PerformanceObserver((list) => {
               list.getEntries().forEach((entry) => sample.eventDurations.push(Number(entry.duration) || 0));
             });
@@ -113,6 +125,7 @@ export async function installLiteFrameSampler(page: Page) {
           interaction: sample.name,
           intervals: sample.intervals.slice(0, 600),
           longTasks: sample.longTasks.slice(0, 120),
+          longAnimationFrames: sample.longAnimationFrames.slice(0, 120),
           eventDurations: sample.eventDurations.slice(0, 120),
         };
       },
@@ -140,6 +153,7 @@ export async function measureLiteInteraction(
 
   const summary = summarizeLiteFrames(raw?.intervals || [], {
     longTasks: raw?.longTasks || [],
+    longAnimationFrames: raw?.longAnimationFrames || [],
     eventDurations: raw?.eventDurations || [],
     warmupFrames: 3,
   });

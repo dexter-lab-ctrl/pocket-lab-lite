@@ -17,6 +17,7 @@ The frame budget is:
 - target smooth-frame ratio: **95% or more at 20 ms**;
 - target severe-frame ratio: **1% or less above 33.34 ms**;
 - long-task target: **no task above 50 ms**;
+- Long Animation Frame target when Chromium exposes LoAF: **no frame above 50 ms**;
 - event-duration target: **200 ms or less**.
 
 A slightly wider automated hard gate exists to keep CI and heterogeneous real-device runs from becoming flaky. Target misses are still recorded in evidence and must be reviewed for production qualification.
@@ -208,6 +209,7 @@ A report contains:
 - target and gate smooth-frame ratios;
 - target and gate severe-frame ratios;
 - long-task count/max duration;
+- Long Animation Frame count/max duration when supported;
 - maximum Event Timing duration when supported;
 - `target_met`;
 - `gate_passed`;

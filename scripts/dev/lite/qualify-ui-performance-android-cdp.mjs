@@ -65,6 +65,7 @@ await page.addInitScript(() => {
         previous: null,
         intervals: [],
         longTasks: [],
+        longAnimationFrames: [],
         eventDurations: [],
         observers: [],
         raf: null,
@@ -87,6 +88,13 @@ await page.addInitScript(() => {
           sample.observers.push(longTaskObserver);
         } catch {}
         try {
+          const loafObserver = new PerformanceObserver((list) => {
+            list.getEntries().forEach((entry) => sample.longAnimationFrames.push(Number(entry.duration) || 0));
+          });
+          loafObserver.observe({ type: 'long-animation-frame', buffered: false });
+          sample.observers.push(loafObserver);
+        } catch {}
+        try {
           const eventObserver = new PerformanceObserver((list) => {
             list.getEntries().forEach((entry) => sample.eventDurations.push(Number(entry.duration) || 0));
           });
@@ -105,6 +113,7 @@ await page.addInitScript(() => {
         interaction: sample.name,
         intervals: sample.intervals.slice(0, 600),
         longTasks: sample.longTasks.slice(0, 120),
+        longAnimationFrames: sample.longAnimationFrames.slice(0, 120),
         eventDurations: sample.eventDurations.slice(0, 120),
       };
     },
@@ -132,6 +141,7 @@ for (const screenId of screens) {
 
   const summary = summarizeLiteFrames(raw.intervals || [], {
     longTasks: raw.longTasks || [],
+    longAnimationFrames: raw.longAnimationFrames || [],
     eventDurations: raw.eventDurations || [],
     warmupFrames: 3,
   });
