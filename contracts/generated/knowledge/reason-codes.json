@@ -3888,6 +3888,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The sanitized PM2 Runtime Contract is not yet available for the Lite status projection.",
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:runtime_contract_unavailable",
+      "name": "runtime_contract_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime status is being checked."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Managed Trivy intelligence exceeded its bounded freshness policy and a bounded refresh did not restore a valid revision.",
       "domain": "security",
       "event_mapping": [],
@@ -4859,6 +4879,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "af9b1f0efac275ebb373a174def2b2d8839b3fa6e423b217ef97ffee698c6777"
+    "source_fingerprint": "88b464765e46595bc330bc08b22e96b0c0566063be7144f0a247d8fb95dd59ab"
   }
 }

@@ -28,6 +28,20 @@ parse_start_dashboard_args(){
         ;;
       --caddy-only)
         export POCKETLAB_RENDER_CADDY_ONLY=1
+        # Caddy refreshes can run from a runtime reconciliation child. Clear
+        # the inherited full-reconcile flag so this scoped path cannot recurse
+        # into another dashboard convergence pass.
+        export POCKETLAB_RECONCILE_ONLY=0
+        shift
+        ;;
+      --node-agent-only)
+        export POCKETLAB_NODE_AGENT_ONLY=1
+        export POCKETLAB_RECONCILE_ONLY=0
+        shift
+        ;;
+      --runtime-reconciler-only)
+        export POCKETLAB_RUNTIME_RECONCILER_ONLY=1
+        export POCKETLAB_RECONCILE_ONLY=0
         shift
         ;;
       --reconcile-only)
@@ -43,6 +57,15 @@ parse_start_dashboard_args(){
   done
 }
 parse_start_dashboard_args "$@"
+
+acquire_start_dashboard_lock() {
+  # Runtime reconciliation already owns the outer reconcile-runtime lock. Its
+  # nested Caddy refresh invokes this script again; reacquiring the same Bash
+  # flock through an inherited descriptor is re-entrant on Termux and can let
+  # PM2 mutations overlap. Child passes reuse the parent lock explicitly.
+  [[ "${POCKETLAB_RECONCILER_CHILD:-0}" == "1" ]] && return 0
+  acquire_lock "${1:-start-dashboard.sh}"
+}
 prepare_lite_state_path(){
   is_lite_profile || return 0
   # Normal Lite startup is an explicit production-safe default. Qualification
@@ -80,6 +103,7 @@ WORKER_SERVER="$SCRIPT_DIR/../../runtime/workers/pocketlab_worker.py"
 AGENT_SERVER="$SCRIPT_DIR/../../runtime/agents/pocketlab_node_agent.py"
 CORE_SUPERVISOR_SERVER="$SCRIPT_DIR/../../runtime/supervisors/pocketlab_core_supervisor.py"
 RUNTIME_RECONCILER_SERVER="$SCRIPT_DIR/../../runtime/supervisors/pocketlab_runtime_reconciler.py"
+PHOTOPRISM_RUNTIME="$SCRIPT_DIR/lite/install-photoprism-proot.sh"
 OPA_POLICY_PREP="$SCRIPT_DIR/lite/prepare-opa-policy.sh"
 OPA_RUNTIME_START="$SCRIPT_DIR/lite/start-opa-runtime.sh"
 API_SERVER="${API_SERVER:-$FASTAPI_SERVER}"
@@ -851,7 +875,11 @@ wait_for_nats_ready(){
     fi
     sleep 1
   done
-  pm2 logs pocket-nats --lines 80 --nostream || true
+  if have timeout; then
+    timeout 15 pm2 logs pocket-nats --lines 80 --nostream || true
+  else
+    pm2 logs pocket-nats --lines 80 --nostream || true
+  fi
   die "NATS did not become ready at $url"
 }
 
@@ -995,10 +1023,20 @@ reload_caddy_if_config_changed(){
   pm2 restart caddy-proxy >/dev/null 2>&1 || return 1
 }
 
+reconcile_installed_photoprism(){
+  is_lite_profile || return 0
+  local photoprism_env="$HOME/.pocket_lab/lite/apps/photoprism/config/photoprism.env"
+  local photoprism_manifest="$HOME/.pocket_lab/lite/apps/photoprism/config/install-manifest.json"
+  [[ -s "$photoprism_env" || -s "$photoprism_manifest" ]] || return 0
+  [[ -f "$PHOTOPRISM_RUNTIME" ]] || die "PhotoPrism runtime script is missing: $PHOTOPRISM_RUNTIME"
+  log INFO "Reconciling installed PhotoPrism runtime before Lite supervisors"
+  POCKETLAB_CADDY_REFRESH_NESTED=1 POCKETLAB_CADDY_REFRESH_RELOAD_ONLY=1 bash "$PHOTOPRISM_RUNTIME" reconcile || die "Installed PhotoPrism runtime did not converge"
+}
+
 start_pm2_daemons(){
   log INFO "Converging dashboard services with PM2"
   configure_lite_runtime_limits
-  POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$HARDWARE_DAEMON")" pm2_runtime_process pocket-telemetry "$HARDWARE_DAEMON" --interpreter python3 --exp-backoff-restart-delay 100
+  POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$HARDWARE_DAEMON")" pm2_runtime_process pocket-telemetry "$HARDWARE_DAEMON" --interpreter python3
   write_nats_config
   POCKETLAB_PM2_SERVICE_VERSION="$(nats_installed_version)" pm2_runtime_process pocket-nats nats-server -- -c "$POCKETLAB_NATS_CONFIG"
   wait_for_nats_ready
@@ -1011,7 +1049,7 @@ start_pm2_daemons(){
       bash "$OPA_RUNTIME_START"
   fi
   if [[ "${POCKETLAB_DISABLE_WORKER:-0}" != "1" ]]; then
-    POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_EVENT_FANOUT=0 POCKETLAB_NATS_USER="$POCKETLAB_NATS_WORKER_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_WORKER_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-worker POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$WORKER_SERVER")" pm2_runtime_process pocket-worker "$WORKER_SERVER" --interpreter python3 --update-env --max-memory-restart "${POCKETLAB_WORKER_MAX_MEMORY_RESTART:-320M}" --exp-backoff-restart-delay 250
+    POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_EVENT_FANOUT=0 POCKETLAB_NATS_USER="$POCKETLAB_NATS_WORKER_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_WORKER_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-worker POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$WORKER_SERVER")" pm2_runtime_process pocket-worker "$WORKER_SERVER" --interpreter python3 --update-env
   else
     die "POCKETLAB_DISABLE_WORKER=1 is not allowed in production NATS mode"
   fi
@@ -1020,11 +1058,12 @@ start_pm2_daemons(){
   else
     log WARN "Pocket Lab node agent not started; this control plane will not publish NATS fleet heartbeats"
   fi
-  POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_USER="$POCKETLAB_NATS_API_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_API_PASSWORD" POCKETLAB_AGENT_NATS_USER="$POCKETLAB_NATS_AGENT_USER" POCKETLAB_AGENT_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-fastapi POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$API_SERVER")" pm2_runtime_process pocket-api "$API_SERVER" --interpreter python3 --update-env --max-memory-restart "${POCKETLAB_API_MAX_MEMORY_RESTART:-384M}" --exp-backoff-restart-delay 250
+  POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_USER="$POCKETLAB_NATS_API_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_API_PASSWORD" POCKETLAB_AGENT_NATS_USER="$POCKETLAB_NATS_AGENT_USER" POCKETLAB_AGENT_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-fastapi POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$API_SERVER")" pm2_runtime_process pocket-api "$API_SERVER" --interpreter python3 --update-env
   wait_for_lite_api_ready
   validate_caddyfile
   POCKETLAB_PM2_SERVICE_VERSION="$(caddy_installed_version)" pm2_runtime_process caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
   reload_caddy_if_config_changed
+  reconcile_installed_photoprism
   if is_lite_profile; then
     POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS="${POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS:-45}" POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS="${POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS:-120}" POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$CORE_SUPERVISOR_SERVER")" pm2_runtime_process pocketlab-core-supervisor "$CORE_SUPERVISOR_SERVER" --interpreter python3 --update-env
     POCKETLAB_RUNTIME_RECONCILE_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_SECONDS:-45}" POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS:-120}" POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$RUNTIME_RECONCILER_SERVER")" pm2_runtime_process pocketlab-runtime-reconciler "$RUNTIME_RECONCILER_SERVER" --interpreter python3 --update-env
@@ -1049,22 +1088,71 @@ start_pm2_daemons(){
 }
 start_caddy_only(){
   SCRIPT_NAME="start-dashboard.sh"
-  acquire_lock "$SCRIPT_NAME"
+  acquire_start_dashboard_lock "$SCRIPT_NAME"
   ensure_root_dirs
   require_termux
   require_cmd python3 caddy pm2
   start_tailscale_if_missing
   write_caddyfile
   validate_caddyfile
-  POCKETLAB_PM2_SERVICE_VERSION="$(caddy_installed_version)" pm2_runtime_process caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
-  reload_caddy_if_config_changed
+  if [[ "${POCKETLAB_CADDY_REFRESH_RELOAD_ONLY:-0}" == "1" ]]; then
+    # The full Lite convergence pass has already verified and owned Caddy.
+    # PhotoPrism invokes this nested refresh to publish its route registry;
+    # reload the existing proxy in place so PM2 daemon recovery does not turn
+    # one desired-state pass into a second Caddy restart.
+    if ! caddy reload --config "$CADDYFILE" >/dev/null 2>&1; then
+      log WARN "Nested Caddy reload failed; falling back to canonical PM2 ownership"
+      POCKETLAB_PM2_SERVICE_VERSION="$(caddy_installed_version)" pm2_runtime_process caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
+      reload_caddy_if_config_changed
+    fi
+  else
+    POCKETLAB_PM2_SERVICE_VERSION="$(caddy_installed_version)" pm2_runtime_process caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
+    reload_caddy_if_config_changed
+  fi
   pm2 save >/dev/null || true
   log INFO "Caddy proxy configuration is updated and safe to rerun"
 }
 
+start_node_agent_only(){
+  SCRIPT_NAME="start-dashboard.sh"
+  acquire_start_dashboard_lock "$SCRIPT_NAME"
+  ensure_root_dirs
+  require_termux
+  require_cmd python3 pm2
+  [[ -f "$AGENT_SERVER" ]] || die "Missing Lite node agent runtime: $AGENT_SERVER"
+  # A node-agent repair must not re-enter full dashboard convergence. That
+  # path also probes optional PRoot applications and can queue unrelated PM2
+  # definitions while the disposable agent definition is absent.
+  ensure_nats_credentials
+  POCKETLAB_NODE_ID="${POCKETLAB_SERVER_NODE_ID:-pocket-lab-lite-server}" \
+  POCKETLAB_NODE_NAME="${POCKETLAB_DEVICE_NAME:-Pocket Lab Lite Server}" \
+  POCKETLAB_NODE_ROLE=server_host \
+  POCKETLAB_IS_CONTROL_PLANE=1 \
+  POCKETLAB_NATS_USER="$POCKETLAB_NATS_AGENT_USER" \
+  POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" \
+  POCKETLAB_NATS_NAME=pocketlab-node-agent \
+    POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$AGENT_SERVER")" pm2_runtime_process pocket-node-agent "$AGENT_SERVER" --interpreter python3 --update-env
+  pm2 save >/dev/null || true
+  log INFO "Lite node-agent runtime converged without unrelated service reconciliation"
+}
+
+start_runtime_reconciler_only(){
+  SCRIPT_NAME="start-dashboard.sh"
+  acquire_start_dashboard_lock "$SCRIPT_NAME"
+  ensure_root_dirs
+  require_termux
+  require_cmd python3 pm2
+  [[ -f "$RUNTIME_RECONCILER_SERVER" ]] || die "Missing Lite runtime reconciler: $RUNTIME_RECONCILER_SERVER"
+  POCKETLAB_RUNTIME_RECONCILE_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_SECONDS:-45}" \
+  POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS:-120}" \
+    POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$RUNTIME_RECONCILER_SERVER")" pm2_runtime_process pocketlab-runtime-reconciler "$RUNTIME_RECONCILER_SERVER" --interpreter python3 --update-env
+  pm2 save >/dev/null || true
+  log INFO "Lite runtime reconciler converged without unrelated service reconciliation"
+}
+
 reconcile_lite_runtime(){
   SCRIPT_NAME="start-dashboard.sh"
-  acquire_lock "$SCRIPT_NAME"
+  acquire_start_dashboard_lock "$SCRIPT_NAME"
   ensure_root_dirs
   require_termux
   require_cmd python3 caddy curl pm2 jq nats-server
@@ -1082,6 +1170,14 @@ reconcile_lite_runtime(){
 }
 
 main(){
+  if [[ "${POCKETLAB_NODE_AGENT_ONLY:-0}" == "1" ]]; then
+    start_node_agent_only
+    return
+  fi
+  if [[ "${POCKETLAB_RUNTIME_RECONCILER_ONLY:-0}" == "1" ]]; then
+    start_runtime_reconciler_only
+    return
+  fi
   if [[ "${POCKETLAB_RECONCILE_ONLY:-0}" == "1" ]]; then
     reconcile_lite_runtime
     return
@@ -1090,7 +1186,7 @@ main(){
     start_caddy_only
     return
   fi
-  SCRIPT_NAME="start-dashboard.sh"; acquire_lock "$SCRIPT_NAME"; ensure_root_dirs; require_termux; require_cmd python3 caddy curl pm2 jq nats-server
+  SCRIPT_NAME="start-dashboard.sh"; acquire_start_dashboard_lock "$SCRIPT_NAME"; ensure_root_dirs; require_termux; require_cmd python3 caddy curl pm2 jq nats-server
   ensure_assets; start_tailscale_if_missing; write_hardware_daemon; write_caddyfile; write_observability_configs; start_pm2_daemons; verify_lite_remote_nats; mark_done dashboard_ready
   log INFO "Dashboard/control-plane services are ready and safe to rerun"
 }

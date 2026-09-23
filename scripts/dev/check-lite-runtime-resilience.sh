@@ -34,6 +34,7 @@ echo "PASS runtime resilience shell syntax"
 
 "$PYTHON" -m py_compile \
   "$RUNTIME/supervisors/pocketlab_runtime_registry.py" \
+  "$RUNTIME/supervisors/pocketlab_runtime_contract.py" \
   "$RUNTIME/supervisors/pocketlab_runtime_reconciler.py" \
   "$RUNTIME/supervisors/pocketlab_core_supervisor.py" \
   "$RUNTIME/agents/pocketlab_agent_supervisor.py"
@@ -45,6 +46,7 @@ PYTHONPATH="tests:$RUNTIME" PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 "$PYTHON" -m pytest
   tests/backend/test_lite_core_supervisor.py \
   tests/backend/test_lite_photoprism_runtime_resilience.py \
   tests/backend/test_lite_pm2_idempotency.py \
+  tests/backend/test_lite_pm2_runtime_contract.py \
   tests/backend/test_lite_pm2_version_projection.py \
   tests/backend/test_lite_runtime_phone_qualification.py
 

@@ -126,6 +126,35 @@ acquire_lock() {
   local lockfile="$LOCK_DIR/${sanitized}.lock"
   local pid=""
 
+  # The runtime reconciler launches PM2-managed children while it holds its
+  # outer lock. A flock descriptor is inherited by those children on Android
+  # Termux, making the child appear to hold reconcile-runtime.sh.lock forever
+  # and blocking every later scoped repair. Use an ownership directory for
+  # this outer lock so the lock cannot leak through PM2 exec inheritance.
+  if [[ "$name" == "reconcile-runtime.sh" ]]; then
+    if [[ -e "$lockfile" && ! -d "$lockfile" ]]; then
+      pid="$(lock_owner_pid "$lockfile")"
+      if [[ -z "$pid" ]] || ! pid_is_running "$pid"; then
+        rm -f "$lockfile" 2>/dev/null || true
+      else
+        die "Another $name run is already active: $lockfile pid=$pid"
+      fi
+    fi
+    if ! mkdir "$lockfile" 2>/dev/null; then
+      pid="$(lock_owner_pid "$lockfile")"
+      if [[ -n "$pid" ]] && ! pid_is_running "$pid"; then
+        rm -rf "$lockfile" 2>/dev/null || true
+        mkdir "$lockfile" 2>/dev/null || die "Another $name run may be active: $lockfile"
+      else
+        die "Another $name run may be active: $lockfile${pid:+ pid=$pid}"
+      fi
+    fi
+    write_lock_metadata "$lockfile/metadata" "$name"
+    ACTIVE_LOCK_DIR="$lockfile"
+    trap release_lock EXIT
+    return 0
+  fi
+
   if have flock; then
     eval "exec ${LOCK_FD}>\"$lockfile\""
     if ! flock -n "$LOCK_FD"; then
@@ -158,6 +187,31 @@ acquire_lock() {
     ACTIVE_LOCK_DIR="$lockdir"
     trap release_lock EXIT
   fi
+}
+
+pm2_mutation_lock_acquire() {
+  local lock_root="${POCKETLAB_STATE_DIR:-$STATE_DIR}"
+  local lock_dir="$lock_root/runtime/pm2-mutation.lock" owner_pid attempts=0
+  mkdir -p "$(dirname "$lock_dir")"
+  [[ -e "$lock_dir" && ! -d "$lock_dir" ]] && rm -f "$lock_dir"
+  while ! mkdir "$lock_dir" 2>/dev/null; do
+    owner_pid="$(awk -F= '/^pid=/{print $2; exit}' "$lock_dir/metadata" 2>/dev/null || true)"
+    if [[ -n "$owner_pid" ]] && ! pid_is_running "$owner_pid"; then
+      rm -rf "$lock_dir"
+      continue
+    fi
+    attempts=$((attempts + 1))
+    (( attempts < 600 )) || die "Timed out waiting for PM2 mutation lock: $lock_dir"
+    sleep 0.1
+  done
+  printf 'pid=%s\n' "${BASHPID:-$$}" >"$lock_dir/metadata"
+  PM2_MUTATION_LOCK_DIR="$lock_dir"
+}
+
+pm2_mutation_lock_release() {
+  [[ -n "${PM2_MUTATION_LOCK_DIR:-}" ]] || return 0
+  rm -rf "$PM2_MUTATION_LOCK_DIR" 2>/dev/null || true
+  PM2_MUTATION_LOCK_DIR=""
 }
 marker_path() { printf '%s/%s.done' "$MARKER_DIR" "${1//[^A-Za-z0-9_.-]/_}"; }
 is_done() { [[ -f "$(marker_path "$1")" ]]; }
@@ -274,14 +328,118 @@ pm2_start_or_restart() {
   fi
 }
 
+pm2_policy_registry_path() {
+  if [[ -n "${POCKETLAB_PM2_POLICY_REGISTRY:-}" ]]; then
+    printf '%s\n' "$POCKETLAB_PM2_POLICY_REGISTRY"
+    return 0
+  fi
+  local common_dir final_root
+  common_dir="$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+  final_root="$(CDPATH='' cd -- "$common_dir/../../.." && pwd)"
+  printf '%s\n' "$final_root/runtime/supervisors/pocketlab_runtime_registry.py"
+}
+
+pm2_policy_fingerprint() {
+  local name="$1" registry rc
+  registry="$(pm2_policy_registry_path)"
+  [[ -f "$registry" ]] || return 0
+  python3 "$registry" --policy-fingerprint "$name" 2>/dev/null || {
+    rc=$?
+    [[ "$rc" -eq 3 ]] && return 0
+    return "$rc"
+  }
+}
+
+pm2_launch_fingerprint() {
+  local script="$1" interpreter="$2" cwd="$3" registry
+  registry="$(pm2_policy_registry_path)"
+  [[ -f "$registry" ]] || return 1
+  python3 "$registry" \
+    --launch-fingerprint \
+    --script "$script" \
+    --interpreter "$interpreter" \
+    --cwd "$cwd"
+}
+
+pm2_write_ecosystem_config() {
+  local name="$1" script="$2" interpreter="$3" app_args_json="$4" destination="$5"
+  local registry cwd
+  registry="$(pm2_policy_registry_path)"
+  [[ -f "$registry" ]] || return 1
+  cwd="$(pwd -P)"
+  python3 "$registry" \
+    --ecosystem-js "$name" \
+    --script "$script" \
+    --interpreter "$interpreter" \
+    --cwd "$cwd" \
+    --app-args-json "$app_args_json" >"$destination"
+}
+
 pm2_process_spec_hash() {
   {
     printf 'argv\\0'
     printf '%s\\0' "$@"
     env | LC_ALL=C sort \
       | grep -E '^(POCKETLAB_|API_PORT=|DASH_PORT=|MALLOC_ARENA_MAX=|OMP_NUM_THREADS=|OPENBLAS_NUM_THREADS=|NUMEXPR_NUM_THREADS=)' \
-      | grep -Ev '^POCKETLAB_(RECONCILE_ONLY|RECONCILER_CHILD|RENDER_CADDY_ONLY|BOOTSTRAP_DRY_RUN|PROCESS_SPEC_HASH|LITE_APP_OPERATION_ID|PHOTOPRISM_PACKAGE_URL|LITE_SECURE_ORIGIN)=' || true
+      | grep -Ev '^POCKETLAB_(RECONCILE_ONLY|RECONCILER_CHILD|RENDER_CADDY_ONLY|BOOTSTRAP_DRY_RUN|PROCESS_SPEC_HASH|PM2_POLICY_REGISTRY|RUNTIME_OBSERVED_.*|PM2_OBSERVED_.*|LITE_APP_OPERATION_ID|PHOTOPRISM_PACKAGE_URL|LITE_SECURE_ORIGIN)=' || true
   } | sha256sum | awk '{print $1}'
+}
+
+pm2_record_desired_process_spec_hash() {
+  local name="$1" hash="$2" launch_hash="$3"
+  local state_dir="${POCKETLAB_STATE_DIR:-${POCKET_LAB_BASE_DIR:-$HOME/pocket-lab-lite}/state}"
+  local evidence_path="$state_dir/runtime/desired-process-specs.json"
+  python3 - "$evidence_path" "$name" "$hash" "$launch_hash" <<'PY'
+import fcntl
+import json
+import os
+from pathlib import Path
+import re
+import sys
+
+path = Path(sys.argv[1])
+name, digest, launch_digest = sys.argv[2], sys.argv[3], sys.argv[4]
+if not re.fullmatch(r"[A-Za-z0-9._-]{1,120}", name):
+    raise SystemExit("invalid PM2 process name for desired-spec evidence")
+if not re.fullmatch(r"[0-9a-f]{64}", digest):
+    raise SystemExit("invalid PM2 desired process-spec fingerprint")
+if not re.fullmatch(r"[0-9a-f]{64}", launch_digest):
+    raise SystemExit("invalid PM2 desired launch fingerprint")
+path.parent.mkdir(parents=True, exist_ok=True)
+lock_path = path.with_suffix(path.suffix + ".lock")
+with lock_path.open("a", encoding="utf-8") as lock:
+    fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+    if path.exists():
+        current = json.loads(path.read_text(encoding="utf-8"))
+        if current.get("schema") != "pocketlab.pm2-desired-process-specs/v1":
+            raise SystemExit("unsupported PM2 desired process-spec evidence schema")
+        processes = current.get("processes")
+        if not isinstance(processes, dict):
+            raise SystemExit("invalid PM2 desired process-spec evidence")
+        launches = current.get("launches")
+        if not isinstance(launches, dict):
+            launches = {}
+    else:
+        processes = {}
+        launches = {}
+    processes[name] = digest
+    launches[name] = launch_digest
+    payload = {
+        "schema": "pocketlab.pm2-desired-process-specs/v1",
+        "schema_version": 1,
+        "processes": dict(sorted(processes.items())),
+        "launches": dict(sorted(launches.items())),
+        "sanitized": True,
+    }
+    temporary = path.with_name(path.name + f".{os.getpid()}.tmp")
+    fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as handle:
+        json.dump(payload, handle, sort_keys=True, separators=(",", ":"))
+        handle.write("\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+    os.replace(temporary, path)
+PY
 }
 
 pm2_normalize_service_version() {
@@ -374,9 +532,16 @@ raise SystemExit(1)
 ' "$name"
 }
 
-pm2_ensure_versioned_process() {
+pm2_ensure_versioned_process() (
   local name="$1" version="$2" source_exec="$3"
   shift 3
+  # Version projection can require deleting a stale PM2 definition before the
+  # normal desired-state convergence path runs. Keep that delete, the wait for
+  # PM2's asynchronous removal, and the replacement launch in the same
+  # mutation critical section as every other PM2 operation. Otherwise PM2 7 on
+  # Termux can apply a queued ecosystem definition to the next process name.
+  pm2_mutation_lock_acquire
+  trap pm2_mutation_lock_release EXIT
   local projected_exec version_snapshot current_version current_declared
   require_cmd pm2 python3 sha256sum
   version="$(pm2_normalize_service_version "$version")" || die "PM2 service $name does not have an exact installed version"
@@ -393,11 +558,15 @@ pm2_ensure_versioned_process() {
     [[ "$current_declared" != "$version" ]]
   }; then
     log INFO "Replacing PM2 process with stale version projection: $name observed=${current_version:-missing} declared=${current_declared:-missing} expected=$version"
-    pm2 delete "$name" >/dev/null 2>&1 || true
+    pm2_delete_process_unlocked "$name"
+    if ! pm2_wait_for_absent "$name"; then
+      log ERROR "PM2 process $name did not disappear after stale-version deletion"
+      return 1
+    fi
   fi
 
-  pm2_ensure_process "$name" "$projected_exec" "$@"
-}
+  pm2_ensure_process_unlocked "$name" "$projected_exec" "$@"
+)
 
 pm2_process_snapshot() {
   local name="$1"
@@ -414,12 +583,150 @@ for item in items if isinstance(items,list) else []:
     env=item.get("pm2_env") if isinstance(item.get("pm2_env"),dict) else {}
     print(str(env.get("status") or item.get("status") or "unknown").lower())
     print(str(env.get("POCKETLAB_PROCESS_SPEC_HASH") or ""))
+    print(str(env.get("pm_exec_path") or ""))
+    print(str(env.get("exec_interpreter") or ""))
+    print(str(env.get("pid") or item.get("pid") or ""))
     raise SystemExit(0)
+raise SystemExit(0)
+' "$name"
+}
+
+pm2_process_id() {
+  local name="$1"
+  pm2 jlist 2>/dev/null | python3 -c '
+import json, sys
+name=sys.argv[1]
+try:
+    items=json.load(sys.stdin)
+except Exception:
+    items=[]
+for item in items if isinstance(items,list) else []:
+    if str(item.get("name") or "") != name:
+        continue
+    env=item.get("pm2_env") if isinstance(item.get("pm2_env"),dict) else {}
+    value=item.get("pm_id", env.get("pm_id", item.get("id", env.get("id"))))
+    if isinstance(value, bool):
+        raise SystemExit(1)
+    try:
+        value=int(value)
+    except (TypeError, ValueError):
+        raise SystemExit(1)
+    if value >= 0:
+        print(value)
+        raise SystemExit(0)
 raise SystemExit(1)
 ' "$name"
 }
 
-pm2_ensure_process() {
+pm2_process_pid() {
+  local name="$1"
+  pm2 jlist 2>/dev/null | python3 -c '
+import json, sys
+name=sys.argv[1]
+try:
+    items=json.load(sys.stdin)
+except Exception:
+    items=[]
+for item in items if isinstance(items,list) else []:
+    if str(item.get("name") or "") != name:
+        continue
+    env=item.get("pm2_env") if isinstance(item.get("pm2_env"),dict) else {}
+    value=item.get("pid", env.get("pid"))
+    if isinstance(value, bool):
+        raise SystemExit(1)
+    try:
+        value=int(value)
+    except (TypeError, ValueError):
+        raise SystemExit(1)
+    if value > 0:
+        print(value)
+        raise SystemExit(0)
+raise SystemExit(1)
+' "$name"
+}
+
+pm2_wait_for_pid_exit() {
+  local pid="$1" attempts="${2:-60}" attempt
+  local state
+  [[ "$pid" =~ ^[0-9]+$ ]] || return 0
+  for attempt in $(seq 1 "$attempts"); do
+    kill -0 "$pid" >/dev/null 2>&1 || return 0
+    state="$(ps -o stat= -p "$pid" 2>/dev/null | tr -d '[:space:]' || true)"
+    [[ "$state" == Z* ]] && return 0
+    sleep 0.5
+  done
+  kill "$pid" >/dev/null 2>&1 || true
+  for attempt in $(seq 1 10); do
+    kill -0 "$pid" >/dev/null 2>&1 || return 0
+    state="$(ps -o stat= -p "$pid" 2>/dev/null | tr -d '[:space:]' || true)"
+    [[ "$state" == Z* ]] && return 0
+    sleep 0.5
+  done
+  kill -KILL "$pid" >/dev/null 2>&1 || true
+  ! kill -0 "$pid" >/dev/null 2>&1 || [[ "$(ps -o stat= -p "$pid" 2>/dev/null | tr -d '[:space:]' || true)" == Z* ]]
+}
+
+pm2_delete_process_unlocked() {
+  local name="$1" process_id="" process_pid=""
+  process_id="$(pm2_process_id "$name" 2>/dev/null || true)"
+  process_pid="$(pm2_process_pid "$name" 2>/dev/null || true)"
+  if [[ "$process_id" =~ ^[0-9]+$ ]]; then
+    pm2 delete "$process_id" >/dev/null 2>&1 || true
+  else
+    # Older PM2 projections may omit pm_id. Preserve the existing name-based
+    # fallback, but prefer the numeric identity whenever it is available so a
+    # queued sibling definition cannot be deleted accidentally.
+    pm2 delete "$name" >/dev/null 2>&1 || true
+  fi
+  # PM2 can leave a stale child alive while its asynchronous definition is
+  # being removed. Drain that exact PID before another ecosystem launch can
+  # reuse its definition identity; escalate only after the bounded SIGTERM
+  # window has elapsed.
+  if [[ "$process_pid" =~ ^[0-9]+$ ]]; then
+    pm2_wait_for_pid_exit "$process_pid" || true
+  fi
+}
+
+pm2_process_launch_matches() {
+  local name="$1" expected_spec="$2" expected_launch="$3" cwd="$4"
+  local snapshot status current_hash current_script current_interpreter current_pid current_launch
+  snapshot="$(pm2_process_snapshot "$name" 2>/dev/null || true)"
+  status="$(printf '%s\n' "$snapshot" | sed -n '1p')"
+  current_hash="$(printf '%s\n' "$snapshot" | sed -n '2p')"
+  current_script="$(printf '%s\n' "$snapshot" | sed -n '3p')"
+  current_interpreter="$(printf '%s\n' "$snapshot" | sed -n '4p')"
+  current_pid="$(printf '%s\n' "$snapshot" | sed -n '5p')"
+  [[ -n "$status" && "$current_hash" == "$expected_spec" && -n "$current_script" ]] || return 1
+  # Older test doubles do not project a PID. Live PM2 projections do, and a
+  # stale online record must not count as converged after its child exited.
+  if [[ -n "$current_pid" ]]; then
+    [[ "$current_pid" =~ ^[0-9]+$ ]] || return 1
+    kill -0 "$current_pid" >/dev/null 2>&1 || return 1
+  fi
+  current_launch="$(pm2_launch_fingerprint "$current_script" "$current_interpreter" "$cwd" 2>/dev/null || true)"
+  [[ "$current_launch" == "$expected_launch" ]]
+}
+
+pm2_wait_for_absent() {
+  local name="$1" attempts="${2:-30}" attempt snapshot status absent_streak=0
+  for attempt in $(seq 1 "$attempts"); do
+    snapshot="$(pm2_process_snapshot "$name" 2>/dev/null || true)"
+    status="$(printf '%s\n' "$snapshot" | sed -n '1p')"
+    if [[ -z "$status" ]]; then
+      absent_streak=$((absent_streak + 1))
+      # PM2 7 on Termux can publish a transiently absent name while a queued
+      # autorestart is still draining. Require consecutive empty projections
+      # before launching the replacement definition.
+      (( absent_streak >= 3 )) && return 0
+    else
+      absent_streak=0
+    fi
+    sleep 1
+  done
+  return 1
+}
+
+pm2_ensure_process_unlocked() {
   local name="$1"
   shift
   require_cmd pm2 python3 sha256sum
@@ -433,40 +740,191 @@ pm2_ensure_process() {
       seen_sep=1
       continue
     fi
-    if [[ "$seen_sep" -eq 1 ]]; then after_sep+=("$arg"); else before_sep+=("$arg"); fi
+    if [[ "$seen_sep" -eq 1 ]]; then
+      after_sep+=("$arg")
+    else
+      before_sep+=("$arg")
+    fi
+  done
+  local process_script="${before_sep[0]:-}" process_interpreter="" index=1 arg
+  [[ -n "$process_script" ]] || { log ERROR "PM2 process $name has no executable"; return 2; }
+  while (( index < ${#before_sep[@]} )); do
+    arg="${before_sep[$index]}"
+    case "$arg" in
+      --interpreter)
+        (( index + 1 < ${#before_sep[@]} )) || { log ERROR "PM2 process $name has an incomplete interpreter option"; return 2; }
+        arg="${before_sep[$((index + 1))]}"
+        if ! command -v "$arg" >/dev/null 2>&1; then
+          log ERROR "PM2 interpreter is unavailable for $name: $arg"
+          return 2
+        fi
+        process_interpreter="$(command -v "$arg")"
+        index=$((index + 2))
+        ;;
+      --update-env)
+        index=$((index + 1))
+        ;;
+      *)
+        log ERROR "Unsupported PM2 launch option for $name: $arg"
+        return 2
+        ;;
+    esac
   done
 
-  local spec_hash snapshot status current_hash
-  spec_hash="$(pm2_process_spec_hash "$@")"
+  local cwd launch_fingerprint policy_fingerprint spec_hash snapshot status current_hash current_script current_interpreter current_launch_fingerprint
+  cwd="$(pwd -P)"
+  launch_fingerprint="$(pm2_launch_fingerprint "$process_script" "$process_interpreter" "$cwd")"
+  policy_fingerprint="$(pm2_policy_fingerprint "$name")"
+  local POCKETLAB_PM2_POLICY_FINGERPRINT="$policy_fingerprint"
+  export POCKETLAB_PM2_POLICY_FINGERPRINT
+
+  local effective_spec=("${before_sep[@]}")
+  if [[ "${#after_sep[@]}" -gt 0 ]]; then
+    effective_spec+=(-- "${after_sep[@]}")
+  fi
+  spec_hash="$(pm2_process_spec_hash "${effective_spec[@]}")"
   if ! snapshot="$(pm2_process_snapshot "$name" 2>/dev/null)"; then
     snapshot=""
   fi
   status="$(printf '%s\n' "$snapshot" | sed -n '1p')"
   current_hash="$(printf '%s\n' "$snapshot" | sed -n '2p')"
+  current_script="$(printf '%s\n' "$snapshot" | sed -n '3p')"
+  current_interpreter="$(printf '%s\n' "$snapshot" | sed -n '4p')"
+  current_launch_fingerprint=""
+  if [[ -n "$current_script" ]]; then
+    current_launch_fingerprint="$(pm2_launch_fingerprint "$current_script" "$current_interpreter" "$cwd" 2>/dev/null || true)"
+  fi
 
-  if [[ -n "$status" && "$current_hash" == "$spec_hash" ]]; then
+  if [[ -n "$status" && "$current_hash" == "$spec_hash" && "$current_launch_fingerprint" == "$launch_fingerprint" ]]; then
     if [[ "$status" == "online" ]]; then
-      log INFO "PM2 process already converged: $name"
-      return 0
+      # A queued PM2 delete can leave a stale online projection while the
+      # child is already gone. Require repeated live identity observations so
+      # that this path cannot accept a process which is about to disappear.
+      local online_streak=0 online_attempt
+      for online_attempt in $(seq 1 3); do
+        if pm2_process_launch_matches "$name" "$spec_hash" "$launch_fingerprint" "$cwd"; then
+          online_streak=$((online_streak + 1))
+          if (( online_streak >= 2 )); then
+            pm2_record_desired_process_spec_hash "$name" "$spec_hash" "$launch_fingerprint"
+            log INFO "PM2 process already converged: $name"
+            return 0
+          fi
+        else
+          online_streak=0
+        fi
+        sleep 1
+      done
+      if ! snapshot="$(pm2_process_snapshot "$name" 2>/dev/null)"; then
+        snapshot=""
+      fi
+      status="$(printf '%s\n' "$snapshot" | sed -n '1p')"
+      log WARN "PM2 process $name did not remain online; reconciling its current projection"
     fi
-    log INFO "Restarting existing converged PM2 process: $name status=$status"
-    POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 restart "$name" --update-env >/dev/null
-    return 0
+    # PM2 7 on Termux can attach a queued sibling ecosystem definition when
+    # either `restart <name>` or `start <name>` resumes a stopped process.
+    # Recreate from the process-specific ecosystem file below instead. The
+    # exact PM2 id is removed first and every new launch is identity-verified.
+    log INFO "Recreating non-online PM2 process from its canonical definition: $name status=$status"
   fi
 
   if [[ -n "$status" ]]; then
     log INFO "Replacing drifted PM2 process definition: $name"
-    pm2 delete "$name" >/dev/null 2>&1 || true
+    pm2_delete_process_unlocked "$name"
+    if ! pm2_wait_for_absent "$name"; then
+      log ERROR "PM2 process $name did not disappear after deletion"
+      return 1
+    fi
   else
     log INFO "Creating missing PM2 process definition: $name"
+    # PM2 7 on Termux can publish an empty snapshot while a queued delete is
+    # still draining.  Settle the absence before launching a replacement even
+    # when the first observation was already empty; otherwise the queued delete
+    # can remove the newly created definition immediately after pm2 start.
+    if ! pm2_wait_for_absent "$name"; then
+      log ERROR "PM2 process $name did not remain absent before launch"
+      return 1
+    fi
   fi
 
-  if [[ "${#after_sep[@]}" -gt 0 ]]; then
-    POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "${before_sep[@]}" --name "$name" -- "${after_sep[@]}"
-  else
-    POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "${before_sep[@]}" --name "$name"
+  local app_args_json state_dir ecosystem_dir ecosystem_file ecosystem_tmp launch_status=0 old_umask safe_name
+  app_args_json="$(python3 - "${after_sep[@]}" <<'PY'
+import json
+import sys
+print(json.dumps(sys.argv[1:], separators=(",", ":")))
+PY
+)"
+  state_dir="${POCKETLAB_STATE_DIR:-${POCKET_LAB_BASE_DIR:-$HOME/pocket-lab-lite}/state}"
+  mkdir -p "$state_dir/runtime"
+  safe_name="${name//[^A-Za-z0-9_.-]/_}"
+  ecosystem_dir="$state_dir/runtime/pm2-ecosystems"
+  mkdir -p "$ecosystem_dir"
+  old_umask="$(umask)"
+  umask 077
+  ecosystem_file="$ecosystem_dir/$safe_name.config.cjs"
+  ecosystem_tmp="$ecosystem_file.$$.tmp"
+  umask "$old_umask"
+  if ! pm2_write_ecosystem_config "$name" "$process_script" "$process_interpreter" "$app_args_json" "$ecosystem_tmp"; then
+    rm -f -- "$ecosystem_tmp"
+    return 1
   fi
+  # Keep a stable, process-specific ecosystem path. Waiting for a deleted
+  # definition above prevents PM2 7 on Termux from applying a queued app
+  # definition to a previous process during recovery.
+  mv -f -- "$ecosystem_tmp" "$ecosystem_file"
+  local launch_attempt verify_attempt verify_ok launch_stable
+  launch_status=1
+  for launch_attempt in 1 2 3; do
+    if [[ "$launch_attempt" -gt 1 ]]; then
+      log WARN "PM2 launch identity drift persisted for $name; replacing the queued definition (attempt=$launch_attempt)"
+      pm2_delete_process_unlocked "$name"
+      if ! pm2_wait_for_absent "$name"; then
+        log ERROR "PM2 process $name did not disappear before retry"
+        launch_status=1
+        continue
+      fi
+    fi
+    # The ecosystem file already carries the canonical process name. PM2 7 on
+    # Termux can apply a CLI --name override to a queued sibling definition;
+    # omit the override so the process-specific file remains the sole launch
+    # identity source.
+    if POCKETLAB_PROCESS_SPEC_HASH="$spec_hash" pm2 start "$ecosystem_file" --only "$name" >/dev/null; then
+      launch_status=0
+    else
+      launch_status=$?
+      continue
+    fi
+    verify_ok=1
+    launch_stable=0
+    for verify_attempt in $(seq 1 12); do
+      if pm2_process_launch_matches "$name" "$spec_hash" "$launch_fingerprint" "$cwd"; then
+        launch_stable=$((launch_stable + 1))
+        if (( launch_stable >= 2 )); then
+          verify_ok=0
+          break
+        fi
+      else
+        launch_stable=0
+      fi
+      sleep 1
+    done
+    [[ "$verify_ok" -eq 0 ]] && break
+    launch_status=1
+  done
+  if [[ "$launch_status" -ne 0 ]]; then
+    log ERROR "PM2 process $name did not publish the expected launch identity"
+    return "$launch_status"
+  fi
+  pm2_record_desired_process_spec_hash "$name" "$spec_hash" "$launch_fingerprint"
 }
+
+pm2_ensure_process() (
+  # PM2 7 on Termux serializes daemon mutations asynchronously. Keep direct
+  # supervisor restarts and ecosystem relaunches in one critical section so a
+  # queued operation cannot attach another process's definition.
+  pm2_mutation_lock_acquire
+  trap pm2_mutation_lock_release EXIT
+  pm2_ensure_process_unlocked "$@"
+)
 
 cleanup_pidfile() { local pidfile="$1" pid=""; [[ -f "$pidfile" ]] || return 0; pid="$(cat "$pidfile" 2>/dev/null || true)"; [[ -n "$pid" ]] && kill "$pid" >/dev/null 2>&1 || true; rm -f "$pidfile"; }
 

@@ -405,6 +405,107 @@ def _control_plane_prepared_response(
     return JSONResponse(content=payload, headers=headers)
 
 
+def _prepared_with_live_overlay(
+    prepared: PreparedRead,
+    *,
+    payload: dict[str, Any],
+    overlay: dict[str, Any],
+) -> PreparedRead:
+    """Keep bounded local runtime evidence current in prepared API responses."""
+    return PreparedRead(
+        payload=payload,
+        etag=lite_security.compact_response_etag({
+            "prepared_etag": prepared.etag,
+            "runtime_overlay": overlay,
+        }),
+        source_revision=prepared.source_revision,
+        projection_age_ms=prepared.projection_age_ms,
+        read_degraded=prepared.read_degraded,
+        refresh_pending=prepared.refresh_pending,
+        timing=prepared.timing,
+        retry_after_seconds=prepared.retry_after_seconds,
+        retry_after_ms=prepared.retry_after_ms,
+        degraded_reason=prepared.degraded_reason,
+        data_source=prepared.data_source,
+        load_state=prepared.load_state,
+    )
+
+
+def _runtime_overlay_fleet(payload: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Project live protected-host recovery alongside its separate access state."""
+    runtime_contract = lite_status.lite_runtime_contract()
+    state = str(runtime_contract.get("state") or "unknown")[:32]
+    summary = str(runtime_contract.get("summary") or "Runtime status is being checked")[:192]
+    services = {
+        str(item.get("process") or ""): item
+        for item in runtime_contract.get("services", [])
+        if isinstance(item, dict)
+    }
+    agent = services.get("pocket-node-agent", {})
+    runtime = {
+        "state": state,
+        "stable": bool(runtime_contract.get("stable")),
+        "summary": summary,
+        "restart_generation": agent.get("restart_generation"),
+        "recent_restarts": agent.get("recent_restarts"),
+        "recovered_at": agent.get("recovered_at"),
+        "reason_codes": list(runtime_contract.get("reason_codes") or [])[:12],
+        "sanitized": True,
+    }
+    updated = dict(payload)
+    devices = [dict(item) for item in payload.get("devices", []) if isinstance(item, dict)]
+    for device in devices:
+        if device.get("role") != "server_host":
+            continue
+        previous = device.get("convergence") if isinstance(device.get("convergence"), dict) else {}
+        recovering = state in {"repairing", "converging"}
+        device["runtime"] = runtime
+        if recovering:
+            device["connection"] = "repairing"
+        elif state == "stable":
+            device["connection"] = "online"
+        device["convergence"] = {
+            **previous,
+            "state": "repairing" if recovering else (
+                "ready" if state == "stable" and previous.get("profile_ready") and previous.get("supervisor_ready")
+                else "waiting_for_details"
+            ),
+            "runtime_state": state,
+            "runtime_stable": bool(runtime_contract.get("stable")),
+        }
+        break
+    updated["devices"] = devices
+    updated["items"] = devices
+    return updated, runtime_contract
+
+
+def _runtime_overlay_status(payload: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+    runtime_contract = lite_status.lite_runtime_contract()
+    state = str(runtime_contract.get("state") or "unknown")[:32]
+    health = "healthy" if state == "stable" else "degraded" if state != "unknown" else "unknown"
+    updated = dict(payload)
+    updated["runtime"] = runtime_contract
+    current = dict(updated.get("system_current_state") or {})
+    current["runtime_contract"] = runtime_contract
+    updated["system_current_state"] = current
+    services = [dict(item) for item in updated.get("services", []) if isinstance(item, dict)]
+    for service in services:
+        if service.get("name") == "Runtime":
+            service["status"] = health
+            service["summary"] = runtime_contract.get("summary") or "Runtime status is being checked"
+            service["source"] = "Pocket Lab runtime contract"
+            break
+    else:
+        services.append({
+            "name": "Runtime",
+            "status": health,
+            "summary": runtime_contract.get("summary") or "Runtime status is being checked",
+            "source": "Pocket Lab runtime contract",
+        })
+    updated["services"] = services
+    return updated, runtime_contract
+
+
 def _projection_warming_response(*, domain: str, view_model: str) -> JSONResponse:
     retry_after = "2"
     return JSONResponse(
@@ -1089,6 +1190,9 @@ def _phase3b_prepared_read(request: Request, projection_domain: str, *, view_mod
         )
     except PreparedProjectionUnavailable:
         return _projection_warming_response(domain=projection_domain, view_model=view_model)
+    if projection_domain == "system.status":
+        updated, runtime = _runtime_overlay_status(dict(prepared.payload))
+        prepared = _prepared_with_live_overlay(prepared, payload=updated, overlay=runtime)
     return _control_plane_prepared_response(request, prepared, view_model=view_model)
 
 
@@ -1194,10 +1298,12 @@ def get_lite_status(request: Request) -> Response:
         request, "system.status", view_model="lite-status-phase3b-v1"
     )
     if response.status_code == 503:
+        fallback, runtime = _runtime_overlay_status(lite_status.default_lite_status_state())
         return JSONResponse(
-            content=lite_status.default_lite_status_state(),
+            content=fallback,
             headers={
                 "Cache-Control": "no-cache",
+                "ETag": lite_security.compact_response_etag({"runtime": runtime}),
                 "Retry-After": "2",
                 "X-PocketLab-View-Model": "lite-status-phase3b-v1",
                 "X-PocketLab-Read-Degraded": "true",
@@ -1205,6 +1311,14 @@ def get_lite_status(request: Request) -> Response:
             },
         )
     return response
+
+
+@router.get("/runtime")
+def get_lite_runtime_contract(request: Request) -> dict[str, Any]:
+    """Return the sanitized, read-only PM2 Runtime Contract projection."""
+
+    deps.require_auth(request)
+    return lite_status.lite_runtime_contract()
 
 
 @router.get("/system/health")
@@ -2826,6 +2940,8 @@ def get_lite_fleet(request: Request) -> Response:
             exc_info=True,
         )
         return _projection_warming_response(domain="fleet", view_model=view_model)
+    updated, runtime = _runtime_overlay_fleet(dict(prepared.payload))
+    prepared = _prepared_with_live_overlay(prepared, payload=updated, overlay=runtime)
     return _control_plane_prepared_response(request, prepared, view_model=view_model)
 
 
@@ -3547,6 +3663,9 @@ def get_lite_recovery_summary(request: Request) -> Response:
         )
     except PreparedProjectionUnavailable:
         return _projection_warming_response(domain="recovery", view_model=view_model)
+    runtime_recovery = lite_core_projections._runtime_recovery_projection()
+    updated = {**prepared.payload, "runtime_recovery": runtime_recovery}
+    prepared = _prepared_with_live_overlay(prepared, payload=updated, overlay=runtime_recovery)
     return _control_plane_prepared_response(request, prepared, view_model=view_model)
 
 
@@ -3565,6 +3684,9 @@ def get_lite_recovery_details(request: Request) -> Response:
         )
     except PreparedProjectionUnavailable:
         return _projection_warming_response(domain="recovery", view_model=view_model)
+    runtime_recovery = lite_core_projections._runtime_recovery_projection()
+    updated = {**prepared.payload, "runtime_recovery": runtime_recovery}
+    prepared = _prepared_with_live_overlay(prepared, payload=updated, overlay=runtime_recovery)
     return _control_plane_prepared_response(request, prepared, view_model=view_model)
 
 

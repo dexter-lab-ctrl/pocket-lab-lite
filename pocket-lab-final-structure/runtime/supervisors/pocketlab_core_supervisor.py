@@ -31,6 +31,9 @@ SUPERVISOR_VERSION = "1.2.2-opa-readiness-proof"
 DEFAULT_INTERVAL_SECONDS = 45
 DEFAULT_COOLDOWN_SECONDS = 120
 DEFAULT_CADDY_FAILURE_THRESHOLD = 3
+MAX_SUPERVISOR_INTERVAL_SECONDS = 3600
+MAX_SUPERVISOR_COOLDOWN_SECONDS = 24 * 60 * 60
+MAX_SUPERVISOR_RESTART_WINDOW_SECONDS = 30 * 24 * 60 * 60
 DEFAULT_API_PORT = 8080
 DEFAULT_CADDY_PORT = 8443
 DEFAULT_NATS_PORT = 4222
@@ -44,6 +47,14 @@ SENSITIVE_KEY_RE = re.compile(
     r"(token|secret|password|passwd|api[_-]?key|private[_-]?key|credential|authorization|cookie)",
     re.IGNORECASE,
 )
+
+
+def _bounded_env_int(name: str, default: int, minimum: int, maximum: int) -> int:
+    try:
+        value = int(os.environ.get(name, default))
+    except (TypeError, ValueError, OverflowError):
+        return default
+    return max(minimum, min(maximum, value))
 
 
 @dataclass(frozen=True)
@@ -95,6 +106,93 @@ def sanitize(value: Any) -> Any:
 
 def run_command(args: List[str], timeout: float = 15.0, env: Optional[Dict[str, str]] = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, check=False, capture_output=True, text=True, timeout=timeout, env=env)
+
+
+@contextlib.contextmanager
+def pm2_mutation_lock(timeout: float = 30.0):
+    """Serialize direct PM2 mutations with shell-owned convergence.
+
+    The shell convergence path holds the start-dashboard flock for its whole
+    reconciliation pass, then takes the PM2 mutation lock for each daemon
+    operation. Take that same flock first here so a core-supervisor restart
+    cannot interleave with a full Termux convergence pass and trigger PM2 7's
+    queued-definition name remapping.
+    """
+
+    configured = os.environ.get("POCKETLAB_PM2_MUTATION_LOCK")
+    state_root = Path(os.environ.get("POCKETLAB_STATE_DIR") or Path.home() / ".pocket_lab")
+    path = Path(configured).expanduser() if configured else state_root / "runtime" / "pm2-mutation.lock"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    dashboard_lock_path = Path(
+        os.environ.get("POCKETLAB_START_DASHBOARD_LOCK")
+        or Path.home() / ".pocket_lab" / "locks" / "start-dashboard.sh.lock"
+    ).expanduser()
+    dashboard_lock_path.parent.mkdir(parents=True, exist_ok=True)
+    dashboard_lock = dashboard_lock_path.open("a+", encoding="utf-8")
+    dashboard_acquired = False
+    deadline = time.monotonic() + max(0.1, float(timeout))
+    while not dashboard_acquired:
+        try:
+            fcntl.flock(dashboard_lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            dashboard_acquired = True
+        except BlockingIOError:
+            if time.monotonic() >= deadline:
+                dashboard_lock.close()
+                yield False
+                return
+            time.sleep(0.1)
+    if path.exists() and not path.is_dir():
+        try:
+            path.unlink()
+        except OSError:
+            pass
+    acquired = False
+    while not acquired:
+        try:
+            path.mkdir()
+            (path / "metadata").write_text(f"pid={os.getpid()}\n", encoding="utf-8")
+            acquired = True
+        except FileExistsError:
+            try:
+                metadata = (path / "metadata").read_text(encoding="utf-8")
+                owner = int(next(line.split("=", 1)[1] for line in metadata.splitlines() if line.startswith("pid=")))
+            except (OSError, StopIteration, ValueError):
+                owner = 0
+            if owner and not _pid_is_running(owner):
+                try:
+                    for child in path.iterdir():
+                        child.unlink()
+                    path.rmdir()
+                except OSError:
+                    pass
+                continue
+            if time.monotonic() >= deadline:
+                fcntl.flock(dashboard_lock.fileno(), fcntl.LOCK_UN)
+                dashboard_lock.close()
+                yield False
+                return
+            time.sleep(0.1)
+    try:
+        yield True
+    finally:
+        try:
+            for child in path.iterdir():
+                child.unlink()
+            path.rmdir()
+        except OSError:
+            pass
+        fcntl.flock(dashboard_lock.fileno(), fcntl.LOCK_UN)
+        dashboard_lock.close()
+
+
+def _pid_is_running(pid: int) -> bool:
+    if pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    return True
 
 
 def pm2_available() -> bool:
@@ -196,15 +294,21 @@ class LiteCoreSupervisor:
     # outage-window primitive into a general PM2 control surface.
     QUALIFICATION_PAUSE_SERVICES = frozenset({"pocket-nats", "pocket-opa"})
     def __init__(self) -> None:
-        self.interval = max(10, int(os.environ.get("POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS", DEFAULT_INTERVAL_SECONDS)))
-        self.cooldown = max(30, int(os.environ.get("POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS", DEFAULT_COOLDOWN_SECONDS)))
+        self.interval = _bounded_env_int(
+            "POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS", DEFAULT_INTERVAL_SECONDS, 10, MAX_SUPERVISOR_INTERVAL_SECONDS
+        )
+        self.cooldown = _bounded_env_int(
+            "POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS", DEFAULT_COOLDOWN_SECONDS, 30, MAX_SUPERVISOR_COOLDOWN_SECONDS
+        )
         self.api_port = int(os.environ.get("API_PORT", os.environ.get("POCKETLAB_API_PORT", DEFAULT_API_PORT)))
         self.caddy_port = int(os.environ.get("DASH_PORT", os.environ.get("POCKETLAB_DASH_PORT", DEFAULT_CADDY_PORT)))
         self.nats_port = int(os.environ.get("POCKETLAB_NATS_PORT", DEFAULT_NATS_PORT))
-        self.caddy_failure_threshold = max(2, int(os.environ.get(
+        self.caddy_failure_threshold = _bounded_env_int(
             "POCKETLAB_CORE_SUPERVISOR_CADDY_FAILURE_THRESHOLD",
             DEFAULT_CADDY_FAILURE_THRESHOLD,
-        )))
+            2,
+            20,
+        )
         self.caddy_tcp_failure_streak = 0
         self.state_root = self._state_root()
         self.evidence_dir = self.state_root / "core-supervisor"
@@ -213,15 +317,18 @@ class LiteCoreSupervisor:
         self.maintenance_file = self.state_root / "security" / "maintenance" / "maintenance-state.json"
         self.restore_transaction_root = self.state_root / "security" / "recovery" / "restore-transactions"
         self.last_actions: Dict[str, float] = self._load_last_actions()
-        self.restart_window_seconds = max(300, int(os.environ.get(
-            "POCKETLAB_CORE_SUPERVISOR_RESTART_WINDOW_SECONDS", "1800"
-        )))
-        self.max_restarts_per_window = max(1, min(10, int(os.environ.get(
-            "POCKETLAB_CORE_SUPERVISOR_MAX_RESTARTS_PER_WINDOW", "3"
-        ))))
-        self.max_restart_backoff_seconds = max(self.cooldown, int(os.environ.get(
-            "POCKETLAB_CORE_SUPERVISOR_MAX_RESTART_BACKOFF_SECONDS", "1800"
-        )))
+        self.restart_window_seconds = _bounded_env_int(
+            "POCKETLAB_CORE_SUPERVISOR_RESTART_WINDOW_SECONDS", 1800, 300, MAX_SUPERVISOR_RESTART_WINDOW_SECONDS
+        )
+        self.max_restarts_per_window = _bounded_env_int(
+            "POCKETLAB_CORE_SUPERVISOR_MAX_RESTARTS_PER_WINDOW", 3, 1, 10
+        )
+        self.max_restart_backoff_seconds = _bounded_env_int(
+            "POCKETLAB_CORE_SUPERVISOR_MAX_RESTART_BACKOFF_SECONDS",
+            1800,
+            self.cooldown,
+            MAX_SUPERVISOR_RESTART_WINDOW_SECONDS,
+        )
         self.opa_readiness_timeout = max(2.0, min(60.0, float(os.environ.get(
             "POCKETLAB_OPA_READINESS_TIMEOUT_SECONDS", DEFAULT_OPA_READINESS_TIMEOUT_SECONDS
         ))))
@@ -415,7 +522,19 @@ class LiteCoreSupervisor:
             # The supervisor itself carries service-specific metadata such as
             # POCKETLAB_SERVICE_VERSION; --update-env would stamp that metadata
             # onto the restarted target and corrupt exact version projection.
-            result = run_command(["pm2", "restart", service], timeout=30)
+            with pm2_mutation_lock(timeout=30) as locked:
+                if not locked:
+                    event = {
+                        "event": "restart_suppressed",
+                        "service": service,
+                        "reason": reason,
+                        "suppressed_reason": "pm2_mutation_lock_busy",
+                        "restart_generation": generation,
+                        "acted": False,
+                    }
+                    self._append_event(event)
+                    return event
+                result = run_command(["pm2", "restart", service], timeout=30)
             acted = result.returncode == 0
             attempted_at = epoch()
             self.mark_action(action)
@@ -927,8 +1046,15 @@ class LiteCoreSupervisor:
         if policy_action is not None:
             actions.append(policy_action)
 
-        nats_unhealthy = not is_online(statuses.get("pocket-nats", "missing")) or not bool(observed["checks"]["nats_tcp_reachable"])
-        if nats_unhealthy:
+        nats_status = statuses.get("pocket-nats", "missing")
+        if nats_status == "missing":
+            self._append_event({
+                "event": "nats_definition_missing",
+                "service": "pocket-nats",
+                "reason": "runtime_reconciler_owns_missing_definition_repair",
+                "acted": False,
+            })
+        elif not is_online(nats_status) or not bool(observed["checks"]["nats_tcp_reachable"]):
             actions.append(self.restart_pm2("pocket-nats", "nats_unhealthy"))
             if self.wait_for_nats_tcp():
                 actions.append(self.restart_pm2("pocket-api", "nats_recovered_refresh_api_client"))
@@ -985,7 +1111,14 @@ class LiteCoreSupervisor:
         caddy_upstream_http_reachable = bool(
             observed["checks"].get("caddy_upstream_http_reachable")
         )
-        if not is_online(caddy_status):
+        if caddy_status == "missing":
+            self._append_event({
+                "event": "caddy_definition_missing",
+                "service": "caddy-proxy",
+                "reason": "runtime_reconciler_owns_missing_definition_repair",
+                "acted": False,
+            })
+        elif not is_online(caddy_status):
             self.caddy_tcp_failure_streak = 0
             actions.append(self.restart_pm2("caddy-proxy", "caddy_pm2_not_online"))
         elif caddy_tcp_reachable:

@@ -129,6 +129,41 @@ def test_status_source_revision_ignores_child_projection_envelope_churn(monkeypa
     assert phase3b.status_source_revision() != first
 
 
+def test_status_source_revision_tracks_runtime_recovery_without_observation_churn(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_phase3b_projections as phase3b, lite_status
+
+    contract = {
+        "state": "stable",
+        "stable": True,
+        "observed_at": "2026-09-21T10:00:00Z",
+        "reason_codes": [],
+        "legacy_lite_services_present": [],
+        "services": [{
+            "process": "pocket-api",
+            "state": "online",
+            "stable": True,
+            "restart_generation": 2,
+            "uptime_seconds": 900,
+            "memory_mb": 140.0,
+            "reason_codes": [],
+        }],
+    }
+    monkeypatch.setattr(lite_status, "lite_runtime_contract", lambda: contract)
+    monkeypatch.setattr(phase3b, "snapshot", lambda _domain: {})
+    monkeypatch.setattr(phase3b, "_database_instance", lambda: "db")
+    monkeypatch.setattr(phase3b, "_bus_material", lambda: {})
+
+    first = phase3b.status_source_revision()
+    contract["observed_at"] = "2026-09-21T10:00:15Z"
+    contract["services"][0]["uptime_seconds"] += 15
+    contract["services"][0]["memory_mb"] = 142.0
+    assert phase3b.status_source_revision() == first
+
+    contract["services"][0]["restart_generation"] += 1
+    assert phase3b.status_source_revision() != first
+
+
 def test_phase3b_projection_is_change_only_and_uses_indexed_lookup(tmp_path, monkeypatch):
     database = _configure(tmp_path, monkeypatch)
     from api_fastapi.db.migrations import apply_migrations

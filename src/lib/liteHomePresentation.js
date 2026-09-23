@@ -38,6 +38,13 @@ const SERVICE_PRESENTATION = Object.freeze({
     review: 'Background operations are being checked.',
     danger: 'Background operations need attention.',
   },
+  runtime: {
+    label: 'System recovery',
+    screen: 'recovery',
+    ready: 'System running normally.',
+    review: 'Recovery in progress.',
+    danger: 'Something changed. Review Recovery for the latest status.',
+  },
   app_catalog: {
     label: 'Apps',
     screen: 'catalog',
@@ -109,6 +116,7 @@ const HOME_SERVICE_PRIORITY = Object.freeze([
   'remote_access',
   'identity_access',
   'control_api',
+  'runtime',
   'worker_execution',
   'command_bus',
   'policy_compliance',
@@ -443,7 +451,7 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
     : semanticResourceMetric({ key: 'activity', label: 'Recent activity', status: 'unknown', summary: 'Activity state has not been reported yet.', screen: 'home' });
 
   const resources = [deviceHealthResource, storageResource, databaseResource, activityResource];
-  const keyAreas = services.filter((item) => ['app_catalog', 'device_fleet', 'security', 'remote_access', 'recovery'].includes(item.key)).slice(0, 5);
+  const keyAreas = services.filter((item) => ['app_catalog', 'device_fleet', 'security', 'runtime', 'remote_access', 'recovery'].includes(item.key)).slice(0, 6);
   const workspaceStory = savedStateOnly || !backendReachable
     ? {
         state: 'saved',

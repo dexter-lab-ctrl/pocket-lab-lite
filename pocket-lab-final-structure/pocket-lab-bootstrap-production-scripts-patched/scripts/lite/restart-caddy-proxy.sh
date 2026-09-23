@@ -18,7 +18,13 @@ log() {
 
 # start-dashboard --caddy-only owns Caddyfile rendering, validation, exact
 # installed-version projection, drift repair, PM2 save, and safe reload/restart.
-bash "$DASHBOARD" --lite --caddy-only
+# A PhotoPrism reconcile can call this while the full dashboard lock is held;
+# in that scoped nested case the child reuses the parent's lock ownership.
+if [[ "${POCKETLAB_CADDY_REFRESH_NESTED:-0}" == "1" ]]; then
+  POCKETLAB_RECONCILER_CHILD=1 POCKETLAB_CADDY_REFRESH_RELOAD_ONLY="${POCKETLAB_CADDY_REFRESH_RELOAD_ONLY:-0}" bash "$DASHBOARD" --lite --caddy-only
+else
+  bash "$DASHBOARD" --lite --caddy-only
+fi
 
 curl -fsS --connect-timeout 1 --max-time 5   http://127.0.0.1:8443/api/lite/catalog >/dev/null || {
   log "Caddy converged but Lite API route is not reachable on 127.0.0.1:8443"

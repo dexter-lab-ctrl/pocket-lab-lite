@@ -343,6 +343,11 @@ reconcile_runtime(){
   write_route_registry
   ensure_pm2_ownership
   refresh_caddy
+  # Caddy refresh is a separate PM2 mutation. PM2 7 on Termux can briefly
+  # remap a sibling definition while that queued operation drains, so prove
+  # PhotoPrism ownership again before publishing runtime evidence or saving
+  # the PM2 snapshot.
+  ensure_pm2_ownership
   wait_for_health || fail_safe "PhotoPrism did not become healthy after runtime reconciliation."
   local version route
   version="$(photoprism_version)"

@@ -17,6 +17,8 @@ SCRIPTS = (
 )
 COMMON = SCRIPTS / "lib" / "common.sh"
 DASHBOARD = SCRIPTS / "start-dashboard.sh"
+RUNTIME_RECONCILE = SCRIPTS / "lite" / "reconcile-runtime.sh"
+RESTART_CADDY = SCRIPTS / "lite" / "restart-caddy-proxy.sh"
 OPA = SCRIPTS / "lite" / "start-opa-runtime.sh"
 PHOTOPRISM = SCRIPTS / "lite" / "install-photoprism-proot.sh"
 FLEET_ROUTER = ROOT / "pocket-lab-final-structure" / "runtime" / "api_fastapi" / "routers" / "fleet.py"
@@ -124,6 +126,47 @@ def test_runtime_reconciler_and_guardian_treat_version_metadata_as_desired_state
     assert "core_supervisor_missing_or_source_drift" in guardian
 
 
+def test_nested_reconciler_dashboard_pass_reuses_outer_lock():
+    source = DASHBOARD.read_text(encoding="utf-8")
+    reconcile = RUNTIME_RECONCILE.read_text(encoding="utf-8")
+    assert "acquire_start_dashboard_lock" in source
+    assert 'POCKETLAB_RECONCILER_CHILD:-0' in source
+    assert '[[ "${POCKETLAB_RECONCILER_CHILD:-0}" == "1" ]] && return 0' in source
+    caddy_only = source[source.index("      --caddy-only)"):source.index("      --reconcile-only)")]
+    assert 'export POCKETLAB_RECONCILE_ONLY=0' in caddy_only
+    assert 'bash "$DASHBOARD" --lite --reconcile-only' in reconcile
+    assert 'POCKETLAB_RECONCILER_CHILD=1 bash "$DASHBOARD" --lite --reconcile-only' not in reconcile
+
+
+def test_photoprism_repair_is_scoped_without_full_dashboard_convergence():
+    source = RUNTIME_RECONCILE.read_text(encoding="utf-8")
+    assert '[[ "$REASON" == *photoprism*' in source
+    assert 'bash "$photoprism" reconcile' in source
+    assert 'POCKETLAB_RECONCILER_CHILD=1' not in source
+
+
+def test_runtime_reconciler_does_not_propagate_child_lock_marker_to_pm2():
+    source = RUNTIME_RECONCILER.read_text(encoding="utf-8")
+    assert 'env["POCKETLAB_RECONCILER_CHILD"]' not in source
+
+
+def test_lite_startup_reconciles_installed_photoprism_before_supervisors():
+    source = DASHBOARD.read_text(encoding="utf-8")
+    helper = RESTART_CADDY.read_text(encoding="utf-8")
+    assert "reconcile_installed_photoprism" in source
+    assert 'bash "$PHOTOPRISM_RUNTIME" reconcile' in source
+    assert 'POCKETLAB_CADDY_REFRESH_NESTED' in helper
+    assert 'POCKETLAB_CADDY_REFRESH_RELOAD_ONLY' in source
+    assert 'POCKETLAB_CADDY_REFRESH_RELOAD_ONLY' in helper
+    assert 'POCKETLAB_RECONCILER_CHILD=1 POCKETLAB_CADDY_REFRESH_RELOAD_ONLY=' in helper
+
+
+def test_caddy_fault_repair_uses_scoped_dashboard_path():
+    source = RUNTIME_RECONCILE.read_text(encoding="utf-8")
+    assert '[[ "$REASON" == *caddy-proxy*' in source
+    assert 'bash "$DASHBOARD" --lite --caddy-only' in source
+
+
 def test_stale_pm2_version_projection_forces_controlled_recreation(tmp_path: Path):
     actions = tmp_path / "actions.log"
     state = tmp_path / "present"
@@ -132,14 +175,20 @@ def test_stale_pm2_version_projection_forces_controlled_recreation(tmp_path: Pat
 set -Eeuo pipefail
 export POCKET_LAB_ALLOW_NON_TERMUX=1
 export HOME="$TEST_HOME"
-export PREFIX="$TEST_PREFIX"
-source "$COMMON_PATH"
-
+export POCKETLAB_STATE_DIR="$TEST_HOME/pocket-lab-lite/state"
+    export PREFIX="$TEST_PREFIX"
+    source "$COMMON_PATH"
 pm2() {
-  case "${1:-}" in
+    case "${1:-}" in
     jlist)
-      if [[ -f "$STATE_FILE" ]]; then
-        printf '%s\n' '[{"name":"caddy-proxy","pm2_env":{"status":"online","version":"N/A","POCKETLAB_SERVICE_VERSION":"1.0.0+sha.wrong","POCKETLAB_PROCESS_SPEC_HASH":"old"}}]'
+          if [[ -f "$STATE_FILE" ]]; then
+            if [[ "$(cat "$STATE_FILE")" == "started" ]]; then
+                      projected="$STATE_DIR/pm2-versioned/caddy-proxy/exec"
+              printf '[{"name":"caddy-proxy","pm2_env":{"status":"online","version":"2.10.2","POCKETLAB_SERVICE_VERSION":"2.10.2","POCKETLAB_PROCESS_SPEC_HASH":"%s","pm_exec_path":"%s","exec_interpreter":"none"}}]\n' \
+                "$(cat "$HASH_FILE")" "$projected"
+        else
+          printf '%s\n' '[{"name":"caddy-proxy","pm2_env":{"status":"online","version":"N/A","POCKETLAB_SERVICE_VERSION":"1.0.0+sha.wrong","POCKETLAB_PROCESS_SPEC_HASH":"old"}}]'
+        fi
       else
         printf '%s\n' '[]'
       fi
@@ -150,6 +199,8 @@ pm2() {
       ;;
     start)
       printf 'start\n' >>"$ACTION_FILE"
+      printf 'started\n' >"$STATE_FILE"
+      printf '%s\n' "${POCKETLAB_PROCESS_SPEC_HASH:-}" >"$HASH_FILE"
       ;;
     *)
       return 0
@@ -169,6 +220,7 @@ pm2_ensure_versioned_process caddy-proxy "2.10.2" "$SOURCE_EXEC" -- run --config
             "SOURCE_EXEC": shutil.which("sh") or "/bin/sh",
             "ACTION_FILE": str(actions),
             "STATE_FILE": str(state),
+            "HASH_FILE": str(tmp_path / "hash"),
         }
     )
     completed = subprocess.run(
@@ -179,8 +231,98 @@ pm2_ensure_versioned_process caddy-proxy "2.10.2" "$SOURCE_EXEC" -- run --config
         capture_output=True,
         check=False,
     )
-    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.returncode == 0, completed.stdout + completed.stderr
     assert actions.read_text(encoding="utf-8").splitlines() == ["delete", "start"]
+
+
+def test_stale_pm2_version_recreation_waits_for_async_delete(tmp_path: Path):
+    actions = tmp_path / "actions.log"
+    state = tmp_path / "present"
+    state.write_text("1", encoding="utf-8")
+    deleting = tmp_path / "deleting"
+    polls = tmp_path / "polls"
+    shell = r"""
+set -Eeuo pipefail
+export POCKET_LAB_ALLOW_NON_TERMUX=1
+export HOME="$TEST_HOME"
+export PREFIX="$TEST_PREFIX"
+export POCKETLAB_STATE_DIR="$TEST_HOME/pocket-lab-lite/state"
+source "$COMMON_PATH"
+EXPECTED_SCRIPT="$(pwd -P)/demo.py"
+EXPECTED_INTERPRETER="$(command -v python3)"
+export ACTION_FILE STATE_FILE DELETING POLLS
+HASH_FILE="$TEST_HOME/hash"
+
+pm2_process_snapshot() {
+  if [[ -f "$DELETING" ]]; then
+    count=0
+    [[ -f "$POLLS" ]] && count="$(cat "$POLLS")"
+    count=$((count + 1))
+    printf '%s\n' "$count" >"$POLLS"
+    if (( count < 3 )); then
+      printf '%s\n%s\n%s\n%s\n' stopping old old old
+      return 0
+    fi
+    rm -f "$DELETING" "$STATE_FILE"
+    return 0
+  fi
+  if [[ -f "$STATE_FILE" ]]; then
+    if [[ "$(cat "$STATE_FILE")" == started ]]; then
+      printf '%s\n%s\n%s\n%s\n' online "$(cat "$HASH_FILE")" "$EXPECTED_SCRIPT" "$EXPECTED_INTERPRETER"
+    else
+      printf '%s\n%s\n%s\n%s\n' online old old old
+    fi
+  fi
+}
+
+pm2_process_launch_matches() {
+  snapshot="$(pm2_process_snapshot "$1")"
+  [[ "$(printf '%s\n' "$snapshot" | sed -n '1p')" == online ]]
+  [[ "$(printf '%s\n' "$snapshot" | sed -n '2p')" == "$2" ]]
+}
+
+pm2() {
+  case "${1:-}" in
+    delete)
+      printf 'delete\n' >>"$ACTION_FILE"
+      : >"$DELETING"
+      ;;
+    start)
+      [[ ! -f "$DELETING" ]] || { echo "start happened before async delete completed" >&2; return 1; }
+      printf 'start\n' >>"$ACTION_FILE"
+      printf 'started\n' >"$STATE_FILE"
+      printf '%s\n' "${POCKETLAB_PROCESS_SPEC_HASH:-}" >"$HASH_FILE"
+      ;;
+    *) return 0 ;;
+  esac
+}
+
+pm2_ensure_versioned_process caddy-proxy "2.10.2" "$SOURCE_EXEC" -- run --config /tmp/Caddyfile
+"""
+    env = os.environ.copy()
+    env.update(
+        {
+            "TEST_HOME": str(tmp_path / "home"),
+            "TEST_PREFIX": str(tmp_path / "prefix"),
+            "COMMON_PATH": str(COMMON),
+            "SOURCE_EXEC": shutil.which("sh") or "/bin/sh",
+            "ACTION_FILE": str(actions),
+            "STATE_FILE": str(state),
+            "DELETING": str(deleting),
+            "POLLS": str(polls),
+        }
+    )
+    completed = subprocess.run(
+        ["bash", "-lc", shell],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    assert actions.read_text(encoding="utf-8").splitlines() == ["delete", "start"]
+    assert int(polls.read_text(encoding="utf-8")) >= 3
 
 
 def test_caddy_config_fallback_restart_preserves_projected_service_version():

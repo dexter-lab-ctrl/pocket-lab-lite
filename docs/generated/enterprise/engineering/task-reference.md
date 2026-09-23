@@ -18,7 +18,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 | Development loop | 55 |
 | Documentation loop | 55 |
 | API-validation loop | 12 |
-| Runtime-evidence loop | 31 |
+| Runtime-evidence loop | 32 |
 | Security-analysis loop | 34 |
 | Release loop | 19 |
 | Recovery-diagnostics loop | 6 |
@@ -4525,6 +4525,40 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:runtime:resilience:phone:remote-access-fault`
+
+## `lite:runtime:stability:phone:faults`
+
+**Purpose:** Qualify bounded PM2 crash-loop, graceful-stop, memory-ceiling, and stable recovery behavior; requires explicit guards
+
+**Audience:** developer/operator
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `bash scripts/dev/check-lite-runtime-resilience-server-phone.sh --pm2-contract-faults`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/check-lite-runtime-resilience-server-phone.sh
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:runtime:stability:phone:faults`
 
 ## `lite:security:assurance:adversarial`
 

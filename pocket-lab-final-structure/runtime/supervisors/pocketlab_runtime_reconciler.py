@@ -13,6 +13,7 @@ PM2 itself is supervised outside PM2 by the Termux boot/runtime guardian.
 """
 from __future__ import annotations
 
+import fcntl
 import json
 import os
 from pathlib import Path
@@ -24,8 +25,14 @@ from typing import Any, Iterable
 from pocketlab_runtime_registry import (
     CONTROL_PLANE_SERVICES,
     LEGACY_LITE_SERVICES,
+    PHOTOPRISM_SPEC,
+    RECONCILER_SPEC,
     REPAIRABLE_PM2_STATUSES,
+    launch_fingerprint,
+    policy_fingerprint,
+    policy_match,
 )
+from pocketlab_runtime_contract import build_runtime_contract
 
 _STOP = False
 VERSION = "1.0.0-lite-desired-state"
@@ -33,6 +40,99 @@ DEFAULT_INTERVAL_SECONDS = 45
 DEFAULT_COOLDOWN_SECONDS = 120
 DEFAULT_WINDOW_SECONDS = 1800
 DEFAULT_MAX_REPAIRS = 3
+MAX_INTERVAL_SECONDS = 3600
+MAX_COOLDOWN_SECONDS = 24 * 60 * 60
+MAX_WINDOW_SECONDS = 30 * 24 * 60 * 60
+
+# PM2 does not keep every projection field authoritative while a process is
+# stopped, errored, or transitioning between lifecycle states.  Treat those
+# observations as transient and let the lifecycle owner restore the process
+# before evaluating version, policy, or desired-spec metadata.  Rebuilding a
+# stopped definition from those transient fields can create a restart loop on
+# PM2 7/Termux and consume the bounded runtime restart budget.
+TRANSIENT_PM2_STATUSES = frozenset(
+    {
+        "missing",
+        "stopped",
+        "errored",
+        "error",
+        "stopping",
+        "launching",
+        "waiting restart",
+    }
+)
+
+# PM2 7/Termux exposes the managed process projection in the child
+# environment. Passing those fields to another PM2 CLI invocation can make
+# the daemon reuse the current definition's executable for the next
+# ecosystem launch. Keep PM2_HOME so the child targets the same daemon, but
+# remove all other PM2 control metadata and lowercase PM2/app markers.
+PM2_CHILD_ENV_KEYS = frozenset(
+    {
+        "PM2_USAGE",
+        "PM2_JSON_PROCESSING",
+        "pm_id",
+        "name",
+        "unique_id",
+        "namespace",
+        "cwd",
+        "exec_interpreter",
+        "exec_mode",
+        "pm_cwd",
+        "pm_exec_path",
+        "pm_out_log_path",
+        "pm_err_log_path",
+        "pm_pid_path",
+        "pm_uptime",
+        "status",
+        "restart_time",
+        "unstable_restarts",
+        "version",
+        "max_memory_restart",
+        "exp_backoff_restart_delay",
+        "kill_timeout",
+        "max_restarts",
+        "min_uptime",
+        "autorestart",
+        "autostart",
+        "instances",
+        "instance_var",
+        "treekill",
+        "merge_logs",
+        "vizion",
+        "vizion_running",
+        "automation",
+        "pmx",
+        "io",
+        "km_link",
+        "username",
+        "windowsHide",
+        "kill_retry_time",
+        "created_at",
+    }
+)
+
+
+def _sanitize_child_environment(source: dict[str, str] | None = None) -> dict[str, str]:
+    """Remove PM2-owned launch metadata before invoking convergence scripts."""
+
+    environment = dict(os.environ if source is None else source)
+    for key in tuple(environment):
+        if (
+            key in PM2_CHILD_ENV_KEYS
+            or (key.startswith("PM2_") and key != "PM2_HOME")
+            or key[:1].islower()
+        ):
+            environment.pop(key, None)
+    return environment
+
+
+def _bounded_env_int(name: str, default: int, minimum: int, maximum: int) -> int:
+    try:
+        value = int(os.environ.get(name, default))
+    except (TypeError, ValueError, OverflowError):
+        return default
+    return max(minimum, min(maximum, value))
 
 
 def _now_iso() -> str:
@@ -41,6 +141,59 @@ def _now_iso() -> str:
 
 def _run(args: list[str], timeout: float = 15.0, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, check=False, capture_output=True, text=True, timeout=timeout, env=env)
+
+
+def lifecycle_transition_active() -> bool:
+    """Return whether the repository-owned dashboard lifecycle is mutating PM2.
+
+    The startup/reconcile shell path holds this lock while it replaces or
+    reloads process definitions. PM2 7 on Termux can briefly report a sibling
+    definition as missing during that queue drain. A concurrent reconciler
+    repair must observe the transition and defer its own mutation until the
+    lifecycle owner has finished.
+    """
+
+    lock_path = Path(
+        os.environ.get(
+            "POCKETLAB_START_DASHBOARD_LOCK",
+            Path.home() / ".pocket_lab" / "locks" / "start-dashboard.sh.lock",
+        )
+    ).expanduser()
+    if not lock_path.exists():
+        return False
+    if not lock_path.is_dir():
+        try:
+            with lock_path.open("a+", encoding="utf-8") as handle:
+                try:
+                    fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                except BlockingIOError:
+                    # The lifecycle owner may have created the file before
+                    # writing metadata. The kernel lock is authoritative.
+                    return True
+                finally:
+                    try:
+                        fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+                    except OSError:
+                        pass
+        except OSError:
+            pass
+    try:
+        metadata = lock_path / "metadata" if lock_path.is_dir() else lock_path
+        values: dict[str, str] = {}
+        for line in metadata.read_text(encoding="utf-8").splitlines():
+            key, separator, value = line.partition("=")
+            if separator:
+                values[key.strip()] = value.strip()
+        owner_pid = int(values.get("pid", "0"))
+    except (OSError, ValueError, TypeError):
+        return False
+    if owner_pid <= 0:
+        return False
+    try:
+        os.kill(owner_pid, 0)
+    except (OSError, ProcessLookupError):
+        return False
+    return True
 
 
 def load_pm2_processes() -> list[dict[str, Any]]:
@@ -67,6 +220,7 @@ def pm2_statuses(processes: Iterable[dict[str, Any]]) -> dict[str, str]:
 
 def pm2_version_projection(processes: Iterable[dict[str, Any]]) -> tuple[dict[str, str], list[str]]:
     tracked = {spec.name for spec in CONTROL_PLANE_SERVICES}
+    tracked.add(RECONCILER_SPEC.name)
     tracked.add("pocketlab-app-photoprism")
     versions: dict[str, str] = {}
     reasons: list[str] = []
@@ -75,25 +229,132 @@ def pm2_version_projection(processes: Iterable[dict[str, Any]]) -> tuple[dict[st
         if name not in tracked:
             continue
         env = item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}
+        status = str(env.get("status") or item.get("status") or "unknown").strip().lower()
         version = str(env.get("version") or "").strip()
         declared = str(env.get("POCKETLAB_SERVICE_VERSION") or "").strip()
         versions[name] = version or "unavailable"
+        if status in TRANSIENT_PM2_STATUSES:
+            continue
         if not version or version.lower() in {"n/a", "na", "unknown"} or version != declared:
             reasons.append(f"pm2_version_projection:{name}")
     return versions, reasons
+
+
+def pm2_policy_reasons(
+    processes: Iterable[dict[str, Any]],
+    *,
+    include_photoprism: bool = False,
+) -> list[str]:
+    """Return desired PM2 policy drift without exposing process environment."""
+
+    tracked = [*CONTROL_PLANE_SERVICES, RECONCILER_SPEC]
+    if include_photoprism:
+        tracked.append(PHOTOPRISM_SPEC)
+    by_name = {
+        str(item.get("name") or "").strip(): item
+        for item in processes
+        if isinstance(item, dict) and str(item.get("name") or "").strip()
+    }
+    reasons: list[str] = []
+    for spec in tracked:
+        item = by_name.get(spec.name)
+        if not item:
+            continue
+        env = item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}
+        status = str(env.get("status") or item.get("status") or "unknown").strip().lower()
+        if status in TRANSIENT_PM2_STATUSES:
+            continue
+        matches, fields = policy_match(spec.name, env)
+        expected_fingerprint = policy_fingerprint(spec.name)
+        observed_fingerprint = str(env.get("POCKETLAB_PM2_POLICY_FINGERPRINT") or "").strip()
+        if not matches or not expected_fingerprint or observed_fingerprint != expected_fingerprint:
+            detail = ",".join(fields) if fields else "fingerprint"
+            reasons.append(f"pm2_policy:{spec.name}:{detail}")
+    return reasons
+
+
+def pm2_desired_spec_reasons(
+    processes: Iterable[dict[str, Any]],
+    *,
+    state_root: Path,
+    include_photoprism: bool = False,
+) -> list[str]:
+    """Detect a running PM2 definition that differs from startup's desired hash."""
+    evidence_path = state_root / "runtime" / "desired-process-specs.json"
+    try:
+        evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, json.JSONDecodeError):
+        return ["pm2_desired_specs_unavailable"]
+    if (
+        not isinstance(evidence, dict)
+        or evidence.get("schema") != "pocketlab.pm2-desired-process-specs/v1"
+        or not isinstance(evidence.get("schema_version"), int)
+        or isinstance(evidence.get("schema_version"), bool)
+        or evidence.get("schema_version") != 1
+        or evidence.get("sanitized") is not True
+        or not isinstance(evidence.get("processes"), dict)
+    ):
+        return ["pm2_desired_specs_invalid"]
+    expected = evidence["processes"]
+    expected_launches = evidence.get("launches") if isinstance(evidence.get("launches"), dict) else {}
+    observed_items = {
+        str(item.get("name") or ""): item
+        for item in processes
+        if isinstance(item, dict) and str(item.get("name") or "")
+    }
+    observed = {
+        name: str(
+            (item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}).get(
+                "POCKETLAB_PROCESS_SPEC_HASH"
+            ) or ""
+        ).strip().lower()
+        for name, item in observed_items.items()
+    }
+    specs = [*CONTROL_PLANE_SERVICES, RECONCILER_SPEC]
+    if include_photoprism:
+        specs.append(PHOTOPRISM_SPEC)
+    reasons: list[str] = []
+    observed_launches = {
+        str(item.get("name") or ""): launch_fingerprint(
+            str((item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}).get("pm_exec_path") or ""),
+            str((item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}).get("exec_interpreter") or ""),
+        )
+        for item in observed_items.values()
+    }
+    for spec in specs:
+        if spec.name not in observed:
+            continue
+        item = observed_items.get(spec.name)
+        env = item.get("pm2_env") if isinstance(item, dict) and isinstance(item.get("pm2_env"), dict) else {}
+        status = str(env.get("status") or (item or {}).get("status") or "unknown").strip().lower()
+        if status in TRANSIENT_PM2_STATUSES:
+            continue
+        desired = str(expected.get(spec.name) or "").strip().lower()
+        if not desired:
+            reasons.append(f"pm2_desired_spec_missing:{spec.name}")
+        elif observed[spec.name] != desired:
+            reasons.append(f"pm2_desired_spec_mismatch:{spec.name}")
+        desired_launch = str(expected_launches.get(spec.name) or "").strip().lower()
+        observed_launch = observed_launches.get(spec.name, "")
+        if not desired_launch:
+            reasons.append(f"pm2_desired_launch_missing:{spec.name}")
+        elif observed_launch != desired_launch:
+            reasons.append(f"pm2_desired_launch_mismatch:{spec.name}")
+    return reasons
 
 
 def repair_reasons(statuses: dict[str, str]) -> list[str]:
     """Return only reconstruction-class drift.
 
     Health-level recovery remains owned by the existing core supervisor. This
-    avoids a second restart loop and intentionally ignores transient states such
-    as "waiting restart" when the process definition still exists.
+    avoids a second restart loop and intentionally ignores stopped/errored
+    states when the process definition still exists. The reconciler only
+    reconstructs a definition that PM2 no longer reports at all.
     """
     reasons: list[str] = []
     for spec in CONTROL_PLANE_SERVICES:
         status = str(statuses.get(spec.name) or "missing").lower()
-        if status in REPAIRABLE_PM2_STATUSES:
+        if status == "missing":
             reasons.append(f"pm2_definition_or_process:{spec.name}:{status}")
     return reasons
 
@@ -172,10 +433,10 @@ def photoprism_reconcile_reasons(statuses: dict[str, str]) -> list[str]:
 
 class RuntimeReconciler:
     def __init__(self) -> None:
-        self.interval = max(10, int(os.environ.get("POCKETLAB_RUNTIME_RECONCILE_SECONDS", DEFAULT_INTERVAL_SECONDS)))
-        self.cooldown = max(30, int(os.environ.get("POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS", DEFAULT_COOLDOWN_SECONDS)))
-        self.window = max(300, int(os.environ.get("POCKETLAB_RUNTIME_RECONCILE_WINDOW_SECONDS", DEFAULT_WINDOW_SECONDS)))
-        self.max_repairs = max(1, min(10, int(os.environ.get("POCKETLAB_RUNTIME_RECONCILE_MAX_REPAIRS", DEFAULT_MAX_REPAIRS))))
+        self.interval = _bounded_env_int("POCKETLAB_RUNTIME_RECONCILE_SECONDS", DEFAULT_INTERVAL_SECONDS, 10, MAX_INTERVAL_SECONDS)
+        self.cooldown = _bounded_env_int("POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS", DEFAULT_COOLDOWN_SECONDS, 30, MAX_COOLDOWN_SECONDS)
+        self.window = _bounded_env_int("POCKETLAB_RUNTIME_RECONCILE_WINDOW_SECONDS", DEFAULT_WINDOW_SECONDS, 300, MAX_WINDOW_SECONDS)
+        self.max_repairs = _bounded_env_int("POCKETLAB_RUNTIME_RECONCILE_MAX_REPAIRS", DEFAULT_MAX_REPAIRS, 1, 10)
         base = Path(os.environ.get("POCKETLAB_STATE_DIR", Path.home() / "pocket-lab-lite" / "state")).expanduser()
         self.state_dir = base / "runtime-reconciler"
         self.state_file = self.state_dir / "state.json"
@@ -191,6 +452,18 @@ class RuntimeReconciler:
             / "lite"
             / "reconcile-runtime.sh"
         )
+
+    def _acquire_singleton(self):
+        """Keep only one reconciler loop active per Lite state directory."""
+
+        self.state_dir.mkdir(parents=True, exist_ok=True)
+        handle = (self.state_dir / "active.lock").open("a+", encoding="utf-8")
+        try:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            handle.close()
+            return None
+        return handle
 
     def _load_previous(self) -> dict[str, Any]:
         try:
@@ -237,7 +510,7 @@ class RuntimeReconciler:
             event = {"event": "runtime_reconcile_unavailable", "reason": "reconcile_script_missing", "acted": False, "result": "missing"}
             self._event(event)
             return event
-        env = os.environ.copy()
+        env = _sanitize_child_environment()
         # Service-specific PM2 projection metadata belongs to this reconciler
         # process only. Never leak it into child convergence, where --update-env
         # or a process-spec hash could otherwise stamp another service with the
@@ -252,11 +525,21 @@ class RuntimeReconciler:
             "POCKETLAB_STATE_DIR",
             "POCKETLAB_LITE_DB_PATH",
             "POCKETLAB_OPA_ACTIVE_POLICY_DIR",
+            # PM2 injects these path fields into managed processes. They are
+            # removed here as well as by the general PM2 metadata filter so
+            # this boundary remains explicit for future additions.
+            "pm_id",
+            "name",
+            "unique_id",
+            "pm_exec_path",
+            "pm_cwd",
+            "pm_out_log_path",
+            "pm_err_log_path",
+            "pm_pid_path",
         ):
             env.pop(key, None)
         env["POCKETLAB_PROFILE"] = "lite"
         env["POCKETLAB_LITE"] = "1"
-        env["POCKETLAB_RECONCILER_CHILD"] = "1"
         try:
             result = _run(["bash", str(self.reconcile_script), "--repair", "--reason", reason], timeout=240, env=env)
             acted = result.returncode == 0
@@ -283,16 +566,39 @@ class RuntimeReconciler:
         remote = tailscale_state()
         reasons = repair_reasons(statuses)
         reasons.extend(version_reasons)
+        reasons.extend(pm2_policy_reasons(processes, include_photoprism=photoprism_expected()))
+        reasons.extend(pm2_desired_spec_reasons(
+            processes,
+            state_root=self.state_dir.parent,
+            include_photoprism=photoprism_expected(),
+        ))
         reasons.extend(remote_reconcile_reasons(remote, previous.get("remote_access")))
         reasons.extend(photoprism_reconcile_reasons(statuses))
         actions: list[dict[str, Any]] = []
         if reasons:
-            actions.append(self._repair(reasons))
-            processes = load_pm2_processes()
-            statuses = pm2_statuses(processes)
-            versions, _ = pm2_version_projection(processes)
-            remote = tailscale_state()
+            if lifecycle_transition_active():
+                event = {
+                    "event": "runtime_reconcile_suppressed",
+                    "reason": "lifecycle_transition",
+                    "acted": False,
+                    "result": reasons[0],
+                }
+                self._event(event)
+                actions.append(event)
+            else:
+                actions.append(self._repair(reasons))
+                processes = load_pm2_processes()
+                statuses = pm2_statuses(processes)
+                versions, _ = pm2_version_projection(processes)
+                remote = tailscale_state()
         legacy_present = sorted(name for name in statuses if name in LEGACY_LITE_SERVICES)
+        runtime_contract = build_runtime_contract(
+            processes=processes,
+            state_root=self.state_dir.parent,
+            photoprism_expected=photoprism_expected(),
+            repairing=bool(reasons or actions),
+            remote_access=remote,
+        )
         payload = {
             "reconciler": "pocketlab-runtime-reconciler",
             "version": VERSION,
@@ -302,6 +608,13 @@ class RuntimeReconciler:
             "remote_access": remote,
             "drift_reasons": reasons,
             "actions": actions,
+            "runtime_contract": {
+                "schema_version": runtime_contract.get("schema_version"),
+                "state": runtime_contract.get("state"),
+                "stable": runtime_contract.get("stable"),
+                "reason_codes": runtime_contract.get("reason_codes"),
+                "observed_at": runtime_contract.get("observed_at"),
+            },
             "legacy_lite_services_present": legacy_present,
             "legacy_lite_services_allowed": False,
             "checked_at": _now_iso(),
@@ -311,19 +624,28 @@ class RuntimeReconciler:
         return payload
 
     def run(self) -> None:
-        while not _STOP:
+        singleton = self._acquire_singleton()
+        if singleton is None:
+            return
+        try:
+            while not _STOP:
+                try:
+                    self.tick()
+                except Exception as exc:
+                    self._event(
+                        {
+                            "event": "runtime_reconcile_check_failed",
+                            "reason": type(exc).__name__,
+                            "acted": False,
+                            "result": "degraded",
+                        }
+                    )
+                time.sleep(self.interval)
+        finally:
             try:
-                self.tick()
-            except Exception as exc:
-                self._event(
-                    {
-                        "event": "runtime_reconcile_check_failed",
-                        "reason": type(exc).__name__,
-                        "acted": False,
-                        "result": "degraded",
-                    }
-                )
-            time.sleep(self.interval)
+                fcntl.flock(singleton.fileno(), fcntl.LOCK_UN)
+            finally:
+                singleton.close()
 
 
 def _stop(_signum: int, _frame: Any) -> None:

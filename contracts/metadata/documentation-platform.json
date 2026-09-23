@@ -1475,6 +1475,21 @@
     },
     {
       "audit_severity": "warning",
+      "code": "runtime_contract_unavailable",
+      "deprecated_aliases": [],
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The sanitized PM2 Runtime Contract is not yet available for the Lite status projection.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "Runtime status is being checked."
+    },
+    {
+      "audit_severity": "warning",
       "code": "protected_server_host",
       "deprecated_aliases": [],
       "domain": "devices",

@@ -152,6 +152,119 @@ def test_lite_status_endpoint_registered():
     assert any(item["name"] == "Control API" for item in payload["services"])
 
 
+def test_lite_runtime_endpoint_returns_schema_versioned_sanitized_projection():
+    from api_fastapi import deps
+
+    path = deps.settings().state_dir / "runtime" / "pm2-runtime-contract.json"
+    deps.core.write_json_file(path, {
+        "schema": "pocketlab.pm2-runtime-contract/v1",
+        "schema_version": 1,
+        "state": "stable",
+        "stable": True,
+        "reason_codes": [],
+        "observed_at": "2026-09-20T10:00:00Z",
+        "services": [{
+            "process": "pocket-api",
+            "role": "control-api",
+            "state": "online",
+            "stable": True,
+            "restart_generation": 1,
+            "recent_restarts": 0,
+            "restart_budget_remaining": 3,
+            "recovered_at": "2026-09-20T09:59:00Z",
+            "pm2_policy": {"kill_timeout_ms": 15000},
+            "POCKETLAB_NATS_PASSWORD": "must-not-project",
+        }],
+        "legacy_lite_services_present": [],
+        "remote_access": {"ready": False, "state": "not_ready"},
+        "log_policy": {"within_policy": True},
+        "sanitized": True,
+    })
+
+    response = client().get("/api/lite/runtime")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["schema"] == "pocketlab.pm2-runtime-contract/v1"
+    assert payload["schema_version"] == 1
+    assert payload["state"] == "stable"
+    assert payload["stable"] is True
+    assert payload["sanitized"] is True
+    assert payload["remote_access"]["state"] == "not_ready"
+    assert "pm2_policy" not in str(payload)
+    assert "must-not-project" not in str(payload)
+
+
+def test_lite_fleet_keeps_server_runtime_recovery_distinct_from_remote_access(monkeypatch):
+    from api_fastapi import deps
+    from api_fastapi.services import lite_status
+
+    path = deps.settings().state_dir / "runtime" / "pm2-runtime-contract.json"
+    deps.core.write_json_file(path, {
+        "schema": "pocketlab.pm2-runtime-contract/v1",
+        "schema_version": 1,
+        "state": "repairing",
+        "stable": False,
+        "reason_codes": ["repair_in_progress"],
+        "observed_at": "2026-09-20T10:00:00Z",
+        "services": [{
+            "process": "pocket-node-agent",
+            "role": "server-host-agent",
+            "state": "online",
+            "stable": False,
+            "restart_generation": 2,
+            "recent_restarts": 1,
+            "restart_budget_remaining": 2,
+            "recovered_at": None,
+            "reason_codes": ["repair_in_progress"],
+        }],
+        "legacy_lite_services_present": [],
+        "remote_access": {"ready": False, "state": "not_ready"},
+        "log_policy": {"within_policy": True},
+        "sanitized": True,
+    })
+    monkeypatch.setattr(lite_status, "_tailscaled_running", lambda: False)
+    monkeypatch.setattr(lite_status, "_tailscale_ipv4_status", lambda: None)
+    monkeypatch.setattr(lite_status, "_nats_reachable_on_host", lambda host: False)
+    monkeypatch.setattr(lite_status, "merged_fleet_nodes", lambda: [])
+
+    assert lite_status.lite_runtime_contract()["state"] == "repairing"
+    direct_fleet = lite_status.lite_fleet()
+    direct_server = next(item for item in direct_fleet["devices"] if item["role"] == "server_host")
+    assert (
+        direct_server["connection"],
+        (direct_server.get("runtime") or {}).get("state"),
+        (direct_server.get("convergence") or {}).get("state"),
+    ) == ("repairing", "repairing", "repairing"), direct_server
+
+    response = client().get("/api/lite/fleet")
+
+    assert response.status_code == 200
+    server = response.json()["devices"][0]
+    assert server["connection"] == "repairing"
+    assert server["runtime"]["state"] == "repairing"
+    assert server["remote_access_status"] == "unavailable"
+    assert server["tailnet_ip"] is None
+
+    status = client().get("/api/lite/status")
+    assert status.status_code == 200
+    status_payload = status.json()
+    assert status_payload["runtime"]["state"] == "repairing"
+    runtime_status = next(item for item in status_payload["services"] if item["name"] == "Runtime")
+    remote_status = next(item for item in status_payload["services"] if item["name"] == "Remote Access")
+    assert runtime_status["status"] == "degraded"
+    assert remote_status["status"] == "unavailable"
+
+    for path in ("/api/lite/recovery/summary", "/api/lite/recovery/details"):
+        recovery = client().get(path)
+        assert recovery.status_code == 200
+        runtime_recovery = recovery.json()["runtime_recovery"]
+        assert runtime_recovery["state"] == "repairing"
+        assert runtime_recovery["stable"] is False
+        assert runtime_recovery["summary"] == "Recovery in progress"
+        assert runtime_recovery["sanitized"] is True
+
+
 def test_lite_catalog_endpoint_registered():
     response = client().get("/api/lite/catalog")
     assert response.status_code == 200

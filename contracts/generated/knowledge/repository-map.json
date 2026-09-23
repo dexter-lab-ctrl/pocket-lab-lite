@@ -464,6 +464,7 @@
         "api:get:/api/lite/release",
         "api:get:/api/lite/remote-access/readiness",
         "api:get:/api/lite/revisions",
+        "api:get:/api/lite/runtime",
         "api:get:/api/lite/security",
         "api:get:/api/lite/security/apps",
         "api:get:/api/lite/security/apps/{app_id}",
@@ -963,6 +964,7 @@
         "reason:rollback_pointer_failed",
         "reason:rollback_unproved",
         "reason:run_not_found",
+        "reason:runtime_contract_unavailable",
         "reason:scanner_intelligence_hard_expired",
         "reason:security_load_unknown",
         "reason:security_scan_conflict",
@@ -1289,6 +1291,7 @@
         "reason:rollback_pointer_failed",
         "reason:rollback_unproved",
         "reason:run_not_found",
+        "reason:runtime_contract_unavailable",
         "reason:scanner_intelligence_hard_expired",
         "reason:security_load_unknown",
         "reason:security_scan_conflict",
@@ -3175,6 +3178,12 @@
     },
     {
       "entities": [
+        "test:tests/backend/test_lite_pm2_runtime_contract.py"
+      ],
+      "source": "tests/backend/test_lite_pm2_runtime_contract.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_lite_pm2_version_projection.py"
       ],
       "source": "tests/backend/test_lite_pm2_version_projection.py"
@@ -4116,6 +4125,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "af9b1f0efac275ebb373a174def2b2d8839b3fa6e423b217ef97ffee698c6777"
+    "source_fingerprint": "88b464765e46595bc330bc08b22e96b0c0566063be7144f0a247d8fb95dd59ab"
   }
 }

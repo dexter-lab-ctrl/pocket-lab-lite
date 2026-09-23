@@ -3070,6 +3070,27 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Get Lite Runtime Contract",
+      "domain": "runtime",
+      "id": "api:get:/api/lite/runtime",
+      "method": "GET",
+      "name": "GET /api/lite/runtime",
+      "operation_id": "get_lite_runtime_contract_api_lite_runtime_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/runtime",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Get Lite Security",
       "domain": "security",
       "frontend_clients": [
@@ -17060,6 +17081,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The sanitized PM2 Runtime Contract is not yet available for the Lite status projection.",
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:runtime_contract_unavailable",
+      "name": "runtime_contract_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime status is being checked."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Managed Trivy intelligence exceeded its bounded freshness policy and a bounded refresh did not restore a valid revision.",
       "domain": "security",
       "event_mapping": [],
@@ -19697,7 +19738,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4021",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4143",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1605"
       ],
       "stream": "incomplete",
@@ -19717,7 +19758,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3638",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3760",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1606"
       ],
       "stream": "incomplete",
@@ -19737,7 +19778,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3668",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3790",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1608"
       ],
       "stream": "incomplete",
@@ -19757,7 +19798,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3651",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3773",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1607"
       ],
       "stream": "incomplete",
@@ -19777,7 +19818,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4108",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4230",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1615"
       ],
       "stream": "incomplete",
@@ -19817,7 +19858,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3708",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3830",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1618"
       ],
       "stream": "incomplete",
@@ -19837,7 +19878,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3751",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3873",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1619"
       ],
       "stream": "incomplete",
@@ -19857,7 +19898,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3809",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3931",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1621"
       ],
       "stream": "incomplete",
@@ -19877,7 +19918,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3769",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3891",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1620"
       ],
       "stream": "incomplete",
@@ -19919,7 +19960,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3877",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3999",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1623"
       ],
       "stream": "incomplete",
@@ -19939,7 +19980,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3851",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3973",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1622"
       ],
       "stream": "incomplete",
@@ -19959,7 +20000,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4270",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4392",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1617"
       ],
       "stream": "incomplete",
@@ -19979,7 +20020,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4143",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4265",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1616"
       ],
       "stream": "incomplete",
@@ -26848,6 +26889,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_pm2_runtime_contract.py",
+      "name": "tests/backend/test_lite_pm2_runtime_contract.py",
+      "source_refs": [
+        "tests/backend/test_lite_pm2_runtime_contract.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_pm2_version_projection.py",
       "name": "tests/backend/test_lite_pm2_version_projection.py",
       "source_refs": [
@@ -31166,7 +31217,9 @@
         "subject:pocketlab.events.runbook.succeeded"
       ],
       "runtime": [
+        "api:get:/api/lite/runtime",
         "domain:runtime",
+        "reason:runtime_contract_unavailable",
         "runtime:agent-supervisor",
         "runtime:architecture-runtime-verification",
         "runtime:caddy-routing",
@@ -31366,6 +31419,7 @@
         "test:tests/backend/test_lite_photoprism_runtime_resilience.py",
         "test:tests/backend/test_lite_platform_release_inventory_isolation.py",
         "test:tests/backend/test_lite_pm2_idempotency.py",
+        "test:tests/backend/test_lite_pm2_runtime_contract.py",
         "test:tests/backend/test_lite_pm2_version_projection.py",
         "test:tests/backend/test_lite_policy_analysis_p2_3.py",
         "test:tests/backend/test_lite_policy_approvals_p3_1.py",
@@ -31774,6 +31828,7 @@
         "api:get:/api/lite/release",
         "api:get:/api/lite/remote-access/readiness",
         "api:get:/api/lite/revisions",
+        "api:get:/api/lite/runtime",
         "api:get:/api/lite/security",
         "api:get:/api/lite/security/apps",
         "api:get:/api/lite/security/apps/{app_id}",
@@ -32270,6 +32325,7 @@
         "reason:rollback_pointer_failed",
         "reason:rollback_unproved",
         "reason:run_not_found",
+        "reason:runtime_contract_unavailable",
         "reason:scanner_intelligence_hard_expired",
         "reason:security_load_unknown",
         "reason:security_scan_conflict",
@@ -32729,6 +32785,7 @@
         "test:tests/backend/test_lite_photoprism_runtime_resilience.py",
         "test:tests/backend/test_lite_platform_release_inventory_isolation.py",
         "test:tests/backend/test_lite_pm2_idempotency.py",
+        "test:tests/backend/test_lite_pm2_runtime_contract.py",
         "test:tests/backend/test_lite_pm2_version_projection.py",
         "test:tests/backend/test_lite_policy_analysis_p2_3.py",
         "test:tests/backend/test_lite_policy_approvals_p3_1.py",
@@ -33859,6 +33916,12 @@
         },
         {
           "source": "domain:home",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/runtime": [
+        {
+          "source": "domain:runtime",
           "type": "owns"
         }
       ],
@@ -37507,6 +37570,12 @@
       "reason:run_not_found": [
         {
           "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:runtime_contract_unavailable": [
+        {
+          "source": "domain:runtime",
           "type": "owns"
         }
       ],
@@ -41740,6 +41809,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:runtime_contract_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:scanner_intelligence_hard_expired",
           "type": "verified_by"
         },
@@ -42399,6 +42472,10 @@
         },
         {
           "source": "api:get:/api/lite/revisions",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/runtime",
           "type": "verified_by"
         },
         {
@@ -43601,6 +43678,12 @@
       "test:tests/backend/test_lite_photoprism_backup.py": [
         {
           "source": "component:photoprism",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_pm2_runtime_contract.py": [
+        {
+          "source": "reason:metadata_only",
           "type": "verified_by"
         }
       ],
@@ -46596,6 +46679,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:runtime_contract_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:scanner_intelligence_hard_expired",
           "type": "verified_by"
         },
@@ -47646,6 +47733,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:runtime_contract_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:scanner_intelligence_hard_expired",
           "type": "verified_by"
         },
@@ -48447,6 +48538,10 @@
         },
         {
           "source": "api:get:/api/lite/revisions",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/runtime",
           "type": "verified_by"
         },
         {
@@ -50813,6 +50908,16 @@
           "target": "table:projection_dirty_signals",
           "type": "reads"
         },
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/runtime": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -58852,6 +58957,16 @@
           "type": "owns"
         }
       ],
+      "domain:runtime": [
+        {
+          "target": "api:get:/api/lite/runtime",
+          "type": "owns"
+        },
+        {
+          "target": "reason:runtime_contract_unavailable",
+          "type": "owns"
+        }
+      ],
       "domain:security": [
         {
           "target": "limitation:security:accepted-1",
@@ -62688,6 +62803,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_pm2_runtime_contract.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -64155,6 +64274,20 @@
         },
         {
           "target": "test:tests/backend/test_lite_harness.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:runtime_contract_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
         },
         {
@@ -65682,7 +65815,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3751"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3873"
       ],
       "id": "rel:01d5bcfc59eaef09",
       "source": "component:lite-api",
@@ -69212,6 +69345,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:1c4dc85182c57e20",
+      "source": "api:get:/api/lite/runtime",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:1c5b27ae8d074f2d",
@@ -71065,6 +71207,15 @@
       "source": "component:device-state",
       "target": "table:device_current_state",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:2a3a46a1757f836e",
+      "source": "domain:runtime",
+      "target": "reason:runtime_contract_unavailable",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -73184,6 +73335,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:3a1de16b0c89e5b9",
+      "source": "reason:runtime_contract_unavailable",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:3a25c643c9e082bf",
@@ -74164,6 +74324,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:41621cbe2393e29d",
+      "source": "domain:runtime",
+      "target": "api:get:/api/lite/runtime",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:416785afcdbe5be8",
@@ -74386,6 +74555,15 @@
       "source": "domain:rules",
       "target": "reason:test_bypass_explicit",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:428ece9592e43558",
+      "source": "api:get:/api/lite/runtime",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -75240,7 +75418,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4108"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4230"
       ],
       "id": "rel:4961dd30cdec3c93",
       "source": "component:lite-api",
@@ -75474,7 +75652,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4021"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4143"
       ],
       "id": "rel:4ae2f2e7982d1c97",
       "source": "component:lite-api",
@@ -76805,6 +76983,15 @@
       "id": "rel:55bd88c5d5928790",
       "source": "reason:bootstrap_transport_rejected",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_pm2_runtime_contract.py"
+      ],
+      "id": "rel:55ce56b700bc760f",
+      "source": "reason:metadata_only",
+      "target": "test:tests/backend/test_lite_pm2_runtime_contract.py",
       "type": "verified_by"
     },
     {
@@ -79554,6 +79741,15 @@
       "source": "journey:release-update",
       "target": "component:post-switch-health",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:6bcf6c6fd9dbe3d5",
+      "source": "reason:runtime_contract_unavailable",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -84951,7 +85147,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3668"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3790"
       ],
       "id": "rel:9622c3144190ef74",
       "source": "component:lite-api",
@@ -85343,7 +85539,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3809"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3931"
       ],
       "id": "rel:99ba9e8682cf6f1f",
       "source": "component:lite-api",
@@ -87108,7 +87304,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4270"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4392"
       ],
       "id": "rel:a718626a5b5f2425",
       "source": "component:lite-api",
@@ -88324,7 +88520,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3708"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3830"
       ],
       "id": "rel:b0e17c2e06af2e29",
       "source": "component:lite-api",
@@ -88598,6 +88794,15 @@
       "source": "ui:liteidentity",
       "target": "api:post:/api/lite/identity/login",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:b3001d3918d7e225",
+      "source": "reason:runtime_contract_unavailable",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -89813,7 +90018,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3851"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3973"
       ],
       "id": "rel:bd798d574b62754a",
       "source": "component:lite-api",
@@ -90346,7 +90551,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3769"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3891"
       ],
       "id": "rel:c146c302df54058b",
       "source": "component:lite-api",
@@ -92240,7 +92445,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3638"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3760"
       ],
       "id": "rel:d0ac21c0cffa28c9",
       "source": "component:lite-api",
@@ -93146,7 +93351,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4143"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4265"
       ],
       "id": "rel:d7a4bd398a93f098",
       "source": "component:lite-api",
@@ -96907,7 +97112,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3651"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3773"
       ],
       "id": "rel:f38477f0420ebc7b",
       "source": "component:lite-api",
@@ -98201,7 +98406,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3877"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3999"
       ],
       "id": "rel:fe30f428c2df7938",
       "source": "component:lite-api",
@@ -98363,33 +98568,33 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "af9b1f0efac275ebb373a174def2b2d8839b3fa6e423b217ef97ffee698c6777",
+  "source_fingerprint": "88b464765e46595bc330bc08b22e96b0c0566063be7144f0a247d8fb95dd59ab",
   "statistics": {
-    "entity_count": 1282,
+    "entity_count": 1285,
     "entity_type_counts": {
       "adr": 6,
-      "api": 218,
+      "api": 219,
       "capability": 5,
       "component": 58,
       "domain": 48,
       "glossary": 16,
       "journey": 24,
       "limitation": 18,
-      "reason-code": 242,
+      "reason-code": 243,
       "release": 3,
       "requirement": 10,
       "runbook": 5,
       "runtime-topology": 9,
       "subject": 210,
       "table": 78,
-      "test": 238,
+      "test": 239,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3635,
-    "source_count": 275
+    "relation_count": 3643,
+    "source_count": 276
   }
 }

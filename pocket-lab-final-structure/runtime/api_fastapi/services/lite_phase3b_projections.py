@@ -1449,6 +1449,34 @@ def _status_snapshot_material(domain: str) -> dict[str, Any]:
     }
 
 
+def _runtime_status_material() -> dict[str, Any]:
+    """Track runtime recovery changes without hashing volatile observations."""
+    from . import lite_status
+
+    contract = lite_status.lite_runtime_contract()
+    services = []
+    for item in contract.get("services", []) if isinstance(contract.get("services"), list) else []:
+        if not isinstance(item, dict):
+            continue
+        services.append({
+            key: item.get(key)
+            for key in (
+                "process", "state", "stable", "version", "declared_version",
+                "restart_generation", "recent_restarts", "restart_budget_remaining",
+                "pm2_restart_budget_remaining", "memory_within_policy",
+                "desired_state_match", "pm2_policy_match", "health",
+                "dependencies", "reason_codes",
+            )
+        })
+    return {
+        "state": contract.get("state"),
+        "stable": bool(contract.get("stable")),
+        "reason_codes": contract.get("reason_codes") or [],
+        "legacy_lite_services_present": contract.get("legacy_lite_services_present") or [],
+        "services": sorted(services, key=lambda item: str(item.get("process") or "")),
+    }
+
+
 def status_source_revision() -> int:
     return semantic_revision(
         "system.status",
@@ -1466,6 +1494,7 @@ def status_source_revision() -> int:
             "storage": _status_snapshot_material("system.storage_pressure"),
             "sqlite": _status_snapshot_material("system.sqlite_health"),
             "activity": _status_snapshot_material("system.activity_current"),
+            "runtime": _runtime_status_material(),
         },
     )
 

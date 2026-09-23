@@ -85,17 +85,67 @@ main() {
   export POCKETLAB_RECONCILE_ONLY=1
 
   log INFO "Reconciling Pocket Lab Lite runtime mode=$MODE reason=$REASON"
-  if bash "$DASHBOARD" --lite --reconcile-only; then
-    local photoprism="$SCRIPT_DIR/install-photoprism-proot.sh"
-    local photoprism_env="$HOME/.pocket_lab/lite/apps/photoprism/config/photoprism.env"
-    local photoprism_manifest="$HOME/.pocket_lab/lite/apps/photoprism/config/install-manifest.json"
-    if [[ -s "$photoprism_env" || -s "$photoprism_manifest" ]]; then
-      log INFO "Installed PhotoPrism state detected; reconciling runtime without install/update work"
-      bash "$photoprism" reconcile || {
-        write_evidence "degraded"
-        die "PhotoPrism runtime did not converge"
-      }
+  local photoprism="$SCRIPT_DIR/install-photoprism-proot.sh"
+  local photoprism_env="$HOME/.pocket_lab/lite/apps/photoprism/config/photoprism.env"
+  local photoprism_manifest="$HOME/.pocket_lab/lite/apps/photoprism/config/install-manifest.json"
+
+  # Caddy recovery is scoped to the proxy. A full dashboard convergence here
+  # can re-enter through optional application route refresh while PM2 is still
+  # draining the stopped proxy definition.
+  if [[ "$REASON" == *caddy-proxy* ]]; then
+    if bash "$DASHBOARD" --lite --caddy-only; then
+      write_evidence "converged"
+      log INFO "Pocket Lab Lite Caddy runtime converged"
+      return 0
     fi
+    write_evidence "degraded"
+    die "Pocket Lab Lite Caddy runtime did not converge"
+  fi
+
+  # PhotoPrism repair is intentionally scoped.  A full dashboard convergence
+  # while only the optional app is missing can queue unrelated PM2 launches on
+  # PM2 7/Termux and remap a process definition.  The PhotoPrism reconciler
+  # owns its PM2 definition and performs the required Caddy refresh itself.
+  if [[ "$REASON" == *photoprism* && ( -s "$photoprism_env" || -s "$photoprism_manifest" ) ]]; then
+    log INFO "Reconciling PhotoPrism runtime without full dashboard convergence"
+    if bash "$photoprism" reconcile; then
+      write_evidence "converged"
+      log INFO "Pocket Lab Lite PhotoPrism runtime converged"
+      return 0
+    fi
+    write_evidence "degraded"
+    die "Pocket Lab Lite PhotoPrism runtime did not converge"
+  fi
+
+  if [[ "$REASON" == *pocket-node-agent* ]]; then
+    log INFO "Reconciling the node-agent runtime without unrelated service convergence"
+    if bash "$DASHBOARD" --lite --node-agent-only; then
+      write_evidence "converged"
+      log INFO "Pocket Lab Lite node-agent runtime converged"
+      return 0
+    fi
+    write_evidence "degraded"
+    die "Pocket Lab Lite node-agent runtime did not converge"
+  fi
+
+  if [[ "$REASON" == *runtime_reconciler* || "$REASON" == *pocketlab-runtime-reconciler* ]]; then
+    log INFO "Reconciling the runtime reconciler without unrelated service convergence"
+    if bash "$DASHBOARD" --lite --runtime-reconciler-only; then
+      write_evidence "converged"
+      log INFO "Pocket Lab Lite runtime reconciler converged"
+      return 0
+    fi
+    write_evidence "degraded"
+    die "Pocket Lab Lite runtime reconciler did not converge"
+  fi
+
+  if bash "$DASHBOARD" --lite --reconcile-only; then
+    # The full dashboard reconciliation already converges installed
+    # PhotoPrism before the Lite supervisors are started. Running the same
+    # application reconcile again here can refresh Caddy a second time during
+    # PM2 daemon recovery, consuming a restart-budget slot without improving
+    # the desired state. Keep the dedicated PhotoPrism fault path above for
+    # scoped recovery while treating the dashboard pass as authoritative here.
     pm2 save >/dev/null 2>&1 || true
     write_evidence "converged"
     log INFO "Pocket Lab Lite runtime converged"

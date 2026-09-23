@@ -60,6 +60,46 @@ def test_sanitize_redacts_sensitive_keys_and_urls():
     assert "user:pass" not in sanitized["nested"]["url"]
 
 
+def test_supervisor_restart_policy_overrides_are_bounded_and_fail_safely(tmp_path, monkeypatch):
+    supervisor_module = load_supervisor_module()
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path / "state"))
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS", "bad")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS", "999999999")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_CADDY_FAILURE_THRESHOLD", "999")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_RESTART_WINDOW_SECONDS", "1")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_MAX_RESTARTS_PER_WINDOW", "-7")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_MAX_RESTART_BACKOFF_SECONDS", "1")
+
+    supervisor = supervisor_module.LiteCoreSupervisor()
+
+    assert supervisor.interval == supervisor_module.DEFAULT_INTERVAL_SECONDS
+    assert supervisor.cooldown == supervisor_module.MAX_SUPERVISOR_COOLDOWN_SECONDS
+    assert supervisor.caddy_failure_threshold == 20
+    assert supervisor.restart_window_seconds == 300
+    assert supervisor.max_restarts_per_window == 1
+    assert supervisor.max_restart_backoff_seconds == supervisor.cooldown
+
+
+def test_supervisor_restart_policy_overrides_are_bounded_and_fail_safely(tmp_path, monkeypatch):
+    supervisor_module = load_supervisor_module()
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path / "state"))
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS", "bad")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS", "999999999")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_CADDY_FAILURE_THRESHOLD", "999")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_RESTART_WINDOW_SECONDS", "1")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_MAX_RESTARTS_PER_WINDOW", "-7")
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_MAX_RESTART_BACKOFF_SECONDS", "1")
+
+    supervisor = supervisor_module.LiteCoreSupervisor()
+
+    assert supervisor.interval == supervisor_module.DEFAULT_INTERVAL_SECONDS
+    assert supervisor.cooldown == supervisor_module.MAX_SUPERVISOR_COOLDOWN_SECONDS
+    assert supervisor.caddy_failure_threshold == 20
+    assert supervisor.restart_window_seconds == 300
+    assert supervisor.max_restarts_per_window == 1
+    assert supervisor.max_restart_backoff_seconds == supervisor.cooldown
+
+
 def test_status_summary_reports_api_nats_health():
     supervisor = load_supervisor_module()
 
@@ -199,6 +239,52 @@ def test_supervisor_does_not_restart_healthy_caddy_for_api_upstream_failure(monk
     assert "caddy_upstream_probe_degraded" in supervisor.events_file.read_text()
 
 
+def test_supervisor_defers_missing_caddy_definition_to_runtime_reconciler(monkeypatch, tmp_path):
+    _prepare_supervisor_runtime(tmp_path, monkeypatch)
+    supervisor_module = load_supervisor_module()
+    supervisor = supervisor_module.LiteCoreSupervisor()
+    observed = _healthy_observed(caddy_tcp=False, caddy_upstream=False)
+    observed["services"]["caddy-proxy"] = "missing"
+    monkeypatch.setattr(supervisor, "collect", lambda: observed)
+    monkeypatch.setattr(supervisor_module, "pm2_available", lambda: True)
+
+    def fail_restart(service, reason):
+        raise AssertionError(f"unexpected restart for {service}: {reason}")
+
+    monkeypatch.setattr(supervisor, "restart_pm2", fail_restart)
+    payload = supervisor.tick()
+
+    assert payload["actions"] == []
+    assert payload["supervisor_status"] == "degraded"
+    assert "caddy_definition_missing" in supervisor.events_file.read_text()
+    assert "runtime_reconciler_owns_missing_definition_repair" in supervisor.events_file.read_text()
+
+
+def test_supervisor_defers_missing_nats_definition_to_runtime_reconciler(monkeypatch, tmp_path):
+    _prepare_supervisor_runtime(tmp_path, monkeypatch)
+    supervisor_module = load_supervisor_module()
+    supervisor = supervisor_module.LiteCoreSupervisor()
+    observed = _healthy_observed()
+    observed["services"]["pocket-nats"] = "missing"
+    observed["checks"]["nats_tcp_reachable"] = False
+    observed["checks"]["api_nats_connected"] = False
+    observed["api_nats_connected"] = False
+    monkeypatch.setattr(supervisor, "collect", lambda: observed)
+    monkeypatch.setattr(supervisor_module, "pm2_available", lambda: True)
+
+    def fail_restart(service, reason):
+        raise AssertionError(f"unexpected restart for {service}: {reason}")
+
+    monkeypatch.setattr(supervisor, "restart_pm2", fail_restart)
+    payload = supervisor.tick()
+
+    assert payload["actions"] == []
+    assert payload["supervisor_status"] == "degraded"
+    events = supervisor.events_file.read_text()
+    assert "nats_definition_missing" in events
+    assert "runtime_reconciler_owns_missing_definition_repair" in events
+
+
 def test_supervisor_requires_consecutive_caddy_tcp_failures(monkeypatch, tmp_path):
     _prepare_supervisor_runtime(tmp_path, monkeypatch)
     supervisor_module = load_supervisor_module()
@@ -266,3 +352,28 @@ def test_core_supervisor_source_never_updates_env_on_pm2_restart():
     ).read_text(encoding="utf-8")
     restart = source[source.index("    def restart_pm2("):source.index("    def qualification_stop_pm2(", source.index("    def restart_pm2("))]
     assert '"--update-env"' not in restart
+
+
+def test_core_supervisor_uses_shared_pm2_mutation_lock(monkeypatch, tmp_path):
+    supervisor_module = load_supervisor_module()
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path / "state"))
+    monkeypatch.setenv(
+        "POCKETLAB_START_DASHBOARD_LOCK",
+        str(tmp_path / "locks" / "start-dashboard.sh.lock"),
+    )
+    supervisor = supervisor_module.LiteCoreSupervisor()
+    calls = []
+
+    class Result:
+        returncode = 0
+
+    def fake_run_command(args, timeout=15.0, env=None):
+        calls.append(list(args))
+        return Result()
+
+    monkeypatch.setattr(supervisor_module, "run_command", fake_run_command)
+    event = supervisor.restart_pm2("pocket-node-agent", "qualification")
+
+    assert event["acted"] is True
+    assert calls == [["pm2", "restart", "pocket-node-agent"]]
+    assert not (tmp_path / "state" / "runtime" / "pm2-mutation.lock").exists()

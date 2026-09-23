@@ -18,6 +18,12 @@ case "$MODE" in
       exit 2
     }
     ;;
+  --pm2-contract-faults)
+    [[ "${POCKETLAB_RUNTIME_PM2_CONTRACT_FAULTS:-0}" == "1" ]] || {
+      echo "ERROR: --pm2-contract-faults requires POCKETLAB_RUNTIME_PM2_CONTRACT_FAULTS=1" >&2
+      exit 2
+    }
+    ;;
   --remote-access-fault)
     [[ "${POCKETLAB_ALLOW_REMOTE_ACCESS_FAULT:-0}" == "1" && "${POCKETLAB_SSH_OUT_OF_BAND:-0}" == "1" ]] || {
       echo "ERROR: remote-access fault requires POCKETLAB_ALLOW_REMOTE_ACCESS_FAULT=1 and POCKETLAB_SSH_OUT_OF_BAND=1" >&2
@@ -25,7 +31,7 @@ case "$MODE" in
     }
     ;;
   *)
-    echo "Usage: $0 [--read-only|--faults|--post-reboot|--remote-access-fault]" >&2
+    echo "Usage: $0 [--read-only|--faults|--pm2-contract-faults|--post-reboot|--remote-access-fault]" >&2
     exit 2
     ;;
 esac
@@ -185,6 +191,257 @@ if [[ "$topology_stable" -lt 2 ]]; then
 fi
 rm -f "$topology_check_file"
 
+runtime_contract="$HOME/pocket-lab-lite/state/runtime/pm2-runtime-contract.json"
+contract_budget_seconds="${POCKETLAB_PHONE_RUNTIME_CONTRACT_STABILIZATION_SECONDS:-600}"
+contract_started_at="$(date +%s)"
+contract_deadline=$((contract_started_at + contract_budget_seconds))
+contract_backoff=3
+contract_stable=0
+contract_error="runtime contract has not been written yet"
+while (( $(date +%s) <= contract_deadline )); do
+  if [[ -s "$runtime_contract" ]]; then
+    if contract_error="$(python3 - "$runtime_contract" <<'PY' 2>&1
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    data = json.load(handle)
+assert data.get("schema") == "pocketlab.pm2-runtime-contract/v1", data.get("schema")
+assert int(data.get("schema_version") or 0) == 1
+assert data.get("sanitized") is True
+assert data.get("legacy_lite_services_present") == []
+assert data.get("state") == "stable", data.get("state")
+assert data.get("stable") is True
+assert int(data.get("stable_observations") or 0) >= 2
+log_policy = data.get("log_policy") or {}
+assert log_policy.get("within_policy") is True
+services = [item for item in data.get("services") or [] if isinstance(item, dict)]
+required = [item for item in services if item.get("required") is True]
+assert required
+for item in required:
+    assert item.get("state") == "online", item
+    assert item.get("stable") is True, item
+    assert item.get("desired_state_match") is True, item
+    assert item.get("pm2_policy_match") is True, item
+    assert item.get("health") == "ready", item
+    assert int(item.get("restart_budget_remaining") or 0) > 0, item
+    assert item.get("memory_within_policy") is True, item
+print("PASS PM2 Runtime Contract reached stable convergence")
+print("PASS PM2 policy/version/health/dependency/restart-budget checks passed")
+print("PASS PM2 log usage is within the bounded retention policy")
+PY
+)"; then
+      contract_stable=1
+      printf '%s\n' "$contract_error"
+      break
+    fi
+  fi
+  now="$(date +%s)"
+  (( now >= contract_deadline )) && break
+  sleep "$contract_backoff"
+  (( contract_backoff < 20 )) && contract_backoff=$((contract_backoff + 3))
+done
+if [[ "$contract_stable" -ne 1 ]]; then
+  fail "PM2 Runtime Contract did not reach stable convergence within ${contract_budget_seconds}s: $contract_error"
+fi
+
+runtime_dir="$HOME/pocket-lab-lite/state/runtime"
+python3 - "$runtime_contract" "$runtime_dir" "$pm2_home/logs" <<'PY'
+from datetime import datetime, timezone
+import json
+import os
+from pathlib import Path
+import stat
+import sys
+import time
+
+contract_path, runtime_dir, raw_logs = map(Path, sys.argv[1:])
+contract = json.loads(contract_path.read_text(encoding="utf-8"))
+stable_path = runtime_dir / "stable-convergence.json"
+stable = json.loads(stable_path.read_text(encoding="utf-8"))
+log_path = runtime_dir / "pm2-log-policy.json"
+log_policy = json.loads(log_path.read_text(encoding="utf-8"))
+
+assert stable.get("schema_version") == 1
+assert stable.get("state") == "stable" and stable.get("stable") is True
+assert int(stable.get("stable_observations") or 0) >= 2
+assert int(stable.get("required_stable_observations") or 0) >= 2
+
+services = [item for item in contract.get("services") or [] if isinstance(item, dict)]
+by_name = {str(item.get("process") or ""): item for item in services}
+required = [item for item in services if item.get("required") is True]
+for item in required:
+    name = str(item.get("process") or "unknown")
+    assert item.get("state") == "online", (name, item.get("state"))
+    assert item.get("stable") is True, name
+    assert item.get("desired_state_match") is True, name
+    assert item.get("pm2_policy_match") is True, name
+    assert item.get("version") not in {None, "", "unavailable"}, name
+    assert item.get("version") == item.get("declared_version"), name
+    assert item.get("health") == "ready", name
+    assert int(item.get("restart_budget_remaining") or 0) > 0, name
+    assert int(item.get("pm2_restart_budget_remaining") or 0) > 0, name
+    assert item.get("memory_within_policy") is True, name
+    assert all(value == "ready" for value in (item.get("dependencies") or {}).values()), name
+assert required
+assert contract.get("legacy_lite_services_present") == []
+
+telemetry = by_name.get("pocket-telemetry")
+if telemetry is not None:
+    assert telemetry.get("state") == "online"
+    assert telemetry.get("desired_state_match") is True
+    assert telemetry.get("pm2_policy_match") is True
+    assert telemetry.get("version") == telemetry.get("declared_version")
+    assert telemetry.get("health") == "ready"
+    assert int(telemetry.get("restart_budget_remaining") or 0) > 0
+    assert int(telemetry.get("pm2_restart_budget_remaining") or 0) > 0
+    assert telemetry.get("memory_within_policy") is True
+
+assert log_policy.get("schema_version") == 1
+assert log_policy.get("sanitized") is True
+assert log_policy.get("contains_log_contents") is False
+assert log_policy.get("within_policy") is True
+aggregate_ceiling = int(log_policy.get("pm2_log_ceiling_bytes") or 0)
+file_ceiling = int(log_policy.get("pm2_log_file_ceiling_bytes") or 0)
+max_age = int(log_policy.get("pm2_log_max_age_seconds") or 0)
+cleanup_interval = int(log_policy.get("cleanup_interval_seconds") or 0)
+assert 8 * 1024 * 1024 <= aggregate_ceiling <= 512 * 1024 * 1024
+assert 1 * 1024 * 1024 <= file_ceiling <= 64 * 1024 * 1024
+assert 24 * 60 * 60 <= max_age <= 30 * 24 * 60 * 60
+assert 300 <= cleanup_interval <= 24 * 60 * 60
+assert int(log_policy.get("pm2_log_bytes") or 0) <= aggregate_ceiling
+
+logs = raw_logs.expanduser()
+if logs.exists():
+    assert not logs.is_symlink()
+    total_bytes = 0
+    file_count = 0
+    oldest_age = 0.0
+    largest_file = 0
+    now = time.time()
+    with os.scandir(logs) as entries:
+        for index, entry in enumerate(entries):
+            assert index < 8192, "PM2 log entry count exceeds the bounded qualification scan"
+            if entry.is_symlink():
+                continue
+            if not entry.is_file(follow_symlinks=False):
+                continue
+            metadata = entry.stat(follow_symlinks=False)
+            assert stat.S_ISREG(metadata.st_mode)
+            file_count += 1
+            total_bytes += metadata.st_size
+            largest_file = max(largest_file, metadata.st_size)
+            oldest_age = max(oldest_age, max(0.0, now - metadata.st_mtime))
+    assert total_bytes <= aggregate_ceiling, (total_bytes, aggregate_ceiling)
+    assert largest_file <= file_ceiling, (largest_file, file_ceiling)
+    assert oldest_age <= max_age + cleanup_interval, (oldest_age, max_age, cleanup_interval)
+    print(
+        "PASS PM2 log metadata current_bytes=%d files=%d max_file_bytes=%d oldest_age_seconds=%d "
+        "aggregate_ceiling=%d file_ceiling=%d max_age_seconds=%d cleanup_interval_seconds=%d"
+        % (total_bytes, file_count, largest_file, int(oldest_age), aggregate_ceiling,
+           file_ceiling, max_age, cleanup_interval)
+    )
+else:
+    assert int(log_policy.get("pm2_log_bytes") or 0) == 0
+    print("PASS PM2 log metadata confirms no log files")
+
+print(
+    "PASS stable convergence observations=%d required=%d required_services=%d"
+    % (stable["stable_observations"], stable["required_stable_observations"], len(required))
+)
+print("PASS required service versions, desired state, PM2 policy, health, dependencies, budgets, and memory policy")
+PY
+
+# Confirm the API projections consumed by Lite screens agree with the local
+# sanitized Runtime Contract while keeping remote access a separate signal.
+python3 - "$runtime_contract" <<'PY'
+import json
+import time
+import urllib.error
+import urllib.request
+from pathlib import Path
+import sys
+
+contract = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+base = "http://127.0.0.1:8080"
+paths = (
+    "/api/lite/runtime",
+    "/api/lite/status",
+    "/api/lite/fleet",
+    "/api/lite/recovery/summary",
+    "/api/lite/recovery/details",
+)
+payloads = {}
+for path in paths:
+    deadline = time.monotonic() + 120
+    last_status = 0
+    while True:
+        request = urllib.request.Request(base + path, headers={"Accept": "application/json"})
+        try:
+            with urllib.request.urlopen(request, timeout=8) as response:
+                last_status = int(response.status)
+                payload = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as error:
+            last_status = int(error.code)
+            if last_status != 503 or time.monotonic() >= deadline:
+                raise AssertionError(f"{path} returned HTTP {last_status}") from None
+            payload = None
+        if payload is not None:
+            break
+        if time.monotonic() >= deadline:
+            raise AssertionError(f"{path} stayed in warming state; last HTTP {last_status}")
+        time.sleep(1)
+    assert isinstance(payload, dict), path
+    payloads[path] = payload
+
+def scan(value, path="payload"):
+    if isinstance(value, dict):
+        for key, child in value.items():
+            normalized = str(key).lower().replace("-", "_")
+            assert normalized not in {"pm2_env", "raw_env", "process_environment", "environment"}, path + "." + str(key)
+            assert not normalized.endswith(("_password", "_token", "_api_key", "_secret", "_credentials")), path + "." + str(key)
+            scan(child, path + "." + str(key))
+    elif isinstance(value, list):
+        for index, child in enumerate(value[:4096]):
+            scan(child, f"{path}[{index}]")
+
+for path, payload in payloads.items():
+    scan(payload, path)
+
+runtime = payloads["/api/lite/runtime"]
+assert runtime.get("schema") == "pocketlab.pm2-runtime-contract/v1"
+assert runtime.get("schema_version") == 1 and runtime.get("sanitized") is True
+assert runtime.get("state") == contract.get("state") and runtime.get("stable") is True
+assert "PM2" not in str(runtime.get("summary") or "")
+print("PASS /api/lite/runtime schema and sanitized state")
+
+status = payloads["/api/lite/status"]
+status_services = status.get("services") if isinstance(status.get("services"), list) else []
+runtime_status = next((item for item in status_services if item.get("name") == "Runtime"), None)
+remote_status = next((item for item in status_services if item.get("name") == "Remote Access"), None)
+assert runtime_status is not None and runtime_status.get("status") == "healthy"
+assert remote_status is not None
+print("PASS /api/lite/status runtime readiness and separate remote-access status")
+
+fleet = payloads["/api/lite/fleet"]
+devices = fleet.get("devices") if isinstance(fleet.get("devices"), list) else []
+server = next((item for item in devices if item.get("role") == "server_host"), None)
+assert server is not None
+assert server.get("connection") == "online"
+server_runtime = server.get("runtime") if isinstance(server.get("runtime"), dict) else {}
+assert server_runtime.get("state") == contract.get("state")
+assert server_runtime.get("stable") is True
+assert server.get("remote_access_status") is not None
+print("PASS /api/lite/fleet protected-host runtime and independent remote-access projection")
+
+for path in ("/api/lite/recovery/summary", "/api/lite/recovery/details"):
+    recovery = payloads[path].get("runtime_recovery")
+    assert isinstance(recovery, dict) and recovery.get("sanitized") is True
+    assert recovery.get("state") == contract.get("state") and recovery.get("stable") is True
+    assert "PM2" not in str(recovery.get("summary") or "")
+    print(f"PASS {path} runtime recovery projection")
+PY
+
 ts_cmd=""
 if command -v tailscale-cli >/dev/null 2>&1; then
   ts_cmd=tailscale-cli
@@ -193,10 +450,28 @@ elif command -v tailscale >/dev/null 2>&1; then
 fi
 
 if [[ -n "$ts_cmd" ]]; then
-  if pgrep -f tailscaled >/dev/null 2>&1 && "$ts_cmd" ip -4 >/dev/null 2>&1; then
-    echo "PASS remote access ready"
-  elif pgrep -f tailscaled >/dev/null 2>&1; then
-    echo "INFO Remote access not ready; tailscaled is running and Lite remains local-ready"
+  if pgrep -f tailscaled >/dev/null 2>&1; then
+    ts_ip="$("$ts_cmd" ip -4 2>/dev/null | head -1 || true)"
+    if [[ -n "$ts_ip" ]]; then
+      nats_port="${POCKETLAB_LITE_NATS_PORT:-${POCKETLAB_PUBLIC_NATS_PORT:-4222}}"
+      python3 - "$ts_ip" "$nats_port" <<'PY' || fail "NATS is not reachable over the Server Phone Tailnet IPv4"
+import socket
+import sys
+
+try:
+    port = int(sys.argv[2])
+except ValueError as error:
+    raise SystemExit("configured NATS port is not an integer") from error
+if not 1 <= port <= 65535:
+    raise SystemExit("configured NATS port is outside the valid TCP range")
+with socket.create_connection((sys.argv[1], port), timeout=3.0):
+    pass
+print(f"PASS NATS reachable through Tailnet IPv4 on configured port {port}")
+PY
+      echo "PASS remote access ready"
+    else
+      echo "INFO Remote access not ready; tailscaled is running without a Tailnet IPv4"
+    fi
   else
     fail "Tailscale is installed but tailscaled is not running"
   fi
@@ -396,16 +671,157 @@ exit 1
 REMOTE
 }
 
-fault_pm2_service() {
-  local service="$1"
-  echo "FAULT stopping $service"
-  ssh "$SSH_ALIAS" bash -s -- "$service" <<'REMOTE'
+wait_pm2_definition_absent() {
+  local service="$1" pm2_id="$2"
+  ssh "$SSH_ALIAS" bash -s -- "$service" "$pm2_id" <<'REMOTE'
 set -Eeuo pipefail
 service="$1"
-pm2 stop "$service" >/dev/null
+pm2_id="$2"
+absent_streak=0
+for _ in $(seq 1 30); do
+  json_file="$(mktemp "${TMPDIR:-$HOME/tmp}/pocketlab-pm2-absent.XXXXXX.json")"
+  if pm2 jlist >"$json_file" 2>/dev/null && python3 - "$json_file" "$service" "$pm2_id" <<'PY'
+import json
+import sys
+
+path, service, pm2_id = sys.argv[1:]
+items = json.loads(open(path, encoding="utf-8").read())
+for item in items if isinstance(items, list) else []:
+    env = item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}
+    value = item.get("pm_id", env.get("pm_id", item.get("id", env.get("id"))))
+    if str(item.get("name") or "") == service or str(value) == pm2_id:
+        raise SystemExit(1)
+raise SystemExit(0)
+PY
+  then
+    rm -f "$json_file"
+    absent_streak=$((absent_streak + 1))
+    if (( absent_streak >= 3 )); then
+      exit 0
+    fi
+  else
+    rm -f "$json_file"
+    absent_streak=0
+  fi
+  sleep 1
+done
+echo "ERROR: PM2 definition did not remain absent after deletion: $service (pm2_id=$pm2_id)" >&2
+exit 1
 REMOTE
+}
+
+fault_pm2_service() {
+  local service="$1"
+  local generation_before started_epoch pm2_id
+  generation_before="$(ssh "$SSH_ALIAS" python3 - "$service" <<'REMOTE'
+import json
+from pathlib import Path
+import sys
+
+service = sys.argv[1]
+path = Path.home() / "pocket-lab-lite/state/runtime/pm2-runtime-contract.json"
+data = json.loads(path.read_text(encoding="utf-8"))
+item = next((item for item in data.get("services", []) if item.get("process") == service), None)
+assert item is not None, f"runtime contract has no service {service}"
+print(int(item.get("restart_generation") or 0))
+REMOTE
+  )"
+  started_epoch="$(ssh "$SSH_ALIAS" 'date +%s')"
+  # PM2 7 on Termux can resolve a mutable process name to a queued sibling
+  # while another lifecycle event is draining. Resolve the current numeric
+  # PM2 identity first so this fault targets exactly the requested service.
+  pm2_id="$(ssh "$SSH_ALIAS" bash -s -- "$service" <<'REMOTE'
+set -Eeuo pipefail
+service="$1"
+json_file="$(mktemp "${TMPDIR:-$HOME/tmp}/pocketlab-pm2-fault.XXXXXX.json")"
+trap 'rm -f "$json_file"' EXIT
+if ! pm2 jlist >"$json_file" 2>/dev/null; then
+  echo "ERROR: pm2 jlist failed while resolving fault identity for $service" >&2
+  exit 1
+fi
+python3 - "$json_file" "$service" <<'PY'
+import json
+import sys
+
+path, service = sys.argv[1:]
+items = json.loads(open(path, encoding="utf-8").read())
+for item in items if isinstance(items, list) else []:
+    if str(item.get("name") or "") != service:
+        continue
+    env = item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}
+    value = item.get("pm_id", env.get("pm_id", item.get("id", env.get("id"))))
+    if isinstance(value, bool):
+        break
+    try:
+        value = int(value)
+    except (TypeError, ValueError):
+        break
+    if value >= 0:
+        print(value)
+        raise SystemExit(0)
+raise SystemExit(f"PM2 numeric identity unavailable for {service}")
+PY
+REMOTE
+  )"
+  [[ "$pm2_id" =~ ^[0-9]+$ ]] || fail "PM2 fault identity was not numeric for $service"
+  echo "FAULT deleting $service definition (pm2_id=$pm2_id restart_generation=$generation_before)"
+  ssh "$SSH_ALIAS" bash -s -- "$pm2_id" <<'REMOTE'
+set -Eeuo pipefail
+pm2_id="$1"
+pm2 delete "$pm2_id" >/dev/null
+REMOTE
+  wait_pm2_definition_absent "$service" "$pm2_id"
   wait_pm2_service "$service"
-  echo "PASS recovered $service"
+  ssh "$SSH_ALIAS" bash -s -- "$service" "$generation_before" "$started_epoch" <<'REMOTE'
+set -Eeuo pipefail
+service="$1"
+generation_before="$2"
+started_epoch="$3"
+budget="${POCKETLAB_PHONE_RUNTIME_CONTRACT_STABILIZATION_SECONDS:-900}"
+deadline=$(( $(date +%s) + budget ))
+last="runtime contract has not reached stable convergence after recovery"
+while (( $(date +%s) <= deadline )); do
+  if last="$(python3 - "$service" "$generation_before" "$HOME/pocket-lab-lite/state/runtime" <<'PY' 2>&1
+import json
+from pathlib import Path
+import sys
+
+service, generation_before = sys.argv[1], int(sys.argv[2])
+runtime_dir = Path(sys.argv[3])
+contract = json.loads((runtime_dir / "pm2-runtime-contract.json").read_text(encoding="utf-8"))
+stable = json.loads((runtime_dir / "stable-convergence.json").read_text(encoding="utf-8"))
+assert contract.get("state") == "stable" and contract.get("stable") is True
+assert int(contract.get("stable_observations") or 0) >= int(contract.get("required_stable_observations") or 2) >= 2
+item = next((item for item in contract.get("services", []) if item.get("process") == service), None)
+assert item is not None, f"runtime contract has no service {service}"
+generation_after = int(item.get("restart_generation") or 0)
+assert generation_after > generation_before, (generation_before, generation_after)
+assert item.get("state") == "online" and item.get("stable") is True
+assert item.get("desired_state_match") is True and item.get("pm2_policy_match") is True
+assert item.get("health") == "ready"
+assert int(item.get("restart_budget_remaining") or 0) > 0
+assert int(item.get("pm2_restart_budget_remaining") or 0) > 0
+assert item.get("memory_within_policy") is True
+assert all(value == "ready" for value in (item.get("dependencies") or {}).values())
+print(json.dumps({
+    "generation_after": generation_after,
+    "restart_budget_remaining": item.get("restart_budget_remaining"),
+    "pm2_restart_budget_remaining": item.get("pm2_restart_budget_remaining"),
+    "stable_observations": stable.get("stable_observations"),
+    "required_stable_observations": stable.get("required_stable_observations"),
+}, sort_keys=True, separators=(",", ":")))
+PY
+)"; then
+    elapsed=$(( $(date +%s) - started_epoch ))
+    printf 'PASS recovered service=%s elapsed_seconds=%s generation_before=%s evidence=%s\n' \
+      "$service" "$elapsed" "$generation_before" "$last"
+    exit 0
+  fi
+  sleep 5
+done
+echo "ERROR: Runtime Contract did not confirm stable recovery for $service within ${budget}s: $last" >&2
+exit 1
+REMOTE
 }
 
 wait_pm2_daemon_without_starting_it() {
@@ -425,6 +841,94 @@ exit 1
 REMOTE
 }
 
+runtime_required_generation_csv() {
+  ssh "$SSH_ALIAS" python3 - <<'REMOTE'
+import json
+from pathlib import Path
+
+names = (
+    "pocket-nats", "pocket-opa", "pocket-worker", "pocket-api",
+    "pocket-node-agent", "caddy-proxy", "pocketlab-core-supervisor",
+    "pocketlab-runtime-reconciler",
+)
+path = Path.home() / "pocket-lab-lite/state/runtime/pm2-runtime-contract.json"
+data = json.loads(path.read_text(encoding="utf-8"))
+services = {item.get("process"): item for item in data.get("services", []) if isinstance(item, dict)}
+if any(name not in services for name in names):
+    raise SystemExit("runtime contract omits a required service generation")
+print(",".join(str(int(services[name].get("restart_generation") or 0)) for name in names))
+REMOTE
+}
+
+wait_runtime_convergence_after_daemon_recovery() {
+  local generation_before="$1" started_epoch="$2"
+  ssh "$SSH_ALIAS" bash -s -- "$generation_before" "$started_epoch" <<'REMOTE'
+set -Eeuo pipefail
+generation_before="$1"
+started_epoch="$2"
+budget="${POCKETLAB_PHONE_RUNTIME_CONTRACT_STABILIZATION_SECONDS:-900}"
+deadline=$(( $(date +%s) + budget ))
+last="runtime contract has not reached stable convergence after PM2 daemon recovery"
+while (( $(date +%s) <= deadline )); do
+  if last="$(python3 - "$generation_before" "$HOME/pocket-lab-lite/state/runtime" <<'PY' 2>&1
+import json
+from pathlib import Path
+import sys
+
+names = (
+    "pocket-nats", "pocket-opa", "pocket-worker", "pocket-api",
+    "pocket-node-agent", "caddy-proxy", "pocketlab-core-supervisor",
+    "pocketlab-runtime-reconciler",
+)
+baseline = [int(value) for value in sys.argv[1].split(",")]
+assert len(baseline) == len(names)
+runtime_dir = Path(sys.argv[2])
+contract = json.loads((runtime_dir / "pm2-runtime-contract.json").read_text(encoding="utf-8"))
+stable = json.loads((runtime_dir / "stable-convergence.json").read_text(encoding="utf-8"))
+assert contract.get("state") == "stable" and contract.get("stable") is True
+assert int(stable.get("stable_observations") or 0) >= int(stable.get("required_stable_observations") or 2) >= 2
+services = {item.get("process"): item for item in contract.get("services", []) if isinstance(item, dict)}
+after = []
+advanced = []
+unchanged = []
+for name, previous_generation in zip(names, baseline):
+    item = services.get(name)
+    assert item is not None, f"runtime contract omits {name}"
+    generation = int(item.get("restart_generation") or 0)
+    # PM2 daemon resurrection does not necessarily restart every child.  A
+    # child that stayed alive must retain its Pocket Lab generation; a child
+    # that was restarted may advance it.  The important invariant here is
+    # that daemon recovery never rolls restart history backward or erases it.
+    assert generation >= previous_generation, (name, previous_generation, generation)
+    assert item.get("state") == "online" and item.get("stable") is True
+    assert item.get("desired_state_match") is True and item.get("pm2_policy_match") is True
+    assert item.get("health") == "ready"
+    assert int(item.get("restart_budget_remaining") or 0) > 0
+    assert int(item.get("pm2_restart_budget_remaining") or 0) > 0
+    after.append(generation)
+    (advanced if generation > previous_generation else unchanged).append(name)
+print(json.dumps({
+    "services": len(names),
+    "generations_before": baseline,
+    "generations_after": after,
+    "generation_advances": advanced,
+    "generation_unchanged": unchanged,
+    "stable_observations": stable.get("stable_observations"),
+    "required_stable_observations": stable.get("required_stable_observations"),
+}, sort_keys=True, separators=(",", ":")))
+PY
+)"; then
+    elapsed=$(( $(date +%s) - started_epoch ))
+    printf 'PASS PM2 daemon recovery elapsed_seconds=%s evidence=%s\n' "$elapsed" "$last"
+    exit 0
+  fi
+  sleep 5
+done
+echo "ERROR: Runtime Contract did not confirm stable PM2 daemon recovery within ${budget}s: $last" >&2
+exit 1
+REMOTE
+}
+
 run_faults() {
   remote_read_only --read-only
 
@@ -436,10 +940,14 @@ run_faults() {
     fault_pm2_service pocketlab-app-photoprism
   fi
 
-  echo "FAULT killing PM2 daemon; the external guardian must resurrect saved state"
+  local daemon_generations daemon_started_epoch
+  daemon_generations="$(runtime_required_generation_csv)"
+  daemon_started_epoch="$(ssh "$SSH_ALIAS" 'date +%s')"
+  echo "FAULT killing PM2 daemon; the external guardian must resurrect saved state (generations=$daemon_generations)"
   ssh "$SSH_ALIAS" "pm2 kill >/dev/null 2>&1 || true"
   wait_pm2_daemon_without_starting_it
   wait_pm2_service pocketlab-runtime-reconciler
+  wait_runtime_convergence_after_daemon_recovery "$daemon_generations" "$daemon_started_epoch"
   echo "PASS PM2 daemon and desired-state reconciler recovered"
 
   if remote_read_only --read-only advisory; then
@@ -447,6 +955,174 @@ run_faults() {
   else
     return 1
   fi
+}
+
+run_pm2_contract_faults() {
+  remote_read_only --read-only
+
+  echo "FAULT qualifying bounded PM2 crash-loop, graceful-stop, and memory-ceiling behavior with disposable canaries"
+  ssh "$SSH_ALIAS" bash -s -- "${POCKETLAB_RUNTIME_MEMORY_FAULTS:-0}" <<'REMOTE'
+set -Eeuo pipefail
+memory_faults="$1"
+tmp_root="${TMPDIR:-$HOME/tmp}/pocketlab-pm2-contract-qualification"
+mkdir -p "$tmp_root"
+chmod 700 "$tmp_root" 2>/dev/null || true
+crash_name="pocketlab-qualification-crash-loop"
+grace_name="pocketlab-qualification-graceful-stop"
+memory_name="pocketlab-qualification-memory-ceiling"
+
+cleanup() {
+  pm2 delete "$crash_name" "$grace_name" "$memory_name" >/dev/null 2>&1 || true
+  rm -rf "$tmp_root"
+}
+trap cleanup EXIT
+
+pm2 delete "$crash_name" "$grace_name" "$memory_name" >/dev/null 2>&1 || true
+
+write_pm2_ecosystem() {
+  local config="$1" script="$2" name="$3" policy_json="$4" env_name="${5:-}" env_value="${6:-}"
+  python3 - "$config" "$script" "$name" "$policy_json" "$env_name" "$env_value" "$(command -v python3)" <<'PY'
+import json
+from pathlib import Path
+import sys
+
+config, script, name, policy_json, env_name, env_value, interpreter = sys.argv[1:]
+app = {
+    "name": name,
+    "script": script,
+    "interpreter": interpreter,
+    "exec_mode": "fork",
+    **json.loads(policy_json),
+}
+if env_name:
+    app["env"] = {env_name: env_value}
+path = Path(config)
+path.write_text(json.dumps({"apps": [app]}, sort_keys=True), encoding="utf-8")
+path.chmod(0o600)
+PY
+}
+
+cat >"$tmp_root/crash.py" <<'PY'
+raise SystemExit(23)
+PY
+write_pm2_ecosystem "$tmp_root/crash.ecosystem.json" "$tmp_root/crash.py" "$crash_name" \
+  '{"autorestart":true,"min_uptime":"2s","max_restarts":3,"kill_timeout":2000,"restart_delay":250}'
+pm2 start "$tmp_root/crash.ecosystem.json" --only "$crash_name" >/dev/null
+crash_terminal=0
+for _ in $(seq 1 40); do
+  if pm2 jlist | NAME="$crash_name" python3 -c '
+import json, os, sys
+items=json.load(sys.stdin)
+for item in items:
+    if item.get("name") != os.environ["NAME"]:
+        continue
+    env=item.get("pm2_env") or {}
+    status=str(env.get("status") or "").lower()
+    restarts=int(env.get("unstable_restarts") or env.get("restart_time") or 0)
+    pid=env.get("pid") or item.get("pid")
+    configured_max=int(env.get("max_restarts") or 3)
+    # PM2 counts the initial launch separately from restart_time on Termux.
+    # A max_restarts=3 canary therefore reaches its terminal state at
+    # restart_time=2 after three total launch attempts.
+    restart_budget_exhausted = restarts >= max(1, configured_max - 1)
+    terminal_status = status in {"errored", "error", "stopped"}
+    # PM2 7 on Termux leaves a capped crash loop in `waiting restart` with no
+    # pid instead of translating it to `errored`; the restart budget is still
+    # enforced and the process is terminal for qualification purposes.
+    if (terminal_status or (status == "waiting restart" and not pid)) and restart_budget_exhausted:
+        raise SystemExit(0)
+raise SystemExit(1)
+'; then
+    crash_terminal=1
+    break
+  fi
+  sleep 1
+done
+[[ "$crash_terminal" -eq 1 ]] || {
+  echo "ERROR: disposable PM2 crash loop did not stop at its restart budget" >&2
+  exit 1
+}
+echo "PASS PM2 crash-loop canary reached a bounded terminal state"
+
+cat >"$tmp_root/graceful.py" <<'PY'
+import os
+from pathlib import Path
+import signal
+import time
+
+marker=Path(os.environ["GRACEFUL_MARKER"])
+def stop(signum, _frame):
+    marker.write_text(str(signum), encoding="utf-8")
+    raise SystemExit(0)
+signal.signal(signal.SIGTERM, stop)
+signal.signal(signal.SIGINT, stop)
+while True:
+    time.sleep(1)
+PY
+marker="$tmp_root/graceful.marker"
+write_pm2_ecosystem "$tmp_root/graceful.ecosystem.json" "$tmp_root/graceful.py" "$grace_name" \
+  '{"autorestart":false,"kill_timeout":3000}' GRACEFUL_MARKER "$marker"
+pm2 start "$tmp_root/graceful.ecosystem.json" --only "$grace_name" >/dev/null
+sleep 2
+pm2 sendSignal SIGTERM "$grace_name" >/dev/null
+for _ in $(seq 1 15); do
+  [[ -s "$marker" ]] && break
+  sleep 1
+done
+[[ -s "$marker" ]] || {
+  echo "ERROR: disposable graceful-stop canary did not handle SIGTERM" >&2
+  exit 1
+}
+echo "PASS graceful SIGTERM was handled before the kill-timeout deadline"
+
+if [[ "$memory_faults" == "1" ]]; then
+  cat >"$tmp_root/memory.py" <<'PY'
+import time
+payload = bytearray(48 * 1024 * 1024)
+while payload:
+    time.sleep(1)
+PY
+  write_pm2_ecosystem "$tmp_root/memory.ecosystem.json" "$tmp_root/memory.py" "$memory_name" \
+    '{"autorestart":true,"max_memory_restart":"32M","min_uptime":"2s","max_restarts":3,"kill_timeout":3000}'
+  pm2 start "$tmp_root/memory.ecosystem.json" --only "$memory_name" >/dev/null
+  memory_restarted=0
+  for _ in $(seq 1 100); do
+    if pm2 jlist | NAME="$memory_name" python3 -c '
+import json, os, sys
+items=json.load(sys.stdin)
+for item in items:
+    if item.get("name") == os.environ["NAME"]:
+        env=item.get("pm2_env") or {}
+        raise SystemExit(0 if int(env.get("restart_time") or 0) >= 1 else 1)
+raise SystemExit(1)
+'; then
+      memory_restarted=1
+      break
+    fi
+    sleep 1
+  done
+  [[ "$memory_restarted" -eq 1 ]] || {
+    echo "ERROR: bounded memory canary did not cross the configured PM2 memory ceiling" >&2
+    exit 1
+  }
+  echo "PASS PM2 memory ceiling restarted a bounded 48 MiB canary without an OOM test"
+else
+  echo "SKIP memory-ceiling canary; set POCKETLAB_RUNTIME_MEMORY_FAULTS=1 to enable the bounded 48 MiB scenario"
+fi
+
+pm2 delete "$crash_name" "$grace_name" "$memory_name" >/dev/null 2>&1 || true
+echo "PASS disposable PM2 policy canaries cleaned up"
+REMOTE
+
+  # Re-run the existing real service-class recovery checks for a Python agent,
+  # Caddy proxy, and NATS binary daemon. Existing runtime owners perform the
+  # recovery; the harness never starts these services itself.
+  fault_pm2_service pocket-node-agent
+  fault_pm2_service caddy-proxy
+  fault_pm2_service pocket-nats
+
+  remote_read_only --read-only
+  echo "PASS PM2 Runtime Contract fault qualification completed and stable recovery reconfirmed"
 }
 
 run_remote_access_fault() {
@@ -476,6 +1152,9 @@ case "$MODE" in
     ;;
   --faults)
     run_faults
+    ;;
+  --pm2-contract-faults)
+    run_pm2_contract_faults
     ;;
   --remote-access-fault)
     run_remote_access_fault

@@ -14,6 +14,11 @@ describe('Lite Home presentation model', () => {
     });
     expect(homeServicePresentation({ name: 'Worker Execution', status: 'degraded' }).label).toBe('Background operations');
     expect(homeServicePresentation({ name: 'Policy & Compliance', status: 'healthy' }).label).toBe('Protection rules');
+    expect(homeServicePresentation({ name: 'Runtime', status: 'healthy' })).toMatchObject({
+      label: 'System recovery',
+      statusLabel: 'Ready',
+      summary: 'System running normally.',
+    });
   });
 
   it('uses saved state truthfully without enabling browser authority', () => {
