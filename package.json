@@ -42,11 +42,13 @@
     "test:parity:selectors": "vitest run src/lib/liteRecoveryParity.test.js",
     "test:e2e:parity": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-parity.spec.ts --project=mocked-desktop --project=mocked-mobile",
     "test:phase9:qualification": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-phase9-qualification.spec.ts --project=mocked-desktop --project=mocked-mobile",
-    "test:perf:components": "vitest run src/performance/litePerformanceBudget.test.js",
+    "test:perf:components": "vitest run src/performance/*.test.js",
     "check:render-budgets": "node scripts/dev/lite/check-ui-performance-evidence.mjs",
     "test:perf:mocked": "rm -rf .pocketlab-dev/performance && VITE_POCKETLAB_PERF_TEST=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-performance.spec.ts --project=mocked-desktop --project=mocked-mobile && npm run check:render-budgets",
     "test:perf:live": "rm -rf .pocketlab-dev/performance && VITE_POCKETLAB_PERF_TEST=1 LITE_E2E_MODE=live LITE_E2E_LIVE=1 playwright test tests/e2e/lite-performance-live.spec.ts --project=live-desktop --project=live-mobile && npm run check:render-budgets",
-    "test:perf": "npm run test:perf:components && npm run test:perf:mocked"
+    "test:perf": "npm run test:perf:components && npm run test:perf:mocked",
+    "test:perf:android-cdp": "rm -rf .pocketlab-dev/performance && node scripts/dev/lite/qualify-ui-performance-android-cdp.mjs && npm run check:render-budgets",
+    "test:perf:qualification": "npm run test:perf:components && npm run build:budget && npm run test:perf:mocked"
   },
   "keywords": [],
   "author": "",
