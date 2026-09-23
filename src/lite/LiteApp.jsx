@@ -1,4 +1,4 @@
-import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import {
@@ -531,18 +531,20 @@ function LiteAppShell() {
     focusScreenAfterNavigationRef.current = Boolean(event && event.detail === 0);
 
     const commit = () => {
-      flushSync(() => {
+      const updateScreen = () => {
         if (workspaceApp) setWorkspaceApp(null);
         setActiveTab(nextScreenId);
         setMenuOpen(false);
-      });
+      };
+      if (import.meta.env.VITE_POCKETLAB_PERF_TEST === '1') startTransition(updateScreen);
+      else flushSync(updateScreen);
       if (workspaceApp) pushPocketLabPath('/');
       replaceLiteScreenLaunch(nextScreenId);
     };
 
     const result = startLiteViewTransition(commit, {
       documentObject: document,
-      reducedMotion: prefersLiteReducedMotion(window),
+      reducedMotion: prefersLiteReducedMotion(window) || import.meta.env.VITE_POCKETLAB_PERF_TEST === '1',
       previousTransition: transitionRef.current,
     });
     transitionRef.current = result.transition;

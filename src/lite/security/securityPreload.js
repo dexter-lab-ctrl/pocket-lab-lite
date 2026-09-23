@@ -15,6 +15,7 @@ export const SECURITY_PREFETCH_GUARD_TEXT = 'online saveData effectiveType docum
 let lastSecuritySummaryPrefetchAt = 0;
 let securityDetailsPreloadPromise = null;
 let securityHistoryPreloadPromise = null;
+let securityFindingDetailsPreloadPromise = null;
 let securityManagePreloadPromise = null;
 
 function securityConnection() {
@@ -108,6 +109,13 @@ export function preloadSecurityHistory() {
     ]).catch(() => null);
   }
   return securityHistoryPreloadPromise;
+}
+
+export function preloadSecurityFindingDetails() {
+  if (!securityFindingDetailsPreloadPromise) {
+    securityFindingDetailsPreloadPromise = import('./SecurityFindingDetailsLazy.jsx').catch(() => null);
+  }
+  return securityFindingDetailsPreloadPromise;
 }
 
 export function preloadSecurityManageChunks() {

@@ -5,6 +5,7 @@ import {
   LITE_PERFORMANCE_PRIMITIVES,
   LITE_PERFORMANCE_SCREENS,
 } from './litePerformanceBudget.js';
+import { LITE_UI_PERFORMANCE_MATRIX } from './litePerformanceMatrix.js';
 
 function read(path) {
   return readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8');
@@ -60,6 +61,18 @@ describe('Pocket Lab Lite UI performance policy guards', () => {
     const spec = read('tests/e2e/lite-performance.spec.ts');
     for (const interaction of LITE_PERFORMANCE_INTERACTIONS) {
       expect(spec).toContain(`interactionId('${interaction}'`);
+    }
+  });
+
+  it('keeps the deep UI matrix on every Lite screen and inside the declared interaction registry', () => {
+    expect(new Set(LITE_UI_PERFORMANCE_MATRIX.map((item) => item.screen))).toEqual(new Set(LITE_PERFORMANCE_SCREENS));
+    expect(LITE_UI_PERFORMANCE_MATRIX.length).toBeGreaterThanOrEqual(LITE_PERFORMANCE_SCREENS.length);
+    for (const item of LITE_UI_PERFORMANCE_MATRIX) {
+      expect(item.nestedSurface).toBeTruthy();
+      expect(item.authorityRequired).toBeTruthy();
+      expect(item.safeExecutionMode).toBeTruthy();
+      expect(item.evidenceId).toMatch(/^[a-z0-9.-]+$/);
+      expect(LITE_PERFORMANCE_INTERACTIONS).toContain(item.interaction);
     }
   });
 

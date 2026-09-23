@@ -206,6 +206,16 @@ def resolve_auth_context(request: Request, *, write: bool = False) -> Dict[str, 
     # human, service-token, or test-bypass authentication.
     from .services import lite_harness
 
+    if request.headers.get(lite_harness.HARNESS_BROWSER_BRIDGE_HEADER, "").strip():
+        try:
+            return lite_harness.authenticate_browser_bridge(request)
+        except lite_harness.HarnessError as exc:
+            raise HTTPException(
+                status_code=exc.status_code,
+                headers={"Cache-Control": "no-store"},
+                detail={"reason_code": exc.reason_code, "message": exc.message, "sanitized": True},
+            ) from exc
+
     if lite_harness.harness_headers_present(request):
         try:
             return lite_harness.authenticate_request(request)

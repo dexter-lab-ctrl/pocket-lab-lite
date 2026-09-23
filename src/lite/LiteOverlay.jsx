@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { animated, useSpring } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
+import { isLitePerformanceMode } from './liteNavigationRuntime.js';
 
 let liteBodyScrollLockCount = 0;
 let liteBodyScrollLockSnapshot = null;
@@ -35,7 +36,7 @@ export function useBodyScrollLock(open = true) {
         overflow: body.style.overflow,
         overscrollBehavior: body.style.overscrollBehavior,
       };
-      body.style.overflow = 'hidden';
+      body.style.overflow = isLitePerformanceMode() ? 'clip' : 'hidden';
       body.style.overscrollBehavior = 'contain';
     }
     liteBodyScrollLockCount += 1;
@@ -91,11 +92,11 @@ export function useFocusReturn(open, closeRef) {
 }
 
 function useReducedMotionPreference() {
-  const reducedMotionRef = useRef(false);
+  const reducedMotionRef = useRef(isLitePerformanceMode());
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return undefined;
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => { reducedMotionRef.current = Boolean(query.matches); };
+    const update = () => { reducedMotionRef.current = isLitePerformanceMode() || Boolean(query.matches); };
     update();
     query.addEventListener?.('change', update);
     return () => query.removeEventListener?.('change', update);
@@ -240,9 +241,9 @@ export function LiteSheet({
   }));
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !safeMotionEnabled) return;
     api.start({ y: 0, scale: 1, opacity: 1, immediate: reducedMotionRef.current });
-  }, [api, open, reducedMotionRef]);
+  }, [api, open, reducedMotionRef, safeMotionEnabled]);
 
   const bindGripDrag = useDrag(
     ({ active, movement: [, my], velocity: [, vy], direction: [, dy], cancel }) => {
@@ -289,7 +290,7 @@ export function LiteSheet({
   if (!open) return null;
   return (
     <LiteOverlayRoot>
-      <div className={`theme-pocket-lite-daylight lite-overlay-root ${variantClasses.layer} ${layerClassName}`.trim()} role="presentation" data-lite-overlay-portal="true">
+      <div className={`theme-pocket-lite-daylight lite-overlay-root ${variantClasses.layer} ${layerClassName}`.trim()} role="presentation" data-lite-overlay-portal="true" data-lite-perf-mode={isLitePerformanceMode() ? 'true' : undefined}>
         <LiteBackdrop onClose={onClose} label={variantClasses.backdropLabel} className={variantClasses.backdrop} />
         <Surface
           ref={setSurfaceRef}

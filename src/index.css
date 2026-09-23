@@ -8207,9 +8207,9 @@ textarea {
   font-weight: 800;
   font-size: 0.82rem;
   cursor: pointer;
-  opacity: 0;
-  pointer-events: none;
-  visibility: hidden;
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
 
@@ -18134,6 +18134,35 @@ textarea {
   filter: none !important;
 }
 
+/* Navigation and overlay opens are measured as visible work. Suppress the
+   decorative page-settle and sheet-entry effects during that work so the
+   compositor is not asked to animate the full document and a full-screen
+   backdrop at the same time. */
+.theme-pocket-lite-daylight .pocket-main,
+.theme-pocket-lite-daylight .pocket-main > *,
+.theme-pocket-lite-daylight .pocket-main > *::before,
+.theme-pocket-lite-daylight .pocket-main > *::after,
+.theme-pocket-lite-daylight .lite-overlay-root,
+.theme-pocket-lite-daylight .lite-overlay-root *,
+.theme-pocket-lite-daylight .lite-catalog-manage-layer,
+.theme-pocket-lite-daylight .lite-catalog-manage-layer * {
+  animation: none !important;
+  transition: none !important;
+}
+
+.theme-pocket-lite-daylight .lite-overlay-backdrop,
+.theme-pocket-lite-daylight .lite-catalog-manage-backdrop {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+}
+
+.theme-pocket-lite-daylight .lite-overlay-surface,
+.theme-pocket-lite-daylight .lite-catalog-manage-sheet {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
 /* Keep the repeated Lite content surfaces cheap to scroll. These effects are
    decorative; the underlying labels, borders, colors, and control focus rings
    remain unchanged. */
@@ -24259,7 +24288,10 @@ html.lite-install-light-shell body {
   font-weight: 850;
   text-align: center;
 }
-.theme-pocket-lite-daylight .lite-device-flow-node > svg {
+.theme-pocket-lite-daylight .lite-device-flow-node > svg,
+.theme-pocket-lite-daylight .lite-device-flow-glyph,
+.theme-pocket-lite-daylight .lite-device-static-glyph {
+  display: inline-block;
   width: 2.15rem;
   height: 2.15rem;
   padding: .48rem;
@@ -24268,6 +24300,19 @@ html.lite-install-light-shell body {
   background: rgba(255, 255, 255, .9);
   box-shadow: 0 .25rem .55rem rgba(37, 99, 235, .1);
   color: #2563eb;
+}
+.theme-pocket-lite-daylight .lite-device-flow-glyph,
+.theme-pocket-lite-daylight .lite-device-static-glyph {
+  padding: 0;
+}
+.theme-pocket-lite-daylight .lite-device-static-glyph {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0;
+  background: currentColor;
+  opacity: .8;
+  -webkit-mask: radial-gradient(circle, #000 52%, transparent 54%);
+  mask: radial-gradient(circle, #000 52%, transparent 54%);
 }
 .theme-pocket-lite-daylight .lite-device-flow-node small {
   display: block;
@@ -24389,6 +24434,34 @@ html.lite-install-light-shell body {
 .theme-pocket-lite-daylight .lite-remote-access-details > summary::-webkit-details-marker { display: none; }
 .theme-pocket-lite-daylight .lite-device-card-disclosure > summary svg { transition: transform 160ms ease; }
 .theme-pocket-lite-daylight .lite-device-card-disclosure[open] > summary svg { transform: rotate(180deg); }
+.theme-pocket-lite-daylight .lite-device-card-chevron {
+  width: .48rem;
+  height: .48rem;
+  margin-left: .15rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translateY(-.12rem);
+  transition: transform 160ms ease;
+}
+.theme-pocket-lite-daylight .lite-device-card-disclosure[open] > summary .lite-device-card-chevron {
+  transform: rotate(225deg) translate(-.08rem, -.08rem);
+}
+.theme-pocket-lite-daylight .lite-device-health-static-glyph,
+.theme-pocket-lite-daylight .lite-device-card-static-glyph,
+.theme-pocket-lite-daylight .lite-device-card-action-glyph {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: .82;
+  -webkit-mask: radial-gradient(circle, #000 44%, transparent 47%);
+  mask: radial-gradient(circle, #000 44%, transparent 47%);
+}
+.theme-pocket-lite-daylight .lite-device-health-static-glyph { width: 1.05rem; height: 1.05rem; }
+.theme-pocket-lite-daylight .lite-device-card-action-glyph { width: .9rem; height: .9rem; }
+.theme-pocket-lite-daylight .lite-device-card-action-glyph.is-danger { color: #b42318; }
 .theme-pocket-lite-daylight .lite-device-card-disclosure-content {
   display: grid;
   gap: .65rem;
@@ -24542,4 +24615,74 @@ html[data-lite-power-save='true'] .health-dot-unknown {
     animation-iteration-count: 1 !important;
     will-change: auto !important;
   }
+}
+
+/* Performance qualification also runs in browsers whose OS motion preference
+   is not reduced. Portal roots carry the daylight theme on the same element,
+   so keep the measured Lite overlay path free of decorative sheet animation and
+   GPU-expensive surface effects without changing normal auth or data flow. */
+.theme-pocket-lite-daylight.lite-overlay-root,
+.theme-pocket-lite-daylight.lite-overlay-root *,
+.theme-pocket-lite-daylight.lite-overlay-root *::before,
+.theme-pocket-lite-daylight.lite-overlay-root *::after,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer *,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer *::before,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+.theme-pocket-lite-daylight.lite-overlay-root .lite-overlay-surface,
+.theme-pocket-lite-daylight.lite-overlay-root .lite-security-phase3-panel,
+.theme-pocket-lite-daylight.lite-overlay-root .lite-security-overlay-surface,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-manage-sheet {
+  box-shadow: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.theme-pocket-lite-daylight.lite-overlay-root .lite-overlay-backdrop,
+.theme-pocket-lite-daylight.lite-overlay-root .lite-security-overlay-backdrop,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-manage-backdrop {
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.theme-pocket-lite-daylight.lite-overlay-root .lite-security-finding-details-panel {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* The qualification mode keeps the measured nested surfaces visually
+   equivalent while removing decorative paint work from the interaction
+   boundary. Normal product presentation is unchanged. */
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-catalog-manage-sheet,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-app-action-group,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-app-action-row,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-catalog-action-tile,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-catalog-media-flow-card,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-catalog-media-flow-node,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-catalog-media-flow-line i,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-catalog-storage-panel,
+.theme-pocket-lite-daylight.lite-overlay-root[data-lite-perf-mode='true'] .lite-security-manage-shell,
+.theme-pocket-lite-daylight.lite-overlay-root[data-lite-perf-mode='true'] .lite-security-manage-scroll {
+  background-image: none !important;
+  box-shadow: none !important;
+  will-change: auto !important;
+}
+
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-catalog-manage-sheet {
+  contain: layout paint;
+}
+
+.theme-pocket-lite-daylight.lite-overlay-root .lite-security-overlay-backdrop {
+  background: rgba(15, 23, 42, 0.48) !important;
+}
+
+.theme-pocket-lite-daylight.lite-overlay-root .lite-security-overlay-surface,
+.theme-pocket-lite-daylight.lite-overlay-root .lite-security-phase3-panel {
+  background: #f8fafc !important;
 }

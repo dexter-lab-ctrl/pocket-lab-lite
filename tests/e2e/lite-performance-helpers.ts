@@ -35,6 +35,7 @@ type LiteRuntimePerformanceSummary = {
 export type LitePerformanceReport = ReturnType<typeof summarizeLiteFrames> & {
   schema_version: string;
   interaction: string;
+  performance_evidence_id: string | null;
   mode: 'mocked' | 'live';
   browser_project: string;
   source_commit: string;
@@ -185,7 +186,7 @@ export async function measureLiteInteraction(
   testInfo: TestInfo,
   interaction: string,
   action: () => Promise<void>,
-  { settleMs = 900, mode = 'mocked' as 'mocked' | 'live' } = {},
+  { settleMs = 900, mode = 'mocked' as 'mocked' | 'live', evidenceId = null } = {},
 ): Promise<LitePerformanceReport> {
   const name = sanitizeLitePerformanceName(interaction);
   const reactProfileAvailable = await page.evaluate(() => {
@@ -226,9 +227,10 @@ export async function measureLiteInteraction(
     warmupFrames: 3,
   });
 
-  return {
+  const report = {
     schema_version: LITE_PERFORMANCE_SCHEMA_VERSION,
     interaction: name,
+    performance_evidence_id: evidenceId ? sanitizeLitePerformanceName(evidenceId) : null,
     mode,
     browser_project: sanitizeLitePerformanceName(testInfo.project.name),
     source_commit: sourceCommit(),
@@ -241,11 +243,19 @@ export async function measureLiteInteraction(
     react_commit_gate_passed: reactCommitGatePassed,
     ...summary,
   };
+  // Persist the sample before the caller asserts the gate so target misses and
+  // hard-gate violations remain inspectable evidence instead of disappearing
+  // with a failed test.
+  await writeLitePerformanceEvidence(testInfo, report);
+  return report;
 }
 
 export function expectLitePerformanceBudget(report: LitePerformanceReport) {
   expect(report.frame_count, 'sample should contain enough rendered frames').toBeGreaterThanOrEqual(20);
-  expect(report.gate_passed, `render budget violations: ${report.gate_violations.join(', ')}`).toBe(true);
+  expect(
+    report.gate_passed,
+    `render budget violations: ${report.gate_violations.join(', ')}; p95=${report.p95_frame_ms}ms; max=${report.max_frame_interval_ms}ms; gate_smooth=${report.gate_smooth_frame_ratio}; long_task=${report.max_long_task_ms}ms; loaf=${report.max_long_animation_frame_ms}ms`,
+  ).toBe(true);
   expect(report.gate_smooth_frame_ratio).toBeGreaterThanOrEqual(LITE_UI_PERFORMANCE_BUDGET.gate.minSmoothFrameRatio);
   if (report.mode === 'mocked') {
     expect(report.react_profile_available, 'mocked performance qualification must include React Profiler evidence').toBe(true);

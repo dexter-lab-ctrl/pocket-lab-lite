@@ -126,7 +126,12 @@ def _ssh_config() -> dict[str, str]:
         "stricthostkeychecking": "yes",
         "identitiesonly": "yes",
     }
-    if any(config.get(k, "").casefold() != v for k, v in required.items()):
+    strict_host_key = config.get("stricthostkeychecking", "").casefold()
+    if any(
+        config.get(key, "").casefold() != value
+        for key, value in required.items()
+        if key != "stricthostkeychecking"
+    ) or strict_host_key not in {"yes", "true"}:
         raise RuntimeTunnelError("runtime_ssh_alias_policy_unsafe")
     known_hosts = config.get("userknownhostsfile", "")
     if not known_hosts or known_hosts.casefold() in {"/dev/null", "none"}:

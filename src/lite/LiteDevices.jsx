@@ -86,12 +86,23 @@ import {
   restartStepStateLabel,
   safeRestartSteps
 } from './LiteUi.jsx';
-import DeviceCard from './devices/DeviceCard.jsx';
 import DeviceActionPortal from './devices/DeviceActionPortal.jsx';
 import LiteVirtualList from './components/LiteVirtualList.jsx';
 import { useLiteDeviceDetailsState, useLiteUiStore } from '../stores/liteUiStore.js';
 
 const MemoLiteVirtualList = React.memo(LiteVirtualList);
+const DeviceCardLazy = React.lazy(() => import('./devices/DeviceCard.jsx'));
+const MemoDeviceCard = React.memo((props) => (
+  <Suspense fallback={<div className="lite-device-card lite-device-card-loading" aria-busy="true" />}>
+    <DeviceCardLazy {...props} />
+  </Suspense>
+), (previous, next) => (
+  previous.device === next.device
+  && previous.restartBusy === next.restartBusy
+  && previous.removeBusy === next.removeBusy
+  && previous.detailsOpen === next.detailsOpen
+  && previous.savedStateOnly === next.savedStateOnly
+));
 
 const DeviceDetailsLazy = React.lazy(() => import('./devices/DeviceDetailsLazy.jsx'));
 const DeviceModelPickerLazy = React.lazy(() => import('./devices/DeviceModelPickerLazy.jsx'));
@@ -254,6 +265,7 @@ export function fleetOperationalStory({ data, devices = [], onlineDevices = 0, h
 export default function DevicesScreen() {
   const [hostname, setHostname] = useState('');
   const [selectedRole, setSelectedRole] = useState('compute');
+  const [addDeviceOpen, setAddDeviceOpen] = useState(false);
   const [result, setResult] = useState(null);
   const [invite, setInvite] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -585,7 +597,7 @@ export default function DevicesScreen() {
   const renderDeviceItem = useCallback((device) => {
     const key = String(device.id || device.name);
     return (
-      <DeviceCard
+      <MemoDeviceCard
         device={device}
         restartBusy={restartBusy}
         removeBusy={removeBusy}
@@ -634,13 +646,13 @@ export default function DevicesScreen() {
       </section>
 
       <div className="lite-devices-layout">
-        <details className="lite-devices-add-disclosure">
+        <details className="lite-devices-add-disclosure" onToggle={(event) => setAddDeviceOpen(event.currentTarget.open)}>
           <summary>
             <span>Expand your workspace</span>
             <strong>Add a device</strong>
             <small>Create a protected invite only when you need one.</small>
           </summary>
-          <GlassCard className="lite-devices-add-card">
+          {addDeviceOpen ? <GlassCard className="lite-devices-add-card">
           <div className="lite-devices-card-head">
             <div className="lite-devices-mini-icon">
               <Network className="h-5 w-5" />
@@ -787,7 +799,7 @@ export default function DevicesScreen() {
               )}
             </div>
           ) : null}
-          </GlassCard>
+          </GlassCard> : null}
         </details>
 
         <section className="lite-devices-list-area" aria-busy={loading ? 'true' : 'false'}>

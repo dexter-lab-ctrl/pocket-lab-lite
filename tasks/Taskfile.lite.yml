@@ -140,6 +140,18 @@ tasks:
         --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}"
         --bootstrap-profile security-assurance-runner
 
+  lite:qualification:start:key-bound:ui-performance:
+    desc: Explicitly start qualification with the operator-approved synthetic qualification-owner UI-performance bootstrap; destructive authority remains off
+    requires:
+      vars: [PRINCIPAL_ID, PUBLIC_KEY_FILE]
+    cmds:
+      - >-
+        POCKETLAB_QUALIFICATION_OWNER=1
+        python3 scripts/dev/lite/task_runtime.py shell -- scripts/dev/lite/start-qualification.sh
+        --bootstrap-principal-id "{{.PRINCIPAL_ID}}"
+        --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}"
+        --bootstrap-profile qualification-owner
+
   lite:qualification:start:key-bound:faults:
     desc: Explicitly start key-bound qualification with fixed non-destructive service-fault controls; Server Phone DEV state is scrubbed first
     requires:

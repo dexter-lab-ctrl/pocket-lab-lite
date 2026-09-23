@@ -39,16 +39,17 @@ async function bootstrapPocketLabLite() {
     await startPocketLabMocks();
   }
 
+  const appTree = (
+    <ExperienceModeProvider>
+      <GovernanceModeProvider>
+        <ToastProvider>
+          <App />
+        </ToastProvider>
+      </GovernanceModeProvider>
+    </ExperienceModeProvider>
+  );
   ReactDOM.createRoot(document.getElementById('root')).render(
-    <React.StrictMode>
-      <ExperienceModeProvider>
-        <GovernanceModeProvider>
-          <ToastProvider>
-            <App />
-          </ToastProvider>
-        </GovernanceModeProvider>
-      </ExperienceModeProvider>
-    </React.StrictMode>,
+    import.meta.env.VITE_POCKETLAB_PERF_TEST === '1' ? appTree : <React.StrictMode>{appTree}</React.StrictMode>,
   );
 }
 

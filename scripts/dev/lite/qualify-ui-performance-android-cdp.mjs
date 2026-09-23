@@ -8,9 +8,12 @@ import {
   sanitizeLitePerformanceName,
   summarizeLiteFrames,
 } from '../../../src/performance/litePerformanceBudget.js';
+import { LITE_UI_PERFORMANCE_MATRIX } from '../../../src/performance/litePerformanceMatrix.js';
 
 const cdpUrl = String(process.env.LITE_ANDROID_CDP_URL || '').trim();
 const baseUrl = String(process.env.LITE_BASE_URL || '').trim();
+const browserBridge = String(process.env.POCKETLAB_HARNESS_BROWSER_BRIDGE || '').trim();
+const browserBridgeEnabled = process.env.LITE_QUALIFICATION_BROWSER_BRIDGE === '1';
 const outputDir = resolve('.pocketlab-dev/performance');
 const screens = ['home', 'catalog', 'devices', 'security', 'identity', 'rules', 'recovery'];
 const MINIMUM_FRAME_COUNT = 20;
@@ -18,6 +21,10 @@ const MINIMUM_FRAME_COUNT = 20;
 function fail(message) {
   console.error(`[ui-performance-android] ${message}`);
   process.exit(1);
+}
+
+if (browserBridgeEnabled !== Boolean(browserBridge)) {
+  fail('Synthetic Android browser qualification requires an explicit browser bridge and LITE_QUALIFICATION_BROWSER_BRIDGE=1.');
 }
 
 function sourceCommit() {
@@ -44,6 +51,16 @@ function validateEndpoint(value, label) {
   return parsed;
 }
 
+function matrixEvidence(screen, interaction, nestedSurface) {
+  const entry = LITE_UI_PERFORMANCE_MATRIX.find((item) => (
+    item.screen === screen
+    && item.interaction === interaction
+    && item.nestedSurface === nestedSurface
+  ));
+  if (!entry) fail(`No source-owned UI performance matrix entry for ${screen} / ${nestedSurface} / ${interaction}.`);
+  return entry.evidenceId;
+}
+
 validateEndpoint(cdpUrl, 'LITE_ANDROID_CDP_URL');
 const base = validateEndpoint(baseUrl, 'LITE_BASE_URL');
 
@@ -54,6 +71,11 @@ const browser = await chromium.connectOverCDP(cdpUrl);
 const contexts = browser.contexts();
 if (!contexts.length) fail('Android Chrome did not expose a browser context over CDP.');
 const context = contexts[0];
+if (browserBridge) {
+  await context.setExtraHTTPHeaders({
+    'X-Pocket-Lab-Qualification-Bridge': browserBridge,
+  });
+}
 const page = await context.newPage();
 
 await page.addInitScript(() => {
@@ -176,6 +198,7 @@ async function measurePhase4Interaction({
   scope,
   surface,
   action,
+  evidenceId = null,
   settleMs = 180,
 }) {
   if (!LITE_PERFORMANCE_INTERACTIONS.includes(interaction)) {
@@ -206,6 +229,7 @@ async function measurePhase4Interaction({
   const report = {
     schema_version: LITE_PERFORMANCE_SCHEMA_VERSION,
     interaction: evidenceInteraction,
+    performance_evidence_id: evidenceId ? sanitizeLitePerformanceName(evidenceId) : null,
     phase4_interaction: interaction,
     interaction_scope: scope,
     interaction_surface: surface,
@@ -235,6 +259,25 @@ async function measurePhase4Interaction({
   if (!report.target_met) targetMisses += 1;
 
   return report;
+}
+
+async function measureNestedInteraction({
+  screen,
+  nestedSurface,
+  interaction,
+  scope,
+  surface,
+  action,
+  settleMs = 440,
+}) {
+  return measurePhase4Interaction({
+    interaction,
+    scope,
+    surface,
+    action,
+    settleMs,
+    evidenceId: matrixEvidence(screen, interaction, nestedSurface),
+  });
 }
 
 // Phase 4: screen-steady on all seven Lite screens.
@@ -281,6 +324,29 @@ await measurePhase4Interaction({
   },
   settleMs: 420,
 });
+const workspaceDialog = await firstVisible(page.getByRole('dialog', { name: /Workspace details/i }), 'Home Workspace details dialog');
+const workspaceTechnicalDetails = workspaceDialog.locator('details').filter({ hasText: 'Technical details' }).first();
+await measureNestedInteraction({
+  screen: 'home',
+  nestedSurface: 'Workspace details / Technical details',
+  interaction: 'nested-detail-open',
+  scope: 'home-workspace-technical-details',
+  surface: 'Home Workspace details / Technical details',
+  action: async () => {
+    await workspaceTechnicalDetails.locator('summary').click();
+    await workspaceTechnicalDetails.waitFor({ state: 'visible' });
+  },
+});
+await measureNestedInteraction({
+  screen: 'home',
+  nestedSurface: 'Workspace details / Technical details',
+  interaction: 'nested-detail-close',
+  scope: 'home-workspace-technical-details',
+  surface: 'Home Workspace details / Technical details',
+  action: async () => {
+    await workspaceTechnicalDetails.locator('summary').click();
+  },
+});
 await measurePhase4Interaction({
   interaction: 'manage-close',
   scope: 'home-workspace',
@@ -291,6 +357,95 @@ await measurePhase4Interaction({
     if (await page.locator('[role="dialog"]:visible').count()) fail('Home Workspace details did not close after Escape.');
   },
   settleMs: 320,
+});
+
+// Deep Apps coverage stays in the prepared PhotoPrism Manage projection. The
+// section switch and Details panel do not submit an app operation.
+await gotoScreen('catalog');
+const catalogManageButton = await firstVisible(page.getByRole('button', { name: /^Manage$/i }), 'Apps Manage button');
+await catalogManageButton.click();
+const catalogManage = await firstVisible(page.getByRole('dialog', { name: /Manage PhotoPrism/i }), 'PhotoPrism Manage dialog');
+const catalogRecoveryTab = catalogManage.getByRole('tab', { name: 'Recovery', exact: true });
+await measureNestedInteraction({
+  screen: 'catalog',
+  nestedSurface: 'PhotoPrism Manage / action sections',
+  interaction: 'section-switch',
+  scope: 'catalog-photoprism-manage',
+  surface: 'PhotoPrism Manage / action sections',
+  action: async () => {
+    await catalogRecoveryTab.click();
+    await catalogRecoveryTab.waitFor({ state: 'visible' });
+  },
+  settleMs: 480,
+});
+const catalogDetailsButton = catalogManage.locator('.lite-app-action-details-button').first();
+await measureNestedInteraction({
+  screen: 'catalog',
+  nestedSurface: 'PhotoPrism Manage / action details',
+  interaction: 'nested-detail-open',
+  scope: 'catalog-photoprism-action-details',
+  surface: 'PhotoPrism Manage / action details',
+  action: async () => {
+    await catalogDetailsButton.click();
+    await catalogManage.locator('.lite-app-action-details-panel:visible').first().waitFor({ state: 'visible' });
+  },
+  settleMs: 480,
+});
+
+// Deep Devices coverage opens the prepared server-host detail projection only.
+// Diagnostics, health history, and the detail scroll are all read-only.
+await gotoScreen('devices');
+const deviceManageButton = await firstVisible(page.getByRole('button', { name: /^Manage /i }), 'device Manage button');
+await deviceManageButton.click();
+const deviceDetailsPanel = await firstVisible(
+  page.getByRole('region', { name: /details/i }),
+  'device details panel',
+);
+const deviceDiagnostics = deviceDetailsPanel.locator('details.lite-device-advanced-details');
+await measureNestedInteraction({
+  screen: 'devices',
+  nestedSurface: 'Device details / Diagnostics and history',
+  interaction: 'nested-detail-open',
+  scope: 'devices-diagnostics-history',
+  surface: 'Device details / Diagnostics and history',
+  action: async () => {
+    await deviceDiagnostics.locator('summary').click();
+  },
+});
+const deviceHealthHistory = deviceDetailsPanel.getByRole('button', { name: 'Show health history' });
+await measureNestedInteraction({
+  screen: 'devices',
+  nestedSurface: 'Device details / health history',
+  interaction: 'history-open',
+  scope: 'devices-health-history',
+  surface: 'Device details / health history',
+  action: async () => {
+    await deviceHealthHistory.click();
+    await deviceDetailsPanel.getByRole('region', { name: 'Device health history' }).waitFor({ state: 'visible' });
+  },
+});
+await measureNestedInteraction({
+  screen: 'devices',
+  nestedSurface: 'Device details / long detail surface',
+  interaction: 'nested-scroll',
+  scope: 'devices-details-panel',
+  surface: 'Device details / long detail surface',
+  action: async () => {
+    await deviceDetailsPanel.evaluate(async (element) => {
+      const started = performance.now();
+      const startTop = element.scrollTop;
+      await new Promise((resolve) => {
+        const step = (now) => {
+          const progress = Math.min(1, (now - started) / 420);
+          element.scrollTop = startTop + (element.scrollHeight - element.clientHeight - startTop) * progress;
+          if (progress < 1) requestAnimationFrame(step);
+          else resolve();
+        };
+        requestAnimationFrame(step);
+      });
+      element.scrollTop = startTop;
+    });
+  },
 });
 
 // Phase 4: representative overlay open/close using the Security details sheet.
@@ -322,6 +477,61 @@ await measurePhase4Interaction({
   settleMs: 320,
 });
 
+// Deep Security coverage uses prepared history and finding projections. It
+// never starts a scan or submits a remediation action.
+await gotoScreen('security');
+const securityManageForHistory = await firstVisible(
+  page.getByRole('button', { name: /Manage Security details/i }),
+  'Security Manage button',
+);
+await securityManageForHistory.click();
+const securityManageHistory = await firstVisible(
+  page.locator('[data-lite-sheet-variant="security"]:visible').first(),
+  'Security Manage sheet',
+);
+await measureNestedInteraction({
+  screen: 'security',
+  nestedSurface: 'Security Manage / history details',
+  interaction: 'history-open',
+  scope: 'security-manage-history',
+  surface: 'Security Manage / history details',
+  action: async () => {
+    await securityManageHistory.getByRole('tab', { name: /History/ }).click();
+    await securityManageHistory.getByRole('button', { name: 'Open Security history details' }).click();
+    await page.locator('[data-security-phase3-responsive-shell="true"]:visible').first().waitFor({ state: 'visible' });
+  },
+  settleMs: 900,
+});
+
+await gotoScreen('security');
+const securityManageForFinding = await firstVisible(
+  page.getByRole('button', { name: /Manage Security details/i }),
+  'Security Manage button for finding details',
+);
+await securityManageForFinding.click();
+const securityManageIssues = await firstVisible(
+  page.locator('[data-lite-sheet-variant="security"]:visible').first(),
+  'Security Manage sheet for findings',
+);
+await securityManageIssues.getByRole('tab', { name: /Issues/ }).click();
+const findingDetailsButton = await firstVisible(
+  securityManageIssues.getByRole('button', { name: /View details for/i }).first(),
+  'Security finding details button',
+);
+await page.waitForTimeout(240);
+await measureNestedInteraction({
+  screen: 'security',
+  nestedSurface: 'Security Manage / finding details',
+  interaction: 'finding-detail-open',
+  scope: 'security-manage-finding',
+  surface: 'Security Manage / finding details',
+  action: async () => {
+    await findingDetailsButton.click();
+    await page.getByRole('dialog', { name: /Dependency risk|Secret-like value/ }).waitFor({ state: 'visible' });
+  },
+  settleMs: 900,
+});
+
 // Phase 4: explicit list/page scrolling on a content-rich screen.
 await gotoScreen('recovery');
 await measurePhase4Interaction({
@@ -332,6 +542,81 @@ await measurePhase4Interaction({
     await exerciseScroll(900);
   },
   settleMs: 180,
+});
+
+// Identity and Rules coverage stops at presentation. No confirmation is
+// accepted and no identity or policy mutation is submitted.
+await gotoScreen('identity');
+const manageAccessButton = await firstVisible(page.getByRole('button', { name: /Manage Access/i }), 'Identity Manage Access button');
+await manageAccessButton.click();
+const identityManage = await firstVisible(page.locator('.lite-identity-manage-sheet:visible'), 'Identity Manage sheet');
+const recoveryCodesButton = identityManage.getByRole('button', { name: 'Generate New Codes' });
+await measureNestedInteraction({
+  screen: 'identity',
+  nestedSurface: 'Manage access / protected confirmation presentation',
+  interaction: 'confirmation-render',
+  scope: 'identity-recovery-confirmation',
+  surface: 'Identity Manage / recovery confirmation',
+  action: async () => {
+    await recoveryCodesButton.click();
+    await page.getByRole('dialog', { name: 'Generate new recovery codes?' }).waitFor({ state: 'visible' });
+  },
+  settleMs: 480,
+});
+await page.getByRole('button', { name: 'Cancel' }).click();
+
+await gotoScreen('rules');
+const manageRulesButton = await firstVisible(page.getByRole('button', { name: /Manage Safety Rules/i }), 'Rules Manage button');
+await manageRulesButton.click();
+const rulesManage = await firstVisible(page.getByRole('dialog', { name: /Manage Safety Rules/i }), 'Rules Manage dialog');
+const rulesTechnicalDetails = rulesManage.locator('details.lite-rules-advanced-details');
+await measureNestedInteraction({
+  screen: 'rules',
+  nestedSurface: 'Manage Safety Rules / Technical status',
+  interaction: 'nested-detail-open',
+  scope: 'rules-technical-status',
+  surface: 'Manage Safety Rules / Technical status',
+  action: async () => {
+    await rulesTechnicalDetails.locator('summary').click();
+  },
+});
+
+// Recovery exercises only section navigation and the Verify-backup detail
+// projection. Restore apply and backup creation remain untouched.
+await gotoScreen('recovery');
+const manageRecoveryButton = await firstVisible(page.getByRole('button', { name: 'Manage backups and recovery' }), 'Recovery Manage button');
+await manageRecoveryButton.click();
+const recoveryManage = await firstVisible(page.locator('[data-lite-sheet-variant="manage"]:visible').first(), 'Recovery Manage sheet');
+const recoveryHistoryTab = recoveryManage.getByRole('tab', { name: 'History', exact: true });
+await measureNestedInteraction({
+  screen: 'recovery',
+  nestedSurface: 'Manage recovery / section tabs',
+  interaction: 'section-switch',
+  scope: 'recovery-manage-history',
+  surface: 'Manage recovery / section tabs',
+  action: async () => {
+    await recoveryHistoryTab.click();
+    await recoveryHistoryTab.waitFor({ state: 'visible' });
+  },
+  settleMs: 480,
+});
+const recoveryRestoreTab = recoveryManage.getByRole('tab', { name: 'Restore', exact: true });
+await recoveryRestoreTab.click();
+const verifyBackupDetails = await firstVisible(
+  recoveryManage.getByRole('button', { name: /Details: Verify backup/i }),
+  'Recovery Verify backup details button',
+);
+await measureNestedInteraction({
+  screen: 'recovery',
+  nestedSurface: 'Manage recovery / action details',
+  interaction: 'nested-detail-open',
+  scope: 'recovery-verify-details',
+  surface: 'Manage recovery / action details',
+  action: async () => {
+    await verifyBackupDetails.click();
+    await page.getByRole('dialog', { name: 'Verify Backup' }).waitFor({ state: 'visible' });
+  },
+  settleMs: 500,
 });
 
 // Phase 4: truthful read-only progress/feedback lifecycle.

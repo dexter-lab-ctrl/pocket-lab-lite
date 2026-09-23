@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { animated, useSpring } from '@react-spring/web';
 import { X } from 'lucide-react';
 import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
+import { isLitePerformanceMode } from '../liteNavigationRuntime.js';
 
 const SECURITY_PROGRESSIVE_DETAILS_MILESTONE_2 = true;
 const SECURITY_FINDING_DETAILS_ARE_LAZY = true;
@@ -20,12 +21,12 @@ const SECURITY_FINDING_DETAILS_PREMIUM_POLISH_V5_SOURCE_GUARDS = [
 void SECURITY_FINDING_DETAILS_PREMIUM_POLISH_V5_SOURCE_GUARDS;
 
 function useReducedMotionPreference() {
-  const [reduced, setReduced] = useState(false);
+  const [reduced, setReduced] = useState(() => isLitePerformanceMode());
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => setReduced(Boolean(media.matches));
+    const update = () => setReduced(isLitePerformanceMode() || Boolean(media.matches));
     update();
     if (typeof media.addEventListener === 'function') {
       media.addEventListener('change', update);
@@ -138,27 +139,29 @@ export default function SecurityFindingDetailsLazy({ finding, context = {}, onCl
   const recommendation = recommendationText(finding);
   const securityFindingMotionReduced = useReducedMotionPreference();
   const findingPanelSpring = useSpring({
-    from: { opacity: 0, y: securityFindingMotionReduced ? 0 : 12, scale: securityFindingMotionReduced ? 1 : 0.985 },
+    from: { opacity: securityFindingMotionReduced ? 1 : 0, y: 0, scale: 1 },
     to: { opacity: 1, y: 0, scale: 1 },
     config: { tension: 260, friction: 28, mass: 0.9 },
     immediate: securityFindingMotionReduced,
   });
   const findingContentSpring = useSpring({
-    from: { opacity: 0, y: securityFindingMotionReduced ? 0 : 8 },
+    from: { opacity: securityFindingMotionReduced ? 1 : 0, y: 0 },
     to: { opacity: 1, y: 0 },
     delay: securityFindingMotionReduced ? 0 : 70,
     config: { tension: 240, friction: 30, mass: 0.8 },
     immediate: securityFindingMotionReduced,
   });
+  const FindingPanel = securityFindingMotionReduced ? 'section' : animated.section;
+  const FindingContent = securityFindingMotionReduced ? 'div' : animated.div;
 
   return (
-    <animated.section
+    <FindingPanel
       className={`lite-security-finding-details-panel lite-security-finding-premium-panel is-${tone}`}
       role="region"
       aria-label={`${title} details`}
       data-security-progressive-details="true"
       data-security-react-spring="finding-details-panel"
-      style={findingPanelSpring}
+      style={securityFindingMotionReduced ? undefined : findingPanelSpring}
     >
       <div className="lite-security-finding-details-head lite-security-finding-premium-head">
         <div>
@@ -171,7 +174,7 @@ export default function SecurityFindingDetailsLazy({ finding, context = {}, onCl
         </button>
       </div>
 
-      <animated.div className="lite-security-finding-premium-content" data-security-react-spring="finding-details-content" style={findingContentSpring}>
+      <FindingContent className="lite-security-finding-premium-content" data-security-react-spring="finding-details-content" style={securityFindingMotionReduced ? undefined : findingContentSpring}>
       <LiteProgressiveDetails
         title={title}
         status={tone}
@@ -206,7 +209,7 @@ export default function SecurityFindingDetailsLazy({ finding, context = {}, onCl
           emptyMessage: 'History will appear here after more safety checks.',
         }}
       />
-      </animated.div>
-    </animated.section>
+      </FindingContent>
+    </FindingPanel>
   );
 }

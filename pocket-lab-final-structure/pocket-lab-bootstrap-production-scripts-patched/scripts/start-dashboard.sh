@@ -546,6 +546,7 @@ write_caddy_site() {
       header_up -X-Pocket-Lab-Harness-Purpose
       header_up -X-Pocket-Lab-Harness-Signature
       header_up -X-Pocket-Lab-Harness-Target-Scope
+      header_up -X-Pocket-Lab-Qualification-Bridge
     }
   }
 
@@ -561,6 +562,7 @@ write_caddy_site() {
       header_up -X-Pocket-Lab-Harness-Purpose
       header_up -X-Pocket-Lab-Harness-Signature
       header_up -X-Pocket-Lab-Harness-Target-Scope
+      header_up -X-Pocket-Lab-Qualification-Bridge
     }
   }
   handle /openapi.json {

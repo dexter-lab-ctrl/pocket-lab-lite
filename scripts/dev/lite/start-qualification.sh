@@ -54,10 +54,13 @@ if [[ "$bootstrap_requested" -eq 1 ]]; then
     echo "ERROR bootstrap principal id is invalid" >&2
     exit 2
   }
-  [[ "$bootstrap_profile" == "security-assurance-runner" ]] || {
-    echo "ERROR bootstrap approval permits only security-assurance-runner" >&2
-    exit 2
-  }
+  case "$bootstrap_profile" in
+    security-assurance-runner|qualification-owner) ;;
+    *)
+      echo "ERROR bootstrap approval permits only security-assurance-runner or qualification-owner" >&2
+      exit 2
+      ;;
+  esac
   [[ -f "$bootstrap_public_key_file" ]] || {
     echo "ERROR bootstrap public-key file is unavailable" >&2
     exit 2
@@ -94,10 +97,24 @@ PYKEY
       *) return 1 ;;
     esac
   }
+  flag_is_on() {
+    ! flag_is_off "${1:-0}"
+  }
   if ! flag_is_off "${POCKETLAB_HARNESS_DESTRUCTIVE:-0}" \
-    || ! flag_is_off "${POCKETLAB_QUALIFICATION_OWNER:-0}" \
     || ! flag_is_off "${POCKETLAB_TEST_AUTH_BYPASS:-0}"; then
-    echo "ERROR key-bound assurance bootstrap requires destructive, Owner, and test-bypass flags to be off" >&2
+    echo "ERROR key-bound qualification bootstrap requires destructive and test-bypass flags to be off" >&2
+    exit 2
+  fi
+  if [[ "$bootstrap_profile" == "security-assurance-runner" ]] && ! flag_is_off "${POCKETLAB_QUALIFICATION_OWNER:-0}"; then
+    echo "ERROR security-assurance-runner bootstrap requires the Owner gate to be off" >&2
+    exit 2
+  fi
+  if [[ "$bootstrap_profile" == "qualification-owner" ]] && ! flag_is_on "${POCKETLAB_QUALIFICATION_OWNER:-0}"; then
+    echo "ERROR qualification-owner bootstrap requires the explicit Owner gate" >&2
+    exit 2
+  fi
+  if [[ "$bootstrap_profile" == "qualification-owner" && "$fault_control_requested" -eq 1 ]]; then
+    echo "ERROR qualification-owner UI bootstrap cannot enable assurance fault control" >&2
     exit 2
   fi
 else
@@ -117,7 +134,11 @@ export POCKETLAB_ENVIRONMENT=qualification
 export POCKETLAB_HARNESS_ENABLED=1
 if [[ "$bootstrap_requested" -eq 1 ]]; then
   export POCKETLAB_HARNESS_DESTRUCTIVE=0
-  export POCKETLAB_QUALIFICATION_OWNER=0
+  if [[ "$bootstrap_profile" == "qualification-owner" ]]; then
+    export POCKETLAB_QUALIFICATION_OWNER=1
+  else
+    export POCKETLAB_QUALIFICATION_OWNER=0
+  fi
   export POCKETLAB_TEST_AUTH_BYPASS=0
   export POCKETLAB_HARNESS_BOOTSTRAP_APPROVED=1
   export POCKETLAB_HARNESS_BOOTSTRAP_PRINCIPAL_ID="$bootstrap_principal_id"

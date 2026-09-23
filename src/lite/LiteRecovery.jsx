@@ -13,6 +13,7 @@ import { useLiteUiStore } from '../stores/liteUiStore.js';
 import { useLiteRecoveryFlow } from '../hooks/useLiteRecoveryFlow.js';
 import { useLiteServiceWorkerUpdateBlocker } from '../hooks/useLiteServiceWorkerUpdateBlocker.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
+import { liteQueryClient, liteQueryKeys } from '../lib/liteQueryClient.js';
 import { createLiteFeedbackDeduper, triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import { LiteSheet } from './LiteOverlay.jsx';
 import { LiteElevationSurface, LiteMotionReveal } from './LiteMotion.jsx';
@@ -38,10 +39,15 @@ const RECOVERY_LAYOUT_SIMPLIFICATION_PHASE_R1 = true;
 const RECOVERY_SHARED_MANAGE_SHELL_PHASE_R2 = true;
 const RECOVERY_SUMMARY_DETAILS_API_SPLIT_PHASE_R3 = true;
 const RECOVERY_NATIVE_POLISH_PHASE_R4 = true;
-const RecoveryManageSheetLazy = React.lazy(() => import('./recovery/RecoveryManageSheetLazy.jsx'));
-const RecoveryActionDetailsLazy = React.lazy(() => import('./recovery/RecoveryActionDetailsLazy.jsx'));
-const RecoveryDatabaseDetailsLazy = React.lazy(() => import('./recovery/RecoveryDatabaseDetailsLazy.jsx'));
-const RecoveryConfirmSheetLazy = React.lazy(() => import('./recovery/RecoveryConfirmSheetLazy.jsx'));
+const loadRecoveryManageSheet = () => import('./recovery/RecoveryManageSheetLazy.jsx');
+const loadRecoveryHistory = () => import('./recovery/RecoveryBackupHistory.jsx');
+const loadRecoveryActionDetails = () => import('./recovery/RecoveryActionDetailsLazy.jsx');
+const loadRecoveryDatabaseDetails = () => import('./recovery/RecoveryDatabaseDetailsLazy.jsx');
+const loadRecoveryConfirmSheet = () => import('./recovery/RecoveryConfirmSheetLazy.jsx');
+const RecoveryManageSheetLazy = React.lazy(loadRecoveryManageSheet);
+const RecoveryActionDetailsLazy = React.lazy(loadRecoveryActionDetails);
+const RecoveryDatabaseDetailsLazy = React.lazy(loadRecoveryDatabaseDetails);
+const RecoveryConfirmSheetLazy = React.lazy(loadRecoveryConfirmSheet);
 void RECOVERY_LAYOUT_SIMPLIFICATION_PHASE_R1;
 void RECOVERY_SHARED_MANAGE_SHELL_PHASE_R2;
 void RECOVERY_SUMMARY_DETAILS_API_SPLIT_PHASE_R3;
@@ -360,6 +366,14 @@ export default function RecoveryScreen() {
 
   function openRecoveryManage(section = 'backup') {
     triggerLiteHaptic('accepted');
+    void loadRecoveryManageSheet();
+    void loadRecoveryHistory();
+    void loadRecoveryActionDetails();
+    void liteQueryClient.prefetchQuery({
+      queryKey: liteQueryKeys.recoveryHistoryPage(10, ''),
+      queryFn: () => liteApi.recoveryHistory(10, ''),
+      staleTime: 15_000,
+    });
     setRecoveryManageSection(section);
     setRecoveryManageOpen(true);
   }

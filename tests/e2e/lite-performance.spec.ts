@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 import { LITE_QUALIFIED_PERFORMANCE_INTERACTIONS } from './lite-performance-contract';
+import { LITE_UI_PERFORMANCE_MATRIX } from '../../src/performance/litePerformanceMatrix.js';
 import {
   exerciseLiteScroll,
   expectLitePerformanceBudget,
@@ -24,6 +25,14 @@ function interactionId(interaction: typeof LITE_QUALIFIED_PERFORMANCE_INTERACTIO
     throw new Error(`Unknown Lite performance interaction: ${interaction}`);
   }
   return scope ? `${scope}:${interaction}` : interaction;
+}
+
+function matrixEvidence(screen: string, interaction: typeof LITE_QUALIFIED_PERFORMANCE_INTERACTIONS[number], surface: string) {
+  const entry = LITE_UI_PERFORMANCE_MATRIX.find((item) => (
+    item.screen === screen && item.interaction === interaction && item.nestedSurface === surface
+  ));
+  if (!entry) throw new Error(`Missing UI performance matrix entry for ${screen} / ${surface} / ${interaction}`);
+  return entry.evidenceId;
 }
 
 test.beforeEach(async ({ page }) => {
@@ -109,13 +118,336 @@ for (const [screenId, scenario, openerName, surfaceSelector] of MANAGE_CASES) {
   });
 }
 
+test('[interaction] Home Technical details disclosure stays inside the render budget', async ({ page }, testInfo) => {
+  await installScenario(page, 'healthy');
+  await page.goto('/?screen=home');
+  await waitForLiteScreenToSettle(page, 'home');
+  await page.getByRole('button', { name: 'Workspace details' }).click();
+  const sheet = page.getByRole('dialog', { name: /Workspace details/i });
+  await expect(sheet).toBeVisible();
+  const disclosure = sheet.locator('details').filter({ hasText: 'Technical details' }).first();
+  await expect(disclosure).toBeVisible();
+
+  const openReport = await measureLiteInteraction(
+    page,
+    testInfo,
+    interactionId('nested-detail-open', 'home-workspace-technical-details'),
+    async () => {
+      await disclosure.locator('summary').click();
+      await expect(disclosure).toHaveAttribute('open', '');
+    },
+    {
+      settleMs: 440,
+      mode: 'mocked',
+      evidenceId: matrixEvidence('home', 'nested-detail-open', 'Workspace details / Technical details'),
+    },
+  );
+  expectLitePerformanceBudget(openReport);
+  await writeLitePerformanceEvidence(testInfo, openReport);
+
+  const closeReport = await measureLiteInteraction(
+    page,
+    testInfo,
+    interactionId('nested-detail-close', 'home-workspace-technical-details'),
+    async () => {
+      await disclosure.locator('summary').click();
+      await expect(disclosure).not.toHaveAttribute('open', '');
+    },
+    {
+      settleMs: 420,
+      mode: 'mocked',
+      evidenceId: matrixEvidence('home', 'nested-detail-close', 'Workspace details / Technical details'),
+    },
+  );
+  expectLitePerformanceBudget(closeReport);
+  await writeLitePerformanceEvidence(testInfo, closeReport);
+});
+
+test('[interaction] Apps Manage section and action details stay inside the render budget', async ({ page }, testInfo) => {
+  await installScenario(page, 'catalog-ready');
+  await page.goto('/?screen=catalog');
+  await waitForLiteScreenToSettle(page, 'catalog');
+  await page.getByRole('button', { name: /^Manage$/i }).first().click();
+  const sheet = page.getByRole('dialog', { name: /Manage PhotoPrism/i });
+  await expect(sheet).toBeVisible();
+
+  const sectionReport = await measureLiteInteraction(
+    page,
+    testInfo,
+    interactionId('section-switch', 'catalog-manage-recovery'),
+    async () => {
+      await sheet.getByRole('tab', { name: 'Recovery', exact: true }).click();
+      await expect(sheet.getByRole('tab', { name: 'Recovery', exact: true })).toHaveAttribute('aria-selected', 'true');
+    },
+    {
+      settleMs: 480,
+      mode: 'mocked',
+      evidenceId: matrixEvidence('catalog', 'section-switch', 'PhotoPrism Manage / action sections'),
+    },
+  );
+  expectLitePerformanceBudget(sectionReport);
+  await writeLitePerformanceEvidence(testInfo, sectionReport);
+
+  const detailsButton = sheet.locator('.lite-app-action-details-button').first();
+  await expect(detailsButton).toBeVisible();
+  const detailsReport = await measureLiteInteraction(
+    page,
+    testInfo,
+    interactionId('nested-detail-open', 'catalog-action-details'),
+    async () => {
+      await detailsButton.click();
+      await expect(sheet.locator('.lite-app-action-details-panel:visible').first()).toBeVisible();
+    },
+    {
+      settleMs: 480,
+      mode: 'mocked',
+      evidenceId: matrixEvidence('catalog', 'nested-detail-open', 'PhotoPrism Manage / action details'),
+    },
+  );
+  expectLitePerformanceBudget(detailsReport);
+  await writeLitePerformanceEvidence(testInfo, detailsReport);
+});
+
+test('[interaction] Devices nested details and health history stay inside the render budget', async ({ page }, testInfo) => {
+  await installScenario(page, 'devices-resource-complete');
+  await page.goto('/?screen=devices');
+  await waitForLiteScreenToSettle(page, 'devices');
+  const manage = page.getByRole('button', { name: /Manage Pocket Lab Lite Server/i });
+  await expect(manage).toBeVisible();
+  await manage.click();
+  const panel = page.getByRole('region', { name: /Pocket Lab Lite Server details/i });
+  await expect(panel).toBeVisible();
+
+  const advanced = panel.locator('details.lite-device-advanced-details');
+  const detailReport = await measureLiteInteraction(
+    page,
+    testInfo,
+    interactionId('nested-detail-open', 'devices-diagnostics-history'),
+    async () => {
+      await advanced.locator('summary').click();
+      await expect(advanced).toHaveAttribute('open', '');
+    },
+    {
+      settleMs: 440,
+      mode: 'mocked',
+      evidenceId: matrixEvidence('devices', 'nested-detail-open', 'Device details / Diagnostics and history'),
+    },
+  );
+  expectLitePerformanceBudget(detailReport);
+  await writeLitePerformanceEvidence(testInfo, detailReport);
+
+  const healthHistory = panel.getByRole('button', { name: 'Show health history' });
+  await expect(healthHistory).toBeVisible();
+  const historyReport = await measureLiteInteraction(
+    page,
+    testInfo,
+    interactionId('history-open', 'devices-health-history'),
+    async () => {
+      await healthHistory.click();
+      await expect(panel.getByRole('region', { name: 'Device health history' })).toBeVisible();
+    },
+    {
+      settleMs: 440,
+      mode: 'mocked',
+      evidenceId: matrixEvidence('devices', 'history-open', 'Device details / health history'),
+    },
+  );
+  expectLitePerformanceBudget(historyReport);
+  await writeLitePerformanceEvidence(testInfo, historyReport);
+
+  const scrollReport = await measureLiteInteraction(
+    page,
+    testInfo,
+    interactionId('nested-scroll', 'devices-details-panel'),
+    async () => {
+      await panel.evaluate(async (element) => {
+        const started = performance.now();
+        const startTop = element.scrollTop;
+        await new Promise<void>((resolve) => {
+          const step = (now: number) => {
+            const progress = Math.min(1, (now - started) / 420);
+            element.scrollTop = startTop + (element.scrollHeight - element.clientHeight - startTop) * progress;
+            if (progress < 1) requestAnimationFrame(step);
+            else resolve();
+          };
+          requestAnimationFrame(step);
+        });
+        element.scrollTop = startTop;
+      });
+    },
+    {
+      settleMs: 440,
+      mode: 'mocked',
+      evidenceId: matrixEvidence('devices', 'nested-scroll', 'Device details / long detail surface'),
+    },
+  );
+  expectLitePerformanceBudget(scrollReport);
+  await writeLitePerformanceEvidence(testInfo, scrollReport);
+});
+
+test('[interaction] Security history details stay inside the render budget', async ({ page }, testInfo) => {
+  await installScenario(page, 'security-action-needed');
+  await page.goto('/?screen=security');
+  await waitForLiteScreenToSettle(page, 'security');
+  await page.getByRole('button', { name: /Manage Security details/i }).click();
+  const manage = page.locator('[data-lite-sheet-variant="security"]:visible').first();
+  await expect(manage).toBeVisible();
+
+  const historyReport = await measureLiteInteraction(
+    page,
+    testInfo,
+    interactionId('history-open', 'security-manage-history'),
+    async () => {
+      await manage.getByRole('tab', { name: /History/ }).click();
+      await manage.getByRole('button', { name: 'Open Security history details' }).click();
+      await expect(page.locator('[data-security-phase3-responsive-shell="true"]:visible').first()).toBeVisible();
+    },
+    {
+      settleMs: 900,
+      mode: 'mocked',
+      evidenceId: matrixEvidence('security', 'history-open', 'Security Manage / history details'),
+    },
+  );
+  expectLitePerformanceBudget(historyReport);
+  await writeLitePerformanceEvidence(testInfo, historyReport);
+});
+
+test('[interaction] Security finding details stay inside the render budget', async ({ page }, testInfo) => {
+  await installScenario(page, 'security-action-needed');
+  await page.goto('/?screen=security');
+  await waitForLiteScreenToSettle(page, 'security');
+  await page.getByRole('button', { name: /Manage Security details/i }).click();
+  const manage = page.locator('[data-lite-sheet-variant="security"]:visible').first();
+  await expect(manage).toBeVisible();
+
+  await manage.getByRole('tab', { name: /Issues/ }).click();
+  const findingTrigger = manage.getByRole('button', { name: /View details for/i }).first();
+  await expect(findingTrigger).toBeVisible();
+  await page.waitForTimeout(240);
+
+  const findingReport = await measureLiteInteraction(
+    page,
+    testInfo,
+    interactionId('finding-detail-open', 'security-manage-finding'),
+    async () => {
+      await findingTrigger.click();
+      await expect(page.getByRole('dialog', { name: /Dependency risk|Secret-like value/ })).toBeVisible();
+    },
+    {
+      settleMs: 900,
+      mode: 'mocked',
+      evidenceId: matrixEvidence('security', 'finding-detail-open', 'Security Manage / finding details'),
+    },
+  );
+  expectLitePerformanceBudget(findingReport);
+  await writeLitePerformanceEvidence(testInfo, findingReport);
+});
+
+test('[interaction] Identity confirmation rendering stays inside the render budget', async ({ page }, testInfo) => {
+  await installScenario(page, 'identity-summary');
+  await page.goto('/?screen=identity');
+  await waitForLiteScreenToSettle(page, 'identity');
+  await page.getByRole('button', { name: /Manage Access/i }).click();
+  const manage = page.locator('.lite-identity-manage-sheet:visible');
+  await expect(manage).toBeVisible();
+  const confirmationReport = await measureLiteInteraction(
+    page,
+    testInfo,
+    interactionId('confirmation-render', 'identity-recovery'),
+    async () => {
+      await manage.getByRole('button', { name: 'Generate New Codes' }).click();
+      await expect(page.getByRole('dialog', { name: 'Generate new recovery codes?' })).toBeVisible();
+    },
+    {
+      settleMs: 480,
+      mode: 'mocked',
+      evidenceId: matrixEvidence('identity', 'confirmation-render', 'Manage access / protected confirmation presentation'),
+    },
+  );
+  expectLitePerformanceBudget(confirmationReport);
+  await writeLitePerformanceEvidence(testInfo, confirmationReport);
+  await page.getByRole('button', { name: 'Cancel' }).click();
+});
+
+test('[interaction] Rules Technical status disclosure stays inside the render budget', async ({ page }, testInfo) => {
+  await installScenario(page, 'healthy');
+  await page.goto('/?screen=rules');
+  await waitForLiteScreenToSettle(page, 'rules');
+  await page.getByRole('button', { name: /Manage Safety Rules/i }).click();
+  const sheet = page.getByRole('dialog', { name: /Manage Safety Rules/i });
+  await expect(sheet).toBeVisible();
+  const disclosure = sheet.locator('details.lite-rules-advanced-details');
+  const report = await measureLiteInteraction(
+    page,
+    testInfo,
+    interactionId('nested-detail-open', 'rules-technical-status'),
+    async () => {
+      await disclosure.locator('summary').click();
+      await expect(disclosure).toHaveAttribute('open', '');
+    },
+    {
+      settleMs: 440,
+      mode: 'mocked',
+      evidenceId: matrixEvidence('rules', 'nested-detail-open', 'Manage Safety Rules / Technical status'),
+    },
+  );
+  expectLitePerformanceBudget(report);
+  await writeLitePerformanceEvidence(testInfo, report);
+});
+
+test('[interaction] Recovery Manage sections and action details stay inside the render budget', async ({ page }, testInfo) => {
+  await installScenario(page, 'recovery-verified');
+  await page.goto('/?screen=recovery');
+  await waitForLiteScreenToSettle(page, 'recovery');
+  await page.getByRole('button', { name: 'Manage backups and recovery' }).click();
+  const sheet = page.locator('[data-lite-sheet-variant="manage"]:visible').first();
+  await expect(sheet).toBeVisible();
+
+  const sectionReport = await measureLiteInteraction(
+    page,
+    testInfo,
+    interactionId('section-switch', 'recovery-manage-history'),
+    async () => {
+      await sheet.getByRole('tab', { name: 'History', exact: true }).click();
+      await expect(sheet.getByRole('tab', { name: 'History', exact: true })).toHaveAttribute('aria-selected', 'true');
+    },
+    {
+      settleMs: 480,
+      mode: 'mocked',
+      evidenceId: matrixEvidence('recovery', 'section-switch', 'Manage recovery / section tabs'),
+    },
+  );
+  expectLitePerformanceBudget(sectionReport);
+  await writeLitePerformanceEvidence(testInfo, sectionReport);
+
+  await sheet.getByRole('tab', { name: 'Restore', exact: true }).click();
+  const details = sheet.getByRole('button', { name: /Details: Verify backup/i });
+  await expect(details).toBeVisible();
+  const detailsReport = await measureLiteInteraction(
+    page,
+    testInfo,
+    interactionId('nested-detail-open', 'recovery-verify-details'),
+    async () => {
+      await details.click();
+      await expect(page.getByRole('dialog', { name: 'Verify Backup' })).toBeVisible();
+    },
+    {
+      settleMs: 500,
+      mode: 'mocked',
+      evidenceId: matrixEvidence('recovery', 'nested-detail-open', 'Manage recovery / action details'),
+    },
+  );
+  expectLitePerformanceBudget(detailsReport);
+  await writeLitePerformanceEvidence(testInfo, detailsReport);
+});
+
 test('[interaction] representative Manage-close stays inside the render budget', async ({ page }, testInfo) => {
   await installScenario(page, 'catalog-ready');
   await page.goto('/?screen=catalog');
   await waitForLiteScreenToSettle(page, 'catalog');
 
   await page.getByRole('button', { name: /^Manage$/i }).first().click();
-  const sheet = page.locator('[data-lite-sheet-variant="manage"]:visible').first();
+  const sheet = page.locator('.lite-catalog-manage-layer:visible').first();
   await expect(sheet).toBeVisible();
 
   const report = await measureLiteInteraction(
@@ -123,7 +455,7 @@ test('[interaction] representative Manage-close stays inside the render budget',
     testInfo,
     interactionId('manage-close', 'catalog'),
     async () => {
-      await page.getByRole('button', { name: 'Close app actions' }).click();
+      await sheet.getByRole('button', { name: 'Close app actions' }).last().click();
       await expect(sheet).toBeHidden();
     },
     { settleMs: 360, mode: 'mocked' },
@@ -159,7 +491,7 @@ test('[interaction] representative overlay open and close stay inside the render
     testInfo,
     interactionId('overlay-close', 'security-manage'),
     async () => {
-      await page.getByRole('button', { name: 'Close security details' }).click();
+      await sheet.getByRole('button', { name: 'Close security details' }).click();
       await expect(sheet).toBeHidden();
     },
     { settleMs: 360, mode: 'mocked' },

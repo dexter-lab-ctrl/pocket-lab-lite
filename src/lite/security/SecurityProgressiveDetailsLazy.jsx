@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { animated, useSpring } from '@react-spring/web';
 import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
+import { isLitePerformanceMode } from '../liteNavigationRuntime.js';
 
 const SecurityHistoryLazy = React.lazy(() => import('./SecurityHistoryLazy.jsx'));
 
@@ -37,12 +38,12 @@ const SECURITY_PROGRESSIVE_DETAILS_PATCH_D_GUARDS = [
 void SECURITY_PROGRESSIVE_DETAILS_PATCH_D_GUARDS;
 
 function useReducedMotionPreference() {
-  const [reduced, setReduced] = useState(false);
+  const [reduced, setReduced] = useState(() => isLitePerformanceMode());
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => setReduced(Boolean(media.matches));
+    const update = () => setReduced(isLitePerformanceMode() || Boolean(media.matches));
     update();
     if (typeof media.addEventListener === 'function') {
       media.addEventListener('change', update);

@@ -27,12 +27,14 @@ SESSION_ENV = "POCKETLAB_HARNESS_SESSION"
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SECRET_OUTPUT_KEYS = frozenset({
     "authorization",
+    "browser_bridge_token",
     "cookie",
     "csrf_token",
     "nonce",
     "private_key",
     "private_key_bytes",
     "provisioning_token",
+    "qualification_bridge",
     "session_token",
     "signature",
     "signing_payload",
@@ -298,6 +300,37 @@ def cmd_bootstrap(args: argparse.Namespace) -> dict:
     )
 
 
+def browser_bridge(*, session_token: str) -> dict:
+    """Create a browser projection without exposing its token in CLI output."""
+    token = str(session_token or "").strip()
+    if not token:
+        raise ValueError("a harness session token is required")
+    return _request(
+        "POST",
+        "/api/lite/harness/browser/bridge",
+        headers={"X-Pocket-Lab-Harness-Session": token},
+    )
+
+
+def cmd_browser_bridge(args: argparse.Namespace) -> dict:
+    token = (args.session_token or os.environ.get(SESSION_ENV, "")).strip()
+    if not token:
+        raise ValueError(f"--session-token or {SESSION_ENV} is required")
+    return browser_bridge(session_token=token)
+
+
+def revoke_authenticated_principal(*, session_token: str) -> dict:
+    """Revoke the bootstrap-created principal through its cleanup capability."""
+    token = str(session_token or "").strip()
+    if not token:
+        raise ValueError("a harness session token is required")
+    return _request(
+        "POST",
+        "/api/lite/harness/principal/revoke",
+        headers={"X-Pocket-Lab-Harness-Session": token},
+    )
+
+
 def _sanitize_output(value: object) -> object:
     if isinstance(value, dict):
         return {
@@ -370,6 +403,9 @@ def _parser() -> argparse.ArgumentParser:
     bootstrap.add_argument("--key-file", required=True)
     bootstrap.add_argument("--ttl-seconds", type=int, choices=range(60, 3601))
     bootstrap.set_defaults(handler=cmd_bootstrap)
+    bridge = commands.add_parser("browser-bridge", help="create a short-lived qualification browser bridge")
+    bridge.add_argument("--session-token")
+    bridge.set_defaults(handler=cmd_browser_bridge)
     for name, handler in (("session-status", cmd_session_status), ("session-stop", cmd_session_stop)):
         command = commands.add_parser(name)
         command.add_argument("--session-id", required=True)

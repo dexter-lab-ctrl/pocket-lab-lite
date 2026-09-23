@@ -84,7 +84,29 @@ def test_runtime_launcher_owns_state_and_opa_path_after_scrub():
     assert ".pocketlab-dev/state/opa/active" not in text
 
 
+def test_runtime_proxy_forwards_only_the_qualification_browser_bridge_on_api_paths():
+    text = (ROOT / "pocket-lab-final-structure" / "pocket-lab-bootstrap-production-scripts-patched" / "scripts" / "start-dashboard.sh").read_text(encoding="utf-8")
+    assert "path /api/lite/harness /api/lite/harness/*" in text
+    assert "handle @pocketlab_harness_routes" in text
+    assert text.count("header_up -X-Pocket-Lab-Qualification-Bridge") == 2
+    assert "handle /api/lite/security/events" in text
+    assert "handle /api/*" in text
+
+
 def test_qualification_launcher_explicitly_sets_qualification_environment():
     text = (ROOT / "scripts" / "dev" / "lite" / "start-qualification.sh").read_text(encoding="utf-8")
     assert "export POCKETLAB_ENVIRONMENT=qualification" in text
     assert "export POCKETLAB_HARNESS_ENABLED=1" in text
+    assert "security-assurance-runner|qualification-owner" in text
+    assert "qualification-owner bootstrap requires the explicit Owner gate" in text
+    assert "export POCKETLAB_HARNESS_DESTRUCTIVE=0" in text
+    assert "export POCKETLAB_TEST_AUTH_BYPASS=0" in text
+
+
+def test_ui_performance_key_bound_task_owns_the_explicit_owner_gate():
+    text = (ROOT / "tasks" / "Taskfile.lite.yml").read_text(encoding="utf-8")
+    task = text.split("lite:qualification:start:key-bound:ui-performance:", 1)[1].split(
+        "lite:qualification:start:key-bound:faults:", 1
+    )[0]
+    assert "POCKETLAB_QUALIFICATION_OWNER=1" in task
+    assert "--bootstrap-profile qualification-owner" in task

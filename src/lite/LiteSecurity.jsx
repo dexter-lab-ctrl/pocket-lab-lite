@@ -30,8 +30,8 @@ import {
   SECURITY_DETAILS_GC_TIME_MS,
   SECURITY_INSTANT_FEEL_FRONTEND_BUNDLE,
   SECURITY_SUMMARY_GC_TIME_MS,
-  prefetchSecurityManageOnIntent,
   preloadSecurityDetails,
+  preloadSecurityFindingDetails,
   preloadSecurityHistory,
   preloadSecurityManageChunks,
   securityDetailsStaleTime,
@@ -50,6 +50,7 @@ import {
 import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy.js';
 import { acceptSecurityProgressEvent } from '../lib/securityProgressEvents.js';
 import { LiteSheet } from './LiteOverlay.jsx';
+import { isLitePerformanceMode } from './liteNavigationRuntime.js';
 import {
   GlassCard,
   StatusBadge,
@@ -1239,12 +1240,12 @@ export function deriveSecurityHealthBanner(securityData, confidence, findings = 
 
 
 function useSecurityReducedMotion() {
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(() => isLitePerformanceMode());
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return undefined;
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => setReducedMotion(Boolean(query.matches));
+    const update = () => setReducedMotion(isLitePerformanceMode() || Boolean(query.matches));
     update();
     query.addEventListener?.('change', update);
     return () => query.removeEventListener?.('change', update);
@@ -1466,6 +1467,50 @@ function SecurityRemediationDrawer({ finding, context, onClose }) {
           <p className="lite-security-remediation-note">This guidance does not run commands or change your device. Any future fix action must stay backend-owned and evidence-backed.</p>
         </div>
       ) : null}
+    </LiteSheet>
+  );
+}
+
+function SecurityFindingDetailsPortal({ findings, context, triggerRef }) {
+  const expandedSecurityFindingId = useLiteUiStore((state) => state.expandedSecurityFindingId);
+  const setExpandedSecurityFindingId = useLiteUiStore((state) => state.setExpandedSecurityFindingId);
+  const selectedFinding = useMemo(() => {
+    if (!expandedSecurityFindingId) return null;
+    return findings.find((finding) => securityFindingUiId(finding) === expandedSecurityFindingId) || null;
+  }, [expandedSecurityFindingId, findings]);
+
+  const closeFindingDetails = useCallback(() => {
+    setExpandedSecurityFindingId(null);
+    window.setTimeout(() => triggerRef?.current?.focus?.(), 0);
+  }, [setExpandedSecurityFindingId, triggerRef]);
+
+  useEffect(() => {
+    if (expandedSecurityFindingId && findings.length && !selectedFinding) {
+      setExpandedSecurityFindingId(null);
+    }
+  }, [expandedSecurityFindingId, findings.length, selectedFinding, setExpandedSecurityFindingId]);
+
+  if (!selectedFinding) return null;
+  return (
+    <LiteSheet
+      open
+      onClose={closeFindingDetails}
+      eyebrow="Finding Details"
+      title={securityFindingLabel(selectedFinding)}
+      description="Review one finding at a time. Technical details stay collapsed and sanitized."
+      layerClassName="lite-security-phase3-layer lite-security-detail-layer"
+      className="lite-security-phase3-panel lite-security-phase3-finding-shell lite-security-phase4-panel-motion"
+      bodyClassName="lite-security-phase3-scroll"
+      headerClassName="lite-security-phase3-head"
+      closeClassName="lite-security-phase3-close"
+      gripClassName="lite-security-phase3-grip"
+      variant="security"
+      motion="safe-grip"
+      surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'finding-details' }}
+    >
+      <Suspense fallback={<div className="lite-security-details-loading">Loading finding details…</div>}>
+        <SecurityFindingDetailsLazy finding={selectedFinding} context={context} onClose={closeFindingDetails} />
+      </Suspense>
     </LiteSheet>
   );
 }
@@ -1897,7 +1942,6 @@ export default function SecurityScreen() {
   const setSecurityManageSection = useLiteUiStore((state) => state.setActiveSecurityManageSection);
   const selectedScanProfile = useLiteUiStore((state) => state.activeSecurityProfile);
   const setSelectedScanProfile = useLiteUiStore((state) => state.setActiveSecurityProfile);
-  const expandedSecurityFindingId = useLiteUiStore((state) => state.expandedSecurityFindingId);
   const setExpandedSecurityFindingId = useLiteUiStore((state) => state.setExpandedSecurityFindingId);
   const setLastSecurityRunIdViewed = useLiteUiStore((state) => state.setLastSecurityRunIdViewed);
   const activeSecurityHistoryLimit = useLiteUiStore((state) => state.activeSecurityHistoryLimit);
@@ -1919,7 +1963,10 @@ export default function SecurityScreen() {
     const policy = securityPollingPolicy(payload);
     return Boolean(busy) || policy.live || isLiteSecurityViewLive(payload) || hasLiveSecurityOperation(result);
   }, [busy, result, securityPollingPolicy]);
-  const shouldLoadSecurityDetails = securityManageOpen || Boolean(activeSecurityDetails);
+  const shouldLoadSecurityDetails = Boolean(activeSecurityDetails) || (
+    securityManageOpen
+    && SECURITY_MANAGE_SECTIONS.some((section) => section.id === securityManageSection && section.id !== 'overview')
+  );
   const shouldLoadSecurityHistory = securityManageOpen && securityManageSection === 'history' || activeSecurityDetails === 'history';
   const localSecurityProgressActive = hasOptimisticSecurityProgress(result) || hasLiveSecurityOperation(result);
   const rootOwnsAcceptedSecurityRun = Boolean(securityObservation?.active && securityObservation?.runId);
@@ -1973,7 +2020,6 @@ export default function SecurityScreen() {
   const {
     data: securityProfileData,
     refreshing: profileRefreshing,
-    refresh: refreshSecurityDetails,
   } = useLiteResource(securityProfileLoader, [scanProfile], {
     queryKey: liteQueryKeys.securityProfile(scanProfile, securityProfileAppId),
     path: liteQueryPaths.securityProfile(scanProfile, securityProfileAppId),
@@ -2175,8 +2221,14 @@ export default function SecurityScreen() {
   const activeProfileMeta = securityProfileMeta(scanProfile);
   const findings = Number(activeProfileView?.items_to_review ?? activeProfileView?.findings_count ?? activeProfileRun?.items_to_review ?? 0);
   const checks = Number(activeProfileRun?.checks_reviewed ?? activeProfileRun?.checks_count ?? data?.checks_reviewed ?? data?.checks_count ?? 0);
-  const criticalIssues = Array.isArray(activeProfileView?.critical_issues) ? activeProfileView.critical_issues : [];
-  const reviewItems = Array.isArray(activeProfileView?.findings) ? activeProfileView.findings : [];
+  const preparedPayloadProfile = normalizeSecurityProfileId(data?.scan_profile || data?.last_run?.scan_profile || (data?.app_id ? 'app' : 'quick'));
+  const preparedPayloadIsActiveProfile = preparedPayloadProfile === scanProfile;
+  const criticalIssues = Array.isArray(activeProfileView?.critical_issues) && activeProfileView.critical_issues.length
+    ? activeProfileView.critical_issues
+    : preparedPayloadIsActiveProfile && Array.isArray(data?.critical_issues) ? data.critical_issues : [];
+  const reviewItems = Array.isArray(activeProfileView?.findings) && activeProfileView.findings.length
+    ? activeProfileView.findings
+    : preparedPayloadIsActiveProfile && Array.isArray(data?.findings) ? data.findings : [];
   const evidenceRefs = profileEvidenceRefs(activeProfileRun, activeProfileView?.evidence_refs || []);
   const componentPosture = Array.isArray(data?.component_posture) ? data.component_posture : [];
   const healthyComponents = componentPosture.filter((item) => normalizeBackendState(item?.status) === 'ready').length;
@@ -2185,10 +2237,6 @@ export default function SecurityScreen() {
   ];
   const evidenceFindings = Array.isArray(evidence?.findings) ? evidence.findings : [];
   const allReviewFindings = useMemo(() => [...criticalIssues, ...reviewItems], [criticalIssues, reviewItems]);
-  const selectedFinding = useMemo(() => {
-    if (!expandedSecurityFindingId) return null;
-    return allReviewFindings.find((finding) => securityFindingUiId(finding) === expandedSecurityFindingId) || null;
-  }, [allReviewFindings, expandedSecurityFindingId]);
   const evidenceRun = evidence?.run || null;
   const toolResults = (activeProfileIsLatest ? evidenceRun?.tool_results : null) || activeProfileView?.tool_results || activeProfileRun?.tool_results || {};
   const coverageFallback = profileFallbackCoverage(scanProfile);
@@ -2336,7 +2384,13 @@ export default function SecurityScreen() {
   const securityFlow = useLiteSecurityCheckFlow({ security: data, backendReachable: effectiveBackendReachable, savedStateOnly: savedStateOnly && !scanInProgress });
   const lastKnownGood = deriveLastKnownGood(activeProfileIsLatest ? data : { ...data, last_run: activeProfileRun }, allReviewFindings);
   const postureComparison = deriveSecurityPostureComparison(activeProfileIsLatest ? data : { ...data, history: profileHistory });
-  const remediationContext = { data, lastRun: activeProfileRun, evidence, evidenceRefs: currentEvidenceRefs, toolResults };
+  const remediationContext = useMemo(() => ({
+    data,
+    lastRun: activeProfileRun,
+    evidence,
+    evidenceRefs: currentEvidenceRefs,
+    toolResults,
+  }), [activeProfileRun, currentEvidenceRefs, data, evidence, toolResults]);
   const trustSignals = [
     {
       icon: Server,
@@ -2407,22 +2461,6 @@ export default function SecurityScreen() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [remediationFinding]);
-
-  React.useEffect(() => {
-    if (!selectedFinding) return undefined;
-    function handleKeyDown(event) {
-      if (event.key === 'Escape') {
-        closeFindingDetails();
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedFinding]);
-
-  React.useEffect(() => {
-    if (!expandedSecurityFindingId || !allReviewFindings.length || selectedFinding) return;
-    setExpandedSecurityFindingId(null);
-  }, [allReviewFindings.length, expandedSecurityFindingId, selectedFinding, setExpandedSecurityFindingId]);
 
   function releaseSecurityScanSubmitGuard(delayMs = 0) {
     const release = () => { securityScanSubmitGuardRef.current = false; };
@@ -2628,11 +2666,6 @@ export default function SecurityScreen() {
     setExpandedSecurityFindingId(securityFindingUiId(finding));
   }
 
-  function closeFindingDetails() {
-    setExpandedSecurityFindingId(null);
-    window.setTimeout(() => findingDetailTriggerRef.current?.focus?.(), 0);
-  }
-
   function openSecurityDetails(type, event) {
     preloadSecurityManageChunks();
     if (type === 'history') preloadSecurityHistory();
@@ -2657,9 +2690,6 @@ export default function SecurityScreen() {
   function openSecurityManage(event) {
     securityDetailsTriggerRef.current = event?.currentTarget || null;
     setSecurityManageOpen(true);
-    if (typeof refreshSecurityDetails === 'function') {
-      refreshSecurityDetails().catch(() => {});
-    }
   }
 
   function closeSecurityManage() {
@@ -2671,6 +2701,7 @@ export default function SecurityScreen() {
     setSecurityManageSection(sectionId);
     if (['changes', 'issues', 'coverage', 'check_path', 'evidence', 'history', 'technical_details'].includes(sectionId)) {
       preloadSecurityManageChunks();
+      if (sectionId === 'issues') preloadSecurityFindingDetails();
       if (sectionId === 'history') preloadSecurityHistory();
     }
   }
@@ -2706,11 +2737,7 @@ export default function SecurityScreen() {
 
   const warmSecurityManageIntent = useCallback(() => {
     preloadSecurityManageChunks();
-    prefetchSecurityManageOnIntent(queryClient, {
-      backendHealthy: effectiveBackendReachable !== false,
-      activeScan: scanInProgress,
-    });
-  }, [effectiveBackendReachable, queryClient, scanInProgress]);
+  }, []);
 
   function openSecurityDetailFromManage(type, event) {
     if (type === 'history') preloadSecurityHistory();
@@ -2907,6 +2934,8 @@ export default function SecurityScreen() {
     immediate: securityMotionReduced,
     config: SECURITY_SPRING_CONFIG.section,
   });
+  const ManageMotionDiv = securityMotionReduced ? 'div' : animated.div;
+  const ManageMotionSection = securityMotionReduced ? 'section' : animated.section;
   const scoreRingStyle = {
     '--score': scoreSpring.number.to((value) => `${Math.max(0, Math.min(100, Math.round(value)))}%`),
   };
@@ -3076,17 +3105,17 @@ export default function SecurityScreen() {
         title="Manage Security"
         description="Review changes, coverage, activity, and protected check records in one focused workspace."
         layerClassName="lite-security-manage-layer"
-        className="lite-security-manage-shell lite-security-manage-panel lite-security-phase4-panel-motion"
+        className={`lite-security-manage-shell lite-security-manage-panel ${securityMotionReduced ? '' : 'lite-security-phase4-panel-motion'}`.trim()}
         bodyClassName="lite-security-manage-scroll"
         headerClassName="lite-security-manage-head"
         closeClassName="lite-security-manage-close"
         gripClassName="lite-security-manage-grip"
         variant="security"
-        motion="safe-grip"
+        motion={securityMotionReduced ? 'none' : 'safe-grip'}
         surfaceProps={{ 'data-security-phase5-manage-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'manage-shell' }}
       >
-        <animated.div style={manageScrollSpring} className="lite-security-manage-scroll-frame" data-security-react-spring="manage-scroll-frame">
-        <animated.div style={manageTabsSpring} className="lite-security-manage-tabs lite-security-premium-v2-manage-tabs-motion" role="tablist" aria-label="Security Manage sections" data-security-react-spring="manage-tabs">
+        <ManageMotionDiv style={securityMotionReduced ? undefined : manageScrollSpring} className="lite-security-manage-scroll-frame" data-security-react-spring="manage-scroll-frame">
+        <ManageMotionDiv style={securityMotionReduced ? undefined : manageTabsSpring} className="lite-security-manage-tabs lite-security-premium-v2-manage-tabs-motion" role="tablist" aria-label="Security Manage sections" data-security-react-spring="manage-tabs">
           {SECURITY_MANAGE_SECTIONS.map((section) => (
             <button
               key={section.id}
@@ -3100,9 +3129,9 @@ export default function SecurityScreen() {
               {section.label}
             </button>
           ))}
-        </animated.div>
+        </ManageMotionDiv>
 
-        <animated.section style={manageSectionSpring} className={`lite-security-manage-section lite-security-manage-section-${activeManageSection}`} aria-label={activeManageSectionMeta.label} data-security-manage-section={activeManageSection} data-security-react-spring="manage-section">
+        <ManageMotionSection style={securityMotionReduced ? undefined : manageSectionSpring} className={`lite-security-manage-section lite-security-manage-section-${activeManageSection}`} aria-label={activeManageSectionMeta.label} data-security-manage-section={activeManageSection} data-security-react-spring="manage-section">
           <div className="lite-security-manage-section-head">
             <span>{activeManageSectionMeta.label}</span>
             <h3>{activeManageSectionMeta.label}</h3>
@@ -3345,8 +3374,8 @@ export default function SecurityScreen() {
               </div>
             </div>
           ) : null}
-        </animated.section>
-        </animated.div>
+        </ManageMotionSection>
+        </ManageMotionDiv>
       </LiteSheet> : null}
 
       {fullLocalConfirmOpen ? <LiteSheet
@@ -3424,28 +3453,7 @@ export default function SecurityScreen() {
         </Suspense>
       </LiteSheet> : null}
 
-      {selectedFinding ? <LiteSheet
-        open={Boolean(selectedFinding)}
-        onClose={closeFindingDetails}
-        eyebrow="Finding Details"
-        title={selectedFinding ? securityFindingLabel(selectedFinding) : 'Finding details'}
-        description="Review one finding at a time. Technical details stay collapsed and sanitized."
-        layerClassName="lite-security-phase3-layer lite-security-detail-layer"
-        className="lite-security-phase3-panel lite-security-phase3-finding-shell lite-security-phase4-panel-motion"
-        bodyClassName="lite-security-phase3-scroll"
-        headerClassName="lite-security-phase3-head"
-        closeClassName="lite-security-phase3-close"
-        gripClassName="lite-security-phase3-grip"
-        variant="security"
-        motion="safe-grip"
-        surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'finding-details' }}
-      >
-        {selectedFinding ? (
-          <Suspense fallback={<div className="lite-security-details-loading">Loading finding details…</div>}>
-            <SecurityFindingDetailsLazy finding={selectedFinding} context={remediationContext} onClose={closeFindingDetails} />
-          </Suspense>
-        ) : null}
-      </LiteSheet> : null}
+      <SecurityFindingDetailsPortal findings={allReviewFindings} context={remediationContext} triggerRef={findingDetailTriggerRef} />
 
       {activeSecurityDetails === 'legacyEvidenceNeverMounts' && (evidence || evidenceError || evidenceLoading) ? (
         <section className="lite-security-evidence-dropdown" aria-label="Sanitized security evidence summary" aria-live="polite">

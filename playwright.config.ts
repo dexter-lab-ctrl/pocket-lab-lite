@@ -3,6 +3,11 @@ import { resolveLiteBrowser } from './scripts/dev/lite/resolve-browser.mjs';
 
 const mode = process.env.LITE_E2E_MODE || 'mocked';
 const live = mode === 'live';
+const browserBridge = String(process.env.POCKETLAB_HARNESS_BROWSER_BRIDGE || '').trim();
+const browserBridgeEnabled = process.env.LITE_QUALIFICATION_BROWSER_BRIDGE === '1';
+if (browserBridgeEnabled !== Boolean(browserBridge) || (browserBridge && !live)) {
+  throw new Error('Synthetic browser bridge requires LITE_E2E_MODE=live and an explicit LITE_QUALIFICATION_BROWSER_BRIDGE=1.');
+}
 const browser = resolveLiteBrowser();
 const launchOptions = browser.executable_path
   ? { executablePath: browser.executable_path }
@@ -20,6 +25,7 @@ const commonUse = {
     ? ('off' as const)
     : ('retain-on-failure' as const),
   serviceWorkers: live ? ('allow' as const) : ('allow' as const),
+  ...(browserBridge ? { extraHTTPHeaders: { 'X-Pocket-Lab-Qualification-Bridge': browserBridge } } : {}),
 };
 
 const mockedHar = (project: string) => ({
