@@ -310,7 +310,7 @@ PYREPO
     local metadata="$TMP_DIR/releases.json" candidates=() selected_urls=()
     download_https "https://api.github.com/repos/$REPO/releases?per_page=100" "$metadata" 2097152
     mapfile -t candidates < <(resolve_release_candidates "$metadata" "$REPO")
-    [[ ${#candidates[@]} -ge 6 && $((${#candidates[@]} % 6)) -eq 0 ]] || die "Could not resolve Pocket Lab Lite release candidates"
+    (( ${#candidates[@]} >= 6 && ${#candidates[@]} % 6 == 0 )) || die "Could not resolve Pocket Lab Lite release candidates"
 
     local i candidate_tag assets_url embedded_complete assets_metadata
     for ((i=0; i<${#candidates[@]}; i+=6)); do
