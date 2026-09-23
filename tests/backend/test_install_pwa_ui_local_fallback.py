@@ -51,13 +51,18 @@ def test_install_pwa_ui_uses_bounded_https_and_safe_zip_extraction():
 
 def _embedded_python(function_name: str) -> str:
     text = _script_text()
-    match = re.search(
-        rf"{re.escape(function_name)}\\(\\) \\{{.*?<<'PY'\\n(.*?)\\nPY\\n\\}}",
-        text,
-        flags=re.DOTALL,
-    )
-    assert match, f"Could not find embedded Python for {function_name}"
-    return match.group(1)
+    function_marker = f"{function_name}() {{"
+    start = text.find(function_marker)
+    assert start >= 0, f"Could not find function {function_name}"
+
+    heredoc = re.search(r"<<'([A-Z0-9_]+)'\\n", text[start:])
+    assert heredoc, f"Could not find Python heredoc for {function_name}"
+
+    delimiter = heredoc.group(1)
+    body_start = start + heredoc.end()
+    body_end = text.find(f"\\n{delimiter}\\n", body_start)
+    assert body_end >= 0, f"Could not find heredoc terminator for {function_name}"
+    return text[body_start:body_end]
 
 
 def _run_embedded_python(function_name: str, *args: str) -> subprocess.CompletedProcess[str]:
