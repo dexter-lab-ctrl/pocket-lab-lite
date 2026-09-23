@@ -32,7 +32,8 @@ def test_install_pwa_ui_filters_the_lite_release_stream():
     text = _script_text()
     assert "https://api.github.com/repos/$REPO/releases?per_page=100" in text
     assert "/releases/latest" not in text
-    assert "resolve_remote_release" in text
+    assert "resolve_release_candidates" in text
+    assert "resolve_release_assets" in text
     assert "pocketlab-lite-release.json" in text
     assert "validate_manifest" in text
 
