@@ -10,6 +10,12 @@ export const LITE_TABS = [
   ['Rules', 'rules'],
 ] as const;
 
+type LiteScreenId = typeof LITE_TABS[number][1];
+
+const LITE_TAB_LABELS = Object.freeze(
+  Object.fromEntries(LITE_TABS.map(([label, screenId]) => [screenId, label])) as Record<LiteScreenId, string>,
+);
+
 export async function installScenario(page: Page, scenario = 'healthy') {
   await page.addInitScript((value) => {
     localStorage.setItem('POCKETLAB_MOCK_SCENARIO', value);
@@ -58,9 +64,16 @@ function escapeRegex(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-export async function openTab(page: Page, label: string, screenId: string) {
-  const shortLabel = label.split(' ')[0];
-  const accessibleName = new RegExp(`^(${escapeRegex(label)}|${escapeRegex(shortLabel)})$`, 'i');
+export function openTab(page: Page, screenId: LiteScreenId): Promise<void>;
+export function openTab(page: Page, label: string, screenId: LiteScreenId): Promise<void>;
+export async function openTab(page: Page, labelOrScreenId: string, explicitScreenId?: LiteScreenId) {
+  const screenId = explicitScreenId || labelOrScreenId as LiteScreenId;
+  const label = explicitScreenId ? labelOrScreenId : LITE_TAB_LABELS[screenId];
+  if (!label) throw new Error(`Unknown Lite screen id: ${screenId}`);
+
+  const labels = [label, label.split(' ')[0]];
+  if (screenId === 'catalog') labels.push('Apps');
+  const accessibleName = new RegExp(`^(?:${[...new Set(labels)].map(escapeRegex).join('|')})$`, 'i');
   const button = page.getByRole('button', { name: accessibleName }).first();
   await button.click();
   await page.locator(`[data-lite-screen-id="${screenId}"]`).waitFor({ state: 'visible' });
