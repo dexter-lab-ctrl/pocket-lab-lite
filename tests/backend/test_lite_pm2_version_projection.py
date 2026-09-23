@@ -156,7 +156,9 @@ def test_lite_startup_reconciles_installed_photoprism_before_supervisors():
     assert "reconcile_installed_photoprism" in source
     assert 'bash "$PHOTOPRISM_RUNTIME" reconcile' in source
     assert 'POCKETLAB_CADDY_REFRESH_NESTED' in helper
-    assert 'POCKETLAB_RECONCILER_CHILD=1 bash "$DASHBOARD" --lite --caddy-only' in helper
+    assert 'POCKETLAB_CADDY_REFRESH_RELOAD_ONLY' in source
+    assert 'POCKETLAB_CADDY_REFRESH_RELOAD_ONLY' in helper
+    assert 'POCKETLAB_RECONCILER_CHILD=1 POCKETLAB_CADDY_REFRESH_RELOAD_ONLY=' in helper
 
 
 def test_caddy_fault_repair_uses_scoped_dashboard_path():

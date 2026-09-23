@@ -1030,7 +1030,7 @@ reconcile_installed_photoprism(){
   [[ -s "$photoprism_env" || -s "$photoprism_manifest" ]] || return 0
   [[ -f "$PHOTOPRISM_RUNTIME" ]] || die "PhotoPrism runtime script is missing: $PHOTOPRISM_RUNTIME"
   log INFO "Reconciling installed PhotoPrism runtime before Lite supervisors"
-  POCKETLAB_CADDY_REFRESH_NESTED=1 bash "$PHOTOPRISM_RUNTIME" reconcile || die "Installed PhotoPrism runtime did not converge"
+  POCKETLAB_CADDY_REFRESH_NESTED=1 POCKETLAB_CADDY_REFRESH_RELOAD_ONLY=1 bash "$PHOTOPRISM_RUNTIME" reconcile || die "Installed PhotoPrism runtime did not converge"
 }
 
 start_pm2_daemons(){
@@ -1095,8 +1095,20 @@ start_caddy_only(){
   start_tailscale_if_missing
   write_caddyfile
   validate_caddyfile
-  POCKETLAB_PM2_SERVICE_VERSION="$(caddy_installed_version)" pm2_runtime_process caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
-  reload_caddy_if_config_changed
+  if [[ "${POCKETLAB_CADDY_REFRESH_RELOAD_ONLY:-0}" == "1" ]]; then
+    # The full Lite convergence pass has already verified and owned Caddy.
+    # PhotoPrism invokes this nested refresh to publish its route registry;
+    # reload the existing proxy in place so PM2 daemon recovery does not turn
+    # one desired-state pass into a second Caddy restart.
+    if ! caddy reload --config "$CADDYFILE" >/dev/null 2>&1; then
+      log WARN "Nested Caddy reload failed; falling back to canonical PM2 ownership"
+      POCKETLAB_PM2_SERVICE_VERSION="$(caddy_installed_version)" pm2_runtime_process caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
+      reload_caddy_if_config_changed
+    fi
+  else
+    POCKETLAB_PM2_SERVICE_VERSION="$(caddy_installed_version)" pm2_runtime_process caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
+    reload_caddy_if_config_changed
+  fi
   pm2 save >/dev/null || true
   log INFO "Caddy proxy configuration is updated and safe to rerun"
 }

@@ -73,6 +73,7 @@ def test_photoprism_caddy_refresh_uses_canonical_version_aware_runtime_path():
     photoprism = (LITE_SCRIPTS / "install-photoprism-proot.sh").read_text()
 
     assert 'bash "$DASHBOARD" --lite --caddy-only' in helper
+    assert 'POCKETLAB_CADDY_REFRESH_RELOAD_ONLY=' in helper
     assert "pm2 delete caddy-proxy" not in helper
     assert 'pm2 start "$(command -v caddy)" --name caddy-proxy' not in helper
     assert 'restart-caddy-proxy.sh' in photoprism
