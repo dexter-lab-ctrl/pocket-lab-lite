@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { openTab, waitForLiteScreenToSettle } from './lite-test-helpers';
 import {
+  exerciseLiteScroll,
   expectLitePerformanceBudget,
   installLiteFrameSampler,
   measureLiteInteraction,
@@ -51,11 +52,9 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
         testInfo,
         `live-scroll:${screenId}`,
         async () => {
-          await page.evaluate(() => window.scrollBy({ top: Math.max(200, Math.round(window.innerHeight * 0.5)), behavior: 'auto' }));
-          await page.waitForTimeout(160);
-          await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'auto' }));
+          await exerciseLiteScroll(page, 820);
         },
-        { settleMs: 900, mode: 'live' },
+        { settleMs: 180, mode: 'live' },
       );
       expectLitePerformanceBudget(report);
       await writeLitePerformanceEvidence(testInfo, report);

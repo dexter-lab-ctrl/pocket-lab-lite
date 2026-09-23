@@ -48,7 +48,8 @@
     "test:perf:live": "rm -rf .pocketlab-dev/performance && VITE_POCKETLAB_PERF_TEST=1 LITE_E2E_MODE=live LITE_E2E_LIVE=1 playwright test tests/e2e/lite-performance-live.spec.ts --project=live-desktop --project=live-mobile && npm run check:render-budgets",
     "test:perf": "npm run test:perf:components && npm run test:perf:mocked",
     "test:perf:android-cdp": "rm -rf .pocketlab-dev/performance && node scripts/dev/lite/qualify-ui-performance-android-cdp.mjs && npm run check:render-budgets",
-    "test:perf:qualification": "npm run test:perf:components && npm run build:budget && npm run test:perf:mocked"
+    "test:perf:qualification": "npm run test:perf:components && npm run build:budget && npm run test:perf:mocked",
+    "test:perf:interactions": "rm -rf .pocketlab-dev/performance && VITE_POCKETLAB_PERF_TEST=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-performance.spec.ts --grep \"\\\\[interaction\\\\]\" --project=mocked-desktop --project=mocked-mobile && npm run check:render-budgets"
   },
   "keywords": [],
   "author": "",

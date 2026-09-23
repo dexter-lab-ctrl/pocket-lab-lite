@@ -72,7 +72,9 @@ Run:
 npm run test:perf:mocked
 ```
 
-This exercises Home, Apps, Devices, Security, Identity & Access, Rules, Recovery, cross-tab navigation, and App Catalog Manage on both mocked desktop and mocked mobile Playwright projects.
+This exercises Home, Apps, Devices, Security, Identity & Access, Rules, Recovery, continuous active scrolling, cross-tab navigation, Home refresh feedback, and every tab's existing Manage surface on both mocked desktop and mocked mobile Playwright projects.
+
+Mocked runs also require opt-in React Profiler evidence and enforce the declared React commit hard gate. Frame evidence is sampled during active work rather than padded with long idle windows.
 
 Evidence is written under:
 
@@ -126,7 +128,7 @@ The repository script:
 scripts/dev/lite/qualify-ui-performance-android-cdp.mjs
 ```
 
-connects to the existing Android Chrome instance, opens a separate temporary tab, checks all seven Lite screens, scrolls them, records requestAnimationFrame intervals, Long Task/Event Timing data when supported, writes sanitized evidence, closes only the temporary tab, and exits without invoking Pocket Lab write actions.
+connects to the existing Android Chrome instance, opens a separate temporary tab, checks all seven Lite screens, performs a bounded continuous scroll workload, records requestAnimationFrame intervals plus Long Task, Long Animation Frame, and Event Timing data when supported, writes sanitized evidence, closes only the temporary tab, and exits without invoking Pocket Lab write actions.
 
 This is the preferred frame-rate qualification when the goal is to prove performance on the physical Android rendering hardware.
 
@@ -153,6 +155,7 @@ Codex should:
 npm run test:perf:components
 npm run build:budget
 npm run test:perf:mocked
+npm run test:perf:interactions
 npm run test:a11y
 npm run test:a11y:states
 npm run test:visual

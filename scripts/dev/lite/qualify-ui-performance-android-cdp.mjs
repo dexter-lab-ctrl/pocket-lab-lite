@@ -133,10 +133,28 @@ for (const screenId of screens) {
 
   const interaction = sanitizeLitePerformanceName(`android-cdp:${screenId}:scroll`);
   await page.evaluate((name) => window.__POCKETLAB_ANDROID_FRAME_SAMPLER__?.start(name), interaction);
-  await page.evaluate(() => window.scrollBy({ top: Math.max(220, Math.round(window.innerHeight * 0.5)), behavior: 'auto' }));
+  await page.evaluate(async () => {
+    const root = document.scrollingElement || document.documentElement;
+    const startTop = root.scrollTop;
+    const maxScroll = Math.max(0, root.scrollHeight - window.innerHeight);
+    const distance = Math.min(maxScroll, Math.max(220, Math.round(window.innerHeight * 0.55)));
+    await new Promise((resolve) => {
+      const startedAt = performance.now();
+      const duration = 900;
+      const step = (now) => {
+        const phase = Math.min(1, (now - startedAt) / duration);
+        const wave = (1 - Math.cos(phase * Math.PI * 2)) / 2;
+        if (distance > 0) root.scrollTop = Math.min(maxScroll, startTop + (distance * wave));
+        if (phase < 1) requestAnimationFrame(step);
+        else {
+          root.scrollTop = startTop;
+          resolve();
+        }
+      };
+      requestAnimationFrame(step);
+    });
+  });
   await page.waitForTimeout(180);
-  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'auto' }));
-  await page.waitForTimeout(1000);
   const raw = await page.evaluate(() => window.__POCKETLAB_ANDROID_FRAME_SAMPLER__?.stop?.() || null);
   if (!raw) fail(`frame sampler returned no evidence for ${screenId}`);
 

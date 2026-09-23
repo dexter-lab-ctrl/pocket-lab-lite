@@ -34,12 +34,26 @@ for (const file of files) {
   if (payload.gate_passed !== true) {
     console.error(`[ui-performance] FAIL ${label}: ${(payload.gate_violations || []).join(', ')}`);
     failures += 1;
-  } else {
-    console.log(`[ui-performance] PASS ${label}: p95=${payload.p95_frame_ms}ms smooth=${payload.target_smooth_frame_ratio}`);
+  }
+  if (payload.mode === 'mocked' && payload.react_profile_available !== true) {
+    console.error(`[ui-performance] FAIL ${label}: mocked evidence is missing React Profiler data`);
+    failures += 1;
+  }
+  if (payload.react_profile_available === true && payload.react_commit_gate_passed !== true) {
+    console.error(`[ui-performance] FAIL ${label}: React commit p95=${payload.react_commit_p95_ms}ms exceeded the hard gate`);
+    failures += 1;
+  }
+  if (payload.gate_passed === true && (payload.react_profile_available !== true || payload.react_commit_gate_passed === true)) {
+    const react = payload.react_profile_available === true ? ` react_p95=${payload.react_commit_p95_ms}ms` : '';
+    console.log(`[ui-performance] PASS ${label}: p95=${payload.p95_frame_ms}ms smooth=${payload.target_smooth_frame_ratio}${react}`);
   }
   if (payload.target_met !== true) {
     targetMisses += 1;
     console.warn(`[ui-performance] TARGET-MISS ${label}: ${(payload.target_misses || []).join(', ')}`);
+  }
+  if (payload.react_profile_available === true && payload.react_commit_target_met !== true) {
+    targetMisses += 1;
+    console.warn(`[ui-performance] TARGET-MISS ${label}: react_commit_p95_ms=${payload.react_commit_p95_ms}`);
   }
 }
 

@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 import {
+  exerciseLiteScroll,
   expectLitePerformanceBudget,
   installLiteFrameSampler,
   measureLiteInteraction,
@@ -33,11 +34,9 @@ for (const [screenId, scenario] of SCREEN_CASES) {
       testInfo,
       `${screenId}:screen-steady`,
       async () => {
-        await page.evaluate(() => window.scrollBy({ top: Math.max(160, Math.round(window.innerHeight * 0.45)), behavior: 'auto' }));
-        await page.waitForTimeout(120);
-        await page.evaluate(() => window.scrollBy({ top: -Math.max(160, Math.round(window.innerHeight * 0.45)), behavior: 'auto' }));
+        await exerciseLiteScroll(page);
       },
-      { settleMs: 900, mode: 'mocked' },
+      { settleMs: 180, mode: 'mocked' },
     );
 
     expectLitePerformanceBudget(report);
@@ -45,7 +44,7 @@ for (const [screenId, scenario] of SCREEN_CASES) {
   });
 }
 
-test('cross-tab navigation stays inside the render budget', async ({ page }, testInfo) => {
+test('[interaction] cross-tab navigation stays inside the render budget', async ({ page }, testInfo) => {
   await installScenario(page, 'healthy');
   await page.goto('/?screen=home');
   await waitForLiteScreenToSettle(page, 'home');
@@ -67,23 +66,58 @@ test('cross-tab navigation stays inside the render budget', async ({ page }, tes
   await writeLitePerformanceEvidence(testInfo, report);
 });
 
-test('App Catalog Manage overlay stays inside the render budget', async ({ page }, testInfo) => {
-  await installScenario(page, 'healthy');
-  await page.goto('/?screen=catalog');
-  await waitForLiteScreenToSettle(page, 'catalog');
+const MANAGE_CASES = [
+  ['home', 'healthy', /Workspace details/i, '[role="dialog"]'],
+  ['catalog', 'catalog-ready', /^Manage$/i, '[role="dialog"]'],
+  ['devices', 'healthy', /Manage Test-Phone-4/i, '.lite-device-details-panel'],
+  ['security', 'healthy', /Manage Security details/i, '[role="dialog"]'],
+  ['identity', 'healthy', /Manage Access/i, '[role="dialog"]'],
+  ['rules', 'healthy', /Manage Safety Rules/i, '[role="dialog"]'],
+  ['recovery', 'healthy', /Manage Recovery/i, '[role="dialog"]'],
+] as const;
 
-  const manage = page.getByRole('button', { name: /^Manage$/ }).first();
-  await expect(manage).toBeVisible();
+for (const [screenId, scenario, openerName, surfaceSelector] of MANAGE_CASES) {
+  test(`[interaction] ${screenId} Manage-open stays inside the render budget`, async ({ page }, testInfo) => {
+    await installScenario(page, scenario);
+    await page.goto(`/?screen=${screenId}`);
+    await waitForLiteScreenToSettle(page, screenId);
+
+    const opener = page.getByRole('button', { name: openerName }).first();
+    await expect(opener).toBeVisible();
+
+    const report = await measureLiteInteraction(
+      page,
+      testInfo,
+      `${screenId}:manage-open`,
+      async () => {
+        await opener.click();
+        await expect(page.locator(`${surfaceSelector}:visible`).first()).toBeVisible();
+      },
+      { settleMs: 320, mode: 'mocked' },
+    );
+
+    expectLitePerformanceBudget(report);
+    await writeLitePerformanceEvidence(testInfo, report);
+  });
+}
+
+test('[interaction] Home refresh feedback stays inside the render budget', async ({ page }, testInfo) => {
+  await installScenario(page, 'healthy');
+  await page.goto('/?screen=home');
+  await waitForLiteScreenToSettle(page, 'home');
+
+  const refresh = page.getByRole('button', { name: /^Refresh$/ }).first();
+  await expect(refresh).toBeVisible();
 
   const report = await measureLiteInteraction(
     page,
     testInfo,
-    'catalog:manage-open',
+    'home:refresh-feedback',
     async () => {
-      await manage.click();
-      await expect(page.locator('[data-lite-overlay-portal="true"]')).toBeVisible();
+      await refresh.click();
+      await expect(page.locator('.lite-refresh-status-popover')).toBeVisible();
     },
-    { settleMs: 850, mode: 'mocked' },
+    { settleMs: 420, mode: 'mocked' },
   );
 
   expectLitePerformanceBudget(report);

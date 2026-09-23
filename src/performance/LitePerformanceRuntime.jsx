@@ -79,6 +79,10 @@ export function useLitePerformanceRuntime() {
 
     if (PERF_ENABLED) {
       const store = performanceStore();
+      store.resetSummary = () => {
+        store.commits = {};
+        store.long_tasks = [];
+      };
       store.readSummary = () => {
         const commits = {};
         for (const [id, durations] of Object.entries(store.commits || {})) {
