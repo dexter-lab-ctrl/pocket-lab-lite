@@ -148,6 +148,16 @@ Codex should:
 
 ## Validation commands
 
+Taskfile aliases:
+
+```bash
+task lite:test:perf:components
+task lite:test:perf:mocked
+task lite:test:perf:qualification
+```
+
+Direct npm commands:
+
 ```bash
 npm run test:perf:components
 npm run build:budget
@@ -165,10 +175,22 @@ task lite:check
 Live runtime:
 
 ```bash
+task lite:test:perf:live
+```
+
+or directly:
+
+```bash
 LITE_E2E_LIVE=1 LITE_BASE_URL='<origin>' bash scripts/dev/lite/run-ui-performance-live.sh
 ```
 
 Physical Android renderer:
+
+```bash
+task lite:test:perf:android
+```
+
+or directly:
 
 ```bash
 LITE_ANDROID_CDP_URL='http://127.0.0.1:<port>' \

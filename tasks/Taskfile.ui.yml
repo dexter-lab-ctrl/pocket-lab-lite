@@ -60,3 +60,32 @@ tasks:
     deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
     cmds:
       - bash scripts/dev/check-lighthouse.sh
+
+lite:test:perf:components:
+    desc: Validate the Pocket Lab Lite UI frame-budget math and performance policy guards
+    cmds:
+      - npm run test:perf:components
+
+  lite:test:perf:mocked:
+    desc: Run deterministic 60 FPS qualification on mocked desktop and mobile Chromium
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:perf:mocked
+
+  lite:test:perf:qualification:
+    desc: Run UI performance unit guards, bundle budgets, and deterministic mocked frame qualification
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:perf:qualification
+
+  lite:test:perf:live:
+    desc: Run read-only UI performance qualification against a prepared live runtime; requires LITE_E2E_LIVE=1
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - bash scripts/dev/lite/run-ui-performance-live.sh
+
+  lite:test:perf:android:
+    desc: Qualify UI frame performance on physical Android Chrome over CDP; requires LITE_ANDROID_CDP_URL
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:perf:android-cdp
