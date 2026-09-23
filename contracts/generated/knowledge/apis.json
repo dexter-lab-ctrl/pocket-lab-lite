@@ -2872,6 +2872,27 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Get Lite Runtime Contract",
+      "domain": "runtime",
+      "id": "api:get:/api/lite/runtime",
+      "method": "GET",
+      "name": "GET /api/lite/runtime",
+      "operation_id": "get_lite_runtime_contract_api_lite_runtime_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/runtime",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Get Lite Security",
       "domain": "security",
       "frontend_clients": [
@@ -6530,6 +6551,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "af9b1f0efac275ebb373a174def2b2d8839b3fa6e423b217ef97ffee698c6777"
+    "source_fingerprint": "88b464765e46595bc330bc08b22e96b0c0566063be7144f0a247d8fb95dd59ab"
   }
 }

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 12211333ece6db56c47432282d41b3f529b2fd4a2c8ee3405f7fe756d8c3569c
+source_fingerprint: e15be279f3eec3e67bf14e070a611bab3c65997af21f753fc18a3560dd1fc503
 schema_revision: 1
 validation_status: generated
 ---
@@ -216,6 +216,7 @@ validation_status: generated
 | `rollback_pointer_failed` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `rollback_unproved` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `run_not_found` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |
+| `runtime_contract_unavailable` | runtime | The sanitized PM2 Runtime Contract is not yet available for the Lite status projection. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py |
 | `scanner_intelligence_hard_expired` | security | Managed Trivy intelligence exceeded its bounded freshness policy and a bounded refresh did not restore a valid revision. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py |
 | `security_load_unknown` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |
 | `security_scan_conflict` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |

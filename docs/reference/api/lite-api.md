@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 7aad62e8e266bcf0c40f26bc567cd97dd6f3e4c6af4c333afe1c9d76de8806cf
+source_fingerprint: 118b1f3d11ad9a1db5a586f17bddb7b8190f472910f4cdce108bc035cc05ed55
 schema_revision: 1
 validation_status: generated
 ---
@@ -4073,6 +4073,21 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 
 - Operation ID: `get_lite_domain_revisions_api_lite_revisions_get`
 - Summary: Get Lite Domain Revisions
+- Deprecated: no
+- Tags: `lite`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-runtime"></a>
+## GET `/api/lite/runtime`
+
+- Operation ID: `get_lite_runtime_contract_api_lite_runtime_get`
+- Summary: Get Lite Runtime Contract
 - Deprecated: no
 - Tags: `lite`
 

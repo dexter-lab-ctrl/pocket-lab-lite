@@ -14835,6 +14835,50 @@
         ]
       }
     },
+    "/api/lite/runtime": {
+      "get": {
+        "description": "Return the sanitized, read-only PM2 Runtime Contract projection.",
+        "operationId": "get_lite_runtime_contract_api_lite_runtime_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Runtime Contract Api Lite Runtime Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get Lite Runtime Contract",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
     "/api/lite/security": {
       "get": {
         "operationId": "get_lite_security_api_lite_security_get",

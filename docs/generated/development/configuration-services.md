@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 2000749d3a8ffce0390893bafaf58282232d78642d032887022c7e54953005ba
+source_fingerprint: b69c196f9e78638982a01e4c85175a5b4ef448b2610f18cd4252aaa3d0b6332f
 schema_revision: 1
 validation_status: generated
 ---
@@ -164,6 +164,7 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_LITE_DB_PATH`
 - `POCKETLAB_LITE_DIRECT_BASE_URL`
 - `POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS`
+- `POCKETLAB_LITE_NATS_PORT`
 - `POCKETLAB_LITE_PROXY_BASE_URL`
 - `POCKETLAB_LITE_RELEASE_REPO`
 - `POCKETLAB_LITE_S8_FAULT_POINT`
@@ -272,7 +273,6 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_PHASE3C_RUNTIME_ATTEMPTS`
 - `POCKETLAB_PHASE3C_RUNTIME_MAX_TIME`
 - `POCKETLAB_PHASE3C_WARMUP_ATTEMPTS`
-- `POCKETLAB_PHONE_API_BACKOFF_MAX_SECONDS`
 
 ## Process roles
 

@@ -871,6 +871,12 @@
           "type": "owns"
         }
       ],
+      "api:get:/api/lite/runtime": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/security": [
         {
           "source": "domain:security",
@@ -4516,6 +4522,12 @@
       "reason:run_not_found": [
         {
           "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:runtime_contract_unavailable": [
+        {
+          "source": "domain:runtime",
           "type": "owns"
         }
       ],
@@ -8749,6 +8761,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:runtime_contract_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:scanner_intelligence_hard_expired",
           "type": "verified_by"
         },
@@ -9408,6 +9424,10 @@
         },
         {
           "source": "api:get:/api/lite/revisions",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/runtime",
           "type": "verified_by"
         },
         {
@@ -10610,6 +10630,12 @@
       "test:tests/backend/test_lite_photoprism_backup.py": [
         {
           "source": "component:photoprism",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_pm2_runtime_contract.py": [
+        {
+          "source": "reason:metadata_only",
           "type": "verified_by"
         }
       ],
@@ -13605,6 +13631,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:runtime_contract_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:scanner_intelligence_hard_expired",
           "type": "verified_by"
         },
@@ -14655,6 +14685,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:runtime_contract_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:scanner_intelligence_hard_expired",
           "type": "verified_by"
         },
@@ -15456,6 +15490,10 @@
         },
         {
           "source": "api:get:/api/lite/revisions",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/runtime",
           "type": "verified_by"
         },
         {
@@ -17822,6 +17860,16 @@
           "target": "table:projection_dirty_signals",
           "type": "reads"
         },
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/runtime": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -25861,6 +25909,16 @@
           "type": "owns"
         }
       ],
+      "domain:runtime": [
+        {
+          "target": "api:get:/api/lite/runtime",
+          "type": "owns"
+        },
+        {
+          "target": "reason:runtime_contract_unavailable",
+          "type": "owns"
+        }
+      ],
       "domain:security": [
         {
           "target": "limitation:security:accepted-1",
@@ -29697,6 +29755,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_pm2_runtime_contract.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -31175,6 +31237,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:runtime_contract_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:scanner_intelligence_hard_expired": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -32383,6 +32459,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "af9b1f0efac275ebb373a174def2b2d8839b3fa6e423b217ef97ffee698c6777"
+    "source_fingerprint": "88b464765e46595bc330bc08b22e96b0c0566063be7144f0a247d8fb95dd59ab"
   }
 }

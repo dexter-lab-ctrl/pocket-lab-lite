@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 7c4c7a25a28c02c434872c54b26f1ce57b17d1d610d18cb127ddc302291727ad
+source_fingerprint: 288ef8479a86b00bed95d19d5a93afdcfcd138b2b8d58a9ada83d529d22f8505
 schema_revision: 1
 validation_status: generated
 ---
@@ -360,6 +360,7 @@ validation_status: generated
 - `/api/lite/recovery/restore/previews/{preview_id}`
 - `/api/lite/recovery/restore/runs/{restore_id}`
 - `/api/lite/remote-access/readiness`
+- `/api/lite/runtime`
 - `/api/lite/security/apps`
 - `/api/lite/security/apps/{app_id}`
 - `/api/lite/security/details/{run_id}`

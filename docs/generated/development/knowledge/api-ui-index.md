@@ -115,6 +115,7 @@ generator_version: 3
 | `GET /api/lite/release` | release | LiteReleaseUpdateCard | release_status_api_lite_release_get | contract-derived |
 | `GET /api/lite/remote-access/readiness` | remote-access | — | get_lite_remote_access_readiness_api_lite_remote_access_readiness_get | contract-derived |
 | `GET /api/lite/revisions` | home | LiteRevisionSyncBridge | get_lite_domain_revisions_api_lite_revisions_get | contract-derived |
+| `GET /api/lite/runtime` | runtime | — | get_lite_runtime_contract_api_lite_runtime_get | contract-derived |
 | `GET /api/lite/security` | security | — | get_lite_security_api_lite_security_get | contract-derived |
 | `GET /api/lite/security/apps` | security | — | get_lite_security_apps_api_lite_security_apps_get | contract-derived |
 | `GET /api/lite/security/apps/{app_id}` | security | — | get_lite_security_app_api_lite_security_apps__app_id__get | contract-derived |

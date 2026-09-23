@@ -5398,6 +5398,46 @@
     },
     {
       "aliases": [],
+      "audience": "developer/operator",
+      "captures_runtime": false,
+      "commands": [
+        "bash scripts/dev/check-lite-runtime-resilience-server-phone.sh --pm2-contract-faults"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:runtime:stability:phone:faults",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/check-lite-runtime-resilience-server-phone.sh"
+      ],
+      "name": "lite:runtime:stability:phone:faults",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Qualify bounded PM2 crash-loop, graceful-stop, memory-ceiling, and stable recovery behavior; requires explicit guards",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Runtime-evidence loop"
+    },
+    {
+      "aliases": [],
       "audience": "developer",
       "captures_runtime": false,
       "commands": [

@@ -2974,6 +2974,7 @@
       "/api/lite/recovery/restore/previews/{preview_id}",
       "/api/lite/recovery/restore/runs/{restore_id}",
       "/api/lite/remote-access/readiness",
+      "/api/lite/runtime",
       "/api/lite/security/apps",
       "/api/lite/security/apps/{app_id}",
       "/api/lite/security/details/{run_id}",
@@ -2993,7 +2994,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "1f357bf24fede87cc26e7ad47b4797dd30e988071bcb646eb17aa8ea9a3a57e4",
+    "aggregate_fingerprint": "a139eb9596c3cc0943e84772a1d16ff156b4c232ac70995a0a5accad0a9822c3",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3003,8 +3004,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "73df089dcb595eacedd99de1797a42e2eedbe4df044eebb8a6fc323fd9c2d1c4",
-      "contracts/metadata/documentation-platform.json": "54ea404fd374edcc6713400b2c076dc24b7c64f9c571e61a8854f518fd376ae2",
+      "contracts/generated/lite-openapi.json": "683093d477f48a1e54959ed51de4498003d3854e51b55b957ec75ad84d6bc929",
+      "contracts/metadata/documentation-platform.json": "c71f6ce0bb40f489bb1f65cf513e6e10572e9e752883827a6588763bfd864313",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4",
       "src/lib/liteApi.js": "cf1a84bfef1cd3de108be00fe8ec5874b7ece405e2637f9cf274a6438f836b6e",
@@ -3026,7 +3027,7 @@
       "src/lite/LiteNativeInstallSurface.jsx": "27366c82bfe0a8e99ddfc87f62fb9960f72d8a50eb48f5dbb2c89a94a1fcae61",
       "src/lite/LiteOverlay.jsx": "1692ab05c81d6ea6cbecc73c5cb34a9f40e656aea70ebad78894fe3e73a8ec5f",
       "src/lite/LitePrimitives.stories.jsx": "7c5e2879ea4785426ba23b45f820bde10ad64955d2ad5a4ad2e85ef3ff6c22e9",
-      "src/lite/LiteRecovery.jsx": "554d174424577ba860a4b6e1f1c62cc0d5a8dfda6f6a5c31d9d915a82c09ef44",
+      "src/lite/LiteRecovery.jsx": "0a17190220cd0d808f4e3df4e12f2010b4defb8b6571dbc104cc7f1c4bd2d4b3",
       "src/lite/LiteRecovery.stories.jsx": "c52888ba8f51947de64807d83c320488b64e23375fbe3abf9bc909fe3b0a71c6",
       "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
       "src/lite/LiteReleaseUpdateCard.jsx": "8c91536d063d7851b62c85874d830d8dacafe586d02857e7f863128b27a63ed4",
