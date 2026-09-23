@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
+  LITE_PERFORMANCE_INTERACTIONS,
   LITE_PERFORMANCE_PRIMITIVES,
   LITE_PERFORMANCE_SCREENS,
 } from './litePerformanceBudget.js';
@@ -49,6 +50,17 @@ describe('Pocket Lab Lite UI performance policy guards', () => {
     expect(read('src/components/ui.jsx')).not.toContain('React.memo(');
     expect(read('src/lite/LiteUi.jsx')).not.toContain('React.memo(');
     expect(read('src/lite/LiteOverlay.jsx')).not.toContain('React.memo(');
+  });
+
+  it('keeps every declared performance interaction tied to a qualified scenario', () => {
+    const contractSource = read('tests/e2e/lite-performance-contract.ts');
+    const qualified = [...contractSource.matchAll(/^\s*'([^']+)',\s*$/gm)].map((match) => match[1]);
+    expect(qualified).toEqual(LITE_PERFORMANCE_INTERACTIONS);
+
+    const spec = read('tests/e2e/lite-performance.spec.ts');
+    for (const interaction of LITE_PERFORMANCE_INTERACTIONS) {
+      expect(spec).toContain(`interactionId('${interaction}'`);
+    }
   });
 
   it('keeps GPU promotion scoped to active compositor motion', () => {
