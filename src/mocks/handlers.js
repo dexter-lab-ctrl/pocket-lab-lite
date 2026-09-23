@@ -4,6 +4,9 @@ import { telemetryNormal, healthAllGreen, healthVaultSealed, fleetAgents, driftD
 import { resolveGeneratedLiteScenario } from '../test/fixtures/generated/lite-fixtures.js';
 
 const scenario = () => resolveGeneratedLiteScenario(typeof window !== 'undefined' ? (window.localStorage.getItem('POCKETLAB_MOCK_SCENARIO') || 'healthy') : 'healthy');
+const liteSafeReadHeaders = (request) => ({
+  'X-PocketLab-Read-Nonce': request.headers.get('X-PocketLab-Read-Nonce') || '',
+});
 const controlPlane = () => {
   if (scenario() === 'nats-down') return controlPlaneNatsDown;
   if (scenario() === 'worker-down') return workerDown;
@@ -560,18 +563,18 @@ export const handlers = [
       meta: { matched_count: values.length, query_time_ms: 12, query: url.searchParams.get('query') || '' }
     });
   }),
-  http.get('/api/lite/revisions', () => HttpResponse.json({
+  http.get('/api/lite/revisions', ({ request }) => HttpResponse.json({
     database_instance: 'pocketlab-lite-msw',
     last_event_id: 1,
     revisions: { status: 1, apps: 1, fleet: 1, security: 1, recovery: 1, identity: 1, rules: 1 },
     projection_version: 1,
     checked_at: new Date().toISOString(),
-  })),
+  }, { headers: liteSafeReadHeaders(request) })),
   http.get('/api/lite/events', () => new HttpResponse('', {
     status: 204,
     headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
   })),
-  http.get('/api/lite/release', () => HttpResponse.json({
+  http.get('/api/lite/release', ({ request }) => HttpResponse.json({
     status: 'current',
     summary: 'Pocket Lab Lite is up to date.',
     install_mode: 'release',
@@ -581,7 +584,7 @@ export const handlers = [
     update_available: false,
     auto_apply: false,
     checked_at: new Date().toISOString(),
-  })),
+  }, { headers: liteSafeReadHeaders(request) })),
   http.get('/api/lite/diagnostics/frontend-lifecycle/challenge', () => HttpResponse.json({
     active: false,
     challenge_id: '',
@@ -606,7 +609,7 @@ export const handlers = [
       'X-PocketLab-Read-Nonce': request.headers.get('X-PocketLab-Read-Nonce') || '',
     },
   })),
-  http.get('/api/lite/catalog', () => {
+  http.get('/api/lite/catalog', ({ request }) => {
     const ready = scenario() === 'catalog-ready';
     const installing = scenario() === 'catalog-installing';
     const app = {
@@ -635,11 +638,11 @@ export const handlers = [
       lifecycle: mockAppLifecycleProfiles()[0],
       lifecycle_summary: { status: 'ready', summary: 'PhotoPrism is ready, protected, and recoverable.', host: 'Runs on Server Phone', storage: 'Media connected', security: 'Protected app', backup: 'Backup ready', attention_count: 0 },
     };
-    return HttpResponse.json({ status: 'healthy', access: { https_ready: true, secure_origin: 'https://pocket-lab-lite.example.ts.net', route_mode: 'tailscale_caddy', pwa_ready: true, message: 'Secure access is ready.' }, apps: [app], items: [app], count: 1, updated_at: new Date().toISOString() });
+    return HttpResponse.json({ status: 'healthy', access: { https_ready: true, secure_origin: 'https://pocket-lab-lite.example.ts.net', route_mode: 'tailscale_caddy', pwa_ready: true, message: 'Secure access is ready.' }, apps: [app], items: [app], count: 1, updated_at: new Date().toISOString() }, { headers: liteSafeReadHeaders(request) });
   }),
-  http.get('/api/lite/apps/lifecycle', () => HttpResponse.json({ status: 'healthy', summary: 'Unified App Lifecycle profiles are available.', apps: mockAppLifecycleProfiles(), items: mockAppLifecycleProfiles(), count: mockAppLifecycleProfiles().length, ready_count: 1, attention_count: 0, updated_at: new Date().toISOString() })),
+  http.get('/api/lite/apps/lifecycle', ({ request }) => HttpResponse.json({ status: 'healthy', summary: 'Unified App Lifecycle profiles are available.', apps: mockAppLifecycleProfiles(), items: mockAppLifecycleProfiles(), count: mockAppLifecycleProfiles().length, ready_count: 1, attention_count: 0, updated_at: new Date().toISOString() }, { headers: liteSafeReadHeaders(request) })),
   http.get('/api/lite/apps/lifecycle/photoprism', () => HttpResponse.json(mockAppLifecycleProfiles()[0])),
-  http.get('/api/lite/apps/photoprism/actions', () => {
+  http.get('/api/lite/apps/photoprism/actions', ({ request }) => {
     const actions = mockUnifiedAppActions();
     return HttpResponse.json({
       status: 'healthy',
@@ -658,7 +661,7 @@ export const handlers = [
         { id: 'danger', label: 'Remove', actions: ['remove_app'] },
       ],
       media: mockAppLifecycleProfiles()[0].media,
-    });
+    }, { headers: liteSafeReadHeaders(request) });
   }),
   http.get('/api/lite/apps/photoprism/evidence', () => HttpResponse.json(mockAppEvidence())),
   http.get('/api/lite/apps/photoprism/update', () => HttpResponse.json(mockAppUpdateState())),
@@ -738,8 +741,8 @@ export const handlers = [
       service: { label: 'Service identities', managed_by: 'FastAPI runtime', api_token_configured: true, summary: 'Service access is separate from the human owner session.' },
     },
   })),
-  http.get('/api/lite/security/summary', () => HttpResponse.json(mockLiteSecurityPayload())),
-  http.get('/api/lite/security/freshness', () => {
+  http.get('/api/lite/security/summary', ({ request }) => HttpResponse.json(mockLiteSecurityPayload(), { headers: liteSafeReadHeaders(request) })),
+  http.get('/api/lite/security/freshness', ({ request }) => {
     const payload = mockLiteSecurityPayload();
     return HttpResponse.json({
       status: payload.status || 'healthy',
@@ -750,9 +753,9 @@ export const handlers = [
       progress_revision: 1,
       profile_revisions: { quick: 1, full: 1, app: 1 },
       updated_at: new Date().toISOString(),
-    });
+    }, { headers: liteSafeReadHeaders(request) });
   }),
-  http.get('/api/lite/security', () => HttpResponse.json(mockLiteSecurityPayload())),
+  http.get('/api/lite/security', ({ request }) => HttpResponse.json(mockLiteSecurityPayload(), { headers: liteSafeReadHeaders(request) })),
   http.get('/api/lite/fleet', ({ request }) => HttpResponse.json({
     status: 'healthy',
     devices: mockLiteDevices(),
@@ -842,7 +845,7 @@ export const handlers = [
     updated_at: new Date().toISOString(),
     sanitized: true,
   })),
-  http.get('/api/lite/recovery/summary', () => HttpResponse.json({
+  http.get('/api/lite/recovery/summary', ({ request }) => HttpResponse.json({
     status: scenario() === 'nats-down' ? 'degraded' : 'healthy',
     summary: scenario() === 'nats-down' ? 'Showing saved Recovery state while the backend reconnects.' : 'Recovery Ready',
     projection_status: scenario() === 'nats-down' ? 'stale' : 'fresh',
@@ -855,8 +858,8 @@ export const handlers = [
     last_restore: null,
     active_operation: null,
     revision: 1,
-  })),
-  http.get('/api/lite/recovery/locations', () => HttpResponse.json({
+  }, { headers: liteSafeReadHeaders(request) })),
+  http.get('/api/lite/recovery/locations', ({ request }) => HttpResponse.json({
     status: 'ready',
     summary: 'Backup location is backend-managed on this protected Server Host.',
     server_host_only: true,
@@ -867,8 +870,8 @@ export const handlers = [
     candidates: [],
     picker: { system_folder_picker: 'not_implemented', selection_mode: 'backend_discovered_candidates', raw_paths_accepted: false },
     sanitized: true,
-  })),
-  http.get('/api/lite/recovery', () => HttpResponse.json({
+  }, { headers: liteSafeReadHeaders(request) })),
+  http.get('/api/lite/recovery', ({ request }) => HttpResponse.json({
     status: 'healthy',
     summary: 'Recovery Ready',
     repository: { type: 'local', engine: 'restic', encrypted: true, ready: true, location: '~/pocket-lab-lite-backups' },
@@ -894,13 +897,13 @@ export const handlers = [
     backup_target_profiles: { status: 'healthy', count: 1, ready_count: 1 },
     planned_actions: [],
     updated_at: new Date().toISOString(),
-  })),
-  http.get('/api/lite/recovery/backups', () => HttpResponse.json({
+  }, { headers: liteSafeReadHeaders(request) })),
+  http.get('/api/lite/recovery/backups', ({ request }) => HttpResponse.json({
     status: 'healthy',
     count: 1,
     latest_backup: { backup_id: 'mock-backup-001', created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(), engine: 'restic', verification_status: 'not_verified', included_file_count: 6 },
     backups: [{ backup_id: 'mock-backup-001', created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(), engine: 'restic', verification_status: 'not_verified', included_file_count: 6, location_id: 'default-private', location: { location_id: 'default-private', display_name: 'Pocket Lab private backup folder', status: 'ready', available: true } }],
-  })),
+  }, { headers: liteSafeReadHeaders(request) })),
   http.get('/api/lite/recovery/backups/:backupId', ({ params }) => HttpResponse.json({ backup_id: params.backupId, engine: 'restic', verification_status: 'not_verified', included_file_count: 6 })),
   http.get('/api/lite/recovery/receipts/:backupId', ({ params }) => HttpResponse.json({ backup_id: params.backupId, status: 'succeeded', summary: 'Evidence saved', engine: 'restic', evidence_saved: true })),
   http.get('/api/lite/recovery/restore/previews/:previewId', ({ params }) => HttpResponse.json({
