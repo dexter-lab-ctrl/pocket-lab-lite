@@ -55,12 +55,12 @@ def _embedded_python(function_name: str) -> str:
     start = text.find(function_marker)
     assert start >= 0, f"Could not find function {function_name}"
 
-    heredoc = re.search(r"<<'([A-Z0-9_]+)'\\n", text[start:])
+    heredoc = re.search(r"<<'([A-Z0-9_]+)'\n", text[start:])
     assert heredoc, f"Could not find Python heredoc for {function_name}"
 
     delimiter = heredoc.group(1)
     body_start = start + heredoc.end()
-    body_end = text.find(f"\\n{delimiter}\\n", body_start)
+    body_end = text.find(f"\n{delimiter}\n", body_start)
     assert body_end >= 0, f"Could not find heredoc terminator for {function_name}"
     return text[body_start:body_end]
 
