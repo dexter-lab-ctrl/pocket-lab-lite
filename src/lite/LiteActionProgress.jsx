@@ -380,6 +380,8 @@ export default function LiteActionProgress({
     <div
       className={`lite-action-progress lite-action-progress--${state} lite-action-progress--${workflowKind} ${className}`.trim()}
       data-action-id={actionId}
+      data-lite-perf-primitive="action-progress"
+      data-lite-perf-motion="compositor"
       data-run-count={Number(runCount) || 0}
       data-indeterminate={syntheticIndeterminate && state !== 'evidence_saved' ? 'true' : 'false'}
       style={{

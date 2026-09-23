@@ -651,7 +651,7 @@ function LiteAppShell() {
   const shellClassName = `pocket-app-shell theme-pocket-lite-daylight lite-motion-system ${workspaceApp ? 'is-app-workspace' : ''}`;
 
   return (
-    <div className={shellClassName}>
+    <div className={shellClassName} data-lite-perf-primitive="app-shell">
       <a href="#pocket-lite-main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[80] focus:rounded-xl focus:bg-indigo-500 focus:px-4 focus:py-2 focus:text-sm focus:font-black focus:text-white">Skip to Pocket Lab Lite content</a>
       <div className="pocket-app-backdrop" aria-hidden="true" />
       <LiteToastHost />
@@ -685,7 +685,7 @@ function LiteAppShell() {
         </div>
       </header>
 
-      <nav className="pocket-nav-dock scrollbar-none" aria-label="Pocket Lab Lite sections">
+      <nav className="pocket-nav-dock scrollbar-none" aria-label="Pocket Lab Lite sections" data-lite-perf-primitive="navigation">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = activeScreenId === item.id;
@@ -698,7 +698,7 @@ function LiteAppShell() {
         })}
       </nav>
 
-      <nav className="pocket-side-rail" aria-label="Pocket Lab Lite primary sections">
+      <nav className="pocket-side-rail" aria-label="Pocket Lab Lite primary sections" data-lite-perf-primitive="navigation">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = activeScreenId === item.id;
@@ -711,7 +711,7 @@ function LiteAppShell() {
       </nav>
 
       {menuOpen && <div className="mobile-more-backdrop" onClick={() => setMenuOpen(false)} aria-hidden="true" />}
-      <aside className={`mobile-more-sheet ${menuOpen ? 'mobile-more-sheet-open' : ''}`} aria-hidden={!menuOpen} aria-label="Pocket Lab Lite sections">
+      <aside className={`mobile-more-sheet ${menuOpen ? 'mobile-more-sheet-open' : ''}`} aria-hidden={!menuOpen} aria-label="Pocket Lab Lite sections" data-lite-perf-primitive="navigation">
         <div className="flex items-center justify-between gap-3 border-b border-white/10 p-4">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-200">Sections</p>

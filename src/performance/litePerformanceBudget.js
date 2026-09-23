@@ -40,6 +40,10 @@ export const LITE_PERFORMANCE_SCREENS = Object.freeze([
 ]);
 
 export const LITE_PERFORMANCE_PRIMITIVES = Object.freeze([
+  'app-shell',
+  'navigation',
+  'toast',
+  'action-progress',
   'page-shell',
   'card',
   'status-badge',
