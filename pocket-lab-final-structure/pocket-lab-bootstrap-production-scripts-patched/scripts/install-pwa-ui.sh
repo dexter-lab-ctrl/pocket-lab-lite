@@ -86,49 +86,129 @@ atomic_link() {
   mv -Tf "$temp" "$link"
 }
 
-resolve_remote_release() {
-  local metadata="$1"
-  python3 - "$metadata" <<'PY'
+resolve_release_candidates() {
+  local metadata="$1" repository="$2"
+  python3 - "$metadata" "$repository" <<'PYRESOLVE'
 import datetime, json, re, sys, urllib.parse
-path=sys.argv[1]
-releases=json.load(open(path, encoding='utf-8'))
-rx=re.compile(r'^lite-(\d{4})\.(\d{2})\.(\d{2})\.([1-9]\d*)$')
-rows=[]
+
+path, repository = sys.argv[1:]
+releases = json.load(open(path, encoding="utf-8"))
+rx = re.compile(r"^lite-(\d{4})\.(\d{2})\.(\d{2})\.([1-9]\d*)$")
+required = {"dist.zip", "checksums.txt", "pocketlab-lite-release.json"}
+allowed_hosts = {
+    "github.com",
+    "api.github.com",
+    "objects.githubusercontent.com",
+    "release-assets.githubusercontent.com",
+    "github-releases.githubusercontent.com",
+}
+
+def trusted_download_url(value):
+    parsed = urllib.parse.urlparse(str(value or ""))
+    host = (parsed.hostname or "").lower()
+    allowed = host in allowed_hosts or host.endswith(".githubusercontent.com")
+    return bool(
+        parsed.scheme == "https"
+        and not parsed.username
+        and not parsed.password
+        and allowed
+    )
+
+def embedded_assets(release):
+    assets = {}
+    duplicate = False
+    for item in release.get("assets") or []:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name") or "")
+        if name not in required:
+            continue
+        if name in assets:
+            duplicate = True
+        url = str(item.get("browser_download_url") or "")
+        if not trusted_download_url(url):
+            duplicate = True
+        assets[name] = url
+    return assets if not duplicate and set(assets) == required else {}
+
+rows = []
 for release in releases if isinstance(releases, list) else []:
-    if not isinstance(release, dict) or release.get('draft') or release.get('prerelease'):
+    if not isinstance(release, dict) or release.get("draft") or release.get("prerelease"):
         continue
-    tag=str(release.get('tag_name') or '')
-    m=rx.fullmatch(tag)
-    if not m:
+    tag = str(release.get("tag_name") or "")
+    match = rx.fullmatch(tag)
+    if not match:
         continue
-    y,mo,d,seq=map(int,m.groups())
-    try: datetime.date(y,mo,d)
-    except ValueError: continue
-    assets={}
-    duplicate=False
-    for item in release.get('assets') or []:
-        if not isinstance(item, dict): continue
-        name=str(item.get('name') or '')
-        if name in {'dist.zip','checksums.txt','pocketlab-lite-release.json'}:
-            if name in assets: duplicate=True
-            url=str(item.get('browser_download_url') or '')
-            parsed=urllib.parse.urlparse(url)
-            host=(parsed.hostname or '').lower()
-            allowed=host in {'github.com','api.github.com','objects.githubusercontent.com','release-assets.githubusercontent.com','github-releases.githubusercontent.com'} or host.endswith('.githubusercontent.com')
-            if parsed.scheme != 'https' or parsed.username or parsed.password or not allowed:
-                duplicate=True
-            assets[name]=url
-    if duplicate or set(assets) != {'dist.zip','checksums.txt','pocketlab-lite-release.json'}:
+    year, month, day, sequence = map(int, match.groups())
+    try:
+        datetime.date(year, month, day)
+    except ValueError:
         continue
-    rows.append(((y,mo,d,seq),tag,assets))
-if not rows:
-    raise SystemExit('No valid Pocket Lab Lite release found')
-_,tag,assets=max(rows,key=lambda row:row[0])
-print(tag)
-print(assets['dist.zip'])
-print(assets['checksums.txt'])
-print(assets['pocketlab-lite-release.json'])
-PY
+
+    release_id = release.get("id")
+    expected_assets_url = (
+        f"https://api.github.com/repos/{repository}/releases/{release_id}/assets"
+        if isinstance(release_id, int) and release_id > 0
+        else ""
+    )
+    assets_url = str(release.get("assets_url") or "")
+    if assets_url != expected_assets_url:
+        assets_url = ""
+
+    assets = embedded_assets(release)
+    rows.append(((year, month, day, sequence), tag, assets_url, assets))
+
+for _, tag, assets_url, assets in sorted(rows, key=lambda row: row[0], reverse=True):
+    print(tag)
+    print(assets_url)
+    print(assets.get("dist.zip", ""))
+    print(assets.get("checksums.txt", ""))
+    print(assets.get("pocketlab-lite-release.json", ""))
+    print("1" if assets else "0")
+PYRESOLVE
+}
+
+resolve_release_assets() {
+  local metadata="$1"
+  python3 - "$metadata" <<'PYASSETS'
+import json, sys, urllib.parse
+
+path = sys.argv[1]
+items = json.load(open(path, encoding="utf-8"))
+required = {"dist.zip", "checksums.txt", "pocketlab-lite-release.json"}
+allowed_hosts = {
+    "github.com",
+    "api.github.com",
+    "objects.githubusercontent.com",
+    "release-assets.githubusercontent.com",
+    "github-releases.githubusercontent.com",
+}
+assets = {}
+duplicate = False
+
+for item in items if isinstance(items, list) else []:
+    if not isinstance(item, dict):
+        continue
+    name = str(item.get("name") or "")
+    if name not in required:
+        continue
+    if name in assets:
+        duplicate = True
+    url = str(item.get("browser_download_url") or "")
+    parsed = urllib.parse.urlparse(url)
+    host = (parsed.hostname or "").lower()
+    allowed = host in allowed_hosts or host.endswith(".githubusercontent.com")
+    if parsed.scheme != "https" or parsed.username or parsed.password or not allowed:
+        duplicate = True
+    assets[name] = url
+
+if duplicate or set(assets) != required:
+    raise SystemExit("Dedicated release assets are incomplete or invalid")
+
+print(assets["dist.zip"])
+print(assets["checksums.txt"])
+print(assets["pocketlab-lite-release.json"])
+PYASSETS
 }
 
 validate_manifest() {
@@ -227,14 +307,52 @@ PYREPO
     tag="source-bootstrap-$(date -u +%Y%m%d%H%M%S)"
     cp "$LOCAL_DIST_ZIP" "$archive"
   else
-    local metadata="$TMP_DIR/releases.json" lines=()
+    local metadata="$TMP_DIR/releases.json" candidates=() selected_urls=()
     download_https "https://api.github.com/repos/$REPO/releases?per_page=100" "$metadata" 2097152
-    mapfile -t lines < <(resolve_remote_release "$metadata")
-    [[ ${#lines[@]} -eq 4 ]] || die "Could not resolve a valid Pocket Lab Lite release"
-    tag="${lines[0]}"
-    download_https "${lines[1]}" "$archive" 268435456
-    download_https "${lines[2]}" "$checksums" 65536
-    download_https "${lines[3]}" "$manifest" 65536
+    mapfile -t candidates < <(resolve_release_candidates "$metadata" "$REPO")
+    (( ${#candidates[@]} >= 6 && ${#candidates[@]} % 6 == 0 )) || die "Could not resolve Pocket Lab Lite release candidates"
+
+    local i candidate_tag assets_url embedded_complete assets_metadata
+    for ((i=0; i<${#candidates[@]}; i+=6)); do
+      candidate_tag="${candidates[i]}"
+      assets_url="${candidates[i+1]}"
+      embedded_complete="${candidates[i+5]}"
+      selected_urls=()
+
+      if [[ "$embedded_complete" == "1" ]]; then
+        selected_urls=("${candidates[i+2]}" "${candidates[i+3]}" "${candidates[i+4]}")
+      else
+        log WARN "Release $candidate_tag has incomplete embedded asset metadata; checking the dedicated GitHub release assets endpoint"
+        if [[ -z "$assets_url" ]]; then
+          log WARN "Skipping release $candidate_tag because its dedicated assets endpoint is not trusted"
+          continue
+        fi
+        assets_metadata="$TMP_DIR/assets-${candidate_tag}.json"
+        if ! download_https "$assets_url" "$assets_metadata" 1048576; then
+          log WARN "Skipping release $candidate_tag because its dedicated assets metadata could not be downloaded"
+          continue
+        fi
+        if ! mapfile -t selected_urls < <(resolve_release_assets "$assets_metadata"); then
+          log WARN "Skipping release $candidate_tag because its dedicated release assets are incomplete or invalid"
+          selected_urls=()
+          continue
+        fi
+        if [[ ${#selected_urls[@]} -ne 3 ]]; then
+          log WARN "Skipping release $candidate_tag because its dedicated release assets could not be resolved"
+          selected_urls=()
+          continue
+        fi
+      fi
+
+      tag="$candidate_tag"
+      break
+    done
+
+    [[ -n "$tag" && ${#selected_urls[@]} -eq 3 ]] || die "Could not resolve a valid Pocket Lab Lite release"
+    log INFO "Selected Pocket Lab Lite release: $tag"
+    download_https "${selected_urls[0]}" "$archive" 268435456
+    download_https "${selected_urls[1]}" "$checksums" 65536
+    download_https "${selected_urls[2]}" "$manifest" 65536
     validate_manifest "$tag" "$manifest" "$checksums" "$archive"
   fi
 
@@ -330,6 +448,6 @@ PYMARKER
   fi
   rm -rf "$TMP_DIR"
   mark_done pwa_ui_ready
-  log INFO "Pocket Lab Lite PWA pointer is ready"
+  log INFO "Pocket Lab Lite PWA pointer is ready: $tag"
 }
 main "$@"
