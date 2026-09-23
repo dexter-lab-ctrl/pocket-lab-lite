@@ -1,5 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import {
+  LITE_PERFORMANCE_PRIMITIVES,
+  LITE_PERFORMANCE_SCREENS,
+} from './litePerformanceBudget.js';
 
 function read(path) {
   return readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8');
@@ -14,6 +18,32 @@ describe('Pocket Lab Lite UI performance policy guards', () => {
     }
     expect(pkg.dependencies?.['@react-spring/web']).toBeTruthy();
     expect(pkg.dependencies?.['@use-gesture/react']).toBeTruthy();
+  });
+
+  it('covers every Lite tab and shared UI primitive without blanket memoization', () => {
+    expect(LITE_PERFORMANCE_SCREENS).toEqual([
+      'home',
+      'catalog',
+      'devices',
+      'security',
+      'identity',
+      'rules',
+      'recovery',
+    ]);
+
+    const primitiveSources = [
+      read('src/components/ui.jsx'),
+      read('src/lite/LiteUi.jsx'),
+      read('src/lite/LiteOverlay.jsx'),
+    ].join('\n');
+    for (const primitive of LITE_PERFORMANCE_PRIMITIVES) {
+      expect(primitiveSources).toContain(`data-lite-perf-primitive="${primitive}"`);
+    }
+
+    const registry = read('src/lite/liteScreenRegistry.js');
+    expect(registry).toContain('memoLiteScreen');
+    expect(registry).toContain('React.memo(Component)');
+    expect(primitiveSources).not.toContain('React.memo(');
   });
 
   it('keeps GPU promotion scoped to active compositor motion', () => {
