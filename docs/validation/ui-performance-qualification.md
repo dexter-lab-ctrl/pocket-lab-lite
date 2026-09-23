@@ -112,15 +112,49 @@ The live Playwright suite performs navigation and scrolling only. It must remain
 
 For a true physical-device render measurement, attach Playwright to Android Chrome over CDP.
 
-A typical operator setup uses Android debugging to expose Chrome's DevTools socket to a loopback TCP port. The exact ADB/device preparation is environment-owned and intentionally not hardcoded in Pocket Lab Lite.
+A typical operator setup uses Android debugging to expose Chrome's DevTools socket to a loopback TCP port. The exact device serial, WSL addresses, Tailnet hostname, and other environment-specific values remain operator-owned and are never hardcoded in Pocket Lab Lite.
 
-After the Android Chrome CDP endpoint is available:
+For Windows 10 + WSL2 DEV-PC qualification, the repository owns two helpers:
+
+```text
+scripts/dev/lite/prepare-ui-performance-android-cdp.ps1
+scripts/dev/lite/run-ui-performance-android-cdp.sh
+```
+
+The elevated Windows PowerShell helper:
+
+- discovers exactly one authorized Android device unless `-DeviceSerial` is supplied;
+- requires Google Chrome to be running in a normal, non-Incognito window;
+- discovers the active `chrome_devtools_remote` abstract socket;
+- maintains the ADB forward on Windows loopback;
+- discovers the current WSL2 gateway and IPv4 address;
+- maintains only Pocket Lab's recorded Windows `portproxy` rule;
+- restricts the Windows Firewall rule to the current WSL2 address;
+- verifies that WSL can read Android Chrome's CDP version endpoint.
+
+Run it from an elevated Windows PowerShell:
+
+```powershell
+& '<repo>\scripts\dev\lite\prepare-ui-performance-android-cdp.ps1'
+```
+
+The WSL runner discovers the Windows host, verifies the Windows bridge, starts a temporary loopback-only `socat` relay on `127.0.0.1:9222` when needed, checks that the advertised CDP WebSocket loops back through that local port, verifies `chromium.connectOverCDP()`, performs a read-only Pocket Lab Home smoke test when `LITE_BASE_URL` is set, records the exact source commit, then runs the physical qualifier.
+
+Connectivity-only check:
 
 ```bash
-export LITE_ANDROID_CDP_URL='http://127.0.0.1:<forwarded-cdp-port>'
-export LITE_BASE_URL='<Pocket Lab Lite origin reachable by that Android Chrome>'
+export LITE_BASE_URL='<Pocket Lab Lite origin reachable by Android Chrome>'
+npm run check:perf:android-cdp
+```
+
+Physical qualification:
+
+```bash
+export LITE_BASE_URL='<Pocket Lab Lite origin reachable by Android Chrome>'
 npm run test:perf:android-cdp
 ```
+
+`LITE_ANDROID_CDP_URL` is set by the WSL runner to its loopback-only relay. The optional environment variables `POCKETLAB_ANDROID_CDP_BRIDGE_PORT` and `POCKETLAB_ANDROID_CDP_LOCAL_PORT` override the default bridge and local ports when a DEV-PC has a legitimate port conflict.
 
 The repository script:
 
@@ -128,7 +162,7 @@ The repository script:
 scripts/dev/lite/qualify-ui-performance-android-cdp.mjs
 ```
 
-connects to the existing Android Chrome instance, opens a separate temporary tab, checks all seven Lite screens, performs a bounded continuous scroll workload, records requestAnimationFrame intervals plus Long Task, Long Animation Frame, and Event Timing data when supported, writes sanitized evidence, closes only the temporary tab, and exits without invoking Pocket Lab write actions.
+connects to the existing Android Chrome instance, opens a separate temporary tab, exercises all declared Phase 4 interaction IDs across real physical Android rendering surfaces, records requestAnimationFrame intervals plus Long Task, Long Animation Frame, and Event Timing data when supported, writes sanitized evidence, closes only the temporary tab, and exits without invoking Pocket Lab write actions. Write-dependent progress/toast semantics remain covered deterministically in mocked qualification; the physical runner maps those IDs onto truthful read-only transient feedback and records the exact interaction surface in evidence.
 
 This is the preferred frame-rate qualification when the goal is to prove performance on the physical Android rendering hardware.
 
@@ -175,9 +209,14 @@ LITE_E2E_LIVE=1 LITE_BASE_URL='<origin>' bash scripts/dev/lite/run-ui-performanc
 Physical Android renderer:
 
 ```bash
-LITE_ANDROID_CDP_URL='http://127.0.0.1:<port>' \
-LITE_BASE_URL='<origin>' \
-npm run test:perf:android-cdp
+LITE_BASE_URL='<origin reachable by Android Chrome>' npm run check:perf:android-cdp
+LITE_BASE_URL='<origin reachable by Android Chrome>' npm run test:perf:android-cdp
+```
+
+Windows bridge cleanup, when explicitly desired:
+
+```powershell
+& '<repo>\scripts\dev\lite\prepare-ui-performance-android-cdp.ps1' -Cleanup
 ```
 
 ## Expected evidence interpretation
