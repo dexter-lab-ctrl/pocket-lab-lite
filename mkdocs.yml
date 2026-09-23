@@ -201,6 +201,7 @@ nav:
       - Validation index: validation/README.md
       - Qualification & maintenance harness: validation/qualification-maintenance-harness.md
       - Runtime security assurance harness: validation/runtime-security-assurance-harness.md
+      - UI performance qualification: validation/ui-performance-qualification.md
       - Accessibility & visual gates: generated/development/accessibility-visual.md
       - Backend-to-Frontend parity: generated/development/validation/parity/index.md
       - Validation coverage: generated/enterprise/reference/validation-coverage.md
