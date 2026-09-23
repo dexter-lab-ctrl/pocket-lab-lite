@@ -1,4 +1,9 @@
+import json
 from pathlib import Path
+import re
+import subprocess
+import sys
+
 
 
 SCRIPT = (
@@ -42,3 +47,172 @@ def test_install_pwa_ui_uses_bounded_https_and_safe_zip_extraction():
     assert "safe_extract_zip" in text
     assert "unzip -q" not in text
     assert '"install_mode":"source"' in text
+
+
+def _embedded_python(function_name: str) -> str:
+    text = _script_text()
+    match = re.search(
+        rf"{re.escape(function_name)}\\(\\) \\{{.*?<<'PY'\\n(.*?)\\nPY\\n\\}}",
+        text,
+        flags=re.DOTALL,
+    )
+    assert match, f"Could not find embedded Python for {function_name}"
+    return match.group(1)
+
+
+def _run_embedded_python(function_name: str, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, "-", *args],
+        input=_embedded_python(function_name),
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+
+def _release(tag: str, release_id: int, assets: list[dict] | None = None) -> dict:
+    return {
+        "id": release_id,
+        "tag_name": tag,
+        "draft": False,
+        "prerelease": False,
+        "assets_url": (
+            f"https://api.github.com/repos/dexter-lab-ctrl/pocket-lab-lite/"
+            f"releases/{release_id}/assets"
+        ),
+        "assets": assets or [],
+    }
+
+
+def _asset(name: str, url: str | None = None) -> dict:
+    return {
+        "name": name,
+        "browser_download_url": url
+        or f"https://github.com/dexter-lab-ctrl/pocket-lab-lite/releases/download/"
+        f"lite-2026.09.23.1/{name}",
+    }
+
+
+def test_release_candidates_keep_newest_release_when_embedded_assets_are_empty(tmp_path):
+    metadata = tmp_path / "releases.json"
+    metadata.write_text(
+        json.dumps(
+            [
+                _release("lite-2026.09.23.1", 394417401),
+                _release(
+                    "lite-2026.09.10.2",
+                    386481814,
+                    [
+                        _asset("dist.zip"),
+                        _asset("checksums.txt"),
+                        _asset("pocketlab-lite-release.json"),
+                    ],
+                ),
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = _run_embedded_python(
+        "resolve_release_candidates",
+        str(metadata),
+        "dexter-lab-ctrl/pocket-lab-lite",
+    )
+
+    assert result.returncode == 0, result.stderr
+    lines = result.stdout.splitlines()
+    assert lines[:6] == [
+        "lite-2026.09.23.1",
+        "https://api.github.com/repos/dexter-lab-ctrl/pocket-lab-lite/releases/394417401/assets",
+        "",
+        "",
+        "",
+        "0",
+    ]
+    assert lines[6] == "lite-2026.09.10.2"
+    assert lines[11] == "1"
+
+
+def test_dedicated_release_assets_accept_complete_trusted_asset_set(tmp_path):
+    metadata = tmp_path / "assets.json"
+    metadata.write_text(
+        json.dumps(
+            [
+                _asset("dist.zip"),
+                _asset("checksums.txt"),
+                _asset("pocketlab-lite-release.json"),
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = _run_embedded_python("resolve_release_assets", str(metadata))
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.splitlines() == [
+        _asset("dist.zip")["browser_download_url"],
+        _asset("checksums.txt")["browser_download_url"],
+        _asset("pocketlab-lite-release.json")["browser_download_url"],
+    ]
+
+
+def test_dedicated_release_assets_reject_incomplete_asset_set(tmp_path):
+    metadata = tmp_path / "assets.json"
+    metadata.write_text(
+        json.dumps([_asset("dist.zip"), _asset("checksums.txt")]),
+        encoding="utf-8",
+    )
+
+    result = _run_embedded_python("resolve_release_assets", str(metadata))
+
+    assert result.returncode != 0
+    assert "incomplete or invalid" in result.stderr
+
+
+def test_dedicated_release_assets_reject_duplicate_required_asset(tmp_path):
+    metadata = tmp_path / "assets.json"
+    metadata.write_text(
+        json.dumps(
+            [
+                _asset("dist.zip"),
+                _asset("dist.zip"),
+                _asset("checksums.txt"),
+                _asset("pocketlab-lite-release.json"),
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = _run_embedded_python("resolve_release_assets", str(metadata))
+
+    assert result.returncode != 0
+    assert "incomplete or invalid" in result.stderr
+
+
+def test_dedicated_release_assets_reject_unapproved_download_host(tmp_path):
+    metadata = tmp_path / "assets.json"
+    metadata.write_text(
+        json.dumps(
+            [
+                _asset("dist.zip", "https://example.com/dist.zip"),
+                _asset("checksums.txt"),
+                _asset("pocketlab-lite-release.json"),
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = _run_embedded_python("resolve_release_assets", str(metadata))
+
+    assert result.returncode != 0
+    assert "incomplete or invalid" in result.stderr
+
+
+def test_install_pwa_ui_recovers_missing_embedded_assets_and_logs_selected_release():
+    text = _script_text()
+    assert "resolve_release_candidates" in text
+    assert "resolve_release_assets" in text
+    assert 'checking the dedicated GitHub release assets endpoint' in text
+    assert 'Skipping release $candidate_tag because its dedicated release assets are incomplete or invalid' in text
+    assert 'Selected Pocket Lab Lite release: $tag' in text
+    assert 'Pocket Lab Lite PWA pointer is ready: $tag' in text
