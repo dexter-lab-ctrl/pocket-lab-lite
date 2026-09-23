@@ -56,7 +56,7 @@ export default defineConfig({
   projects: [
     {
       name: 'mocked-desktop',
-      testMatch: /lite-(mocked|accessibility(?:-states)?|content-stress|phase9-qualification|rules-activation-progress|visual(?:-(?:devices|states|overlays))?|parity)\.spec\.ts/,
+      testMatch: /lite-(mocked|accessibility(?:-states)?|content-stress|phase9-qualification|rules-activation-progress|visual(?:-(?:devices|states|overlays))?|parity|performance)\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], ...commonUse, recordHar: mockedHar('mocked-desktop') },
     },
     {
@@ -66,7 +66,7 @@ export default defineConfig({
     },
     {
       name: 'live-desktop',
-      testMatch: /lite-live\.spec\.ts/,
+      testMatch: /lite-(?:live|performance-live)\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], ...commonUse },
     },
     {

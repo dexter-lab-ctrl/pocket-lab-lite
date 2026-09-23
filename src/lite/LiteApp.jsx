@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import {
@@ -37,6 +37,7 @@ import LiteToastHost from './LiteToastHost.jsx';
 import LiteServiceWorkerUpdateNotice from './LiteServiceWorkerUpdateNotice.jsx';
 import LiteNativeInstallSurface from './LiteNativeInstallSurface.jsx';
 import LiteRevisionSyncBridge from './LiteRevisionSyncBridge.jsx';
+import { LitePerformanceProfiler, useLitePerformanceRuntime } from '../performance/LitePerformanceRuntime.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 import {
   GlassCard,
@@ -421,6 +422,7 @@ class LiteErrorBoundary extends React.Component {
 }
 
 function LiteAppShell() {
+  useLitePerformanceRuntime();
   const active = useLiteUiStore((state) => state.activeTab);
   const setActiveTab = useLiteUiStore((state) => state.setActiveTab);
   const menuOpen = useLiteUiStore((state) => state.mobileMenuOpen);
@@ -611,6 +613,7 @@ function LiteAppShell() {
       ref={screenStageRef}
       className={`lite-screen-stage lite-screen-stage-${activeScreenId}`}
       data-lite-screen-id={activeScreenId}
+      data-lite-perf-screen={activeScreenId}
       style={{ '--lite-screen-intrinsic-size': activeScreenEntry.intrinsicSize }}
       tabIndex={-1}
       aria-label={`${activeScreenEntry.label} screen`}
@@ -622,7 +625,9 @@ function LiteAppShell() {
         onRetry={retryActiveScreen}
       >
         <Suspense fallback={<LiteScreenLoading label={activeScreenEntry.label} intrinsicSize={activeScreenEntry.intrinsicSize} />}>
-          <ActiveScreen {...activeScreenProps} />
+          <LitePerformanceProfiler id={`screen:${activeScreenId}`}>
+            <ActiveScreen {...activeScreenProps} />
+          </LitePerformanceProfiler>
         </Suspense>
       </LiteScreenErrorBoundary>
     </section>
