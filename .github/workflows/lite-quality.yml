@@ -112,7 +112,7 @@ jobs:
         run: npm run test:perf:qualification
       - name: Redaction and evidence
         run: |
-          .venv/bin/python scripts/dev/lite/redaction_check.py --paths contracts/generated src/test/fixtures/generated docs/generated .pocketlab-dev/validation
+          .venv/bin/python scripts/dev/lite/redaction_check.py --paths contracts/generated src/test/fixtures/generated docs/generated .pocketlab-dev/validation .pocketlab-dev/performance
           .venv/bin/python scripts/dev/lite/validation_evidence.py allure --validation-dir .pocketlab-dev/validation --output allure-results
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
