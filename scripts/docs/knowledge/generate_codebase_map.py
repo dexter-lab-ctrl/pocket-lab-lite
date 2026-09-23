@@ -755,8 +755,8 @@ def build_browser_projection(model: dict[str, Any]) -> dict[str, Any]:
         nodes.append({
             "id": node["id"], "p": node["path"], "parent": node.get("parent_id"), "k": node["kind"], "r": node["role"], "f": node["facets"],
             "l": facts.get("language"), "o": node["execution_owner"], "c": node["explanation"]["confidence"], "s": node["explanation"]["freshness_status"],
-            "purpose": node["explanation"]["purpose"], "arch": node["architecture_refs"], "boundaries": node["trust_boundaries"], "knowledge": node["knowledge_refs"],
-            "symbols": symbols, "generated": bool(facts.get("generated")), "critical": bool(node.get("critical")), "loc": facts.get("loc"), "size": facts.get("size_bytes"),
+            "u": node["explanation"]["purpose"], "arch": node["architecture_refs"], "boundaries": node["trust_boundaries"], "knowledge": node["knowledge_refs"],
+            "y": symbols, "generated": bool(facts.get("generated")), "critical": bool(node.get("critical")), "loc": facts.get("loc"), "size": facts.get("size_bytes"),
         })
     # Browser relationships stay compact but retain external label metadata.
     rels = [{"id": r["id"], "t": r["type"], "a": r["source"], "b": r["target"], "c": r["confidence"]} for r in model["relationships"] if r["type"] != "DEFINES"]
@@ -765,8 +765,8 @@ def build_browser_projection(model: dict[str, Any]) -> dict[str, Any]:
         external_terms = []
         for ref in node["arch"] + node["boundaries"] + node["knowledge"]:
             external_terms.append(str(external.get(ref, {}).get("name") or ref))
-        symbol_terms = [str(x.get("name") or "") for x in node["symbols"]]
-        tokens = " ".join([node["p"], PurePosixPath(node["p"]).name, node["purpose"], node["r"], node["l"] or "", node["o"], node["c"], *external_terms, *symbol_terms]).lower()
+        symbol_terms = [str(x.get("name") or "") for x in node["y"]]
+        tokens = " ".join([node["p"], PurePosixPath(node["p"]).name, node["u"], node["r"], node["l"] or "", node["o"], node["c"], *external_terms, *symbol_terms]).lower()
         search[node["id"]] = re.sub(r"[^a-z0-9_./:@ -]+", " ", tokens)[:900]
     projection = {
         "schema_version": "1.0.0", "source_fingerprint": model["source_fingerprint"], "root_id": model["topology"]["root_id"], "live_runtime": False,

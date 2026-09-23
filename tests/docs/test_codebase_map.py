@@ -118,6 +118,8 @@ def test_browser_projection_is_static_compact_and_resolvable():
     # Browser projection is intentionally smaller than the canonical evidence model.
     assert BROWSER_PATH.stat().st_size < MODEL_PATH.stat().st_size
     assert BROWSER_PATH.stat().st_size < 10_000_000
+    assert all("u" in node and "y" in node for node in browser["nodes"])
+    assert all("purpose" not in node and "symbols" not in node for node in browser["nodes"])
 
 
 def test_codebase_map_runtime_network_and_sensitive_data_fence():

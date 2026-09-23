@@ -232,7 +232,7 @@
       ['Freshness', node.s], ['Size', fmtBytes(node.size)], ['Lines', node.loc ?? '—'], ['Critical path', node.critical ? 'yes' : 'no'],
     ].forEach(([label, value]) => grid.append(fact(label, value)));
     inspector.append(grid);
-    inspector.append(add(el('section', 'pl-codebase-inspector-section'), el('h4', '', 'Purpose'), el('p', 'pl-card-lead', node.purpose)));
+    inspector.append(add(el('section', 'pl-codebase-inspector-section'), el('h4', '', 'Purpose'), el('p', 'pl-card-lead', node.u)));
     inspector.append(chips('Architecture', node.arch || []), chips('Trust boundaries', node.boundaries || []), chips('Knowledge', node.knowledge || []));
 
     const out = outgoing(node.id); const inc = incoming(node.id);
@@ -242,11 +242,11 @@
     const generated = out.filter((rel) => ['GENERATES', 'GENERATED_BY', 'INVOKED_BY_TASK'].includes(rel.t));
     inspector.append(relationSection('Uses', uses, node.id), relationSection('Used by', usedBy, node.id), relationSection('Tests', tests, node.id), relationSection('Generated / tasks', generated, node.id));
 
-    if (node.symbols?.length) {
+    if (node.y?.length) {
       const section = el('section', 'pl-codebase-inspector-section');
-      section.append(el('h4', '', `Symbols (${node.symbols.length})`));
+      section.append(el('h4', '', `Symbols (${node.y.length})`));
       const list = el('div', 'pl-codebase-symbol-list');
-      node.symbols.slice(0, 80).forEach((symbol) => {
+      node.y.slice(0, 80).forEach((symbol) => {
         const button = el('button', `pl-codebase-symbol${state.symbol === symbol.name ? ' is-selected' : ''}`);
         button.type = 'button';
         add(button, el('code', '', symbol.name), el('span', '', `${symbol.kind || 'symbol'} · line ${symbol.line || '—'}`));
