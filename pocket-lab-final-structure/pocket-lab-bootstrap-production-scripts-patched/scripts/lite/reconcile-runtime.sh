@@ -140,13 +140,12 @@ main() {
   fi
 
   if bash "$DASHBOARD" --lite --reconcile-only; then
-    if [[ -s "$photoprism_env" || -s "$photoprism_manifest" ]]; then
-      log INFO "Installed PhotoPrism state detected; reconciling runtime without install/update work"
-      bash "$photoprism" reconcile || {
-        write_evidence "degraded"
-        die "PhotoPrism runtime did not converge"
-      }
-    fi
+    # The full dashboard reconciliation already converges installed
+    # PhotoPrism before the Lite supervisors are started. Running the same
+    # application reconcile again here can refresh Caddy a second time during
+    # PM2 daemon recovery, consuming a restart-budget slot without improving
+    # the desired state. Keep the dedicated PhotoPrism fault path above for
+    # scoped recovery while treating the dashboard pass as authoritative here.
     pm2 save >/dev/null 2>&1 || true
     write_evidence "converged"
     log INFO "Pocket Lab Lite runtime converged"

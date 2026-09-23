@@ -43,10 +43,15 @@ def test_photoprism_update_is_explicit_and_separate_from_reconcile():
     assert "install_or_update_package" not in reconcile
 
 
-def test_global_runtime_reconcile_only_reconciles_photoprism_when_installed():
+def test_global_runtime_reconcile_delegates_installed_photoprism_to_dashboard_pass():
     source = (LITE_SCRIPTS / "reconcile-runtime.sh").read_text()
-    assert "install-manifest.json" in source
+    dashboard = (LITE_SCRIPTS / "../start-dashboard.sh").resolve().read_text()
+    assert "install-manifest.json" in dashboard
+    assert "reconcile_installed_photoprism" in dashboard
+    assert 'bash "$DASHBOARD" --lite --reconcile-only' in source
     assert 'bash "$photoprism" reconcile' in source
+    full_pass = source[source.index('if bash "$DASHBOARD" --lite --reconcile-only; then'):source.index('write_evidence "converged"', source.index('if bash "$DASHBOARD" --lite --reconcile-only; then'))]
+    assert 'bash "$photoprism" reconcile' not in full_pass
 
 
 def test_backend_repair_uses_non_installing_photoprism_reconcile():
