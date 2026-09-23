@@ -889,21 +889,30 @@ assert contract.get("state") == "stable" and contract.get("stable") is True
 assert int(stable.get("stable_observations") or 0) >= int(stable.get("required_stable_observations") or 2) >= 2
 services = {item.get("process"): item for item in contract.get("services", []) if isinstance(item, dict)}
 after = []
+advanced = []
+unchanged = []
 for name, previous_generation in zip(names, baseline):
     item = services.get(name)
     assert item is not None, f"runtime contract omits {name}"
     generation = int(item.get("restart_generation") or 0)
-    assert generation > previous_generation, (name, previous_generation, generation)
+    # PM2 daemon resurrection does not necessarily restart every child.  A
+    # child that stayed alive must retain its Pocket Lab generation; a child
+    # that was restarted may advance it.  The important invariant here is
+    # that daemon recovery never rolls restart history backward or erases it.
+    assert generation >= previous_generation, (name, previous_generation, generation)
     assert item.get("state") == "online" and item.get("stable") is True
     assert item.get("desired_state_match") is True and item.get("pm2_policy_match") is True
     assert item.get("health") == "ready"
     assert int(item.get("restart_budget_remaining") or 0) > 0
     assert int(item.get("pm2_restart_budget_remaining") or 0) > 0
     after.append(generation)
+    (advanced if generation > previous_generation else unchanged).append(name)
 print(json.dumps({
     "services": len(names),
     "generations_before": baseline,
     "generations_after": after,
+    "generation_advances": advanced,
+    "generation_unchanged": unchanged,
     "stable_observations": stable.get("stable_observations"),
     "required_stable_observations": stable.get("required_stable_observations"),
 }, sort_keys=True, separators=(",", ":")))

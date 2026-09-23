@@ -116,7 +116,9 @@ def test_fault_qualification_waits_for_contract_stability_and_generation_advance
     assert 'PM2 fault identity was not numeric' in service_fault
     assert 'runtime_required_generation_csv' in daemon_fault
     assert 'wait_runtime_convergence_after_daemon_recovery' in daemon_fault
-    assert 'assert generation > previous_generation' in daemon_fault
+    assert 'assert generation >= previous_generation' in daemon_fault
+    assert 'generation_advances' in daemon_fault
+    assert 'generation_unchanged' in daemon_fault
 
 
 def test_server_phone_qualification_uses_adaptive_api_stabilization():
