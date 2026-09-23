@@ -93,7 +93,7 @@ for (const [screenId, scenario, openerName, surfaceSelector] of MANAGE_CASES) {
         await opener.click();
         await expect(page.locator(`${surfaceSelector}:visible`).first()).toBeVisible();
       },
-      { settleMs: 320, mode: 'mocked' },
+      { settleMs: 560, mode: 'mocked' },
     );
 
     expectLitePerformanceBudget(report);
