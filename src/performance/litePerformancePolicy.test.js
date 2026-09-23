@@ -35,6 +35,9 @@ describe('Pocket Lab Lite UI performance policy guards', () => {
       read('src/components/ui.jsx'),
       read('src/lite/LiteUi.jsx'),
       read('src/lite/LiteOverlay.jsx'),
+      read('src/lite/LiteApp.jsx'),
+      read('src/lite/LiteToastHost.jsx'),
+      read('src/lite/LiteActionProgress.jsx'),
     ].join('\n');
     for (const primitive of LITE_PERFORMANCE_PRIMITIVES) {
       expect(primitiveSources).toContain(`data-lite-perf-primitive="${primitive}"`);
@@ -43,7 +46,9 @@ describe('Pocket Lab Lite UI performance policy guards', () => {
     const registry = read('src/lite/liteScreenRegistry.js');
     expect(registry).toContain('memoLiteScreen');
     expect(registry).toContain('React.memo(Component)');
-    expect(primitiveSources).not.toContain('React.memo(');
+    expect(read('src/components/ui.jsx')).not.toContain('React.memo(');
+    expect(read('src/lite/LiteUi.jsx')).not.toContain('React.memo(');
+    expect(read('src/lite/LiteOverlay.jsx')).not.toContain('React.memo(');
   });
 
   it('keeps GPU promotion scoped to active compositor motion', () => {
