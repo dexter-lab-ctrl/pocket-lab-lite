@@ -61,7 +61,7 @@ tasks:
     cmds:
       - bash scripts/dev/check-lighthouse.sh
 
-lite:test:perf:components:
+  lite:test:perf:components:
     desc: Validate the Pocket Lab Lite UI frame-budget math and performance policy guards
     cmds:
       - npm run test:perf:components
