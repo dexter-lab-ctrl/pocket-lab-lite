@@ -46,6 +46,11 @@ function formatBytes(value) {
   return `${(value / 1024).toFixed(1)} KiB`;
 }
 
+function manifestKeyForSource(manifest, source) {
+  if (manifest[source]) return source;
+  return Object.keys(manifest).find((key) => manifest[key]?.src === source) || null;
+}
+
 function collectStaticGraph(manifest, startKey) {
   const seen = new Set();
   const visit = (key) => {
@@ -97,20 +102,24 @@ checkBudget('Initial JavaScript', initialJavaScript, budgets.initialJavaScript);
 checkBudget('Initial CSS', initialCss, budgets.initialCss);
 checkBudget('Initial JavaScript + CSS gzip', initialGzip, budgets.initialGzip);
 
-const eagerScreens = screenSources.filter((source) => initialGraph.has(source));
+const eagerScreens = screenSources.filter((source) => {
+  const key = manifestKeyForSource(manifest, source);
+  return key ? initialGraph.has(key) : false;
+});
 if (eagerScreens.length) {
   fail(`Unexpected eager Lite screen imports: ${eagerScreens.join(', ')}.`);
 }
 
 const routeChunks = [];
 for (const source of screenSources) {
-  const record = manifest[source];
+  const manifestKey = manifestKeyForSource(manifest, source);
+  const record = manifestKey ? manifest[manifestKey] : null;
   if (!record?.file) {
     fail(`Missing route chunk manifest entry for ${source}.`);
     continue;
   }
   const bytes = assetBytes(record.file);
-  routeChunks.push({ source, file: record.file, bytes });
+  routeChunks.push({ source, manifestKey, file: record.file, bytes });
   checkBudget(`${source} route chunk`, bytes, budgets.routeChunk);
 }
 
@@ -137,5 +146,5 @@ console.log(`  initial-gzip=${formatBytes(initialGzip)}`);
 console.log(`  route-chunks=${routeChunks.length}`);
 if (largestRoute) console.log(`  largest-route=${largestRoute.source} ${formatBytes(largestRoute.bytes)}`);
 for (const route of routeChunks) {
-  console.log(`  screen=${route.source} file=${route.file} size=${formatBytes(route.bytes)}`);
+  console.log(`  screen=${route.source} manifest-key=${route.manifestKey} file=${route.file} size=${formatBytes(route.bytes)}`);
 }
