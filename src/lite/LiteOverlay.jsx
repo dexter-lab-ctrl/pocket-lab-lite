@@ -147,7 +147,16 @@ export function LiteOverlayRoot({ children }) {
 }
 
 export function LiteBackdrop({ onClose, label = 'Close overlay', className = '' }) {
-  return <button type="button" className={`lite-overlay-backdrop ${className}`.trim()} onClick={onClose} aria-label={label} />;
+  return (
+    <button
+      type="button"
+      className={`lite-overlay-backdrop ${className}`.trim()}
+      onClick={onClose}
+      aria-label={label}
+      data-lite-perf-primitive="backdrop"
+      data-lite-perf-motion="compositor"
+    />
+  );
 }
 
 const LITE_SHEET_VARIANTS = {
@@ -292,6 +301,9 @@ export function LiteSheet({
           aria-labelledby={titleId}
           data-lite-sheet-variant={variant}
           data-lite-safe-motion={safeMotionEnabled ? 'safe-grip' : 'none'}
+          data-lite-perf-primitive="sheet"
+          data-lite-perf-motion="compositor"
+          data-lite-perf-motion-active={safeMotionEnabled ? 'true' : 'false'}
           {...surfaceProps}
         >
           <button type="button" className={`lite-overlay-grip ${variantClasses.grip} ${gripClassName}`.trim()} aria-label={variantClasses.gripLabel} {...mergedGripProps}>

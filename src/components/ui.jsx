@@ -102,7 +102,7 @@ const STATUS_CLASS = {
 
 export function PageShell({ eyebrow, title, description, actions, children, className = '' }) {
   return (
-    <section className={`pocket-page ${className}`}>
+    <section className={`pocket-page ${className}`} data-lite-perf-primitive="page-shell">
       {(eyebrow || title || description || actions) && (
         <div className="pocket-page-header">
           <div className="min-w-0">
@@ -120,7 +120,7 @@ export function PageShell({ eyebrow, title, description, actions, children, clas
 
 export function GlassCard({ as: Component = 'section', children, className = '', interactive = false, ...props }) {
   return (
-    <Component className={`pocket-card ${interactive ? 'pocket-card-interactive' : ''} ${className}`} {...props}>
+    <Component className={`pocket-card ${interactive ? 'pocket-card-interactive' : ''} ${className}`} data-lite-perf-primitive="card" {...props}>
       {children}
     </Component>
   );
@@ -130,7 +130,7 @@ export function StatusBadge({ status = 'unknown', children, className = '', simp
   const normalized = normalizeStatus(status);
   const language = statusLanguage(normalized, { simpleMode });
   return (
-    <span className={`${STATUS_CLASS[normalized] || STATUS_CLASS[language.tone] || STATUS_CLASS.unknown} ${className}`}>
+    <span className={`${STATUS_CLASS[normalized] || STATUS_CLASS[language.tone] || STATUS_CLASS.unknown} ${className}`} data-lite-perf-primitive="status-badge">
       {children || language.label}
     </span>
   );
@@ -169,7 +169,7 @@ export function StateSurface({ tone = 'empty', title, description, action, icon:
   const normalized = String(tone || 'empty').toLowerCase();
   const Icon = IconOverride || stateIcon(normalized);
   return (
-    <div className={`pocket-state-surface ${STATE_CLASS[normalized] || STATE_CLASS.empty} ${className}`}>
+    <div className={`pocket-state-surface ${STATE_CLASS[normalized] || STATE_CLASS.empty} ${className}`} data-lite-perf-primitive="state-surface">
       <div className="pocket-state-icon">
         <Icon className="h-5 w-5" />
       </div>
@@ -191,7 +191,7 @@ export function ProgressiveDisclosure({
   className = '',
 }) {
   return (
-    <details open={defaultOpen} className={`progressive-disclosure ${simpleMode ? 'progressive-disclosure-simple' : ''} ${className}`}>
+    <details open={defaultOpen} className={`progressive-disclosure ${simpleMode ? 'progressive-disclosure-simple' : ''} ${className}`} data-lite-perf-primitive="progressive-disclosure">
       <summary className="progressive-disclosure-summary">
         <span>{simpleMode ? title.replace('Technical', 'Support') : title}</span>
         <span className="progressive-disclosure-caret" aria-hidden="true">⌄</span>
@@ -205,7 +205,7 @@ export function ProgressiveDisclosure({
 
 export function StandardList({ title, description, actions, children, className = '' }) {
   return (
-    <section className={`standard-list ${className}`}>
+    <section className={`standard-list ${className}`} data-lite-perf-primitive="standard-list">
       {(title || description || actions) && (
         <div className="standard-list-header">
           <div className="min-w-0">
@@ -232,7 +232,7 @@ export function StandardListItem({
   className = '',
 }) {
   return (
-    <article className={`standard-list-item ${className}`}>
+    <article className={`standard-list-item ${className}`} data-lite-perf-primitive="standard-list-item" data-lite-perf-offscreen="true">
       <div className="standard-list-item-main">
         {Icon ? <div className="standard-list-icon"><Icon className="h-5 w-5" /></div> : null}
         <div className="min-w-0 flex-1">
@@ -261,7 +261,7 @@ export function StandardListItem({
 
 export function SegmentedControl({ label, value, options, onChange, className = '' }) {
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div className={`space-y-2 ${className}`} data-lite-perf-primitive="segmented-control">
       {label ? <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">{label}</p> : null}
       <div className={`pocket-segmented-control mode-switch-morph mode-switch-${value}`} role="radiogroup" aria-label={label} data-value={value}>
         {options.map((option) => {
@@ -287,7 +287,7 @@ export function SegmentedControl({ label, value, options, onChange, className = 
 
 export function SkeletonCards({ count = 3, simpleMode = false, className = '' }) {
   return (
-    <div className={`skeleton-card-grid ${className}`} aria-label={simpleMode ? 'Loading content' : 'Loading structured cards'}>
+    <div className={`skeleton-card-grid ${className}`} data-lite-perf-primitive="skeleton-cards" aria-label={simpleMode ? 'Loading content' : 'Loading structured cards'}>
       {Array.from({ length: count }).map((_, index) => (
         <article key={index} className="skeleton-card skeleton-shimmer" aria-hidden="true">
           <div className="skeleton-card-header">

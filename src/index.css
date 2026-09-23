@@ -24325,3 +24325,87 @@ html.lite-install-light-shell body {
   .theme-pocket-lite-daylight .is-connected .lite-device-flow-signal,
   .theme-pocket-lite-daylight .is-repairing .lite-device-flow-signal { left: 50%; opacity: 1; }
 }
+
+
+/* ==========================================================================
+   Pocket Lab Lite UI performance contract
+   Keeps the existing visual design while constraining high-frequency work to
+   compositor-friendly motion and skipping off-screen list rendering.
+   ========================================================================== */
+
+[data-lite-perf-motion='compositor'] {
+  backface-visibility: hidden;
+}
+
+[data-lite-perf-motion-active='true'] {
+  will-change: transform, opacity;
+}
+
+[data-lite-perf-motion-active='false'] {
+  will-change: auto;
+}
+
+@supports (content-visibility: auto) {
+  [data-lite-perf-offscreen='true'] {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 5.5rem;
+  }
+}
+
+/* Avoid continuously spending frames while the PWA is backgrounded. */
+html[data-lite-document-hidden='true'] .jetstream-flow-node-active .jetstream-flow-dot,
+html[data-lite-document-hidden='true'] .jetstream-flow-segment,
+html[data-lite-document-hidden='true'] .health-dot-healthy,
+html[data-lite-document-hidden='true'] .health-dot-running,
+html[data-lite-document-hidden='true'] .health-dot-degraded,
+html[data-lite-document-hidden='true'] .health-dot-unknown,
+html[data-lite-document-hidden='true'] .skeleton-card::after,
+html[data-lite-document-hidden='true'] .skeleton-shimmer::after {
+  animation-play-state: paused !important;
+}
+
+/* Respect explicit browser power-saving signals without inventing device state. */
+html[data-lite-power-save='true'] .jetstream-flow-node-active .jetstream-flow-dot,
+html[data-lite-power-save='true'] .jetstream-flow-segment,
+html[data-lite-power-save='true'] .health-dot-healthy,
+html[data-lite-power-save='true'] .health-dot-running,
+html[data-lite-power-save='true'] .health-dot-degraded,
+html[data-lite-power-save='true'] .health-dot-unknown {
+  animation: none !important;
+}
+
+/* Do not interpolate expensive paint properties for the primary card/button path. */
+.theme-pocket-lite-daylight .pocket-card {
+  transition: transform 180ms ease, border-color 180ms ease;
+}
+
+.theme-pocket-lite-daylight .pocket-button {
+  transition: transform 150ms ease, opacity 150ms ease;
+}
+
+@media (hover: none) {
+  .theme-pocket-lite-daylight .pocket-card:hover {
+    transform: translateZ(0);
+  }
+
+  .theme-pocket-lite-daylight .pocket-button:hover {
+    transform: translateZ(0);
+  }
+
+  .theme-pocket-lite-daylight .pocket-button:hover::after {
+    animation: none;
+  }
+
+  .theme-pocket-lite-daylight .pocket-button:active {
+    transform: translateZ(0) scale(0.985);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-lite-perf-motion='compositor'] {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    will-change: auto !important;
+  }
+}

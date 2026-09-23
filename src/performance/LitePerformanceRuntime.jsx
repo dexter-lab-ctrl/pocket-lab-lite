@@ -40,11 +40,22 @@ export function useLitePerformanceRuntime() {
   useEffect(() => {
     if (typeof document === 'undefined') return undefined;
     const root = document.documentElement;
+    const motionQuery = typeof window.matchMedia === 'function'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)')
+      : null;
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || null;
     const syncVisibility = () => {
       root.dataset.liteDocumentHidden = document.hidden ? 'true' : 'false';
     };
+    const syncPowerPolicy = () => {
+      const conservative = Boolean(motionQuery?.matches || connection?.saveData);
+      root.dataset.litePowerSave = conservative ? 'true' : 'false';
+    };
     syncVisibility();
+    syncPowerPolicy();
     document.addEventListener('visibilitychange', syncVisibility);
+    motionQuery?.addEventListener?.('change', syncPowerPolicy);
+    connection?.addEventListener?.('change', syncPowerPolicy);
 
     let observer = null;
     if (PERF_ENABLED && typeof PerformanceObserver !== 'undefined') {
@@ -84,6 +95,8 @@ export function useLitePerformanceRuntime() {
 
     return () => {
       document.removeEventListener('visibilitychange', syncVisibility);
+      motionQuery?.removeEventListener?.('change', syncPowerPolicy);
+      connection?.removeEventListener?.('change', syncPowerPolicy);
       observer?.disconnect?.();
     };
   }, []);

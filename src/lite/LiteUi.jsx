@@ -79,7 +79,7 @@ export function LiteRefreshButton({
   }
 
   return (
-    <div className={`lite-refresh-control ${copy.stale ? 'is-stale' : 'is-live'} ${open ? 'is-open' : ''} ${className}`.trim()}>
+    <div className={`lite-refresh-control ${copy.stale ? 'is-stale' : 'is-live'} ${open ? 'is-open' : ''} ${className}`.trim()} data-lite-perf-primitive="refresh-control">
       <LiteButton onClick={handleClick} tone={tone}>
         <RefreshCw className={`h-4 w-4 lite-refresh-icon ${refreshing ? 'is-refreshing' : ''}`} />
         {refreshing ? 'Refreshing…' : label}
@@ -853,6 +853,8 @@ export function LiteButton({ children, onClick, disabled = false, tone = 'primar
       aria-label={ariaLabel}
       title={title || ariaLabel}
       className={`pocket-button ${toneClass} ${className}`.trim()}
+      data-lite-perf-primitive="button"
+      data-lite-perf-motion="compositor"
     >
       {children}
     </button>

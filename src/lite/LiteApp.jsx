@@ -516,7 +516,7 @@ function LiteAppShell() {
     return () => window.cancelAnimationFrame(frame);
   }, [activeScreenId, activeRetryGeneration, workspaceApp]);
 
-  const warmScreenOnNavIntent = (tabId) => {
+  const warmScreenOnNavIntent = useCallback((tabId) => {
     const normalizedId = normalizeLiteScreenId(tabId);
     preloadLiteScreen(normalizedId).catch(() => null);
     if (normalizedId !== 'security') return;
@@ -524,9 +524,9 @@ function LiteAppShell() {
       backendHealthy: backendHealthyForPrefetch,
       activeScan: false,
     });
-  };
+  }, [backendHealthyForPrefetch]);
 
-  const commitScreenNavigation = (tabId, event = null) => {
+  const commitScreenNavigation = useCallback((tabId, event = null) => {
     const nextScreenId = normalizeLiteScreenId(tabId);
     focusScreenAfterNavigationRef.current = Boolean(event && event.detail === 0);
 
@@ -553,9 +553,9 @@ function LiteAppShell() {
         })
         .catch(() => null);
     }
-  };
+  }, [setActiveTab, setMenuOpen, workspaceApp]);
 
-  const openWorkspace = (app, openUrl) => {
+  const openWorkspace = useCallback((app, openUrl) => {
     const appId = app?.id || app?.app_id;
     if (!appId || !resolveSafeAppOpenPath(openUrl || app)) return;
     setWorkspaceApp({
@@ -569,37 +569,52 @@ function LiteAppShell() {
     setActiveTab('catalog');
     setMenuOpen(false);
     pushPocketLabPath(workspacePathForApp(appId));
-  };
+  }, [activeScreenId, setActiveTab, setMenuOpen]);
 
-  const openFullScreen = (openUrl) => {
+  const openFullScreen = useCallback((openUrl) => {
     const target = resolveSafeAppOpenPath(openUrl);
     if (!target) return;
     window.location.assign(target);
-  };
+  }, []);
 
-  const retryActiveScreen = () => {
+  const retryActiveScreen = useCallback(() => {
     setScreenRetryGeneration((current) => ({
       ...current,
       [activeScreenId]: (current[activeScreenId] || 0) + 1,
     }));
-  };
+  }, [activeScreenId]);
 
-  const activeScreenProps = activeScreenId === 'home'
-    ? {
-      status,
-      loading,
-      error,
-      refresh,
-      cacheStatus,
-      refreshing,
-      savedStateOnly,
-      backendReachable,
-      lastUpdatedLabel,
-      onNavigate: commitScreenNavigation,
-    }
-    : activeScreenId === 'catalog'
-      ? { onOpenWorkspace: openWorkspace }
-      : {};
+  const activeScreenProps = useMemo(() => (
+    activeScreenId === 'home'
+      ? {
+        status,
+        loading,
+        error,
+        refresh,
+        cacheStatus,
+        refreshing,
+        savedStateOnly,
+        backendReachable,
+        lastUpdatedLabel,
+        onNavigate: commitScreenNavigation,
+      }
+      : activeScreenId === 'catalog'
+        ? { onOpenWorkspace: openWorkspace }
+        : {}
+  ), [
+    activeScreenId,
+    backendReachable,
+    cacheStatus,
+    commitScreenNavigation,
+    error,
+    lastUpdatedLabel,
+    loading,
+    openWorkspace,
+    refresh,
+    refreshing,
+    savedStateOnly,
+    status,
+  ]);
 
   const content = workspaceApp ? (
     <LiteAppWorkspace
