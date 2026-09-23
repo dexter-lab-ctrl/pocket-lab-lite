@@ -121,6 +121,7 @@ await page.addInitScript(() => {
 });
 
 let failures = 0;
+let targetMisses = 0;
 const commit = sourceCommit();
 
 for (const screenId of screens) {
@@ -161,17 +162,19 @@ for (const screenId of screens) {
 
   const path = resolve(outputDir, `ui-performance-android-cdp-${screenId}.json`);
   await writeFile(path, JSON.stringify(report, null, 2) + '\n', 'utf8');
-  const status = report.gate_passed ? 'PASS' : 'FAIL';
+  const status = report.target_met ? 'TARGET-PASS' : report.gate_passed ? 'TARGET-MISS' : 'FAIL';
   console.log(`[ui-performance-android] ${status} ${screenId}: p95=${report.p95_frame_ms}ms smooth=${report.target_smooth_frame_ratio}`);
   if (!report.gate_passed) failures += 1;
+  if (!report.target_met) targetMisses += 1;
 }
 
 await page.close();
 
-if (failures) {
-  console.error(`[ui-performance-android] ${failures} screen(s) exceeded the hard render gate.`);
+if (failures || targetMisses) {
+  if (failures) console.error(`[ui-performance-android] ${failures} screen(s) exceeded the hard render gate.`);
+  if (targetMisses) console.error(`[ui-performance-android] ${targetMisses} screen(s) missed the 60 FPS production target.`);
   process.exit(1);
 }
 
-console.log('[ui-performance-android] all screen render gates passed');
+console.log('[ui-performance-android] all screens met the 60 FPS production target');
 process.exit(0);
