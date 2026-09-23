@@ -201,7 +201,6 @@ nav:
       - Validation index: validation/README.md
       - Qualification & maintenance harness: validation/qualification-maintenance-harness.md
       - Runtime security assurance harness: validation/runtime-security-assurance-harness.md
-      - UI performance qualification: validation/ui-performance-qualification.md
       - Accessibility & visual gates: generated/development/accessibility-visual.md
       - Backend-to-Frontend parity: generated/development/validation/parity/index.md
       - Validation coverage: generated/enterprise/reference/validation-coverage.md
@@ -325,6 +324,7 @@ nav:
       - Lite Security model: security/lite-security-model.md
       - Backup & restore reference: recovery/backup-restore.md
       - Lite validation: validation/lite-validation.md
+      - UI performance qualification: validation/ui-performance-qualification.md
   - Documentation Platform:
       - Overview: generated/enterprise/documentation-platform/index.md
       - How to use these docs: generated/enterprise/documentation-platform/how-to-use.md
