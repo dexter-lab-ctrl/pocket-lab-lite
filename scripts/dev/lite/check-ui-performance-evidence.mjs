@@ -21,7 +21,12 @@ let targetMisses = 0;
 for (const file of files) {
   const payload = JSON.parse(await readFile(resolve(directory, file), 'utf8'));
   const label = `${payload.browser_project || 'unknown'} ${payload.interaction || file}`;
-  if (payload.sanitized !== true || payload.schema_version !== '1.0.0') {
+  if (
+    payload.sanitized !== true
+    || payload.schema_version !== '1.0.0'
+    || !/^[0-9a-f]{40}$/.test(String(payload.source_commit || ''))
+    || /^0+$/.test(String(payload.source_commit || ''))
+  ) {
     console.error(`[ui-performance] FAIL ${label}: invalid evidence contract`);
     failures += 1;
     continue;

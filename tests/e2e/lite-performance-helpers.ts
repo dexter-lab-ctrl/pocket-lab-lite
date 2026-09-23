@@ -30,10 +30,11 @@ function sourceCommit() {
   if (/^[0-9a-f]{40}$/.test(configured)) return configured;
   try {
     const value = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
-    return /^[0-9a-f]{40}$/.test(value) ? value : '0'.repeat(40);
+    if (/^[0-9a-f]{40}$/.test(value) && !/^0+$/.test(value)) return value;
   } catch {
-    return '0'.repeat(40);
+    // Fall through to the fail-closed error below.
   }
+  throw new Error('UI performance evidence requires an exact 40-character source commit.');
 }
 
 export async function installLiteFrameSampler(page: Page) {

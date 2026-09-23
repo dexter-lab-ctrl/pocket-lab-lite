@@ -61,7 +61,7 @@ export default defineConfig({
     },
     {
       name: 'mocked-mobile',
-      testMatch: /lite-(mocked|accessibility(?:-states)?|content-stress|phase9-qualification|rules-activation-progress|visual(?:-(?:devices|states|overlays))?|parity)\.spec\.ts/,
+      testMatch: /lite-(mocked|accessibility(?:-states)?|content-stress|phase9-qualification|rules-activation-progress|visual(?:-(?:devices|states|overlays))?|parity|performance)\.spec\.ts/,
       use: { ...devices['Pixel 7'], ...commonUse, recordHar: mockedHar('mocked-mobile') },
     },
     {
@@ -71,7 +71,7 @@ export default defineConfig({
     },
     {
       name: 'live-mobile',
-      testMatch: /lite-live\.spec\.ts/,
+      testMatch: /lite-(?:live|performance-live)\.spec\.ts/,
       use: { ...devices['Pixel 7'], ...commonUse },
     },
   ],
