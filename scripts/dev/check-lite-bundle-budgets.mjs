@@ -48,7 +48,17 @@ function formatBytes(value) {
 
 function manifestKeyForSource(manifest, source) {
   if (manifest[source]) return source;
-  return Object.keys(manifest).find((key) => manifest[key]?.src === source) || null;
+  const sourceKey = Object.keys(manifest).find((key) => manifest[key]?.src === source);
+  if (sourceKey) return sourceKey;
+
+  // Rollup can emit a dynamic entry without a `src` field when the route
+  // chunk is shared with another dynamic import. Its stable manifest name is
+  // still the canonical component basename, so use that as a final fallback.
+  const sourceName = source.split('/').pop()?.replace(/\.[^.]+$/, '');
+  return Object.keys(manifest).find((key) => {
+    const record = manifest[key];
+    return record?.isDynamicEntry && record.name === sourceName;
+  }) || null;
 }
 
 function collectStaticGraph(manifest, startKey) {
