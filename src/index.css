@@ -18103,6 +18103,140 @@ textarea {
   border-radius: var(--lite-security-radius-xl) !important;
 }
 
+/* Lite performance surfaces stay visually layered without forcing a backdrop
+   blur over the whole scrolling document. Backdrop filters are disproportionately
+   expensive during continuous scroll on low-power phone-class GPUs. */
+.theme-pocket-lite-daylight .lite-page-header,
+.theme-pocket-lite-daylight main .lite-page-header,
+.theme-pocket-lite-daylight main .lite-page-header[class*="rounded-[2rem]"][class*="border"],
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-toolbar--simple,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card,
+.theme-pocket-lite-daylight .lite-security-native-polish .lite-security-safety-center-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* The Lite shell stays fixed while the document scrolls. Avoid repainting the
+   entire document through translucent fixed layers during that gesture. */
+.theme-pocket-lite-daylight.pocket-app-shell > header,
+.theme-pocket-lite-daylight .pocket-nav-dock,
+.theme-pocket-lite-daylight .pocket-side-rail,
+.theme-pocket-lite-daylight .pocket-app-backdrop,
+.theme-pocket-lite-daylight .mobile-more-backdrop {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+.theme-pocket-lite-daylight .pocket-app-backdrop::before,
+.theme-pocket-lite-daylight .pocket-app-backdrop::after {
+  filter: none !important;
+}
+
+/* Keep the repeated Lite content surfaces cheap to scroll. These effects are
+   decorative; the underlying labels, borders, colors, and control focus rings
+   remain unchanged. */
+.theme-pocket-lite-daylight main .pocket-card,
+.theme-pocket-lite-daylight main .pocket-state-surface,
+.theme-pocket-lite-daylight main .lite-motion-elevation-surface,
+.theme-pocket-lite-daylight main .lite-operational-story,
+.theme-pocket-lite-daylight main .lite-remote-access-panel,
+.theme-pocket-lite-daylight main .lite-flow-status-panel {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+.theme-pocket-lite-daylight main .pocket-card,
+.theme-pocket-lite-daylight main .pocket-card::before,
+.theme-pocket-lite-daylight main .pocket-card::after,
+.theme-pocket-lite-daylight main .pocket-badge,
+.theme-pocket-lite-daylight main .lite-ready-dot,
+.theme-pocket-lite-daylight main .lite-device-pulse,
+.theme-pocket-lite-daylight main .lite-device-flow-signal,
+.theme-pocket-lite-daylight main .lite-device-card::before,
+.theme-pocket-lite-daylight main .lite-device-card::after {
+  animation: none !important;
+}
+
+.theme-pocket-lite-daylight main .lite-device-card::before,
+.theme-pocket-lite-daylight main .lite-device-card::after,
+.theme-pocket-lite-daylight main .lite-device-pulse,
+.theme-pocket-lite-daylight main .lite-device-flow-signal {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* Catalog cards are the repeated scrolling surface. Preserve their shape and
+   status color while removing per-card depth effects that force extra paint
+   work on phone-class GPUs. Focus rings remain owned by the control styles. */
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card .lite-catalog-icon,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card .lite-catalog-status-badge,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card .lite-catalog-app-icon-img,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card .pocket-badge,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-pull-refresh {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card::before,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card .pocket-button:not(:focus-visible) {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-native-polish .pocket-badge {
+  animation: none !important;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-trust-marker,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .pocket-button:not(:focus-visible) {
+  box-shadow: none !important;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-pull-refresh:not(.is-pulling) svg {
+  animation: none !important;
+}
+
+/* Security completion swaps the compact live view for the saved overview in
+   the same interaction. Keep that handoff paint-stable, including the shared
+   card/status effects and the toast surface. */
+.theme-pocket-lite-daylight .lite-security-phase5-shell .lite-security-safety-center-card,
+.theme-pocket-lite-daylight .lite-security-phase5-shell .lite-security-safety-center-card::before,
+.theme-pocket-lite-daylight .lite-security-phase5-shell .lite-ready-dot,
+.theme-pocket-lite-daylight .lite-security-phase5-shell .pocket-badge,
+.lite-toast {
+  animation: none !important;
+}
+
+.lite-toast {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* Keep continuous scan progress truthful without animating large gradients,
+   pseudo-elements, or status pulses on every frame. The short entry motion
+   remains available before a scan starts; only the live state is quieted. */
+.theme-pocket-lite-daylight .lite-security-phase4-live,
+.theme-pocket-lite-daylight .lite-security-phase4-live *,
+.theme-pocket-lite-daylight .lite-security-phase4-live::before,
+.theme-pocket-lite-daylight .lite-security-phase4-live::after,
+.theme-pocket-lite-daylight .lite-security-phase4-live *::before,
+.theme-pocket-lite-daylight .lite-security-phase4-live *::after {
+  animation: none !important;
+  transition: none !important;
+  filter: none !important;
+}
+
 .theme-pocket-lite-daylight .lite-security-safety-center-copy h2 {
   margin: 0;
   letter-spacing: -0.045em;

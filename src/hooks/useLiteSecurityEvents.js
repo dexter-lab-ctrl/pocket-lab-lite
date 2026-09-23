@@ -25,6 +25,7 @@ import {
 const API_BASE = (import.meta.env.VITE_POCKETLAB_API_BASE || '').replace(/\/$/, '');
 const SECURITY_EVENTS_PATH = '/api/lite/security/events';
 const SECURITY_PROGRESS_FALLBACK_MS = 3000;
+const SECURITY_TERMINAL_REFRESH_DEFER_MS = 2000;
 const SECURITY_STREAM_FALLBACK_LABEL = 'Using backup progress check';
 const SECURITY_EVENT_TYPES = [
   'security.scan.snapshot',
@@ -113,7 +114,15 @@ function acceptAndApplySecurityEvent(queryClient, event, historyLimit = 20) {
   });
   if (terminalSecurityProgress(payload)) {
     broadcastTerminalSecurityEvent(payload);
-    invalidateTerminalSecurityQueries(queryClient, payload, historyLimit);
+    // Keep the terminal progress event and completion toast responsive first;
+    // the normalized progress cache is already current. Refresh the heavier
+    // read models just after the visible completion handoff settles.
+    const refresh = () => invalidateTerminalSecurityQueries(queryClient, payload, historyLimit);
+    if (typeof window !== 'undefined' && typeof window.setTimeout === 'function') {
+      window.setTimeout(refresh, SECURITY_TERMINAL_REFRESH_DEFER_MS);
+    } else {
+      refresh();
+    }
   } else if (incoming.type === 'security.scan.evidence_saved') {
     const runId = sanitizeSecurityRunId(payload.run_id) || 'latest';
     queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityEvidenceSummary(runId) });

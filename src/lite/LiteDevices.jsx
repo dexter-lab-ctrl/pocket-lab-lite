@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Activity,
   Copy,
@@ -91,6 +91,8 @@ import DeviceActionPortal from './devices/DeviceActionPortal.jsx';
 import LiteVirtualList from './components/LiteVirtualList.jsx';
 import { useLiteDeviceDetailsState, useLiteUiStore } from '../stores/liteUiStore.js';
 
+const MemoLiteVirtualList = React.memo(LiteVirtualList);
+
 const DeviceDetailsLazy = React.lazy(() => import('./devices/DeviceDetailsLazy.jsx'));
 const DeviceModelPickerLazy = React.lazy(() => import('./devices/DeviceModelPickerLazy.jsx'));
 
@@ -104,6 +106,39 @@ void DEVICES_DETAILS_ARE_LAZY;
 void DEVICES_ACTION_ROWS_OWN_CLICKS;
 void DEVICES_LINKED_CARD_CLASS_MARKER;
 void DEVICES_CONNECTION_COPY_MARKER;
+
+function deviceListKey(device) {
+  return device?.id || device?.name;
+}
+
+const DEVICE_LIST_VOLATILE_FIELDS = new Set([
+  'last_seen',
+  'last_seen_at',
+  'last_heartbeat_at',
+  'last_telemetry_at',
+  'last_system_profile_at',
+  'last_supervisor_heartbeat_at',
+  'last_command_received_at',
+  'last_command_completed_at',
+  'last_nats_connected_at',
+  'last_nats_disconnected_at',
+  'last_tailnet_ready_at',
+  'last_recovery_at',
+  'heartbeat_age_seconds',
+  'supervisor_age_seconds',
+  'connection_age_seconds',
+  'stale_since',
+  'updated_at',
+  'checked_at',
+  'refreshed_at',
+  'reported_at',
+]);
+
+function deviceListVisualFingerprint(devices) {
+  return JSON.stringify(devices, (key, value) => (
+    DEVICE_LIST_VOLATILE_FIELDS.has(key) ? undefined : value
+  ));
+}
 
 const DEVICES_POLLING_POLICY_PHASE4 = 'DEVICES_POLLING_POLICY_PHASE4';
 
@@ -236,6 +271,8 @@ export default function DevicesScreen() {
   const setDeviceModelPickerId = useLiteUiStore((state) => state.setDeviceModelPickerId);
   const detailsButtonRefs = useRef(new Map());
   const removeButtonRefs = useRef(new Map());
+  const deviceActionHandlersRef = useRef({ restartAgent: null, loadRemovalAssessment: null });
+  const stableDeviceListRef = useRef({ fingerprint: '', devices: null });
   const detailsPanelRef = useRef(null);
   const deviceCompletionFeedback = useRef(createLiteFeedbackDeduper());
   const pendingInviteId = useRef('');
@@ -258,7 +295,14 @@ export default function DevicesScreen() {
     snapshotSelect: selectDevicesScreenView,
   });
   const removalFlow = useLiteDeviceRemovalFlow({ backendReachable, savedStateOnly });
-  const devices = data?.devices || [];
+  const rawDevices = data?.devices || [];
+  const devices = useMemo(() => {
+    const fingerprint = deviceListVisualFingerprint(rawDevices);
+    const previous = stableDeviceListRef.current;
+    if (previous.devices && previous.fingerprint === fingerprint) return previous.devices;
+    stableDeviceListRef.current = { fingerprint, devices: rawDevices };
+    return rawDevices;
+  }, [rawDevices]);
   const activeDetailsDevice = devices.find((device) => String(device?.id || device?.name || '') === detailsDeviceId) || null;
   const modelPickerDevice = devices.find((device) => String(device?.id || device?.name || '') === deviceModelPickerId) || null;
   const remoteAccess = data?.remote_access || {};
@@ -535,6 +579,33 @@ export default function DevicesScreen() {
     }
   }
 
+  deviceActionHandlersRef.current.restartAgent = restartAgent;
+  deviceActionHandlersRef.current.loadRemovalAssessment = loadRemovalAssessment;
+  const pinnedDeviceKeys = useMemo(() => [detailsDeviceId, restartBusy].filter(Boolean), [detailsDeviceId, restartBusy]);
+  const renderDeviceItem = useCallback((device) => {
+    const key = String(device.id || device.name);
+    return (
+      <DeviceCard
+        device={device}
+        restartBusy={restartBusy}
+        removeBusy={removeBusy}
+        detailsOpen={detailsDeviceId === key}
+        savedStateOnly={savedStateOnly}
+        onOpenDetails={() => { setDetailsDeviceId(detailsDeviceId === key ? '' : key); }}
+        detailsButtonRef={(node) => {
+          if (node) detailsButtonRefs.current.set(key, node);
+          else detailsButtonRefs.current.delete(key);
+        }}
+        removeButtonRef={(node) => {
+          if (node) removeButtonRefs.current.set(key, node);
+          else removeButtonRefs.current.delete(key);
+        }}
+        onRestartAgent={() => deviceActionHandlersRef.current.restartAgent?.(device)}
+        onRemoveDevice={() => deviceActionHandlersRef.current.loadRemovalAssessment?.(device)}
+      />
+    );
+  }, [detailsDeviceId, removeBusy, restartBusy, savedStateOnly, setDetailsDeviceId]);
+
   return (
     <>
       <PageHeader
@@ -719,7 +790,7 @@ export default function DevicesScreen() {
           </GlassCard>
         </details>
 
-        <section className="lite-devices-list-area">
+        <section className="lite-devices-list-area" aria-busy={loading ? 'true' : 'false'}>
           <div className="lite-devices-section-title">
             <div>
               <p>Fleet</p>
@@ -898,11 +969,11 @@ export default function DevicesScreen() {
             </Suspense>
           ) : null}
 
-          <LiteVirtualList
+          <MemoLiteVirtualList
             items={devices}
             domain="devices"
             datasetKey="fleet:all"
-            getItemKey={(device) => device?.id || device?.name}
+            getItemKey={deviceListKey}
             estimateSize={312}
             overscan={4}
             viewportHeight={720}
@@ -914,32 +985,10 @@ export default function DevicesScreen() {
             normalClassName="lite-devices-grid lite-devices-linked-grid lite-render-containment lite-render-containment--devices"
             virtualClassName="lite-devices-virtual-list"
             savedState={savedStateOnly}
-            pinnedItemKeys={[detailsDeviceId, restartBusy].filter(Boolean)}
+            pinnedItemKeys={pinnedDeviceKeys}
             emptyState={null}
             testId="devices-fleet-list"
-            renderItem={(device) => {
-              const key = String(device.id || device.name);
-              return (
-                <DeviceCard
-                  device={device}
-                  restartBusy={restartBusy}
-                  removeBusy={removeBusy}
-                  detailsOpen={detailsDeviceId === key}
-                  savedStateOnly={savedStateOnly}
-                  onOpenDetails={() => { setDetailsDeviceId(detailsDeviceId === key ? '' : key); }}
-                  detailsButtonRef={(node) => {
-                    if (node) detailsButtonRefs.current.set(key, node);
-                    else detailsButtonRefs.current.delete(key);
-                  }}
-                  removeButtonRef={(node) => {
-                    if (node) removeButtonRefs.current.set(key, node);
-                    else removeButtonRefs.current.delete(key);
-                  }}
-                  onRestartAgent={() => restartAgent(device)}
-                  onRemoveDevice={() => loadRemovalAssessment(device)}
-                />
-              );
-            }}
+            renderItem={renderDeviceItem}
           />
 
           {!loading && devices.length === 0 ? (

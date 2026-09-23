@@ -93,6 +93,7 @@ function DeviceCard({
   detailsButtonRef = null,
   savedStateOnly = false,
 }) {
+  const [technicalDetailsOpen, setTechnicalDetailsOpen] = React.useState(false);
   const presentation = canonicalDevicePresentation(device);
   const online = !savedStateOnly && presentation.state === 'online';
   const linkState = deviceLinkState(device);
@@ -103,7 +104,7 @@ function DeviceCard({
     ? 'lite-device-card-server'
     : `lite-device-card-linked lite-device-card-linked-${effectiveLinkState}`;
   const deviceName = device?.name || 'Unnamed device';
-  const capabilitySummary = deviceCapabilitySummary(device);
+  const capabilitySummary = technicalDetailsOpen ? deviceCapabilitySummary(device) : null;
   const canRestart = !savedStateOnly && canRestartDeviceAgent(device);
   const canRemove = !savedStateOnly && canRemoveDevice(device);
   const proactiveHealth = device?.proactive_health || null;
@@ -233,30 +234,32 @@ function DeviceCard({
       ) : null}
 
       <div className="lite-device-actions">
-        <details className="lite-device-card-disclosure">
+        <details className="lite-device-card-disclosure" onToggle={(event) => setTechnicalDetailsOpen(event.currentTarget.open)}>
           <summary aria-label={`More details and actions for ${deviceName}`}>
             <span>Technical and safety</span><ChevronDown className="h-4 w-4" />
           </summary>
-          <div className="lite-device-card-disclosure-content">
-            <div className="lite-device-trust-strip" aria-label="Device trust and responsibilities">
-              <span><ShieldCheck className="h-4 w-4" /> <strong>{identityLabel(device)}</strong></span>
-              {responsibilitySummary(device) ? <small>{responsibilitySummary(device)}</small> : <small>No active dependencies reported.</small>}
-              {device?.removal_assessment ? (
-                <small className={device.removal_assessment.safe_to_remove ? 'is-ready' : 'is-review'}>
-                  {device.removal_assessment.protected ? 'Protected server host' : (device.removal_assessment.allowed ?? device.removal_assessment.safe_to_remove) ? 'Remove after confirmation' : 'Removal blocked'}
-                </small>
-              ) : null}
-              <small>Capabilities: {capabilitySummary.label}</small>
+          {technicalDetailsOpen ? (
+            <div className="lite-device-card-disclosure-content">
+              <div className="lite-device-trust-strip" aria-label="Device trust and responsibilities">
+                <span><ShieldCheck className="h-4 w-4" /> <strong>{identityLabel(device)}</strong></span>
+                {responsibilitySummary(device) ? <small>{responsibilitySummary(device)}</small> : <small>No active dependencies reported.</small>}
+                {device?.removal_assessment ? (
+                  <small className={device.removal_assessment.safe_to_remove ? 'is-ready' : 'is-review'}>
+                    {device.removal_assessment.protected ? 'Protected server host' : (device.removal_assessment.allowed ?? device.removal_assessment.safe_to_remove) ? 'Remove after confirmation' : 'Removal blocked'}
+                  </small>
+                ) : null}
+                <small>Capabilities: {capabilitySummary.label}</small>
+              </div>
+              {(canRestart || canRemove) ? <div className="lite-device-secondary-actions">
+                {canRestart && story.next_action?.kind !== 'restart' ? <LiteButton tone="secondary" onClick={onRestartAgent} disabled={restartBusy === device?.id}>
+                  <RefreshCw className="h-4 w-4" />{restartBusy === device?.id ? 'Checking progress...' : 'Restart agent'}
+                </LiteButton> : null}
+                {canRemove ? <LiteButton tone="danger" onClick={openRemovalReview} disabled={removeBusy} buttonRef={removeActionButtonRef}>
+                  <Trash2 className="h-4 w-4" />{(device?.removal_assessment?.allowed ?? device?.removal_assessment?.safe_to_remove) ? 'Remove device' : 'Review removal'}
+                </LiteButton> : null}
+              </div> : null}
             </div>
-            {(canRestart || canRemove) ? <div className="lite-device-secondary-actions">
-              {canRestart && story.next_action?.kind !== 'restart' ? <LiteButton tone="secondary" onClick={onRestartAgent} disabled={restartBusy === device?.id}>
-                <RefreshCw className="h-4 w-4" />{restartBusy === device?.id ? 'Checking progress...' : 'Restart agent'}
-              </LiteButton> : null}
-              {canRemove ? <LiteButton tone="danger" onClick={openRemovalReview} disabled={removeBusy} buttonRef={removeActionButtonRef}>
-                <Trash2 className="h-4 w-4" />{(device?.removal_assessment?.allowed ?? device?.removal_assessment?.safe_to_remove) ? 'Remove device' : 'Review removal'}
-              </LiteButton> : null}
-            </div> : null}
-          </div>
+          ) : null}
         </details>
       </div>
     </GlassCard>
