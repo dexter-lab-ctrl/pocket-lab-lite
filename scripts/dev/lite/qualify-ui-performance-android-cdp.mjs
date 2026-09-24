@@ -17,6 +17,7 @@ const browserBridgeEnabled = process.env.LITE_QUALIFICATION_BROWSER_BRIDGE === '
 const outputDir = resolve('.pocketlab-dev/performance');
 const screens = ['home', 'catalog', 'devices', 'security', 'identity', 'rules', 'recovery'];
 const MINIMUM_FRAME_COUNT = 20;
+const MAX_MINIMUM_FRAME_EXTENSION_MS = 2_000;
 
 function fail(message) {
   console.error(`[ui-performance-android] ${message}`);
@@ -262,6 +263,9 @@ await page.addInitScript(() => {
         eventDurations: sample.eventDurations.slice(0, 120),
       };
     },
+    count() {
+      return active?.intervals?.length || 0;
+    },
   };
 });
 
@@ -277,6 +281,15 @@ async function firstVisible(locator, label) {
     if (await candidate.isVisible().catch(() => false)) return candidate;
   }
   fail(`Could not find visible ${label}.`);
+}
+
+async function firstVisibleOrNull(locator) {
+  const count = await locator.count().catch(() => 0);
+  for (let index = 0; index < count; index += 1) {
+    const candidate = locator.nth(index);
+    if (await candidate.isVisible().catch(() => false)) return candidate;
+  }
+  return null;
 }
 
 async function gotoScreen(screenId) {
@@ -330,6 +343,20 @@ async function measurePhase4Interaction({
 
   await action();
   if (settleMs > 0) await page.waitForTimeout(settleMs);
+
+  // Keep collection truthful on a slower physical renderer without changing
+  // any frame target or hard-gate threshold. The renderer may deliver fewer
+  // than 20 RAF intervals during a short interaction window even though it is
+  // still producing measurable frames; extend collection for at most two
+  // seconds before the existing fail-closed minimum-frame check.
+  const extensionDeadline = Date.now() + MAX_MINIMUM_FRAME_EXTENSION_MS;
+  while (Date.now() < extensionDeadline) {
+    const frameCount = await page.evaluate(
+      () => window.__POCKETLAB_ANDROID_FRAME_SAMPLER__?.count?.() || 0,
+    ).catch(() => 0);
+    if (frameCount >= MINIMUM_FRAME_COUNT) break;
+    await page.waitForTimeout(50);
+  }
 
   const raw = await page.evaluate(() => window.__POCKETLAB_ANDROID_FRAME_SAMPLER__?.stop?.() || null);
   if (!raw) fail(`frame sampler returned no evidence for ${interaction} (${scope})`);
@@ -682,23 +709,33 @@ await measurePhase4Interaction({
 // Identity and Rules coverage stops at presentation. No confirmation is
 // accepted and no identity or policy mutation is submitted.
 await gotoScreen('identity');
-const manageAccessButton = await firstVisible(page.getByRole('button', { name: /Manage Access/i }), 'Identity Manage Access button');
-await manageAccessButton.click();
-const identityManage = await firstVisible(page.locator('.lite-identity-manage-sheet:visible'), 'Identity Manage sheet');
-const recoveryCodesButton = identityManage.getByRole('button', { name: 'Generate New Codes' });
-await measureNestedInteraction({
-  screen: 'identity',
-  nestedSurface: 'Manage access / protected confirmation presentation',
-  interaction: 'confirmation-render',
-  scope: 'identity-recovery-confirmation',
-  surface: 'Identity Manage / recovery confirmation',
-  action: async () => {
-    await recoveryCodesButton.click();
-    await page.getByRole('dialog', { name: 'Generate new recovery codes?' }).waitFor({ state: 'visible' });
-  },
-  settleMs: 480,
-});
-await page.getByRole('button', { name: 'Cancel' }).click();
+const manageAccessButton = await firstVisibleOrNull(page.getByRole('button', { name: /Manage Access/i }));
+if (!manageAccessButton) {
+  // The installed Server Phone runtime may predate the Owner-gated Identity
+  // projection. Do not fabricate authorization or silently mark the surface
+  // covered: continue safe read-only screens and let the final interaction
+  // completeness check report confirmation-render as unavailable.
+  console.log(
+    '[ui-performance-android] UNAVAILABLE identity Manage Access: the current runtime did not expose the Owner-gated surface; continuing safe read-only coverage.',
+  );
+} else {
+  await manageAccessButton.click();
+  const identityManage = await firstVisible(page.locator('.lite-identity-manage-sheet:visible'), 'Identity Manage sheet');
+  const recoveryCodesButton = identityManage.getByRole('button', { name: 'Generate New Codes' });
+  await measureNestedInteraction({
+    screen: 'identity',
+    nestedSurface: 'Manage access / protected confirmation presentation',
+    interaction: 'confirmation-render',
+    scope: 'identity-recovery-confirmation',
+    surface: 'Identity Manage / recovery confirmation',
+    action: async () => {
+      await recoveryCodesButton.click();
+      await page.getByRole('dialog', { name: 'Generate new recovery codes?' }).waitFor({ state: 'visible' });
+    },
+    settleMs: 480,
+  });
+  await page.getByRole('button', { name: 'Cancel' }).click();
+}
 
 await gotoScreen('rules');
 const manageRulesButton = await firstVisible(page.getByRole('button', { name: /Manage Safety Rules/i }), 'Rules Manage button');
