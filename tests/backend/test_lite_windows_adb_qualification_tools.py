@@ -35,6 +35,9 @@ def test_candidate_helper_uses_shared_adb_and_reports_specific_device_states():
     assert "android_device_offline" in SHARED.read_text(encoding="utf-8")
     assert "multiple_android_devices" in SHARED.read_text(encoding="utf-8")
     assert "requested_android_device_not_found" in SHARED.read_text(encoding="utf-8")
+    assert "function Wake-PocketLabAndroidDevice" in SHARED.read_text(encoding="utf-8")
+    assert "KEYCODE_WAKEUP" in SHARED.read_text(encoding="utf-8")
+    assert "Wake-PocketLabAndroidDevice" in source
     assert "& $adb" not in source
 
 
@@ -45,6 +48,7 @@ def test_cdp_helper_shares_adb_transport_and_does_not_use_path_only_lookup():
     assert "Resolve-PocketLabWindowsAdb" in source
     assert "Get-PocketLabAndroidDeviceRecords" in source
     assert "Invoke-PocketLabWindowsAdb" in source
+    assert "Wake-PocketLabAndroidDevice" in source
     assert "Get-Command adb" not in source
     assert "& adb" not in source
 

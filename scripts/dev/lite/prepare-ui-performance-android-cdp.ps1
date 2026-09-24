@@ -72,6 +72,11 @@ try {
 }
 
 $serial = [string]$device.Serial
+try {
+  Wake-PocketLabAndroidDevice -AdbPath $adb -DeviceSerial $serial
+} catch {
+  Fail $_.Exception.Message
+}
 $pidResult = Invoke-PocketLabWindowsAdb -AdbPath $adb -Arguments @('-s', $serial, 'shell', 'pidof', 'com.android.chrome')
 if ($pidResult.ExitCode -ne 0) {
   Fail 'adb_transport_failed: could not inspect the Android Chrome process.'

@@ -181,3 +181,25 @@ function Select-PocketLabAndroidDevice {
   }
   throw 'adb_transport_failed: no authorized Android device is available in the reported ADB states.'
 }
+
+function Wake-PocketLabAndroidDevice {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$AdbPath,
+    [Parameter(Mandatory = $true)]
+    [string]$DeviceSerial
+  )
+
+  $result = Invoke-PocketLabWindowsAdb -AdbPath $AdbPath -Arguments @(
+    '-s',
+    $DeviceSerial,
+    'shell',
+    'input',
+    'keyevent',
+    'KEYCODE_WAKEUP'
+  )
+  if ($result.ExitCode -ne 0) {
+    throw 'adb_transport_failed: could not send the bounded Android wake request.'
+  }
+}

@@ -56,6 +56,11 @@ try {
 }
 
 $serial = [string]$device.Serial
+try {
+  Wake-PocketLabAndroidDevice -AdbPath $adb -DeviceSerial $serial
+} catch {
+  Fail $_.Exception.Message
+}
 $reverseResult = Invoke-PocketLabWindowsAdb -AdbPath $adb -Arguments @('-s', $serial, 'reverse', '--list')
 if ($reverseResult.ExitCode -ne 0) {
   Fail 'adb_transport_failed: could not inspect existing ADB reverse mappings.'
