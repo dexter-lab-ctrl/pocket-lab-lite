@@ -65,7 +65,8 @@ describe('Pocket Lab Lite Security S8 recovery UI', () => {
   });
 
   it('keeps first paint compact and lazy-loads database management', () => {
-    expect(recoverySource).toContain("React.lazy(() => import('./recovery/RecoveryDatabaseDetailsLazy.jsx'))");
+    expect(recoverySource).toContain("const loadRecoveryDatabaseDetails = () => import('./recovery/RecoveryDatabaseDetailsLazy.jsx');");
+    expect(recoverySource).toContain('const RecoveryDatabaseDetailsLazy = React.lazy(loadRecoveryDatabaseDetails);');
     expect(manageSource).toContain('Back Up Pocket Lab');
     expect(recoverySource).toContain('Manage backups and recovery');
     expect(recoverySource).toContain('variant="manage"');
