@@ -2328,6 +2328,13 @@
           "mocked": false,
           "owner": "liteApi.recoveryHistory",
           "resolved": true,
+          "source_module": "src/lite/LiteRecovery.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": false,
+          "owner": "liteApi.recoveryHistory",
+          "resolved": true,
           "source_module": "src/lite/recovery/RecoveryBackupHistory.jsx",
           "usage": "query"
         },
@@ -4726,6 +4733,28 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Browser Bridge",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/browser/bridge",
+      "method": "POST",
+      "name": "POST /api/lite/harness/browser/bridge",
+      "operation_id": "browser_bridge_api_lite_harness_browser_bridge_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "503"
+      ],
+      "route": "/api/lite/harness/browser/bridge",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-harness"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Challenge",
       "domain": "harness",
       "id": "api:post:/api/lite/harness/challenge",
@@ -6551,6 +6580,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "88b464765e46595bc330bc08b22e96b0c0566063be7144f0a247d8fb95dd59ab"
+    "source_fingerprint": "349d4b29ee32c8cf8342e6f244c6392f13d81e45768561b01d5ebafd66dae124"
   }
 }

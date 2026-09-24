@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 288ef8479a86b00bed95d19d5a93afdcfcd138b2b8d58a9ada83d529d22f8505
+source_fingerprint: 506e9087e7fd92cdbf96b424e777918a6ac0e89eace97f78a60b7799ae35ecf1
 schema_revision: 1
 validation_status: generated
 ---
@@ -54,6 +54,7 @@ validation_status: generated
 | src/lite/LiteIdentityEnterprise.jsx | liteApi.verifyPasskeyStepUp | POST | `/api/lite/identity/step-up/verify` | mutation | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.backupApp | POST | `/api/lite/apps/{param}/backup` | mutation | no | dynamic |
 | src/lite/LiteRecovery.jsx | liteApi.backupNow | POST | `/api/lite/recovery/backup` | mutation | no | static |
+| src/lite/LiteRecovery.jsx | liteApi.recoveryHistory | GET | `/api/lite/recovery/backups` | query | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.verifyBackup | POST | `/api/lite/recovery/backups/{param}/verify` | mutation | no | dynamic |
 | src/lite/LiteRecovery.jsx | liteApi.databaseRecovery | GET | `/api/lite/recovery/database` | query | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.backupDatabase | POST | `/api/lite/recovery/database/backup` | mutation | no | static |
@@ -306,6 +307,7 @@ validation_status: generated
 - `/api/lite/harness/bootstrap/challenge`
 - `/api/lite/harness/bootstrap/complete`
 - `/api/lite/harness/bootstrap/grants`
+- `/api/lite/harness/browser/bridge`
 - `/api/lite/harness/capabilities`
 - `/api/lite/harness/challenge`
 - `/api/lite/harness/principal/revoke`

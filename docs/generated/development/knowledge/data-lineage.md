@@ -24,6 +24,7 @@ Verified relationships are generated from frontend API usage, parity field mappi
 | `GET /api/lite/fleet/devices/{node_id}/restart-agent/status` | ui:litedevices | — | unvalidated |
 | `GET /api/lite/identity/owner-claim/status` | ui:liteidentity | — | unvalidated |
 | `GET /api/lite/policy` | ui:literules | — | unvalidated |
+| `GET /api/lite/recovery/backups` | ui:literecovery | — | unvalidated |
 | `GET /api/lite/recovery/database` | ui:literecovery | — | unvalidated |
 | `GET /api/lite/recovery/details` | ui:literecovery | table:backup_manifest_index, table:recovery_backup_location_events, table:recovery_backup_locations, table:recovery_code_batches, table:recovery_codes, table:recovery_current_state, table:recovery_operations | contract-derived |
 | `GET /api/lite/recovery/locations` | ui:literecovery | — | unvalidated |

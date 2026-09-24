@@ -1883,6 +1883,17 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Browser Bridge",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/browser/bridge",
+      "name": "POST /api/lite/harness/browser/bridge",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Challenge",
       "domain": "harness",
       "id": "api:post:/api/lite/harness/challenge",
@@ -13122,6 +13133,28 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_ui_candidate_server.py",
+      "name": "tests/backend/test_lite_ui_candidate_server.py",
+      "source_refs": [
+        "tests/backend/test_lite_ui_candidate_server.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_ui_performance_runner.py",
+      "name": "tests/backend/test_lite_ui_performance_runner.py",
+      "source_refs": [
+        "tests/backend/test_lite_ui_performance_runner.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_worker_recovery.py",
       "name": "tests/backend/test_lite_worker_recovery.py",
       "source_refs": [
@@ -13830,6 +13863,50 @@
       "name": "tests/e2e/lite-parity.spec.ts",
       "source_refs": [
         "tests/e2e/lite-parity.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-performance-contract.ts",
+      "name": "tests/e2e/lite-performance-contract.ts",
+      "source_refs": [
+        "tests/e2e/lite-performance-contract.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-performance-helpers.ts",
+      "name": "tests/e2e/lite-performance-helpers.ts",
+      "source_refs": [
+        "tests/e2e/lite-performance-helpers.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-performance-live.spec.ts",
+      "name": "tests/e2e/lite-performance-live.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-performance-live.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-performance.spec.ts",
+      "name": "tests/e2e/lite-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-performance.spec.ts"
       ],
       "type": "test"
     },
@@ -18998,6 +19075,20 @@
       "id": "rel:130d4cb5549904f5",
       "source": "component:command-lifecycle",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-performance.spec.ts"
+      ],
+      "id": "rel:131c5207765f24b7",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-performance.spec.ts",
       "type": "verified_by"
     },
     {
@@ -26766,6 +26857,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "src/lite/LiteRecovery.jsx"
+      ],
+      "id": "rel:38748cbe618beed2",
+      "source": "ui:literecovery",
+      "target": "api:get:/api/lite/recovery/backups",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_premium_tab_polish.py"
       ],
       "id": "rel:387ea61c0f5adf77",
@@ -26869,6 +26974,20 @@
       "id": "rel:38d4c08116595386",
       "source": "api:get:/api/lite/fleet/devices/{device_id}/recovery-history",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-performance.spec.ts"
+      ],
+      "id": "rel:38dfbc77a1b3d463",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-performance.spec.ts",
       "type": "verified_by"
     },
     {
@@ -31873,6 +31992,20 @@
       "source": "component:recovery-state",
       "target": "troubleshooting:backup-failure",
       "type": "recovers_with"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:4fecfa531d39b053",
+      "source": "api:post:/api/lite/harness/browser/bridge",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -47244,6 +47377,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_ui_candidate_server.py"
+      ],
+      "id": "rel:9f05f36edfec7328",
+      "source": "component:browser",
+      "target": "test:tests/backend/test_lite_ui_candidate_server.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:9f30d692e6f204ce",
@@ -52759,6 +52906,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:bbe6bc9745146bb9",
+      "source": "api:post:/api/lite/harness/browser/bridge",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:bbe7d16c0378abda",
@@ -53930,6 +54091,20 @@
       "id": "rel:c16addc58c2dd961",
       "source": "reason:shutdown",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-performance.spec.ts"
+      ],
+      "id": "rel:c16bdd375e37d27d",
+      "source": "domain:security",
+      "target": "test:tests/e2e/lite-performance.spec.ts",
       "type": "verified_by"
     },
     {
@@ -60259,6 +60434,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:e0f4197f2eab17bc",
+      "source": "domain:harness",
+      "target": "api:post:/api/lite/harness/browser/bridge",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:e101b0d6511af827",
@@ -65826,6 +66015,20 @@
       "source": "component:backup-engine",
       "target": "subject:pocketlab.events.lite.restore.service_restart_checked",
       "type": "publishes"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-performance.spec.ts"
+      ],
+      "id": "rel:fc2435a3f2ab951c",
+      "source": "domain:identity",
+      "target": "test:tests/e2e/lite-performance.spec.ts",
+      "type": "verified_by"
     },
     {
       "derivation": {

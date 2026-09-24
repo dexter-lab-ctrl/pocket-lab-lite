@@ -5201,6 +5201,49 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
+        "POCKETLAB_QUALIFICATION_OWNER=1 python3 scripts/dev/lite/task_runtime.py shell -- scripts/dev/lite/start-qualification.sh --bootstrap-principal-id \"{{.PRINCIPAL_ID}}\" --bootstrap-public-key-file \"{{.PUBLIC_KEY_FILE}}\" --bootstrap-profile qualification-owner"
+      ],
+      "dependencies": [],
+      "environment": [
+        "POCKETLAB_QUALIFICATION_OWNER"
+      ],
+      "example_invocation": "task lite:qualification:start:key-bound:ui-performance",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/start-qualification.sh",
+        "scripts/dev/lite/task_runtime.py"
+      ],
+      "name": "lite:qualification:start:key-bound:ui-performance",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Explicitly start qualification with the operator-approved synthetic qualification-owner UI-performance bootstrap; destructive authority remains off",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": true,
+      "safe_local": false,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": true
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Runtime-evidence loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
         "bash scripts/dev/check-lite-runtime-resilience.sh"
       ],
       "dependencies": [],

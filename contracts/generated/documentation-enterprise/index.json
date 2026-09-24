@@ -2173,6 +2173,30 @@
         "affects_release": false,
         "affects_runtime": true,
         "default": "source-defined/unvalidated",
+        "name": "LITE_ANDROID_CDP_URL",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/lite/run-ui-performance-android-cdp.sh",
+          "scripts/dev/lite/run-ui-performance-qualified.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
         "name": "LITE_ANDROID_GATE",
         "owner": "repository tooling",
         "purpose": "Documentation/developer automation configuration",
@@ -2385,21 +2409,20 @@
       },
       {
         "affected_components": [
-          "documentation",
           "repository tooling"
         ],
         "affects_release": false,
-        "affects_runtime": false,
+        "affects_runtime": true,
         "default": "source-defined/unvalidated",
         "name": "LITE_BASE_URL",
-        "owner": "documentation tooling",
-        "purpose": "Documentation/developer automation configuration",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
         "related_troubleshooting": [
           "Development Troubleshooting",
           "Production Troubleshooting"
         ],
         "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
-        "restart_required": "no-runtime-restart-for-doc-tooling",
+        "restart_required": "source-dependent",
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
@@ -2407,8 +2430,8 @@
           "performance/parity/edge-readonly.js",
           "performance/parity/wsl-readonly.js",
           "playwright.config.ts",
-          "scripts/docs/lite/generate_docs.py",
-          "tests/backend/test_lite_security_assurance_scenario_contracts.py"
+          "scripts/dev/lite/run-ui-performance-android-candidate.sh",
+          "scripts/dev/lite/run-ui-performance-android-cdp.sh"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -2656,11 +2679,11 @@
         "secret": false,
         "source": [
           "scripts/dev/lite/run-gate.sh",
+          "scripts/dev/lite/run-ui-performance-live.sh",
+          "scripts/dev/lite/run-ui-performance-qualified.py",
           "scripts/docs/lite/generate_docs.py",
           "tasks/Taskfile.parity.yml",
-          "tasks/Taskfile.ui.yml",
-          "tests/docs/release-inventory.spec.ts",
-          "tests/docs/test_release_inventory_experience.py"
+          "tasks/Taskfile.ui.yml"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -2686,9 +2709,9 @@
           ".github/workflows/lite-quality.yml",
           "playwright.config.ts",
           "scripts/dev/lite/run-playwright-mocked.sh",
+          "scripts/dev/lite/run-ui-performance-qualified.py",
           "scripts/test/parity/promote_runtime_verification.py",
-          "tasks/Taskfile.parity.yml",
-          "tests/dev/test_frontend_resource_policy.py"
+          "tasks/Taskfile.parity.yml"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -3988,6 +4011,202 @@
         "secret": false,
         "source": [
           "scripts/test/parity/capture_live_recovery_parity.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "frontend"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "LITE_PERFORMANCE_INTERACTIONS",
+        "owner": "frontend",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "src/performance/litePerformanceBudget.js",
+          "src/performance/litePerformancePolicy.test.js"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "frontend"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "LITE_PERFORMANCE_PRIMITIVES",
+        "owner": "frontend",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "src/performance/litePerformanceBudget.js",
+          "src/performance/litePerformancePolicy.test.js"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "frontend"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "LITE_PERFORMANCE_RUNTIME_ENABLED",
+        "owner": "frontend",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "src/performance/LitePerformanceRuntime.jsx"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "frontend",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "LITE_PERFORMANCE_SCHEMA_VERSION",
+        "owner": "frontend",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "src/performance/LitePerformanceRuntime.jsx",
+          "src/performance/litePerformanceBudget.js",
+          "tests/e2e/lite-performance-helpers.ts"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "frontend"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "LITE_PERFORMANCE_SCREENS",
+        "owner": "frontend",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "src/performance/litePerformanceBudget.js",
+          "src/performance/litePerformancePolicy.test.js"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "LITE_PERF_SOURCE_COMMIT",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          ".github/workflows/lite-quality.yml",
+          "scripts/dev/lite/run-ui-performance-android-candidate.sh",
+          "scripts/dev/lite/run-ui-performance-android-cdp.sh",
+          "scripts/dev/lite/ui_performance_candidate_server.py",
+          "tests/e2e/lite-performance-helpers.ts"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "LITE_QUALIFICATION_BROWSER_BRIDGE",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "playwright.config.ts",
+          "scripts/dev/lite/run-ui-performance-qualified.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "LITE_QUALIFIED_PERFORMANCE_INTERACTIONS",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "tests/e2e/lite-performance-contract.ts",
+          "tests/e2e/lite-performance.spec.ts"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -5613,6 +5832,29 @@
       },
       {
         "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "LITE_TAB_LABELS",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "tests/e2e/lite-test-helpers.ts"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "frontend",
           "repository tooling"
         ],
@@ -5656,6 +5898,58 @@
         "secret": false,
         "source": [
           "tests/backend/test_lite_security_f3_summary_contract.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "frontend",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "LITE_UI_PERFORMANCE_BUDGET",
+        "owner": "frontend",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "src/performance/litePerformanceBudget.js",
+          "src/performance/litePerformanceBudget.test.js",
+          "tests/e2e/lite-performance-helpers.ts"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "frontend",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "LITE_UI_PERFORMANCE_MATRIX",
+        "owner": "frontend",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "src/performance/litePerformanceMatrix.js",
+          "src/performance/litePerformancePolicy.test.js",
+          "tests/e2e/lite-performance.spec.ts"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -6997,6 +7291,52 @@
         "affects_release": false,
         "affects_runtime": true,
         "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_ANDROID_CDP_BRIDGE_PORT",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/lite/run-ui-performance-android-cdp.sh"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_ANDROID_CDP_LOCAL_PORT",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/lite/run-ui-performance-android-cdp.sh"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
         "name": "POCKETLAB_API_DIR",
         "owner": "repository tooling",
         "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -7384,6 +7724,8 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
+          "scripts/dev/lite/run-ui-performance-android-candidate.sh",
+          "scripts/dev/lite/run-ui-performance-candidate.sh",
           "vite.config.js"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -10985,7 +11327,9 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          "scripts/dev/lite/harness.py"
+          "scripts/dev/lite/harness.py",
+          "scripts/dev/lite/run-ui-performance-qualified.py",
+          "tests/backend/test_lite_ui_performance_runner.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -11033,6 +11377,7 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
+          "scripts/dev/lite/run-ui-performance-qualified.py",
           "scripts/dev/lite/start-qualification.sh",
           "tests/backend/test_lite_harness.py"
         ],
@@ -11082,6 +11427,7 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
+          "scripts/dev/lite/run-ui-performance-qualified.py",
           "scripts/dev/lite/start-qualification.sh",
           "tests/backend/test_lite_harness.py"
         ],
@@ -11108,6 +11454,7 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
+          "scripts/dev/lite/run-ui-performance-qualified.py",
           "scripts/dev/lite/start-qualification.sh",
           "tests/backend/test_lite_harness.py"
         ],
@@ -11134,6 +11481,7 @@
         "secret": true,
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
+          "scripts/dev/lite/run-ui-performance-qualified.py",
           "scripts/dev/lite/start-qualification.sh",
           "tests/backend/test_lite_harness.py"
         ],
@@ -11159,6 +11507,54 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_HARNESS_BROWSER",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "tests/backend/test_lite_harness.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_HARNESS_BROWSER_BRIDGE",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "playwright.config.ts",
+          "scripts/dev/lite/run-ui-performance-qualified.py",
+          "tests/backend/test_lite_ui_performance_runner.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -11256,8 +11652,8 @@
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py",
-          "scripts/dev/lite/start-qualification.sh",
-          "tests/backend/test_lite_harness.py"
+          "scripts/dev/lite/run-ui-performance-qualified.py",
+          "scripts/dev/lite/start-qualification.sh"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -11286,8 +11682,8 @@
           "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
-          "scripts/dev/lite/start-qualification.sh",
-          "tests/backend/test_lite_harness.py"
+          "scripts/dev/lite/run-ui-performance-qualified.py",
+          "scripts/dev/lite/start-qualification.sh"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -11363,10 +11759,10 @@
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
           "scripts/dev/lite/harness.py",
+          "scripts/dev/lite/run-ui-performance-qualified.py",
           "scripts/dev/lite/start-qualification.sh",
           "scripts/docs/check_security_assurance_playbooks.py",
-          "tests/backend/test_lite_harness.py",
-          "tests/backend/test_lite_security_assurance.py"
+          "tests/backend/test_lite_harness.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -11417,7 +11813,9 @@
         "secret": false,
         "source": [
           "scripts/dev/lite/harness.py",
-          "scripts/dev/lite/security_assurance.py"
+          "scripts/dev/lite/run-ui-performance-qualified.py",
+          "scripts/dev/lite/security_assurance.py",
+          "tests/backend/test_lite_ui_performance_runner.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -21503,7 +21901,7 @@
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py",
-          "scripts/dev/lite/start-qualification.sh"
+          "scripts/dev/lite/run-ui-performance-qualified.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -26035,6 +26433,31 @@
         "secret": false,
         "source": [
           "scripts/dev/setup-threat-dragon.sh"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_UI_PERF_CANDIDATE",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/lite/run-ui-performance-android-candidate.sh",
+          "scripts/dev/lite/run-ui-performance-candidate.sh",
+          "vite.config.js"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -38099,7 +38522,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 486,
+      "page_count": 487,
       "top_level": [
         "start-here",
         "use",
@@ -45983,9 +46406,9 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "c7efb2a97b0314a431a6494cd426a4053d2ce3fdd430312fbd9073b0e2167652",
-        "documentation": "deeed3817c6780e8068b77a811d093f0a9cb9f06a0b59dc7a0d26307eb0737f0",
-        "openapi": "683093d477f48a1e54959ed51de4498003d3854e51b55b957ec75ad84d6bc929",
-        "operational_health": "60af58e404834511dc5d3dc9e50e30de90cbdb4cdf9862ee9e68c8096dc971f5"
+        "documentation": "959f59dc57248c34f1bd33e289cc578524ac03342a9712ccfe537f9d58c1cf4d",
+        "openapi": "8d70d2565517e6782d0afafcaf1e9d6090b6fe9c73cf9eb2feeaa0892ea3737b",
+        "operational_health": "ca62ed0da4cd6b8d5ba3be553aa10ca41e88e3de1a052fdf1cce3b517bb264d5"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -47919,7 +48342,7 @@
         },
         {
           "path": "package.json",
-          "sha256": "b9a19d60282bc3428b44b53b90b580587eeb52a5e63e880ce22b0ec16870cb9d"
+          "sha256": "9a9c2887cfb3d1b8c3e8548565b2fc5920b640963b2aadb7edd18f9af4cdabdb"
         },
         {
           "path": "requirements-dev.txt",
@@ -93434,6 +93857,49 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
+          "POCKETLAB_QUALIFICATION_OWNER=1 python3 scripts/dev/lite/task_runtime.py shell -- scripts/dev/lite/start-qualification.sh --bootstrap-principal-id \"{{.PRINCIPAL_ID}}\" --bootstrap-public-key-file \"{{.PUBLIC_KEY_FILE}}\" --bootstrap-profile qualification-owner"
+        ],
+        "dependencies": [],
+        "environment": [
+          "POCKETLAB_QUALIFICATION_OWNER"
+        ],
+        "example_invocation": "task lite:qualification:start:key-bound:ui-performance",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/start-qualification.sh",
+          "scripts/dev/lite/task_runtime.py"
+        ],
+        "name": "lite:qualification:start:key-bound:ui-performance",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Explicitly start qualification with the operator-approved synthetic qualification-owner UI-performance bootstrap; destructive authority remains off",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": true,
+        "safe_local": false,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": true
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Runtime-evidence loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
           "bash scripts/dev/check-lite-runtime-resilience.sh"
         ],
         "dependencies": [],
@@ -116186,5 +116652,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "531b88b77dd9d845733a552f8bcbbc19ef6c17738e2868479019b14006407402"
+  "source_fingerprint": "74e628bcefef78be1c14589bb7df2b716f1604311d833217c8fc9d8f3f4aed72"
 }

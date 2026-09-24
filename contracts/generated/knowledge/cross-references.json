@@ -691,6 +691,10 @@
       ],
       "api:get:/api/lite/recovery/backups": [
         {
+          "source": "ui:literecovery",
+          "type": "calls"
+        },
+        {
           "source": "domain:recovery",
           "type": "owns"
         }
@@ -1404,6 +1408,12 @@
         }
       ],
       "api:post:/api/lite/harness/bootstrap/grants": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/harness/browser/bridge": [
         {
           "source": "domain:harness",
           "type": "owns"
@@ -9687,6 +9697,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/harness/browser/bridge",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/harness/challenge",
           "type": "verified_by"
         },
@@ -11688,6 +11702,12 @@
         },
         {
           "source": "requirement:architecture-10",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_ui_candidate_server.py": [
+        {
+          "source": "component:browser",
           "type": "verified_by"
         }
       ],
@@ -15029,6 +15049,24 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-performance.spec.ts": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-phase9-qualification.spec.ts": [
         {
           "source": "domain:identity",
@@ -15750,6 +15788,10 @@
         },
         {
           "source": "api:post:/api/lite/harness/bootstrap/grants",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/browser/bridge",
           "type": "verified_by"
         },
         {
@@ -18607,6 +18649,16 @@
           "type": "verified_by"
         }
       ],
+      "api:post:/api/lite/harness/browser/bridge": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:post:/api/lite/harness/challenge": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -20291,6 +20343,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_ui_candidate_server.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_release_process_isolation.py",
           "type": "verified_by"
         },
@@ -21542,6 +21598,10 @@
         },
         {
           "target": "test:tests/e2e/lite-content-stress.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-performance.spec.ts",
           "type": "verified_by"
         },
         {
@@ -24049,6 +24109,10 @@
           "type": "owns"
         },
         {
+          "target": "api:post:/api/lite/harness/browser/bridge",
+          "type": "owns"
+        },
+        {
           "target": "api:post:/api/lite/harness/challenge",
           "type": "owns"
         },
@@ -24624,6 +24688,10 @@
         },
         {
           "target": "test:tests/e2e/lite-mocked.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-performance.spec.ts",
           "type": "verified_by"
         },
         {
@@ -26374,6 +26442,10 @@
         },
         {
           "target": "test:tests/e2e/lite-mocked.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-performance.spec.ts",
           "type": "verified_by"
         },
         {
@@ -28586,6 +28658,10 @@
         },
         {
           "target": "test:tests/e2e/lite-live.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-performance.spec.ts",
           "type": "verified_by"
         },
         {
@@ -32305,6 +32381,10 @@
       ],
       "ui:literecovery": [
         {
+          "target": "api:get:/api/lite/recovery/backups",
+          "type": "calls"
+        },
+        {
           "target": "api:get:/api/lite/recovery/database",
           "type": "calls"
         },
@@ -32459,6 +32539,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "88b464765e46595bc330bc08b22e96b0c0566063be7144f0a247d8fb95dd59ab"
+    "source_fingerprint": "349d4b29ee32c8cf8342e6f244c6392f13d81e45768561b01d5ebafd66dae124"
   }
 }

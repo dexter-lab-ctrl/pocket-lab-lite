@@ -18,7 +18,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 | Development loop | 55 |
 | Documentation loop | 55 |
 | API-validation loop | 12 |
-| Runtime-evidence loop | 32 |
+| Runtime-evidence loop | 33 |
 | Security-analysis loop | 34 |
 | Release loop | 19 |
 | Recovery-diagnostics loop | 6 |
@@ -4355,6 +4355,40 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:qualification:start:key-bound:faults`
+
+## `lite:qualification:start:key-bound:ui-performance`
+
+**Purpose:** Explicitly start qualification with the operator-approved synthetic qualification-owner UI-performance bootstrap; destructive authority remains off
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `POCKETLAB_QUALIFICATION_OWNER=1 python3 scripts/dev/lite/task_runtime.py shell -- scripts/dev/lite/start-qualification.sh --bootstrap-principal-id "{{.PRINCIPAL_ID}}" --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}" --bootstrap-profile qualification-owner`
+
+**Environment:** POCKETLAB_QUALIFICATION_OWNER
+
+**Inputs:** scripts/dev/lite/start-qualification.sh, scripts/dev/lite/task_runtime.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=True; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=False; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:qualification:start:key-bound:ui-performance`
 
 ## `lite:runtime:resilience:check`
 

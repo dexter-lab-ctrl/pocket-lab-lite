@@ -529,6 +529,7 @@
         "api:post:/api/lite/harness/bootstrap/challenge",
         "api:post:/api/lite/harness/bootstrap/complete",
         "api:post:/api/lite/harness/bootstrap/grants",
+        "api:post:/api/lite/harness/browser/bridge",
         "api:post:/api/lite/harness/challenge",
         "api:post:/api/lite/harness/principal/revoke",
         "api:post:/api/lite/harness/principals",
@@ -3586,6 +3587,18 @@
     },
     {
       "entities": [
+        "test:tests/backend/test_lite_ui_candidate_server.py"
+      ],
+      "source": "tests/backend/test_lite_ui_candidate_server.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_ui_performance_runner.py"
+      ],
+      "source": "tests/backend/test_lite_ui_performance_runner.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_lite_worker_recovery.py"
       ],
       "source": "tests/backend/test_lite_worker_recovery.py"
@@ -3976,6 +3989,30 @@
     },
     {
       "entities": [
+        "test:tests/e2e/lite-performance-contract.ts"
+      ],
+      "source": "tests/e2e/lite-performance-contract.ts"
+    },
+    {
+      "entities": [
+        "test:tests/e2e/lite-performance-helpers.ts"
+      ],
+      "source": "tests/e2e/lite-performance-helpers.ts"
+    },
+    {
+      "entities": [
+        "test:tests/e2e/lite-performance-live.spec.ts"
+      ],
+      "source": "tests/e2e/lite-performance-live.spec.ts"
+    },
+    {
+      "entities": [
+        "test:tests/e2e/lite-performance.spec.ts"
+      ],
+      "source": "tests/e2e/lite-performance.spec.ts"
+    },
+    {
+      "entities": [
         "test:tests/e2e/lite-phase9-qualification.spec.ts"
       ],
       "source": "tests/e2e/lite-phase9-qualification.spec.ts"
@@ -4125,6 +4162,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "88b464765e46595bc330bc08b22e96b0c0566063be7144f0a247d8fb95dd59ab"
+    "source_fingerprint": "349d4b29ee32c8cf8342e6f244c6392f13d81e45768561b01d5ebafd66dae124"
   }
 }
