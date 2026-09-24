@@ -304,6 +304,12 @@ async function firstVisibleOrNull(locator) {
   return null;
 }
 
+async function removeQualificationUpdateNotice() {
+  await page.locator('[data-lite-sw-update-ready="true"]').evaluateAll((nodes) => {
+    nodes.forEach((node) => node.remove());
+  }).catch(() => {});
+}
+
 async function gotoScreen(screenId) {
   const target = new URL(base.href);
   target.searchParams.set('screen', screenId);
@@ -313,6 +319,7 @@ async function gotoScreen(screenId) {
     if ('fonts' in document) await document.fonts.ready;
   });
   await page.waitForTimeout(500);
+  await removeQualificationUpdateNotice();
 }
 
 async function exerciseScroll(duration = 900) {
@@ -351,8 +358,8 @@ async function measurePhase4Interaction({
   }
 
   const evidenceInteraction = sanitizeLitePerformanceName(`android-cdp:${scope}:${interaction}`);
+  await removeQualificationUpdateNotice();
   await page.evaluate((name) => window.__POCKETLAB_ANDROID_FRAME_SAMPLER__?.start(name), evidenceInteraction);
-
   await action();
   if (settleMs > 0) await page.waitForTimeout(settleMs);
 
