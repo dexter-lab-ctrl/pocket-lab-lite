@@ -285,6 +285,7 @@ let failures = 0;
 let targetMisses = 0;
 let evidenceCount = 0;
 const exercisedInteractions = new Set();
+const unavailableSurfaces = [];
 
 async function firstVisible(locator, label) {
   const count = await locator.count();
@@ -734,6 +735,7 @@ if (!manageAccessButton) {
   // projection. Do not fabricate authorization or silently mark the surface
   // covered: continue safe read-only screens and let the final interaction
   // completeness check report confirmation-render as unavailable.
+  unavailableSurfaces.push('Identity Manage Access / protected confirmation presentation');
   console.log(
     '[ui-performance-android] UNAVAILABLE identity Manage Access: the current runtime did not expose the Owner-gated surface; continuing safe read-only coverage.',
   );
@@ -757,20 +759,27 @@ if (!manageAccessButton) {
 }
 
 await gotoScreen('rules');
-const manageRulesButton = await firstVisible(page.getByRole('button', { name: /Manage Safety Rules/i }), 'Rules Manage button');
-await manageRulesButton.click();
-const rulesManage = await firstVisible(page.getByRole('dialog', { name: /Manage Safety Rules/i }), 'Rules Manage dialog');
-const rulesTechnicalDetails = rulesManage.locator('details.lite-rules-advanced-details');
-await measureNestedInteraction({
-  screen: 'rules',
-  nestedSurface: 'Manage Safety Rules / Technical status',
-  interaction: 'nested-detail-open',
-  scope: 'rules-technical-status',
-  surface: 'Manage Safety Rules / Technical status',
-  action: async () => {
-    await rulesTechnicalDetails.locator('summary').click();
-  },
-});
+const manageRulesButton = await firstVisibleOrNull(page.getByRole('button', { name: /Manage Safety Rules/i }));
+if (!manageRulesButton) {
+  unavailableSurfaces.push('Rules Manage / Technical status');
+  console.log(
+    '[ui-performance-android] UNAVAILABLE Rules Manage: the current runtime did not expose the Owner-gated surface; continuing safe read-only coverage.',
+  );
+} else {
+  await manageRulesButton.click();
+  const rulesManage = await firstVisible(page.getByRole('dialog', { name: /Manage Safety Rules/i }), 'Rules Manage dialog');
+  const rulesTechnicalDetails = rulesManage.locator('details.lite-rules-advanced-details');
+  await measureNestedInteraction({
+    screen: 'rules',
+    nestedSurface: 'Manage Safety Rules / Technical status',
+    interaction: 'nested-detail-open',
+    scope: 'rules-technical-status',
+    surface: 'Manage Safety Rules / Technical status',
+    action: async () => {
+      await rulesTechnicalDetails.locator('summary').click();
+    },
+  });
+}
 
 // Recovery exercises only section navigation and the Verify-backup detail
 // projection. Restore apply and backup creation remain untouched.
@@ -861,8 +870,12 @@ await measurePhase4Interaction({
 });
 
 const missingInteractions = LITE_PERFORMANCE_INTERACTIONS.filter((interaction) => !exercisedInteractions.has(interaction));
-if (missingInteractions.length) {
-  fail(`physical Android qualification did not exercise Phase 4 interaction ids: ${missingInteractions.join(', ')}`);
+const qualificationGaps = [
+  ...(missingInteractions.length ? [`interaction ids: ${missingInteractions.join(', ')}`] : []),
+  ...(unavailableSurfaces.length ? [`surfaces: ${unavailableSurfaces.join('; ')}`] : []),
+];
+if (qualificationGaps.length) {
+  fail(`physical Android qualification could not exercise all requested coverage: ${qualificationGaps.join(' | ')}`);
 }
 
 await page.close();
