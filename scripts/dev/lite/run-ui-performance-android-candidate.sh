@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+IFS=$'\n\t'
+
+repo_root="$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../.." && pwd)"
+cd "$repo_root"
+
+fail() {
+  printf '[ui-performance-android-candidate] ERROR: %s\n' "$*" >&2
+  exit 1
+}
+
+command -v powershell.exe >/dev/null 2>&1 || fail 'Windows PowerShell is required for the owned ADB reverse mapping.'
+command -v npm >/dev/null 2>&1 || fail 'npm is required; activate the checked-in Node toolchain first.'
+command -v node >/dev/null 2>&1 || fail 'node is required; activate the checked-in Node toolchain first.'
+
+source_commit="$(git rev-parse HEAD)"
+[[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || fail 'the candidate source SHA is not an exact commit.'
+
+candidate_process=''
+cleanup() {
+  set +e
+  if [[ -n "$candidate_process" ]] && kill -0 "$candidate_process" 2>/dev/null; then
+    kill "$candidate_process" 2>/dev/null || true
+    wait "$candidate_process" 2>/dev/null || true
+  fi
+  powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
+    -File scripts/dev/lite/prepare-ui-performance-android-candidate.ps1 -Cleanup >/dev/null 2>&1 || true
+}
+trap cleanup EXIT INT TERM
+
+printf '[ui-performance-android-candidate] building exact source SHA %s\n' "$source_commit"
+POCKETLAB_UI_PERF_CANDIDATE=1 POCKETLAB_BUILD_ID="$source_commit" npm run build
+
+powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
+  -File scripts/dev/lite/prepare-ui-performance-android-candidate.ps1
+
+python3 scripts/dev/lite/ui_performance_candidate_server.py --source-commit "$source_commit" &
+candidate_process=$!
+
+for _ in {1..80}; do
+  if curl -fsS --connect-timeout 1 --max-time 2 \
+      http://127.0.0.1:18765/__pocketlab_qualification__/candidate.json >/dev/null 2>&1; then
+    break
+  fi
+  if ! kill -0 "$candidate_process" 2>/dev/null; then
+    fail 'candidate server exited before readiness.'
+  fi
+  sleep 0.25
+done
+curl -fsS --connect-timeout 1 --max-time 2 \
+  http://127.0.0.1:18765/__pocketlab_qualification__/candidate.json >/dev/null \
+  || fail 'candidate server did not expose its exact-SHA manifest.'
+
+printf '[ui-performance-android-candidate] running physical Android qualification for %s\n' "$source_commit"
+LITE_BASE_URL='http://127.0.0.1:18765' \
+LITE_PERF_SOURCE_COMMIT="$source_commit" \
+  bash scripts/dev/lite/run-ui-performance-android-cdp.sh

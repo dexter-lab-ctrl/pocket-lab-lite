@@ -63,6 +63,7 @@ function matrixEvidence(screen, interaction, nestedSurface) {
 
 validateEndpoint(cdpUrl, 'LITE_ANDROID_CDP_URL');
 const base = validateEndpoint(baseUrl, 'LITE_BASE_URL');
+const commit = sourceCommit();
 
 await rm(outputDir, { recursive: true, force: true });
 await mkdir(outputDir, { recursive: true });
@@ -77,6 +78,41 @@ if (browserBridge) {
   });
 }
 const page = await context.newPage();
+
+// Physical qualification must prove that Android loaded a fresh candidate
+// built from this exact checkout.  The manifest is served by the loopback
+// candidate server, never by the installed Server Phone PWA, and contains no
+// authority or credential material.
+const candidateManifestUrl = new URL('/__pocketlab_qualification__/candidate.json', base).toString();
+const candidateManifestResponse = await page.goto(candidateManifestUrl, { waitUntil: 'domcontentloaded' });
+if (!candidateManifestResponse || !candidateManifestResponse.ok()) {
+  fail('The Android base URL did not expose the required exact-SHA candidate manifest.');
+}
+let candidateManifest;
+try {
+  candidateManifest = JSON.parse(await page.locator('body').innerText());
+} catch {
+  fail('The Android candidate manifest was not valid JSON.');
+}
+if (candidateManifest?.source_commit !== commit || candidateManifest?.sanitized !== true) {
+  fail('The Android candidate manifest source SHA does not match the requested exact commit.');
+}
+if (candidateManifestResponse.headers()['x-pocket-lab-candidate-sha'] !== commit) {
+  fail('The Android candidate response header did not prove the requested exact commit.');
+}
+await page.evaluate(async () => {
+  const registrations = await navigator.serviceWorker?.getRegistrations?.() || [];
+  await Promise.all(registrations.map((registration) => registration.unregister()));
+  await navigator.serviceWorker?.getRegistrations?.();
+});
+const candidatePageResponse = await page.goto(new URL('/?screen=home', base).toString(), { waitUntil: 'domcontentloaded' });
+if (!candidatePageResponse || !candidatePageResponse.ok()) {
+  fail('The Android candidate page did not load.');
+}
+const candidateMeta = await page.locator('meta[name="pocketlab-candidate-sha"]').getAttribute('content').catch(() => null);
+if (candidateMeta !== commit) {
+  fail('The Android rendered page did not expose the requested exact candidate SHA.');
+}
 
 await page.addInitScript(() => {
   let active = null;
@@ -147,7 +183,6 @@ await page.addInitScript(() => {
 let failures = 0;
 let targetMisses = 0;
 let evidenceCount = 0;
-const commit = sourceCommit();
 const exercisedInteractions = new Set();
 
 async function firstVisible(locator, label) {
@@ -237,6 +272,9 @@ async function measurePhase4Interaction({
     qualification_surface: 'android-cdp',
     browser_project: 'android-cdp',
     source_commit: commit,
+    candidate_manifest_verified: true,
+    candidate_manifest_source_commit: candidateManifest.source_commit,
+    candidate_manifest_schema_version: candidateManifest.schema_version,
     sanitized: true,
     viewport: viewport ? { width: viewport.width, height: viewport.height } : null,
     ...summary,

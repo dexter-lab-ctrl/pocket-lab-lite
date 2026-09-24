@@ -11,6 +11,7 @@ import {
 
 const packageMetadata = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 const pocketLabBuildId = process.env.POCKETLAB_BUILD_ID || process.env.GITHUB_SHA || packageMetadata.version || 'development';
+const qualificationCandidateBuild = process.env.POCKETLAB_UI_PERF_CANDIDATE === '1';
 
 const noPwaFallbackPattern = /^\/(?:api|terminal|apps|gitea|docs)(?:\/|$)|^\/openapi\.json$/;
 
@@ -45,6 +46,23 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    {
+      name: 'pocketlab-qualification-candidate-identity',
+      transformIndexHtml(html) {
+        if (!qualificationCandidateBuild || !/^[0-9a-f]{40}$/i.test(String(pocketLabBuildId))) return html;
+        return {
+          html,
+          tags: [{
+            tag: 'meta',
+            injectTo: 'head-prepend',
+            attrs: {
+              name: 'pocketlab-candidate-sha',
+              content: String(pocketLabBuildId).toLowerCase(),
+            },
+          }],
+        };
+      },
+    },
     VitePWA({
       registerType: 'prompt',
       includeAssets: [

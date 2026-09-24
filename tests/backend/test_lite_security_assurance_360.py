@@ -235,6 +235,7 @@ def test_runtime_tunnel_uses_runtime_reported_server_and_tailnet_ips():
     )
     argv = tunnel.build_tunnel_argv(facts, config)
     assert "Hostname=192.168.50.20" in argv
+    assert not any(token.startswith("HostKeyAlias=") for token in argv)
     assert argv[argv.index("-p") + 1] == "8022"
     assert argv[argv.index("-l") + 1] == "u0_a123"
     assert "127.0.0.1:18443:100.64.12.34:443" in argv
@@ -242,12 +243,18 @@ def test_runtime_tunnel_uses_runtime_reported_server_and_tailnet_ips():
     assert facts["server_phone_ip_source"] == "SSH_CONNECTION"
     assert facts["tailscale_ipv4_source"] == "tailscale_runtime_ip4"
 
+    ui_argv = tunnel.build_tunnel_argv(facts, config, include_caddy_http=True)
+    assert "127.0.0.1:18444:127.0.0.1:8443" in ui_argv
+
 
 def test_runtime_tunnel_cli_has_no_caller_selected_network_inputs():
     text = TUNNEL.read_text(encoding="utf-8")
     assert 'SSH_ALIAS = "pocketlab-termux"' in text
     assert '"-o", f"Hostname={server_ip}"' in text
     assert 'f"127.0.0.1:{CADDY_LOCAL_PORT}:{tailscale_ip}:{CADDY_REMOTE_PORT}"' in text
+    assert 'include_caddy_http: bool = False' in text
+    assert 'CADDY_HTTP_LOCAL_PORT = 18444' in text
+    assert '127.0.0.1:{CADDY_HTTP_LOCAL_PORT}:127.0.0.1:{CADDY_HTTP_REMOTE_PORT}' in text
     for forbidden in (
         'add_argument("--host"',
         'add_argument("--port"',
