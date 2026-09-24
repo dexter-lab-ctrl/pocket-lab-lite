@@ -91,7 +91,8 @@ import LiteVirtualList from './components/LiteVirtualList.jsx';
 import { useLiteDeviceDetailsState, useLiteUiStore } from '../stores/liteUiStore.js';
 
 const MemoLiteVirtualList = React.memo(LiteVirtualList);
-const DeviceCardLazy = React.lazy(() => import('./devices/DeviceCard.jsx'));
+const loadDeviceCard = () => import('./devices/DeviceCard.jsx');
+const DeviceCardLazy = React.lazy(loadDeviceCard);
 const MemoDeviceCard = React.memo((props) => (
   <Suspense fallback={<div className="lite-device-card lite-device-card-loading" aria-busy="true" />}>
     <DeviceCardLazy {...props} />
@@ -104,7 +105,8 @@ const MemoDeviceCard = React.memo((props) => (
   && previous.savedStateOnly === next.savedStateOnly
 ));
 
-const DeviceDetailsLazy = React.lazy(() => import('./devices/DeviceDetailsLazy.jsx'));
+const loadDeviceDetails = () => import('./devices/DeviceDetailsLazy.jsx');
+const DeviceDetailsLazy = React.lazy(loadDeviceDetails);
 const DeviceModelPickerLazy = React.lazy(() => import('./devices/DeviceModelPickerLazy.jsx'));
 
 const DEVICES_PROGRESSIVE_DETAILS_MILESTONE_2 = true;
@@ -330,6 +332,30 @@ export default function DevicesScreen() {
     || deviceInviteIsLive(latestInvite)
     || deviceRestartProgressIsLive(restartProgress)
   ));
+  useEffect(() => {
+    // Warm the first interactive card and the read-only details surface as the
+    // Devices screen enters the DOM. This keeps dynamic-module parsing out of
+    // a user's Manage click without mounting privileged details or changing
+    // the normal lazy/error boundary behavior.
+    let cancelled = false;
+    let frameId = null;
+    let timeoutId = null;
+    const warmDetailsModules = () => {
+      if (cancelled) return;
+      void loadDeviceCard().catch(() => null);
+      void loadDeviceDetails().catch(() => null);
+    };
+    if (typeof window.requestAnimationFrame === 'function') {
+      frameId = window.requestAnimationFrame(warmDetailsModules);
+    } else {
+      timeoutId = window.setTimeout(warmDetailsModules, 0);
+    }
+    return () => {
+      cancelled = true;
+      if (frameId !== null) window.cancelAnimationFrame(frameId);
+      if (timeoutId !== null) window.clearTimeout(timeoutId);
+    };
+  }, []);
   const onlineDevices = devices.filter((device) => String(device?.connection || '').toLowerCase() === 'online').length;
   const healthAttentionCurrent = Boolean(data?.health_summary?.attention_current);
   const healthAttentionCount = healthAttentionCurrent ? Number(data?.health_summary?.attention_count || 0) : 0;

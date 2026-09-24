@@ -90,6 +90,8 @@ const APP_CATALOG_FLIP_SHARED_CONTINUITY_IS_PRESENTATION_ONLY = true;
 // intercept clicks, or change backend-owned action execution.
 void APP_CATALOG_FLIP_SHARED_CONTINUITY_IS_PRESENTATION_ONLY;
 
+const APP_CATALOG_MANAGE_BODY_PERF_DELAY_MS = 700;
+
 function updateLiteCatalogVisualViewportVar() {
   if (typeof document === 'undefined' || typeof window === 'undefined') return;
   const height = window.visualViewport?.height || window.innerHeight;
@@ -1969,6 +1971,10 @@ function CatalogManagePortal({
       setManageExtrasReady(false);
       return undefined;
     }
+    if (isLitePerformanceMode()) {
+      const timer = window.setTimeout(() => setManageBodyReady(true), APP_CATALOG_MANAGE_BODY_PERF_DELAY_MS);
+      return () => window.clearTimeout(timer);
+    }
     const frame = window.requestAnimationFrame(() => setManageBodyReady(true));
     return () => window.cancelAnimationFrame(frame);
   }, [manageAppOpen]);
@@ -1977,10 +1983,6 @@ function CatalogManagePortal({
     if (!manageBodyReady) {
       setManageExtrasReady(false);
       return undefined;
-    }
-    if (isLitePerformanceMode()) {
-      const timer = window.setTimeout(() => setManageExtrasReady(true), 700);
-      return () => window.clearTimeout(timer);
     }
     const frame = window.requestAnimationFrame(() => setManageExtrasReady(true));
     return () => window.cancelAnimationFrame(frame);
@@ -2214,7 +2216,7 @@ function CatalogManagePortal({
                 </>
               ) : null}
             </>
-          ) : null}
+          ) : <div className="lite-catalog-manage-section-loading" aria-busy="true">Preparing app actions…</div>}
         </div>
       </section>
     </div>,

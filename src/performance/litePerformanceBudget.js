@@ -113,6 +113,13 @@ export function sanitizeLitePerformanceName(value = 'unknown') {
   return safe || 'unknown';
 }
 
+export function isLiteScreenPerformanceId(value = '') {
+  const id = String(value || '');
+  // Profiler IDs are sanitized before storage, so `screen:devices` is stored
+  // as `screen-devices`. Accept the source form as well for direct callers.
+  return id.startsWith('screen-') || id.startsWith('screen:');
+}
+
 export function summarizeLiteFrames(intervals = [], {
   longTasks = [],
   longAnimationFrames = [],

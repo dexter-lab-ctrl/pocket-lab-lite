@@ -1,6 +1,7 @@
 import React, { Profiler, useEffect } from 'react';
 import {
   LITE_PERFORMANCE_SCHEMA_VERSION,
+  isLiteScreenPerformanceId,
   sanitizeLitePerformanceName,
   summarizeReactCommits,
 } from './litePerformanceBudget.js';
@@ -86,7 +87,7 @@ export function useLitePerformanceRuntime() {
       store.readSummary = () => {
         const commits = {};
         for (const [id, durations] of Object.entries(store.commits || {})) {
-          commits[id] = summarizeReactCommits(durations, { screenTransition: id.startsWith('screen:') });
+          commits[id] = summarizeReactCommits(durations, { screenTransition: isLiteScreenPerformanceId(id) });
         }
         return {
           schema_version: LITE_PERFORMANCE_SCHEMA_VERSION,

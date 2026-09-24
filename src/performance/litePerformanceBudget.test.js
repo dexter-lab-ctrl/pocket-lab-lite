@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   LITE_UI_PERFORMANCE_BUDGET,
+  isLiteScreenPerformanceId,
   percentile,
   sanitizeLitePerformanceName,
   summarizeLiteFrames,
@@ -35,5 +36,11 @@ describe('Pocket Lab Lite UI performance contract', () => {
     const commits = summarizeReactCommits([2, 4, 6, 8]);
     expect(commits.p95_commit_ms).toBe(8);
     expect(commits.target_met).toBe(true);
+  });
+
+  it('preserves the screen-transition budget after profiler id sanitization', () => {
+    expect(isLiteScreenPerformanceId('screen:devices')).toBe(true);
+    expect(isLiteScreenPerformanceId('screen-devices')).toBe(true);
+    expect(isLiteScreenPerformanceId('devices-manage-open')).toBe(false);
   });
 });
