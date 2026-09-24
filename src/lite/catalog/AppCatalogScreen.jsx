@@ -1978,6 +1978,10 @@ function CatalogManagePortal({
       setManageExtrasReady(false);
       return undefined;
     }
+    if (isLitePerformanceMode()) {
+      const timer = window.setTimeout(() => setManageExtrasReady(true), 700);
+      return () => window.clearTimeout(timer);
+    }
     const frame = window.requestAnimationFrame(() => setManageExtrasReady(true));
     return () => window.cancelAnimationFrame(frame);
   }, [manageBodyReady]);
