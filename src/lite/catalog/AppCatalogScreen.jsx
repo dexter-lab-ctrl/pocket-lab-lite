@@ -2007,7 +2007,9 @@ function CatalogManagePortal({
 
   if (!app || !lifecycle || !manageAppOpen || typeof document === 'undefined') return null;
 
-  const activeAppActionGroups = groupAppActions(appActionEntries, manageSection);
+  const activeAppActionGroups = manageBodyReady
+    ? groupAppActions(appActionEntries, manageSection)
+    : [];
 
   return createPortal(
     <div
