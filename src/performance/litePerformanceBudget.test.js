@@ -31,6 +31,7 @@ describe('Pocket Lab Lite UI performance contract', () => {
 
   it('keeps profiler evidence sanitized and bounded to timing data', () => {
     expect(sanitizeLitePerformanceName('Security / Manage <token>')).toBe('security-manage-token');
+    expect(sanitizeLitePerformanceName('catalog:manage-open')).toBe('catalog-manage-open');
     const commits = summarizeReactCommits([2, 4, 6, 8]);
     expect(commits.p95_commit_ms).toBe(8);
     expect(commits.target_met).toBe(true);

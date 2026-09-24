@@ -42,7 +42,10 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : 1,
+  // Frame and Long Animation Frame samples are renderer measurements. Keep
+  // the performance lane single-worker even on CI so another browser worker
+  // cannot contend for the same runner and create false target misses.
+  workers: process.env.VITE_POCKETLAB_PERF_TEST === '1' ? 1 : process.env.CI ? 2 : 1,
   outputDir: '.pocketlab-dev/test-results',
   globalSetup: './tests/e2e/global-setup.ts',
   reporter: [

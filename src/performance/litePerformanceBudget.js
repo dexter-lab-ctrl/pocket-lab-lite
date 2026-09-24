@@ -104,7 +104,10 @@ export function sanitizeLitePerformanceName(value = 'unknown') {
   const safe = String(value || 'unknown')
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9:._-]+/g, '-')
+    // Evidence names are also artifact filenames. Keep the contract portable
+    // across upload-artifact, Windows, and local filesystem consumers; the
+    // interaction value itself remains preserved in the JSON evidence.
+    .replace(/[^a-z0-9._-]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 96);
   return safe || 'unknown';
