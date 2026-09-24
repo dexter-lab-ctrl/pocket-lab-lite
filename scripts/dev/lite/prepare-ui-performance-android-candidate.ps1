@@ -2,6 +2,7 @@
 param(
   [int]$CandidatePort = 18765,
   [string]$DeviceSerial = '',
+  [switch]$OpenCandidate,
   [switch]$Cleanup
 )
 
@@ -86,5 +87,12 @@ $state = [ordered]@{
   updated_at = (Get-Date).ToUniversalTime().ToString('o')
 }
 $state | ConvertTo-Json | Set-Content -Encoding UTF8 $StatePath
+if ($OpenCandidate) {
+  try {
+    Open-PocketLabAndroidCandidate -AdbPath $adb -DeviceSerial $serial -CandidatePort $CandidatePort
+  } catch {
+    Fail $_.Exception.Message
+  }
+}
 Write-Host '[pocketlab-android-candidate] READY'
 Write-Host "[pocketlab-android-candidate] candidate loopback port: $CandidatePort"

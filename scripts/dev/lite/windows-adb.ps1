@@ -203,3 +203,35 @@ function Wake-PocketLabAndroidDevice {
     throw 'adb_transport_failed: could not send the bounded Android wake request.'
   }
 }
+
+function Open-PocketLabAndroidCandidate {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$AdbPath,
+    [Parameter(Mandatory = $true)]
+    [string]$DeviceSerial,
+    [Parameter(Mandatory = $true)]
+    [int]$CandidatePort
+  )
+
+  if ($CandidatePort -lt 1024 -or $CandidatePort -gt 65535) {
+    throw 'adb_transport_failed: candidate port is outside the user port range.'
+  }
+  $candidateUrl = "http://127.0.0.1:$CandidatePort"
+  $result = Invoke-PocketLabWindowsAdb -AdbPath $AdbPath -Arguments @(
+    '-s',
+    $DeviceSerial,
+    'shell',
+    'am',
+    'start',
+    '-a',
+    'android.intent.action.VIEW',
+    '-d',
+    $candidateUrl,
+    'com.android.chrome'
+  )
+  if ($result.ExitCode -ne 0) {
+    throw 'adb_transport_failed: could not open the owned Android candidate URL in Chrome.'
+  }
+}

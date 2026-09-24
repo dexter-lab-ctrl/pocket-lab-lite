@@ -33,7 +33,7 @@ printf '[ui-performance-android-candidate] building exact source SHA %s\n' "$sou
 POCKETLAB_UI_PERF_CANDIDATE=1 POCKETLAB_BUILD_ID="$source_commit" npm run build
 
 powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
-  -File scripts/dev/lite/prepare-ui-performance-android-candidate.ps1
+  -File scripts/dev/lite/prepare-ui-performance-android-candidate.ps1 -OpenCandidate
 
 python3 scripts/dev/lite/ui_performance_candidate_server.py --source-commit "$source_commit" &
 candidate_process=$!

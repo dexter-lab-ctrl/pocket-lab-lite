@@ -6,6 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 SHARED = ROOT / "scripts/dev/lite/windows-adb.ps1"
 CANDIDATE = ROOT / "scripts/dev/lite/prepare-ui-performance-android-candidate.ps1"
+CANDIDATE_RUNNER = ROOT / "scripts/dev/lite/run-ui-performance-android-candidate.sh"
 CDP = ROOT / "scripts/dev/lite/prepare-ui-performance-android-cdp.ps1"
 ANDROID_QUALIFIER = ROOT / "scripts/dev/lite/qualify-ui-performance-android-cdp.mjs"
 
@@ -37,6 +38,9 @@ def test_candidate_helper_uses_shared_adb_and_reports_specific_device_states():
     assert "requested_android_device_not_found" in SHARED.read_text(encoding="utf-8")
     assert "function Wake-PocketLabAndroidDevice" in SHARED.read_text(encoding="utf-8")
     assert "KEYCODE_WAKEUP" in SHARED.read_text(encoding="utf-8")
+    assert "function Open-PocketLabAndroidCandidate" in SHARED.read_text(encoding="utf-8")
+    assert "$OpenCandidate" in source
+    assert "-OpenCandidate" in CANDIDATE_RUNNER.read_text(encoding="utf-8")
     assert "Wake-PocketLabAndroidDevice" in source
     assert "& $adb" not in source
 
