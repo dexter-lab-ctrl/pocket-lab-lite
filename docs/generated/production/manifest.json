@@ -32,7 +32,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "8ffeeab0e01ccf674356bdba6f294c07b6daf018a414fe8904001d347407fac6",
+  "source_fingerprint": "d87491f49ca8bcb05902101028453718a152d647cfa6d12154097d4d34f794bb",
   "source_fingerprints": {
     ".github/workflows/docs-security-supply-chain.yml": "b5ce9661a2c0673d9e9c2a3be9b19e958b4046543816728556a581a2f338fa27",
     ".github/workflows/lite-quality.yml": "895c08c00e6352aa07bf24ee04b31621940f6d8db0ab6fb61916beb496f0546c",
@@ -59,7 +59,7 @@
     "scripts/dev/lite/harness.py": "478210833fb586e3a4c8fb9cb87ddab105963c7b5778b97eebc4aba516d44a08",
     "scripts/dev/lite/prepare-ui-performance-android-candidate.ps1": "3348498e1bc0984264549b1f846aa999bdbab30cc6a036e83cd4fd36193d24a0",
     "scripts/dev/lite/prepare-ui-performance-android-cdp.ps1": "5f87badcc47eef153a5d9146e3ad474726879ff569242aa3d2e21ecc0b6c9fb2",
-    "scripts/dev/lite/qualify-ui-performance-android-cdp.mjs": "dd92a9863146b26b0010cf819b7bb7be944a80d0553bff132eacf3fe987be0f9",
+    "scripts/dev/lite/qualify-ui-performance-android-cdp.mjs": "c93add499623cf24f83c14878790ccce09b4a1691bfdfed3b5c54c7dca0c22fe",
     "scripts/dev/lite/redaction_check.py": "e063173dfbedaf3e57680ee70c7518c4f07a77c885cd41c504691d6fc954f980",
     "scripts/dev/lite/release_artifact_check.py": "1a50fb4d9438fba3c3d6c31f43c5bcbeef041828fb6320153c0d50bfa2c79e44",
     "scripts/dev/lite/resolve-browser.mjs": "cfce0a19ef05720f3099df781151d32c611b70ffdb0808a17a12038dc3094a2a",
