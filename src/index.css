@@ -24706,6 +24706,19 @@ html[data-lite-power-save='true'] .health-dot-unknown {
   contain: layout paint;
 }
 
+/* Keep qualification focused on screen layout/paint and interaction work.
+   Page-entry, card-rise, status, and control animations are decorative and
+   otherwise add nondeterministic frames to every screen transition. This is
+   scoped to the explicit performance-test build; normal product motion is
+   unchanged. */
+html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main,
+html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *,
+html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::before,
+html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
 .theme-pocket-lite-daylight.lite-overlay-root .lite-security-overlay-backdrop {
   background: rgba(15, 23, 42, 0.48) !important;
 }

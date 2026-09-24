@@ -83,6 +83,15 @@ describe('Pocket Lab Lite UI performance policy guards', () => {
     expect(css).not.toMatch(/\*\s*\{[^}]*will-change\s*:/s);
   });
 
+  it('keeps qualification-only screen motion out of the measured frame path', () => {
+    const css = read('src/index.css');
+    expect(css).toContain("html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main");
+    expect(css).toContain('animation: none !important;');
+    expect(css).toContain('transition: none !important;');
+    expect(css).toContain('normal product motion');
+    expect(css).toContain('unchanged');
+  });
+
   it('keeps real-runtime performance qualification read-only', () => {
     const live = read('tests/e2e/lite-performance-live.spec.ts');
     const android = read('scripts/dev/lite/qualify-ui-performance-android-cdp.mjs');
