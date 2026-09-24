@@ -17,6 +17,7 @@ const browserBridgeEnabled = process.env.LITE_QUALIFICATION_BROWSER_BRIDGE === '
 const outputDir = resolve('.pocketlab-dev/performance');
 const screens = ['home', 'catalog', 'devices', 'security', 'identity', 'rules', 'recovery'];
 const MINIMUM_FRAME_COUNT = 20;
+const MINIMUM_SAMPLER_INTERVAL_COUNT = MINIMUM_FRAME_COUNT + 3;
 const MAX_MINIMUM_FRAME_EXTENSION_MS = 2_000;
 
 function fail(message) {
@@ -365,7 +366,7 @@ async function measurePhase4Interaction({
     const frameCount = await page.evaluate(
       () => window.__POCKETLAB_ANDROID_FRAME_SAMPLER__?.count?.() || 0,
     ).catch(() => 0);
-    if (frameCount >= MINIMUM_FRAME_COUNT) break;
+    if (frameCount >= MINIMUM_SAMPLER_INTERVAL_COUNT) break;
     await page.waitForTimeout(50);
   }
 
