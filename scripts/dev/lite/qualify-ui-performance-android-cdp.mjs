@@ -69,6 +69,8 @@ await rm(outputDir, { recursive: true, force: true });
 await mkdir(outputDir, { recursive: true });
 
 const browser = await chromium.connectOverCDP(cdpUrl);
+const androidChromeVersion = String(browser.version() || '').trim();
+if (!androidChromeVersion) fail('Android Chrome did not expose a browser version over CDP.');
 const contexts = browser.contexts();
 if (!contexts.length) fail('Android Chrome did not expose a browser context over CDP.');
 const context = contexts[0];
@@ -159,15 +161,21 @@ try {
 if (candidateManifest?.source_commit !== commit || candidateManifest?.sanitized !== true) {
   fail('The Android candidate manifest source SHA does not match the requested exact commit.');
 }
-if (candidateManifestResponse.headers()['x-pocket-lab-candidate-sha'] !== commit) {
+const candidateManifestResponseHeaderVerified = candidateManifestResponse.headers()['x-pocket-lab-candidate-sha'] === commit;
+if (!candidateManifestResponseHeaderVerified) {
   fail('The Android candidate response header did not prove the requested exact commit.');
 }
 const candidatePageResponse = await page.goto(new URL('/?screen=home', base).toString(), { waitUntil: 'domcontentloaded' });
 if (!candidatePageResponse || !candidatePageResponse.ok()) {
   fail('The Android candidate page did not load.');
 }
+const candidatePageResponseHeaderVerified = candidatePageResponse.headers()['x-pocket-lab-candidate-sha'] === commit;
+if (!candidatePageResponseHeaderVerified) {
+  fail('The Android rendered page response header did not prove the requested exact commit.');
+}
 const candidateMeta = await page.locator('meta[name="pocketlab-candidate-sha"]').getAttribute('content').catch(() => null);
-if (candidateMeta !== commit) {
+const candidatePageMetaVerified = candidateMeta === commit;
+if (!candidatePageMetaVerified) {
   fail('The Android rendered page did not expose the requested exact candidate SHA.');
 }
 
@@ -348,10 +356,16 @@ async function measurePhase4Interaction({
     mode: 'live',
     qualification_surface: 'android-cdp',
     browser_project: 'android-cdp',
+    rendering_surface: 'physical-android-chrome',
+    android_chrome_version: androidChromeVersion,
+    android_package: 'com.android.chrome',
     source_commit: commit,
     candidate_manifest_verified: true,
     candidate_manifest_source_commit: candidateManifest.source_commit,
     candidate_manifest_schema_version: candidateManifest.schema_version,
+    candidate_manifest_response_header_verified: candidateManifestResponseHeaderVerified,
+    candidate_page_response_header_verified: candidatePageResponseHeaderVerified,
+    candidate_page_meta_verified: candidatePageMetaVerified,
     sanitized: true,
     viewport: viewport ? { width: viewport.width, height: viewport.height } : null,
     ...summary,

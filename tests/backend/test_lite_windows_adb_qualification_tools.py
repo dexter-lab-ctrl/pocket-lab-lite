@@ -61,4 +61,9 @@ def test_android_qualifier_proves_fresh_origin_and_foreground_renderer():
     assert "caches.delete(cacheName)" in source
     assert "receivesAnimationFrames" in source
     assert "navigator.wakeLock.request('screen')" in source
+    assert "browser.version()" in source
     assert "candidate_manifest_verified: true" in source
+    assert "candidate_manifest_response_header_verified" in source
+    assert "candidate_page_response_header_verified" in source
+    assert "candidate_page_meta_verified" in source
+    assert "rendering_surface: 'physical-android-chrome'" in source
