@@ -16,6 +16,7 @@ import json
 import mimetypes
 import os
 import re
+import signal
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -301,6 +302,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dist-dir", default=str(REPO_ROOT / "dist"))
     parser.add_argument("--source-commit", default="")
     args = parser.parse_args(argv)
+
+    # The shell wrapper owns this process and may need to terminate it during
+    # qualification cleanup.  Convert SIGTERM into the same controlled path as
+    # Ctrl-C so the context manager always tears down its SSH tunnel and state
+    # file instead of orphaning a loopback forward.
+    def _graceful_termination(_signum: int, _frame: Any) -> None:
+        raise KeyboardInterrupt
+
+    signal.signal(signal.SIGTERM, _graceful_termination)
     try:
         commit = exact_source_commit(args.source_commit)
         with ui_performance_runtime_tunnel():

@@ -77,12 +77,74 @@ if (browserBridge) {
     'X-Pocket-Lab-Qualification-Bridge': browserBridge,
   });
 }
-const page = await context.newPage();
+
+// Android Chrome can expose several CDP targets while only one is the
+// foreground renderer.  A target created with context.newPage() may report
+// visible/focused DOM state while receiving no requestAnimationFrame ticks.
+// Prefer an already-rendering target and use a bounded RAF probe so physical
+// evidence is collected from the actual Android renderer rather than a
+// background CDP target.
+async function receivesAnimationFrames(candidatePage) {
+  const frames = await candidatePage.evaluate(() => new Promise((resolve) => {
+    let count = 0;
+    const timeout = setTimeout(() => resolve(count), 350);
+    const tick = () => {
+      count += 1;
+      if (count >= 2) {
+        clearTimeout(timeout);
+        resolve(count);
+        return;
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  })).catch(() => 0);
+  return Number(frames) >= 2;
+}
+
+const candidateOrigin = new URL(base.origin);
+const existingPages = context.pages();
+let page = null;
+for (const candidatePage of existingPages) {
+  if (candidatePage.url().startsWith(candidateOrigin.origin) && await receivesAnimationFrames(candidatePage)) {
+    page = candidatePage;
+    break;
+  }
+}
+if (!page) {
+  for (const candidatePage of existingPages) {
+    if (await receivesAnimationFrames(candidatePage)) {
+      page = candidatePage;
+      break;
+    }
+  }
+}
+if (!page) page = await context.newPage();
+await page.bringToFront().catch(() => {});
 
 // Physical qualification must prove that Android loaded a fresh candidate
 // built from this exact checkout.  The manifest is served by the loopback
 // candidate server, never by the installed Server Phone PWA, and contains no
 // authority or credential material.
+//
+// Android Chrome may already have a service worker for this loopback origin
+// from an earlier candidate run.  Clear that origin before reading the
+// manifest; otherwise a service worker can return an app-shell fallback for
+// the manifest URL and make response-header evidence appear truthful while
+// the rendered document is stale.
+await page.goto(new URL('/?pocketlab_qualification_bootstrap=1', candidateOrigin).toString(), {
+  waitUntil: 'domcontentloaded',
+  timeout: 30_000,
+});
+await page.waitForTimeout(250);
+await page.evaluate(async () => {
+  const registrations = await navigator.serviceWorker?.getRegistrations?.() || [];
+  await Promise.all(registrations.map((registration) => registration.unregister()));
+  if ('caches' in window) {
+    const cacheNames = await caches.keys();
+    await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+  }
+});
 const candidateManifestUrl = new URL('/__pocketlab_qualification__/candidate.json', base).toString();
 const candidateManifestResponse = await page.goto(candidateManifestUrl, { waitUntil: 'domcontentloaded' });
 if (!candidateManifestResponse || !candidateManifestResponse.ok()) {
@@ -100,11 +162,6 @@ if (candidateManifest?.source_commit !== commit || candidateManifest?.sanitized 
 if (candidateManifestResponse.headers()['x-pocket-lab-candidate-sha'] !== commit) {
   fail('The Android candidate response header did not prove the requested exact commit.');
 }
-await page.evaluate(async () => {
-  const registrations = await navigator.serviceWorker?.getRegistrations?.() || [];
-  await Promise.all(registrations.map((registration) => registration.unregister()));
-  await navigator.serviceWorker?.getRegistrations?.();
-});
 const candidatePageResponse = await page.goto(new URL('/?screen=home', base).toString(), { waitUntil: 'domcontentloaded' });
 if (!candidatePageResponse || !candidatePageResponse.ok()) {
   fail('The Android candidate page did not load.');
@@ -112,6 +169,26 @@ if (!candidatePageResponse || !candidatePageResponse.ok()) {
 const candidateMeta = await page.locator('meta[name="pocketlab-candidate-sha"]').getAttribute('content').catch(() => null);
 if (candidateMeta !== commit) {
   fail('The Android rendered page did not expose the requested exact candidate SHA.');
+}
+
+// Keep the physical renderer awake for the bounded qualification session.
+// Android Chrome otherwise allows the display to enter Doze while CDP still
+// reports the page as visible, which produces throttled/zero RAF evidence.
+const wakeLock = await page.evaluate(async () => {
+  if (!navigator.wakeLock?.request) return { supported: false, acquired: false };
+  try {
+    const lock = await navigator.wakeLock.request('screen');
+    window.__POCKETLAB_ANDROID_WAKE_LOCK__ = lock;
+    // A disconnected qualifier must not leave the consumer phone awake
+    // forever.  Normal completion also releases this when the page closes.
+    window.setTimeout(() => lock.release().catch(() => {}), 300_000);
+    return { supported: true, acquired: !lock.released };
+  } catch {
+    return { supported: true, acquired: false };
+  }
+});
+if (!wakeLock.acquired) {
+  fail('Android screen wake lock could not be acquired; physical frame evidence would be throttled.');
 }
 
 await page.addInitScript(() => {
@@ -394,13 +471,18 @@ await measurePhase4Interaction({
     await page.locator('[role="dialog"]:visible').first().waitFor({ state: 'hidden', timeout: 10_000 }).catch(() => null);
     if (await page.locator('[role="dialog"]:visible').count()) fail('Home Workspace details did not close after Escape.');
   },
-  settleMs: 320,
+  // Keep the sample window above the 20-frame minimum on the physical
+  // renderer even when Android drops a few vsync callbacks.  This changes
+  // collection completeness only; frame targets and hard gates remain fixed.
+  settleMs: 700,
 });
 
 // Deep Apps coverage stays in the prepared PhotoPrism Manage projection. The
 // section switch and Details panel do not submit an app operation.
 await gotoScreen('catalog');
-const catalogManageButton = await firstVisible(page.getByRole('button', { name: /^Manage$/i }), 'Apps Manage button');
+const catalogManageButtonLocator = page.getByRole('button', { name: /^Manage$/i });
+await catalogManageButtonLocator.first().waitFor({ state: 'visible', timeout: 20_000 });
+const catalogManageButton = await firstVisible(catalogManageButtonLocator, 'Apps Manage button');
 await catalogManageButton.click();
 const catalogManage = await firstVisible(page.getByRole('dialog', { name: /Manage PhotoPrism/i }), 'PhotoPrism Manage dialog');
 const catalogRecoveryTab = catalogManage.getByRole('tab', { name: 'Recovery', exact: true });
@@ -433,12 +515,13 @@ await measureNestedInteraction({
 // Deep Devices coverage opens the prepared server-host detail projection only.
 // Diagnostics, health history, and the detail scroll are all read-only.
 await gotoScreen('devices');
-const deviceManageButton = await firstVisible(page.getByRole('button', { name: /^Manage /i }), 'device Manage button');
+const deviceManageButtonLocator = page.getByRole('button', { name: /^Manage(?:\s|$)/i });
+await deviceManageButtonLocator.first().waitFor({ state: 'visible', timeout: 20_000 });
+const deviceManageButton = await firstVisible(deviceManageButtonLocator, 'device Manage button');
 await deviceManageButton.click();
-const deviceDetailsPanel = await firstVisible(
-  page.getByRole('region', { name: /details/i }),
-  'device details panel',
-);
+const deviceDetailsPanelLocator = page.getByRole('region', { name: /details/i });
+await deviceDetailsPanelLocator.first().waitFor({ state: 'visible', timeout: 20_000 });
+const deviceDetailsPanel = await firstVisible(deviceDetailsPanelLocator, 'device details panel');
 const deviceDiagnostics = deviceDetailsPanel.locator('details.lite-device-advanced-details');
 await measureNestedInteraction({
   screen: 'devices',
@@ -565,7 +648,7 @@ await measureNestedInteraction({
   surface: 'Security Manage / finding details',
   action: async () => {
     await findingDetailsButton.click();
-    await page.getByRole('dialog', { name: /Dependency risk|Secret-like value/ }).waitFor({ state: 'visible' });
+    await page.getByRole('dialog').filter({ hasText: /Finding Details/i }).last().waitFor({ state: 'visible' });
   },
   settleMs: 900,
 });

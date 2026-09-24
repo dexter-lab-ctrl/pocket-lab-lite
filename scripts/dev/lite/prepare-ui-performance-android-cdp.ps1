@@ -10,6 +10,7 @@ $ErrorActionPreference = 'Stop'
 $FirewallRuleName = 'Pocket Lab Android CDP from WSL'
 $StateDir = Join-Path $env:LOCALAPPDATA 'PocketLab'
 $StatePath = Join-Path $StateDir 'ui-performance-cdp.json'
+. (Join-Path $PSScriptRoot 'windows-adb.ps1')
 
 function Fail([string]$Message) {
   throw "[pocketlab-cdp] $Message"
@@ -37,54 +38,54 @@ function Remove-RecordedPortProxy {
 
 Assert-Administrator
 
+try {
+  $adb = Resolve-PocketLabWindowsAdb
+  Write-PocketLabWindowsAdbInfo -AdbPath $adb
+} catch {
+  Fail $_.Exception.Message
+}
+
 if ($Cleanup) {
   Remove-RecordedPortProxy
   Get-NetFirewallRule -DisplayName $FirewallRuleName -ErrorAction SilentlyContinue |
     Remove-NetFirewallRule -Confirm:$false
-  if (Get-Command adb -ErrorAction SilentlyContinue) {
-    try {
-      if ($DeviceSerial) {
-        & adb -s $DeviceSerial forward --remove "tcp:$AdbPort" | Out-Null
-      } else {
-        & adb forward --remove "tcp:$AdbPort" | Out-Null
-      }
-    } catch {
-      Write-Warning '[pocketlab-cdp] ADB forward cleanup was skipped.'
+  try {
+    if ($DeviceSerial) {
+      $cleanupResult = Invoke-PocketLabWindowsAdb -AdbPath $adb -Arguments @('-s', $DeviceSerial, 'forward', '--remove', "tcp:$AdbPort")
+    } else {
+      $cleanupResult = Invoke-PocketLabWindowsAdb -AdbPath $adb -Arguments @('forward', '--remove', "tcp:$AdbPort")
     }
+  } catch {
+    Write-Warning '[pocketlab-cdp] ADB forward cleanup was skipped.'
   }
   Remove-Item -Force $StatePath -ErrorAction SilentlyContinue
   Write-Host '[pocketlab-cdp] Pocket Lab CDP bridge cleanup complete.'
   exit 0
 }
 
-if (-not (Get-Command adb -ErrorAction SilentlyContinue)) {
-  Fail 'adb is not available on PATH. Install Android SDK Platform-Tools first.'
+$records = @()
+try {
+  $records = @(Get-PocketLabAndroidDeviceRecords -AdbPath $adb)
+  $device = Select-PocketLabAndroidDevice -Records $records -DeviceSerial $DeviceSerial
+} catch {
+  Fail $_.Exception.Message
 }
 
-$deviceLines = @(
-  (& adb devices -l) |
-    Select-Object -Skip 1 |
-    Where-Object { $_ -match '^\S+\s+device(?:\s|$)' }
-)
-
-if ($DeviceSerial) {
-  $deviceLines = @($deviceLines | Where-Object { ($_ -split '\s+')[0] -eq $DeviceSerial })
+$serial = [string]$device.Serial
+$pidResult = Invoke-PocketLabWindowsAdb -AdbPath $adb -Arguments @('-s', $serial, 'shell', 'pidof', 'com.android.chrome')
+if ($pidResult.ExitCode -ne 0) {
+  Fail 'adb_transport_failed: could not inspect the Android Chrome process.'
 }
-
-if ($deviceLines.Count -eq 0) {
-  Fail 'No authorized Android device is available. Connect the Server Phone and approve USB debugging.'
-}
-if ($deviceLines.Count -gt 1) {
-  Fail 'More than one authorized Android device is connected. Re-run with -DeviceSerial <serial>.'
-}
-
-$serial = ($deviceLines[0] -split '\s+')[0]
-$chromePid = (& adb -s $serial shell pidof com.android.chrome 2>$null).Trim()
+$chromePid = ([string]$pidResult.Stdout).Trim()
 if (-not $chromePid) {
   Fail 'Google Chrome is not running on the Android device. Open a normal (non-Incognito) Chrome tab and retry.'
 }
 
-$unixSockets = & adb -s $serial shell cat /proc/net/unix
+$socketResult = Invoke-PocketLabWindowsAdb -AdbPath $adb -Arguments @('-s', $serial, 'shell', 'cat', '/proc/net/unix')
+if ($socketResult.ExitCode -ne 0) {
+  Fail 'adb_transport_failed: could not inspect Android Chrome DevTools sockets.'
+}
+$unixSockets = @([string]$socketResult.Stdout -split "`r?`n")
 $chromeSocket = ''
 foreach ($line in $unixSockets) {
   if ($line -match '@(chrome_devtools_remote(?:_[0-9]+)?)\s*$') {
@@ -97,11 +98,15 @@ if (-not $chromeSocket) {
 }
 
 $wantedForward = "$serial tcp:$AdbPort localabstract:$chromeSocket"
-$currentForwards = @(& adb forward --list)
+$forwardListResult = Invoke-PocketLabWindowsAdb -AdbPath $adb -Arguments @('forward', '--list')
+if ($forwardListResult.ExitCode -ne 0) {
+  Fail 'adb_transport_failed: could not inspect existing ADB forward mappings.'
+}
+$currentForwards = @([string]$forwardListResult.Stdout -split "`r?`n" | Where-Object { $_.Trim() })
 if (-not ($currentForwards -contains $wantedForward)) {
-  & adb -s $serial forward --remove "tcp:$AdbPort" 2>$null | Out-Null
-  & adb -s $serial forward "tcp:$AdbPort" "localabstract:$chromeSocket" | Out-Null
-  if ($LASTEXITCODE -ne 0) {
+  $removeForwardResult = Invoke-PocketLabWindowsAdb -AdbPath $adb -Arguments @('-s', $serial, 'forward', '--remove', "tcp:$AdbPort")
+  $createForwardResult = Invoke-PocketLabWindowsAdb -AdbPath $adb -Arguments @('-s', $serial, 'forward', "tcp:$AdbPort", "localabstract:$chromeSocket")
+  if ($createForwardResult.ExitCode -ne 0) {
     Fail "Could not create ADB forward tcp:$AdbPort -> localabstract:$chromeSocket."
   }
 }
@@ -164,7 +169,6 @@ if ($wslCdp.'Android-Package' -ne 'com.android.chrome') {
 }
 
 Write-Host '[pocketlab-cdp] READY'
-Write-Host "[pocketlab-cdp] Android device: $serial"
 Write-Host "[pocketlab-cdp] Chrome socket: $chromeSocket"
 Write-Host "[pocketlab-cdp] Windows ADB endpoint: 127.0.0.1:$AdbPort"
 Write-Host "[pocketlab-cdp] WSL bridge endpoint: $wslGateway`:$BridgePort"
