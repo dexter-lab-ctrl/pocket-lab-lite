@@ -76,6 +76,9 @@ def test_android_qualifier_proves_fresh_origin_and_foreground_renderer():
     assert "MAX_MINIMUM_FRAME_EXTENSION_MS" in source
     assert "MINIMUM_SAMPLER_INTERVAL_COUNT" in source
     assert "count()" in source
+    assert "#recovery-manage-tab-history" in source
+    assert "#recovery-manage-tab-restore" in source
+    assert "recoveryHistoryTab.waitFor({ state: 'visible'" in source
     assert "firstVisibleOrNull" in source
     assert "UNAVAILABLE identity Manage Access" in source
     assert "UNAVAILABLE Rules Manage" in source

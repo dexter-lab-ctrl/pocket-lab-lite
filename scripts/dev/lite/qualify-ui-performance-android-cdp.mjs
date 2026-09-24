@@ -793,7 +793,11 @@ await gotoScreen('recovery');
 const manageRecoveryButton = await firstVisible(page.getByRole('button', { name: 'Manage backups and recovery' }), 'Recovery Manage button');
 await manageRecoveryButton.click();
 const recoveryManage = await firstVisible(page.locator('[data-lite-sheet-variant="manage"]:visible').first(), 'Recovery Manage sheet');
-const recoveryHistoryTab = recoveryManage.getByRole('tab', { name: 'History', exact: true });
+// The recovery sheet is lazy-mounted after the screen transition. Resolve the
+// source-owned stable tab ids at page scope after the sheet is visible instead
+// of retaining a role locator under a potentially replaced sheet subtree.
+const recoveryHistoryTab = page.locator('#recovery-manage-tab-history');
+await recoveryHistoryTab.waitFor({ state: 'visible', timeout: 10_000 });
 await measureNestedInteraction({
   screen: 'recovery',
   nestedSurface: 'Manage recovery / section tabs',
@@ -806,7 +810,8 @@ await measureNestedInteraction({
   },
   settleMs: 480,
 });
-const recoveryRestoreTab = recoveryManage.getByRole('tab', { name: 'Restore', exact: true });
+const recoveryRestoreTab = page.locator('#recovery-manage-tab-restore');
+await recoveryRestoreTab.waitFor({ state: 'visible', timeout: 10_000 });
 await recoveryRestoreTab.click();
 const verifyBackupDetails = await firstVisible(
   recoveryManage.getByRole('button', { name: /Details: Verify backup/i }),
