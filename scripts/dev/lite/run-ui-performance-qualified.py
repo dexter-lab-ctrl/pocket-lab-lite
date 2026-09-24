@@ -16,6 +16,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import urlsplit
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parents[2]
@@ -23,6 +24,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import harness as harness_client
+from security_assurance_runtime_tunnel import ui_performance_runtime_tunnel
 
 
 PROFILE = "qualification-owner"
@@ -44,6 +46,7 @@ SECRET_ENV_KEYS = (
     "POCKETLAB_HARNESS_ENABLED",
     "POCKETLAB_QUALIFICATION_OWNER",
     "POCKETLAB_TEST_AUTH_BYPASS",
+    "POCKETLAB_HARNESS_API_URL",
 )
 
 
@@ -73,12 +76,13 @@ def _runner_command(mode: str) -> list[str]:
     return [shell, str(script)]
 
 
-def _child_environment(bridge_token: str, *, mode: str) -> dict[str, str]:
+def _child_environment(bridge_token: str, *, mode: str, base_url: str) -> dict[str, str]:
     child = dict(os.environ)
     for key in SECRET_ENV_KEYS:
         child.pop(key, None)
     child["LITE_E2E_MODE"] = "live"
     child["LITE_E2E_LIVE"] = "1"
+    child["LITE_BASE_URL"] = base_url
     child["LITE_QUALIFICATION_BROWSER_BRIDGE"] = "1"
     child["POCKETLAB_HARNESS_BROWSER_BRIDGE"] = bridge_token
     if mode == "android-cdp":
@@ -86,7 +90,24 @@ def _child_environment(bridge_token: str, *, mode: str) -> dict[str, str]:
     return child
 
 
-def _validate_operator_environment(mode: str) -> None:
+def _base_url(mode: str) -> str:
+    configured = os.environ.get("LITE_BASE_URL", "").strip()
+    # The live browser can safely use the Caddy loopback forward owned by this
+    # process. Android still requires a caller-owned candidate origin because
+    # the ADB reverse and exact-SHA candidate server are separate lifecycle
+    # steps.
+    value = configured or ("http://127.0.0.1:18444" if mode == "live" else "")
+    if not value:
+        raise ValueError("LITE_BASE_URL must identify the prepared live runtime")
+    parsed = urlsplit(value)
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        raise ValueError("LITE_BASE_URL must use http:// or https://")
+    if parsed.username or parsed.password or parsed.query or parsed.fragment:
+        raise ValueError("LITE_BASE_URL must not contain credentials or query state")
+    return value.rstrip("/")
+
+
+def _validate_operator_environment(mode: str) -> str:
     if _truthy(os.environ.get("POCKETLAB_TEST_AUTH_BYPASS")):
         raise ValueError("POCKETLAB_TEST_AUTH_BYPASS must remain disabled")
     if _truthy(os.environ.get("POCKETLAB_HARNESS_DESTRUCTIVE")):
@@ -95,10 +116,9 @@ def _validate_operator_environment(mode: str) -> None:
         raise ValueError("POCKETLAB_HARNESS_SESSION must be unset; bootstrap is process-owned")
     if os.environ.get("POCKETLAB_HARNESS_BROWSER_BRIDGE", "").strip():
         raise ValueError("POCKETLAB_HARNESS_BROWSER_BRIDGE must be unset; bridge creation is process-owned")
-    if not os.environ.get("LITE_BASE_URL", "").strip():
-        raise ValueError("LITE_BASE_URL must identify the prepared live runtime")
     if mode not in {"live", "android-cdp"}:
         raise ValueError("unsupported UI-performance qualification mode")
+    return _base_url(mode)
 
 
 def _bridge_token(response: dict) -> str:
@@ -117,7 +137,7 @@ def _bridge_token(response: dict) -> str:
 
 
 def run(args: argparse.Namespace) -> int:
-    _validate_operator_environment(args.mode)
+    base_url = _validate_operator_environment(args.mode)
     principal_id = str(args.principal_id or "").strip().casefold()
     if not PRINCIPAL_ID_RE.fullmatch(principal_id):
         raise ValueError("principal id must be a bounded disposable synthetic identifier")
@@ -127,43 +147,55 @@ def run(args: argparse.Namespace) -> int:
     child_returncode = 2
     cleanup_error = ""
     output_secrets: tuple[str, ...] = ()
+    previous_api_url = os.environ.get("POCKETLAB_HARNESS_API_URL")
     try:
-        session = harness_client.bootstrap_session(
-            principal_id=principal_id,
-            key_file=str(Path(args.key_file).expanduser()),
-            ttl_seconds=args.ttl_seconds,
-        )
-        session_token = str(session.get("session_token") or "").strip()
-        if not session_token:
-            raise RuntimeError("key-bound bootstrap returned no session")
-        bridge_token = _bridge_token(harness_client.browser_bridge(session_token=session_token))
-        output_secrets = (session_token, bridge_token)
-        child = subprocess.run(
-            _runner_command(args.mode),
-            cwd=str(REPO_ROOT),
-            env=_child_environment(bridge_token, mode=args.mode),
-            stdin=subprocess.DEVNULL,
-            capture_output=True,
-            text=True,
-            timeout=RUN_TIMEOUT_SECONDS,
-            check=False,
-        )
-        if child.stdout:
-            sys.stdout.write(_redact_output(child.stdout, output_secrets))
-        if child.stderr:
-            sys.stderr.write(_redact_output(child.stderr, output_secrets))
-        child_returncode = int(child.returncode)
+        with ui_performance_runtime_tunnel():
+            try:
+                # Bootstrap and revocation use the direct loopback FastAPI
+                # forward; the browser receives only the short-lived bridge
+                # header and uses the same-origin Caddy forward selected above.
+                os.environ["POCKETLAB_HARNESS_API_URL"] = "http://127.0.0.1:18080"
+                session = harness_client.bootstrap_session(
+                    principal_id=principal_id,
+                    key_file=str(Path(args.key_file).expanduser()),
+                    ttl_seconds=args.ttl_seconds,
+                )
+                session_token = str(session.get("session_token") or "").strip()
+                if not session_token:
+                    raise RuntimeError("key-bound bootstrap returned no session")
+                bridge_token = _bridge_token(harness_client.browser_bridge(session_token=session_token))
+                output_secrets = (session_token, bridge_token)
+                child = subprocess.run(
+                    _runner_command(args.mode),
+                    cwd=str(REPO_ROOT),
+                    env=_child_environment(bridge_token, mode=args.mode, base_url=base_url),
+                    stdin=subprocess.DEVNULL,
+                    capture_output=True,
+                    text=True,
+                    timeout=RUN_TIMEOUT_SECONDS,
+                    check=False,
+                )
+                if child.stdout:
+                    sys.stdout.write(_redact_output(child.stdout, output_secrets))
+                if child.stderr:
+                    sys.stderr.write(_redact_output(child.stderr, output_secrets))
+                child_returncode = int(child.returncode)
+            finally:
+                if session_token:
+                    try:
+                        harness_client.revoke_authenticated_principal(session_token=session_token)
+                    except (OSError, RuntimeError, ValueError) as exc:
+                        cleanup_error = str(exc)[:240]
     except subprocess.TimeoutExpired:
         child_returncode = 124
         print("[ui-performance-qualified] ERROR fixed UI-performance runner timed out", file=sys.stderr)
     except (OSError, RuntimeError, ValueError) as exc:
         print(f"[ui-performance-qualified] ERROR {str(exc)[:320]}", file=sys.stderr)
     finally:
-        if session_token:
-            try:
-                harness_client.revoke_authenticated_principal(session_token=session_token)
-            except (OSError, RuntimeError, ValueError) as exc:
-                cleanup_error = str(exc)[:240]
+        if previous_api_url is None:
+            os.environ.pop("POCKETLAB_HARNESS_API_URL", None)
+        else:
+            os.environ["POCKETLAB_HARNESS_API_URL"] = previous_api_url
 
     if cleanup_error:
         print(f"[ui-performance-qualified] ERROR synthetic principal cleanup failed: {cleanup_error}", file=sys.stderr)
