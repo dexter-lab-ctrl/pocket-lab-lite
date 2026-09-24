@@ -772,7 +772,10 @@ def build_browser_projection(model: dict[str, Any]) -> dict[str, Any]:
     projection = {
         "schema_version": "1.0.0", "source_fingerprint": model["source_fingerprint"], "root_id": model["topology"]["root_id"], "live_runtime": False,
         "statistics": model["statistics"], "documentation_health": model["documentation_health"], "nodes": nodes, "relationships": rels,
-        "external": {k: {"kind": v.get("kind"), "name": v.get("name"), "source": v.get("source")} for k, v in external.items() if v.get("kind") != "symbol"},
+        # The browser inspector only needs labels for external relationship
+        # targets.  Keep kind/source metadata in the canonical model while
+        # omitting that duplicate metadata from the static browser payload.
+        "external": {k: {"name": v.get("name")} for k, v in external.items() if v.get("kind") != "symbol"},
         "indexes": {"by_path": model["indexes"]["by_path"], "children_by_parent": model["indexes"]["children_by_parent"], "relationships_from": model["indexes"]["relationships_from"], "relationships_to": model["indexes"]["relationships_to"], "search": search},
         "capabilities": model["capabilities"],
     }

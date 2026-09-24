@@ -26468,6 +26468,29 @@
         "affects_release": false,
         "affects_runtime": true,
         "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_WINDOWS_ADB",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "tests/backend/test_lite_windows_adb_qualification_tools.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
         "name": "POCKETLAB_WINDOWS_REPO",
         "owner": "repository tooling",
         "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -46406,7 +46429,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "c7efb2a97b0314a431a6494cd426a4053d2ce3fdd430312fbd9073b0e2167652",
-        "documentation": "d0bfbb4ff6e45b68ff799ad83d368b7419786154ccd680cbb591ec036f6d33f1",
+        "documentation": "1bbcca98e6ccffd26ae6f7cc53707cef1038598bc0d0239e26702bde8160d507",
         "openapi": "8d70d2565517e6782d0afafcaf1e9d6090b6fe9c73cf9eb2feeaa0892ea3737b",
         "operational_health": "ca62ed0da4cd6b8d5ba3be553aa10ca41e88e3de1a052fdf1cce3b517bb264d5"
       },
@@ -116652,5 +116675,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "a61ed2557057c9c9e54f8b8eb063b8813abe1aee6f94cdc6ce5551cb83b4ba76"
+  "source_fingerprint": "4433b0cb674896045b9f1adb5914daf43dbccee7314867972280b9bc067235ea"
 }

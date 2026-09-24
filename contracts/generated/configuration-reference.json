@@ -17699,7 +17699,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "beec922edf1ec9c14b39a23f3038d31ce3ca3a840d426fec4eacbce8163da687",
+    "aggregate_fingerprint": "8d9b00471548206ffe581189ef695dee0c085f524eca2a2c391d113c5503ce97",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -17956,7 +17956,7 @@
       "scripts/dev/lite/frontend-resource-preflight.sh": "74eed4341ce0a1c191c4e65f41984a14eb2aead2e8a19f63c0c090bac216a7f5",
       "scripts/dev/lite/run-gate.sh": "81b2d42dbbb265fbc31dc28ec7f87c77a863a4d3bfa9586a9875a4aeb30e7ee1",
       "scripts/dev/lite/run-playwright-mocked.sh": "9293ca6becf155ebefd5348901302e694eae8cca478ed0012b91e3a0dc68fd16",
-      "scripts/dev/lite/run-ui-performance-android-candidate.sh": "acddccb8af8a2a71f8de11f3d45e61a516674113e3e9cf4862a71a30105f8f8f",
+      "scripts/dev/lite/run-ui-performance-android-candidate.sh": "4f4fffec74472d985662297501c4fe1ce408252f76116013a581b9233387e59e",
       "scripts/dev/lite/run-ui-performance-android-cdp.sh": "2391da3169194c798da96e0001e82478e14a9302fd726012f5dac937ec032307",
       "scripts/dev/lite/run-ui-performance-candidate.sh": "d6200d8b4b30a2d10d739237f26040a67d85b701090eb8b065d466711b84d16d",
       "scripts/dev/lite/run-ui-performance-live.sh": "30f187ec66d57e50ac2434cb0fc79e52ab3ac8b363fe6350ed3c0f8d9e54fc5b",

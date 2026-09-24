@@ -13155,6 +13155,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_windows_adb_qualification_tools.py",
+      "name": "tests/backend/test_lite_windows_adb_qualification_tools.py",
+      "source_refs": [
+        "tests/backend/test_lite_windows_adb_qualification_tools.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_worker_recovery.py",
       "name": "tests/backend/test_lite_worker_recovery.py",
       "source_refs": [
@@ -21545,6 +21556,20 @@
       "id": "rel:1e4efcca351a4e46",
       "source": "reason:policy_activation_pending",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_windows_adb_qualification_tools.py"
+      ],
+      "id": "rel:1e4fdf53af6cdccb",
+      "source": "domain:security",
+      "target": "test:tests/backend/test_lite_windows_adb_qualification_tools.py",
       "type": "verified_by"
     },
     {

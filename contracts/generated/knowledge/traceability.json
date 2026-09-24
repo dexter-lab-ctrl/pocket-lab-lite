@@ -3727,6 +3727,7 @@
         "test:tests/backend/test_lite_security_worker_sqlite_commit.py",
         "test:tests/backend/test_lite_sqlite_performance.py",
         "test:tests/backend/test_lite_startup_workload_isolation.py",
+        "test:tests/backend/test_lite_windows_adb_qualification_tools.py",
         "test:tests/backend/test_lite_worker_recovery.py",
         "test:tests/backend/test_lite_workload_admission.py",
         "test:tests/docs/documentation-ia.spec.ts",
@@ -4312,6 +4313,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5293030013a91cadf225d5c5154a8a6f37e84d656f7cf9560a7d559f8f90ae37"
+    "source_fingerprint": "e2846d0b6a023e5e4d546d098ff52333b1b09b4ade64bf9aeb46e5c75e6646d8"
   }
 }

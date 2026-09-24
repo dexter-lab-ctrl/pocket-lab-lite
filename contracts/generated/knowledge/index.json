@@ -27618,6 +27618,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_windows_adb_qualification_tools.py",
+      "name": "tests/backend/test_lite_windows_adb_qualification_tools.py",
+      "source_refs": [
+        "tests/backend/test_lite_windows_adb_qualification_tools.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_worker_recovery.py",
       "name": "tests/backend/test_lite_worker_recovery.py",
       "source_refs": [
@@ -31579,6 +31589,7 @@
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/backend/test_lite_ui_candidate_server.py",
         "test:tests/backend/test_lite_ui_performance_runner.py",
+        "test:tests/backend/test_lite_windows_adb_qualification_tools.py",
         "test:tests/backend/test_lite_worker_recovery.py",
         "test:tests/backend/test_lite_workload_admission.py",
         "test:tests/backend/test_nats_required.py",
@@ -32952,6 +32963,7 @@
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/backend/test_lite_ui_candidate_server.py",
         "test:tests/backend/test_lite_ui_performance_runner.py",
+        "test:tests/backend/test_lite_windows_adb_qualification_tools.py",
         "test:tests/backend/test_lite_worker_recovery.py",
         "test:tests/backend/test_lite_workload_admission.py",
         "test:tests/backend/test_nats_required.py",
@@ -44859,6 +44871,12 @@
       "test:tests/backend/test_lite_ui_candidate_server.py": [
         {
           "source": "component:browser",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_windows_adb_qualification_tools.py": [
+        {
+          "source": "domain:security",
           "type": "verified_by"
         }
       ],
@@ -59504,6 +59522,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_windows_adb_qualification_tools.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_worker_recovery.py",
           "type": "verified_by"
         },
@@ -69821,6 +69843,15 @@
       "id": "rel:1e4efcca351a4e46",
       "source": "reason:policy_activation_pending",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_windows_adb_qualification_tools.py"
+      ],
+      "id": "rel:1e4fdf53af6cdccb",
+      "source": "domain:security",
+      "target": "test:tests/backend/test_lite_windows_adb_qualification_tools.py",
       "type": "verified_by"
     },
     {
@@ -98832,9 +98863,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "5293030013a91cadf225d5c5154a8a6f37e84d656f7cf9560a7d559f8f90ae37",
+  "source_fingerprint": "e2846d0b6a023e5e4d546d098ff52333b1b09b4ade64bf9aeb46e5c75e6646d8",
   "statistics": {
-    "entity_count": 1292,
+    "entity_count": 1293,
     "entity_type_counts": {
       "adr": 6,
       "api": 220,
@@ -98851,14 +98882,14 @@
       "runtime-topology": 9,
       "subject": 210,
       "table": 78,
-      "test": 245,
+      "test": 246,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3652,
-    "source_count": 282
+    "relation_count": 3653,
+    "source_count": 283
   }
 }
