@@ -8600,6 +8600,60 @@
         ]
       }
     },
+    "/api/lite/harness/browser/bridge": {
+      "post": {
+        "description": "Create a process-ephemeral bridge for a physical qualification browser.",
+        "operationId": "browser_bridge_api_lite_harness_browser_bridge_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Browser Bridge Api Lite Harness Browser Bridge Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Browser Bridge",
+        "tags": [
+          "lite-harness"
+        ]
+      }
+    },
     "/api/lite/harness/capabilities": {
       "get": {
         "operationId": "capabilities_api_lite_harness_capabilities_get",

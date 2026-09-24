@@ -14,7 +14,7 @@
     "scenario": "app-projection-stale",
     "schema_revision": 1,
     "source_commit": "uncommitted",
-    "source_fingerprint": "5ceaeb837c66474b394fd61e509076028550d008db621fa652900e24d59f12e1",
+    "source_fingerprint": "af89a9ae890b7e2fdd0edf1ec253dcad24ac4fcc0aea3e8c38972da4dac22ce5",
     "validation_status": "generated"
   }
 }
