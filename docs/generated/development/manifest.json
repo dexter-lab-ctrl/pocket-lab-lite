@@ -35,7 +35,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "881a1fa1c35f9c1965c0a0f41b64adec4ad6d8c893bf3c9452a15b26efad1292",
+  "source_fingerprint": "a45c91520cce913b57f5b56afc97488ba84e1abd543260cabcb6cb2a3807ae27",
   "source_fingerprints": {
     ".github/workflows/docs-security-supply-chain.yml": "b5ce9661a2c0673d9e9c2a3be9b19e958b4046543816728556a581a2f338fa27",
     ".github/workflows/lite-quality.yml": "895c08c00e6352aa07bf24ee04b31621940f6d8db0ab6fb61916beb496f0546c",
@@ -92,7 +92,7 @@
     "scripts/dev/lite/setup.sh": "db9a106eb4889bed57b68e0d19e651ef9d55c243b2507518f91abd30115a34a5",
     "scripts/dev/lite/start-qualification.sh": "37e5d6449163fd4bd862e7285e1c7dc45ad1004592104c21d428ec8ce5c4deac",
     "scripts/dev/lite/task_runtime.py": "0f680e3d158825eaa661f24ac4b4bebf1ad2ff9b25b1e0ed9a1facd7ca0b9245",
-    "scripts/dev/lite/tool_versions.py": "fd41f2e2a2e2ccd309d3cdd0b4372cc0438bdd3a318500e21ae63ecb1b136403",
+    "scripts/dev/lite/tool_versions.py": "a804a0a73ac4f0b524a0b29d47e7e813dea162c15f2aac2cbc7b2dfde0d8f74e",
     "scripts/dev/lite/ui_performance_candidate_server.py": "351f0fddc16fe8d23df45fa22fed8ee20febc960dfa13872c0493e0482b5ff03",
     "scripts/dev/lite/validation_evidence.py": "bbca414f1a3fa1a505c2c36db88874eb728d146e03f87d0d2649e4791d2d98b8",
     "scripts/docs/lite/capture-storybook.mjs": "8f23bf560451088cdb0f456d444913ca6ea620108eee764b9d421cc372b9b2c8",
