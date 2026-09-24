@@ -125,6 +125,17 @@ if (!page) {
 if (!page) page = await context.newPage();
 await page.bringToFront().catch(() => {});
 
+// A previous candidate service worker can surface the normal app-update
+// notice while the qualifier is clearing that worker and its caches. It is
+// unrelated to the UI interaction under measurement and can intercept a
+// navigation click. Hide only this incidental notice in the qualification
+// browser context; production rendering and update behavior are unchanged.
+await page.addInitScript(() => {
+  const style = document.createElement('style');
+  style.textContent = '[data-lite-sw-update-ready="true"] { display: none !important; }';
+  (document.head || document.documentElement)?.appendChild(style);
+});
+
 // Physical qualification must prove that Android loaded a fresh candidate
 // built from this exact checkout.  The manifest is served by the loopback
 // candidate server, never by the installed Server Phone PWA, and contains no
