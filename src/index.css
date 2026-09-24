@@ -18183,9 +18183,12 @@ textarea {
 .theme-pocket-lite-daylight main .pocket-badge,
 .theme-pocket-lite-daylight main .lite-ready-dot,
 .theme-pocket-lite-daylight main .lite-device-pulse,
-.theme-pocket-lite-daylight main .lite-device-flow-signal,
 .theme-pocket-lite-daylight main .lite-device-card::before,
 .theme-pocket-lite-daylight main .lite-device-card::after {
+  animation: none !important;
+}
+
+html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight main .lite-device-flow-signal {
   animation: none !important;
 }
 
@@ -18264,6 +18267,31 @@ textarea {
   animation: none !important;
   transition: none !important;
   filter: none !important;
+}
+
+/* The connection topology remains animated in normal product mode. The
+   performance qualification mode intentionally disables this decorative work
+   while measuring expensive interaction boundaries. */
+html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-connected .lite-device-flow-signal {
+  animation: lite-device-flow-packet-horizontal 2.5s ease-in-out infinite;
+}
+
+html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repairing .lite-device-flow-signal {
+  animation: lite-device-flow-packet-horizontal 1.4s ease-in-out infinite;
+}
+
+@media (max-width: 640px) {
+  html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-connected .lite-device-flow-signal,
+  html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repairing .lite-device-flow-signal {
+    animation-name: lite-device-flow-packet-vertical;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-connected .lite-device-flow-signal,
+  html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repairing .lite-device-flow-signal {
+    animation: none !important;
+  }
 }
 
 .theme-pocket-lite-daylight .lite-security-safety-center-copy h2 {

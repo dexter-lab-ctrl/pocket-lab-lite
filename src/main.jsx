@@ -13,6 +13,12 @@ import {
 } from './lib/liteServiceWorkerRuntime.js';
 import './index.css';
 
+if (typeof document !== 'undefined') {
+  document.documentElement.dataset.litePerfMode = import.meta.env.VITE_POCKETLAB_PERF_TEST === '1'
+    ? 'true'
+    : 'false';
+}
+
 let updateSW = () => {};
 if (typeof window !== 'undefined') {
   captureOwnerClaimFromUrl();

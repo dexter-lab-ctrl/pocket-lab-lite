@@ -1493,7 +1493,7 @@ function SecurityFindingDetailsPortal({ findings, context, triggerRef }) {
   if (!selectedFinding) return null;
   return (
     <LiteSheet
-      open
+      open={Boolean(selectedFinding)}
       onClose={closeFindingDetails}
       eyebrow="Finding Details"
       title={securityFindingLabel(selectedFinding)}
@@ -2015,13 +2015,15 @@ export default function SecurityScreen() {
     snapshotSelect: selectSecurityScreenView,
   });
   const securityProfileAppId = scanProfile === 'app' ? 'photoprism' : '';
+  const normalizedProfile = scanProfile;
+  const securityProfileQueryKey = liteQueryKeys.securityProfile(normalizedProfile, normalizedProfile === 'app' ? 'photoprism' : '');
   const securityProfileLoader = useCallback(() => liteApi.securityProfile(scanProfile, securityProfileAppId), [scanProfile, securityProfileAppId]);
   const securityHistoryLoader = useCallback(() => liteApi.securityHistory(activeSecurityHistoryLimit || 20), [activeSecurityHistoryLimit]);
   const {
     data: securityProfileData,
     refreshing: profileRefreshing,
   } = useLiteResource(securityProfileLoader, [scanProfile], {
-    queryKey: liteQueryKeys.securityProfile(scanProfile, securityProfileAppId),
+    queryKey: securityProfileQueryKey,
     path: liteQueryPaths.securityProfile(scanProfile, securityProfileAppId),
     enabled: shouldLoadSecurityDetails,
     pollingMode: 'relaxed',
@@ -2160,11 +2162,12 @@ export default function SecurityScreen() {
 
     const previousProfiles = previous.profile_revisions || {};
     const currentProfiles = securityFreshnessData.profile_revisions || {};
-    ['quick', 'full', 'app'].forEach((profile) => {
-      if (previousProfiles[profile] !== currentProfiles[profile]) {
-        invalidate(liteQueryKeys.securityProfile(profile, profile === 'app' ? 'photoprism' : ''));
-      }
-    });
+    const invalidateSecurityQuery = (profile) => invalidate(
+      liteQueryKeys.securityProfile(profile, profile === 'app' ? 'photoprism' : ''),
+    );
+    if (previousProfiles.quick !== currentProfiles.quick) invalidateSecurityQuery('quick');
+    if (previousProfiles.full !== currentProfiles.full) invalidateSecurityQuery('full');
+    if (previousProfiles.app !== currentProfiles.app) invalidateSecurityQuery('app');
 
     if (previous.history_revision !== securityFreshnessData.history_revision) {
       invalidate(liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20));

@@ -2123,7 +2123,7 @@ function CatalogManagePortal({
                             result={entry.result}
                             tone={entry.tone}
                             onClick={entry.onClick}
-                            onViewDetails={() => openActionDetails(entry.actionId)}
+                            onViewDetails={() => openActionDetails(entry.actionId, app.id || 'photoprism')}
                             detailsExpanded={detailsActionId === entry.actionId}
                             disabled={entry.disabled}
                             title={entry.title}
@@ -2248,6 +2248,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [storagePreviewError, setStoragePreviewError] = useState(null);
   const [storagePreviewNotice, setStoragePreviewNotice] = useState(null);
   const setActiveAction = useLiteUiStore((state) => state.setActiveAction);
+  const setActiveDetailsAction = useLiteUiStore((state) => state.setActiveDetailsAction);
   const clearActiveDetailsAction = useLiteUiStore((state) => state.clearActiveDetailsAction);
   const [actionSnapshots, setActionSnapshots] = useState({});
   const [pullRefresh, setPullRefresh] = useState({ pulling: false, ready: false, offsetY: 0 });
@@ -2448,12 +2449,12 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   // Do not add manual refresh intervals here; live actions should use isLive polling.
 
 
-  function openActionDetails(actionId) {
+  function openActionDetails(actionId, _appId = 'photoprism') {
     const next = useLiteUiStore.getState().activeDetailsActionId === actionId ? null : actionId;
     setActiveAction(next);
     if (next) {
       void loadAppActionDetails();
-      useLiteUiStore.getState().setActiveDetailsAction(next);
+      setActiveDetailsAction(next);
       return;
     }
     clearActiveDetailsAction();
