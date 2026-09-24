@@ -3009,7 +3009,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "c6f3672c312492e015e0abd8c926c8c1143fcac6222ab62d061c7aa87bfa3abf",
+    "aggregate_fingerprint": "47e93a7d960e94b277bfe34ac0e41493beb7a3a22b8d52b84a80eb62c596d0be",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3028,7 +3028,7 @@
       "src/lite/LiteApp.jsx": "4df112401b4e133dd188e350cef370d3828d8c9f7b1ac0b29a335290314bf2ff",
       "src/lite/LiteCatalog.jsx": "8e58b8d66a504532ae3a8f97a63b4cb5b058e172f11c167bb11c2484e02e4902",
       "src/lite/LiteCatalog.stories.jsx": "d15cc614846f6c01c5e3d577fe5e747919ae4de80ec8189341a2ed13dac80c05",
-      "src/lite/LiteDevices.jsx": "0dbf6c1e4db20642a73175b94a9fa1d309ca63002d2163ff234741c2125a5089",
+      "src/lite/LiteDevices.jsx": "6cd6045754be73959bcd3967b77fa379edb8043447b2d9c0047dd7085c598567",
       "src/lite/LiteDevices.stories.jsx": "09ef4d871905c5e099a9d4086a829c381bf070b38e281fd9f5cdc9165de8786b",
       "src/lite/LiteHelp.jsx": "2b57e1055641dc99b7b80af9e8e32cc6557de599b1c816a03e4d857b149f8527",
       "src/lite/LiteHome.jsx": "0e33e317a20fc7c23f7fcc1d06be1f37c68398737a2d16b3a455c671caa71a99",

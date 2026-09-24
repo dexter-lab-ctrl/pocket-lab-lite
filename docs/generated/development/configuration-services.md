@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: a45c91520cce913b57f5b56afc97488ba84e1abd543260cabcb6cb2a3807ae27
+source_fingerprint: 758a79e0d8204b43a0ca1343fcdf1ccfcdc077465cb32f8d0beda8940bc77022
 schema_revision: 1
 validation_status: generated
 ---
@@ -263,6 +263,7 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_OASDIFF_BIN`
 - `POCKETLAB_OASDIFF_VERSION`
 - `POCKETLAB_PARITY_TOOLS_DIR`
+- `POCKETLAB_PERF_TEST`
 - `POCKETLAB_PHASE3B_IDLE_SECONDS`
 - `POCKETLAB_PHASE3B_QUIESCENCE_ATTEMPTS`
 - `POCKETLAB_PHASE3B_QUIESCENCE_SLEEP_SECONDS`
@@ -272,7 +273,6 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_PHASE3B_RUNTIME_ATTEMPTS`
 - `POCKETLAB_PHASE3B_RUNTIME_MAX_TIME`
 - `POCKETLAB_PHASE3B_WARMUP_ATTEMPTS`
-- `POCKETLAB_PHASE3C_IDLE_BASELINE_ATTEMPTS`
 
 ## Process roles
 
