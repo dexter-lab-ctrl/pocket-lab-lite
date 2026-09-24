@@ -79,4 +79,5 @@ def test_android_qualifier_proves_fresh_origin_and_foreground_renderer():
     assert "firstVisibleOrNull" in source
     assert "UNAVAILABLE identity Manage Access" in source
     assert "UNAVAILABLE Rules Manage" in source
+    assert "UNAVAILABLE Security finding details" in source
     assert "unavailableSurfaces" in source

@@ -696,23 +696,29 @@ const securityManageIssues = await firstVisible(
   'Security Manage sheet for findings',
 );
 await securityManageIssues.getByRole('tab', { name: /Issues/ }).click();
-const findingDetailsButton = await firstVisible(
+const findingDetailsButton = await firstVisibleOrNull(
   securityManageIssues.getByRole('button', { name: /View details for/i }).first(),
-  'Security finding details button',
 );
-await page.waitForTimeout(240);
-await measureNestedInteraction({
-  screen: 'security',
-  nestedSurface: 'Security Manage / finding details',
-  interaction: 'finding-detail-open',
-  scope: 'security-manage-finding',
-  surface: 'Security Manage / finding details',
-  action: async () => {
-    await findingDetailsButton.click();
-    await page.getByRole('dialog').filter({ hasText: /Finding Details/i }).last().waitFor({ state: 'visible' });
-  },
-  settleMs: 900,
-});
+if (!findingDetailsButton) {
+  unavailableSurfaces.push('Security Manage / finding details');
+  console.log(
+    '[ui-performance-android] UNAVAILABLE Security finding details: the current runtime did not expose a prepared finding projection; continuing safe read-only coverage.',
+  );
+} else {
+  await page.waitForTimeout(240);
+  await measureNestedInteraction({
+    screen: 'security',
+    nestedSurface: 'Security Manage / finding details',
+    interaction: 'finding-detail-open',
+    scope: 'security-manage-finding',
+    surface: 'Security Manage / finding details',
+    action: async () => {
+      await findingDetailsButton.click();
+      await page.getByRole('dialog').filter({ hasText: /Finding Details/i }).last().waitFor({ state: 'visible' });
+    },
+    settleMs: 900,
+  });
+}
 
 // Phase 4: explicit list/page scrolling on a content-rich screen.
 await gotoScreen('recovery');
