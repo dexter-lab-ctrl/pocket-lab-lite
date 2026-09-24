@@ -1961,15 +1961,26 @@ function CatalogManagePortal({
   const manageSheetRef = useRef(null);
   const manageScrollRef = useRef(null);
   const [manageBodyReady, setManageBodyReady] = useState(false);
+  const [manageExtrasReady, setManageExtrasReady] = useState(false);
 
   useEffect(() => {
     if (!manageAppOpen) {
       setManageBodyReady(false);
+      setManageExtrasReady(false);
       return undefined;
     }
     const frame = window.requestAnimationFrame(() => setManageBodyReady(true));
     return () => window.cancelAnimationFrame(frame);
   }, [manageAppOpen]);
+
+  useEffect(() => {
+    if (!manageBodyReady) {
+      setManageExtrasReady(false);
+      return undefined;
+    }
+    const frame = window.requestAnimationFrame(() => setManageExtrasReady(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, [manageBodyReady]);
 
   useEffect(() => {
     if (!manageAppOpen) return undefined;
@@ -2114,86 +2125,90 @@ function CatalogManagePortal({
                 <div className="lite-catalog-action-groups">
                   {activeAppActionGroups.map((group) => (
                     <AppActionGroup key={group.id} group={group} actionIds={group.actions.map((entry) => entry.actionId)}>
-                      {group.actions.map((entry) => (
-                        <React.Fragment key={entry.actionId}>
-                          <PhotoPrismActionTile
-                            app={app}
-                            actionId={entry.actionId}
-                            action={entry.action}
-                            busyKey={entry.busyKey || actionBusyKey}
-                            progress={entry.progress}
-                            result={entry.result}
-                            tone={entry.tone}
-                            onClick={entry.onClick}
-                            onViewDetails={() => openActionDetails(entry.actionId, app.id || 'photoprism')}
-                            detailsExpanded={detailsActionId === entry.actionId}
-                            disabled={entry.disabled}
-                            title={entry.title}
-                          />
-                          {entry.actionId === 'connect_photos' && isPhoneStorageConnected ? <PhoneStorageConnectedFolders /> : null}
-                          {entry.actionId === 'connect_photos' && !isPhoneStorageConnected && storagePreviewApp?.id === app.id ? (
-                            <div className="lite-catalog-storage-preview-anchor">
-                              <PhotoPrismStoragePreviewSheet
-                                preview={storagePreview}
-                                loading={storagePreviewLoading}
-                                error={storagePreviewError}
-                                connecting={Boolean(storageBusy)}
-                                notice={storagePreviewNotice}
-                                onClose={closeStoragePreview}
-                                onConfirm={connectPhoneStorageFromPreview}
-                                onRetry={loadStoragePreview}
-                                onDismissNotice={() => setStoragePreviewNotice(null)}
-                              />
-                            </div>
-                          ) : null}
-                          {entry.actionId === 'import_photos' && isPhotosImported ? <p className="lite-catalog-media-note">Photos imported. PhotoPrism will handle new photos.</p> : null}
-                          {entry.actionId !== 'connect_photos' && detailsActionId === entry.actionId ? (
-                            <div className="lite-catalog-action-details-anchor">
-                              <React.Suspense fallback={<div className="lite-app-action-details-loading">Loading details…</div>}>
-                                <AppActionDetailsLazy
-                                  details={detailsForAction(entry.actionId, entry.action, tileResultForAction(entry.actionId, entry.action, entry.result))}
-                                  actionId={entry.actionId}
-                                  onClose={closeActionDetails}
+                        {group.actions.map((entry) => (
+                          <React.Fragment key={entry.actionId}>
+                            <PhotoPrismActionTile
+                              app={app}
+                              actionId={entry.actionId}
+                              action={entry.action}
+                              busyKey={entry.busyKey || actionBusyKey}
+                              progress={entry.progress}
+                              result={entry.result}
+                              tone={entry.tone}
+                              onClick={entry.onClick}
+                              onViewDetails={() => openActionDetails(entry.actionId, app.id || 'photoprism')}
+                              detailsExpanded={detailsActionId === entry.actionId}
+                              disabled={entry.disabled}
+                              title={entry.title}
+                            />
+                            {entry.actionId === 'connect_photos' && isPhoneStorageConnected ? <PhoneStorageConnectedFolders /> : null}
+                            {entry.actionId === 'connect_photos' && !isPhoneStorageConnected && storagePreviewApp?.id === app.id ? (
+                              <div className="lite-catalog-storage-preview-anchor">
+                                <PhotoPrismStoragePreviewSheet
+                                  preview={storagePreview}
+                                  loading={storagePreviewLoading}
+                                  error={storagePreviewError}
+                                  connecting={Boolean(storageBusy)}
+                                  notice={storagePreviewNotice}
+                                  onClose={closeStoragePreview}
+                                  onConfirm={connectPhoneStorageFromPreview}
+                                  onRetry={loadStoragePreview}
+                                  onDismissNotice={() => setStoragePreviewNotice(null)}
                                 />
-                              </React.Suspense>
-                            </div>
-                          ) : null}
-                        </React.Fragment>
-                      ))}
+                              </div>
+                            ) : null}
+                            {entry.actionId === 'import_photos' && isPhotosImported ? <p className="lite-catalog-media-note">Photos imported. PhotoPrism will handle new photos.</p> : null}
+                            {entry.actionId !== 'connect_photos' && detailsActionId === entry.actionId ? (
+                              <div className="lite-catalog-action-details-anchor">
+                                <React.Suspense fallback={<div className="lite-app-action-details-loading">Loading details…</div>}>
+                                  <AppActionDetailsLazy
+                                    details={detailsForAction(entry.actionId, entry.action, tileResultForAction(entry.actionId, entry.action, entry.result))}
+                                    actionId={entry.actionId}
+                                    onClose={closeActionDetails}
+                                  />
+                                </React.Suspense>
+                              </div>
+                            ) : null}
+                          </React.Fragment>
+                        ))}
                     </AppActionGroup>
                   ))}
                 </div>
               </div>
-              <div className="lite-catalog-action-reasons">
-                {[
-                  lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'import_photos')?.action, 'Import photos'),
-                  lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'preview_restore')?.action, 'Preview restore'),
-                  lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'backup_to_storage')?.action, 'Back up to storage device'),
-                  lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'update_app')?.action, 'Update'),
-                  lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'repair_app')?.action, 'Repair'),
-                ].filter(Boolean).map((warning) => <span key={warning}>{warning}</span>)}
-              </div>
-              <div className="lite-catalog-storage-panel lite-catalog-storage-panel--sheet">
-                <div className="lite-catalog-storage-head">
-                  <div>
-                    <span>Media folders</span>
-                    <strong>{storageMappings(app).length ? storageMediaSummary(app) : 'No folders connected'}</strong>
+              {manageExtrasReady ? (
+                <>
+                  <div className="lite-catalog-action-reasons">
+                    {[
+                      lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'import_photos')?.action, 'Import photos'),
+                      lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'preview_restore')?.action, 'Preview restore'),
+                      lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'backup_to_storage')?.action, 'Back up to storage device'),
+                      lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'update_app')?.action, 'Update'),
+                      lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'repair_app')?.action, 'Repair'),
+                    ].filter(Boolean).map((warning) => <span key={warning}>{warning}</span>)}
                   </div>
-                  <FolderOpen className="h-5 w-5" />
-                </div>
-                <div className="lite-catalog-storage-facts">
-                  <span><Server className="h-4 w-4" /> {hostLabel}</span>
-                  <span><FolderPlus className="h-4 w-4" /> Media from: {canonical.mediaConnected ? app?.storage?.summary || app?.device_relationships?.media_from || storageMediaSummary(app) : 'Not connected'}</span>
-                  {storageBackupLabel ? <span><HardDrive className="h-4 w-4" /> {storageBackupLabel}</span> : null}
-                  <span><HardDrive className="h-4 w-4" /> Storage devices: {storageDeviceCount(app)} available</span>
-                </div>
-                {canonical.mediaConnected ? (
-                  <div className="lite-catalog-storage-chips">
-                    {storageMappings(app).map((mapping) => <span key={mapping.mapping_id || mapping.label}>{mapping.label || 'Media folder'} · {mapping.mode_label || 'Read-only'}</span>)}
+                  <div className="lite-catalog-storage-panel lite-catalog-storage-panel--sheet">
+                    <div className="lite-catalog-storage-head">
+                      <div>
+                        <span>Media folders</span>
+                        <strong>{storageMappings(app).length ? storageMediaSummary(app) : 'No folders connected'}</strong>
+                      </div>
+                      <FolderOpen className="h-5 w-5" />
+                    </div>
+                    <div className="lite-catalog-storage-facts">
+                      <span><Server className="h-4 w-4" /> {hostLabel}</span>
+                      <span><FolderPlus className="h-4 w-4" /> Media from: {canonical.mediaConnected ? app?.storage?.summary || app?.device_relationships?.media_from || storageMediaSummary(app) : 'Not connected'}</span>
+                      {storageBackupLabel ? <span><HardDrive className="h-4 w-4" /> {storageBackupLabel}</span> : null}
+                      <span><HardDrive className="h-4 w-4" /> Storage devices: {storageDeviceCount(app)} available</span>
+                    </div>
+                    {canonical.mediaConnected ? (
+                      <div className="lite-catalog-storage-chips">
+                        {storageMappings(app).map((mapping) => <span key={mapping.mapping_id || mapping.label}>{mapping.label || 'Media folder'} · {mapping.mode_label || 'Read-only'}</span>)}
+                      </div>
+                    ) : <p className="lite-catalog-storage-empty">No media folders connected yet. Connect a photo folder to start using PhotoPrism.</p>}
+                    {storageDeviceCount(app) < 1 ? <p className="lite-catalog-storage-hint">Join a storage device to use remote media folders.</p> : null}
                   </div>
-                ) : <p className="lite-catalog-storage-empty">No media folders connected yet. Connect a photo folder to start using PhotoPrism.</p>}
-                {storageDeviceCount(app) < 1 ? <p className="lite-catalog-storage-hint">Join a storage device to use remote media folders.</p> : null}
-              </div>
+                </>
+              ) : null}
             </>
           ) : null}
         </div>
