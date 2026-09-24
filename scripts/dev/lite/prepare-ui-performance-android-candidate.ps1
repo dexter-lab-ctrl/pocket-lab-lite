@@ -16,12 +16,16 @@ function Fail([string]$Message) {
 function Resolve-Adb {
   $command = Get-Command adb.exe -ErrorAction SilentlyContinue
   if ($command) { return $command.Source }
-  $candidates = @(
-    (Join-Path $env:LOCALAPPDATA 'Android\Sdk\platform-tools\adb.exe'),
-    (Join-Path $env:ANDROID_HOME 'platform-tools\adb.exe'),
-    (Join-Path $env:ANDROID_SDK_ROOT 'platform-tools\adb.exe'),
-    (Join-Path $env:ProgramFiles 'Android\Sdk\platform-tools\adb.exe')
-  ) | Where-Object { $_ -and (Test-Path $_ -PathType Leaf) }
+  $candidates = @()
+  if ($env:LOCALAPPDATA) { $candidates += Join-Path $env:LOCALAPPDATA 'Android\Sdk\platform-tools\adb.exe' }
+  if ($env:ANDROID_HOME) { $candidates += Join-Path $env:ANDROID_HOME 'platform-tools\adb.exe' }
+  if ($env:ANDROID_SDK_ROOT) { $candidates += Join-Path $env:ANDROID_SDK_ROOT 'platform-tools\adb.exe' }
+  if ($env:ProgramFiles) { $candidates += Join-Path $env:ProgramFiles 'Android\Sdk\platform-tools\adb.exe' }
+  if ($env:USERPROFILE) {
+    $candidates += Join-Path $env:USERPROFILE 'Downloads\platform-tools-latest-windows\platform-tools\adb.exe'
+  }
+  $candidates += 'C:\Android\platform-tools\adb.exe'
+  $candidates = @($candidates | Where-Object { Test-Path $_ -PathType Leaf })
   if ($candidates.Count -ge 1) { return $candidates[0] }
   Fail 'adb.exe is not available on PATH or in the standard Android SDK locations.'
 }
