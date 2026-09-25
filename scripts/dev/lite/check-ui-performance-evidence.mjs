@@ -31,6 +31,35 @@ for (const file of files) {
     failures += 1;
     continue;
   }
+  if (payload.qualification_surface === 'android-cdp-baseline-normalized') {
+    const classifications = new Set([
+      'WITHIN_BASELINE',
+      'PLATFORM_DOMINATED',
+      'APP_INCREMENTAL_COST',
+      'MIXED',
+      'INCONCLUSIVE',
+    ]);
+    const baselineContractValid = (
+      payload.baseline_schema_version === '1.0.0'
+      && Number(payload.repetition_count) >= 3
+      && Number(payload.platform_baseline_sample_count) >= 6
+      && payload.platform_baseline
+      && typeof payload.platform_baseline === 'object'
+      && payload.interaction_summary
+      && typeof payload.interaction_summary === 'object'
+      && payload.baseline_delta
+      && typeof payload.baseline_delta === 'object'
+      && classifications.has(String(payload.baseline_classification || ''))
+      && Array.isArray(payload.baseline_reasons)
+      && Array.isArray(payload.device_state_samples)
+      && payload.device_state_samples.length >= 3
+    );
+    if (!baselineContractValid) {
+      console.error(`[ui-performance] FAIL ${label}: invalid Android baseline-normalized evidence contract`);
+      failures += 1;
+      continue;
+    }
+  }
   if (payload.gate_passed !== true) {
     console.error(`[ui-performance] FAIL ${label}: ${(payload.gate_violations || []).join(', ')}`);
     failures += 1;
