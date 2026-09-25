@@ -162,6 +162,11 @@ tasks:
     cmds:
       - npm run analyze:perf:android-baseline
 
+  lite:ui:perf:android:baseline:check:
+    desc: Fail when normalized repeated Android evidence shows material app incremental cost
+    cmds:
+      - npm run check:perf:android-baseline
+
   lite:qualification:start:key-bound:faults:
     desc: Explicitly start key-bound qualification with fixed non-destructive service-fault controls; Server Phone DEV state is scrubbed first
     requires:
