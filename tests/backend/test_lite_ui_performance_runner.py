@@ -300,3 +300,23 @@ def test_live_default_interaction_plan_is_bounded_and_filterable():
 
     args = SimpleNamespace(mode="live", interaction=["live-scroll:home"])
     assert runner._interactions(args) == ("live-scroll:home",)
+
+
+def test_renewal_contract_is_repository_owned():
+    runner_source = Path("scripts/dev/lite/run-ui-performance-qualified.py").read_text(encoding="utf-8")
+    live_spec = Path("tests/e2e/lite-performance-live.spec.ts").read_text(encoding="utf-8")
+    taskfile = Path("tasks/Taskfile.lite.yml").read_text(encoding="utf-8")
+    ignore = Path(".gitignore").read_text(encoding="utf-8")
+
+    assert "SESSION_RENEWAL_THRESHOLD_SECONDS = 45" in runner_source
+    assert "BRIDGE_RENEWAL_THRESHOLD_SECONDS = 30" in runner_source
+    assert "LITE_QUALIFICATION_INTERACTION" in live_spec
+    assert "Unsupported live qualification interaction" in live_spec
+    assert "lite:ui:perf:qualified:" in taskfile
+    assert ".pocketlab-dev/" in ignore
+
+
+def test_harness_client_exposes_direct_session_stop_helper():
+    source = Path("scripts/dev/lite/harness.py").read_text(encoding="utf-8")
+    assert "def stop_session(*, session_token: str, session_id: str)" in source
+    assert '"/api/lite/harness/session/{identifier}"' in source
