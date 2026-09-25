@@ -9,6 +9,11 @@ import {
 } from './lite-performance-helpers';
 
 const LIVE_TABS = ['home', 'catalog', 'devices', 'security', 'identity', 'rules', 'recovery'] as const;
+const REQUESTED_INTERACTION = String(process.env.LITE_QUALIFICATION_INTERACTION || '').trim().toLowerCase();
+
+function interactionRequested(id: string) {
+  return !REQUESTED_INTERACTION || REQUESTED_INTERACTION === id.toLowerCase();
+}
 
 test.describe('Pocket Lab Lite live UI performance qualification', () => {
   test.skip(
@@ -25,10 +30,12 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
     await waitForLiteScreenToSettle(page, 'home');
 
     for (const screenId of LIVE_TABS.slice(1)) {
+      const interactionId = `live-navigation:${screenId}`;
+      if (!interactionRequested(interactionId)) continue;
       const report = await measureLiteInteraction(
         page,
         testInfo,
-        `live-navigation:${screenId}`,
+        interactionId,
         async () => {
           await openTab(page, screenId);
           await waitForLiteScreenToSettle(page, screenId);
@@ -44,13 +51,15 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
   test('real runtime read-only scrolling meets the UI frame gate on every tab', async ({ page }, testInfo) => {
     await page.goto('/?screen=home');
     for (const screenId of LIVE_TABS) {
+      const interactionId = `live-scroll:${screenId}`;
+      if (!interactionRequested(interactionId)) continue;
       if (screenId !== 'home') await openTab(page, screenId);
       await waitForLiteScreenToSettle(page, screenId);
 
       const report = await measureLiteInteraction(
         page,
         testInfo,
-        `live-scroll:${screenId}`,
+        interactionId,
         async () => {
           await exerciseLiteScroll(page, 820);
         },
