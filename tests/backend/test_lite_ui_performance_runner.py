@@ -330,7 +330,7 @@ def test_live_default_interaction_plan_is_bounded_and_filterable():
     args = SimpleNamespace(mode="live", interaction=None)
     plan = runner._interactions(args)
     assert plan == runner.DEFAULT_LIVE_INTERACTIONS
-    assert len(plan) == 13
+    assert len(plan) == 26
 
     args = SimpleNamespace(mode="live", interaction=["live-scroll:home"])
     assert runner._interactions(args) == ("live-scroll:home",)
