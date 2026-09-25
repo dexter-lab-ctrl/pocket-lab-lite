@@ -41,6 +41,7 @@ CANDIDATE_HOST = "127.0.0.1"
 CANDIDATE_PORT = 18765
 CANDIDATE_MANIFEST_PATH = "/__pocketlab_qualification__/candidate.json"
 CANDIDATE_HEALTH_PATH = "/__pocketlab_qualification__/health"
+CANDIDATE_CONTROL_PATH = "/__pocketlab_qualification__/baseline-control.html"
 BRIDGE_HEADER = "X-Pocket-Lab-Qualification-Bridge"
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 MAX_BRIDGE_HEADER_BYTES = 4096
@@ -124,6 +125,27 @@ def _json_bytes(payload: dict[str, Any]) -> bytes:
     return (json.dumps(payload, ensure_ascii=True, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
 
 
+def baseline_control_html(source_commit: str) -> bytes:
+    commit = exact_source_commit(source_commit)
+    html = f"""<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="pocketlab-candidate-sha" content="{commit}">
+<title>Pocket Lab Android baseline control</title>
+<style>
+html,body{{margin:0;min-height:100%;background:#fff;color:#111;font:16px system-ui,sans-serif}}
+main{{min-height:100vh;display:grid;place-items:center}}
+</style>
+</head>
+<body>
+<main data-pocketlab-baseline-control="true" aria-label="Pocket Lab Android baseline control">baseline</main>
+</body>
+</html>"""
+    return html.encode("utf-8")
+
+
 class CandidateRequestHandler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.0"
     server_version = "PocketLabLiteCandidate/1.0"
@@ -181,6 +203,9 @@ class CandidateRequestHandler(BaseHTTPRequestHandler):
             return
         if path == CANDIDATE_HEALTH_PATH:
             self._send_bytes(200, _json_bytes({"status": "ready", "source_commit": self.source_commit, "sanitized": True}), content_type="application/json")
+            return
+        if path == CANDIDATE_CONTROL_PATH:
+            self._send_bytes(200, baseline_control_html(self.source_commit), content_type="text/html; charset=utf-8")
             return
         if path == "/api/lite/harness" or path.startswith("/api/lite/harness/"):
             self._send_error_json(404, "browser_harness_route_not_available")
