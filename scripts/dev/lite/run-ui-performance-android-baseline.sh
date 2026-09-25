@@ -59,7 +59,7 @@ done
 rm -rf .pocketlab-dev/performance
 mkdir -p .pocketlab-dev/performance
 
-node scripts/dev/lite/analyze-ui-performance-android-baseline.mjs   --runs-root "$staging_root"   --output-dir .pocketlab-dev/performance   --write-summary .pocketlab-dev/performance/ui-performance-android-baseline-summary.json
+node scripts/dev/lite/analyze-ui-performance-android-baseline.mjs   --runs-root "$staging_root"   --output-dir .pocketlab-dev/performance   --write-summary .pocketlab-dev/performance/android-baseline-summary.json
 
 printf '[ui-performance-android-baseline] repeated qualification complete; raw runs=%s normalized=%s\n'   "$repetitions" ".pocketlab-dev/performance"
 printf '[ui-performance-android-baseline] underlying qualifier exits: %s\n' "${qualifier_statuses[*]}"
