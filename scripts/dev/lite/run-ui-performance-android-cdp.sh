@@ -7,10 +7,13 @@ cd "$repo_root"
 bridge_port="${POCKETLAB_ANDROID_CDP_BRIDGE_PORT:-19222}"
 local_port="${POCKETLAB_ANDROID_CDP_LOCAL_PORT:-9222}"
 check_only=0
+baseline_mode=0
 owned_socat_pid=""
 
 if [[ "${1:-}" == "--check-only" ]]; then
   check_only=1
+elif [[ "${1:-}" == "--baseline" ]]; then
+  baseline_mode=1
 elif [[ -n "${1:-}" ]]; then
   printf '[ui-performance-android-preflight] ERROR: unknown argument: %s\n' "$1" >&2
   exit 2
@@ -142,8 +145,12 @@ fi
 [[ "$LITE_PERF_SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ ]] || fail 'LITE_PERF_SOURCE_COMMIT must be an exact 40-character Git commit.'
 
 printf '[ui-performance-android-preflight] source commit: %s\n' "$LITE_PERF_SOURCE_COMMIT"
-printf '[ui-performance-android-preflight] running physical Android UI performance qualification\n'
+if (( baseline_mode == 1 )); then
+  printf '[ui-performance-android-preflight] running repeated baseline-normalized Android qualification\n'
+  exec bash scripts/dev/lite/run-ui-performance-android-baseline.sh
+fi
 
+printf '[ui-performance-android-preflight] running physical Android UI performance qualification\n'
 rm -rf .pocketlab-dev/performance/ui-performance-android-cdp-*.json
 node scripts/dev/lite/qualify-ui-performance-android-cdp.mjs
 npm run check:render-budgets
