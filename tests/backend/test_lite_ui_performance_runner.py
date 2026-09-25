@@ -172,6 +172,12 @@ def test_candidate_ui_mode_is_live_only_and_uses_checked_in_candidate_server():
 
 def test_candidate_ui_mode_owns_the_browser_base_url(monkeypatch):
     runner = _load_runner()
+    # Other backend fixtures intentionally enable their isolated test auth
+    # contract at module import time.  This controller contract must exercise
+    # the real operator environment boundary, so clear that test-only default
+    # before asserting candidate-mode validation.
+    monkeypatch.delenv("POCKETLAB_TEST_AUTH_BYPASS", raising=False)
+    monkeypatch.delenv("POCKETLAB_HARNESS_DESTRUCTIVE", raising=False)
     monkeypatch.delenv("LITE_BASE_URL", raising=False)
     assert runner._base_url("live", candidate_ui=True) == runner.CANDIDATE_BASE_URL
     with pytest.raises(ValueError, match="only for live mode"):
