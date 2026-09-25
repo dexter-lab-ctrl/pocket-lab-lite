@@ -13,7 +13,7 @@ import {
 import { useOnlineStatus } from '../hooks/useOnlineStatus.js';
 import { useLiteResource, useLiteStatus } from '../hooks/useLiteStatus.js';
 import { liteApi } from '../lib/liteApi.js';
-import { liteQueryClient } from '../lib/liteQueryClient.js';
+import { liteQueryClient, liteQueryKeys } from '../lib/liteQueryClient.js';
 import {
   SECURITY_PREFETCH_SETTLE_MS,
   prefetchSecuritySummary,
@@ -50,6 +50,10 @@ import {
   backendLabel,
   resolveSafeAppOpenPath,
 } from './LiteUi.jsx';
+
+const LITE_CATALOG_PREFETCH_SETTLE_MS = 900;
+const LITE_CATALOG_PREFETCH_STALE_TIME_MS = 60_000;
+const LITE_CATALOG_PREFETCH_GC_TIME_MS = 5 * 60_000;
 
 function currentWorkspaceFromLocation() {
   if (typeof window === 'undefined') return null;
@@ -487,6 +491,28 @@ function LiteAppShell() {
     }, SECURITY_PREFETCH_SETTLE_MS);
     return () => window.clearTimeout(timer);
   }, [activeScreenId, backendHealthyForPrefetch]);
+
+  useEffect(() => {
+    if (activeScreenId === 'catalog' || workspaceApp || !backendHealthyForPrefetch) return undefined;
+    const timer = window.setTimeout(() => {
+      const prefetches = [
+        liteQueryClient.prefetchQuery({
+          queryKey: liteQueryKeys.catalog(),
+          queryFn: liteApi.catalog,
+          staleTime: LITE_CATALOG_PREFETCH_STALE_TIME_MS,
+          gcTime: LITE_CATALOG_PREFETCH_GC_TIME_MS,
+        }),
+        liteQueryClient.prefetchQuery({
+          queryKey: liteQueryKeys.appActions('photoprism'),
+          queryFn: () => liteApi.appActions('photoprism'),
+          staleTime: 10_000,
+          gcTime: LITE_CATALOG_PREFETCH_GC_TIME_MS,
+        }),
+      ];
+      Promise.allSettled(prefetches).catch(() => null);
+    }, LITE_CATALOG_PREFETCH_SETTLE_MS);
+    return () => window.clearTimeout(timer);
+  }, [activeScreenId, backendHealthyForPrefetch, workspaceApp]);
 
   useEffect(() => {
     if (workspaceApp || !activeScreenEntry?.idlePreload) return undefined;

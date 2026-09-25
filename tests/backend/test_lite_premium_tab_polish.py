@@ -31,6 +31,18 @@ def test_home_uses_existing_server_state_layers_without_new_api_fanout() -> None
     assert "Dexie" in snapshots or "liteOfflineDb" in snapshots
 
 
+def test_lite_navigation_prefetches_catalog_reads_before_the_tab_boundary() -> None:
+    app = read("src/lite/LiteApp.jsx")
+
+    assert "LITE_CATALOG_PREFETCH_SETTLE_MS = 900" in app
+    assert "liteQueryClient.prefetchQuery" in app
+    assert "queryKey: liteQueryKeys.catalog()" in app
+    assert "queryFn: liteApi.catalog" in app
+    assert "queryKey: liteQueryKeys.appActions('photoprism')" in app
+    assert "activeScreenId === 'catalog' || workspaceApp || !backendHealthyForPrefetch" in app
+    assert "Promise.allSettled(prefetches)" in app
+
+
 def test_home_presentation_keeps_lite_language_and_a_real_next_action_contract() -> None:
     home = read("src/lite/LiteHome.jsx")
     presentation = read("src/lib/liteHomePresentation.js")
