@@ -467,7 +467,12 @@ test('[interaction] representative Manage-close stays inside the render budget',
 
 test('[interaction] representative overlay open and close stay inside the render budget', async ({ page }, testInfo) => {
   await installScenario(page, 'healthy');
+  const initialSecurityReads = Promise.all([
+    page.waitForResponse((response) => response.url().includes('/api/lite/security/freshness') && response.ok()),
+    page.waitForResponse((response) => response.url().includes('/api/lite/security/summary') && response.ok()),
+  ]);
   await page.goto('/?screen=security');
+  await initialSecurityReads;
   await waitForLiteScreenToSettle(page, 'security');
 
   const opener = page.getByRole('button', { name: /Manage Security details/i }).first();

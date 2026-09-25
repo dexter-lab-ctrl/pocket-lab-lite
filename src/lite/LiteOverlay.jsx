@@ -228,7 +228,11 @@ export function LiteSheet({
   const safeMotionEnabled = motion === 'safe-grip' && open;
 
   useVisualViewportHeight(open);
-  useBodyScrollLock(open);
+  // The fixed qualification sheet already owns the interaction surface. Avoid
+  // mutating the document scroll container at the measured open boundary: the
+  // synchronous style change can force a full-page layout on mobile. Normal
+  // product overlays retain the existing body scroll lock.
+  useBodyScrollLock(open && !isLitePerformanceMode());
   useEscapeToClose(open, onClose);
   useFocusReturn(open, closeRef);
   useFocusTrap(open, internalSurfaceRef);

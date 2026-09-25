@@ -92,6 +92,18 @@ describe('Pocket Lab Lite UI performance policy guards', () => {
     expect(css).toContain('unchanged');
   });
 
+  it('keeps qualification overlay opens out of the document scroll-lock layout path', () => {
+    const overlay = read('src/lite/LiteOverlay.jsx');
+    expect(overlay).toContain('useBodyScrollLock(open && !isLitePerformanceMode());');
+    expect(overlay).toContain('product overlays retain the existing body scroll lock.');
+  });
+
+  it('does not start passive Security Manage progress polling during overlay qualification', () => {
+    const policy = read('src/lib/liteSecurityProgressPolicy.js');
+    expect(policy).toContain('shouldLoadSecurityProgress');
+    expect(policy).not.toContain('securityManageOpen');
+  });
+
   it('keeps real-runtime performance qualification read-only', () => {
     const live = read('tests/e2e/lite-performance-live.spec.ts');
     const android = read('scripts/dev/lite/qualify-ui-performance-android-cdp.mjs');

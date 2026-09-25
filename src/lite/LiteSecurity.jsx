@@ -49,6 +49,7 @@ import {
 } from '../lib/liteViewModels.js';
 import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy.js';
 import { acceptSecurityProgressEvent } from '../lib/securityProgressEvents.js';
+import { shouldUseLiteSecurityProgressStream } from '../lib/liteSecurityProgressPolicy.js';
 import { LiteSheet } from './LiteOverlay.jsx';
 import { isLitePerformanceMode } from './liteNavigationRuntime.js';
 import {
@@ -1971,9 +1972,11 @@ export default function SecurityScreen() {
   const localSecurityProgressActive = hasOptimisticSecurityProgress(result) || hasLiveSecurityOperation(result);
   const rootOwnsAcceptedSecurityRun = Boolean(securityObservation?.active && securityObservation?.runId);
   const shouldLoadSecurityProgress = busy || localSecurityProgressActive;
-  const shouldUseSecurityProgressStream = Boolean(
-    !rootOwnsAcceptedSecurityRun && (shouldLoadSecurityProgress || securityManageOpen || activeSecurityDetails === 'checkPath'),
-  );
+  const shouldUseSecurityProgressStream = shouldUseLiteSecurityProgressStream({
+    rootOwnsAcceptedSecurityRun,
+    shouldLoadSecurityProgress,
+    activeSecurityDetails,
+  });
   const securityFreshnessLoader = useCallback(() => liteApi.securityFreshness(), []);
   const { data: securityFreshnessData } = useLiteResource(securityFreshnessLoader, [], {
     queryKey: liteQueryKeys.securityFreshness(),
