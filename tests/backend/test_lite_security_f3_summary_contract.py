@@ -160,6 +160,7 @@ def test_lite_security_group1_f13_lazy_preload_contract():
 
     assert "warmSecurityManageIntent" in screen
     assert "preloadSecurityFindingDetails();" in screen
+    assert "function openSecurityManage(event)" in screen
     assert "onPointerEnter={warmSecurityManageIntent}" in screen
     assert "onFocus={warmSecurityManageIntent}" in screen
     assert "onTouchStart={warmSecurityManageIntent}" in screen

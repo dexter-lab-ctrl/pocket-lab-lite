@@ -2694,6 +2694,7 @@ export default function SecurityScreen() {
   }
 
   function openSecurityManage(event) {
+    preloadSecurityFindingDetails();
     securityDetailsTriggerRef.current = event?.currentTarget || null;
     setSecurityManageOpen(true);
   }
