@@ -182,7 +182,6 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
       await page.getByRole('button', { name: /^Manage$/i }).first().click();
       const sheet = page.locator('.lite-catalog-manage-layer:visible').first();
       await expect(sheet).toBeVisible();
-      await expect(sheet.locator('.lite-app-action-details-button:visible').first()).toBeVisible({ timeout: 15_000 });
 
       if (requested('live-deep:catalog-section-switch')) {
         const report = await measureLiteInteraction(
@@ -204,6 +203,15 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
       }
 
       if (requested('live-deep:catalog-action-details')) {
+        // The live projection's default Photos section contains only the
+        // Connect/Import shortcuts, which intentionally have no detail
+        // affordance. Recovery is the action-detail surface.
+        const recoveryTab = sheet.getByRole('tab', { name: 'Recovery', exact: true });
+        if ((await recoveryTab.getAttribute('aria-selected')) !== 'true') {
+          await recoveryTab.click();
+          await expect(recoveryTab).toHaveAttribute('aria-selected', 'true');
+        }
+        await expect(sheet.locator('.lite-app-action-details-button:visible').first()).toBeVisible({ timeout: 15_000 });
         const detailsButton = sheet.locator('.lite-app-action-details-button:visible').first();
         const report = await measureLiteInteraction(
           page,
