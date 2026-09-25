@@ -85,6 +85,7 @@ def test_candidate_build_disables_only_candidate_service_worker_registration():
     assert "qualificationCandidateBuild ? '1' : '0'" in config
     assert "!qualificationCandidateBuild" in main
     assert "VITE_POCKETLAB_UI_PERF_CANDIDATE=1" in script
+    assert "VITE_POCKETLAB_PERF_TEST=1" in script
 
 
 def test_prepared_runtime_probe_is_loopback_only():

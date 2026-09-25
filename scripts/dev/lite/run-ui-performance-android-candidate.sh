@@ -37,7 +37,12 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 printf '[ui-performance-android-candidate] building exact source SHA %s\n' "$source_commit"
-POCKETLAB_UI_PERF_CANDIDATE=1 VITE_POCKETLAB_UI_PERF_CANDIDATE=1 POCKETLAB_BUILD_ID="$source_commit" npm run build
+# The performance mode is a compile-time Lite rendering contract. The live
+# runner sets the same flag for Playwright, but the candidate bundle must also
+# receive it or the physical/browser candidate would retain entrance springs,
+# elevation cues, and other motion that the performance contract intentionally
+# removes at the qualification boundary.
+POCKETLAB_UI_PERF_CANDIDATE=1 VITE_POCKETLAB_UI_PERF_CANDIDATE=1 VITE_POCKETLAB_PERF_TEST=1 POCKETLAB_BUILD_ID="$source_commit" npm run build
 
 powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
   -File scripts/dev/lite/prepare-ui-performance-android-candidate.ps1 -OpenCandidate
