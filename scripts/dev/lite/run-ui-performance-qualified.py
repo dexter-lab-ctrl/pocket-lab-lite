@@ -1,20 +1,30 @@
 #!/usr/bin/env python3
-"""Run the fixed UI-performance browser lane with a short-lived harness bridge.
+"""Run bounded UI-performance qualification with renewable synthetic Owner authority.
 
-The key-bound bootstrap, browser projection, and principal cleanup stay in this
-process.  The child receives only the short-lived bridge header through its
-environment; the PWA never receives a harness session or provisioning token.
+The controller owns Ed25519 bootstrap/session/bridge material in process memory.
+Each measured interaction runs in a separate child process so authority can be
+rotated only BETWEEN interactions, never while a measurement is in progress.
+
+Renewal policy:
+- session remaining < 45 seconds -> establish a replacement signed session,
+  mint its bridge, then revoke the old session before the next interaction.
+- bridge remaining < 30 seconds -> mint a replacement bridge from the still
+  healthy parent session before the next interaction.
+
 No arbitrary command, URL, profile, capability, or destructive operation is
-accepted by this runner.
+accepted. The browser receives only the short-lived bridge proof.
 """
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import shutil
 import subprocess
 import sys
+from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -33,8 +43,27 @@ TARGET_SCOPE = "local_server_host_only"
 MIN_SESSION_TTL_SECONDS = 60
 MAX_SESSION_TTL_SECONDS = 300
 DEFAULT_SESSION_TTL_SECONDS = 180
+SESSION_RENEWAL_THRESHOLD_SECONDS = 45
+BRIDGE_RENEWAL_THRESHOLD_SECONDS = 30
 RUN_TIMEOUT_SECONDS = 15 * 60
 PRINCIPAL_ID_RE = re.compile(r"^[a-z][a-z0-9._-]{2,79}$")
+INTERACTION_ID_RE = re.compile(r"^[a-z0-9][a-z0-9:._-]{2,119}$")
+DEFAULT_CONTROLLER_CHECKPOINT = REPO_ROOT / ".pocketlab-dev/ui-performance-qualified-controller.json"
+DEFAULT_LIVE_INTERACTIONS = (
+    "live-navigation:catalog",
+    "live-navigation:devices",
+    "live-navigation:security",
+    "live-navigation:identity",
+    "live-navigation:rules",
+    "live-navigation:recovery",
+    "live-scroll:home",
+    "live-scroll:catalog",
+    "live-scroll:devices",
+    "live-scroll:security",
+    "live-scroll:identity",
+    "live-scroll:rules",
+    "live-scroll:recovery",
+)
 SECRET_ENV_KEYS = (
     "POCKETLAB_HARNESS_SESSION",
     "POCKETLAB_HARNESS_PROVISIONING_TOKEN",
@@ -50,8 +79,39 @@ SECRET_ENV_KEYS = (
 )
 
 
+@dataclass
+class Authority:
+    session_token: str
+    session_id: str
+    session_expires_at: datetime
+    bridge_token: str
+    bridge_expires_at: datetime
+
+
 def _truthy(value: str | None) -> bool:
     return str(value or "").strip().casefold() in {"1", "true", "yes", "on"}
+
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _parse_timestamp(value: object, *, label: str) -> datetime:
+    raw = str(value or "").strip()
+    if not raw:
+        raise RuntimeError(f"{label} expiry is missing")
+    try:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise RuntimeError(f"{label} expiry is invalid") from exc
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _remaining_seconds(expires_at: datetime, *, now: datetime | None = None) -> float:
+    current = now or _utcnow()
+    return (expires_at - current).total_seconds()
 
 
 def _redact_output(value: object, secrets: tuple[str, ...]) -> str:
@@ -76,7 +136,13 @@ def _runner_command(mode: str) -> list[str]:
     return [shell, str(script)]
 
 
-def _child_environment(bridge_token: str, *, mode: str, base_url: str) -> dict[str, str]:
+def _child_environment(
+    bridge_token: str,
+    *,
+    mode: str,
+    base_url: str,
+    interaction: str | None,
+) -> dict[str, str]:
     child = dict(os.environ)
     for key in SECRET_ENV_KEYS:
         child.pop(key, None)
@@ -85,6 +151,11 @@ def _child_environment(bridge_token: str, *, mode: str, base_url: str) -> dict[s
     child["LITE_BASE_URL"] = base_url
     child["LITE_QUALIFICATION_BROWSER_BRIDGE"] = "1"
     child["POCKETLAB_HARNESS_BROWSER_BRIDGE"] = bridge_token
+    child["LITE_PERF_PRESERVE_EVIDENCE"] = "1"
+    if interaction:
+        child["LITE_QUALIFICATION_INTERACTION"] = interaction
+    else:
+        child.pop("LITE_QUALIFICATION_INTERACTION", None)
     if mode == "android-cdp":
         child.pop("LITE_ANDROID_CDP_URL", None)
     return child
@@ -92,10 +163,6 @@ def _child_environment(bridge_token: str, *, mode: str, base_url: str) -> dict[s
 
 def _base_url(mode: str) -> str:
     configured = os.environ.get("LITE_BASE_URL", "").strip()
-    # The live browser can safely use the Caddy loopback forward owned by this
-    # process. Android still requires a caller-owned candidate origin because
-    # the ADB reverse and exact-SHA candidate server are separate lifecycle
-    # steps.
     value = configured or ("http://127.0.0.1:18444" if mode == "live" else "")
     if not value:
         raise ValueError("LITE_BASE_URL must identify the prepared live runtime")
@@ -121,7 +188,18 @@ def _validate_operator_environment(mode: str) -> str:
     return _base_url(mode)
 
 
-def _bridge_token(response: dict) -> str:
+def _session_authority(response: dict) -> tuple[str, str, datetime]:
+    token = str(response.get("session_token") or "").strip()
+    session = response.get("session")
+    if not token or not isinstance(session, dict):
+        raise RuntimeError("key-bound qualification returned no usable session")
+    session_id = str(session.get("harness_session_id") or "").strip()
+    if not session_id:
+        raise RuntimeError("key-bound qualification returned no session id")
+    return token, session_id, _parse_timestamp(session.get("expires_at"), label="session")
+
+
+def _bridge_authority(response: dict) -> tuple[str, datetime]:
     metadata = response.get("browser_bridge")
     token = str(response.get("browser_bridge_token") or "").strip()
     if not isinstance(metadata, dict) or token == "":
@@ -133,7 +211,190 @@ def _bridge_token(response: dict) -> str:
     }
     if any(str(metadata.get(key) or "") != value for key, value in expected.items()):
         raise RuntimeError("the browser qualification bridge binding was not accepted")
-    return token
+    return token, _parse_timestamp(metadata.get("expires_at"), label="browser bridge")
+
+
+def _mint_bridge(session_token: str) -> tuple[str, datetime]:
+    return _bridge_authority(harness_client.browser_bridge(session_token=session_token))
+
+
+def _bootstrap_authority(*, principal_id: str, key_file: str, ttl_seconds: int) -> Authority:
+    response = harness_client.bootstrap_session(
+        principal_id=principal_id,
+        key_file=key_file,
+        ttl_seconds=ttl_seconds,
+    )
+    session_token, session_id, session_expires = _session_authority(response)
+    bridge_token, bridge_expires = _mint_bridge(session_token)
+    return Authority(session_token, session_id, session_expires, bridge_token, bridge_expires)
+
+
+def _renew_session(
+    authority: Authority,
+    *,
+    principal_id: str,
+    key_file: str,
+    ttl_seconds: int,
+) -> Authority:
+    response = harness_client.start_session(
+        principal_id=principal_id,
+        profile=PROFILE,
+        purpose=PURPOSE,
+        key_file=key_file,
+        ttl_seconds=ttl_seconds,
+    )
+    new_token, new_id, new_expires = _session_authority(response)
+    new_bridge, new_bridge_expires = _mint_bridge(new_token)
+    try:
+        harness_client.stop_session(session_token=authority.session_token, session_id=authority.session_id)
+    except (OSError, RuntimeError, ValueError):
+        # The replacement authority is already valid. Cleanup of the principal
+        # at the end revokes every remaining session. Do not discard a valid
+        # replacement merely because the old session was already expired.
+        pass
+    return Authority(new_token, new_id, new_expires, new_bridge, new_bridge_expires)
+
+
+def _before_owner_interaction(
+    authority: Authority,
+    *,
+    principal_id: str,
+    key_file: str,
+    ttl_seconds: int,
+    now: datetime | None = None,
+) -> tuple[Authority, str]:
+    current = now or _utcnow()
+    if _remaining_seconds(authority.session_expires_at, now=current) < SESSION_RENEWAL_THRESHOLD_SECONDS:
+        return (
+            _renew_session(
+                authority,
+                principal_id=principal_id,
+                key_file=key_file,
+                ttl_seconds=ttl_seconds,
+            ),
+            "session_rotated",
+        )
+    if _remaining_seconds(authority.bridge_expires_at, now=current) < BRIDGE_RENEWAL_THRESHOLD_SECONDS:
+        bridge_token, bridge_expires = _mint_bridge(authority.session_token)
+        return (
+            Authority(
+                authority.session_token,
+                authority.session_id,
+                authority.session_expires_at,
+                bridge_token,
+                bridge_expires,
+            ),
+            "bridge_rotated",
+        )
+    return authority, "authority_healthy"
+
+
+def _interactions(args: argparse.Namespace) -> tuple[str | None, ...]:
+    requested = tuple(str(value or "").strip().casefold() for value in (args.interaction or ()) if str(value or "").strip())
+    for item in requested:
+        if not INTERACTION_ID_RE.fullmatch(item):
+            raise ValueError(f"invalid interaction id: {item}")
+    if requested:
+        return requested
+    if args.mode == "live":
+        return DEFAULT_LIVE_INTERACTIONS
+    # The physical Android runner owns its complete matrix internally today.
+    # It remains one bounded interaction group until it exposes a per-measurement
+    # selector; renewal therefore happens before that group, never mid-run.
+    return (None,)
+
+
+def _checkpoint_path(args: argparse.Namespace) -> Path:
+    configured = str(args.controller_checkpoint or "").strip()
+    path = Path(configured).expanduser() if configured else DEFAULT_CONTROLLER_CHECKPOINT
+    resolved = path.resolve()
+    try:
+        resolved.relative_to(REPO_ROOT.resolve())
+    except ValueError:
+        raise ValueError("controller checkpoint must remain inside the repository working tree") from None
+    return resolved
+
+
+def _load_completed(path: Path, *, principal_id: str, mode: str) -> set[str]:
+    if not path.exists():
+        return set()
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return set()
+    if not isinstance(payload, dict):
+        return set()
+    if payload.get("principal_id") != principal_id or payload.get("mode") != mode:
+        return set()
+    values = payload.get("completed_interactions")
+    if not isinstance(values, list):
+        return set()
+    return {str(value) for value in values if isinstance(value, str)}
+
+
+def _write_checkpoint(
+    path: Path,
+    *,
+    principal_id: str,
+    mode: str,
+    completed: set[str],
+    next_interaction: str | None,
+    status: str,
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "schema_version": "1.0.0",
+        "principal_id": principal_id,
+        "mode": mode,
+        "profile": PROFILE,
+        "purpose": PURPOSE,
+        "target_scope": TARGET_SCOPE,
+        "completed_interactions": sorted(completed),
+        "next_interaction": next_interaction,
+        "status": status,
+        "updated_at": _utcnow().isoformat().replace("+00:00", "Z"),
+        "contains_secrets": False,
+    }
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    temporary.write_text(json.dumps(payload, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+    os.replace(temporary, path)
+
+
+def _clear_performance_evidence() -> None:
+    target = REPO_ROOT / ".pocketlab-dev/performance"
+    if target.exists():
+        shutil.rmtree(target)
+    target.mkdir(parents=True, exist_ok=True)
+
+
+def _run_interaction(
+    args: argparse.Namespace,
+    *,
+    base_url: str,
+    authority: Authority,
+    interaction: str | None,
+    secrets: tuple[str, ...],
+) -> int:
+    child = subprocess.run(
+        _runner_command(args.mode),
+        cwd=str(REPO_ROOT),
+        env=_child_environment(
+            authority.bridge_token,
+            mode=args.mode,
+            base_url=base_url,
+            interaction=interaction,
+        ),
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        text=True,
+        timeout=RUN_TIMEOUT_SECONDS,
+        check=False,
+    )
+    if child.stdout:
+        sys.stdout.write(_redact_output(child.stdout, secrets))
+    if child.stderr:
+        sys.stderr.write(_redact_output(child.stderr, secrets))
+    return int(child.returncode)
 
 
 def run(args: argparse.Namespace) -> int:
@@ -141,54 +402,117 @@ def run(args: argparse.Namespace) -> int:
     principal_id = str(args.principal_id or "").strip().casefold()
     if not PRINCIPAL_ID_RE.fullmatch(principal_id):
         raise ValueError("principal id must be a bounded disposable synthetic identifier")
+    key_file = str(Path(args.key_file).expanduser())
+    interactions = _interactions(args)
+    checkpoint = _checkpoint_path(args)
+    completed = _load_completed(checkpoint, principal_id=principal_id, mode=args.mode) if args.resume else set()
 
-    session_token = ""
-    bridge_token = ""
+    authority: Authority | None = None
     child_returncode = 2
     cleanup_error = ""
-    output_secrets: tuple[str, ...] = ()
+    known_secrets: list[str] = []
     previous_api_url = os.environ.get("POCKETLAB_HARNESS_API_URL")
+    _clear_performance_evidence()
+
     try:
         with ui_performance_runtime_tunnel():
             try:
-                # Bootstrap and revocation use the direct loopback FastAPI
-                # forward; the browser receives only the short-lived bridge
-                # header and uses the same-origin Caddy forward selected above.
                 os.environ["POCKETLAB_HARNESS_API_URL"] = "http://127.0.0.1:18080"
-                session = harness_client.bootstrap_session(
+                authority = _bootstrap_authority(
                     principal_id=principal_id,
-                    key_file=str(Path(args.key_file).expanduser()),
+                    key_file=key_file,
                     ttl_seconds=args.ttl_seconds,
                 )
-                session_token = str(session.get("session_token") or "").strip()
-                if not session_token:
-                    raise RuntimeError("key-bound bootstrap returned no session")
-                bridge_token = _bridge_token(harness_client.browser_bridge(session_token=session_token))
-                output_secrets = (session_token, bridge_token)
-                child = subprocess.run(
-                    _runner_command(args.mode),
-                    cwd=str(REPO_ROOT),
-                    env=_child_environment(bridge_token, mode=args.mode, base_url=base_url),
-                    stdin=subprocess.DEVNULL,
-                    capture_output=True,
-                    text=True,
-                    timeout=RUN_TIMEOUT_SECONDS,
-                    check=False,
-                )
-                if child.stdout:
-                    sys.stdout.write(_redact_output(child.stdout, output_secrets))
-                if child.stderr:
-                    sys.stderr.write(_redact_output(child.stderr, output_secrets))
-                child_returncode = int(child.returncode)
+                known_secrets.extend([authority.session_token, authority.bridge_token])
+
+                pending = [
+                    interaction
+                    for interaction in interactions
+                    if interaction is None or interaction not in completed
+                ]
+                for index, interaction in enumerate(pending):
+                    checkpoint_name = interaction or "android-cdp-matrix"
+                    _write_checkpoint(
+                        checkpoint,
+                        principal_id=principal_id,
+                        mode=args.mode,
+                        completed=completed,
+                        next_interaction=checkpoint_name,
+                        status="before_interaction",
+                    )
+                    authority, renewal = _before_owner_interaction(
+                        authority,
+                        principal_id=principal_id,
+                        key_file=key_file,
+                        ttl_seconds=args.ttl_seconds,
+                    )
+                    known_secrets.extend([authority.session_token, authority.bridge_token])
+                    print(
+                        "[ui-performance-qualified] "
+                        f"authority={renewal} interaction={checkpoint_name} "
+                        f"session_remaining_s={max(0, int(_remaining_seconds(authority.session_expires_at)))} "
+                        f"bridge_remaining_s={max(0, int(_remaining_seconds(authority.bridge_expires_at)))}"
+                    )
+                    child_returncode = _run_interaction(
+                        args,
+                        base_url=base_url,
+                        authority=authority,
+                        interaction=interaction,
+                        secrets=tuple(known_secrets),
+                    )
+                    if child_returncode != 0:
+                        _write_checkpoint(
+                            checkpoint,
+                            principal_id=principal_id,
+                            mode=args.mode,
+                            completed=completed,
+                            next_interaction=checkpoint_name,
+                            status=f"interaction_failed:{child_returncode}",
+                        )
+                        break
+                    if interaction is not None:
+                        completed.add(interaction)
+                    next_name = None
+                    if index + 1 < len(pending):
+                        next_name = pending[index + 1] or "android-cdp-matrix"
+                    _write_checkpoint(
+                        checkpoint,
+                        principal_id=principal_id,
+                        mode=args.mode,
+                        completed=completed,
+                        next_interaction=next_name,
+                        status="interaction_complete",
+                    )
+                else:
+                    child_returncode = 0
+                    _write_checkpoint(
+                        checkpoint,
+                        principal_id=principal_id,
+                        mode=args.mode,
+                        completed=completed,
+                        next_interaction=None,
+                        status="complete",
+                    )
             finally:
-                if session_token:
+                if authority is not None and authority.session_token:
                     try:
-                        harness_client.revoke_authenticated_principal(session_token=session_token)
+                        # Ensure cleanup authority is still usable. Session
+                        # rotation is allowed here because no measurement is in
+                        # progress.
+                        authority, _ = _before_owner_interaction(
+                            authority,
+                            principal_id=principal_id,
+                            key_file=key_file,
+                            ttl_seconds=args.ttl_seconds,
+                        )
+                        harness_client.revoke_authenticated_principal(
+                            session_token=authority.session_token
+                        )
                     except (OSError, RuntimeError, ValueError) as exc:
                         cleanup_error = str(exc)[:240]
     except subprocess.TimeoutExpired:
         child_returncode = 124
-        print("[ui-performance-qualified] ERROR fixed UI-performance runner timed out", file=sys.stderr)
+        print("[ui-performance-qualified] ERROR fixed UI-performance interaction timed out", file=sys.stderr)
     except (OSError, RuntimeError, ValueError) as exc:
         print(f"[ui-performance-qualified] ERROR {str(exc)[:320]}", file=sys.stderr)
     finally:
@@ -204,7 +528,9 @@ def run(args: argparse.Namespace) -> int:
         print(
             "[ui-performance-qualified] cleanup passed; profile=qualification-owner "
             "purpose=ui-performance-60fps target=local_server_host_only "
-            f"ttl_seconds={args.ttl_seconds} destructive=false test_auth_bypass=false"
+            f"ttl_seconds={args.ttl_seconds} session_renew_before={SESSION_RENEWAL_THRESHOLD_SECONDS}s "
+            f"bridge_renew_before={BRIDGE_RENEWAL_THRESHOLD_SECONDS}s "
+            "destructive=false test_auth_bypass=false"
         )
     return child_returncode
 
@@ -219,6 +545,20 @@ def main(argv: list[str] | None = None) -> int:
         type=int,
         choices=range(MIN_SESSION_TTL_SECONDS, MAX_SESSION_TTL_SECONDS + 1),
         default=DEFAULT_SESSION_TTL_SECONDS,
+    )
+    parser.add_argument(
+        "--interaction",
+        action="append",
+        help="Run one bounded live interaction per child; may be repeated. Defaults to the fixed live matrix.",
+    )
+    parser.add_argument(
+        "--controller-checkpoint",
+        help="Untracked non-secret controller checkpoint path inside the repository.",
+    )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Skip completed live interactions recorded in the non-secret controller checkpoint.",
     )
     return run(parser.parse_args(argv))
 
