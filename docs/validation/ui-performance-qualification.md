@@ -108,6 +108,73 @@ The live Playwright suite performs navigation and scrolling only. It must remain
 
 **Important:** this layer measures the Playwright browser that is rendering the UI. If Playwright is running on the DEV-PC against a Server Phone backend, it proves live-backend UI behavior but not the Server Phone GPU/rendering performance.
 
+### 3a. Renewable synthetic Owner qualification controller
+
+Owner-gated UI performance qualification uses the repository-owned controller:
+
+```text
+scripts/dev/lite/run-ui-performance-qualified.py
+```
+
+The controller keeps the disposable Ed25519 bootstrap/session authority in the Python controller process and projects only the short-lived browser bridge into each Playwright child. The live qualification matrix is split into bounded per-interaction child runs so authority can be rotated **between interactions** and never during an active measurement.
+
+The source-owned renewal policy is:
+
+```text
+session remaining < 45 seconds
+    -> establish a replacement signed session
+    -> mint a bridge bound to the replacement
+    -> revoke the old session
+    -> begin the next interaction
+
+bridge remaining < 30 seconds
+    -> mint a replacement bridge from the still-healthy session
+    -> begin the next interaction
+```
+
+If both authorities are healthy, the existing bridge is reused. Credential TTLs are not extended merely because a test is still running.
+
+Conceptually:
+
+```text
+beforeOwnerInteraction():
+    if session_remaining < 45s:
+        obtain new signed session
+        mint bridge
+        revoke old session
+    else if bridge_remaining < 30s:
+        mint replacement bridge
+    then begin measurement
+```
+
+A credential is never swapped in the middle of one measured interaction. If authority expires during an interaction, that interaction fails closed and is restarted from a clean boundary after authority is renewed; partial timing is not treated as valid evidence.
+
+The controller records a non-secret resumable state under:
+
+```text
+.pocketlab-dev/ui-performance-qualified-controller.json
+```
+
+The repository already ignores `.pocketlab-dev/`. The checkpoint contains only profile/purpose/scope, completed interaction IDs, the next interaction, status, and timestamps. It must never contain session tokens, browser-bridge tokens, private keys, cookies, Authorization values, or other credentials.
+
+Resume a bounded live qualification with:
+
+```bash
+python3 scripts/dev/lite/run-ui-performance-qualified.py \
+  --mode live \
+  --principal-id '<disposable-principal-id>' \
+  --key-file '<0600 key outside the repository>' \
+  --resume
+```
+
+The corresponding Taskfile entry is:
+
+```bash
+task lite:ui:perf:qualified PRINCIPAL_ID='<id>' KEY_FILE='<path-outside-repo>'
+```
+
+The default live interaction plan contains the current read-only navigation and scrolling measurements. `--interaction` may be repeated to run a bounded subset; unknown interaction IDs fail closed. Physical Android CDP currently remains one bounded matrix group until its qualifier exposes a safe per-measurement selector, so no mid-matrix credential rotation is attempted.
+
 ### 4. Physical Android rendering qualification through Chrome DevTools Protocol
 
 For a true physical-device render measurement, attach Playwright to Android Chrome over CDP.
