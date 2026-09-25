@@ -493,7 +493,7 @@ function LiteAppShell() {
   }, [activeScreenId, backendHealthyForPrefetch]);
 
   useEffect(() => {
-    if (activeScreenId === 'catalog' || workspaceApp || !backendHealthyForPrefetch) return undefined;
+    if (activeScreenId === 'catalog' || workspaceApp || !online) return undefined;
     const timer = window.setTimeout(() => {
       const prefetches = [
         liteQueryClient.prefetchQuery({
@@ -512,7 +512,7 @@ function LiteAppShell() {
       Promise.allSettled(prefetches).catch(() => null);
     }, LITE_CATALOG_PREFETCH_SETTLE_MS);
     return () => window.clearTimeout(timer);
-  }, [activeScreenId, backendHealthyForPrefetch, workspaceApp]);
+  }, [activeScreenId, online, workspaceApp]);
 
   useEffect(() => {
     if (workspaceApp || !activeScreenEntry?.idlePreload) return undefined;

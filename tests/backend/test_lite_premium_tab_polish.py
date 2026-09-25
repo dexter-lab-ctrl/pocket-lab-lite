@@ -39,7 +39,7 @@ def test_lite_navigation_prefetches_catalog_reads_before_the_tab_boundary() -> N
     assert "queryKey: liteQueryKeys.catalog()" in app
     assert "queryFn: liteApi.catalog" in app
     assert "queryKey: liteQueryKeys.appActions('photoprism')" in app
-    assert "activeScreenId === 'catalog' || workspaceApp || !backendHealthyForPrefetch" in app
+    assert "activeScreenId === 'catalog' || workspaceApp || !online" in app
     assert "Promise.allSettled(prefetches)" in app
 
 
