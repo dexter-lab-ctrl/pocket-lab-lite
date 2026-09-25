@@ -348,6 +348,8 @@ def test_renewal_contract_is_repository_owned():
     assert "Unsupported live qualification interaction" in live_spec
     assert "UNAVAILABLE identity Manage Access" in live_spec
     assert "UNAVAILABLE Rules Manage" in live_spec
+    assert "UNAVAILABLE recovery Manage" in live_spec
+    assert "UNAVAILABLE recovery Restore" in live_spec
     assert "lite:ui:perf:qualified:" in taskfile
     assert ".pocketlab-dev/" in ignore
 

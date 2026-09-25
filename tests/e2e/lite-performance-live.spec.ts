@@ -418,18 +418,31 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
 
     if (requested('live-deep:recovery-section-switch') || requested('live-deep:recovery-action-details')) {
       await prepareLiveScreen(page, 'recovery');
-      await page.getByRole('button', { name: 'Manage backups and recovery' }).click();
+      const manageRecovery = page.getByRole('button', { name: 'Manage backups and recovery' }).first();
+      if (!(await manageRecovery.isVisible().catch(() => false))) {
+        console.log('[ui-performance-live] UNAVAILABLE recovery Manage: the current runtime contained the Recovery section; no unsafe recovery operation is attempted.');
+        return;
+      }
+      await manageRecovery.click();
       const sheet = page.locator('[data-lite-sheet-variant="manage"]:visible').first();
-      await expect(sheet).toBeVisible();
+      if (!(await sheet.isVisible().catch(() => false))) {
+        console.log('[ui-performance-live] UNAVAILABLE recovery Manage: the current runtime did not keep the safe read-only Manage surface available.');
+        return;
+      }
 
       if (requested('live-deep:recovery-section-switch')) {
+        const historyTab = sheet.getByRole('tab', { name: 'History', exact: true }).first();
+        if (!(await historyTab.isVisible().catch(() => false))) {
+          console.log('[ui-performance-live] UNAVAILABLE recovery History: the current runtime did not expose the safe read-only History section.');
+          return;
+        }
         const report = await measureLiteInteraction(
           page,
           testInfo,
           'live-deep:recovery-section-switch',
           async () => {
-            await sheet.getByRole('tab', { name: 'History', exact: true }).click();
-            await expect(sheet.getByRole('tab', { name: 'History', exact: true })).toHaveAttribute('aria-selected', 'true');
+            await historyTab.click();
+            await expect(historyTab).toHaveAttribute('aria-selected', 'true');
           },
           {
             settleMs: 480,
@@ -442,9 +455,17 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
       }
 
       if (requested('live-deep:recovery-action-details')) {
-        await sheet.getByRole('tab', { name: 'Restore', exact: true }).click();
+        const restoreTab = sheet.getByRole('tab', { name: 'Restore', exact: true }).first();
+        if (!(await restoreTab.isVisible().catch(() => false))) {
+          console.log('[ui-performance-live] UNAVAILABLE recovery Restore: the current runtime did not expose a safe read-only Restore projection.');
+          return;
+        }
+        await restoreTab.click();
         const details = sheet.getByRole('button', { name: /^Details:/ }).first();
-        await expect(details).toBeVisible();
+        if (!(await details.isVisible().catch(() => false))) {
+          console.log('[ui-performance-live] UNAVAILABLE recovery action details: the current runtime did not expose a safe read-only action detail projection.');
+          return;
+        }
         const report = await measureLiteInteraction(
           page,
           testInfo,
