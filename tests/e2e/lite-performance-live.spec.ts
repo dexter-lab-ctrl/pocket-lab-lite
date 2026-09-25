@@ -10,6 +10,14 @@ import {
 
 const LIVE_TABS = ['home', 'catalog', 'devices', 'security', 'identity', 'rules', 'recovery'] as const;
 const REQUESTED_INTERACTION = String(process.env.LITE_QUALIFICATION_INTERACTION || '').trim().toLowerCase();
+const LIVE_INTERACTION_IDS = new Set([
+  ...LIVE_TABS.slice(1).map((screenId) => `live-navigation:${screenId}`),
+  ...LIVE_TABS.map((screenId) => `live-scroll:${screenId}`),
+]);
+
+if (REQUESTED_INTERACTION && !LIVE_INTERACTION_IDS.has(REQUESTED_INTERACTION)) {
+  throw new Error(`Unsupported live qualification interaction: ${REQUESTED_INTERACTION}`);
+}
 
 function interactionRequested(id: string) {
   return !REQUESTED_INTERACTION || REQUESTED_INTERACTION === id.toLowerCase();
