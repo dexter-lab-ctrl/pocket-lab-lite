@@ -2,6 +2,7 @@
 param(
   [int]$CandidatePort = 18765,
   [string]$DeviceSerial = '',
+  [string]$AdbPath = '',
   [switch]$OpenCandidate,
   [switch]$Cleanup
 )
@@ -22,6 +23,9 @@ function Read-State {
 }
 
 try {
+  if ($AdbPath) {
+    $env:POCKETLAB_WINDOWS_ADB = $AdbPath
+  }
   $adb = Resolve-PocketLabWindowsAdb
   Write-PocketLabWindowsAdbInfo -AdbPath $adb
 } catch {

@@ -28,6 +28,8 @@ def test_candidate_helper_uses_shared_adb_and_reports_specific_device_states():
     source = CANDIDATE.read_text(encoding="utf-8")
 
     assert "windows-adb.ps1" in source
+    assert "[string]$AdbPath = ''" in source
+    assert "$env:POCKETLAB_WINDOWS_ADB = $AdbPath" in source
     assert "Resolve-PocketLabWindowsAdb" in source
     assert "Get-PocketLabAndroidDeviceRecords" in source
     assert "Select-PocketLabAndroidDevice" in source
@@ -49,6 +51,8 @@ def test_cdp_helper_shares_adb_transport_and_does_not_use_path_only_lookup():
     source = CDP.read_text(encoding="utf-8")
 
     assert "windows-adb.ps1" in source
+    assert "[string]$AdbPath = ''" in source
+    assert "$env:POCKETLAB_WINDOWS_ADB = $AdbPath" in source
     assert "Resolve-PocketLabWindowsAdb" in source
     assert "Get-PocketLabAndroidDeviceRecords" in source
     assert "Invoke-PocketLabWindowsAdb" in source

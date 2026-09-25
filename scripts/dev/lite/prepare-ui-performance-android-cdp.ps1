@@ -3,6 +3,7 @@ param(
   [int]$AdbPort = 9222,
   [int]$BridgePort = 19222,
   [string]$DeviceSerial = '',
+  [string]$AdbPath = '',
   [switch]$Cleanup
 )
 
@@ -39,6 +40,9 @@ function Remove-RecordedPortProxy {
 Assert-Administrator
 
 try {
+  if ($AdbPath) {
+    $env:POCKETLAB_WINDOWS_ADB = $AdbPath
+  }
   $adb = Resolve-PocketLabWindowsAdb
   Write-PocketLabWindowsAdbInfo -AdbPath $adb
 } catch {
