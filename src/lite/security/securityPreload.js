@@ -9,7 +9,9 @@ export const SECURITY_SUMMARY_GC_TIME_MS = 45 * 60_000;
 export const SECURITY_DETAILS_IDLE_STALE_TIME_MS = 60_000;
 export const SECURITY_DETAILS_GC_TIME_MS = 30 * 60_000;
 export const SECURITY_PREFETCH_COOLDOWN_MS = 60_000;
-export const SECURITY_PREFETCH_SETTLE_MS = 1_200;
+// Optional background summary work waits until the first navigation window is
+// clear. Explicit Security navigation still prefetches on intent below.
+export const SECURITY_PREFETCH_SETTLE_MS = 5_000;
 export const SECURITY_PREFETCH_GUARD_TEXT = 'online saveData effectiveType document.visibilityState backend healthy active scan';
 
 let lastSecuritySummaryPrefetchAt = 0;

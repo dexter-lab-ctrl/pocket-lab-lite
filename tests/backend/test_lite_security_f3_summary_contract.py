@@ -61,7 +61,8 @@ def test_lite_security_f3_frontend_uses_summary_for_initial_render_and_full_for_
     assert "useLiteResource(liteApi.securitySummary || liteApi.security" in screen
     assert "securityProfileLoader" in screen
     assert "liteApi.securityProfile(scanProfile, securityProfileAppId)" in screen
-    assert "const shouldLoadSecurityDetails = securityManageOpen || Boolean(activeSecurityDetails);" in screen
+    assert "const shouldLoadSecurityDetails = Boolean(activeSecurityDetails) || (" in screen
+    assert "SECURITY_MANAGE_SECTIONS.some((section) => section.id === securityManageSection && section.id !== 'overview')" in screen
     assert "enabled: shouldLoadSecurityDetails" in screen
     assert "const data = splitSecurityData || securitySummaryData;" in screen
     assert "liteQueryKeys.securityProfile(profile, profile === 'app' ? 'photoprism' : '')" in screen
@@ -123,6 +124,7 @@ def test_lite_security_group1_f6_prefetch_is_guarded_and_summary_first():
 
     assert "prefetchSecuritySummary" in app
     assert "SECURITY_PREFETCH_SETTLE_MS" in app
+    assert "SECURITY_PREFETCH_SETTLE_MS = 5_000" in preload
     assert "warmScreenOnNavIntent" in app
     assert "normalizeLiteScreenId(tabId)" in app
     assert "if (normalizedId !== 'security') return;" in app
