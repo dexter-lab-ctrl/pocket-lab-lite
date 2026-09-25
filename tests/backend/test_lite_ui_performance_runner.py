@@ -244,17 +244,17 @@ def test_session_rotation_uses_existing_principal_and_revokes_old_session(monkey
         now + timedelta(seconds=20),
     )
     observed = {}
-    monkeypatch.setattr(
-        runner.harness_client,
-        "start_session",
-        lambda **kwargs: observed.setdefault("start", kwargs) or _session_payload("new-token", expires_in=180, session_id="hs-new"),
-    )
+    def fake_start_session(**kwargs):
+        observed["start"] = kwargs
+        return _session_payload("new-token", expires_in=180, session_id="hs-new")
+
+    monkeypatch.setattr(runner.harness_client, "start_session", fake_start_session)
     monkeypatch.setattr(runner.harness_client, "browser_bridge", lambda **kwargs: _bridge_payload("new-bridge", expires_in=120))
-    monkeypatch.setattr(
-        runner.harness_client,
-        "stop_session",
-        lambda **kwargs: observed.setdefault("stop", kwargs) or {"status": "revoked"},
-    )
+    def fake_stop_session(**kwargs):
+        observed["stop"] = kwargs
+        return {"status": "revoked"}
+
+    monkeypatch.setattr(runner.harness_client, "stop_session", fake_stop_session)
 
     renewed = runner._renew_session(
         old,
