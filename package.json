@@ -51,6 +51,7 @@
     "test:perf:android-cdp": "bash scripts/dev/lite/run-ui-performance-android-cdp.sh",
     "test:perf:android-baseline": "bash scripts/dev/lite/run-ui-performance-android-candidate.sh --baseline",
     "analyze:perf:android-baseline": "bash scripts/dev/lite/analyze-ui-performance-android-baseline.sh",
+    "check:perf:android-baseline": "bash scripts/dev/lite/analyze-ui-performance-android-baseline.sh --fail-on-app-cost",
     "test:perf:qualification": "npm run test:perf:components && npm run build:budget && npm run test:perf:mocked",
     "test:perf:interactions": "rm -rf .pocketlab-dev/performance && VITE_POCKETLAB_PERF_TEST=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-performance.spec.ts --grep \"\\\\[interaction\\\\]\" --project=mocked-desktop --project=mocked-mobile && npm run check:render-budgets"
   },
