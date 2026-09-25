@@ -76,6 +76,17 @@ def test_candidate_baseline_control_is_static_and_sha_bound():
     assert "token" not in body.casefold()
 
 
+def test_candidate_build_disables_only_candidate_service_worker_registration():
+    config = (ROOT / "vite.config.js").read_text(encoding="utf-8")
+    main = (ROOT / "src/main.jsx").read_text(encoding="utf-8")
+    script = (ROOT / "scripts/dev/lite/run-ui-performance-android-candidate.sh").read_text(encoding="utf-8")
+
+    assert "VITE_POCKETLAB_UI_PERF_CANDIDATE" in config
+    assert "qualificationCandidateBuild ? '1' : '0'" in config
+    assert "!qualificationCandidateBuild" in main
+    assert "VITE_POCKETLAB_UI_PERF_CANDIDATE=1" in script
+
+
 def test_prepared_runtime_probe_is_loopback_only():
     candidate = _module()
     source = MODULE.read_text(encoding="utf-8")

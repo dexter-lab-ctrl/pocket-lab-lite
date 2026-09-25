@@ -20,7 +20,8 @@ if (typeof document !== 'undefined') {
 }
 
 let updateSW = () => {};
-if (typeof window !== 'undefined') {
+const qualificationCandidateBuild = import.meta.env.VITE_POCKETLAB_UI_PERF_CANDIDATE === '1';
+if (typeof window !== 'undefined' && !qualificationCandidateBuild) {
   captureOwnerClaimFromUrl();
   updateSW = registerSW({
     immediate: true,

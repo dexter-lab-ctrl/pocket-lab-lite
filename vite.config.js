@@ -18,6 +18,10 @@ const noPwaFallbackPattern = /^\/(?:api|terminal|apps|gitea|docs)(?:\/|$)|^\/ope
 export default defineConfig({
   define: {
     'import.meta.env.VITE_POCKETLAB_BUILD_ID': JSON.stringify(pocketLabBuildId),
+    // Candidate builds are served only by the qualification loopback server.
+    // They must not install a persistent service worker that can reload the
+    // page between the candidate bootstrap and a measured interaction.
+    'import.meta.env.VITE_POCKETLAB_UI_PERF_CANDIDATE': JSON.stringify(qualificationCandidateBuild ? '1' : '0'),
   },
   server: {
     // Keep transient Pocket Lab evidence and generated test/build outputs out of
