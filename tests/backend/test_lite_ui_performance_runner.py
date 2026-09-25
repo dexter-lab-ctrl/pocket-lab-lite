@@ -152,6 +152,14 @@ def test_taskfile_qualified_live_mode_overrides_general_caddy_default():
     ) in taskfile
 
 
+def test_live_runner_loads_node_toolchain_for_noninteractive_controller_children():
+    source = Path("scripts/dev/lite/run-ui-performance-live.sh").read_text(encoding="utf-8")
+    assert 'nvm_dir="${NVM_DIR:-${HOME:-}/.nvm}"' in source
+    assert 'source "$nvm_dir/nvm.sh"' in source
+    assert 'nvm use "${POCKETLAB_NODE_VERSION:-24.16.0}"' in source
+    assert 'command -v npm >/dev/null 2>&1 || fail' in source
+
+
 def test_before_owner_interaction_rotates_session_below_45_seconds(monkeypatch):
     runner = _load_runner()
     now = datetime(2026, 9, 25, 9, 0, tzinfo=timezone.utc)

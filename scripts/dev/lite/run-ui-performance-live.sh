@@ -4,6 +4,19 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "$repo_root"
 
+# The renewable controller launches this script from Python, so a non-
+# interactive WSL shell may not have the operator's checked-in Node toolchain
+# on PATH. Load the same nvm installation used by the repository WSL checks
+# before invoking the npm-owned live qualifier.
+if ! command -v npm >/dev/null 2>&1; then
+  nvm_dir="${NVM_DIR:-${HOME:-}/.nvm}"
+  if [[ -s "$nvm_dir/nvm.sh" ]]; then
+    # shellcheck disable=SC1090
+    source "$nvm_dir/nvm.sh"
+    nvm use "${POCKETLAB_NODE_VERSION:-24.16.0}" >/dev/null 2>&1 || true
+  fi
+fi
+
 fail() {
   printf '[ui-performance-live] ERROR: %s\n' "$*" >&2
   exit 1
@@ -11,6 +24,7 @@ fail() {
 
 [[ "${LITE_E2E_LIVE:-}" == "1" ]] || fail "Set LITE_E2E_LIVE=1 to acknowledge live read-only qualification."
 [[ -n "${LITE_BASE_URL:-}" ]] || fail "Set LITE_BASE_URL to the prepared Pocket Lab Lite origin."
+command -v npm >/dev/null 2>&1 || fail "npm is required; load the repository Node toolchain first."
 
 case "$LITE_BASE_URL" in
   http://*|https://*) ;;
