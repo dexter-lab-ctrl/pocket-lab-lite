@@ -89,9 +89,9 @@ import {
 import DeviceActionPortal from './devices/DeviceActionPortal.jsx';
 import LiteVirtualList from './components/LiteVirtualList.jsx';
 import { useLiteDeviceDetailsState, useLiteUiStore } from '../stores/liteUiStore.js';
+import { loadDeviceCard } from './devices/devicesPreload.js';
 
 const MemoLiteVirtualList = React.memo(LiteVirtualList);
-const loadDeviceCard = () => import('./devices/DeviceCard.jsx');
 const DeviceCardLazy = React.lazy(loadDeviceCard);
 const MemoDeviceCard = React.memo((props) => (
   <Suspense fallback={<div className="lite-device-card lite-device-card-loading" aria-busy="true" />}>
@@ -333,28 +333,30 @@ export default function DevicesScreen() {
     || deviceRestartProgressIsLive(restartProgress)
   ));
   useEffect(() => {
-    // Warm the first interactive card and the read-only details surface as the
-    // Devices screen enters the DOM. This keeps dynamic-module parsing out of
-    // a user's Manage click without mounting privileged details or changing
-    // the normal lazy/error boundary behavior.
+    // Warm the read-only details surface only during idle time. The Devices
+    // screen's initial navigation should not compete with a background lazy
+    // parse for the first frame; explicit Manage intent below still preloads
+    // the same module before the details surface mounts.
     let cancelled = false;
-    let frameId = null;
+    let idleId = null;
     let timeoutId = null;
     const warmDetailsModules = () => {
       if (cancelled) return;
-      void loadDeviceCard().catch(() => null);
       void loadDeviceDetails().catch(() => null);
     };
-    if (typeof window.requestAnimationFrame === 'function') {
-      frameId = window.requestAnimationFrame(warmDetailsModules);
+    if (typeof window.requestIdleCallback === 'function') {
+      idleId = window.requestIdleCallback(warmDetailsModules, { timeout: 2_800 });
     } else {
-      timeoutId = window.setTimeout(warmDetailsModules, 0);
+      timeoutId = window.setTimeout(warmDetailsModules, 1_800);
     }
     return () => {
       cancelled = true;
-      if (frameId !== null) window.cancelAnimationFrame(frameId);
+      if (idleId !== null) window.cancelIdleCallback?.(idleId);
       if (timeoutId !== null) window.clearTimeout(timeoutId);
     };
+  }, []);
+  const preloadDeviceDetailsOnIntent = useCallback(() => {
+    void loadDeviceDetails().catch(() => null);
   }, []);
   const onlineDevices = devices.filter((device) => String(device?.connection || '').toLowerCase() === 'online').length;
   const healthAttentionCurrent = Boolean(data?.health_summary?.attention_current);
@@ -630,6 +632,7 @@ export default function DevicesScreen() {
         detailsOpen={detailsDeviceId === key}
         savedStateOnly={savedStateOnly}
         onOpenDetails={() => { setDetailsDeviceId(detailsDeviceId === key ? '' : key); }}
+        onPreloadDetails={preloadDeviceDetailsOnIntent}
         detailsButtonRef={(node) => {
           if (node) detailsButtonRefs.current.set(key, node);
           else detailsButtonRefs.current.delete(key);
@@ -642,7 +645,7 @@ export default function DevicesScreen() {
         onRemoveDevice={() => deviceActionHandlersRef.current.loadRemovalAssessment?.(device)}
       />
     );
-  }, [detailsDeviceId, removeBusy, restartBusy, savedStateOnly, setDetailsDeviceId]);
+  }, [detailsDeviceId, preloadDeviceDetailsOnIntent, removeBusy, restartBusy, savedStateOnly, setDetailsDeviceId]);
 
   return (
     <>

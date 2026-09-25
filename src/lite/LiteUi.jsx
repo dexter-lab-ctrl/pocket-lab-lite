@@ -916,6 +916,9 @@ function StoryAction({ action, fallbackTone = 'secondary' }) {
         ariaLabel={action.ariaLabel || action.label}
         aria-expanded={typeof action.ariaExpanded === 'boolean' ? action.ariaExpanded : undefined}
         buttonRef={action.buttonRef}
+        onPointerEnter={action.onPointerEnter}
+        onFocus={action.onFocus}
+        onTouchStart={action.onTouchStart}
       >
         {action.label}
       </LiteButton>

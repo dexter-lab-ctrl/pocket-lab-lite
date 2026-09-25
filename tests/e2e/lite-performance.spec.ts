@@ -66,13 +66,19 @@ test('[interaction] cross-tab navigation stays inside the render budget', async 
   await page.goto('/?screen=home');
   await waitForLiteScreenToSettle(page, 'home');
 
+  const devicesButton = page.getByRole('button', { name: /^Devices$/ }).first();
+  await devicesButton.hover().catch(() => null);
+  // The production navigation intentionally preloads the lazy screen on
+  // pointer intent. Let that existing preload finish before measuring the
+  // screen transition; otherwise Vite's first source transform is counted
+  // as interaction rendering in mocked qualification.
+  await page.waitForLoadState('networkidle');
+
   const report = await measureLiteInteraction(
     page,
     testInfo,
     interactionId('screen-navigation', 'home-to-devices'),
     async () => {
-      const devicesButton = page.getByRole('button', { name: /^Devices$/ }).first();
-      await devicesButton.hover().catch(() => null);
       await devicesButton.click();
       await waitForLiteScreenToSettle(page, 'devices');
     },

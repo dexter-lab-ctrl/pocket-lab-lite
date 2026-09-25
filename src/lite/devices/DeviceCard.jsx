@@ -89,6 +89,7 @@ function DeviceCard({
   onRestartAgent,
   onRemoveDevice,
   onOpenDetails,
+  onPreloadDetails,
   detailsButtonRef = null,
   savedStateOnly = false,
 }) {
@@ -167,6 +168,9 @@ function DeviceCard({
             ariaLabel: `${detailsOpen ? 'Hide' : 'Manage'} ${deviceName}`,
             ariaExpanded: detailsOpen,
             buttonRef: detailsButtonRef,
+            onPointerEnter: onPreloadDetails,
+            onFocus: onPreloadDetails,
+            onTouchStart: onPreloadDetails,
           }}
         />
 
@@ -231,6 +235,7 @@ function areEqual(previous, next) {
     && previous.restartBusy === next.restartBusy
     && previous.removeBusy === next.removeBusy
     && previous.detailsOpen === next.detailsOpen
+    && previous.onPreloadDetails === next.onPreloadDetails
     && previous.savedStateOnly === next.savedStateOnly;
 }
 

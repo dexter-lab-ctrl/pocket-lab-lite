@@ -37,6 +37,7 @@ import LiteToastHost from './LiteToastHost.jsx';
 import LiteServiceWorkerUpdateNotice from './LiteServiceWorkerUpdateNotice.jsx';
 import LiteNativeInstallSurface from './LiteNativeInstallSurface.jsx';
 import LiteRevisionSyncBridge from './LiteRevisionSyncBridge.jsx';
+import { preloadDeviceCard } from './devices/devicesPreload.js';
 import { LitePerformanceProfiler, useLitePerformanceRuntime } from '../performance/LitePerformanceRuntime.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 import {
@@ -519,6 +520,7 @@ function LiteAppShell() {
   const warmScreenOnNavIntent = useCallback((tabId) => {
     const normalizedId = normalizeLiteScreenId(tabId);
     preloadLiteScreen(normalizedId).catch(() => null);
+    if (normalizedId === 'devices') preloadDeviceCard().catch(() => null);
     if (normalizedId !== 'security') return;
     prefetchSecuritySummary(liteQueryClient, {
       backendHealthy: backendHealthyForPrefetch,
