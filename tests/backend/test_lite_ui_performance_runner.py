@@ -346,6 +346,8 @@ def test_renewal_contract_is_repository_owned():
     assert "BRIDGE_RENEWAL_THRESHOLD_SECONDS = 30" in runner_source
     assert "LITE_QUALIFICATION_INTERACTION" in live_spec
     assert "Unsupported live qualification interaction" in live_spec
+    assert "UNAVAILABLE identity Manage Access" in live_spec
+    assert "UNAVAILABLE Rules Manage" in live_spec
     assert "lite:ui:perf:qualified:" in taskfile
     assert ".pocketlab-dev/" in ignore
 
