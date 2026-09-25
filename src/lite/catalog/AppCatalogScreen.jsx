@@ -1931,12 +1931,7 @@ function CatalogManagePortal({
   lifecycle,
   canonical,
   canOpen,
-  mediaSummary,
-  hostLabel,
-  storageBackupLabel,
-  isPhoneStorageConnected,
-  isPhotosImported,
-  appActionEntries,
+  buildManageViewModel,
   actionBusyKey,
   result,
   storagePreviewApp,
@@ -2024,7 +2019,17 @@ function CatalogManagePortal({
 
   if (!app || !lifecycle || !manageAppOpen || typeof document === 'undefined') return null;
 
-  const activeAppActionGroups = manageBodyReady
+  // Keep the expensive lifecycle/action projection out of the measured Manage
+  // open boundary. The portal first paints its lightweight shell, then builds
+  // the action model after the qualification-safe body delay has elapsed.
+  const manageViewModel = manageBodyReady ? buildManageViewModel() : null;
+  const mediaSummary = manageViewModel?.mediaSummary || '';
+  const hostLabel = manageViewModel?.hostLabel || '';
+  const storageBackupLabel = manageViewModel?.storageBackupLabel || '';
+  const isPhoneStorageConnected = Boolean(manageViewModel?.isPhoneStorageConnected);
+  const isPhotosImported = Boolean(manageViewModel?.isPhotosImported);
+  const appActionEntries = manageViewModel?.appActionEntries || [];
+  const activeAppActionGroups = manageViewModel
     ? groupAppActions(appActionEntries, manageSection)
     : [];
 
@@ -2246,6 +2251,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     snapshotSelect: selectCatalogSummaryView,
   });
   const setManageApp = useLiteUiStore((state) => state.setManageApp);
+  const manageAppId = useLiteUiStore((state) => state.manageAppId);
   const clearManageApp = useLiteUiStore((state) => state.clearManageApp);
   const longPressRef = useRef(null);
   const catalogFeedbackDeduper = useRef(createLiteFeedbackDeduper());
@@ -2737,32 +2743,37 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const cardClassName = `lite-catalog-card lite-catalog-app-card ${featured ? 'is-featured' : ''} ${installing ? 'is-installing' : ''}`;
     const actionsClassName = 'lite-catalog-actions';
     const lifecycle = lifecycleProfile(app);
-    const actionState = (actionId) => actionFromSnapshot(actionSnapshot, actionId, lifecycleAction(lifecycle, actionId));
     const lifecycleAttention = lifecycleAttentionItems(lifecycle);
-    const openAction = actionState('open');
-    const connectPhotosAction = actionState('connect_photos');
-    const isPhoneStorageConnected = phoneStorageConnected(app, lifecycle, actionSnapshot);
-    const checkAppAction = actionState('check_app');
-    const backupAppAction = actionState('backup_app');
-    const importPhotosAction = actionState('import_photos');
-    const importProgress = actionProgressFromLifecycle(lifecycle, 'import_photos', actionBusyKey === `${app.id}:import_photos`);
-    const checkAppProgress = actionProgressFromLifecycle(lifecycle, 'check_app', actionBusyKey === `${app.id}:check_app`);
-    const repairAppProgress = actionProgressFromLifecycle(lifecycle, 'repair_app', actionBusyKey === `${app.id}:repair_app`);
-    const backupAppProgress = actionProgressFromLifecycle(lifecycle, 'backup_app', actionBusyKey === `${app.id}:backup_app`);
-    const previewRestoreProgress = actionProgressFromLifecycle(lifecycle, 'preview_restore', actionBusyKey === `${app.id}:preview_restore`);
-    const backupToStorageProgress = actionProgressFromLifecycle(lifecycle, 'backup_to_storage', actionBusyKey === `${app.id}:backup_to_storage`);
-    const updateAppProgress = actionProgressFromLifecycle(lifecycle, 'update_app', actionBusyKey === `${app.id}:update_app`);
-    const previewRestoreAction = actionState('preview_restore');
-    const backupToStorageAction = actionState('backup_to_storage');
-    const installAppAction = actionState('install_app');
-    const updateAppAction = actionState('update_app');
-    const repairAppAction = actionState('repair_app');
-    const removeAppAction = actionState('remove_app');
-    const mediaSummary = lifecycleMediaSummary(lifecycle);
-    const hostLabel = appHostLabel(app, lifecycle, targetName);
-    const storageBackupLabel = verifiedStorageBackupLabel(backupToStorageAction);
-    const isPhotosImported = photosAlreadyImported(lifecycle, actionSnapshot, app, importPhotosAction);
-    const appActionEntries = [
+    const manageAppOpen = manageAppId === catalogAppKey(app);
+    const buildManageViewModel = () => {
+      const actionState = (actionId) => actionFromSnapshot(actionSnapshot, actionId, lifecycleAction(lifecycle, actionId));
+      const openAction = actionState('open');
+      const connectPhotosAction = actionState('connect_photos');
+      const isPhoneStorageConnected = phoneStorageConnected(app, lifecycle, actionSnapshot);
+      const checkAppAction = actionState('check_app');
+      const backupAppAction = actionState('backup_app');
+      const importPhotosAction = actionState('import_photos');
+      const importProgress = actionProgressFromLifecycle(lifecycle, 'import_photos', actionBusyKey === `${app.id}:import_photos`);
+      const checkAppProgress = actionProgressFromLifecycle(lifecycle, 'check_app', actionBusyKey === `${app.id}:check_app`);
+      const repairAppProgress = actionProgressFromLifecycle(lifecycle, 'repair_app', actionBusyKey === `${app.id}:repair_app`);
+      const backupAppProgress = actionProgressFromLifecycle(lifecycle, 'backup_app', actionBusyKey === `${app.id}:backup_app`);
+      const previewRestoreProgress = actionProgressFromLifecycle(lifecycle, 'preview_restore', actionBusyKey === `${app.id}:preview_restore`);
+      const backupToStorageProgress = actionProgressFromLifecycle(lifecycle, 'backup_to_storage', actionBusyKey === `${app.id}:backup_to_storage`);
+      const updateAppProgress = actionProgressFromLifecycle(lifecycle, 'update_app', actionBusyKey === `${app.id}:update_app`);
+      const previewRestoreAction = actionState('preview_restore');
+      const backupToStorageAction = actionState('backup_to_storage');
+      const installAppAction = actionState('install_app');
+      const updateAppAction = actionState('update_app');
+      const repairAppAction = actionState('repair_app');
+      const removeAppAction = actionState('remove_app');
+      const isPhotosImported = photosAlreadyImported(lifecycle, actionSnapshot, app, importPhotosAction);
+      return {
+        mediaSummary: lifecycleMediaSummary(lifecycle),
+        hostLabel: appHostLabel(app, lifecycle, targetName),
+        storageBackupLabel: verifiedStorageBackupLabel(backupToStorageAction),
+        isPhoneStorageConnected,
+        isPhotosImported,
+        appActionEntries: [
       {
         actionId: 'open',
         action: openAction,
@@ -2903,7 +2914,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         title: lifecycleActionReason(removeAppAction),
         result,
       },
-    ];
+        ],
+      };
+    };
     const quickActionsOpen = quickActionsAppId === app.id;
 
     return (
@@ -2968,18 +2981,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             ) : null}
           </div>
         ) : null}
-        {installed && lifecycle ? (
+        {installed && lifecycle && manageAppOpen ? (
           <CatalogManagePortal
             app={app}
             lifecycle={lifecycle}
             canonical={canonical}
             canOpen={canOpen}
-            mediaSummary={mediaSummary}
-            hostLabel={hostLabel}
-            storageBackupLabel={storageBackupLabel}
-            isPhoneStorageConnected={isPhoneStorageConnected}
-            isPhotosImported={isPhotosImported}
-            appActionEntries={appActionEntries}
+            buildManageViewModel={buildManageViewModel}
             actionBusyKey={actionBusyKey}
             result={result}
             storagePreviewApp={storagePreviewApp}
