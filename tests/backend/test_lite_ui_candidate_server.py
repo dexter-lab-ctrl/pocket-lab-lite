@@ -63,3 +63,14 @@ def test_candidate_static_path_stays_inside_dist(tmp_path):
     assert candidate.safe_dist_file(tmp_path, "/../outside.js") is None
     assert candidate.safe_dist_file(tmp_path, "/assets/../index.html") == (tmp_path / "index.html").resolve()
 
+
+
+def test_candidate_baseline_control_is_static_and_sha_bound():
+    candidate = _module()
+    sha = "b" * 40
+    body = candidate.baseline_control_html(sha).decode("utf-8")
+    assert 'data-pocketlab-baseline-control="true"' in body
+    assert f'name="pocketlab-candidate-sha" content="{sha}"' in body
+    assert "<script" not in body
+    assert "/api/" not in body
+    assert "token" not in body.casefold()
