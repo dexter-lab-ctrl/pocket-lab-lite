@@ -45,7 +45,7 @@
     "test:perf:components": "vitest run src/performance/*.test.js",
     "check:render-budgets": "node scripts/dev/lite/check-ui-performance-evidence.mjs",
     "test:perf:mocked": "rm -rf .pocketlab-dev/performance && VITE_POCKETLAB_PERF_TEST=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-performance.spec.ts --project=mocked-desktop --project=mocked-mobile && npm run check:render-budgets",
-    "test:perf:live": "rm -rf .pocketlab-dev/performance && VITE_POCKETLAB_PERF_TEST=1 LITE_E2E_MODE=live LITE_E2E_LIVE=1 playwright test tests/e2e/lite-performance-live.spec.ts --project=live-desktop --project=live-mobile && npm run check:render-budgets",
+    "test:perf:live": "if [ \"${LITE_PERF_PRESERVE_EVIDENCE:-0}\" != \"1\" ]; then rm -rf .pocketlab-dev/performance; fi; VITE_POCKETLAB_PERF_TEST=1 LITE_E2E_MODE=live LITE_E2E_LIVE=1 playwright test tests/e2e/lite-performance-live.spec.ts --project=live-desktop --project=live-mobile && npm run check:render-budgets",
     "test:perf": "npm run test:perf:components && npm run test:perf:mocked",
     "check:perf:android-cdp": "bash scripts/dev/lite/run-ui-performance-android-cdp.sh --check-only",
     "test:perf:android-cdp": "bash scripts/dev/lite/run-ui-performance-android-cdp.sh",
