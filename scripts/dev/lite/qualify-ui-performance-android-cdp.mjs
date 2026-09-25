@@ -107,23 +107,14 @@ async function receivesAnimationFrames(candidatePage) {
 }
 
 const candidateOrigin = new URL(base.origin);
-const existingPages = context.pages();
-let page = null;
-for (const candidatePage of existingPages) {
-  if (candidatePage.url().startsWith(candidateOrigin.origin) && await receivesAnimationFrames(candidatePage)) {
-    page = candidatePage;
-    break;
-  }
-}
-if (!page) {
-  for (const candidatePage of existingPages) {
-    if (await receivesAnimationFrames(candidatePage)) {
-      page = candidatePage;
-      break;
-    }
-  }
-}
-if (!page) page = await context.newPage();
+// Chrome can retain many old candidate tabs across qualification runs.  A
+// background target may still answer DOM/CDP requests while delivering no
+// requestAnimationFrame callbacks after navigation.  Candidate-origin tabs
+// are owned by this qualification flow, so close only those stale tabs and
+// create one fresh target.  Unrelated browser tabs remain untouched.
+const staleCandidatePages = context.pages().filter((candidatePage) => candidatePage.url().startsWith(candidateOrigin.origin));
+await Promise.all(staleCandidatePages.map((candidatePage) => candidatePage.close().catch(() => {})));
+const page = await context.newPage();
 await page.bringToFront().catch(() => {});
 
 // A previous candidate service worker can surface the normal app-update
@@ -210,6 +201,16 @@ const wakeLock = await page.evaluate(async () => {
 });
 if (!wakeLock.acquired) {
   fail('Android screen wake lock could not be acquired; physical frame evidence would be throttled.');
+}
+
+let foregroundFramesReady = await receivesAnimationFrames(page);
+for (let attempt = 0; !foregroundFramesReady && attempt < 2; attempt += 1) {
+  await page.bringToFront().catch(() => {});
+  await page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => {});
+  foregroundFramesReady = await receivesAnimationFrames(page);
+}
+if (!foregroundFramesReady) {
+  fail('Android candidate target did not deliver foreground animation frames after bounded retries.');
 }
 
 await page.addInitScript(() => {
