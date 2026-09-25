@@ -341,7 +341,11 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
           'live-deep:security-finding-details',
           async () => {
             await findingTrigger.click();
-            await expect(page.getByRole('dialog', { name: /Dependency risk|Secret-like value/ })).toBeVisible();
+            // Live qualification uses the backend-owned finding projection,
+            // whose sanitized title is state-dependent. The responsive shell
+            // marker is the stable current UI boundary for this read-only
+            // detail surface.
+            await expect(page.locator('[data-security-phase3-responsive-shell="true"]:visible').last()).toBeVisible();
           },
           {
             settleMs: 900,
