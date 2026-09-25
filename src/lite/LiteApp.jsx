@@ -51,7 +51,7 @@ import {
   resolveSafeAppOpenPath,
 } from './LiteUi.jsx';
 
-const LITE_CATALOG_PREFETCH_SETTLE_MS = 300;
+const LITE_CATALOG_PREFETCH_SETTLE_MS = 0;
 const LITE_CATALOG_PREFETCH_STALE_TIME_MS = 60_000;
 const LITE_CATALOG_PREFETCH_GC_TIME_MS = 5 * 60_000;
 
