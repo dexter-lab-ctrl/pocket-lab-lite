@@ -15,4 +15,4 @@ runs_root=".pocketlab-dev/android-performance-baseline/$commit"
   exit 1
 }
 mkdir -p .pocketlab-dev/performance
-exec node scripts/dev/lite/analyze-ui-performance-android-baseline.mjs   --runs-root "$runs_root"   --output-dir .pocketlab-dev/performance   --write-summary .pocketlab-dev/performance/ui-performance-android-baseline-summary.json "$@"
+exec node scripts/dev/lite/analyze-ui-performance-android-baseline.mjs   --runs-root "$runs_root"   --output-dir .pocketlab-dev/performance   --write-summary .pocketlab-dev/performance/android-baseline-summary.json "$@"
