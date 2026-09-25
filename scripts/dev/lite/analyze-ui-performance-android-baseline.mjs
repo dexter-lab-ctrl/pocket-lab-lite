@@ -15,7 +15,9 @@ function metricSample(report) {
     p95_frame_ms: Number(report.p95_frame_ms || 0),
     max_frame_ms: Number(report.max_frame_ms || 0),
     target_smooth_frame_ratio: Number(report.target_smooth_frame_ratio || 0),
+    gate_smooth_frame_ratio: Number(report.gate_smooth_frame_ratio ?? report.target_smooth_frame_ratio ?? 0),
     target_severe_frame_ratio: Number(report.target_severe_frame_ratio || 0),
+    gate_severe_frame_ratio: Number(report.gate_severe_frame_ratio ?? report.target_severe_frame_ratio ?? 0),
     max_long_task_ms: Number(report.max_long_task_ms || 0),
     max_long_animation_frame_ms: Number(report.max_long_animation_frame_ms || 0),
     max_event_duration_ms: Number(report.max_event_duration_ms || 0),
@@ -36,17 +38,12 @@ function absoluteStatus(summary) {
     if (summary.max_event_duration_ms > limits.maxInpMs) output.push('event_duration_ms');
   };
   evaluate(target, misses);
-  const gateSummary = {
-    ...summary,
-    target_smooth_frame_ratio: summary.target_smooth_frame_ratio,
-    target_severe_frame_ratio: summary.target_severe_frame_ratio,
-  };
-  if (gateSummary.p95_frame_ms > gate.maxP95FrameMs) violations.push('p95_frame_ms');
-  if (gateSummary.target_smooth_frame_ratio < gate.minSmoothFrameRatio) violations.push('smooth_frame_ratio');
-  if (gateSummary.target_severe_frame_ratio > gate.maxSevereFrameRatio) violations.push('severe_frame_ratio');
-  if (gateSummary.max_long_task_ms > gate.maxLongTaskMs) violations.push('long_task_ms');
-  if (gateSummary.max_long_animation_frame_ms > gate.maxLongAnimationFrameMs) violations.push('long_animation_frame_ms');
-  if (gateSummary.max_event_duration_ms > gate.maxInpMs) violations.push('event_duration_ms');
+  if (summary.p95_frame_ms > gate.maxP95FrameMs) violations.push('p95_frame_ms');
+  if (summary.gate_smooth_frame_ratio < gate.minSmoothFrameRatio) violations.push('smooth_frame_ratio');
+  if (summary.gate_severe_frame_ratio > gate.maxSevereFrameRatio) violations.push('severe_frame_ratio');
+  if (summary.max_long_task_ms > gate.maxLongTaskMs) violations.push('long_task_ms');
+  if (summary.max_long_animation_frame_ms > gate.maxLongAnimationFrameMs) violations.push('long_animation_frame_ms');
+  if (summary.max_event_duration_ms > gate.maxInpMs) violations.push('event_duration_ms');
   return {
     target_met: misses.length === 0,
     target_misses: misses,
@@ -180,7 +177,9 @@ export async function analyzeBaselineRuns(runsRoot, outputDir = '') {
       p95_frame_ms: comparison.interaction.p95_frame_ms,
       max_frame_ms: comparison.interaction.max_frame_ms,
       target_smooth_frame_ratio: comparison.interaction.target_smooth_frame_ratio,
+      gate_smooth_frame_ratio: comparison.interaction.gate_smooth_frame_ratio,
       target_severe_frame_ratio: comparison.interaction.target_severe_frame_ratio,
+      gate_severe_frame_ratio: comparison.interaction.gate_severe_frame_ratio,
       max_long_task_ms: comparison.interaction.max_long_task_ms,
       max_long_animation_frame_ms: comparison.interaction.max_long_animation_frame_ms,
       max_event_duration_ms: comparison.interaction.max_event_duration_ms,
