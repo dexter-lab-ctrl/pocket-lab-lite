@@ -107,10 +107,17 @@ node --input-type=module <<'NODE'
 import { chromium } from '@playwright/test';
 
 const browser = await chromium.connectOverCDP(process.env.LITE_ANDROID_CDP_URL);
-const contexts = browser.contexts();
-if (!contexts.length) throw new Error('Android Chrome exposed no browser context.');
-const pageCount = contexts.reduce((count, context) => count + context.pages().length, 0);
-console.log('[ui-performance-android-preflight] Playwright CDP attach passed: contexts=' + contexts.length + ' pages=' + pageCount);
+try {
+  const contexts = browser.contexts();
+  if (!contexts.length) throw new Error('Android Chrome exposed no browser context.');
+  const pageCount = contexts.reduce((count, context) => count + context.pages().length, 0);
+  console.log('[ui-performance-android-preflight] Playwright CDP attach passed: contexts=' + contexts.length + ' pages=' + pageCount);
+} finally {
+  // Disconnect this short-lived preflight client before the full qualifier
+  // attaches.  browser.close() closes Playwright's CDP transport here; it
+  // does not close the remote Android Chrome process or unrelated tabs.
+  await browser.close().catch(() => {});
+}
 process.exit(0);
 NODE
 
@@ -125,18 +132,24 @@ if [[ -n "${LITE_BASE_URL:-}" ]]; then
 import { chromium } from '@playwright/test';
 
 const browser = await chromium.connectOverCDP(process.env.LITE_ANDROID_CDP_URL);
-const contexts = browser.contexts();
-if (!contexts.length) throw new Error('Android Chrome exposed no browser context.');
-const context = contexts[0];
-const page = await context.newPage();
 try {
-  const target = new URL(process.env.LITE_BASE_URL);
-  target.searchParams.set('screen', 'home');
-  await page.goto(target.href, { waitUntil: 'domcontentloaded', timeout: 30_000 });
-  await page.locator('[data-lite-screen-id="home"]').waitFor({ state: 'visible', timeout: 20_000 });
-  console.log('[ui-performance-android-preflight] physical Android Pocket Lab Home smoke test passed');
+  const contexts = browser.contexts();
+  if (!contexts.length) throw new Error('Android Chrome exposed no browser context.');
+  const context = contexts[0];
+  const page = await context.newPage();
+  try {
+    const target = new URL(process.env.LITE_BASE_URL);
+    target.searchParams.set('screen', 'home');
+    await page.goto(target.href, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+    await page.locator('[data-lite-screen-id="home"]').waitFor({ state: 'visible', timeout: 20_000 });
+    console.log('[ui-performance-android-preflight] physical Android Pocket Lab Home smoke test passed');
+  } finally {
+    await page.close().catch(() => {});
+  }
 } finally {
-  await page.close().catch(() => {});
+  // Release the short-lived smoke-test CDP transport before the measured
+  // qualifier opens its own connection to the physical renderer.
+  await browser.close().catch(() => {});
 }
 process.exit(0);
 NODE

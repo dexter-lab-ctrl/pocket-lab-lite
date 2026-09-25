@@ -168,6 +168,7 @@ def test_android_runner_loads_node_toolchain_for_noninteractive_controller_child
     assert 'source "$nvm_dir/nvm.sh"' in source
     assert 'nvm use "${POCKETLAB_NODE_VERSION:-24.16.0}"' in source
     assert 'need node' in source
+    assert source.count("await browser.close().catch(() => {});") >= 2
 
 
 def test_android_qualifier_uses_a_fresh_candidate_target_and_bounded_foreground_raf_probe():
