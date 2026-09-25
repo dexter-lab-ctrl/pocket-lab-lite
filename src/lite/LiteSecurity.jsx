@@ -2743,6 +2743,9 @@ export default function SecurityScreen() {
 
   const warmSecurityManageIntent = useCallback(() => {
     preloadSecurityManageChunks();
+    // Finding details are lazy, but a Manage intent is the safe boundary to
+    // warm their module before the first read-only finding interaction.
+    preloadSecurityFindingDetails();
   }, []);
 
   function openSecurityDetailFromManage(type, event) {

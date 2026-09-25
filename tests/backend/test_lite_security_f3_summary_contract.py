@@ -153,10 +153,13 @@ def test_lite_security_group1_f13_lazy_preload_contract():
     assert "preloadSecurityHistory" in preload
     assert "import('./SecurityHistoryLazy.jsx')" in preload
     assert "import('../components/LiteHistorySection.jsx')" in preload
+    assert "preloadSecurityFindingDetails" in preload
+    assert "import('./SecurityFindingDetailsLazy.jsx')" in preload
     assert "preloadSecurityManageChunks" in preload
     assert "prefetchSecurityManageOnIntent" in preload
 
     assert "warmSecurityManageIntent" in screen
+    assert "preloadSecurityFindingDetails();" in screen
     assert "onPointerEnter={warmSecurityManageIntent}" in screen
     assert "onFocus={warmSecurityManageIntent}" in screen
     assert "onTouchStart={warmSecurityManageIntent}" in screen
