@@ -152,6 +152,16 @@ tasks:
         --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}"
         --bootstrap-profile qualification-owner
 
+  lite:ui:perf:android:baseline:
+    desc: Run repeated exact-SHA physical Android qualification with contemporaneous platform controls and normalized attribution
+    cmds:
+      - npm run test:perf:android-baseline
+
+  lite:ui:perf:android:baseline:analyze:
+    desc: Re-analyze existing repeated Android baseline evidence without touching the Server Phone
+    cmds:
+      - npm run analyze:perf:android-baseline
+
   lite:qualification:start:key-bound:faults:
     desc: Explicitly start key-bound qualification with fixed non-destructive service-fault controls; Server Phone DEV state is scrubbed first
     requires:
