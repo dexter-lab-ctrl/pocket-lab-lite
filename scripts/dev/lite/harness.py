@@ -354,8 +354,25 @@ def cmd_session_status(args: argparse.Namespace) -> dict:
     return _request("GET", f"/api/lite/harness/session/{args.session_id}", headers=_session_headers(args))
 
 
+def stop_session(*, session_token: str, session_id: str) -> dict:
+    token = str(session_token or "").strip()
+    identifier = str(session_id or "").strip()
+    if not token:
+        raise ValueError("a harness session token is required")
+    if not identifier:
+        raise ValueError("a harness session id is required")
+    return _request(
+        "DELETE",
+        f"/api/lite/harness/session/{identifier}",
+        headers={"X-Pocket-Lab-Harness-Session": token},
+    )
+
+
 def cmd_session_stop(args: argparse.Namespace) -> dict:
-    return _request("DELETE", f"/api/lite/harness/session/{args.session_id}", headers=_session_headers(args))
+    token = (args.session_token or os.environ.get(SESSION_ENV, "")).strip()
+    if not token:
+        raise ValueError(f"--session-token or {SESSION_ENV} is required")
+    return stop_session(session_token=token, session_id=args.session_id)
 
 
 def cmd_status(_args: argparse.Namespace) -> dict:
