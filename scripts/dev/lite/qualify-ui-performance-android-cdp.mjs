@@ -109,12 +109,17 @@ async function receivesAnimationFrames(candidatePage) {
 const candidateOrigin = new URL(base.origin);
 // Chrome can retain many old candidate tabs across qualification runs.  A
 // background target may still answer DOM/CDP requests while delivering no
-// requestAnimationFrame callbacks after navigation.  Candidate-origin tabs
-// are owned by this qualification flow, so close only those stale tabs and
-// create one fresh target.  Unrelated browser tabs remain untouched.
-const staleCandidatePages = context.pages().filter((candidatePage) => candidatePage.url().startsWith(candidateOrigin.origin));
+// requestAnimationFrame callbacks after navigation.  Android Chrome is more
+// reliable when the tab opened through the ADB reverse is reused: a new
+// Target.createTarget page can remain backgrounded even after bringToFront().
+// Keep the most recently exposed candidate tab as the foreground candidate,
+// close only older candidate duplicates, and create a tab only when the
+// browser exposes no candidate target at all.  Unrelated browser tabs remain
+// untouched.
+const existingCandidatePages = context.pages().filter((candidatePage) => candidatePage.url().startsWith(candidateOrigin.origin));
+const page = existingCandidatePages[existingCandidatePages.length - 1] || await context.newPage();
+const staleCandidatePages = existingCandidatePages.filter((candidatePage) => candidatePage !== page);
 await Promise.all(staleCandidatePages.map((candidatePage) => candidatePage.close().catch(() => {})));
-const page = await context.newPage();
 await page.bringToFront().catch(() => {});
 
 // A previous candidate service worker can surface the normal app-update

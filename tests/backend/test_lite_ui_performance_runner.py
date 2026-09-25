@@ -173,9 +173,10 @@ def test_android_runner_loads_node_toolchain_for_noninteractive_controller_child
 
 def test_android_qualifier_uses_a_fresh_candidate_target_and_bounded_foreground_raf_probe():
     source = Path("scripts/dev/lite/qualify-ui-performance-android-cdp.mjs").read_text(encoding="utf-8")
+    assert "existingCandidatePages" in source
+    assert "existingCandidatePages[existingCandidatePages.length - 1] || await context.newPage()" in source
     assert "staleCandidatePages" in source
     assert "candidatePage.close()" in source
-    assert "const page = await context.newPage();" in source
     assert "foregroundFramesReady" in source
     assert "bounded retries" in source
 
