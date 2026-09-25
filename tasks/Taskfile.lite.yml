@@ -152,6 +152,21 @@ tasks:
         --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}"
         --bootstrap-profile qualification-owner
 
+  lite:ui:perf:qualified:
+    desc: Run renewable synthetic qualification-owner UI performance with bounded between-interaction session/bridge rotation
+    requires:
+      vars: [PRINCIPAL_ID, KEY_FILE]
+    vars:
+      MODE: '{{default "live" .MODE}}'
+      TTL_SECONDS: '{{default "180" .TTL_SECONDS}}'
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/run-ui-performance-qualified.py
+        --mode "{{.MODE}}"
+        --principal-id "{{.PRINCIPAL_ID}}"
+        --key-file "{{.KEY_FILE}}"
+        --ttl-seconds "{{.TTL_SECONDS}}"
+
   lite:ui:perf:android:baseline:
     desc: Run repeated exact-SHA physical Android qualification with contemporaneous platform controls and normalized attribution
     cmds:
