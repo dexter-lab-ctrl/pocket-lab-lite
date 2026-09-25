@@ -23,7 +23,6 @@ import re
 import shutil
 import subprocess
 import sys
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -79,13 +78,20 @@ SECRET_ENV_KEYS = (
 )
 
 
-@dataclass
 class Authority:
-    session_token: str
-    session_id: str
-    session_expires_at: datetime
-    bridge_token: str
-    bridge_expires_at: datetime
+    def __init__(
+        self,
+        session_token: str,
+        session_id: str,
+        session_expires_at: datetime,
+        bridge_token: str,
+        bridge_expires_at: datetime,
+    ) -> None:
+        self.session_token = session_token
+        self.session_id = session_id
+        self.session_expires_at = session_expires_at
+        self.bridge_token = bridge_token
+        self.bridge_expires_at = bridge_expires_at
 
 
 def _truthy(value: str | None) -> bool:
