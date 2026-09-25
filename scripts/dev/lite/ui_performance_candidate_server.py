@@ -322,10 +322,29 @@ def serve_candidate(dist_dir: Path, source_commit: str) -> None:
         server.server_close()
 
 
+def prepared_runtime_ready() -> bool:
+    """Return whether the controller-owned loopback Caddy forward is ready."""
+    connection = http.client.HTTPConnection("127.0.0.1", CADDY_HTTP_LOCAL_PORT, timeout=2)
+    try:
+        connection.request("GET", "/health", headers={"Accept": "application/json"})
+        response = connection.getresponse()
+        response.read()
+        return response.status == 200
+    except (OSError, http.client.HTTPException):
+        return False
+    finally:
+        connection.close()
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dist-dir", default=str(REPO_ROOT / "dist"))
     parser.add_argument("--source-commit", default="")
+    parser.add_argument(
+        "--prepared-runtime",
+        action="store_true",
+        help="Use an already-running repository-owned loopback Caddy forward.",
+    )
     args = parser.parse_args(argv)
 
     # The shell wrapper owns this process and may need to terminate it during
@@ -338,8 +357,13 @@ def main(argv: list[str] | None = None) -> int:
     signal.signal(signal.SIGTERM, _graceful_termination)
     try:
         commit = exact_source_commit(args.source_commit)
-        with ui_performance_runtime_tunnel():
+        if args.prepared_runtime:
+            if not prepared_runtime_ready():
+                raise CandidateServerError("candidate_runtime_tunnel_unavailable")
             serve_candidate(Path(args.dist_dir), commit)
+        else:
+            with ui_performance_runtime_tunnel():
+                serve_candidate(Path(args.dist_dir), commit)
     except KeyboardInterrupt:
         return 0
     except (CandidateServerError, RuntimeTunnelError) as exc:

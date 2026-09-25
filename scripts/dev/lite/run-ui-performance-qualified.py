@@ -17,15 +17,18 @@ accepted. The browser receives only the short-lived bridge proof.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import os
 import re
 import shutil
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
+from urllib.request import urlopen
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parents[2]
@@ -45,6 +48,7 @@ DEFAULT_SESSION_TTL_SECONDS = 180
 SESSION_RENEWAL_THRESHOLD_SECONDS = 45
 BRIDGE_RENEWAL_THRESHOLD_SECONDS = 30
 RUN_TIMEOUT_SECONDS = 15 * 60
+CANDIDATE_BASE_URL = "http://127.0.0.1:18765"
 PRINCIPAL_ID_RE = re.compile(r"^[a-z][a-z0-9._-]{2,79}$")
 INTERACTION_ID_RE = re.compile(r"^[a-z0-9][a-z0-9:._-]{2,119}$")
 DEFAULT_CONTROLLER_CHECKPOINT = REPO_ROOT / ".pocketlab-dev/ui-performance-qualified-controller.json"
@@ -167,9 +171,14 @@ def _child_environment(
     return child
 
 
-def _base_url(mode: str) -> str:
+def _base_url(mode: str, *, candidate_ui: bool = False) -> str:
     configured = os.environ.get("LITE_BASE_URL", "").strip()
-    value = configured or ("http://127.0.0.1:18444" if mode == "live" else "")
+    if candidate_ui:
+        value = CANDIDATE_BASE_URL
+        if configured and configured.rstrip("/") != value:
+            raise ValueError("candidate UI qualification owns LITE_BASE_URL")
+    else:
+        value = configured or ("http://127.0.0.1:18444" if mode == "live" else "")
     if not value:
         raise ValueError("LITE_BASE_URL must identify the prepared live runtime")
     parsed = urlsplit(value)
@@ -180,7 +189,7 @@ def _base_url(mode: str) -> str:
     return value.rstrip("/")
 
 
-def _validate_operator_environment(mode: str) -> str:
+def _validate_operator_environment(mode: str, *, candidate_ui: bool = False) -> str:
     if _truthy(os.environ.get("POCKETLAB_TEST_AUTH_BYPASS")):
         raise ValueError("POCKETLAB_TEST_AUTH_BYPASS must remain disabled")
     if _truthy(os.environ.get("POCKETLAB_HARNESS_DESTRUCTIVE")):
@@ -191,7 +200,59 @@ def _validate_operator_environment(mode: str) -> str:
         raise ValueError("POCKETLAB_HARNESS_BROWSER_BRIDGE must be unset; bridge creation is process-owned")
     if mode not in {"live", "android-cdp"}:
         raise ValueError("unsupported UI-performance qualification mode")
-    return _base_url(mode)
+    if candidate_ui and mode != "live":
+        raise ValueError("candidate UI qualification is available only for live mode")
+    return _base_url(mode, candidate_ui=candidate_ui)
+
+
+@contextlib.contextmanager
+def _prepared_candidate_server(enabled: bool, *, source_commit: str):
+    """Serve the exact current build while the controller owns the runtime tunnel."""
+    if not enabled:
+        yield
+        return
+
+    server_script = REPO_ROOT / "scripts/dev/lite/ui_performance_candidate_server.py"
+    if not server_script.is_file():
+        raise RuntimeError("the checked-in candidate server is unavailable")
+    process = subprocess.Popen(
+        [
+            sys.executable,
+            str(server_script),
+            "--source-commit",
+            source_commit,
+            "--prepared-runtime",
+        ],
+        cwd=str(REPO_ROOT),
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+        env={"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "HOME": str(Path.home()), "LC_ALL": "C", "LANG": "C"},
+    )
+    try:
+        deadline = time.monotonic() + 10.0
+        while time.monotonic() < deadline:
+            if process.poll() is not None:
+                raise RuntimeError("candidate server exited before readiness")
+            try:
+                with urlopen(f"{CANDIDATE_BASE_URL}/__pocketlab_qualification__/health", timeout=1.5) as response:
+                    if response.status == 200:
+                        break
+            except OSError:
+                pass
+            time.sleep(0.15)
+        else:
+            raise RuntimeError("candidate server readiness failed")
+        yield
+    finally:
+        if process.poll() is None:
+            process.terminate()
+            try:
+                process.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=2)
 
 
 def _session_authority(response: dict) -> tuple[str, str, datetime]:
@@ -404,7 +465,7 @@ def _run_interaction(
 
 
 def run(args: argparse.Namespace) -> int:
-    base_url = _validate_operator_environment(args.mode)
+    base_url = _validate_operator_environment(args.mode, candidate_ui=args.candidate_ui)
     principal_id = str(args.principal_id or "").strip().casefold()
     if not PRINCIPAL_ID_RE.fullmatch(principal_id):
         raise ValueError("principal id must be a bounded disposable synthetic identifier")
@@ -421,7 +482,15 @@ def run(args: argparse.Namespace) -> int:
     _clear_performance_evidence()
 
     try:
-        with ui_performance_runtime_tunnel():
+        source_commit = ""
+        if args.candidate_ui:
+            source_commit = subprocess.check_output(
+                ["git", "rev-parse", "HEAD"], cwd=str(REPO_ROOT), text=True
+            ).strip()
+        with ui_performance_runtime_tunnel(), _prepared_candidate_server(
+            args.candidate_ui,
+            source_commit=source_commit,
+        ):
             try:
                 os.environ["POCKETLAB_HARNESS_API_URL"] = "http://127.0.0.1:18080"
                 authority = _bootstrap_authority(
@@ -565,6 +634,11 @@ def main(argv: list[str] | None = None) -> int:
         "--resume",
         action="store_true",
         help="Skip completed live interactions recorded in the non-secret controller checkpoint.",
+    )
+    parser.add_argument(
+        "--candidate-ui",
+        action="store_true",
+        help="Serve the exact current dist build through the checked-in candidate proxy for live mode.",
     )
     return run(parser.parse_args(argv))
 

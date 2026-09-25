@@ -74,3 +74,11 @@ def test_candidate_baseline_control_is_static_and_sha_bound():
     assert "<script" not in body
     assert "/api/" not in body
     assert "token" not in body.casefold()
+
+
+def test_prepared_runtime_probe_is_loopback_only():
+    candidate = _module()
+    source = MODULE.read_text(encoding="utf-8")
+    assert "--prepared-runtime" in source
+    assert 'HTTPConnection("127.0.0.1", CADDY_HTTP_LOCAL_PORT' in source
+    assert candidate.CADDY_HTTP_LOCAL_PORT == 18444
