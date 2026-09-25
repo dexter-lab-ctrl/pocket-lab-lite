@@ -58,6 +58,8 @@ def test_android_baseline_entry_points_are_repository_owned():
     scripts = package["scripts"]
     assert scripts["test:perf:android-baseline"] == "bash scripts/dev/lite/run-ui-performance-android-candidate.sh --baseline"
     assert scripts["analyze:perf:android-baseline"] == "bash scripts/dev/lite/analyze-ui-performance-android-baseline.sh"
+    assert scripts["check:perf:android-baseline"] == "bash scripts/dev/lite/analyze-ui-performance-android-baseline.sh --fail-on-app-cost"
     taskfile = (ROOT / "tasks/Taskfile.lite.yml").read_text(encoding="utf-8")
     assert "lite:ui:perf:android:baseline:" in taskfile
     assert "lite:ui:perf:android:baseline:analyze:" in taskfile
+    assert "lite:ui:perf:android:baseline:check:" in taskfile
