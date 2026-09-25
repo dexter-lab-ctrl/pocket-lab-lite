@@ -40,6 +40,10 @@ def test_candidate_helper_uses_shared_adb_and_reports_specific_device_states():
     assert "requested_android_device_not_found" in SHARED.read_text(encoding="utf-8")
     assert "function Wake-PocketLabAndroidDevice" in SHARED.read_text(encoding="utf-8")
     assert "KEYCODE_WAKEUP" in SHARED.read_text(encoding="utf-8")
+    assert "dumpsys" in SHARED.read_text(encoding="utf-8")
+    assert "mWakefulness" in SHARED.read_text(encoding="utf-8")
+    assert "KEYCODE_POWER" in SHARED.read_text(encoding="utf-8")
+    assert "android_device_not_awake" in SHARED.read_text(encoding="utf-8")
     assert "function Open-PocketLabAndroidCandidate" in SHARED.read_text(encoding="utf-8")
     assert "$OpenCandidate" in source
     assert "-OpenCandidate" in CANDIDATE_RUNNER.read_text(encoding="utf-8")

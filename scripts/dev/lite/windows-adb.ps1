@@ -202,6 +202,52 @@ function Wake-PocketLabAndroidDevice {
   if ($result.ExitCode -ne 0) {
     throw 'adb_transport_failed: could not send the bounded Android wake request.'
   }
+
+  # Some Android builds leave the display in ambient/doze after KEYCODE_WAKEUP
+  # even though Chrome remains resumed and CDP reports a focused document. That
+  # state throttles requestAnimationFrame to zero and would make physical UI
+  # evidence look like a browser-target failure. Read the bounded power state
+  # before toggling the power key so an already-awake phone is never turned off.
+  Start-Sleep -Milliseconds 200
+  $power = Invoke-PocketLabWindowsAdb -AdbPath $AdbPath -Arguments @(
+    '-s',
+    $DeviceSerial,
+    'shell',
+    'dumpsys',
+    'power'
+  )
+  if ($power.ExitCode -ne 0) {
+    throw 'adb_transport_failed: could not inspect Android wakefulness after the wake request.'
+  }
+  $wakefulnessMatch = [regex]::Match([string]$power.Stdout, '(?m)^\s*mWakefulness=([^\r\n]+)')
+  if ($wakefulnessMatch.Success -and $wakefulnessMatch.Groups[1].Value.Trim() -ne 'Awake') {
+    $toggle = Invoke-PocketLabWindowsAdb -AdbPath $AdbPath -Arguments @(
+      '-s',
+      $DeviceSerial,
+      'shell',
+      'input',
+      'keyevent',
+      'KEYCODE_POWER'
+    )
+    if ($toggle.ExitCode -ne 0) {
+      throw 'adb_transport_failed: could not exit Android ambient/doze state.'
+    }
+    Start-Sleep -Milliseconds 200
+    $verification = Invoke-PocketLabWindowsAdb -AdbPath $AdbPath -Arguments @(
+      '-s',
+      $DeviceSerial,
+      'shell',
+      'dumpsys',
+      'power'
+    )
+    if ($verification.ExitCode -ne 0) {
+      throw 'adb_transport_failed: could not verify Android wakefulness.'
+    }
+    $verifiedWakefulness = [regex]::Match([string]$verification.Stdout, '(?m)^\s*mWakefulness=([^\r\n]+)')
+    if ($verifiedWakefulness.Success -and $verifiedWakefulness.Groups[1].Value.Trim() -ne 'Awake') {
+      throw 'android_device_not_awake: Android remained in ambient/doze state after the bounded wake request.'
+    }
+  }
 }
 
 function Open-PocketLabAndroidCandidate {
