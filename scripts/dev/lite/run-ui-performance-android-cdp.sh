@@ -4,6 +4,19 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "$repo_root"
 
+# The renewable controller launches this script from Python, so a non-
+# interactive WSL shell may not have the operator's checked-in Node toolchain
+# on PATH. Load the same nvm installation used by the repository WSL checks
+# before invoking the Node-owned Android/CDP qualifier.
+if ! command -v node >/dev/null 2>&1; then
+  nvm_dir="${NVM_DIR:-${HOME:-}/.nvm}"
+  if [[ -s "$nvm_dir/nvm.sh" ]]; then
+    # shellcheck disable=SC1090
+    source "$nvm_dir/nvm.sh"
+    nvm use "${POCKETLAB_NODE_VERSION:-24.16.0}" >/dev/null 2>&1 || true
+  fi
+fi
+
 bridge_port="${POCKETLAB_ANDROID_CDP_BRIDGE_PORT:-19222}"
 local_port="${POCKETLAB_ANDROID_CDP_LOCAL_PORT:-9222}"
 check_only=0

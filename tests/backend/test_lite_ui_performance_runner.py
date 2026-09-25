@@ -162,6 +162,14 @@ def test_live_runner_loads_node_toolchain_for_noninteractive_controller_children
     assert 'command -v npm >/dev/null 2>&1 || fail' in source
 
 
+def test_android_runner_loads_node_toolchain_for_noninteractive_controller_children():
+    source = Path("scripts/dev/lite/run-ui-performance-android-cdp.sh").read_text(encoding="utf-8")
+    assert 'nvm_dir="${NVM_DIR:-${HOME:-}/.nvm}"' in source
+    assert 'source "$nvm_dir/nvm.sh"' in source
+    assert 'nvm use "${POCKETLAB_NODE_VERSION:-24.16.0}"' in source
+    assert 'need node' in source
+
+
 def test_candidate_ui_mode_supports_live_and_android_cdp_and_uses_checked_in_candidate_server():
     runner = _load_runner()
     source = Path("scripts/dev/lite/run-ui-performance-qualified.py").read_text(encoding="utf-8")
