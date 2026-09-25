@@ -144,6 +144,14 @@ def test_qualified_runner_defaults_live_browser_to_owned_caddy_forward(monkeypat
     assert observed["env"]["LITE_BASE_URL"] == "http://127.0.0.1:18444"
 
 
+def test_taskfile_qualified_live_mode_overrides_general_caddy_default():
+    taskfile = Path("tasks/Taskfile.lite.yml").read_text(encoding="utf-8")
+    assert (
+        'LITE_BASE_URL="{{if eq .MODE "live"}}http://127.0.0.1:18444'
+        '{{else}}{{.LITE_BASE_URL}}{{end}}"'
+    ) in taskfile
+
+
 def test_before_owner_interaction_rotates_session_below_45_seconds(monkeypatch):
     runner = _load_runner()
     now = datetime(2026, 9, 25, 9, 0, tzinfo=timezone.utc)

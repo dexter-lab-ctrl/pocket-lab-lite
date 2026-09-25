@@ -161,6 +161,7 @@ tasks:
       TTL_SECONDS: '{{default "180" .TTL_SECONDS}}'
     cmds:
       - >-
+        LITE_BASE_URL="{{if eq .MODE "live"}}http://127.0.0.1:18444{{else}}{{.LITE_BASE_URL}}{{end}}"
         {{.PYTHON}} scripts/dev/lite/run-ui-performance-qualified.py
         --mode "{{.MODE}}"
         --principal-id "{{.PRINCIPAL_ID}}"
