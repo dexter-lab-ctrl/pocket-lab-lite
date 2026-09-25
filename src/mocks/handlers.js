@@ -4,6 +4,10 @@ import { telemetryNormal, healthAllGreen, healthVaultSealed, fleetAgents, driftD
 import { resolveGeneratedLiteScenario } from '../test/fixtures/generated/lite-fixtures.js';
 
 const scenario = () => resolveGeneratedLiteScenario(typeof window !== 'undefined' ? (window.localStorage.getItem('POCKETLAB_MOCK_SCENARIO') || 'healthy') : 'healthy');
+// Mocked UI evidence must not drift with the operator's wall clock. Keep the
+// relative ages used by the fixtures while making screenshots reproducible.
+const MOCK_NOW_MS = Date.parse('2026-09-24T08:54:00.000Z');
+const mockIso = (offsetMs = 0) => new Date(MOCK_NOW_MS + offsetMs).toISOString();
 const liteSafeReadHeaders = (request) => ({
   'X-PocketLab-Read-Nonce': request.headers.get('X-PocketLab-Read-Nonce') || '',
 });
@@ -24,13 +28,13 @@ const mockAppLifecycleProfiles = () => [{
   summary: scenario() === 'lifecycle-attention' ? 'PhotoPrism needs attention.' : 'PhotoPrism is ready, protected, and recoverable.',
   host_device: { id: 'pocket-lab-lite-server', name: 'Pocket Lab Lite Server', label: 'Runs on Server Phone', status: 'online' },
   storage: { status: 'connected', summary: 'Media connected', mapping_count: 2, labels: ['Phone photos'] },
-  security: { status: 'protected', summary: 'Protected app', evidence_status: 'saved', last_checked_at: new Date(Date.now() - 2 * 60 * 1000).toISOString() },
+  security: { status: 'protected', summary: 'Protected app', evidence_status: 'saved', last_checked_at: mockIso(-2 * 60 * 1000) },
   backup: { status: 'ready', summary: 'Backup ready', default_mode: 'config_only', media: 'excluded', target_available: true, target_ready: true, target_label: 'Storage Phone' },
   backup_targets: { status: 'healthy', app_id: 'photoprism', targets: [{ device_id: 'storage-phone', name: 'Storage Phone', status: 'ready', ready: true, available: true, label: 'Storage device', summary: 'Storage Phone can save app backups.' }], count: 1, ready_count: 1 },
   app_lifecycle: { status: 'ready', preservation: { media_preserved_by_default: true, backups_preserved_by_default: true, backend_records_preserved_by_default: true } },
   recovery: { status: 'review', summary: 'Restore preview not ready', preview_available: false, restore_available: false },
   update: mockAppUpdateState(),
-  media: { status: 'ready', summary: 'Import ready', mapping_count: 1, labels: ['Phone photos'], last_imported_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(), evidence: { status: 'saved', count: 1, summary: '1 media record' } },
+  media: { status: 'ready', summary: 'Import ready', mapping_count: 1, labels: ['Phone photos'], last_imported_at: mockIso(-30 * 60 * 1000), evidence: { status: 'saved', count: 1, summary: '1 media record' } },
   attention: scenario() === 'lifecycle-attention' ? [{ id: 'backup_target_missing', area: 'backup', severity: 'review', title: 'Backup target not ready', summary: 'Join a storage device to save app backups elsewhere.' }] : [],
   actions: {
     open: { enabled: true, label: 'Open', url: '/apps/photoprism/' },
@@ -48,7 +52,7 @@ const mockAppLifecycleProfiles = () => [{
     remove_app: { enabled: true, label: 'Remove app', risk: 'destructive', requires_confirmation: true, summary: 'Your photo files and backups will not be deleted by default.' },
   },
   evidence: { status: 'saved', summary: 'Safety, recovery, and media records saved', security_count: 1, backup_count: 1, media_count: 1 },
-  updated_at: new Date().toISOString(),
+  updated_at: mockIso(),
 }];
 
 function mockActionDetails(actionId, action = {}, status = 'ready') {
@@ -122,7 +126,7 @@ function mockUnifiedAppActions() {
 function mockAppUpdateState() {
   const running = scenario() === 'app-update-running';
   const noCheck = scenario() === 'app-update-empty';
-  const now = new Date().toISOString();
+  const now = mockIso();
   const latest = noCheck ? null : {
     app_id: 'photoprism',
     app_label: 'PhotoPrism',
@@ -203,7 +207,7 @@ function mockAppUpdateReceipt() {
   status: 'succeeded',
   readiness: 'review',
   summary: 'Update source not ready. No update was applied.',
-  completed_at: new Date().toISOString(),
+  completed_at: mockIso(),
   proofs: [
     { id: 'backend_worker_executed', label: 'Backend worker executed', status: 'passed', plain_language: 'The update readiness check ran through the backend worker.' },
     { id: 'frontend_no_shell', label: 'Browser did not run commands', status: 'passed', plain_language: 'The browser only requested Update through FastAPI.' },
@@ -219,12 +223,12 @@ function mockAppUpdateReceipt() {
   redaction: { status: 'passed', secrets_hidden: true, raw_logs_hidden: true, raw_paths_hidden: true },
   technical_details: { action_id: 'update_app', execution_owner: 'backend worker', apply_supported: false, rollback_ready: false, raw_logs: 'hidden', raw_paths: 'hidden', secret_values: 'hidden' },
   evidence_ref: 'apps/photoprism/update/app-update-check-photoprism-mock001.json',
-  updated_at: new Date().toISOString(),
+  updated_at: mockIso(),
 });
 }
 
 const mockAppEvidence = () => {
-  const completedAt = new Date(Date.now() - 6 * 60 * 1000).toISOString();
+  const completedAt = mockIso(-6 * 60 * 1000);
   const receipt = {
     receipt_version: 1,
     receipt_id: 'photoprism-media-mock001',
@@ -234,7 +238,7 @@ const mockAppEvidence = () => {
     action_label: 'Import photos',
     status: 'succeeded',
     summary: 'Import photos completed.',
-    started_at: new Date(Date.now() - 9 * 60 * 1000).toISOString(),
+    started_at: mockIso(-9 * 60 * 1000),
     completed_at: completedAt,
     proof_counts: { passed: 8, review: 0, failed: 0, not_checked: 0, not_applicable: 1 },
     proof_status: 'passed',
@@ -289,7 +293,7 @@ const mockProtectedApps = () => [{
   name: 'PhotoPrism',
   status: 'ready',
   summary: 'PhotoPrism is protected.',
-  last_checked_at: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
+  last_checked_at: mockIso(-2 * 60 * 1000),
   checks: [
     { id: 'route_safety', label: 'Secure app route', status: 'passed', summary: 'PhotoPrism opens through Pocket Lab.' },
     { id: 'config_redaction', label: 'Config protected', status: 'passed', summary: 'Sensitive values are hidden.' },
@@ -315,7 +319,7 @@ const mockAppBackups = () => [{
 }];
 
 const mockLiteSecurityPayload = () => {
-  const now = Date.now();
+  const now = MOCK_NOW_MS;
   const baseRun = {
     run_id: 'security-mock-001',
     status: 'succeeded',
@@ -494,7 +498,7 @@ const mockLiteDevices = () => [
     name: 'Pocket Lab Lite Server',
     status: 'healthy',
     connection: 'online',
-    last_seen: new Date().toISOString(),
+    last_seen: mockIso(),
     remote_access: true,
     role: 'server_host',
     role_label: 'Server Host',
@@ -507,7 +511,7 @@ const mockLiteDevices = () => [
     name: 'Test-Phone-2',
     status: 'joining',
     connection: 'joining',
-    last_seen: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
+    last_seen: mockIso(-20 * 60 * 1000),
     remote_access: false,
     role: 'compute',
     role_label: 'App Host',
@@ -519,7 +523,7 @@ const mockLiteDevices = () => [
     name: 'Test-Phone-4',
     status: 'healthy',
     connection: 'online',
-    last_seen: new Date().toISOString(),
+    last_seen: mockIso(),
     remote_access: false,
     role: 'compute',
     role_label: 'App Host',
@@ -531,7 +535,7 @@ const mockLiteDevices = () => [
     name: 'Storage Phone',
     status: 'healthy',
     connection: 'online',
-    last_seen: new Date().toISOString(),
+    last_seen: mockIso(),
     remote_access: true,
     role: 'storage',
     role_label: 'Storage Node',
@@ -551,7 +555,7 @@ export const handlers = [
   http.get('/api/observability/status', () => HttpResponse.json(observabilityPayload())),
   http.get('/api/logs/query', ({ request }) => {
     const url = new URL(request.url);
-    const now = Date.now() * 1000000;
+    const now = MOCK_NOW_MS * 1000000;
     const values = [
       [String(now - 3000000000), 'INFO Pocket Lab FastAPI log query stream ready'],
       [String(now - 2000000000), 'WARN Drift check found one pending review'],
@@ -568,7 +572,7 @@ export const handlers = [
     last_event_id: 1,
     revisions: { status: 1, apps: 1, fleet: 1, security: 1, recovery: 1, identity: 1, rules: 1 },
     projection_version: 1,
-    checked_at: new Date().toISOString(),
+    checked_at: mockIso(),
   }, { headers: liteSafeReadHeaders(request) })),
   http.get('/api/lite/events', () => new HttpResponse('', {
     status: 204,
@@ -583,7 +587,7 @@ export const handlers = [
     comparison: 'equal',
     update_available: false,
     auto_apply: false,
-    checked_at: new Date().toISOString(),
+    checked_at: mockIso(),
   }, { headers: liteSafeReadHeaders(request) })),
   http.get('/api/lite/diagnostics/frontend-lifecycle/challenge', () => HttpResponse.json({
     active: false,
@@ -592,7 +596,7 @@ export const handlers = [
   })),
   http.get('/api/lite/status', ({ request }) => HttpResponse.json({
     overall: 'healthy',
-    checked_at: new Date().toISOString(),
+    checked_at: mockIso(),
     device: { name: 'pocket-lab-lite', mode: 'lite', resource_profile: 'low-power' },
     summary: { apps_available: 1, devices_known: 1, security_findings: 0, nats_connected: true, jetstream_enabled: true, live_sampler_running: true },
     telemetry: { status: 'healthy', cpu_temp_c: 42, cpu_usage_percent: 12, free_space_mb: 256000, memory_usage_mb: 512 },
@@ -623,7 +627,7 @@ export const handlers = [
       runtime: { route: '/apps/photoprism/', url: ready ? '/apps/photoprism/' : null, health: ready ? 'healthy' : installing ? 'installing' : 'not_installed', version: ready ? 'detected-or-unknown' : null },
       access: { https_ready: true, route_ready: ready, open_url: ready ? '/apps/photoprism/' : null, message: ready ? 'PhotoPrism is ready over secure access.' : 'Install PhotoPrism to enable secure app access.' },
       progress: installing ? { step: 'Preparing PhotoPrism runtime', current: 2, total: 7, message: 'Setting up the app environment.' } : null,
-      last_operation: installing ? { operation_id: 'app-photoprism-mock', status: 'running', updated_at: new Date().toISOString(), message: 'PhotoPrism install is running.' } : ready ? { operation_id: 'app-photoprism-mock', status: 'succeeded', updated_at: new Date().toISOString(), message: 'PhotoPrism is ready.' } : null,
+      last_operation: installing ? { operation_id: 'app-photoprism-mock', status: 'running', updated_at: mockIso(), message: 'PhotoPrism install is running.' } : ready ? { operation_id: 'app-photoprism-mock', status: 'succeeded', updated_at: mockIso(), message: 'PhotoPrism is ready.' } : null,
       evidence_refs: ready ? ['catalog/evidence/app-photoprism-mock/summary.json'] : [],
       host_device_id: 'pocket-lab-lite-server',
       host_device_name: 'Pocket Lab Lite Server',
@@ -638,9 +642,9 @@ export const handlers = [
       lifecycle: mockAppLifecycleProfiles()[0],
       lifecycle_summary: { status: 'ready', summary: 'PhotoPrism is ready, protected, and recoverable.', host: 'Runs on Server Phone', storage: 'Media connected', security: 'Protected app', backup: 'Backup ready', attention_count: 0 },
     };
-    return HttpResponse.json({ status: 'healthy', access: { https_ready: true, secure_origin: 'https://pocket-lab-lite.example.ts.net', route_mode: 'tailscale_caddy', pwa_ready: true, message: 'Secure access is ready.' }, apps: [app], items: [app], count: 1, updated_at: new Date().toISOString() }, { headers: liteSafeReadHeaders(request) });
+    return HttpResponse.json({ status: 'healthy', access: { https_ready: true, secure_origin: 'https://pocket-lab-lite.example.ts.net', route_mode: 'tailscale_caddy', pwa_ready: true, message: 'Secure access is ready.' }, apps: [app], items: [app], count: 1, updated_at: mockIso() }, { headers: liteSafeReadHeaders(request) });
   }),
-  http.get('/api/lite/apps/lifecycle', ({ request }) => HttpResponse.json({ status: 'healthy', summary: 'Unified App Lifecycle profiles are available.', apps: mockAppLifecycleProfiles(), items: mockAppLifecycleProfiles(), count: mockAppLifecycleProfiles().length, ready_count: 1, attention_count: 0, updated_at: new Date().toISOString() }, { headers: liteSafeReadHeaders(request) })),
+  http.get('/api/lite/apps/lifecycle', ({ request }) => HttpResponse.json({ status: 'healthy', summary: 'Unified App Lifecycle profiles are available.', apps: mockAppLifecycleProfiles(), items: mockAppLifecycleProfiles(), count: mockAppLifecycleProfiles().length, ready_count: 1, attention_count: 0, updated_at: mockIso() }, { headers: liteSafeReadHeaders(request) })),
   http.get('/api/lite/apps/lifecycle/photoprism', () => HttpResponse.json(mockAppLifecycleProfiles()[0])),
   http.get('/api/lite/apps/photoprism/actions', ({ request }) => {
     const actions = mockUnifiedAppActions();
@@ -732,7 +736,7 @@ export const handlers = [
     status: 'ready', summary: 'Owner access is protected by server-side sessions.', setup_required: false, authenticated: true,
     owner: { human_id: 'human-mock', username: 'owner', display_name: 'Pocket Lab Owner', status: 'active', password_algorithm: 'scrypt' },
     session: { session_id: 'sess-mock', authenticated: true, auth_method: 'password' },
-    sessions: [{ session_id: 'sess-mock', auth_method: 'password', created_at: new Date().toISOString(), active: true, current: true }],
+    sessions: [{ session_id: 'sess-mock', auth_method: 'password', created_at: mockIso(), active: true, current: true }],
     recovery: { configured: true, remaining: 8, generation: 1 }, recent_activity: [],
     sign_in_methods: { password: true, passkey: false, oidc: false },
     identity_classes: {
@@ -752,7 +756,7 @@ export const handlers = [
       history_revision: 1,
       progress_revision: 1,
       profile_revisions: { quick: 1, full: 1, app: 1 },
-      updated_at: new Date().toISOString(),
+      updated_at: mockIso(),
     }, { headers: liteSafeReadHeaders(request) });
   }),
   http.get('/api/lite/security', ({ request }) => HttpResponse.json(mockLiteSecurityPayload(), { headers: liteSafeReadHeaders(request) })),
@@ -781,7 +785,7 @@ export const handlers = [
       storage_devices_available: 1,
       storage_devices_ready: 1,
     },
-    updated_at: new Date().toISOString(),
+    updated_at: mockIso(),
   }, {
     headers: {
       // The real FastAPI safe-read path echoes this nonce so a
@@ -807,8 +811,8 @@ export const handlers = [
       backup_id: 'db-backup-mock-001',
       status: 'verified',
       verification_status: 'verified',
-      created_at: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-      verified_at: new Date(Date.now() - 40 * 60 * 1000).toISOString(),
+      created_at: mockIso(-45 * 60 * 1000),
+      verified_at: mockIso(-40 * 60 * 1000),
       summary: 'Database backup verified.',
       sanitized: true,
     },
@@ -842,7 +846,7 @@ export const handlers = [
       sanitized: true,
     },
     rollback_available: false,
-    updated_at: new Date().toISOString(),
+    updated_at: mockIso(),
     sanitized: true,
   })),
   http.get('/api/lite/recovery/summary', ({ request }) => HttpResponse.json({
@@ -850,9 +854,9 @@ export const handlers = [
     summary: scenario() === 'nats-down' ? 'Showing saved Recovery state while the backend reconnects.' : 'Recovery Ready',
     projection_status: scenario() === 'nats-down' ? 'stale' : 'fresh',
     saved_state: scenario() === 'nats-down',
-    checked_at: new Date().toISOString(),
+    checked_at: mockIso(),
     repository_readiness: { ready: true, engine: 'restic', repository_initialized: true },
-    last_backup: { backup_id: 'backup-mock-001', verification_status: 'verified', created_at: new Date(Date.now() - 3600000).toISOString(), location_id: 'default-private', location: { location_id: 'default-private', display_name: 'Pocket Lab private backup folder', status: 'ready', available: true } },
+    last_backup: { backup_id: 'backup-mock-001', verification_status: 'verified', created_at: mockIso(-3600000), location_id: 'default-private', location: { location_id: 'default-private', display_name: 'Pocket Lab private backup folder', status: 'ready', available: true } },
     latest_restore_preview: { status: 'ready', restore_allowed: true, preview_id: 'preview-mock-001' },
     pre_restore_checkpoint: { status: 'created', checkpoint_id: 'checkpoint-mock-001' },
     last_restore: null,
@@ -863,12 +867,12 @@ export const handlers = [
     status: scenario() === 'nats-down' ? 'degraded' : 'healthy',
     summary: scenario() === 'nats-down' ? 'Showing saved Recovery details while the backend reconnects.' : 'Recovery details ready.',
     repository: { type: 'local', engine: 'restic', encrypted: true, ready: true, location: '~/pocket-lab-lite-backups' },
-    last_backup: { backup_id: 'backup-mock-001', verification_status: 'verified', created_at: new Date(Date.now() - 3600000).toISOString(), location_id: 'default-private' },
+    last_backup: { backup_id: 'backup-mock-001', verification_status: 'verified', created_at: mockIso(-3600000), location_id: 'default-private' },
     latest_restore_preview: { status: 'ready', restore_allowed: true, preview_id: 'preview-mock-001', backup_id: 'backup-mock-001', change_count: 2 },
     pre_restore_checkpoint: { status: 'created', checkpoint_id: 'checkpoint-mock-001' },
     last_restore: null,
-    backup_history: [{ backup_id: 'backup-mock-001', verification_status: 'verified', created_at: new Date(Date.now() - 3600000).toISOString(), summary: 'Backup verified.' }],
-    available_restore_points: [{ backup_id: 'backup-mock-001', verification_status: 'verified', created_at: new Date(Date.now() - 3600000).toISOString(), summary: 'Backup verified.' }],
+    backup_history: [{ backup_id: 'backup-mock-001', verification_status: 'verified', created_at: mockIso(-3600000), summary: 'Backup verified.' }],
+    available_restore_points: [{ backup_id: 'backup-mock-001', verification_status: 'verified', created_at: mockIso(-3600000), summary: 'Backup verified.' }],
     app_backups: mockAppBackups(),
     app_backup_profiles: { status: 'healthy', apps: mockAppBackups(), count: mockAppBackups().length },
     app_lifecycle_profiles: { status: 'healthy', apps: mockAppLifecycleProfiles(), count: mockAppLifecycleProfiles().length },
@@ -876,7 +880,7 @@ export const handlers = [
     backup_locations: { selected_location_id: 'default-private', locations: [] },
     what_will_be_backed_up: ['Lite runtime state', 'Device records and heartbeats', 'Rules/protection state', 'App catalog/install metadata'],
     what_will_not_be_backed_up: ['raw API tokens', 'raw invite tokens', 'NATS passwords', 'private SSH keys'],
-    updated_at: new Date().toISOString(),
+    updated_at: mockIso(),
   }, { headers: liteSafeReadHeaders(request) })),
   http.get('/api/lite/recovery/locations', ({ request }) => HttpResponse.json({
     status: 'ready',
@@ -896,14 +900,14 @@ export const handlers = [
     repository: { type: 'local', engine: 'restic', encrypted: true, ready: true, location: '~/pocket-lab-lite-backups' },
     what_will_be_backed_up: ['Lite runtime state', 'Device records and heartbeats', 'Device invite lifecycle records', 'Rules/protection state', 'App catalog/install metadata', 'Backup manifests and receipts'],
     what_will_not_be_backed_up: ['raw API tokens', 'raw invite tokens', 'NATS passwords', 'Vault root token', 'Vault unseal keys', 'private SSH keys'],
-    last_backup: { backup_id: 'mock-backup-001', created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(), engine: 'restic', verification_status: 'not_verified', included_file_count: 6, summary: 'Backup created with 6 safe item(s). Evidence saved.' },
-    last_backup_time: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+    last_backup: { backup_id: 'mock-backup-001', created_at: mockIso(-25 * 60 * 1000), engine: 'restic', verification_status: 'not_verified', included_file_count: 6, summary: 'Backup created with 6 safe item(s). Evidence saved.' },
+    last_backup_time: mockIso(-25 * 60 * 1000),
     last_verification_result: 'not_verified',
     backup_history: [
-      { backup_id: 'mock-backup-001', created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(), engine: 'restic', verification_status: 'not_verified', included_file_count: 6, summary: 'Backup created with 6 safe item(s). Evidence saved.' }
+      { backup_id: 'mock-backup-001', created_at: mockIso(-25 * 60 * 1000), engine: 'restic', verification_status: 'not_verified', included_file_count: 6, summary: 'Backup created with 6 safe item(s). Evidence saved.' }
     ],
     available_restore_points: [
-      { backup_id: 'mock-backup-001', created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(), engine: 'restic', verification_status: 'not_verified', included_file_count: 6, summary: 'Backup created with 6 safe item(s). Evidence saved.' }
+      { backup_id: 'mock-backup-001', created_at: mockIso(-25 * 60 * 1000), engine: 'restic', verification_status: 'not_verified', included_file_count: 6, summary: 'Backup created with 6 safe item(s). Evidence saved.' }
     ],
     latest_restore_preview: { preview_id: 'mock-preview-001', backup_id: 'mock-backup-001', status: 'ready', change_count: 2 },
     pre_restore_checkpoint: { status: 'not_created', summary: 'A checkpoint will be created automatically before restore changes local state.' },
@@ -915,13 +919,13 @@ export const handlers = [
     backup_targets: [{ device_id: 'storage-phone', name: 'Storage Phone', status: 'ready', ready: true, available: true, label: 'Storage device', summary: 'Storage Phone can save app backups.' }],
     backup_target_profiles: { status: 'healthy', count: 1, ready_count: 1 },
     planned_actions: [],
-    updated_at: new Date().toISOString(),
+    updated_at: mockIso(),
   }, { headers: liteSafeReadHeaders(request) })),
   http.get('/api/lite/recovery/backups', ({ request }) => HttpResponse.json({
     status: 'healthy',
     count: 1,
-    latest_backup: { backup_id: 'mock-backup-001', created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(), engine: 'restic', verification_status: 'not_verified', included_file_count: 6 },
-    backups: [{ backup_id: 'mock-backup-001', created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(), engine: 'restic', verification_status: 'not_verified', included_file_count: 6, location_id: 'default-private', location: { location_id: 'default-private', display_name: 'Pocket Lab private backup folder', status: 'ready', available: true } }],
+    latest_backup: { backup_id: 'mock-backup-001', created_at: mockIso(-25 * 60 * 1000), engine: 'restic', verification_status: 'not_verified', included_file_count: 6 },
+    backups: [{ backup_id: 'mock-backup-001', created_at: mockIso(-25 * 60 * 1000), engine: 'restic', verification_status: 'not_verified', included_file_count: 6, location_id: 'default-private', location: { location_id: 'default-private', display_name: 'Pocket Lab private backup folder', status: 'ready', available: true } }],
   }, { headers: liteSafeReadHeaders(request) })),
   http.get('/api/lite/recovery/backups/:backupId', ({ params }) => HttpResponse.json({ backup_id: params.backupId, engine: 'restic', verification_status: 'not_verified', included_file_count: 6 })),
   http.get('/api/lite/recovery/receipts/:backupId', ({ params }) => HttpResponse.json({ backup_id: params.backupId, status: 'succeeded', summary: 'Evidence saved', engine: 'restic', evidence_saved: true })),
@@ -1034,7 +1038,7 @@ export const handlers = [
       removed_invite_records: 1,
       message: 'Old device record removed.',
       summary: 'Old device record removed. The phone was not wiped and Pocket Lab was not uninstalled from that device.',
-      updated_at: new Date().toISOString(),
+      updated_at: mockIso(),
     });
   }),
   http.post('/api/lite/fleet/add-device', async ({ request }) => {
@@ -1065,7 +1069,7 @@ export const handlers = [
         }
       }, { status: 409 });
     }
-    const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+    const expiresAt = mockIso(30 * 60 * 1000);
     return HttpResponse.json({
       accepted: true,
       status: 'invite_ready',

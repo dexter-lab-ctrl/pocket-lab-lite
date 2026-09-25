@@ -162,7 +162,7 @@ def test_live_runner_loads_node_toolchain_for_noninteractive_controller_children
     assert 'command -v npm >/dev/null 2>&1 || fail' in source
 
 
-def test_candidate_ui_mode_is_live_only_and_uses_checked_in_candidate_server():
+def test_candidate_ui_mode_supports_live_and_android_cdp_and_uses_checked_in_candidate_server():
     runner = _load_runner()
     source = Path("scripts/dev/lite/run-ui-performance-qualified.py").read_text(encoding="utf-8")
     assert "--candidate-ui" in source
@@ -180,8 +180,7 @@ def test_candidate_ui_mode_owns_the_browser_base_url(monkeypatch):
     monkeypatch.delenv("POCKETLAB_HARNESS_DESTRUCTIVE", raising=False)
     monkeypatch.delenv("LITE_BASE_URL", raising=False)
     assert runner._base_url("live", candidate_ui=True) == runner.CANDIDATE_BASE_URL
-    with pytest.raises(ValueError, match="only for live mode"):
-        runner._validate_operator_environment("android-cdp", candidate_ui=True)
+    assert runner._validate_operator_environment("android-cdp", candidate_ui=True) == runner.CANDIDATE_BASE_URL
 
 
 def test_before_owner_interaction_rotates_session_below_45_seconds(monkeypatch):

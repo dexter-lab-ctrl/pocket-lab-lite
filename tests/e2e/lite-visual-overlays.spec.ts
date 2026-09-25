@@ -27,7 +27,7 @@ const OVERLAYS: OverlayCase[] = [
     name: 'devices-manage',
     screen: 'devices',
     open: async (page) => page.getByRole('button', { name: /Manage Test-Phone-4/i }).click(),
-    surface: (page) => page.locator('.lite-device-details-panel'),
+    surface: (page) => page.locator('.lite-device-details-panel.is-ready'),
   },
   {
     name: 'security-manage',
@@ -65,6 +65,9 @@ for (const item of OVERLAYS) {
     await item.open(page);
     const surface = item.surface(page);
     await expect(surface).toBeVisible();
+    if (item.name === 'recovery-manage') {
+      await expect(surface.getByRole('heading', { name: 'Create and manage restore points' })).toBeVisible();
+    }
 
     await expect(surface).toHaveScreenshot(`${item.name}.png`, {
       animations: 'disabled',

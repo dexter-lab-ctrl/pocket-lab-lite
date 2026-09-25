@@ -213,8 +213,8 @@ def _validate_operator_environment(mode: str, *, candidate_ui: bool = False) -> 
         raise ValueError("POCKETLAB_HARNESS_BROWSER_BRIDGE must be unset; bridge creation is process-owned")
     if mode not in {"live", "android-cdp"}:
         raise ValueError("unsupported UI-performance qualification mode")
-    if candidate_ui and mode != "live":
-        raise ValueError("candidate UI qualification is available only for live mode")
+    if candidate_ui and mode not in {"live", "android-cdp"}:
+        raise ValueError("candidate UI qualification is available only for live or android-cdp mode")
     return _base_url(mode, candidate_ui=candidate_ui)
 
 
@@ -651,7 +651,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--candidate-ui",
         action="store_true",
-        help="Serve the exact current dist build through the checked-in candidate proxy for live mode.",
+        help="Serve the exact current dist build through the checked-in candidate proxy for live or android-cdp mode.",
     )
     return run(parser.parse_args(argv))
 
