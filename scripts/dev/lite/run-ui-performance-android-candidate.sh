@@ -25,8 +25,13 @@ source_commit="$(git rev-parse HEAD)"
 [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || fail 'the candidate source SHA is not an exact commit.'
 
 candidate_process=''
+keepalive_process=''
 cleanup() {
   set +e
+  if [[ -n "$keepalive_process" ]] && kill -0 "$keepalive_process" 2>/dev/null; then
+    kill "$keepalive_process" 2>/dev/null || true
+    wait "$keepalive_process" 2>/dev/null || true
+  fi
   if [[ -n "$candidate_process" ]] && kill -0 "$candidate_process" 2>/dev/null; then
     kill "$candidate_process" 2>/dev/null || true
     wait "$candidate_process" 2>/dev/null || true
@@ -67,6 +72,13 @@ curl -fsS --connect-timeout 1 --max-time 2 \
 # renderer animation frames.
 powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
   -File scripts/dev/lite/prepare-ui-performance-android-candidate.ps1 -OpenCandidate
+
+bash scripts/dev/lite/android-candidate-keepalive.sh &
+keepalive_process=$!
+sleep 0.2
+if ! kill -0 "$keepalive_process" 2>/dev/null; then
+  fail 'the owned Android qualification keepalive exited before physical qualification started.'
+fi
 
 printf '[ui-performance-android-candidate] running physical Android qualification for %s\n' "$source_commit"
 cdp_arg=""

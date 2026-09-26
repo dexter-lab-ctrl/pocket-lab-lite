@@ -47,7 +47,9 @@ def test_candidate_helper_uses_shared_adb_and_reports_specific_device_states():
     assert "function Open-PocketLabAndroidCandidate" in SHARED.read_text(encoding="utf-8")
     assert "$OpenCandidate" in source
     assert "$Wake" in source
+    assert "$ActivityPulse" in source
     assert "-OpenCandidate" in CANDIDATE_RUNNER.read_text(encoding="utf-8")
+    assert "android-candidate-keepalive.sh" in CANDIDATE_RUNNER.read_text(encoding="utf-8")
     assert "-Wake" in Path("scripts/dev/lite/run-ui-performance-android-cdp.sh").read_text(encoding="utf-8")
     assert "-Wake -OpenCandidate" in Path("scripts/dev/lite/run-ui-performance-android-cdp.sh").read_text(encoding="utf-8")
     assert "Wake-PocketLabAndroidDevice" in source

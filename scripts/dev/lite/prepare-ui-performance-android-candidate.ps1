@@ -5,6 +5,7 @@ param(
   [string]$AdbPath = '',
   [switch]$OpenCandidate,
   [switch]$Wake,
+  [switch]$ActivityPulse,
   [switch]$Cleanup
 )
 
@@ -58,6 +59,25 @@ if ($Wake) {
     Open-PocketLabAndroidCandidate -AdbPath $adb -DeviceSerial ([string]$state.device_serial) -CandidatePort ([int]$state.candidate_port)
   }
   Write-Host '[pocketlab-android-candidate] bounded wake request complete.'
+  exit 0
+}
+
+if ($ActivityPulse) {
+  if (-not $state -or -not $state.device_serial) {
+    Fail 'No owned Android candidate state is available for an activity pulse.'
+  }
+  $pulseResult = Invoke-PocketLabWindowsAdb -AdbPath $adb -Arguments @(
+    '-s',
+    [string]$state.device_serial,
+    'shell',
+    'input',
+    'tap',
+    '1',
+    '1'
+  )
+  if ($pulseResult.ExitCode -ne 0) {
+    Fail 'adb_transport_failed: could not send the bounded Android activity pulse.'
+  }
   exit 0
 }
 
