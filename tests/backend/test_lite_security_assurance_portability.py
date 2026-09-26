@@ -88,7 +88,10 @@ def test_runtime_proxy_forwards_only_the_qualification_browser_bridge_on_api_pat
     text = (ROOT / "pocket-lab-final-structure" / "pocket-lab-bootstrap-production-scripts-patched" / "scripts" / "start-dashboard.sh").read_text(encoding="utf-8")
     assert "path /api/lite/harness /api/lite/harness/*" in text
     assert "handle @pocketlab_harness_routes" in text
-    assert text.count("header_up -X-Pocket-Lab-Qualification-Bridge") == 2
+    assert text.count("header_up X-Pocket-Lab-Qualification-Bridge {http.request.header.X-Pocket-Lab-Qualification-Bridge}") == 1
+    assert text.count("${qualification_bridge_forward}") == 2
+    assert 'if [[ "$site_label" == ":${DASH_PORT}" ]]' in text
+    assert "qualification_bridge_forward='" in text
     assert "handle /api/lite/security/events" in text
     assert "handle /api/*" in text
 
