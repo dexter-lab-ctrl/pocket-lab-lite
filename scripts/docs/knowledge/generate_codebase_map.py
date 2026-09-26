@@ -768,7 +768,11 @@ def build_browser_projection(model: dict[str, Any]) -> dict[str, Any]:
         symbol_terms = [str(x.get("name") or "") for x in node["symbols"]]
         # The basename is already present in the full path; omitting the duplicate token keeps the static browser index compact without changing search semantics.
         tokens = " ".join([node["p"], node["purpose"], node["r"], node["l"] or "", node["o"], node["c"], *external_terms, *symbol_terms]).lower()
-        search[node["id"]] = re.sub(r"[^a-z0-9_./:@ -]+", " ", tokens)[:900]
+        # Keep the static browser projection below its deliberately bounded
+        # payload budget as the tracked repository grows.  The path and the
+        # highest-value labels appear first; the bounded tail is only a
+        # compact search aid and is not canonical source evidence.
+        search[node["id"]] = re.sub(r"[^a-z0-9_./:@ -]+", " ", tokens)[:800]
     projection = {
         "schema_version": "1.0.0", "source_fingerprint": model["source_fingerprint"], "root_id": model["topology"]["root_id"], "live_runtime": False,
         "statistics": model["statistics"], "documentation_health": model["documentation_health"], "nodes": nodes, "relationships": rels,
