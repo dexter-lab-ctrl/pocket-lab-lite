@@ -92,3 +92,11 @@ def test_android_qualifier_proves_fresh_origin_and_foreground_renderer():
     assert "UNAVAILABLE Rules Manage" in source
     assert "UNAVAILABLE Security finding details" in source
     assert "unavailableSurfaces" in source
+
+
+def test_android_candidate_server_is_ready_before_chrome_is_opened():
+    source = CANDIDATE_RUNNER.read_text(encoding="utf-8")
+    server_start = source.index("ui_performance_candidate_server.py")
+    server_probe = source.index("candidate server did not expose its exact-SHA manifest")
+    chrome_open = source.index("prepare-ui-performance-android-candidate.ps1 -OpenCandidate")
+    assert server_start < server_probe < chrome_open

@@ -44,9 +44,6 @@ printf '[ui-performance-android-candidate] building exact source SHA %s\n' "$sou
 # removes at the qualification boundary.
 POCKETLAB_UI_PERF_CANDIDATE=1 VITE_POCKETLAB_UI_PERF_CANDIDATE=1 VITE_POCKETLAB_PERF_TEST=1 POCKETLAB_BUILD_ID="$source_commit" npm run build
 
-powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
-  -File scripts/dev/lite/prepare-ui-performance-android-candidate.ps1 -OpenCandidate
-
 python3 scripts/dev/lite/ui_performance_candidate_server.py --source-commit "$source_commit" &
 candidate_process=$!
 
@@ -63,6 +60,13 @@ done
 curl -fsS --connect-timeout 1 --max-time 2 \
   http://127.0.0.1:18765/__pocketlab_qualification__/candidate.json >/dev/null \
   || fail 'candidate server did not expose its exact-SHA manifest.'
+
+# Open Chrome only after the exact candidate server is serving. Opening the
+# URL before the server exists can leave Android Chrome on a foreground error
+# target; CDP may still attach to that target, but it will not deliver real
+# renderer animation frames.
+powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
+  -File scripts/dev/lite/prepare-ui-performance-android-candidate.ps1 -OpenCandidate
 
 printf '[ui-performance-android-candidate] running physical Android qualification for %s\n' "$source_commit"
 cdp_arg=""
