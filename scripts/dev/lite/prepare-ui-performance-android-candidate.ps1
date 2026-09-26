@@ -4,6 +4,7 @@ param(
   [string]$DeviceSerial = '',
   [string]$AdbPath = '',
   [switch]$OpenCandidate,
+  [switch]$Wake,
   [switch]$Cleanup
 )
 
@@ -45,6 +46,15 @@ if ($Cleanup) {
   }
   Remove-Item -Force $StatePath -ErrorAction SilentlyContinue
   Write-Host '[pocketlab-android-candidate] owned ADB reverse cleanup complete.'
+  exit 0
+}
+
+if ($Wake) {
+  if (-not $state -or -not $state.device_serial) {
+    Fail 'No owned Android candidate state is available for a bounded wake request.'
+  }
+  Wake-PocketLabAndroidDevice -AdbPath $adb -DeviceSerial ([string]$state.device_serial)
+  Write-Host '[pocketlab-android-candidate] bounded wake request complete.'
   exit 0
 }
 

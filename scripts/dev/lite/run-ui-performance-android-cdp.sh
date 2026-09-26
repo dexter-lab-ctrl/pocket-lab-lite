@@ -176,6 +176,11 @@ if (( baseline_mode == 1 )); then
   exec bash scripts/dev/lite/run-ui-performance-android-baseline.sh
 fi
 
+if [[ "${POCKETLAB_ANDROID_WAKE_BEFORE_QUALIFICATION:-0}" == "1" ]]; then
+  powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
+    -File scripts/dev/lite/prepare-ui-performance-android-candidate.ps1 -Wake
+fi
+
 printf '[ui-performance-android-preflight] running physical Android UI performance qualification\n'
 rm -rf .pocketlab-dev/performance/ui-performance-android-cdp-*.json
 node scripts/dev/lite/qualify-ui-performance-android-cdp.mjs

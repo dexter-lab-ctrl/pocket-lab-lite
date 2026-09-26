@@ -71,6 +71,7 @@ powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
 printf '[ui-performance-android-candidate] running physical Android qualification for %s\n' "$source_commit"
 cdp_arg=""
 if (( baseline_mode == 1 )); then cdp_arg="--baseline"; fi
+POCKETLAB_ANDROID_WAKE_BEFORE_QUALIFICATION=1 \
 LITE_BASE_URL='http://127.0.0.1:18765' \
 LITE_PERF_SOURCE_COMMIT="$source_commit" \
   bash scripts/dev/lite/run-ui-performance-android-cdp.sh $cdp_arg
