@@ -5,7 +5,6 @@ param(
   [string]$AdbPath = '',
   [switch]$OpenCandidate,
   [switch]$Wake,
-  [switch]$ActivityPulse,
   [switch]$Cleanup
 )
 
@@ -37,13 +36,30 @@ $state = Read-State
 
 if ($Cleanup) {
   if ($state -and $state.device_serial -and $state.candidate_port) {
+    if ($state.wake_lock_acquired -eq $true) {
+      $wakeRelease = Invoke-PocketLabWindowsAdb -AdbPath $adb -Arguments @(
+        '-s',
+        [string]$state.device_serial,
+        'shell',
+        'cmd',
+        'power',
+        'set-wakelock',
+        'release',
+        '-d',
+        '0',
+        'FULL_WAKE_LOCK'
+      )
+      if ($wakeRelease.ExitCode -ne 0) {
+        Write-Warning '[pocketlab-android-candidate] Android wake-lock release failed.'
+      }
+    }
     $cleanupResult = Invoke-PocketLabWindowsAdb -AdbPath $adb -Arguments @(
-      '-s',
-      [string]$state.device_serial,
-      'reverse',
-      '--remove',
-      "tcp:$([int]$state.candidate_port)"
-    )
+        '-s',
+        [string]$state.device_serial,
+        'reverse',
+        '--remove',
+        "tcp:$([int]$state.candidate_port)"
+      )
   }
   Remove-Item -Force $StatePath -ErrorAction SilentlyContinue
   Write-Host '[pocketlab-android-candidate] owned ADB reverse cleanup complete.'
@@ -59,26 +75,6 @@ if ($Wake) {
     Open-PocketLabAndroidCandidate -AdbPath $adb -DeviceSerial ([string]$state.device_serial) -CandidatePort ([int]$state.candidate_port)
   }
   Write-Host '[pocketlab-android-candidate] bounded wake request complete.'
-  exit 0
-}
-
-if ($ActivityPulse) {
-  if (-not $state -or -not $state.device_serial) {
-    Fail 'No owned Android candidate state is available for an activity pulse.'
-  }
-  Wake-PocketLabAndroidDevice -AdbPath $adb -DeviceSerial ([string]$state.device_serial)
-  $pulseResult = Invoke-PocketLabWindowsAdb -AdbPath $adb -Arguments @(
-    '-s',
-    [string]$state.device_serial,
-    'shell',
-    'input',
-    'tap',
-    '1',
-    '1'
-  )
-  if ($pulseResult.ExitCode -ne 0) {
-    Fail 'adb_transport_failed: could not send the bounded Android activity pulse.'
-  }
   exit 0
 }
 
@@ -122,9 +118,29 @@ $state = [ordered]@{
   version = 1
   device_serial = $serial
   candidate_port = $CandidatePort
+  # Set the cleanup intent before acquiring the lock so an interrupted
+  # operator process still releases the bounded Android wake lock.
+  wake_lock_acquired = $true
   updated_at = (Get-Date).ToUniversalTime().ToString('o')
 }
 $state | ConvertTo-Json | Set-Content -Encoding UTF8 $StatePath
+
+$wakeResult = Invoke-PocketLabWindowsAdb -AdbPath $adb -Arguments @(
+  '-s',
+  $serial,
+  'shell',
+  'cmd',
+  'power',
+  'set-wakelock',
+  'acquire',
+  '-d',
+  '0',
+  'FULL_WAKE_LOCK'
+)
+if ($wakeResult.ExitCode -ne 0) {
+  Fail 'adb_transport_failed: could not acquire the bounded Android qualification wake lock.'
+}
+
 if ($OpenCandidate) {
   try {
     Open-PocketLabAndroidCandidate -AdbPath $adb -DeviceSerial $serial -CandidatePort $CandidatePort
