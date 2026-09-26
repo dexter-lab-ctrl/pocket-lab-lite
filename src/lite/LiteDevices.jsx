@@ -88,26 +88,48 @@ import {
 } from './LiteUi.jsx';
 import DeviceActionPortal from './devices/DeviceActionPortal.jsx';
 import LiteVirtualList from './components/LiteVirtualList.jsx';
-import { useLiteDeviceDetailsState, useLiteUiStore } from '../stores/liteUiStore.js';
+import { useLiteUiStore } from '../stores/liteUiStore.js';
 import { loadDeviceCard } from './devices/devicesPreload.js';
+import { isLitePerformanceMode } from './liteNavigationRuntime.js';
 
 const MemoLiteVirtualList = React.memo(LiteVirtualList);
 const DeviceCardLazy = React.lazy(loadDeviceCard);
 const MemoDeviceCard = React.memo((props) => (
-  <Suspense fallback={<div className="lite-device-card lite-device-card-loading" aria-busy="true" />}>
-    <DeviceCardLazy {...props} />
-  </Suspense>
+  <ConnectedDeviceCard {...props} />
 ), (previous, next) => (
   previous.device === next.device
   && previous.restartBusy === next.restartBusy
   && previous.removeBusy === next.removeBusy
-  && previous.detailsOpen === next.detailsOpen
   && previous.savedStateOnly === next.savedStateOnly
 ));
+
+function ConnectedDeviceCard(props) {
+  const deviceKey = String(props.device?.id || props.device?.name || '');
+  const detailsOpen = useLiteUiStore((state) => state.activeDeviceDetailsId === deviceKey);
+  return (
+    <Suspense fallback={<div className="lite-device-card lite-device-card-loading" aria-busy="true" />}>
+      <DeviceCardLazy {...props} detailsOpen={detailsOpen} />
+    </Suspense>
+  );
+}
+
+function DeviceFleetList(props) {
+  const detailsDeviceId = useLiteUiStore((state) => state.activeDeviceDetailsId);
+  const pinnedItemKeys = useMemo(
+    () => {
+      const basePinnedItemKeys = props.pinnedItemKeys || [];
+      if (!detailsDeviceId) return basePinnedItemKeys;
+      return [detailsDeviceId, ...basePinnedItemKeys].filter(Boolean);
+    },
+    [detailsDeviceId, props.pinnedItemKeys],
+  );
+  return <MemoLiteVirtualList {...props} pinnedItemKeys={pinnedItemKeys} />;
+}
 
 const loadDeviceDetails = () => import('./devices/DeviceDetailsLazy.jsx');
 const DeviceDetailsLazy = React.lazy(loadDeviceDetails);
 const DeviceModelPickerLazy = React.lazy(() => import('./devices/DeviceModelPickerLazy.jsx'));
+const DEVICE_DETAILS_BODY_PERF_DELAY_MS = 700;
 
 const DEVICES_PROGRESSIVE_DETAILS_MILESTONE_2 = true;
 const DEVICES_DETAILS_ARE_LAZY = true;
@@ -151,6 +173,81 @@ function deviceListVisualFingerprint(devices) {
   return JSON.stringify(devices, (key, value) => (
     DEVICE_LIST_VOLATILE_FIELDS.has(key) ? undefined : value
   ));
+}
+
+function toggleDeviceDetails(deviceKey) {
+  const store = useLiteUiStore.getState();
+  store.setActiveDeviceDetailsId(store.activeDeviceDetailsId === deviceKey ? '' : deviceKey);
+}
+
+function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
+  const detailsDeviceId = useLiteUiStore((state) => state.activeDeviceDetailsId);
+  const setDeviceModelPickerId = useLiteUiStore((state) => state.setDeviceModelPickerId);
+  const detailsPanelRef = useRef(null);
+  const [detailsBodyReady, setDetailsBodyReady] = useState(false);
+  const activeDetailsDevice = useMemo(
+    () => devices.find((device) => String(device?.id || device?.name || '') === detailsDeviceId) || null,
+    [devices, detailsDeviceId],
+  );
+
+  useEffect(() => {
+    if (!activeDetailsDevice) {
+      setDetailsBodyReady(false);
+      return undefined;
+    }
+    if (isLitePerformanceMode()) {
+      const timer = window.setTimeout(() => setDetailsBodyReady(true), DEVICE_DETAILS_BODY_PERF_DELAY_MS);
+      return () => window.clearTimeout(timer);
+    }
+    const frame = window.requestAnimationFrame(() => setDetailsBodyReady(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeDetailsDevice]);
+
+  const closeDeviceDetails = useCallback(() => {
+    const trigger = detailsButtonRefs.current.get(detailsDeviceId);
+    useLiteUiStore.getState().setActiveDeviceDetailsId('');
+    window.requestAnimationFrame(() => trigger?.focus?.({ preventScroll: true }));
+  }, [detailsButtonRefs, detailsDeviceId]);
+
+  useEffect(() => {
+    if (!activeDetailsDevice || !detailsPanelRef.current) return undefined;
+    const frame = window.requestAnimationFrame(() => {
+      detailsPanelRef.current?.focus?.({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeDetailsDevice?.id]);
+
+  useEffect(() => {
+    if (!activeDetailsDevice) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key !== 'Escape' || event.defaultPrevented) return;
+      event.preventDefault();
+      closeDeviceDetails();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [activeDetailsDevice, closeDeviceDetails]);
+
+  if (!activeDetailsDevice) return null;
+  return (
+    <DeviceActionPortal>
+      <div ref={detailsPanelRef} tabIndex={-1} className="lite-device-details-focus-anchor lite-device-action-surface">
+        {detailsBodyReady ? (
+          <Suspense fallback={<GlassCard className="lite-device-details-panel"><p>Loading device details…</p></GlassCard>}>
+            <DeviceDetailsLazy
+              device={activeDetailsDevice}
+              onClose={closeDeviceDetails}
+              onChooseModel={() => setDeviceModelPickerId(activeDetailsDevice?.id)}
+            />
+          </Suspense>
+        ) : (
+          <GlassCard className="lite-device-details-panel" aria-busy="true">
+            <p>Loading device details…</p>
+          </GlassCard>
+        )}
+      </div>
+    </DeviceActionPortal>
+  );
 }
 
 const DEVICES_POLLING_POLICY_PHASE4 = 'DEVICES_POLLING_POLICY_PHASE4';
@@ -280,14 +377,12 @@ export default function DevicesScreen() {
   const [removeBusy, setRemoveBusy] = useState(false);
   const [removeAssessmentLoading, setRemoveAssessmentLoading] = useState(false);
   const [serverConflict, setServerConflict] = useState(null);
-  const { activeDeviceDetailsId: detailsDeviceId, deviceModelPickerId } = useLiteDeviceDetailsState();
-  const setDetailsDeviceId = useLiteUiStore((state) => state.setActiveDeviceDetailsId);
+  const deviceModelPickerId = useLiteUiStore((state) => state.deviceModelPickerId);
   const setDeviceModelPickerId = useLiteUiStore((state) => state.setDeviceModelPickerId);
   const detailsButtonRefs = useRef(new Map());
   const removeButtonRefs = useRef(new Map());
   const deviceActionHandlersRef = useRef({ restartAgent: null, loadRemovalAssessment: null });
   const stableDeviceListRef = useRef({ fingerprint: '', devices: null });
-  const detailsPanelRef = useRef(null);
   const deviceCompletionFeedback = useRef(createLiteFeedbackDeduper());
   const pendingInviteId = useRef('');
   const pendingRestartId = useRef('');
@@ -317,7 +412,6 @@ export default function DevicesScreen() {
     stableDeviceListRef.current = { fingerprint, devices: rawDevices };
     return rawDevices;
   }, [rawDevices]);
-  const activeDetailsDevice = devices.find((device) => String(device?.id || device?.name || '') === detailsDeviceId) || null;
   const modelPickerDevice = devices.find((device) => String(device?.id || device?.name || '') === deviceModelPickerId) || null;
   const remoteAccess = data?.remote_access || {};
   const remoteAccessView = remoteAccessPresentation(remoteAccess, savedStateOnly);
@@ -397,28 +491,6 @@ export default function DevicesScreen() {
     }
     pendingRestartId.current = '';
   }, [pushToast, restartProgress]);
-  useEffect(() => {
-    if (!activeDetailsDevice || !detailsPanelRef.current) return undefined;
-    const frame = window.requestAnimationFrame(() => {
-      detailsPanelRef.current?.focus?.({ preventScroll: true });
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [activeDetailsDevice?.id]);
-  const closeDeviceDetails = () => {
-    const trigger = detailsButtonRefs.current.get(detailsDeviceId);
-    setDetailsDeviceId('');
-    window.requestAnimationFrame(() => trigger?.focus?.({ preventScroll: true }));
-  };
-  useEffect(() => {
-    if (!activeDetailsDevice) return undefined;
-    const onKeyDown = (event) => {
-      if (event.key !== 'Escape' || event.defaultPrevented) return;
-      event.preventDefault();
-      closeDeviceDetails();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [activeDetailsDevice, detailsDeviceId]);
   useEffect(() => {
     if (!removeCandidate) return undefined;
     const frame = window.requestAnimationFrame(() => {
@@ -567,11 +639,19 @@ export default function DevicesScreen() {
   function closeRemovalReview() {
     if (removeBusy) return;
     const candidateId = String(removeCandidate?.id || '');
-    const trigger = removeButtonRefs.current.get(candidateId);
     removalFlow.cancel();
     setRemoveCandidate(null);
     setRemoveAssessment(null);
-    window.requestAnimationFrame(() => trigger?.focus?.({ preventScroll: true }));
+    // The removal sheet unmount and the virtual-list reconciliation can land
+    // in separate frames. Restore focus after both have settled and resolve
+    // the current ref at that point so a remounted action button is not left
+    // unfocused.
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const target = removeButtonRefs.current.get(candidateId);
+        target?.focus?.({ preventScroll: true });
+      });
+    });
   }
 
   async function removeOldDevice() {
@@ -621,7 +701,7 @@ export default function DevicesScreen() {
 
   deviceActionHandlersRef.current.restartAgent = restartAgent;
   deviceActionHandlersRef.current.loadRemovalAssessment = loadRemovalAssessment;
-  const pinnedDeviceKeys = useMemo(() => [detailsDeviceId, restartBusy].filter(Boolean), [detailsDeviceId, restartBusy]);
+  const pinnedDeviceKeys = useMemo(() => [restartBusy].filter(Boolean), [restartBusy]);
   const renderDeviceItem = useCallback((device) => {
     const key = String(device.id || device.name);
     return (
@@ -629,9 +709,8 @@ export default function DevicesScreen() {
         device={device}
         restartBusy={restartBusy}
         removeBusy={removeBusy}
-        detailsOpen={detailsDeviceId === key}
         savedStateOnly={savedStateOnly}
-        onOpenDetails={() => { setDetailsDeviceId(detailsDeviceId === key ? '' : key); }}
+        onOpenDetails={() => toggleDeviceDetails(key)}
         onPreloadDetails={preloadDeviceDetailsOnIntent}
         detailsButtonRef={(node) => {
           if (node) detailsButtonRefs.current.set(key, node);
@@ -645,7 +724,7 @@ export default function DevicesScreen() {
         onRemoveDevice={() => deviceActionHandlersRef.current.loadRemovalAssessment?.(device)}
       />
     );
-  }, [detailsDeviceId, preloadDeviceDetailsOnIntent, removeBusy, restartBusy, savedStateOnly, setDetailsDeviceId]);
+  }, [preloadDeviceDetailsOnIntent, removeBusy, restartBusy, savedStateOnly]);
 
   return (
     <>
@@ -984,19 +1063,7 @@ export default function DevicesScreen() {
 
           {loading ? <LoadingCard label="Loading devices..." /> : null}
 
-          {activeDetailsDevice ? (
-            <DeviceActionPortal>
-              <div ref={detailsPanelRef} tabIndex={-1} className="lite-device-details-focus-anchor lite-device-action-surface">
-                <Suspense fallback={<GlassCard className="lite-device-details-panel"><p>Loading device details…</p></GlassCard>}>
-                  <DeviceDetailsLazy
-                    device={activeDetailsDevice}
-                    onClose={closeDeviceDetails}
-                    onChooseModel={() => { setDeviceModelPickerId(activeDetailsDevice?.id); }}
-                  />
-                </Suspense>
-              </div>
-            </DeviceActionPortal>
-          ) : null}
+          <DeviceDetailsPortal devices={devices} detailsButtonRefs={detailsButtonRefs} />
 
           {modelPickerDevice ? (
             <Suspense fallback={null}>
@@ -1010,7 +1077,7 @@ export default function DevicesScreen() {
             </Suspense>
           ) : null}
 
-          <MemoLiteVirtualList
+          <DeviceFleetList
             items={devices}
             domain="devices"
             datasetKey="fleet:all"

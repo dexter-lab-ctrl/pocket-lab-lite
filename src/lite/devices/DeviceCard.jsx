@@ -91,6 +91,7 @@ function DeviceCard({
   onOpenDetails,
   onPreloadDetails,
   detailsButtonRef = null,
+  removeButtonRef = null,
   savedStateOnly = false,
 }) {
   const [technicalDetailsOpen, setTechnicalDetailsOpen] = React.useState(false);
@@ -218,7 +219,7 @@ function DeviceCard({
                   {canRestart && story.next_action?.kind !== 'restart' ? <LiteButton tone="secondary" onClick={onRestartAgent} disabled={restartBusy === device?.id}>
                     <span className="lite-device-card-action-glyph" aria-hidden="true" />{restartBusy === device?.id ? 'Checking progress...' : 'Restart agent'}
                   </LiteButton> : null}
-                  {canRemove ? <LiteButton tone="danger" onClick={openRemovalReview} disabled={removeBusy}>
+                  {canRemove ? <LiteButton tone="danger" onClick={openRemovalReview} disabled={removeBusy} buttonRef={removeButtonRef}>
                     <span className="lite-device-card-action-glyph is-danger" aria-hidden="true" />{(device?.removal_assessment?.allowed ?? device?.removal_assessment?.safe_to_remove) ? 'Remove device' : 'Review removal'}
                   </LiteButton> : null}
                 </div> : null}
