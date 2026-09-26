@@ -66,6 +66,7 @@ if ($ActivityPulse) {
   if (-not $state -or -not $state.device_serial) {
     Fail 'No owned Android candidate state is available for an activity pulse.'
   }
+  Wake-PocketLabAndroidDevice -AdbPath $adb -DeviceSerial ([string]$state.device_serial)
   $pulseResult = Invoke-PocketLabWindowsAdb -AdbPath $adb -Arguments @(
     '-s',
     [string]$state.device_serial,
