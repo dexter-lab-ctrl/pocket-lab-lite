@@ -32,7 +32,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "1d1a1908e4d75d1473d9677cb188e48aef3bc35f8ff1542299d105e58877586f",
+  "source_fingerprint": "552acfb76c424a861e4734116d9fccb6a0aa2531c6fc78f046dc4cbb2531e907",
   "source_fingerprints": {
     ".github/workflows/docs-security-supply-chain.yml": "b5ce9661a2c0673d9e9c2a3be9b19e958b4046543816728556a581a2f338fa27",
     ".github/workflows/lite-quality.yml": "895c08c00e6352aa07bf24ee04b31621940f6d8db0ab6fb61916beb496f0546c",
@@ -71,7 +71,7 @@
     "scripts/dev/lite/run-playwright-mocked.sh": "9293ca6becf155ebefd5348901302e694eae8cca478ed0012b91e3a0dc68fd16",
     "scripts/dev/lite/run-ui-performance-android-baseline.sh": "ab353bc98382ea73cc698d97cdbec25fc4ecf587e50dcba36d49ddbaa62950ee",
     "scripts/dev/lite/run-ui-performance-android-candidate.sh": "700922903778101eeece1fda9a81f4edfb76174740e5ed501afd39b61db5ea5d",
-    "scripts/dev/lite/run-ui-performance-android-cdp.sh": "af1e51d38c26c451db9082b3c4b30e29ccc59ff647a231ede09258a1ac3ea506",
+    "scripts/dev/lite/run-ui-performance-android-cdp.sh": "1abc5b2ae4d12f2b4caa6aff71106014a36ad30aaf6c91ec42241838815b8f6c",
     "scripts/dev/lite/run-ui-performance-candidate.sh": "d6200d8b4b30a2d10d739237f26040a67d85b701090eb8b065d466711b84d16d",
     "scripts/dev/lite/run-ui-performance-live.sh": "8138ffc28101a6b24871ea2814bad953e65589df99be75149beb834833540f2c",
     "scripts/dev/lite/run-ui-performance-qualified.py": "807fb573f7a7a092ee4eb6d778a596033968ab165b75edea740b1a903c1c0c1a",
