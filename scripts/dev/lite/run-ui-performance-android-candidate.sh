@@ -47,7 +47,7 @@ POCKETLAB_UI_PERF_CANDIDATE=1 VITE_POCKETLAB_UI_PERF_CANDIDATE=1 VITE_POCKETLAB_
 python3 scripts/dev/lite/ui_performance_candidate_server.py --source-commit "$source_commit" &
 candidate_process=$!
 
-for _ in {1..80}; do
+for _ in {1..240}; do
   if curl -fsS --connect-timeout 1 --max-time 2 \
       http://127.0.0.1:18765/__pocketlab_qualification__/candidate.json >/dev/null 2>&1; then
     break
