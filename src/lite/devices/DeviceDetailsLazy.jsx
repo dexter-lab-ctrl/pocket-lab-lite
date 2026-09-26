@@ -794,6 +794,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
           const attention = deviceAttention(device);
           return (
             <LiteProgressiveDetails
+              sectionRenderMode="css-contained"
               title={title}
               status={status}
               statusLabel={deviceStatusLabel(effectiveStatus)}

@@ -1,14 +1,14 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import LiteTechnicalDetails from './LiteTechnicalDetails.jsx';
 import LiteHistorySection from './LiteHistorySection.jsx';
 
 const PROGRESSIVE_DETAILS_SUMMARY_FIRST = true;
-const PROGRESSIVE_DETAILS_CSS_CONTAINED = true;
+const PROGRESSIVE_DETAILS_DEFAULT_RENDER_MODE = 'progressive';
 const PROGRESSIVE_DETAILS_NO_BACKEND_EVIDENCE_FETCH = true;
 const PROGRESSIVE_DETAILS_NO_HIDDEN_HEAVY_PANELS = true;
 const PROGRESSIVE_DETAILS_ATTENTION_CLASS_MARKER = 'lite-app-action-detail-section--attention';
 void PROGRESSIVE_DETAILS_SUMMARY_FIRST;
-void PROGRESSIVE_DETAILS_CSS_CONTAINED;
+void PROGRESSIVE_DETAILS_DEFAULT_RENDER_MODE;
 void PROGRESSIVE_DETAILS_NO_BACKEND_EVIDENCE_FETCH;
 void PROGRESSIVE_DETAILS_NO_HIDDEN_HEAVY_PANELS;
 void PROGRESSIVE_DETAILS_ATTENTION_CLASS_MARKER;
@@ -56,6 +56,7 @@ export default function LiteProgressiveDetails({
   next_step = '',
   technicalDetails = [],
   history = null,
+  sectionRenderMode = PROGRESSIVE_DETAILS_DEFAULT_RENDER_MODE,
   children,
 }) {
   const savedSummary = safeSavedSummary(saved_for_troubleshooting);
@@ -101,8 +102,38 @@ export default function LiteProgressiveDetails({
     what_will_not_happen_by_default,
     what_would_happen_after_confirmation,
   ]);
+  const cssContained = sectionRenderMode === 'css-contained';
+  const initialSectionCount = Math.min(1, detailSections.length);
+  const [visibleSectionCount, setVisibleSectionCount] = useState(cssContained ? detailSections.length : initialSectionCount);
+
+  useEffect(() => {
+    if (cssContained) {
+      setVisibleSectionCount(detailSections.length);
+      return undefined;
+    }
+    setVisibleSectionCount(initialSectionCount);
+    if (detailSections.length <= initialSectionCount) return undefined;
+
+    let active = true;
+    let frame = null;
+    let nextCount = initialSectionCount;
+    const revealNextBatch = () => {
+      frame = window.requestAnimationFrame(() => {
+        if (!active) return;
+        nextCount = Math.min(detailSections.length, nextCount + 1);
+        setVisibleSectionCount(nextCount);
+        if (nextCount < detailSections.length) revealNextBatch();
+      });
+    };
+    revealNextBatch();
+    return () => {
+      active = false;
+      if (frame !== null) window.cancelAnimationFrame(frame);
+    };
+  }, [cssContained, detailSections.length, initialSectionCount]);
+
   return (
-    <article className={`lite-progressive-details is-${status || 'neutral'}`} data-lite-progressive-render="css-contained">
+    <article className={`lite-progressive-details is-${status || 'neutral'}`} data-lite-progressive-render={cssContained ? 'css-contained' : 'raf-batched'}>
       <div className="lite-progressive-details-summary">
         <span>Details</span>
         <h3>{title}</h3>
@@ -111,7 +142,7 @@ export default function LiteProgressiveDetails({
       </div>
 
       <div className="lite-progressive-details-grid">
-        {detailSections}
+        {detailSections.slice(0, visibleSectionCount)}
       </div>
 
       <LiteTechnicalDetails rows={technicalDetails} />
