@@ -45,6 +45,12 @@ for (const [screenId, scenario] of SCREEN_CASES) {
     await page.goto(`/?screen=${screenId}`);
     await waitForLiteScreenToSettle(page, screenId);
     await expect(page.locator(`[data-lite-screen-id="${screenId}"]`)).toBeVisible();
+    if (screenId === 'rules') {
+      // Rules delivers its final projection through the mocked message
+      // pipeline after geometry settles; keep that delivery out of the scroll
+      // sample just as the Recovery fixture requires below.
+      await page.waitForTimeout(1000);
+    }
 
     const report = await measureLiteInteraction(
       page,

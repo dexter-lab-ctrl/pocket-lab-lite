@@ -329,6 +329,40 @@ def test_qualified_runner_retries_transient_cleanup_transport(monkeypatch, tmp_p
     assert attempts["count"] == 3
 
 
+def test_qualified_runner_resume_preserves_existing_evidence(monkeypatch, tmp_path):
+    runner = _load_runner()
+    _prepare_runner(monkeypatch, runner, tmp_path)
+    evidence = tmp_path / ".pocketlab-dev/performance/existing.json"
+    evidence.parent.mkdir(parents=True)
+    evidence.write_text('{"source_commit":"candidate"}\n', encoding="utf-8")
+    checkpoint = tmp_path / ".pocketlab-dev/qualification-controller.json"
+    runner._write_checkpoint(
+        checkpoint,
+        principal_id="codex-ui-performance-qualification",
+        mode="live",
+        completed={"live-scroll:home"},
+        next_interaction="live-scroll:catalog",
+        status="interaction_complete",
+    )
+    monkeypatch.setattr(runner.harness_client, "bootstrap_session", lambda **kwargs: _session_payload())
+    monkeypatch.setattr(runner.harness_client, "browser_bridge", lambda **kwargs: _bridge_payload())
+    monkeypatch.setattr(runner.harness_client, "revoke_authenticated_principal", lambda **kwargs: {})
+    monkeypatch.setattr(
+        runner.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
+    )
+    assert runner.main([
+        "--mode", "live",
+        "--principal-id", "codex-ui-performance-qualification",
+        "--key-file", str(tmp_path / "qualification.key"),
+        "--interaction", "live-scroll:home",
+        "--controller-checkpoint", str(checkpoint),
+        "--resume",
+    ]) == 0
+    assert evidence.exists()
+
+
 def test_before_owner_interaction_rotates_session_below_45_seconds(monkeypatch):
     runner = _load_runner()
     now = datetime(2026, 9, 25, 9, 0, tzinfo=timezone.utc)

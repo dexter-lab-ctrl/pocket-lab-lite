@@ -564,7 +564,11 @@ def run(args: argparse.Namespace) -> int:
     cleanup_error = ""
     known_secrets: list[str] = []
     previous_api_url = os.environ.get("POCKETLAB_HARNESS_API_URL")
-    _clear_performance_evidence()
+    # A resumed controller must retain the already-completed interaction
+    # reports so the final evidence set remains complete.  A fresh controller
+    # run owns a clean evidence directory; resume is explicitly the exception.
+    if not args.resume:
+        _clear_performance_evidence()
 
     try:
         source_commit = ""
