@@ -25,6 +25,9 @@ def test_android_baseline_control_is_exact_sha_candidate_surface():
     assert 'pocketlab-candidate-sha' in runner
     assert 'MINIMUM_FRAME_COUNT = 20' in runner
     assert 'candidate_control_verified: true' in runner
+    assert 'existingCandidatePages' in runner
+    assert 'baseline_foreground_renderer_unavailable' in runner
+    assert 'receivesAnimationFrames' in runner
 
 
 def test_android_device_state_capture_is_bounded_and_sanitized():

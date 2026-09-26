@@ -101,6 +101,24 @@ async function collectSample(page, durationMs) {
   return summary;
 }
 
+async function receivesAnimationFrames(page) {
+  const frames = await page.evaluate(() => new Promise((resolve) => {
+    let count = 0;
+    const timeout = setTimeout(() => resolve(count), 350);
+    const tick = () => {
+      count += 1;
+      if (count >= 2) {
+        clearTimeout(timeout);
+        resolve(count);
+        return;
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  })).catch(() => 0);
+  return Number(frames) >= 2;
+}
+
 export async function collectAndroidBaseline({
   cdpUrl,
   baseUrl,
@@ -116,7 +134,16 @@ export async function collectAndroidBaseline({
   const contexts = browser.contexts();
   if (!contexts.length) fail('android_context_unavailable');
   const context = contexts[0];
-  const page = await context.newPage();
+  const origin = new URL(base.origin);
+  const existingCandidatePages = context.pages().filter((candidatePage) => candidatePage.url().startsWith(origin.origin));
+  // Android Chrome can keep a CDP-created page backgrounded with zero RAF
+  // callbacks even when DOM automation works. Reuse the tab opened through the
+  // owned ADB reverse path so the control sample measures the physical
+  // foreground renderer and remains available to the following UI qualifier.
+  const page = existingCandidatePages[existingCandidatePages.length - 1] || await context.newPage();
+  const ownsPage = existingCandidatePages.length === 0;
+  const staleCandidatePages = existingCandidatePages.filter((candidatePage) => candidatePage !== page);
+  await Promise.all(staleCandidatePages.map((candidatePage) => candidatePage.close().catch(() => {})));
   try {
     const controlUrl = new URL('/__pocketlab_qualification__/baseline-control.html', base);
     const response = await page.goto(controlUrl.toString(), { waitUntil: 'domcontentloaded', timeout: 30_000 });
@@ -127,6 +154,13 @@ export async function collectAndroidBaseline({
     const meta = await page.locator('meta[name="pocketlab-candidate-sha"]').getAttribute('content');
     if (meta !== commit) fail('baseline_control_meta_mismatch');
     await page.bringToFront();
+    let foregroundFramesReady = await receivesAnimationFrames(page);
+    for (let attempt = 0; !foregroundFramesReady && attempt < 2; attempt += 1) {
+      await page.bringToFront().catch(() => {});
+      await page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => {});
+      foregroundFramesReady = await receivesAnimationFrames(page);
+    }
+    if (!foregroundFramesReady) fail('baseline_foreground_renderer_unavailable');
     await installSampler(page);
     const samples = [];
     const boundedCount = Math.max(3, Math.min(10, Number(sampleCount) || DEFAULT_SAMPLES));
@@ -156,7 +190,7 @@ export async function collectAndroidBaseline({
     }
     return report;
   } finally {
-    await page.close().catch(() => {});
+    if (ownsPage) await page.close().catch(() => {});
   }
 }
 
