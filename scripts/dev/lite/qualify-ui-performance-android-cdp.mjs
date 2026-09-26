@@ -121,7 +121,23 @@ const existingCandidatePages = context.pages().filter((candidatePage) => candida
 const page = existingCandidatePages[existingCandidatePages.length - 1] || await context.newPage();
 const staleCandidatePages = existingCandidatePages.filter((candidatePage) => candidatePage !== page);
 await Promise.all(staleCandidatePages.map((candidatePage) => candidatePage.close().catch(() => {})));
-await page.bringToFront().catch(() => {});
+
+async function activateCandidatePage() {
+  // Playwright's bringToFront can resolve while Android Chrome keeps the
+  // target backgrounded after a cross-document navigation.  The CDP command
+  // is the renderer-level activation request; keep the Playwright call too
+  // for browsers that do not expose Page.bringToFront on the Android target.
+  await page.bringToFront().catch(() => {});
+  try {
+    const session = await context.newCDPSession(page);
+    await session.send('Page.bringToFront');
+    await session.detach().catch(() => {});
+  } catch {
+    // The Playwright activation above remains the portable fallback.
+  }
+}
+
+await activateCandidatePage();
 
 // A previous candidate service worker can surface the normal app-update
 // notice while the qualifier is clearing that worker and its caches. It is
@@ -211,10 +227,12 @@ if (!candidatePageMetaVerified) {
   fail('The Android rendered page did not expose the requested exact candidate SHA.');
 }
 
+await activateCandidatePage();
 let foregroundFramesReady = await receivesAnimationFrames(page);
 for (let attempt = 0; !foregroundFramesReady && attempt < 2; attempt += 1) {
-  await page.bringToFront().catch(() => {});
+  await activateCandidatePage();
   await page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => {});
+  await activateCandidatePage();
   foregroundFramesReady = await receivesAnimationFrames(page);
 }
 if (!foregroundFramesReady) {
