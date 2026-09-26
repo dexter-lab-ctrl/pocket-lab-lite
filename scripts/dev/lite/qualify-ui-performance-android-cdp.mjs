@@ -311,6 +311,24 @@ async function firstVisibleOrNull(locator) {
   return null;
 }
 
+async function waitForVisibleWithReload(locator, label, screenId) {
+  let lastError = null;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      await locator.first().waitFor({ state: 'visible', timeout: 8_000 });
+      return;
+    } catch (error) {
+      lastError = error;
+      if (attempt === 2) break;
+      await page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 });
+      await page.locator(`[data-lite-screen-id="${screenId}"]`).waitFor({ state: 'visible', timeout: 20_000 });
+      await page.waitForTimeout(800);
+      await removeQualificationUpdateNotice();
+    }
+  }
+  fail(`Could not find visible ${label} after bounded screen reload retries: ${lastError?.message || 'unknown error'}`);
+}
+
 async function removeQualificationUpdateNotice() {
   await page.locator('[data-lite-sw-update-ready="true"]').evaluateAll((nodes) => {
     nodes.forEach((node) => node.remove());
@@ -548,7 +566,7 @@ await measurePhase4Interaction({
 // section switch and Details panel do not submit an app operation.
 await gotoScreen('catalog');
 const catalogManageButtonLocator = page.getByRole('button', { name: /^Manage$/i });
-await catalogManageButtonLocator.first().waitFor({ state: 'visible', timeout: 20_000 });
+await waitForVisibleWithReload(catalogManageButtonLocator, 'Apps Manage button', 'catalog');
 const catalogManageButton = await firstVisible(catalogManageButtonLocator, 'Apps Manage button');
 await catalogManageButton.click();
 const catalogManage = await firstVisible(page.getByRole('dialog', { name: /Manage PhotoPrism/i }), 'PhotoPrism Manage dialog');
@@ -583,7 +601,7 @@ await measureNestedInteraction({
 // Diagnostics, health history, and the detail scroll are all read-only.
 await gotoScreen('devices');
 const deviceManageButtonLocator = page.getByRole('button', { name: /^Manage(?:\s|$)/i });
-await deviceManageButtonLocator.first().waitFor({ state: 'visible', timeout: 20_000 });
+await waitForVisibleWithReload(deviceManageButtonLocator, 'device Manage button', 'devices');
 const deviceManageButton = await firstVisible(deviceManageButtonLocator, 'device Manage button');
 await deviceManageButton.click();
 const deviceDetailsPanelLocator = page.getByRole('region', { name: /details/i });

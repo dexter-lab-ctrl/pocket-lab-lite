@@ -175,6 +175,8 @@ def test_android_qualifier_uses_a_fresh_candidate_target_and_bounded_foreground_
     source = Path("scripts/dev/lite/qualify-ui-performance-android-cdp.mjs").read_text(encoding="utf-8")
     assert "existingCandidatePages" in source
     assert "existingCandidatePages[existingCandidatePages.length - 1] || await context.newPage()" in source
+    assert "waitForVisibleWithReload" in source
+    assert "bounded screen reload retries" in source
     assert "staleCandidatePages" in source
     assert "candidatePage.close()" in source
     assert "foregroundFramesReady" in source
