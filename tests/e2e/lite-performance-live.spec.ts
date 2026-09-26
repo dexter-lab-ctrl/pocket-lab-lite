@@ -418,7 +418,7 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
 
     if (requested('live-deep:recovery-section-switch') || requested('live-deep:recovery-action-details')) {
       await prepareLiveScreen(page, 'recovery');
-      const manageRecovery = page.getByRole('button', { name: 'Manage backups and recovery' }).first();
+      const manageRecovery = page.getByRole('button', { name: /Manage Recovery|Manage backups and recovery/i }).first();
       if (!(await manageRecovery.isVisible().catch(() => false))) {
         console.log('[ui-performance-live] UNAVAILABLE recovery Manage: the current runtime contained the Recovery section; no unsafe recovery operation is attempted.');
         return;
