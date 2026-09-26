@@ -20,7 +20,7 @@ export default defineConfig({
     'import.meta.env.VITE_POCKETLAB_BUILD_ID': JSON.stringify(pocketLabBuildId),
     // Candidate builds are served only by the qualification loopback server.
     // They must not install a persistent service worker that can reload the
-    // page between the candidate bootstrap and a measured interaction.
+    // page before the first measured interaction.
     'import.meta.env.VITE_POCKETLAB_UI_PERF_CANDIDATE': JSON.stringify(qualificationCandidateBuild ? '1' : '0'),
   },
   server: {
