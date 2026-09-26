@@ -200,7 +200,10 @@ def test_android_qualifier_uses_a_fresh_candidate_target_and_bounded_foreground_
     assert "existingCandidatePages[existingCandidatePages.length - 1] || await context.newPage()" in source
     assert "waitForVisibleWithReload" in source
     assert "bounded screen reload retries" in source
-    assert "staleCandidatePages" in source
+    assert "const candidatePages = [...new Set([...existingCandidatePages, page])]" in source
+    assert "const foregroundCandidates = [page, ...candidatePages.filter((candidatePage) => candidatePage !== page)]" in source
+    assert "async function proveCandidatePage(candidatePage)" in source
+    assert "pocketlab_qualification_sha_probe=1" in source
     assert "candidatePage.close()" in source
     assert "foregroundFramesReady" in source
     assert "bounded retries" in source
