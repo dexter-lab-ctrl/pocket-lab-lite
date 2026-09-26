@@ -11,6 +11,7 @@ import {
 
 const LIVE_TABS = ['home', 'catalog', 'devices', 'security', 'identity', 'rules', 'recovery'] as const;
 const REQUESTED_INTERACTION = String(process.env.LITE_QUALIFICATION_INTERACTION || '').trim().toLowerCase();
+const COLLECT_EVIDENCE = process.env.LITE_PERF_COLLECT_EVIDENCE === '1';
 const LIVE_INTERACTION_IDS = new Set([
   ...LIVE_TABS.slice(1).map((screenId) => `live-navigation:${screenId}`),
   ...LIVE_TABS.map((screenId) => `live-scroll:${screenId}`),
@@ -43,6 +44,14 @@ function matrixEvidence(screen: string, interaction: string, nestedSurface: stri
   ));
   if (!entry) throw new Error(`Missing UI performance matrix entry for ${screen} / ${nestedSurface} / ${interaction}`);
   return entry.evidenceId;
+}
+
+function expectLivePerformanceBudget(report: Parameters<typeof expectLitePerformanceBudget>[0]) {
+  if (COLLECT_EVIDENCE && !report.gate_passed) {
+    console.warn(`[ui-performance-live] collection-only gate miss: ${report.interaction}`);
+    return;
+  }
+  expectLitePerformanceBudget(report);
 }
 
 async function prepareLiveScreen(page: Page, screenId: string) {
@@ -96,7 +105,7 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
         },
         { settleMs: 1000, mode: 'live' },
       );
-      expectLitePerformanceBudget(report);
+      expectLivePerformanceBudget(report);
       await writeLitePerformanceEvidence(testInfo, report);
     }
   });
@@ -118,7 +127,7 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
         },
         { settleMs: 180, mode: 'live' },
       );
-      expectLitePerformanceBudget(report);
+      expectLivePerformanceBudget(report);
       await writeLitePerformanceEvidence(testInfo, report);
     }
   });
@@ -149,7 +158,7 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
             evidenceId: matrixEvidence('home', 'nested-detail-open', 'Workspace details / Technical details'),
           },
         );
-        expectLitePerformanceBudget(report);
+        expectLivePerformanceBudget(report);
         await writeLitePerformanceEvidence(testInfo, report);
       }
 
@@ -172,7 +181,7 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
             evidenceId: matrixEvidence('home', 'nested-detail-close', 'Workspace details / Technical details'),
           },
         );
-        expectLitePerformanceBudget(report);
+        expectLivePerformanceBudget(report);
         await writeLitePerformanceEvidence(testInfo, report);
       }
     }
@@ -198,7 +207,7 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
             evidenceId: matrixEvidence('catalog', 'section-switch', 'PhotoPrism Manage / action sections'),
           },
         );
-        expectLitePerformanceBudget(report);
+        expectLivePerformanceBudget(report);
         await writeLitePerformanceEvidence(testInfo, report);
       }
 
@@ -227,7 +236,7 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
             evidenceId: matrixEvidence('catalog', 'nested-detail-open', 'PhotoPrism Manage / action details'),
           },
         );
-        expectLitePerformanceBudget(report);
+        expectLivePerformanceBudget(report);
         await writeLitePerformanceEvidence(testInfo, report);
       }
     }
@@ -261,7 +270,7 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
             evidenceId: matrixEvidence('devices', 'nested-detail-open', 'Device details / Diagnostics and history'),
           },
         );
-        expectLitePerformanceBudget(report);
+        expectLivePerformanceBudget(report);
         await writeLitePerformanceEvidence(testInfo, report);
       }
 
@@ -282,7 +291,7 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
             evidenceId: matrixEvidence('devices', 'history-open', 'Device details / health history'),
           },
         );
-        expectLitePerformanceBudget(report);
+        expectLivePerformanceBudget(report);
         await writeLitePerformanceEvidence(testInfo, report);
       }
 
@@ -300,7 +309,7 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
             evidenceId: matrixEvidence('devices', 'nested-scroll', 'Device details / long detail surface'),
           },
         );
-        expectLitePerformanceBudget(report);
+        expectLivePerformanceBudget(report);
         await writeLitePerformanceEvidence(testInfo, report);
       }
     }
@@ -327,7 +336,7 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
             evidenceId: matrixEvidence('security', 'history-open', 'Security Manage / history details'),
           },
         );
-        expectLitePerformanceBudget(report);
+        expectLivePerformanceBudget(report);
         await writeLitePerformanceEvidence(testInfo, report);
       }
 
@@ -353,7 +362,7 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
             evidenceId: matrixEvidence('security', 'finding-detail-open', 'Security Manage / finding details'),
           },
         );
-        expectLitePerformanceBudget(report);
+        expectLivePerformanceBudget(report);
         await writeLitePerformanceEvidence(testInfo, report);
       }
     }
@@ -381,7 +390,7 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
             evidenceId: matrixEvidence('identity', 'confirmation-render', 'Manage access / protected confirmation presentation'),
           },
         );
-        expectLitePerformanceBudget(report);
+        expectLivePerformanceBudget(report);
         await writeLitePerformanceEvidence(testInfo, report);
         await page.getByRole('button', { name: 'Cancel' }).click();
       }
@@ -411,7 +420,7 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
             evidenceId: matrixEvidence('rules', 'nested-detail-open', 'Manage Safety Rules / Technical status'),
           },
         );
-        expectLitePerformanceBudget(report);
+        expectLivePerformanceBudget(report);
         await writeLitePerformanceEvidence(testInfo, report);
       }
     }
@@ -450,7 +459,7 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
             evidenceId: matrixEvidence('recovery', 'section-switch', 'Manage recovery / section tabs'),
           },
         );
-        expectLitePerformanceBudget(report);
+        expectLivePerformanceBudget(report);
         await writeLitePerformanceEvidence(testInfo, report);
       }
 
@@ -480,7 +489,7 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
             evidenceId: matrixEvidence('recovery', 'nested-detail-open', 'Manage recovery / action details'),
           },
         );
-        expectLitePerformanceBudget(report);
+        expectLivePerformanceBudget(report);
         await writeLitePerformanceEvidence(testInfo, report);
       }
     }

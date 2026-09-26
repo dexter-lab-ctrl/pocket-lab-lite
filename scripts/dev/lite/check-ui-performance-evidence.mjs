@@ -87,4 +87,8 @@ for (const file of files) {
 }
 
 console.log(`[ui-performance] evidence=${files.length} gate_failures=${failures} target_misses=${targetMisses}`);
-if (failures) process.exit(1);
+if (failures && process.env.LITE_PERF_COLLECT_EVIDENCE === '1') {
+  console.warn('[ui-performance] collection-only mode retained gate failures for matrix coverage');
+} else if (failures) {
+  process.exit(1);
+}

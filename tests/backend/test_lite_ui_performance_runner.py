@@ -94,6 +94,7 @@ def test_qualified_runner_projects_only_the_fixed_browser_bridge_and_cleans_up(m
     assert observed["env"]["POCKETLAB_HARNESS_BROWSER_BRIDGE"] == bridge_token
     assert observed["env"]["LITE_QUALIFICATION_INTERACTION"] == "live-scroll:home"
     assert observed["env"]["LITE_PERF_PRESERVE_EVIDENCE"] == "1"
+    assert observed["env"]["LITE_PERF_COLLECT_EVIDENCE"] == "1"
     assert observed["env"]["LITE_BASE_URL"] == "https://qualification.invalid"
     assert "POCKETLAB_HARNESS_SESSION" not in observed["env"]
     assert "POCKETLAB_HARNESS_API_URL" not in observed["env"]
@@ -169,6 +170,28 @@ def test_android_runner_loads_node_toolchain_for_noninteractive_controller_child
     assert 'nvm use "${POCKETLAB_NODE_VERSION:-24.16.0}"' in source
     assert 'need node' in source
     assert source.count("await browser.close().catch(() => {});") >= 2
+
+
+def test_android_controller_does_not_enable_live_collection_mode(monkeypatch, tmp_path):
+    runner = _load_runner()
+    _prepare_runner(monkeypatch, runner, tmp_path)
+    monkeypatch.setattr(runner.harness_client, "bootstrap_session", lambda **kwargs: _session_payload())
+    monkeypatch.setattr(runner.harness_client, "browser_bridge", lambda **kwargs: _bridge_payload())
+    monkeypatch.setattr(runner.harness_client, "revoke_authenticated_principal", lambda **kwargs: {})
+    monkeypatch.setattr(runner.harness_client, "stop_session", lambda **kwargs: {})
+    observed = {}
+
+    def fake_run(command, *, env, **kwargs):
+        observed["env"] = env
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(runner.subprocess, "run", fake_run)
+    assert runner.main([
+        "--mode", "android-cdp",
+        "--principal-id", "codex-ui-performance-qualification",
+        "--key-file", str(tmp_path / "qualification.key"),
+    ]) == 0
+    assert "LITE_PERF_COLLECT_EVIDENCE" not in observed["env"]
 
 
 def test_android_qualifier_uses_a_fresh_candidate_target_and_bounded_foreground_raf_probe():

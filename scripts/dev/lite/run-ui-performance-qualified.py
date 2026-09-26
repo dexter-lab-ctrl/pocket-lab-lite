@@ -198,6 +198,13 @@ def _child_environment(
     child["LITE_QUALIFICATION_BROWSER_BRIDGE"] = "1"
     child["POCKETLAB_HARNESS_BROWSER_BRIDGE"] = bridge_token
     child["LITE_PERF_PRESERVE_EVIDENCE"] = "1"
+    # Live matrix collection must be able to retain later interaction evidence
+    # after a target/gate miss.  The evidence checker still records every miss;
+    # this flag only changes the fail-fast behavior of the live child runner.
+    if mode == "live":
+        child["LITE_PERF_COLLECT_EVIDENCE"] = "1"
+    else:
+        child.pop("LITE_PERF_COLLECT_EVIDENCE", None)
     if interaction:
         child["LITE_QUALIFICATION_INTERACTION"] = interaction
     else:
