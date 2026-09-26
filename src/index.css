@@ -18111,7 +18111,8 @@ textarea {
 .theme-pocket-lite-daylight main .lite-page-header[class*="rounded-[2rem]"][class*="border"],
 .theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-toolbar--simple,
 .theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card,
-.theme-pocket-lite-daylight .lite-security-native-polish .lite-security-safety-center-card {
+.theme-pocket-lite-daylight .lite-security-native-polish .lite-security-safety-center-card,
+.theme-pocket-lite-daylight .lite-refresh-status-popover {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
@@ -24584,6 +24585,16 @@ html.lite-install-light-shell body {
   [data-lite-perf-offscreen='true'] {
     content-visibility: auto;
     contain-intrinsic-size: auto 5.5rem;
+  }
+
+  /* Detail cards are independent, summary-first surfaces. Let Chromium skip
+     cards below the active phone viewport while preserving their estimated
+     scroll space and accessible DOM. This reduces the layout/paint burst when
+     a nested detail surface opens without hiding any user-facing content. */
+  .theme-pocket-lite-daylight .lite-progressive-details-grid > .lite-progressive-detail-section,
+  [data-lite-manage-portal='true'] .lite-progressive-details-grid > .lite-progressive-detail-section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 7.5rem;
   }
 }
 
