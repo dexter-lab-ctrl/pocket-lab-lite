@@ -119,6 +119,27 @@ async function receivesAnimationFrames(page) {
   return Number(frames) >= 2;
 }
 
+async function acquireScreenWakeLock(page) {
+  return page.evaluate(async () => {
+    if (!navigator.wakeLock?.request) return false;
+    try {
+      const lock = await navigator.wakeLock.request('screen');
+      window.__POCKETLAB_ANDROID_BASELINE_WAKE_LOCK__ = lock;
+      return !lock.released;
+    } catch {
+      return false;
+    }
+  }).catch(() => false);
+}
+
+async function releaseScreenWakeLock(page) {
+  await page.evaluate(async () => {
+    const lock = window.__POCKETLAB_ANDROID_BASELINE_WAKE_LOCK__;
+    if (lock) await lock.release().catch(() => {});
+    window.__POCKETLAB_ANDROID_BASELINE_WAKE_LOCK__ = null;
+  }).catch(() => {});
+}
+
 export async function collectAndroidBaseline({
   cdpUrl,
   baseUrl,
@@ -154,6 +175,7 @@ export async function collectAndroidBaseline({
     const meta = await page.locator('meta[name="pocketlab-candidate-sha"]').getAttribute('content');
     if (meta !== commit) fail('baseline_control_meta_mismatch');
     await page.bringToFront();
+    if (!await acquireScreenWakeLock(page)) fail('baseline_screen_wake_lock_unavailable');
     let foregroundFramesReady = await receivesAnimationFrames(page);
     for (let attempt = 0; !foregroundFramesReady && attempt < 2; attempt += 1) {
       await page.bringToFront().catch(() => {});
@@ -190,6 +212,7 @@ export async function collectAndroidBaseline({
     }
     return report;
   } finally {
+    await releaseScreenWakeLock(page);
     if (ownsPage) await page.close().catch(() => {});
   }
 }
