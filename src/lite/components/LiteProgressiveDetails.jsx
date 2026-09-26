@@ -1,16 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import LiteTechnicalDetails from './LiteTechnicalDetails.jsx';
 import LiteHistorySection from './LiteHistorySection.jsx';
 
 const PROGRESSIVE_DETAILS_SUMMARY_FIRST = true;
-const PROGRESSIVE_DETAILS_INITIAL_SECTION_COUNT = 1;
-const PROGRESSIVE_DETAILS_SECTION_BATCH_SIZE = 1;
+const PROGRESSIVE_DETAILS_CSS_CONTAINED = true;
 const PROGRESSIVE_DETAILS_NO_BACKEND_EVIDENCE_FETCH = true;
 const PROGRESSIVE_DETAILS_NO_HIDDEN_HEAVY_PANELS = true;
 const PROGRESSIVE_DETAILS_ATTENTION_CLASS_MARKER = 'lite-app-action-detail-section--attention';
 void PROGRESSIVE_DETAILS_SUMMARY_FIRST;
-void PROGRESSIVE_DETAILS_INITIAL_SECTION_COUNT;
-void PROGRESSIVE_DETAILS_SECTION_BATCH_SIZE;
+void PROGRESSIVE_DETAILS_CSS_CONTAINED;
 void PROGRESSIVE_DETAILS_NO_BACKEND_EVIDENCE_FETCH;
 void PROGRESSIVE_DETAILS_NO_HIDDEN_HEAVY_PANELS;
 void PROGRESSIVE_DETAILS_ATTENTION_CLASS_MARKER;
@@ -103,33 +101,8 @@ export default function LiteProgressiveDetails({
     what_will_not_happen_by_default,
     what_would_happen_after_confirmation,
   ]);
-  const initialSectionCount = Math.min(PROGRESSIVE_DETAILS_INITIAL_SECTION_COUNT, detailSections.length);
-  const [visibleSectionCount, setVisibleSectionCount] = useState(initialSectionCount);
-
-  useEffect(() => {
-    setVisibleSectionCount(initialSectionCount);
-    if (detailSections.length <= initialSectionCount) return undefined;
-
-    let active = true;
-    let frame = null;
-    let nextCount = initialSectionCount;
-    const revealNextBatch = () => {
-      frame = window.requestAnimationFrame(() => {
-        if (!active) return;
-        nextCount = Math.min(detailSections.length, nextCount + PROGRESSIVE_DETAILS_SECTION_BATCH_SIZE);
-        setVisibleSectionCount(nextCount);
-        if (nextCount < detailSections.length) revealNextBatch();
-      });
-    };
-    revealNextBatch();
-    return () => {
-      active = false;
-      if (frame !== null) window.cancelAnimationFrame(frame);
-    };
-  }, [detailSections.length, initialSectionCount]);
-
   return (
-    <article className={`lite-progressive-details is-${status || 'neutral'}`}>
+    <article className={`lite-progressive-details is-${status || 'neutral'}`} data-lite-progressive-render="css-contained">
       <div className="lite-progressive-details-summary">
         <span>Details</span>
         <h3>{title}</h3>
@@ -138,7 +111,7 @@ export default function LiteProgressiveDetails({
       </div>
 
       <div className="lite-progressive-details-grid">
-        {detailSections.slice(0, visibleSectionCount)}
+        {detailSections}
       </div>
 
       <LiteTechnicalDetails rows={technicalDetails} />
