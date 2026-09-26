@@ -2111,23 +2111,23 @@ function CatalogManagePortal({
           </button>
         </div>
         <div className="lite-catalog-manage-scroll" ref={manageScrollRef}>
-          <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} />
-          <div className="lite-catalog-manage-quick-actions" aria-label="Quick app actions">
-            <LiteButton onClick={(event) => { stopGestureEvent(event); openAppFullScreen(app, event); }} disabled={!canOpen} tone="secondary"><ExternalLink className="h-4 w-4" />Open full screen</LiteButton>
-          </div>
-          <div className="lite-catalog-manage-section-tabs" role="tablist" aria-label="Manage app sections">
-            {MANAGE_SECTION_ORDER.map((sectionId) => (
-              <LiteManageSectionTab
-                key={sectionId}
-                sectionId={sectionId}
-                active={manageSection === sectionId}
-                label={MANAGE_SECTION_LABELS[sectionId] || sectionId}
-                onSelect={(event) => { stopGestureEvent(event); setManageSection(sectionId); closeActionDetails(); }}
-              />
-            ))}
-          </div>
           {manageBodyReady ? (
             <>
+              <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} />
+              <div className="lite-catalog-manage-quick-actions" aria-label="Quick app actions">
+                <LiteButton onClick={(event) => { stopGestureEvent(event); openAppFullScreen(app, event); }} disabled={!canOpen} tone="secondary"><ExternalLink className="h-4 w-4" />Open full screen</LiteButton>
+              </div>
+              <div className="lite-catalog-manage-section-tabs" role="tablist" aria-label="Manage app sections">
+                {MANAGE_SECTION_ORDER.map((sectionId) => (
+                  <LiteManageSectionTab
+                    key={sectionId}
+                    sectionId={sectionId}
+                    active={manageSection === sectionId}
+                    label={MANAGE_SECTION_LABELS[sectionId] || sectionId}
+                    onSelect={(event) => { stopGestureEvent(event); setManageSection(sectionId); closeActionDetails(); }}
+                  />
+                ))}
+              </div>
               <div className="lite-catalog-manage-section-viewport">
                 <div className="lite-catalog-manage-section-hint" aria-live="polite">
                   <strong>{MANAGE_SECTION_LABELS[manageSection] || 'Manage'}</strong>
@@ -2251,7 +2251,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     snapshotSelect: selectCatalogSummaryView,
   });
   const setManageApp = useLiteUiStore((state) => state.setManageApp);
-  const manageAppId = useLiteUiStore((state) => state.manageAppId);
   const clearManageApp = useLiteUiStore((state) => state.clearManageApp);
   const longPressRef = useRef(null);
   const catalogFeedbackDeduper = useRef(createLiteFeedbackDeduper());
@@ -2744,7 +2743,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const actionsClassName = 'lite-catalog-actions';
     const lifecycle = lifecycleProfile(app);
     const lifecycleAttention = lifecycleAttentionItems(lifecycle);
-    const manageAppOpen = manageAppId === catalogAppKey(app);
     const buildManageViewModel = () => {
       const actionState = (actionId) => actionFromSnapshot(actionSnapshot, actionId, lifecycleAction(lifecycle, actionId));
       const openAction = actionState('open');
@@ -2981,7 +2979,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             ) : null}
           </div>
         ) : null}
-        {installed && lifecycle && manageAppOpen ? (
+        {installed && lifecycle ? (
           <CatalogManagePortal
             app={app}
             lifecycle={lifecycle}
