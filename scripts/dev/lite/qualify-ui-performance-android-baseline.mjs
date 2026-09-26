@@ -11,6 +11,7 @@ import {
 const MINIMUM_FRAME_COUNT = 20;
 const DEFAULT_SAMPLES = 3;
 const DEFAULT_SAMPLE_MS = 900;
+const MAX_SAMPLE_EXTENSION_MS = 2_000;
 
 function fail(message) {
   throw new Error(message);
@@ -89,7 +90,10 @@ async function installSampler(page) {
 
 async function collectSample(page, durationMs) {
   await page.evaluate(() => window.__POCKETLAB_BASELINE_SAMPLER__.start());
-  await page.waitForTimeout(durationMs);
+  // Android Chrome can briefly deliver a lower cadence while the physical
+  // renderer settles even with a held screen wake lock. Extend only the
+  // bounded control-sample window; performance thresholds remain unchanged.
+  await page.waitForTimeout(durationMs + MAX_SAMPLE_EXTENSION_MS);
   const raw = await page.evaluate(() => window.__POCKETLAB_BASELINE_SAMPLER__.stop());
   const summary = summarizeLiteFrames(raw?.intervals || [], {
     longTasks: raw?.longTasks || [],

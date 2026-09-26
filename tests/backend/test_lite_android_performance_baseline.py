@@ -24,6 +24,7 @@ def test_android_baseline_control_is_exact_sha_candidate_surface():
     assert "x-pocket-lab-candidate-sha" in runner
     assert 'pocketlab-candidate-sha' in runner
     assert 'MINIMUM_FRAME_COUNT = 20' in runner
+    assert 'MAX_SAMPLE_EXTENSION_MS = 2_000' in runner
     assert 'candidate_control_verified: true' in runner
     assert 'existingCandidatePages' in runner
     assert 'baseline_foreground_renderer_unavailable' in runner
