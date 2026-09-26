@@ -83,6 +83,12 @@ const APP_CATALOG_MANAGE_SHEET_PORTAL_OVERLAY = true;
 // transforms, animation wrappers, and overflow containers cannot clip the sheet.
 void APP_CATALOG_MANAGE_SHEET_PORTAL_OVERLAY;
 
+const APP_CATALOG_DETAILS_PRELOAD_ON_MANAGE = true;
+// Warm the code-split read-only details view after the lightweight Manage
+// shell is ready so the first Details interaction spends its frame budget on
+// rendering rather than module fetch and evaluation.
+void APP_CATALOG_DETAILS_PRELOAD_ON_MANAGE;
+
 
 const APP_CATALOG_FLIP_SHARED_CONTINUITY_IS_PRESENTATION_ONLY = true;
 // Enterprise UI rule: FLIP and shared visual continuity animate cloned or
@@ -1982,6 +1988,24 @@ function CatalogManagePortal({
     const frame = window.requestAnimationFrame(() => setManageExtrasReady(true));
     return () => window.cancelAnimationFrame(frame);
   }, [manageBodyReady]);
+
+  useEffect(() => {
+    if (!manageAppOpen || !manageBodyReady || typeof window === 'undefined') return undefined;
+    let idleId = null;
+    let timerId = null;
+    const preload = () => {
+      void loadAppActionDetails().catch(() => null);
+    };
+    if (typeof window.requestIdleCallback === 'function') {
+      idleId = window.requestIdleCallback(preload, { timeout: 1200 });
+    } else {
+      timerId = window.setTimeout(preload, 0);
+    }
+    return () => {
+      if (idleId !== null) window.cancelIdleCallback?.(idleId);
+      if (timerId !== null) window.clearTimeout(timerId);
+    };
+  }, [manageAppOpen, manageBodyReady]);
 
   useEffect(() => {
     if (!manageAppOpen) return undefined;

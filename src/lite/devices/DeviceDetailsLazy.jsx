@@ -396,11 +396,191 @@ function LiteDeferredDetails({ render, delayFrames = 1 }) {
   return render();
 }
 
+const DEVICE_AWARENESS_INITIAL_SECTION_COUNT = 1;
+const DEVICE_AWARENESS_SECTION_BATCH_SIZE = 1;
+
+function DeviceAwarenessDetails({ device }) {
+  const sections = React.useMemo(() => {
+    const capabilities = capabilityRows(device);
+    const capabilitySummary = deviceCapabilitySummary(device);
+    const runtimeServices = deviceRuntimeServices(device);
+    const restartAssessment = deviceRestartAssessment(device) || {};
+    const dependencies = device?.dependencies || {};
+    const removal = device?.removal_assessment || {};
+    return [
+      <section key="connection" className="lite-device-awareness-section" aria-label="Connection lifecycle">
+        <span>Connection</span>
+        <strong>{deviceConnectionLabel(device)}</strong>
+        <p>
+          Latest activity {formatDeviceTime(
+            device?.last_seen_state?.last_seen_at
+              || device?.last_seen_at
+              || device?.last_seen,
+          )} from {titleCase(
+            device?.last_seen_state?.last_seen_source,
+            'device activity',
+          )}.
+        </p>
+        <dl>
+          <div>
+            <dt>Heartbeat</dt>
+            <dd>{formatDeviceTime(
+              device?.last_seen_state?.last_heartbeat_at,
+              'No heartbeat reported',
+            )}</dd>
+          </div>
+          <div>
+            <dt>Supervisor</dt>
+            <dd>{formatDeviceTime(
+              device?.last_seen_state?.last_supervisor_heartbeat_at
+                || device?.last_supervisor_at,
+              'No supervisor heartbeat reported',
+            )}</dd>
+          </div>
+          <div>
+            <dt>Private connection</dt>
+            <dd>{formatDeviceTime(
+              device?.last_seen_state?.last_nats_connected_at,
+              'No private connection report',
+            )}</dd>
+          </div>
+        </dl>
+      </section>,
+
+      <section key="trust" className="lite-device-awareness-section" aria-label="Device trust">
+        <span>Trust</span>
+        <strong>{titleCase(device?.identity?.status || device?.identity_status, 'Identity check pending')}</strong>
+        <dl>
+          {trustSummary(device).map((item) => <div key={item.label}><dt>{item.label}</dt><dd>{item.value || 'Not reported'}</dd></div>)}
+        </dl>
+        {device?.identity?.repair_required ? <p className="is-review">Repair or rejoin must be started explicitly.</p> : null}
+      </section>,
+
+      <section key="capabilities" className="lite-device-awareness-section" aria-label="Device capabilities">
+        <span>Capabilities</span>
+        <strong>{capabilitySummary.label}</strong>
+        <ul className="lite-device-capability-list">
+          {capabilities.map((item) => (
+            <li key={item.id}>
+              <span>{item.label || titleCase(item.id)}</span>
+              <strong className={`is-${String(item.status || 'unknown').toLowerCase()}`}>
+                {capabilityStatusLabel(item.status, item.reason_code)}
+              </strong>
+            </li>
+          ))}
+        </ul>
+      </section>,
+
+      <section key="services" className="lite-device-awareness-section" aria-label="Runtime services">
+        <span>Services</span>
+        <strong>{runtimeServices.length ? `${runtimeServices.length} reported` : 'Not reported'}</strong>
+        {runtimeServices.length ? (
+          <ul className="lite-device-capability-list">
+            {runtimeServices.map((service) => (
+              <li key={service.service_id}>
+                <span>{service.label || titleCase(service.service_id)}</span>
+                <strong className={`is-${String(service.freshness || 'unknown').toLowerCase()}`}>
+                  {String(service.freshness || '').toLowerCase() === 'stale' ? `Last reported ${titleCase(service.state)}` : titleCase(service.state)}
+                </strong>
+              </li>
+            ))}
+          </ul>
+        ) : <p>Service status will appear after the next supervisor report.</p>}
+        {!restartAssessment.allowed ? <p>{restartAssessment.summary || 'Restart actions are unavailable until the device reports a safe recovery state.'}</p> : null}
+      </section>,
+
+      <section key="dependencies" className="lite-device-awareness-section" aria-label="Device dependencies">
+        <span>Dependencies</span>
+        <strong>{Number(dependencies.hosted_app_count || 0) + Number(dependencies.backup_set_count || 0)} responsibilities</strong>
+        {Array.isArray(dependencies.hosted_apps) && dependencies.hosted_apps.length ? (
+          <ul>{dependencies.hosted_apps.map((app) => <li key={app.app_id}><strong>{app.label}</strong> · {titleCase(app.status)}</li>)}</ul>
+        ) : <p>No hosted apps reported.</p>}
+        {Number(dependencies.backup_set_count || 0) > 0 ? <p>Stores {dependencies.backup_set_count} verified backup set{Number(dependencies.backup_set_count) === 1 ? '' : 's'}.</p> : null}
+        <p>Command delivery: {deviceCommandDeliveryLabel(device)}</p>
+      </section>,
+
+      <section key="removal" className="lite-device-awareness-section lite-device-awareness-removal" aria-label="Removal impact">
+        <span>Removal</span>
+        <strong>{removal.protected ? 'Protected server host' : (removal.allowed ?? removal.safe_to_remove) ? 'Remove after confirmation' : 'Removal blocked'}</strong>
+        {Array.isArray(removal.blockers) && removal.blockers.length ? (
+          <ul>{removal.blockers.map((item) => <li key={item.code}>{item.summary}</li>)}</ul>
+        ) : <p>{removal.protected ? 'This control device cannot be removed.' : 'No dependency blockers are currently reported.'}</p>}
+      </section>,
+    ];
+  }, [device]);
+  const initialSectionCount = Math.min(DEVICE_AWARENESS_INITIAL_SECTION_COUNT, sections.length);
+  const [visibleSectionCount, setVisibleSectionCount] = React.useState(initialSectionCount);
+
+  React.useEffect(() => {
+    setVisibleSectionCount(initialSectionCount);
+    if (sections.length <= initialSectionCount) return undefined;
+
+    let active = true;
+    let frame = null;
+    let nextCount = initialSectionCount;
+    const revealNextBatch = () => {
+      frame = window.requestAnimationFrame(() => {
+        if (!active) return;
+        nextCount = Math.min(sections.length, nextCount + DEVICE_AWARENESS_SECTION_BATCH_SIZE);
+        setVisibleSectionCount(nextCount);
+        if (nextCount < sections.length) revealNextBatch();
+      });
+    };
+    revealNextBatch();
+    return () => {
+      active = false;
+      if (frame !== null) window.cancelAnimationFrame(frame);
+    };
+  }, [initialSectionCount, sections.length]);
+
+  return <div className="lite-device-awareness-grid">{sections.slice(0, visibleSectionCount)}</div>;
+}
+
+function DeviceHealthHistory({ deviceId }) {
+  const healthHistoryOpenId = useLiteUiStore((state) => state.deviceHealthHistoryOpenId);
+  const setDeviceHealthHistoryOpenId = useLiteUiStore((state) => state.setDeviceHealthHistoryOpenId);
+  const healthHistoryOpen = healthHistoryOpenId === deviceId;
+  const healthHistoryQuery = useLiteQuery({
+    queryKey: liteQueryKeys.deviceHealthHistory(deviceId, 20, ''),
+    path: liteQueryPaths.deviceHealthHistory(deviceId, 20, ''),
+    queryFn: () => liteApi.deviceHealthHistory(deviceId, 20, ''),
+    enabled: Boolean(deviceId && healthHistoryOpen),
+    staleTime: 60_000,
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+  });
+  const healthTransitions = healthHistoryItems(healthHistoryQuery.data || {});
+
+  return (
+    <div className="lite-device-health-history-control">
+      <LiteButton
+        tone="secondary"
+        onClick={() => setDeviceHealthHistoryOpenId(healthHistoryOpen ? '' : deviceId)}
+        aria-expanded={healthHistoryOpen}
+      >
+        <Clock3 className="h-4 w-4" />
+        {healthHistoryOpen ? 'Hide health history' : 'Show health history'}
+      </LiteButton>
+      {healthHistoryOpen ? (
+        <div className="lite-device-health-history" role="region" aria-label="Device health history">
+          {healthHistoryQuery.loading ? <p>Loading safe health history…</p> : null}
+          {!healthHistoryQuery.loading && healthTransitions.length === 0 ? <p>No health transitions have been recorded yet.</p> : null}
+          {healthTransitions.map((item) => (
+            <article key={item.id}>
+              <strong>{item.title}</strong>
+              <span>{formatLiteTime(item.created_at)}</span>
+              <p>{item.summary}</p>
+            </article>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
   if (!device) return null;
   const initialDeviceId = device?.id || '';
-  const healthHistoryOpenId = useLiteUiStore((state) => state.deviceHealthHistoryOpenId);
-  const setDeviceHealthHistoryOpenId = useLiteUiStore((state) => state.setDeviceHealthHistoryOpenId);
   const setActiveTab = useLiteUiStore((state) => state.setActiveTab);
   const detailsQuery = useLiteQuery({
     queryKey: liteQueryKeys.device(initialDeviceId),
@@ -428,16 +608,6 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
   );
   const proactiveHealth = healthQuery.data?.health || device?.proactive_health || null;
   device = proactiveHealth ? { ...device, proactive_health: proactiveHealth } : device;
-  const healthHistoryOpen = healthHistoryOpenId === initialDeviceId;
-  const healthHistoryQuery = useLiteQuery({
-    queryKey: liteQueryKeys.deviceHealthHistory(initialDeviceId, 20, ''),
-    path: liteQueryPaths.deviceHealthHistory(initialDeviceId, 20, ''),
-    queryFn: () => liteApi.deviceHealthHistory(initialDeviceId, 20, ''),
-    enabled: Boolean(initialDeviceId && healthHistoryOpen),
-    staleTime: 60_000,
-    refetchInterval: false,
-    refetchOnWindowFocus: false,
-  });
   const title = device?.name || device?.hostname || 'Device details';
   const effectiveStatus = effectiveDeviceStatus(device);
   const status = effectiveStatus === 'online'
@@ -509,7 +679,6 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
         const healthAttention = healthAttentionCurrent && Array.isArray(proactiveHealth?.attention_items)
           ? proactiveHealth.attention_items.slice(0, 12)
           : [];
-        const healthTransitions = healthHistoryItems(healthHistoryQuery.data || {});
         const recommendationTargetScreen = recommendationScreen(proactiveHealth?.recommended_action);
         return (<section className={`lite-device-proactive-health is-${normalizeStatus(proactiveHealth?.status || 'unknown')}`} aria-label="Proactive device health">
         <div className="lite-device-proactive-health-head">
@@ -604,142 +773,13 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
               <p className="lite-device-health-saved-note">Saved health is visible. Reconnect before treating attention as current.</p>
             )}
 
-            <div className="lite-device-health-history-control">
-              <LiteButton
-                tone="secondary"
-                onClick={() => setDeviceHealthHistoryOpenId(healthHistoryOpen ? '' : initialDeviceId)}
-                aria-expanded={healthHistoryOpen}
-              >
-                <Clock3 className="h-4 w-4" />
-                {healthHistoryOpen ? 'Hide health history' : 'Show health history'}
-              </LiteButton>
-              {healthHistoryOpen ? (
-                <div className="lite-device-health-history" role="region" aria-label="Device health history">
-                  {healthHistoryQuery.loading ? <p>Loading safe health history…</p> : null}
-                  {!healthHistoryQuery.loading && healthTransitions.length === 0 ? <p>No health transitions have been recorded yet.</p> : null}
-                  {healthTransitions.map((item) => (
-                    <article key={item.id}>
-                      <strong>{item.title}</strong>
-                      <span>{formatLiteTime(item.created_at)}</span>
-                      <p>{item.summary}</p>
-                    </article>
-                  ))}
-                </div>
-              ) : null}
-            </div>
+            <DeviceHealthHistory deviceId={initialDeviceId} />
           </>
         ) : <p>Health will appear after the next prepared fleet refresh.</p>}
       </section>);
       }} />
 
-      <LiteDeferredDetails delayFrames={DEVICE_DETAILS_NONCRITICAL_DELAY_FRAMES} render={() => {
-        const capabilities = capabilityRows(device);
-        const capabilitySummary = deviceCapabilitySummary(device);
-        const runtimeServices = deviceRuntimeServices(device);
-        const restartAssessment = deviceRestartAssessment(device) || {};
-        const dependencies = device?.dependencies || {};
-        const removal = device?.removal_assessment || {};
-        return (<div className="lite-device-awareness-grid">
-        <section className="lite-device-awareness-section" aria-label="Connection lifecycle">
-          <span>Connection</span>
-          <strong>{deviceConnectionLabel(device)}</strong>
-          <p>
-            Latest activity {formatDeviceTime(
-              device?.last_seen_state?.last_seen_at
-                || device?.last_seen_at
-                || device?.last_seen,
-            )} from {titleCase(
-              device?.last_seen_state?.last_seen_source,
-              'device activity',
-            )}.
-          </p>
-          <dl>
-            <div>
-              <dt>Heartbeat</dt>
-              <dd>{formatDeviceTime(
-                device?.last_seen_state?.last_heartbeat_at,
-                'No heartbeat reported',
-              )}</dd>
-            </div>
-            <div>
-              <dt>Supervisor</dt>
-              <dd>{formatDeviceTime(
-                device?.last_seen_state?.last_supervisor_heartbeat_at
-                  || device?.last_supervisor_at,
-                'No supervisor heartbeat reported',
-              )}</dd>
-            </div>
-            <div>
-              <dt>Private connection</dt>
-              <dd>{formatDeviceTime(
-                device?.last_seen_state?.last_nats_connected_at,
-                'No private connection report',
-              )}</dd>
-            </div>
-          </dl>
-        </section>
-
-        <section className="lite-device-awareness-section" aria-label="Device trust">
-          <span>Trust</span>
-          <strong>{titleCase(device?.identity?.status || device?.identity_status, 'Identity check pending')}</strong>
-          <dl>
-            {trustSummary(device).map((item) => <div key={item.label}><dt>{item.label}</dt><dd>{item.value || 'Not reported'}</dd></div>)}
-          </dl>
-          {device?.identity?.repair_required ? <p className="is-review">Repair or rejoin must be started explicitly.</p> : null}
-        </section>
-
-        <section className="lite-device-awareness-section" aria-label="Device capabilities">
-          <span>Capabilities</span>
-          <strong>{capabilitySummary.label}</strong>
-          <ul className="lite-device-capability-list">
-            {capabilities.map((item) => (
-              <li key={item.id}>
-                <span>{item.label || titleCase(item.id)}</span>
-                <strong className={`is-${String(item.status || 'unknown').toLowerCase()}`}>
-                  {capabilityStatusLabel(item.status, item.reason_code)}
-                </strong>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="lite-device-awareness-section" aria-label="Runtime services">
-          <span>Services</span>
-          <strong>{runtimeServices.length ? `${runtimeServices.length} reported` : 'Not reported'}</strong>
-          {runtimeServices.length ? (
-            <ul className="lite-device-capability-list">
-              {runtimeServices.map((service) => (
-                <li key={service.service_id}>
-                  <span>{service.label || titleCase(service.service_id)}</span>
-                  <strong className={`is-${String(service.freshness || 'unknown').toLowerCase()}`}>
-                    {String(service.freshness || '').toLowerCase() === 'stale' ? `Last reported ${titleCase(service.state)}` : titleCase(service.state)}
-                  </strong>
-                </li>
-              ))}
-            </ul>
-          ) : <p>Service status will appear after the next supervisor report.</p>}
-          {!restartAssessment.allowed ? <p>{restartAssessment.summary || 'Restart actions are unavailable until the device reports a safe recovery state.'}</p> : null}
-        </section>
-
-        <section className="lite-device-awareness-section" aria-label="Device dependencies">
-          <span>Dependencies</span>
-          <strong>{Number(dependencies.hosted_app_count || 0) + Number(dependencies.backup_set_count || 0)} responsibilities</strong>
-          {Array.isArray(dependencies.hosted_apps) && dependencies.hosted_apps.length ? (
-            <ul>{dependencies.hosted_apps.map((app) => <li key={app.app_id}><strong>{app.label}</strong> · {titleCase(app.status)}</li>)}</ul>
-          ) : <p>No hosted apps reported.</p>}
-          {Number(dependencies.backup_set_count || 0) > 0 ? <p>Stores {dependencies.backup_set_count} verified backup set{Number(dependencies.backup_set_count) === 1 ? '' : 's'}.</p> : null}
-          <p>Command delivery: {deviceCommandDeliveryLabel(device)}</p>
-        </section>
-
-        <section className="lite-device-awareness-section lite-device-awareness-removal" aria-label="Removal impact">
-          <span>Removal</span>
-          <strong>{removal.protected ? 'Protected server host' : (removal.allowed ?? removal.safe_to_remove) ? 'Remove after confirmation' : 'Removal blocked'}</strong>
-          {Array.isArray(removal.blockers) && removal.blockers.length ? (
-            <ul>{removal.blockers.map((item) => <li key={item.code}>{item.summary}</li>)}</ul>
-          ) : <p>{removal.protected ? 'This control device cannot be removed.' : 'No dependency blockers are currently reported.'}</p>}
-        </section>
-      </div>);
-      }} />
+      <LiteDeferredDetails delayFrames={DEVICE_DETAILS_NONCRITICAL_DELAY_FRAMES} render={() => <DeviceAwarenessDetails device={device} />} />
 
       <details className="lite-device-advanced-details">
         <summary>
