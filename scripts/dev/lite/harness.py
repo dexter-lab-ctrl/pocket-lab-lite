@@ -379,6 +379,11 @@ def cmd_status(_args: argparse.Namespace) -> dict:
     return _request("GET", "/api/lite/harness/status")
 
 
+def status() -> dict:
+    """Return the bounded, sanitized harness status for an in-process caller."""
+    return _request("GET", "/api/lite/harness/status")
+
+
 def cmd_profiles(_args: argparse.Namespace) -> dict:
     return _request("GET", "/api/lite/harness/capabilities")
 

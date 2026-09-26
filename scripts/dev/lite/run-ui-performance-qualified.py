@@ -111,6 +111,11 @@ TRANSIENT_CLEANUP_MARKERS = (
     "502",
     "temporarily unavailable",
 )
+IDEMPOTENT_CLEANUP_MARKERS = (
+    "harness_session_revoked",
+    "session_revoked",
+    "principal_revoked",
+)
 
 
 class Authority:
@@ -477,6 +482,21 @@ def _is_transient_cleanup_error(exc: BaseException) -> bool:
     return any(marker in output for marker in TRANSIENT_CLEANUP_MARKERS)
 
 
+def _cleanup_already_complete(exc: BaseException) -> bool:
+    """Accept a lost cleanup response only when the backend proves clean state."""
+    output = str(exc).casefold()
+    if not any(marker in output for marker in IDEMPOTENT_CLEANUP_MARKERS):
+        return False
+    try:
+        status = harness_client.status()
+    except (OSError, RuntimeError, ValueError):
+        return False
+    return (
+        int(status.get("active_sessions", -1)) == 0
+        and int(status.get("principal_count", -1)) == 0
+    )
+
+
 def _run_interaction(
     args: argparse.Namespace,
     *,
@@ -681,6 +701,9 @@ def run(args: argparse.Namespace) -> int:
                             break
                         except (OSError, RuntimeError, ValueError) as exc:
                             cleanup_error = _redact_output(str(exc)[:240], tuple(known_secrets))
+                            if _cleanup_already_complete(exc):
+                                cleanup_error = ""
+                                break
                             if (
                                 not _is_transient_cleanup_error(exc)
                                 or cleanup_attempt + 1 >= CLEANUP_RETRY_ATTEMPTS

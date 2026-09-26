@@ -329,6 +329,34 @@ def test_qualified_runner_retries_transient_cleanup_transport(monkeypatch, tmp_p
     assert attempts["count"] == 3
 
 
+def test_qualified_runner_accepts_lost_cleanup_response_after_clean_status(monkeypatch, tmp_path):
+    runner = _load_runner()
+    _prepare_runner(monkeypatch, runner, tmp_path)
+    monkeypatch.setattr(runner.harness_client, "bootstrap_session", lambda **kwargs: _session_payload())
+    monkeypatch.setattr(runner.harness_client, "browser_bridge", lambda **kwargs: _bridge_payload())
+    monkeypatch.setattr(
+        runner.harness_client,
+        "revoke_authenticated_principal",
+        lambda **kwargs: (_ for _ in ()).throw(RuntimeError("harness_session_revoked: The harness session is no longer active.")),
+    )
+    monkeypatch.setattr(
+        runner.harness_client,
+        "status",
+        lambda: {"active_sessions": 0, "principal_count": 0, "sanitized": True},
+    )
+    monkeypatch.setattr(
+        runner.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
+    )
+    assert runner.main([
+        "--mode", "live",
+        "--principal-id", "codex-ui-performance-qualification",
+        "--key-file", str(tmp_path / "qualification.key"),
+        "--interaction", "live-scroll:home",
+    ]) == 0
+
+
 def test_qualified_runner_resume_preserves_existing_evidence(monkeypatch, tmp_path):
     runner = _load_runner()
     _prepare_runner(monkeypatch, runner, tmp_path)
