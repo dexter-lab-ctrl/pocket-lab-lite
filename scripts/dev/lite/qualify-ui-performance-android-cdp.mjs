@@ -148,6 +148,28 @@ await page.goto(new URL('/?pocketlab_qualification_bootstrap=1', candidateOrigin
   timeout: 30_000,
 });
 await page.waitForTimeout(250);
+
+// Acquire the renderer wake lock immediately after the first candidate
+// navigation. Manifest/cache validation can cross a short Android screen
+// timeout; waiting until after those probes lets Chrome enter Doze and
+// throttles requestAnimationFrame before the foreground probe.
+const wakeLock = await page.evaluate(async () => {
+  if (!navigator.wakeLock?.request) return { supported: false, acquired: false };
+  try {
+    const lock = await navigator.wakeLock.request('screen');
+    window.__POCKETLAB_ANDROID_WAKE_LOCK__ = lock;
+    // A disconnected qualifier must not leave the consumer phone awake
+    // forever. Normal completion also releases this when the page closes.
+    window.setTimeout(() => lock.release().catch(() => {}), 300_000);
+    return { supported: true, acquired: !lock.released };
+  } catch {
+    return { supported: true, acquired: false };
+  }
+});
+if (!wakeLock.acquired) {
+  fail('Android screen wake lock could not be acquired; physical frame evidence would be throttled.');
+}
+
 await page.evaluate(async () => {
   const registrations = await navigator.serviceWorker?.getRegistrations?.() || [];
   await Promise.all(registrations.map((registration) => registration.unregister()));
@@ -186,26 +208,6 @@ const candidateMeta = await page.locator('meta[name="pocketlab-candidate-sha"]')
 const candidatePageMetaVerified = candidateMeta === commit;
 if (!candidatePageMetaVerified) {
   fail('The Android rendered page did not expose the requested exact candidate SHA.');
-}
-
-// Keep the physical renderer awake for the bounded qualification session.
-// Android Chrome otherwise allows the display to enter Doze while CDP still
-// reports the page as visible, which produces throttled/zero RAF evidence.
-const wakeLock = await page.evaluate(async () => {
-  if (!navigator.wakeLock?.request) return { supported: false, acquired: false };
-  try {
-    const lock = await navigator.wakeLock.request('screen');
-    window.__POCKETLAB_ANDROID_WAKE_LOCK__ = lock;
-    // A disconnected qualifier must not leave the consumer phone awake
-    // forever.  Normal completion also releases this when the page closes.
-    window.setTimeout(() => lock.release().catch(() => {}), 300_000);
-    return { supported: true, acquired: !lock.released };
-  } catch {
-    return { supported: true, acquired: false };
-  }
-});
-if (!wakeLock.acquired) {
-  fail('Android screen wake lock could not be acquired; physical frame evidence would be throttled.');
 }
 
 let foregroundFramesReady = await receivesAnimationFrames(page);
