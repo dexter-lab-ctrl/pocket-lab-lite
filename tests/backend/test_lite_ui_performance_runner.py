@@ -237,6 +237,69 @@ def test_qualified_runner_retries_only_a_transient_preflight_failure(monkeypatch
     assert len(calls) == 2
 
 
+def test_transient_preflight_recovery_renews_only_between_child_attempts(monkeypatch, tmp_path):
+    runner = _load_runner()
+    _prepare_runner(monkeypatch, runner, tmp_path)
+    runner.PREFLIGHT_RETRY_ATTEMPTS = 2
+    runner.PREFLIGHT_RETRY_DELAY_SECONDS = 0
+    old = runner.Authority(
+        "old-session",
+        "old-id",
+        datetime.now(timezone.utc) + timedelta(seconds=20),
+        "old-bridge",
+        datetime.now(timezone.utc) + timedelta(seconds=20),
+    )
+    replacement = runner.Authority(
+        "new-session",
+        "new-id",
+        datetime.now(timezone.utc) + timedelta(seconds=180),
+        "new-bridge",
+        datetime.now(timezone.utc) + timedelta(seconds=180),
+    )
+    renewals = []
+    child_bridges = []
+    monkeypatch.setattr(
+        runner,
+        "_before_owner_interaction",
+        lambda authority, **_kwargs: (renewals.append(authority) or (replacement, "session_rotated")),
+    )
+    monkeypatch.setattr(runner, "_runner_command", lambda _mode: ["fake-runner"])
+    monkeypatch.setattr(runner.time, "sleep", lambda _seconds: None)
+    outcomes = iter(
+        (
+            SimpleNamespace(
+                returncode=1,
+                stdout="",
+                stderr="[ui-performance-live] ERROR: Pocket Lab Lite status endpoint is not reachable.\n",
+            ),
+            SimpleNamespace(returncode=0, stdout="measured\n", stderr=""),
+        )
+    )
+
+    def fake_run(_command, *, env, **_kwargs):
+        child_bridges.append(env["POCKETLAB_HARNESS_BROWSER_BRIDGE"])
+        return next(outcomes)
+
+    monkeypatch.setattr(runner.subprocess, "run", fake_run)
+    secrets = []
+    code, current = runner._run_interaction(
+        SimpleNamespace(mode="live"),
+        base_url="http://127.0.0.1:18444",
+        authority=old,
+        principal_id="owner-runner",
+        key_file="/tmp/key",
+        ttl_seconds=180,
+        interaction="live-scroll:home",
+        secrets=secrets,
+    )
+    assert code == 0
+    assert current is replacement
+    assert renewals == [old]
+    assert child_bridges == ["old-bridge", "new-bridge"]
+    assert "new-session" in secrets
+    assert "new-bridge" in secrets
+
+
 def test_qualified_runner_retries_transient_cleanup_transport(monkeypatch, tmp_path):
     runner = _load_runner()
     _prepare_runner(monkeypatch, runner, tmp_path)

@@ -48,8 +48,12 @@ DEFAULT_SESSION_TTL_SECONDS = 180
 SESSION_RENEWAL_THRESHOLD_SECONDS = 45
 BRIDGE_RENEWAL_THRESHOLD_SECONDS = 30
 RUN_TIMEOUT_SECONDS = 15 * 60
-PREFLIGHT_RETRY_ATTEMPTS = 3
-PREFLIGHT_RETRY_DELAY_SECONDS = 1.0
+# A supported Server Phone runtime can restart the API under its bounded PM2
+# memory policy.  The restart is safe, but startup includes projection warmup
+# and can take about 45 seconds.  Preflight retries happen before the browser
+# interaction starts, so waiting here never rotates authority mid-measurement.
+PREFLIGHT_RETRY_ATTEMPTS = 15
+PREFLIGHT_RETRY_DELAY_SECONDS = 5.0
 CLEANUP_RETRY_ATTEMPTS = 10
 CLEANUP_RETRY_DELAY_SECONDS = 1.0
 CANDIDATE_BASE_URL = "http://127.0.0.1:18765"
@@ -478,10 +482,38 @@ def _run_interaction(
     *,
     base_url: str,
     authority: Authority,
+    principal_id: str,
+    key_file: str,
+    ttl_seconds: int,
     interaction: str | None,
-    secrets: tuple[str, ...],
-) -> int:
+    secrets: list[str],
+) -> tuple[int, Authority]:
     for attempt in range(PREFLIGHT_RETRY_ATTEMPTS):
+        if attempt:
+            try:
+                authority, renewal = _before_owner_interaction(
+                    authority,
+                    principal_id=principal_id,
+                    key_file=key_file,
+                    ttl_seconds=ttl_seconds,
+                )
+                secrets.extend([authority.session_token, authority.bridge_token])
+                if renewal != "authority_healthy":
+                    print(
+                        "[ui-performance-qualified] "
+                        f"{renewal} while waiting for runtime preflight"
+                    )
+            except (OSError, RuntimeError, ValueError) as exc:
+                # The runtime may still be restarting.  Keep the bounded
+                # preflight retry alive and try authority renewal again at the
+                # next safe boundary rather than failing on a transient
+                # control-plane outage.
+                print(
+                    "[ui-performance-qualified] transient authority renewal "
+                    "while waiting for runtime preflight: "
+                    f"{_redact_output(str(exc)[:160], tuple(secrets))}",
+                    file=sys.stderr,
+                )
         child = subprocess.run(
             _runner_command(args.mode),
             cwd=str(REPO_ROOT),
@@ -498,23 +530,23 @@ def _run_interaction(
             check=False,
         )
         if child.stdout:
-            sys.stdout.write(_redact_output(child.stdout, secrets))
+            sys.stdout.write(_redact_output(child.stdout, tuple(secrets)))
         if child.stderr:
-            sys.stderr.write(_redact_output(child.stderr, secrets))
+            sys.stderr.write(_redact_output(child.stderr, tuple(secrets)))
         returncode = int(child.returncode)
         if not _is_transient_preflight_failure(
             returncode=returncode,
             stdout=child.stdout or "",
             stderr=child.stderr or "",
         ) or attempt + 1 >= PREFLIGHT_RETRY_ATTEMPTS:
-            return returncode
+            return returncode, authority
         print(
             "[ui-performance-qualified] transient runtime preflight failure; "
             f"retrying before measurement attempt={attempt + 2}/{PREFLIGHT_RETRY_ATTEMPTS}",
             file=sys.stderr,
         )
         time.sleep(PREFLIGHT_RETRY_DELAY_SECONDS)
-    return 2
+    return 2, authority
 
 
 def run(args: argparse.Namespace) -> int:
@@ -581,13 +613,17 @@ def run(args: argparse.Namespace) -> int:
                         f"session_remaining_s={max(0, int(_remaining_seconds(authority.session_expires_at)))} "
                         f"bridge_remaining_s={max(0, int(_remaining_seconds(authority.bridge_expires_at)))}"
                     )
-                    child_returncode = _run_interaction(
+                    child_returncode, authority = _run_interaction(
                         args,
                         base_url=base_url,
                         authority=authority,
+                        principal_id=principal_id,
+                        key_file=key_file,
+                        ttl_seconds=args.ttl_seconds,
                         interaction=interaction,
-                        secrets=tuple(known_secrets),
+                        secrets=known_secrets,
                     )
+                    known_secrets.extend([authority.session_token, authority.bridge_token])
                     if child_returncode != 0:
                         _write_checkpoint(
                             checkpoint,
