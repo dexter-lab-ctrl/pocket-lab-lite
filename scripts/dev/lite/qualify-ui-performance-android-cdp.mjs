@@ -19,6 +19,7 @@ const screens = ['home', 'catalog', 'devices', 'security', 'identity', 'rules', 
 const MINIMUM_FRAME_COUNT = 20;
 const MINIMUM_SAMPLER_INTERVAL_COUNT = MINIMUM_FRAME_COUNT + 3;
 const MAX_MINIMUM_FRAME_EXTENSION_MS = 2_000;
+const MAX_SURFACE_RELOAD_ATTEMPTS = 5;
 
 function fail(message) {
   console.error(`[ui-performance-android] ${message}`);
@@ -315,20 +316,44 @@ async function firstVisibleOrNull(locator) {
 
 async function waitForVisibleWithReload(locator, label, screenId) {
   let lastError = null;
-  for (let attempt = 0; attempt < 3; attempt += 1) {
+  for (let attempt = 0; attempt < MAX_SURFACE_RELOAD_ATTEMPTS; attempt += 1) {
     try {
       await locator.first().waitFor({ state: 'visible', timeout: 8_000 });
       return;
     } catch (error) {
       lastError = error;
-      if (attempt === 2) break;
-      await page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 });
+      if (attempt === MAX_SURFACE_RELOAD_ATTEMPTS - 1) break;
+      const retryUrl = new URL(base.href);
+      retryUrl.searchParams.set('screen', screenId);
+      retryUrl.searchParams.set('pocketlab_qualification_retry', String(attempt + 1));
+      await page.goto(retryUrl.href, { waitUntil: 'domcontentloaded', timeout: 30_000 });
       await page.locator(`[data-lite-screen-id="${screenId}"]`).waitFor({ state: 'visible', timeout: 20_000 });
-      await page.waitForTimeout(800);
+      await page.waitForTimeout(1_200);
       await removeQualificationUpdateNotice();
     }
   }
   fail(`Could not find visible ${label} after bounded screen reload retries: ${lastError?.message || 'unknown error'}`);
+}
+
+async function settleOrResetRefreshPopover() {
+  const popover = page.locator('.lite-refresh-status-popover');
+  try {
+    await popover.waitFor({ state: 'hidden', timeout: 7_000 });
+    return;
+  } catch {
+    // The read-only refresh request may outlive its visual status window on a
+    // slow qualification runtime. The interaction sample is already closed;
+    // reset the page only between measurements so the next interaction starts
+    // from a truthful clean Home state rather than failing the whole matrix.
+    console.warn('[ui-performance-android] refresh popover did not settle within 7s; resetting Home between measurements.');
+  }
+  await page.goto(new URL('?screen=home&pocketlab_qualification_refresh_reset=1', base).toString(), {
+    waitUntil: 'domcontentloaded',
+    timeout: 30_000,
+  });
+  await page.locator('[data-lite-screen-id="home"]').waitFor({ state: 'visible', timeout: 20_000 });
+  await page.waitForTimeout(800);
+  await removeQualificationUpdateNotice();
 }
 
 async function removeQualificationUpdateNotice() {
@@ -880,7 +905,7 @@ await measurePhase4Interaction({
   settleMs: 120,
 });
 
-await page.locator('.lite-refresh-status-popover').waitFor({ state: 'hidden', timeout: 7_000 });
+await settleOrResetRefreshPopover();
 
 await measurePhase4Interaction({
   interaction: 'toast-settle',

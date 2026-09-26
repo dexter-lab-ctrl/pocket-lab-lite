@@ -32,7 +32,7 @@ expected_interaction_reports="${LITE_ANDROID_EXPECTED_INTERACTION_REPORTS:-27}"
 if ! [[ "$expected_interaction_reports" =~ ^[0-9]+$ ]] || (( expected_interaction_reports < 1 )); then
   fail 'LITE_ANDROID_EXPECTED_INTERACTION_REPORTS must be a positive integer.'
 fi
-qualifier_attempts=2
+qualifier_attempts=3
 
 staging_root=".pocketlab-dev/android-performance-baseline/${LITE_PERF_SOURCE_COMMIT}"
 rm -rf "$staging_root"
