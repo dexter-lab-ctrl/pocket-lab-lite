@@ -515,6 +515,11 @@ test('[interaction] explicit list scrolling stays inside the render budget', asy
   await installScenario(page, 'recovery-backup-running');
   await page.goto('/?screen=recovery');
   await waitForLiteScreenToSettle(page, 'recovery');
+  // The Recovery fixture delivers its final saved projection through the
+  // mocked service-worker/message pipeline after the visible geometry is
+  // stable. Keep that asynchronous warmup outside the measured gesture so
+  // the sample represents scrolling a settled screen, not fixture delivery.
+  await page.waitForTimeout(1000);
 
   const report = await measureLiteInteraction(
     page,
