@@ -166,26 +166,39 @@ await page.goto(new URL('/?pocketlab_qualification_bootstrap=1', candidateOrigin
 });
 await page.waitForTimeout(250);
 
-// Acquire the renderer wake lock immediately after the first candidate
-// navigation. Manifest/cache validation can cross a short Android screen
-// timeout; waiting until after those probes lets Chrome enter Doze and
-// throttles requestAnimationFrame before the foreground probe.
-const wakeLock = await page.evaluate(async () => {
-  if (!navigator.wakeLock?.request) return { supported: false, acquired: false };
-  try {
-    const lock = await navigator.wakeLock.request('screen');
-    window.__POCKETLAB_ANDROID_WAKE_LOCK__ = lock;
-    // A disconnected qualifier must not leave the consumer phone awake
-    // forever. Normal completion also releases this when the page closes.
-    window.setTimeout(() => lock.release().catch(() => {}), 300_000);
-    return { supported: true, acquired: !lock.released };
-  } catch {
-    return { supported: true, acquired: false };
-  }
-});
-if (!wakeLock.acquired) {
-  fail('Android screen wake lock could not be acquired; physical frame evidence would be throttled.');
+// A navigation replaces the document and releases its screen wake lock. The
+// candidate manifest/page proof below intentionally performs several
+// cross-document navigations, so reacquire the bounded lock after every
+// navigation that can precede frame collection.
+async function acquireScreenWakeLock() {
+  return page.evaluate(async () => {
+    const existing = window.__POCKETLAB_ANDROID_WAKE_LOCK__;
+    if (existing && !existing.released) return { supported: true, acquired: true };
+    if (!navigator.wakeLock?.request) return { supported: false, acquired: false };
+    try {
+      const lock = await navigator.wakeLock.request('screen');
+      window.__POCKETLAB_ANDROID_WAKE_LOCK__ = lock;
+      // A disconnected qualifier must not leave the consumer phone awake
+      // forever. Normal completion also releases this when the page closes.
+      window.setTimeout(() => lock.release().catch(() => {}), 300_000);
+      return { supported: true, acquired: !lock.released };
+    } catch {
+      return { supported: true, acquired: false };
+    }
+  });
 }
+
+async function requireScreenWakeLock() {
+  const wakeLock = await acquireScreenWakeLock();
+  if (!wakeLock.acquired) {
+    fail('Android screen wake lock could not be acquired; physical frame evidence would be throttled.');
+  }
+}
+
+// Acquire the renderer wake lock immediately after the first candidate
+// navigation. It is reacquired after the manifest/page proof and each bounded
+// retry below because those navigations replace the document.
+await requireScreenWakeLock();
 
 await page.evaluate(async () => {
   const registrations = await navigator.serviceWorker?.getRegistrations?.() || [];
@@ -227,11 +240,13 @@ if (!candidatePageMetaVerified) {
   fail('The Android rendered page did not expose the requested exact candidate SHA.');
 }
 
+await requireScreenWakeLock();
 await activateCandidatePage();
 let foregroundFramesReady = await receivesAnimationFrames(page);
 for (let attempt = 0; !foregroundFramesReady && attempt < 2; attempt += 1) {
   await activateCandidatePage();
   await page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => {});
+  await requireScreenWakeLock();
   await activateCandidatePage();
   foregroundFramesReady = await receivesAnimationFrames(page);
 }
@@ -345,6 +360,7 @@ async function waitForVisibleWithReload(locator, label, screenId) {
       retryUrl.searchParams.set('screen', screenId);
       retryUrl.searchParams.set('pocketlab_qualification_retry', String(attempt + 1));
       await page.goto(retryUrl.href, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+      await requireScreenWakeLock();
       await page.locator(`[data-lite-screen-id="${screenId}"]`).waitFor({ state: 'visible', timeout: 20_000 });
       await page.waitForTimeout(1_200);
       await removeQualificationUpdateNotice();
@@ -369,6 +385,7 @@ async function settleOrResetRefreshPopover() {
     waitUntil: 'domcontentloaded',
     timeout: 30_000,
   });
+  await requireScreenWakeLock();
   await page.locator('[data-lite-screen-id="home"]').waitFor({ state: 'visible', timeout: 20_000 });
   await page.waitForTimeout(800);
   await removeQualificationUpdateNotice();
@@ -384,6 +401,7 @@ async function gotoScreen(screenId) {
   const target = new URL(base.href);
   target.searchParams.set('screen', screenId);
   await page.goto(target.href, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+  await requireScreenWakeLock();
   await page.locator(`[data-lite-screen-id="${screenId}"]`).waitFor({ state: 'visible', timeout: 20_000 });
   await page.evaluate(async () => {
     if ('fonts' in document) await document.fonts.ready;
