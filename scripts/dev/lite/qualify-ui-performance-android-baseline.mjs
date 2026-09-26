@@ -218,6 +218,9 @@ export async function collectAndroidBaseline({
   } finally {
     await releaseScreenWakeLock(page);
     if (ownsPage) await page.close().catch(() => {});
+    // Closing the Playwright transport is required for the bounded control
+    // process to exit; it disconnects CDP without closing Android Chrome.
+    await browser.close().catch(() => {});
   }
 }
 

@@ -31,6 +31,7 @@ def test_android_baseline_control_is_exact_sha_candidate_surface():
     assert 'receivesAnimationFrames' in runner
     assert "navigator.wakeLock.request('screen')" in runner
     assert 'baseline_screen_wake_lock_unavailable' in runner
+    assert 'await browser.close().catch(() => {})' in runner
 
 
 def test_android_device_state_capture_is_bounded_and_sanitized():
