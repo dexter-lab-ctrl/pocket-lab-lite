@@ -19,6 +19,7 @@ import re
 import signal
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -46,6 +47,8 @@ BRIDGE_HEADER = "X-Pocket-Lab-Qualification-Bridge"
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 MAX_BRIDGE_HEADER_BYTES = 4096
 MAX_PROXY_RESPONSE_BYTES = 32 * 1024 * 1024
+PREPARED_RUNTIME_PROBE_ATTEMPTS = 20
+PREPARED_RUNTIME_PROBE_INTERVAL_SECONDS = 0.25
 READ_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})
 HOP_BY_HOP_HEADERS = frozenset(
     {
@@ -164,15 +167,21 @@ class CandidateRequestHandler(BaseHTTPRequestHandler):
         return
 
     def _send_bytes(self, status: int, body: bytes, *, content_type: str, cache_control: str = "no-store") -> None:
-        self.send_response(status)
-        self.send_header("Content-Type", content_type)
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", cache_control)
-        self.send_header("X-Content-Type-Options", "nosniff")
-        self.send_header("X-Pocket-Lab-Candidate-SHA", self.source_commit)
-        self.end_headers()
-        if self.command != "HEAD":
-            self.wfile.write(body)
+        try:
+            self.send_response(status)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", cache_control)
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("X-Pocket-Lab-Candidate-SHA", self.source_commit)
+            self.end_headers()
+            if self.command != "HEAD":
+                self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):
+            # A browser may close a qualification tab while a response is in
+            # flight.  This is not a candidate/runtime failure and must not
+            # produce a noisy traceback or alter the measured interaction.
+            return
 
     def _send_error_json(self, status: int, reason: str) -> None:
         self._send_bytes(status, _json_bytes({"status": "error", "reason": reason, "sanitized": True}), content_type="application/json")
@@ -324,16 +333,21 @@ def serve_candidate(dist_dir: Path, source_commit: str) -> None:
 
 def prepared_runtime_ready() -> bool:
     """Return whether the controller-owned loopback Caddy forward is ready."""
-    connection = http.client.HTTPConnection("127.0.0.1", CADDY_HTTP_LOCAL_PORT, timeout=2)
-    try:
-        connection.request("GET", "/health", headers={"Accept": "application/json"})
-        response = connection.getresponse()
-        response.read()
-        return response.status == 200
-    except (OSError, http.client.HTTPException):
-        return False
-    finally:
-        connection.close()
+    for attempt in range(PREPARED_RUNTIME_PROBE_ATTEMPTS):
+        connection = http.client.HTTPConnection("127.0.0.1", CADDY_HTTP_LOCAL_PORT, timeout=2)
+        try:
+            connection.request("GET", "/health", headers={"Accept": "application/json"})
+            response = connection.getresponse()
+            response.read()
+            if response.status == 200:
+                return True
+        except (OSError, http.client.HTTPException):
+            pass
+        finally:
+            connection.close()
+        if attempt + 1 < PREPARED_RUNTIME_PROBE_ATTEMPTS:
+            time.sleep(PREPARED_RUNTIME_PROBE_INTERVAL_SECONDS)
+    return False
 
 
 def main(argv: list[str] | None = None) -> int:

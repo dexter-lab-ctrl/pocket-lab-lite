@@ -44,6 +44,9 @@ CADDY_LOCAL_PORT = 18443
 CADDY_REMOTE_PORT = 443
 CADDY_HTTP_LOCAL_PORT = 18444
 CADDY_HTTP_REMOTE_PORT = 8443
+UI_TUNNEL_READINESS_TIMEOUT_SECONDS = 30.0
+UI_TUNNEL_READY_STREAK = 3
+UI_TUNNEL_PROBE_INTERVAL_SECONDS = 0.25
 API_HEALTH = "http://127.0.0.1:18080/health"
 VERSION = "1.0.0"
 
@@ -446,17 +449,23 @@ def ui_performance_runtime_tunnel() -> Iterator[dict[str, Any]]:
             start_new_session=True,
             env={"PATH": "/usr/bin:/bin", "HOME": str(Path.home()), "LC_ALL": "C", "LANG": "C"},
         )
-        deadline = time.monotonic() + 10.0
+        deadline = time.monotonic() + UI_TUNNEL_READINESS_TIMEOUT_SECONDS
+        ready_streak = 0
         while time.monotonic() < deadline:
             if process.poll() is not None:
                 raise RuntimeTunnelError("runtime_ui_tunnel_exited_early")
-            if (
+            ready = (
                 all(_port_open(port) for port in ports)
                 and _api_ready()
                 and _caddy_http_ready()
-            ):
-                break
-            time.sleep(0.15)
+            )
+            if ready:
+                ready_streak += 1
+                if ready_streak >= UI_TUNNEL_READY_STREAK:
+                    break
+            else:
+                ready_streak = 0
+            time.sleep(UI_TUNNEL_PROBE_INTERVAL_SECONDS)
         else:
             raise RuntimeTunnelError("runtime_ui_tunnel_readiness_failed")
 

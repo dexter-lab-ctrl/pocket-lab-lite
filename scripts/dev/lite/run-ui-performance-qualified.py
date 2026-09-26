@@ -48,6 +48,10 @@ DEFAULT_SESSION_TTL_SECONDS = 180
 SESSION_RENEWAL_THRESHOLD_SECONDS = 45
 BRIDGE_RENEWAL_THRESHOLD_SECONDS = 30
 RUN_TIMEOUT_SECONDS = 15 * 60
+PREFLIGHT_RETRY_ATTEMPTS = 3
+PREFLIGHT_RETRY_DELAY_SECONDS = 1.0
+CLEANUP_RETRY_ATTEMPTS = 10
+CLEANUP_RETRY_DELAY_SECONDS = 1.0
 CANDIDATE_BASE_URL = "http://127.0.0.1:18765"
 PRINCIPAL_ID_RE = re.compile(r"^[a-z][a-z0-9._-]{2,79}$")
 INTERACTION_ID_RE = re.compile(r"^[a-z0-9][a-z0-9:._-]{2,119}$")
@@ -92,6 +96,16 @@ SECRET_ENV_KEYS = (
     "POCKETLAB_QUALIFICATION_OWNER",
     "POCKETLAB_TEST_AUTH_BYPASS",
     "POCKETLAB_HARNESS_API_URL",
+)
+TRANSIENT_PREFLIGHT_MARKER = "status endpoint is not reachable"
+TRANSIENT_CLEANUP_MARKERS = (
+    "harness_transport_unavailable",
+    "connectionreseterror",
+    "connection refused",
+    "timed out",
+    "timeout",
+    "502",
+    "temporarily unavailable",
 )
 
 
@@ -447,6 +461,18 @@ def _clear_performance_evidence() -> None:
     target.mkdir(parents=True, exist_ok=True)
 
 
+def _is_transient_preflight_failure(*, returncode: int, stdout: str, stderr: str) -> bool:
+    if returncode == 0:
+        return False
+    output = f"{stdout}\n{stderr}".casefold()
+    return TRANSIENT_PREFLIGHT_MARKER in output
+
+
+def _is_transient_cleanup_error(exc: BaseException) -> bool:
+    output = str(exc).casefold()
+    return any(marker in output for marker in TRANSIENT_CLEANUP_MARKERS)
+
+
 def _run_interaction(
     args: argparse.Namespace,
     *,
@@ -455,26 +481,40 @@ def _run_interaction(
     interaction: str | None,
     secrets: tuple[str, ...],
 ) -> int:
-    child = subprocess.run(
-        _runner_command(args.mode),
-        cwd=str(REPO_ROOT),
-        env=_child_environment(
-            authority.bridge_token,
-            mode=args.mode,
-            base_url=base_url,
-            interaction=interaction,
-        ),
-        stdin=subprocess.DEVNULL,
-        capture_output=True,
-        text=True,
-        timeout=RUN_TIMEOUT_SECONDS,
-        check=False,
-    )
-    if child.stdout:
-        sys.stdout.write(_redact_output(child.stdout, secrets))
-    if child.stderr:
-        sys.stderr.write(_redact_output(child.stderr, secrets))
-    return int(child.returncode)
+    for attempt in range(PREFLIGHT_RETRY_ATTEMPTS):
+        child = subprocess.run(
+            _runner_command(args.mode),
+            cwd=str(REPO_ROOT),
+            env=_child_environment(
+                authority.bridge_token,
+                mode=args.mode,
+                base_url=base_url,
+                interaction=interaction,
+            ),
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            timeout=RUN_TIMEOUT_SECONDS,
+            check=False,
+        )
+        if child.stdout:
+            sys.stdout.write(_redact_output(child.stdout, secrets))
+        if child.stderr:
+            sys.stderr.write(_redact_output(child.stderr, secrets))
+        returncode = int(child.returncode)
+        if not _is_transient_preflight_failure(
+            returncode=returncode,
+            stdout=child.stdout or "",
+            stderr=child.stderr or "",
+        ) or attempt + 1 >= PREFLIGHT_RETRY_ATTEMPTS:
+            return returncode
+        print(
+            "[ui-performance-qualified] transient runtime preflight failure; "
+            f"retrying before measurement attempt={attempt + 2}/{PREFLIGHT_RETRY_ATTEMPTS}",
+            file=sys.stderr,
+        )
+        time.sleep(PREFLIGHT_RETRY_DELAY_SECONDS)
+    return 2
 
 
 def run(args: argparse.Namespace) -> int:
@@ -583,21 +623,35 @@ def run(args: argparse.Namespace) -> int:
                     )
             finally:
                 if authority is not None and authority.session_token:
-                    try:
-                        # Ensure cleanup authority is still usable. Session
-                        # rotation is allowed here because no measurement is in
-                        # progress.
-                        authority, _ = _before_owner_interaction(
-                            authority,
-                            principal_id=principal_id,
-                            key_file=key_file,
-                            ttl_seconds=args.ttl_seconds,
-                        )
-                        harness_client.revoke_authenticated_principal(
-                            session_token=authority.session_token
-                        )
-                    except (OSError, RuntimeError, ValueError) as exc:
-                        cleanup_error = str(exc)[:240]
+                    for cleanup_attempt in range(CLEANUP_RETRY_ATTEMPTS):
+                        try:
+                            # Ensure cleanup authority is still usable. Session
+                            # rotation is allowed here because no measurement is in
+                            # progress.
+                            authority, _ = _before_owner_interaction(
+                                authority,
+                                principal_id=principal_id,
+                                key_file=key_file,
+                                ttl_seconds=args.ttl_seconds,
+                            )
+                            harness_client.revoke_authenticated_principal(
+                                session_token=authority.session_token
+                            )
+                            cleanup_error = ""
+                            break
+                        except (OSError, RuntimeError, ValueError) as exc:
+                            cleanup_error = _redact_output(str(exc)[:240], tuple(known_secrets))
+                            if (
+                                not _is_transient_cleanup_error(exc)
+                                or cleanup_attempt + 1 >= CLEANUP_RETRY_ATTEMPTS
+                            ):
+                                break
+                            print(
+                                "[ui-performance-qualified] transient cleanup transport failure; "
+                                f"retrying attempt={cleanup_attempt + 2}/{CLEANUP_RETRY_ATTEMPTS}",
+                                file=sys.stderr,
+                            )
+                            time.sleep(CLEANUP_RETRY_DELAY_SECONDS)
     except subprocess.TimeoutExpired:
         child_returncode = 124
         print("[ui-performance-qualified] ERROR fixed UI-performance interaction timed out", file=sys.stderr)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -94,3 +95,35 @@ def test_prepared_runtime_probe_is_loopback_only():
     assert "--prepared-runtime" in source
     assert 'HTTPConnection("127.0.0.1", CADDY_HTTP_LOCAL_PORT' in source
     assert candidate.CADDY_HTTP_LOCAL_PORT == 18444
+
+
+def test_prepared_runtime_probe_retries_transient_caddy_restart(monkeypatch):
+    candidate = _module()
+    attempts = {"count": 0}
+
+    class FakeConnection:
+        def __init__(self, *_args, **_kwargs):
+            pass
+
+        def request(self, *_args, **_kwargs):
+            return None
+
+        def getresponse(self):
+            attempts["count"] += 1
+            if attempts["count"] < 3:
+                raise ConnectionResetError("transient Caddy restart")
+            return SimpleNamespace(status=200, read=lambda: b"ok")
+
+        def close(self):
+            return None
+
+    monkeypatch.setattr(candidate.http.client, "HTTPConnection", FakeConnection)
+    monkeypatch.setattr(candidate.time, "sleep", lambda _seconds: None)
+    assert candidate.prepared_runtime_ready() is True
+    assert attempts["count"] == 3
+
+
+def test_candidate_server_handles_browser_disconnect_without_traceback():
+    source = MODULE.read_text(encoding="utf-8")
+    assert "except (BrokenPipeError, ConnectionResetError):" in source
+    assert "PREPARED_RUNTIME_PROBE_ATTEMPTS = 20" in source

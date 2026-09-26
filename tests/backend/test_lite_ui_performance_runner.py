@@ -204,6 +204,68 @@ def test_candidate_ui_mode_owns_the_browser_base_url(monkeypatch):
     assert runner._validate_operator_environment("android-cdp", candidate_ui=True) == runner.CANDIDATE_BASE_URL
 
 
+def test_qualified_runner_retries_only_a_transient_preflight_failure(monkeypatch, tmp_path):
+    runner = _load_runner()
+    _prepare_runner(monkeypatch, runner, tmp_path)
+    monkeypatch.setattr(runner.harness_client, "bootstrap_session", lambda **kwargs: _session_payload())
+    monkeypatch.setattr(runner.harness_client, "browser_bridge", lambda **kwargs: _bridge_payload())
+    monkeypatch.setattr(runner.harness_client, "revoke_authenticated_principal", lambda **kwargs: {})
+    monkeypatch.setattr(runner.time, "sleep", lambda _seconds: None)
+    outcomes = iter(
+        (
+            SimpleNamespace(
+                returncode=1,
+                stdout="",
+                stderr="[ui-performance-live] ERROR: Pocket Lab Lite status endpoint is not reachable.\n",
+            ),
+            SimpleNamespace(returncode=0, stdout="measured\n", stderr=""),
+        )
+    )
+    calls = []
+
+    def fake_run(*_args, **_kwargs):
+        calls.append(True)
+        return next(outcomes)
+
+    monkeypatch.setattr(runner.subprocess, "run", fake_run)
+    assert runner.main([
+        "--mode", "live",
+        "--principal-id", "codex-ui-performance-qualification",
+        "--key-file", str(tmp_path / "qualification.key"),
+        "--interaction", "live-scroll:home",
+    ]) == 0
+    assert len(calls) == 2
+
+
+def test_qualified_runner_retries_transient_cleanup_transport(monkeypatch, tmp_path):
+    runner = _load_runner()
+    _prepare_runner(monkeypatch, runner, tmp_path)
+    monkeypatch.setattr(runner.harness_client, "bootstrap_session", lambda **kwargs: _session_payload())
+    monkeypatch.setattr(runner.harness_client, "browser_bridge", lambda **kwargs: _bridge_payload())
+    monkeypatch.setattr(runner.time, "sleep", lambda _seconds: None)
+    attempts = {"count": 0}
+
+    def revoke(**_kwargs):
+        attempts["count"] += 1
+        if attempts["count"] < 3:
+            raise RuntimeError("harness_transport_unavailable: ConnectionResetError")
+        return {"sanitized": True}
+
+    monkeypatch.setattr(runner.harness_client, "revoke_authenticated_principal", revoke)
+    monkeypatch.setattr(
+        runner.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
+    )
+    assert runner.main([
+        "--mode", "live",
+        "--principal-id", "codex-ui-performance-qualification",
+        "--key-file", str(tmp_path / "qualification.key"),
+        "--interaction", "live-scroll:home",
+    ]) == 0
+    assert attempts["count"] == 3
+
+
 def test_before_owner_interaction_rotates_session_below_45_seconds(monkeypatch):
     runner = _load_runner()
     now = datetime(2026, 9, 25, 9, 0, tzinfo=timezone.utc)

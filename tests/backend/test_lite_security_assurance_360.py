@@ -265,3 +265,12 @@ def test_runtime_tunnel_cli_has_no_caller_selected_network_inputs():
         'add_argument("--sni"',
     ):
         assert forbidden not in text
+
+
+def test_ui_runtime_tunnel_uses_bounded_stable_readiness():
+    text = TUNNEL.read_text(encoding="utf-8")
+    assert "UI_TUNNEL_READINESS_TIMEOUT_SECONDS = 30.0" in text
+    assert "UI_TUNNEL_READY_STREAK = 3" in text
+    assert "ready_streak = 0" in text
+    assert "ready_streak >= UI_TUNNEL_READY_STREAK" in text
+    assert "ready_streak = 0" in text[text.index("def ui_performance_runtime_tunnel"):]
