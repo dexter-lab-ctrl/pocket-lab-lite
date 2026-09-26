@@ -24675,7 +24675,16 @@ html[data-lite-power-save='true'] .health-dot-unknown {
 .theme-pocket-lite-daylight.lite-overlay-root .lite-overlay-surface,
 .theme-pocket-lite-daylight.lite-overlay-root .lite-security-phase3-panel,
 .theme-pocket-lite-daylight.lite-overlay-root .lite-security-overlay-surface,
-.theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-manage-sheet {
+.theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-manage-sheet,
+.theme-pocket-lite-daylight.lite-overlay-root .lite-progressive-details-summary,
+.theme-pocket-lite-daylight.lite-overlay-root .lite-progressive-detail-section,
+.theme-pocket-lite-daylight.lite-overlay-root .lite-technical-details,
+.theme-pocket-lite-daylight.lite-overlay-root .lite-history-section,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-progressive-details-summary,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-progressive-detail-section,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-technical-details,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-history-section,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-app-action-details-panel {
   box-shadow: none !important;
   filter: none !important;
   backdrop-filter: none !important;
@@ -24707,7 +24716,16 @@ html[data-lite-power-save='true'] .health-dot-unknown {
 .theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-catalog-media-flow-line i,
 .theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-catalog-storage-panel,
 .theme-pocket-lite-daylight.lite-overlay-root[data-lite-perf-mode='true'] .lite-security-manage-shell,
-.theme-pocket-lite-daylight.lite-overlay-root[data-lite-perf-mode='true'] .lite-security-manage-scroll {
+.theme-pocket-lite-daylight.lite-overlay-root[data-lite-perf-mode='true'] .lite-security-manage-scroll,
+.theme-pocket-lite-daylight.lite-overlay-root[data-lite-perf-mode='true'] .lite-progressive-details-summary,
+.theme-pocket-lite-daylight.lite-overlay-root[data-lite-perf-mode='true'] .lite-progressive-detail-section,
+.theme-pocket-lite-daylight.lite-overlay-root[data-lite-perf-mode='true'] .lite-technical-details,
+.theme-pocket-lite-daylight.lite-overlay-root[data-lite-perf-mode='true'] .lite-history-section,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-progressive-details-summary,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-progressive-detail-section,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-technical-details,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-history-section,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-app-action-details-panel {
   background-image: none !important;
   box-shadow: none !important;
   will-change: auto !important;
