@@ -178,7 +178,7 @@ fi
 
 if [[ "${POCKETLAB_ANDROID_WAKE_BEFORE_QUALIFICATION:-0}" == "1" ]]; then
   powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
-    -File scripts/dev/lite/prepare-ui-performance-android-candidate.ps1 -Wake
+    -File scripts/dev/lite/prepare-ui-performance-android-candidate.ps1 -Wake -OpenCandidate
 fi
 
 printf '[ui-performance-android-preflight] running physical Android UI performance qualification\n'

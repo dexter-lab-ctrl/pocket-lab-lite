@@ -54,6 +54,9 @@ if ($Wake) {
     Fail 'No owned Android candidate state is available for a bounded wake request.'
   }
   Wake-PocketLabAndroidDevice -AdbPath $adb -DeviceSerial ([string]$state.device_serial)
+  if ($OpenCandidate) {
+    Open-PocketLabAndroidCandidate -AdbPath $adb -DeviceSerial ([string]$state.device_serial) -CandidatePort ([int]$state.candidate_port)
+  }
   Write-Host '[pocketlab-android-candidate] bounded wake request complete.'
   exit 0
 }
