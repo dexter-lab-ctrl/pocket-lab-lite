@@ -24735,6 +24735,16 @@ html[data-lite-power-save='true'] .health-dot-unknown {
   contain: layout paint;
 }
 
+.theme-pocket-lite-daylight.lite-overlay-root[data-lite-perf-mode='true'] .lite-recovery-action-details-sheet,
+.theme-pocket-lite-daylight.lite-overlay-root[data-lite-perf-mode='true'] .lite-recovery-action-details-scroll,
+.theme-pocket-lite-daylight.lite-overlay-root[data-lite-perf-mode='true'] .lite-recovery-action-details-shell {
+  contain: layout paint;
+}
+
+.theme-pocket-lite-daylight.lite-overlay-root[data-lite-perf-mode='true'] .lite-recovery-action-details-scroll {
+  scroll-behavior: auto;
+}
+
 /* Keep qualification focused on screen layout/paint and interaction work.
    Page-entry, card-rise, status, and control animations are decorative and
    otherwise add nondeterministic frames to every screen transition. This is

@@ -122,6 +122,7 @@ export default function RecoveryActionDetailsLazy({
   return (
     <div className="lite-recovery-action-details-shell lite-recovery-details-lazy" data-recovery-progressive-details="true">
       <LiteProgressiveDetails
+        sectionRenderMode="css-contained"
         title={title}
         status={status}
         statusLabel={statusLabel}
