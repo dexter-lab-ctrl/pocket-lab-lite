@@ -52,10 +52,10 @@ RUN_TIMEOUT_SECONDS = 15 * 60
 # memory policy.  The restart is safe, but startup includes projection warmup
 # and can take about 45 seconds.  Preflight retries happen before the browser
 # interaction starts, so waiting here never rotates authority mid-measurement.
-PREFLIGHT_RETRY_ATTEMPTS = 15
+PREFLIGHT_RETRY_ATTEMPTS = 24
 PREFLIGHT_RETRY_DELAY_SECONDS = 5.0
-CLEANUP_RETRY_ATTEMPTS = 10
-CLEANUP_RETRY_DELAY_SECONDS = 1.0
+CLEANUP_RETRY_ATTEMPTS = 45
+CLEANUP_RETRY_DELAY_SECONDS = 2.0
 CANDIDATE_BASE_URL = "http://127.0.0.1:18765"
 PRINCIPAL_ID_RE = re.compile(r"^[a-z][a-z0-9._-]{2,79}$")
 INTERACTION_ID_RE = re.compile(r"^[a-z0-9][a-z0-9:._-]{2,119}$")
