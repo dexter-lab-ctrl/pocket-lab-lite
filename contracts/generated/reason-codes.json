@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "864c354741194e4f22dbe03419e838b9a87fdee4153e0aa0bd59bd9234353aba",
+    "aggregate_fingerprint": "2e54dd019bf7ff0a18de79cb7a0ad56c6b3ba9207391867698bf885daff4c614",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -86,7 +86,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_resource_health.py": "efc6332c4b9ea3e6306ed2c286feabf68ac3e69b957f6d8fdb45ed266cbf6a89",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_runtime_extensions.py": "5f080e7eeeee5f23a8c0459f50eb470dc7a8dd778d88c82ad4891db220b3d4a1",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_runtime_projection.py": "344cb6d1e10044a2b8a3d523b055db5d0334b49c9368e2df50e1caf1e13bdaf4",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_enrollment.py": "9b0ba3cf81acd063cd7db392689314a1c9cdc6edcd14703271bb92bde7186700",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_enrollment.py": "c09294c4b4148eccd019d8c4288d0f1e99ea93b2de0dfc5e2389ac92bd34970a",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_governance.py": "87e4f6437f65fcc695a8ee12271bcf9b944bb54d8d3e1ae291292b12309c1056",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py": "41e7b61ed086d90aeac20f9deeef660d70a4dcfe80c147d5d3775933afca2bcc",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_managed_enrollment.py": "1202aad81ce69535e7944badaa2b9658b229e4f5c22af21c16f7da6bb8385df3",

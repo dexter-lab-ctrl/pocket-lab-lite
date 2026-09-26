@@ -11670,6 +11670,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_android_performance_baseline.py",
+      "name": "tests/backend/test_lite_android_performance_baseline.py",
+      "source_refs": [
+        "tests/backend/test_lite_android_performance_baseline.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_api.py",
       "name": "tests/backend/test_lite_api.py",
       "source_refs": [
@@ -20580,6 +20591,20 @@
       "source": "domain:harness",
       "target": "api:post:/api/lite/harness/challenge",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "src/lite/LiteApp.jsx"
+      ],
+      "id": "rel:19c9e39b0b4858bc",
+      "source": "ui:liteapp",
+      "target": "api:get:/api/lite/apps/{app_id}/actions",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -52077,6 +52102,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-performance-live.spec.ts"
+      ],
+      "id": "rel:b717f256c88a40e3",
+      "source": "domain:security",
+      "target": "test:tests/e2e/lite-performance-live.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:b729fcf6fffddab7",
@@ -56692,6 +56731,20 @@
       "source": "component:pm2",
       "target": "component:agent-supervisor",
       "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-performance-live.spec.ts"
+      ],
+      "id": "rel:cefea207810ce841",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-performance-live.spec.ts",
+      "type": "verified_by"
     },
     {
       "derivation": {

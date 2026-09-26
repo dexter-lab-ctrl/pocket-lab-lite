@@ -44,15 +44,52 @@
         "scripts"
       ],
       "deprecated_aliases": [],
+      "name": "LITE_ANDROID_BASELINE_REPETITIONS",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/run-ui-performance-android-baseline.sh"
+      ],
+      "safe_default": "3",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
       "name": "LITE_ANDROID_CDP_URL",
       "production": true,
       "required": false,
       "restart_required": "component-dependent",
       "runtime_readers": [
+        "scripts/dev/lite/run-ui-performance-android-baseline.sh",
         "scripts/dev/lite/run-ui-performance-android-cdp.sh",
         "scripts/dev/lite/run-ui-performance-qualified.py"
       ],
       "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_ANDROID_EXPECTED_INTERACTION_REPORTS",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/run-ui-performance-android-baseline.sh"
+      ],
+      "safe_default": "27",
       "secret_classification": "configuration",
       "wsl2": true
     },
@@ -130,6 +167,7 @@
       "runtime_readers": [
         "Taskfile.yml",
         "playwright.config.ts",
+        "scripts/dev/lite/run-ui-performance-android-baseline.sh",
         "scripts/dev/lite/run-ui-performance-android-candidate.sh",
         "scripts/dev/lite/run-ui-performance-android-cdp.sh",
         "scripts/dev/lite/run-ui-performance-live.sh",
@@ -599,16 +637,54 @@
         "scripts"
       ],
       "deprecated_aliases": [],
+      "name": "LITE_PERF_COLLECT_EVIDENCE",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/run-ui-performance-qualified.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_PERF_PRESERVE_EVIDENCE",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/run-ui-performance-qualified.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
       "name": "LITE_PERF_SOURCE_COMMIT",
       "production": true,
       "required": false,
       "restart_required": "component-dependent",
       "runtime_readers": [
+        "scripts/dev/lite/analyze-ui-performance-android-baseline.sh",
+        "scripts/dev/lite/run-ui-performance-android-baseline.sh",
         "scripts/dev/lite/run-ui-performance-android-candidate.sh",
         "scripts/dev/lite/run-ui-performance-android-cdp.sh",
         "scripts/dev/lite/ui_performance_candidate_server.py"
       ],
-      "safe_default": "source-defined or empty",
+      "safe_default": "$(git rev-parse HEAD)",
       "secret_classification": "configuration",
       "wsl2": true
     },
@@ -626,6 +702,24 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "playwright.config.ts",
+        "scripts/dev/lite/run-ui-performance-qualified.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_QUALIFICATION_INTERACTION",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
         "scripts/dev/lite/run-ui-performance-qualified.py"
       ],
       "safe_default": "source-defined or empty",
@@ -1743,6 +1837,25 @@
         "scripts/dev/lite/run-ui-performance-android-cdp.sh"
       ],
       "safe_default": "9222",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_ANDROID_WAKE_BEFORE_QUALIFICATION",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/run-ui-performance-android-candidate.sh",
+        "scripts/dev/lite/run-ui-performance-android-cdp.sh"
+      ],
+      "safe_default": "0",
       "secret_classification": "configuration",
       "wsl2": true
     },
@@ -11150,6 +11263,25 @@
         "scripts"
       ],
       "deprecated_aliases": [],
+      "name": "POCKETLAB_NODE_VERSION",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/run-ui-performance-android-cdp.sh",
+        "scripts/dev/lite/run-ui-performance-live.sh"
+      ],
+      "safe_default": "24.16.0",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
       "name": "POCKETLAB_OASDIFF_BIN",
       "production": true,
       "required": false,
@@ -17699,7 +17831,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "8d9b00471548206ffe581189ef695dee0c085f524eca2a2c391d113c5503ce97",
+    "aggregate_fingerprint": "d1ca9e900c24343877af45a02e54be928db67a3eefd30115a2542b00f03c9ed9",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -17790,7 +17922,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_resource_health.py": "efc6332c4b9ea3e6306ed2c286feabf68ac3e69b957f6d8fdb45ed266cbf6a89",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_runtime_extensions.py": "5f080e7eeeee5f23a8c0459f50eb470dc7a8dd778d88c82ad4891db220b3d4a1",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_runtime_projection.py": "344cb6d1e10044a2b8a3d523b055db5d0334b49c9368e2df50e1caf1e13bdaf4",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_enrollment.py": "9b0ba3cf81acd063cd7db392689314a1c9cdc6edcd14703271bb92bde7186700",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_enrollment.py": "c09294c4b4148eccd019d8c4288d0f1e99ea93b2de0dfc5e2389ac92bd34970a",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_governance.py": "87e4f6437f65fcc695a8ee12271bcf9b944bb54d8d3e1ae291292b12309c1056",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_identity.py": "41e7b61ed086d90aeac20f9deeef660d70a4dcfe80c147d5d3775933afca2bcc",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_managed_enrollment.py": "1202aad81ce69535e7944badaa2b9658b229e4f5c22af21c16f7da6bb8385df3",
@@ -17950,16 +18082,18 @@
       "scripts/dev/lib/long_gate_report.sh": "0617d8f74d1a2a793a189d699bbd94b3bc657cf5a756cc5fa64e1d883b5f8051",
       "scripts/dev/lib/long_gate_runtime.sh": "e947f27743cf6f5140759b81eb19740fbc1bb1104b74a898a7f588ae6ce37833",
       "scripts/dev/lib/long_gate_sqlite.sh": "6e1ea251b278df10ec362ccc2120374521117d0222c3634ca3dc7a6f8a606be3",
+      "scripts/dev/lite/analyze-ui-performance-android-baseline.sh": "5f5a607bcc723abd9b7f784ecee8d0b47c25352f53456072b8f62af98c2cbeb2",
       "scripts/dev/lite/check-contracts.sh": "a62c37cc391390c74010ae4ebbda691e3598a93cb004c66c555d1b9fca9566e3",
       "scripts/dev/lite/check-documentation-security-tools.sh": "31a14f3d0fe1c3faa26b912be9623f2fc76a0d4d0bafd602fa7ba8c3aec62da1",
       "scripts/dev/lite/dev-scratch.sh": "60f59291ed3f615f553ae1c0647c1029732c3c00074254d5e01e07f29f5b6255",
       "scripts/dev/lite/frontend-resource-preflight.sh": "74eed4341ce0a1c191c4e65f41984a14eb2aead2e8a19f63c0c090bac216a7f5",
       "scripts/dev/lite/run-gate.sh": "81b2d42dbbb265fbc31dc28ec7f87c77a863a4d3bfa9586a9875a4aeb30e7ee1",
       "scripts/dev/lite/run-playwright-mocked.sh": "9293ca6becf155ebefd5348901302e694eae8cca478ed0012b91e3a0dc68fd16",
-      "scripts/dev/lite/run-ui-performance-android-candidate.sh": "4f4fffec74472d985662297501c4fe1ce408252f76116013a581b9233387e59e",
-      "scripts/dev/lite/run-ui-performance-android-cdp.sh": "2391da3169194c798da96e0001e82478e14a9302fd726012f5dac937ec032307",
+      "scripts/dev/lite/run-ui-performance-android-baseline.sh": "ab353bc98382ea73cc698d97cdbec25fc4ecf587e50dcba36d49ddbaa62950ee",
+      "scripts/dev/lite/run-ui-performance-android-candidate.sh": "700922903778101eeece1fda9a81f4edfb76174740e5ed501afd39b61db5ea5d",
+      "scripts/dev/lite/run-ui-performance-android-cdp.sh": "af1e51d38c26c451db9082b3c4b30e29ccc59ff647a231ede09258a1ac3ea506",
       "scripts/dev/lite/run-ui-performance-candidate.sh": "d6200d8b4b30a2d10d739237f26040a67d85b701090eb8b065d466711b84d16d",
-      "scripts/dev/lite/run-ui-performance-live.sh": "30f187ec66d57e50ac2434cb0fc79e52ab3ac8b363fe6350ed3c0f8d9e54fc5b",
+      "scripts/dev/lite/run-ui-performance-live.sh": "8138ffc28101a6b24871ea2814bad953e65589df99be75149beb834833540f2c",
       "scripts/dev/lite/serve-docs.sh": "d3026ce84c5d83efc8b3e9e39e175961587a961800f09a1eaeb738b6fa4e5927",
       "scripts/dev/lite/setup-architecture-icons.sh": "0d81b57af59460b24f9b879c02c1860a97a8ef7db8a8f24c446506efa9fac6bf",
       "scripts/dev/lite/setup-check.sh": "777a6a78eafe1fbb06864518743930fbb9c89db5489255ebd60bb4a49d05e2d8",

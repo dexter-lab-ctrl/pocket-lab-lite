@@ -27,7 +27,7 @@ generator_version: 3
 | `GET /api/lite/apps/photoprism/storage-mappings` | apps | — | get_photoprism_storage_mappings_api_lite_apps_photoprism_storage_mappings_get | contract-derived |
 | `GET /api/lite/apps/photoprism/storage-preview` | apps | — | get_photoprism_storage_preview_api_lite_apps_photoprism_storage_preview_get | contract-derived |
 | `GET /api/lite/apps/{app_id}/action-history` | apps | — | get_lite_app_action_history_api_lite_apps__app_id__action_history_get | contract-derived |
-| `GET /api/lite/apps/{app_id}/actions` | apps | — | get_lite_app_actions_api_lite_apps__app_id__actions_get | contract-derived |
+| `GET /api/lite/apps/{app_id}/actions` | apps | LiteApp | get_lite_app_actions_api_lite_apps__app_id__actions_get | contract-derived |
 | `GET /api/lite/apps/{app_id}/backup` | apps | — | get_lite_app_backup_status_api_lite_apps__app_id__backup_get | contract-derived |
 | `GET /api/lite/apps/{app_id}/backups` | apps | — | list_lite_app_backups_api_lite_apps__app_id__backups_get | contract-derived |
 | `GET /api/lite/apps/{app_id}/backups/{backup_id}/receipt` | apps | — | get_lite_app_backup_receipt_api_lite_apps__app_id__backups__backup_id__receipt_get | contract-derived |
@@ -241,7 +241,7 @@ generator_version: 3
 
 | UI | APIs |
 | --- | --- |
-| LiteApp | GET /api/lite/catalog |
+| LiteApp | GET /api/lite/apps/{app_id}/actions, GET /api/lite/catalog |
 | LiteDevices | GET /api/lite/devices/{device_id}/removal-assessment, GET /api/lite/fleet, GET /api/lite/fleet/devices/{node_id}/restart-agent/status, POST /api/lite/fleet/add-device, POST /api/lite/fleet/devices/{node_id}/restart-agent, POST /api/lite/fleet/remove-device |
 | LiteIdentity | GET /api/lite/identity/owner-claim/status, POST /api/lite/identity/login, POST /api/lite/identity/logout, POST /api/lite/identity/owner-claim/consume, POST /api/lite/identity/owner-claim/passkey/options, POST /api/lite/identity/owner-claim/passkey/verify, POST /api/lite/identity/passkeys/registration/options, POST /api/lite/identity/passkeys/registration/verify, POST /api/lite/identity/password, POST /api/lite/identity/recover, POST /api/lite/identity/recovery/regenerate, POST /api/lite/identity/sessions/revoke-others, POST /api/lite/identity/setup, POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify, PUT /api/lite/identity/passkeys/{credential_id} |
 | LiteIdentityEnterprise | POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify |

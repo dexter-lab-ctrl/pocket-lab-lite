@@ -6734,6 +6734,162 @@
     },
     {
       "aliases": [],
+      "audience": "developer/operator",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:perf:android-baseline"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:ui:perf:android:baseline",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:ui:perf:android:baseline",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run repeated exact-SHA physical Android qualification with contemporaneous platform controls and normalized attribution",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer/operator",
+      "captures_runtime": false,
+      "commands": [
+        "npm run analyze:perf:android-baseline"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:ui:perf:android:baseline:analyze",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:ui:perf:android:baseline:analyze",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Re-analyze existing repeated Android baseline evidence without touching the Server Phone",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer/operator",
+      "captures_runtime": false,
+      "commands": [
+        "npm run check:perf:android-baseline"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:ui:perf:android:baseline:check",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:ui:perf:android:baseline:check",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Fail when normalized repeated Android evidence shows material app incremental cost",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "LITE_BASE_URL=\"{{if eq .MODE \"live\"}}http://127.0.0.1:18444{{else}}{{.LITE_BASE_URL}}{{end}}\" {{.PYTHON}} scripts/dev/lite/run-ui-performance-qualified.py --mode \"{{.MODE}}\" --principal-id \"{{.PRINCIPAL_ID}}\" --key-file \"{{.KEY_FILE}}\" --ttl-seconds \"{{.TTL_SECONDS}}\""
+      ],
+      "dependencies": [],
+      "environment": [
+        "LITE_BASE_URL"
+      ],
+      "example_invocation": "task lite:ui:perf:qualified",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/run-ui-performance-qualified.py"
+      ],
+      "name": "lite:ui:perf:qualified",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run renewable synthetic qualification-owner UI performance with bounded between-interaction session/bridge rotation",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
       "audience": "developer",
       "captures_runtime": false,
       "commands": [

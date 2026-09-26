@@ -15,7 +15,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 | Workflow | Task count |
 | --- | --- |
-| Development loop | 55 |
+| Development loop | 59 |
 | Documentation loop | 55 |
 | API-validation loop | 12 |
 | Runtime-evidence loop | 33 |
@@ -5647,6 +5647,142 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** gate-defined
 
 **Example:** `task lite:test:runtime`
+
+## `lite:ui:perf:android:baseline`
+
+**Purpose:** Run repeated exact-SHA physical Android qualification with contemporaneous platform controls and normalized attribution
+
+**Audience:** developer/operator
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:perf:android-baseline`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:ui:perf:android:baseline`
+
+## `lite:ui:perf:android:baseline:analyze`
+
+**Purpose:** Re-analyze existing repeated Android baseline evidence without touching the Server Phone
+
+**Audience:** developer/operator
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run analyze:perf:android-baseline`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:ui:perf:android:baseline:analyze`
+
+## `lite:ui:perf:android:baseline:check`
+
+**Purpose:** Fail when normalized repeated Android evidence shows material app incremental cost
+
+**Audience:** developer/operator
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run check:perf:android-baseline`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:ui:perf:android:baseline:check`
+
+## `lite:ui:perf:qualified`
+
+**Purpose:** Run renewable synthetic qualification-owner UI performance with bounded between-interaction session/bridge rotation
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `LITE_BASE_URL="{{if eq .MODE "live"}}http://127.0.0.1:18444{{else}}{{.LITE_BASE_URL}}{{end}}" {{.PYTHON}} scripts/dev/lite/run-ui-performance-qualified.py --mode "{{.MODE}}" --principal-id "{{.PRINCIPAL_ID}}" --key-file "{{.KEY_FILE}}" --ttl-seconds "{{.TTL_SECONDS}}"`
+
+**Environment:** LITE_BASE_URL
+
+**Inputs:** scripts/dev/lite/run-ui-performance-qualified.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:ui:perf:qualified`
 
 ## `lite:validation:check`
 

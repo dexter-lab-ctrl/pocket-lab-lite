@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 13e9b5f98a1cf6cbcf2c456ca8380dc9138dc2c2b214ea192b4660b9753a0678
+source_fingerprint: 3fff0f6e492e04a3c39e2471caf8d68074dc92c63fd263e984acfcf12a67f57a
 schema_revision: 1
 validation_status: generated
 ---
@@ -25,6 +25,8 @@ validation_status: generated
 | src/hooks/useLiteHotPathDiagnostics.js | liteApi.hotPathDiagnostics | GET | `/api/lite/diagnostics/runtime` | query | no | static |
 | src/hooks/useLiteSecurityEvents.js | liteApi.securityProgress | GET | `/api/lite/security/progress` | query | no | static |
 | src/hooks/useLiteStatus.js | liteApi.status | GET | `/api/lite/status` | query | no | static |
+| src/lite/LiteApp.jsx | liteApi.appActions | GET | `/api/lite/apps/photoprism/actions` | query | no | static |
+| src/lite/LiteApp.jsx | liteApi.appActions | GET | `/api/lite/apps/{param}/actions` | query | no | dynamic |
 | src/lite/LiteApp.jsx | liteApi.catalog | GET | `/api/lite/catalog` | query | no | static |
 | src/lite/LiteDevices.jsx | liteApi.deviceRemovalAssessment | GET | `/api/lite/devices/{param}/removal-assessment` | query | no | dynamic |
 | src/lite/LiteDevices.jsx | liteApi.fleet | GET | `/api/lite/fleet` | query | no | static |
@@ -156,6 +158,7 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery/backups/:backupId` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/recovery/backups/:backupId/verify` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery/database` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery/details` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery/locations` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/recovery/locations/discover` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/recovery/locations/forget` | mock | yes | static |
