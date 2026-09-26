@@ -5468,7 +5468,8 @@ def test_lite_devices_tab_uses_lazy_progressive_details_foundation():
     assert "React.lazy" in devices
     assert "import('./devices/DeviceDetailsLazy.jsx')" in devices
     assert "<Suspense" in devices
-    assert "activeDetailsDevice ? (" in devices
+    assert "if (!activeDetailsDevice) return null;" in devices
+    assert "detailsBodyReady ? (" in devices
     assert "React.memo(DeviceCard" in card
     assert "DEVICES_CARD_ACTIONS_OWN_CLICKS" in card
     assert "LiteProgressiveDetails" in details
