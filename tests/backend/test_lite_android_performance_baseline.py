@@ -16,6 +16,10 @@ def test_android_baseline_runner_repeats_existing_physical_matrix():
     assert 'baseline-after.json' in runner
     assert 'device-state.json' in runner
     assert 'ui-performance-android-cdp-*.json' in runner
+    assert 'LITE_ANDROID_EXPECTED_INTERACTION_REPORTS:-27' in runner
+    assert 'qualifier_attempts=2' in runner
+    assert 'retrying the complete qualifier' in runner
+    assert 'expected_interaction_reports' in runner
 
 
 def test_android_baseline_control_is_exact_sha_candidate_surface():

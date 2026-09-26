@@ -22,6 +22,18 @@ if ! [[ "$repetitions" =~ ^[0-9]+$ ]] || (( repetitions < 3 || repetitions > 5 )
   fail 'LITE_ANDROID_BASELINE_REPETITIONS must be an integer from 3 through 5.'
 fi
 
+# The physical matrix is intentionally fixed-size. A qualifier can return
+# non-zero for truthful target/gate misses, but it must still produce every
+# safe interaction report before the run is eligible for baseline analysis.
+# Android Chrome occasionally loses the foreground candidate tab between the
+# control page and the measured page; retry the complete qualifier once from
+# a clean evidence directory instead of normalizing a partial run.
+expected_interaction_reports="${LITE_ANDROID_EXPECTED_INTERACTION_REPORTS:-27}"
+if ! [[ "$expected_interaction_reports" =~ ^[0-9]+$ ]] || (( expected_interaction_reports < 1 )); then
+  fail 'LITE_ANDROID_EXPECTED_INTERACTION_REPORTS must be a positive integer.'
+fi
+qualifier_attempts=2
+
 staging_root=".pocketlab-dev/android-performance-baseline/${LITE_PERF_SOURCE_COMMIT}"
 rm -rf "$staging_root"
 mkdir -p "$staging_root"
@@ -36,24 +48,38 @@ for run_index in $(seq 1 "$repetitions"); do
 
   powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass     -File scripts/dev/lite/capture-ui-performance-android-state.ps1     >"$run_root/device-state.json"
 
-  rm -rf .pocketlab-dev/performance
-  mkdir -p .pocketlab-dev/performance
+  qualifier_status=1
+  evidence_count=0
+  evidence_files=()
+  for qualifier_attempt in $(seq 1 "$qualifier_attempts"); do
+    rm -rf .pocketlab-dev/performance
+    mkdir -p .pocketlab-dev/performance
 
-  set +e
-  node scripts/dev/lite/qualify-ui-performance-android-cdp.mjs
-  qualifier_status=$?
-  set -e
+    set +e
+    node scripts/dev/lite/qualify-ui-performance-android-cdp.mjs
+    qualifier_status=$?
+    set -e
+
+    shopt -s nullglob
+    evidence_files=(.pocketlab-dev/performance/ui-performance-android-cdp-*.json)
+    shopt -u nullglob
+    evidence_count="${#evidence_files[@]}"
+    if (( evidence_count == expected_interaction_reports )); then
+      break
+    fi
+    if (( qualifier_attempt < qualifier_attempts )); then
+      printf '[ui-performance-android-baseline] %s produced %s/%s reports on attempt %s; retrying the complete qualifier from a clean evidence directory.\n' \
+        "$run_name" "$evidence_count" "$expected_interaction_reports" "$qualifier_attempt" >&2
+    fi
+  done
   qualifier_statuses+=("$qualifier_status")
 
-  shopt -s nullglob
-  evidence_files=(.pocketlab-dev/performance/ui-performance-android-cdp-*.json)
-  shopt -u nullglob
-  (( ${#evidence_files[@]} > 0 )) || fail "${run_name} produced no physical Android interaction evidence."
+  (( evidence_count == expected_interaction_reports )) || fail "${run_name} produced ${evidence_count}/${expected_interaction_reports} physical Android interaction reports after ${qualifier_attempts} attempts."
   cp "${evidence_files[@]}" "$run_root/evidence/"
 
   node scripts/dev/lite/qualify-ui-performance-android-baseline.mjs     --label "${run_name}-after"     --samples 3     --output "$run_root/baseline-after.json"
 
-  printf '[ui-performance-android-baseline] %s captured %s interaction reports; qualifier exit=%s\n'     "$run_name" "${#evidence_files[@]}" "$qualifier_status"
+  printf '[ui-performance-android-baseline] %s captured %s interaction reports; qualifier exit=%s\n'     "$run_name" "$evidence_count" "$qualifier_status"
 done
 
 rm -rf .pocketlab-dev/performance
