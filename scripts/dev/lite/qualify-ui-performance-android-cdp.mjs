@@ -118,18 +118,17 @@ const candidateOrigin = new URL(base.origin);
 // browser exposes no candidate target at all.  Unrelated browser tabs remain
 // untouched.
 const existingCandidatePages = context.pages().filter((candidatePage) => candidatePage.url().startsWith(candidateOrigin.origin));
-const page = existingCandidatePages[existingCandidatePages.length - 1] || await context.newPage();
-const staleCandidatePages = existingCandidatePages.filter((candidatePage) => candidatePage !== page);
-await Promise.all(staleCandidatePages.map((candidatePage) => candidatePage.close().catch(() => {})));
+let page = existingCandidatePages[existingCandidatePages.length - 1] || await context.newPage();
+const candidatePages = [...new Set([...existingCandidatePages, page])];
 
-async function activateCandidatePage() {
+async function activateCandidatePage(candidatePage = page) {
   // Playwright's bringToFront can resolve while Android Chrome keeps the
   // target backgrounded after a cross-document navigation.  The CDP command
   // is the renderer-level activation request; keep the Playwright call too
   // for browsers that do not expose Page.bringToFront on the Android target.
-  await page.bringToFront().catch(() => {});
+  await candidatePage.bringToFront().catch(() => {});
   try {
-    const session = await context.newCDPSession(page);
+    const session = await context.newCDPSession(candidatePage);
     await session.send('Page.bringToFront');
     await session.detach().catch(() => {});
   } catch {
@@ -230,29 +229,63 @@ const candidatePageResponse = await page.goto(new URL('/?screen=home', base).toS
 if (!candidatePageResponse || !candidatePageResponse.ok()) {
   fail('The Android candidate page did not load.');
 }
-const candidatePageResponseHeaderVerified = candidatePageResponse.headers()['x-pocket-lab-candidate-sha'] === commit;
+let candidatePageResponseHeaderVerified = candidatePageResponse.headers()['x-pocket-lab-candidate-sha'] === commit;
 if (!candidatePageResponseHeaderVerified) {
   fail('The Android rendered page response header did not prove the requested exact commit.');
 }
 const candidateMeta = await page.locator('meta[name="pocketlab-candidate-sha"]').getAttribute('content').catch(() => null);
-const candidatePageMetaVerified = candidateMeta === commit;
+let candidatePageMetaVerified = candidateMeta === commit;
 if (!candidatePageMetaVerified) {
   fail('The Android rendered page did not expose the requested exact candidate SHA.');
 }
 
-await requireScreenWakeLock();
-await activateCandidatePage();
-let foregroundFramesReady = await receivesAnimationFrames(page);
-for (let attempt = 0; !foregroundFramesReady && attempt < 2; attempt += 1) {
-  await activateCandidatePage();
-  await page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => {});
+async function proveCandidatePage(candidatePage) {
+  const proof = await candidatePage.evaluate(async () => {
+    const response = await fetch('/?screen=home&pocketlab_qualification_sha_probe=1', {
+      cache: 'no-store',
+      credentials: 'same-origin',
+    });
+    return {
+      ok: response.ok,
+      responseHeader: response.headers.get('x-pocket-lab-candidate-sha'),
+      meta: document.querySelector('meta[name="pocketlab-candidate-sha"]')?.getAttribute('content') || null,
+    };
+  }).catch(() => null);
+  if (!proof?.ok) {
+    fail('The Android foreground candidate page did not expose a readable candidate response.');
+  }
+  candidatePageResponseHeaderVerified = proof.responseHeader === commit;
+  if (!candidatePageResponseHeaderVerified) {
+    fail('The Android foreground candidate page response header did not prove the requested exact commit.');
+  }
+  candidatePageMetaVerified = proof.meta === commit;
+  if (!candidatePageMetaVerified) {
+    fail('The Android foreground candidate page did not expose the requested exact candidate SHA.');
+  }
   await requireScreenWakeLock();
-  await activateCandidatePage();
-  foregroundFramesReady = await receivesAnimationFrames(page);
+}
+
+let foregroundFramesReady = false;
+const foregroundCandidates = [page, ...candidatePages.filter((candidatePage) => candidatePage !== page)];
+for (const candidatePage of foregroundCandidates) {
+  page = candidatePage;
+  await activateCandidatePage(candidatePage);
+  await proveCandidatePage(candidatePage);
+  foregroundFramesReady = await receivesAnimationFrames(candidatePage);
+  for (let attempt = 0; !foregroundFramesReady && attempt < 2; attempt += 1) {
+    await activateCandidatePage(candidatePage);
+    await candidatePage.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => {});
+    await requireScreenWakeLock();
+    await activateCandidatePage(candidatePage);
+    foregroundFramesReady = await receivesAnimationFrames(candidatePage);
+  }
+  if (foregroundFramesReady) break;
 }
 if (!foregroundFramesReady) {
   fail('Android candidate target did not deliver foreground animation frames after bounded retries.');
 }
+
+await Promise.all(candidatePages.filter((candidatePage) => candidatePage !== page).map((candidatePage) => candidatePage.close().catch(() => {})));
 
 await page.addInitScript(() => {
   let active = null;
