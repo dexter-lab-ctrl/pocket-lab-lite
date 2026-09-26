@@ -1,5 +1,4 @@
 import React from 'react';
-import { AlertTriangle, ChevronDown, HeartPulse, Lock, Network, RefreshCw, Server, ShieldCheck, Trash2 } from 'lucide-react';
 import {
   GlassCard,
   LiteButton,
@@ -90,9 +89,12 @@ function DeviceCard({
   onRestartAgent,
   onRemoveDevice,
   onOpenDetails,
+  onPreloadDetails,
   detailsButtonRef = null,
+  removeButtonRef = null,
   savedStateOnly = false,
 }) {
+  const [technicalDetailsOpen, setTechnicalDetailsOpen] = React.useState(false);
   const presentation = canonicalDevicePresentation(device);
   const online = !savedStateOnly && presentation.state === 'online';
   const linkState = deviceLinkState(device);
@@ -103,7 +105,7 @@ function DeviceCard({
     ? 'lite-device-card-server'
     : `lite-device-card-linked lite-device-card-linked-${effectiveLinkState}`;
   const deviceName = device?.name || 'Unnamed device';
-  const capabilitySummary = deviceCapabilitySummary(device);
+  const capabilitySummary = technicalDetailsOpen ? deviceCapabilitySummary(device) : null;
   const canRestart = !savedStateOnly && canRestartDeviceAgent(device);
   const canRemove = !savedStateOnly && canRemoveDevice(device);
   const proactiveHealth = device?.proactive_health || null;
@@ -115,150 +117,116 @@ function DeviceCard({
   const showHealthAttention = Boolean(proactiveHealth && (healthAttentionCount > 0 || !['healthy', 'unknown'].includes(String(proactiveHealth.status || '').toLowerCase())));
   const lastSeen = device?.last_seen_state?.last_seen_at || device?.last_seen;
   const story = selectDeviceOperationalStory(device, { savedStateOnly });
-  const removeActionButtonRef = React.useRef(null);
-  const removalPanelRef = React.useRef(null);
-  const removalInitiatedRef = React.useRef(false);
-
-  function syncRemovalFocus() {
-    if (!removalInitiatedRef.current || typeof document === 'undefined') return;
-    const panel = document.querySelector('.lite-device-remove-panel');
-    if (panel) {
-      if (removalPanelRef.current !== panel) {
-        removalPanelRef.current = panel;
-        panel.setAttribute('tabindex', '-1');
-        panel.setAttribute('role', 'region');
-        panel.setAttribute('aria-label', `Remove old device: ${deviceName}`);
-        panel.focus?.({ preventScroll: true });
-      }
-      return;
-    }
-    if (!removalPanelRef.current) return;
-    removalPanelRef.current = null;
-    removalInitiatedRef.current = false;
-    const trigger = removeActionButtonRef.current;
-    if (trigger?.isConnected) {
-      window.requestAnimationFrame(() => trigger.focus?.({ preventScroll: true }));
-    }
-  }
-
-  React.useEffect(() => {
-    if (typeof document === 'undefined' || typeof MutationObserver === 'undefined') return undefined;
-    const observer = new MutationObserver(syncRemovalFocus);
-    observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, []);
-
   function openRemovalReview() {
-    removalInitiatedRef.current = true;
     onRemoveDevice?.();
-    if (typeof window !== 'undefined') {
-      window.requestAnimationFrame(syncRemovalFocus);
-    }
   }
 
   return (
     <GlassCard className={`lite-device-card ${connectionClass}`}>
-      <div className="lite-device-card-top">
-        <div className="lite-device-icon">
-          <span className={online ? 'lite-device-pulse' : 'lite-device-pulse lite-device-pulse-muted'} />
-          <Network className="h-5 w-5" />
-        </div>
-      </div>
-
-      <div className="lite-device-card-heading">
-        <span className="lite-device-card-kicker">
-          {isServerCard ? <Server className="h-3.5 w-3.5" /> : <Network className="h-3.5 w-3.5" />}
-          {isServerCard ? 'Server host' : device?.role_label || roleLabel(device?.role)}
-        </span>
-        <h2>{deviceName}</h2>
-        {isServerCard ? <p>Protected control device for this self-hosted workspace.</p> : null}
-      </div>
-
-      <div className={`lite-device-connection-flow is-${flowState}`} data-connection-state={flowState} role="img" aria-label={deviceConnectionFlowLabel(flowState, deviceName, isServerCard)}>
-        <div className="lite-device-connection-copy">
-          <span>Connection</span>
-          <strong>{deviceConnectionSummary(flowState)}</strong>
-        </div>
-        {isServerCard ? (
-          <div className="lite-device-protected-host" aria-hidden="true">
-            <span className="lite-device-flow-node lite-device-flow-server"><Server className="h-4 w-4" /><small>Pocket Lab Server</small></span>
-            <span className="lite-device-protected-lock"><Lock className="h-3.5 w-3.5" /> Protected</span>
+        <div className="lite-device-card-top">
+          <div className="lite-device-icon">
+            <span className={online ? 'lite-device-pulse' : 'lite-device-pulse lite-device-pulse-muted'} />
           </div>
-        ) : (
-          <div className="lite-device-flow-topology" aria-hidden="true">
-            <span className="lite-device-flow-node lite-device-flow-server"><Server className="h-4 w-4" /><small>Server</small></span>
-            <span className="lite-device-flow-track"><span className="lite-device-flow-signal" /><span className="lite-device-flow-break">×</span></span>
-            <span className="lite-device-flow-node lite-device-flow-device"><Network className="h-4 w-4" /><small title={deviceName}>{deviceName}</small></span>
-          </div>
-        )}
-      </div>
-
-      <LiteOperationalStory
-        className="lite-device-operational-story"
-        story={{
-          ...story,
-          freshness: lastSeen ? { label: savedStateOnly ? 'Saved status' : 'Last seen', detail: formatLiteTime(lastSeen), state: savedStateOnly ? 'stale' : 'live' } : null,
-        }}
-        primaryAction={story.next_action?.kind === 'restart' ? { label: story.next_action.label, onClick: onRestartAgent, tone: 'primary' } : null}
-        manageAction={{
-          label: detailsOpen ? 'Hide details' : 'Manage',
-          onClick: onOpenDetails,
-          ariaLabel: `${detailsOpen ? 'Hide' : 'Manage'} ${deviceName}`,
-          ariaExpanded: detailsOpen,
-          buttonRef: detailsButtonRef,
-        }}
-      />
-
-      {story.remote_access === 'not_ready' ? (
-        <LiteActionRow
-          className="lite-device-remote-access-row"
-          label="Remote access"
-          value="Not ready"
-          summary="This is separate from the local Pocket Lab connection."
-          attention
-        />
-      ) : null}
-
-      {showHealthAttention ? (
-        <div className={`lite-device-health-strip ${healthTone(proactiveHealth.status)}`} aria-label="Proactive device health">
-          <span className="lite-device-health-strip-icon">
-            {healthAttentionCount > 0 ? <AlertTriangle className="h-4 w-4" /> : <HeartPulse className="h-4 w-4" />}
-          </span>
-          <span>
-            <strong>{healthLabel(proactiveHealth.status)}</strong>
-            <small>{proactiveHealth.summary || 'Device health is not available yet.'}</small>
-          </span>
-          {healthAttentionCount > 0 ? <em>{healthAttentionCount} item{healthAttentionCount === 1 ? '' : 's'}</em> : null}
         </div>
-      ) : null}
 
-      <div className="lite-device-actions">
-        <details className="lite-device-card-disclosure">
-          <summary aria-label={`More details and actions for ${deviceName}`}>
-            <span>Technical and safety</span><ChevronDown className="h-4 w-4" />
-          </summary>
-          <div className="lite-device-card-disclosure-content">
-            <div className="lite-device-trust-strip" aria-label="Device trust and responsibilities">
-              <span><ShieldCheck className="h-4 w-4" /> <strong>{identityLabel(device)}</strong></span>
-              {responsibilitySummary(device) ? <small>{responsibilitySummary(device)}</small> : <small>No active dependencies reported.</small>}
-              {device?.removal_assessment ? (
-                <small className={device.removal_assessment.safe_to_remove ? 'is-ready' : 'is-review'}>
-                  {device.removal_assessment.protected ? 'Protected server host' : (device.removal_assessment.allowed ?? device.removal_assessment.safe_to_remove) ? 'Remove after confirmation' : 'Removal blocked'}
-                </small>
-              ) : null}
-              <small>Capabilities: {capabilitySummary.label}</small>
+        <div className="lite-device-card-heading">
+          <span className="lite-device-card-kicker">
+            {isServerCard ? 'Server host' : device?.role_label || roleLabel(device?.role)}
+          </span>
+          <h2>{deviceName}</h2>
+          {isServerCard ? <p>Protected control device for this self-hosted workspace.</p> : null}
+        </div>
+
+        <div className={`lite-device-connection-flow is-${flowState}`} data-connection-state={flowState} role="img" aria-label={deviceConnectionFlowLabel(flowState, deviceName, isServerCard)}>
+          <div className="lite-device-connection-copy">
+            <span>Connection</span>
+            <strong>{deviceConnectionSummary(flowState)}</strong>
+          </div>
+          {isServerCard ? (
+            <div className="lite-device-protected-host" aria-hidden="true">
+              <span className="lite-device-flow-node lite-device-flow-server"><span className="lite-device-static-glyph" aria-hidden="true" /><small>Pocket Lab Server</small></span>
+              <span className="lite-device-protected-lock"><span className="lite-device-static-glyph" aria-hidden="true" /> Protected</span>
             </div>
-            {(canRestart || canRemove) ? <div className="lite-device-secondary-actions">
-              {canRestart && story.next_action?.kind !== 'restart' ? <LiteButton tone="secondary" onClick={onRestartAgent} disabled={restartBusy === device?.id}>
-                <RefreshCw className="h-4 w-4" />{restartBusy === device?.id ? 'Checking progress...' : 'Restart agent'}
-              </LiteButton> : null}
-              {canRemove ? <LiteButton tone="danger" onClick={openRemovalReview} disabled={removeBusy} buttonRef={removeActionButtonRef}>
-                <Trash2 className="h-4 w-4" />{(device?.removal_assessment?.allowed ?? device?.removal_assessment?.safe_to_remove) ? 'Remove device' : 'Review removal'}
-              </LiteButton> : null}
-            </div> : null}
+          ) : (
+            <div className="lite-device-flow-topology" aria-hidden="true">
+              <span className="lite-device-flow-node lite-device-flow-server"><span className="lite-device-flow-glyph" aria-hidden="true" /><small>Server</small></span>
+              <span className="lite-device-flow-track"><span className="lite-device-flow-signal" /><span className="lite-device-flow-break">×</span></span>
+              <span className="lite-device-flow-node lite-device-flow-device"><span className="lite-device-flow-glyph" aria-hidden="true" /><small title={deviceName}>{deviceName}</small></span>
+            </div>
+          )}
+        </div>
+
+        <LiteOperationalStory
+          className="lite-device-operational-story"
+          story={{
+            ...story,
+            freshness: lastSeen ? { label: savedStateOnly ? 'Saved status' : 'Last seen', detail: formatLiteTime(lastSeen), state: savedStateOnly ? 'stale' : 'live' } : null,
+          }}
+          primaryAction={story.next_action?.kind === 'restart' ? { label: story.next_action.label, onClick: onRestartAgent, tone: 'primary' } : null}
+          manageAction={{
+            label: detailsOpen ? 'Hide details' : 'Manage',
+            onClick: onOpenDetails,
+            ariaLabel: `${detailsOpen ? 'Hide' : 'Manage'} ${deviceName}`,
+            ariaExpanded: detailsOpen,
+            buttonRef: detailsButtonRef,
+            onPointerEnter: onPreloadDetails,
+            onFocus: onPreloadDetails,
+            onTouchStart: onPreloadDetails,
+          }}
+        />
+
+        {story.remote_access === 'not_ready' ? (
+          <LiteActionRow
+            className="lite-device-remote-access-row"
+            label="Remote access"
+            value="Not ready"
+            summary="This is separate from the local Pocket Lab connection."
+            attention
+          />
+        ) : null}
+
+        {showHealthAttention ? (
+          <div className={`lite-device-health-strip ${healthTone(proactiveHealth.status)}`} aria-label="Proactive device health">
+            <span className="lite-device-health-strip-icon">
+              <span className="lite-device-health-static-glyph" aria-hidden="true" />
+            </span>
+            <span>
+              <strong>{healthLabel(proactiveHealth.status)}</strong>
+              <small>{proactiveHealth.summary || 'Device health is not available yet.'}</small>
+            </span>
+            {healthAttentionCount > 0 ? <em>{healthAttentionCount} item{healthAttentionCount === 1 ? '' : 's'}</em> : null}
           </div>
-        </details>
-      </div>
+        ) : null}
+
+        <div className="lite-device-actions">
+          <details className="lite-device-card-disclosure" onToggle={(event) => setTechnicalDetailsOpen(event.currentTarget.open)}>
+            <summary aria-label={`More details and actions for ${deviceName}`}>
+              <span>Technical and safety</span><span className="lite-device-card-chevron" aria-hidden="true" />
+            </summary>
+            {technicalDetailsOpen ? (
+              <div className="lite-device-card-disclosure-content">
+                <div className="lite-device-trust-strip" aria-label="Device trust and responsibilities">
+                  <span><span className="lite-device-card-static-glyph" aria-hidden="true" /> <strong>{identityLabel(device)}</strong></span>
+                  {responsibilitySummary(device) ? <small>{responsibilitySummary(device)}</small> : <small>No active dependencies reported.</small>}
+                  {device?.removal_assessment ? (
+                    <small className={device.removal_assessment.safe_to_remove ? 'is-ready' : 'is-review'}>
+                      {device.removal_assessment.protected ? 'Protected server host' : (device.removal_assessment.allowed ?? device.removal_assessment.safe_to_remove) ? 'Remove after confirmation' : 'Removal blocked'}
+                    </small>
+                  ) : null}
+                  <small>Capabilities: {capabilitySummary.label}</small>
+                </div>
+                {(canRestart || canRemove) ? <div className="lite-device-secondary-actions">
+                  {canRestart && story.next_action?.kind !== 'restart' ? <LiteButton tone="secondary" onClick={onRestartAgent} disabled={restartBusy === device?.id}>
+                    <span className="lite-device-card-action-glyph" aria-hidden="true" />{restartBusy === device?.id ? 'Checking progress...' : 'Restart agent'}
+                  </LiteButton> : null}
+                  {canRemove ? <LiteButton tone="danger" onClick={openRemovalReview} disabled={removeBusy} buttonRef={removeButtonRef}>
+                    <span className="lite-device-card-action-glyph is-danger" aria-hidden="true" />{(device?.removal_assessment?.allowed ?? device?.removal_assessment?.safe_to_remove) ? 'Remove device' : 'Review removal'}
+                  </LiteButton> : null}
+                </div> : null}
+              </div>
+            ) : null}
+          </details>
+        </div>
     </GlassCard>
   );
 }
@@ -268,6 +236,7 @@ function areEqual(previous, next) {
     && previous.restartBusy === next.restartBusy
     && previous.removeBusy === next.removeBusy
     && previous.detailsOpen === next.detailsOpen
+    && previous.onPreloadDetails === next.onPreloadDetails
     && previous.savedStateOnly === next.savedStateOnly;
 }
 

@@ -67,6 +67,7 @@ Hosts the installed or web PWA and enforces browser-origin boundaries.
 - verified_by: `tests/backend/test_lite_n6b_install_surface.py`
 - verified_by: `tests/backend/test_lite_native_release.py`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
+- verified_by: `tests/backend/test_lite_ui_candidate_server.py`
 - verified_by: `tests/backend/test_release_process_isolation.py`
 - verified_by: `tests/dev/test_frontend_resource_policy.py`
 - verified_by: `tests/docs/test_docs_runtime_network_fence.py`

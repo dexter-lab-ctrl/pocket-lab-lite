@@ -32,7 +32,7 @@ export default function LiteToastHost() {
   if (!toasts.length) return null;
 
   return (
-    <div className="lite-toast-host" role="status" aria-live="polite" aria-relevant="additions text">
+    <div className="lite-toast-host" role="status" aria-live="polite" aria-relevant="additions text" data-lite-perf-primitive="toast">
       {toasts.map((toast) => {
         const Icon = TOAST_ICONS[toast.kind] || Info;
         return (

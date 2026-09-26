@@ -18,7 +18,8 @@ describe('Pocket Lab Lite Recovery R1/R2 UI', () => {
   });
 
   it('uses one shared Manage shell with focused sections', () => {
-    expect(recoverySource).toContain("React.lazy(() => import('./recovery/RecoveryManageSheetLazy.jsx'))");
+    expect(recoverySource).toContain("const loadRecoveryManageSheet = () => import('./recovery/RecoveryManageSheetLazy.jsx');");
+    expect(recoverySource).toContain('const RecoveryManageSheetLazy = React.lazy(loadRecoveryManageSheet);');
     expect(recoverySource).toContain('variant="manage"');
     for (const label of ['Backup', 'Restore', 'Protection', 'History']) {
       expect(manageSource).toContain(`label: '${label}'`);

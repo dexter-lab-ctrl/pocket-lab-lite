@@ -2,12 +2,13 @@
   "approved_change_classes": [
     "add the loopback-only Runtime Security Assurance Harness OpenAPI surface under /api/lite/harness/security-assurance/*, including fixed capability/suite/preflight/run/findings/report/cancel operations; these endpoints remain fail-closed behind harness enablement, loopback-only transport, Ed25519 proof, short-lived qualification session, least-privilege capability, fixed target-scope, resource, and worker-owned execution gates",
     "add the qualification-only key-bound bootstrap challenge/complete operations and durable assurance events/resume operations; bootstrap remains direct-loopback, operator-approved, fixed-profile, one-use, short-lived, and unavailable through Caddy or production",
-    "add the read-only /api/lite/runtime operation exposing the sanitized PM2 Runtime Contract projection; the route adds no browser-side execution, NATS access, backend secrets, or state-changing behavior"
+    "add the read-only /api/lite/runtime operation exposing the sanitized PM2 Runtime Contract projection; the route adds no browser-side execution, NATS access, backend secrets, or state-changing behavior",
+    "add the qualification-only POST /api/lite/harness/browser/bridge surface; it is direct-loopback-only, requires a signed short-lived ui-performance-60fps synthetic session and qualification.browser_bridge capability, returns a process-ephemeral browser projection, never persists credentials, and is unavailable through Caddy or production"
   ],
   "baseline": "contracts/parity/openapi-baseline.json",
   "contract": "contracts/generated/lite-openapi.json",
-  "previous_sha256": "73df089dcb595eacedd99de1797a42e2eedbe4df044eebb8a6fc323fd9c2d1c4",
-  "promoted_sha256": "683093d477f48a1e54959ed51de4498003d3854e51b55b957ec75ad84d6bc929",
+  "previous_sha256": "683093d477f48a1e54959ed51de4498003d3854e51b55b957ec75ad84d6bc929",
+  "promoted_sha256": "8d70d2565517e6782d0afafcaf1e9d6090b6fe9c73cf9eb2feeaa0892ea3737b",
   "sanitized": true,
   "schema_version": "1.0.0",
   "security_review": {
@@ -16,7 +17,7 @@
     "runtime_routes_removed": false,
     "write_operations_added": false
   },
-  "source_revision": "feat/pm2-runtime-contract-stable-convergence",
+  "source_revision": "perf/lite-ui-60fps-performance-contract@e9b2ec2790e4ff63604eb8ff618fec8e74ede4fb",
   "status": "promoted",
-  "validation_status": "dev-pc-and-server-phone-validated-pm2-runtime-contract-stable-convergence"
+  "validation_status": "dev-pc-contract-and-harness-tests-validated; physical-runtime-qualification-pending"
 }

@@ -11,6 +11,7 @@ import { liteQueryKeys, liteQueryPaths } from '../../lib/liteQueryClient.js';
 import { useLiteQuery } from '../../hooks/useLiteQuery.js';
 import { useLiteDeviceHealthReviewFlow } from '../../hooks/useLiteDeviceHealthReviewFlow.js';
 import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
+import { isLitePerformanceMode } from '../liteNavigationRuntime.js';
 import { useLiteUiStore } from '../../stores/liteUiStore.js';
 import { triggerLiteTactileFeedback } from '../LiteMotion.jsx';
 import {
@@ -35,6 +36,7 @@ const DEVICE_DETAILS_BACKEND_EVIDENCE_BOUNDARY = 'normal Devices details do not 
 const DEVICE_DETAILS_TECHNICAL_DETAILS_COLLAPSED = true;
 const DEVICE_HEALTH_HISTORY_PROGRESSIVE_DISCLOSURE_D4 = true;
 const DEVICE_HEALTH_RECOMMENDATIONS_DO_NOT_EXECUTE_D4 = true;
+const DEVICE_DETAILS_NONCRITICAL_DELAY_FRAMES = isLitePerformanceMode() ? 45 : 2;
 void DEVICE_DETAILS_USES_PROGRESSIVE_FOUNDATION;
 void DEVICE_DETAILS_HISTORY_IS_LAZY;
 void DEVICE_DETAILS_BACKEND_EVIDENCE_BOUNDARY;
@@ -366,6 +368,34 @@ function trustSummary(device) {
   ];
 }
 
+function LiteDeferredDetails({ render, delayFrames = 1 }) {
+  const [ready, setReady] = React.useState(false);
+
+  React.useEffect(() => {
+    let active = true;
+    let frame = null;
+    let remaining = Math.max(1, Number(delayFrames) || 1);
+    const schedule = () => {
+      frame = window.requestAnimationFrame(() => {
+        if (!active) return;
+        remaining -= 1;
+        if (remaining <= 0) setReady(true);
+        else schedule();
+      });
+    };
+    schedule();
+    return () => {
+      active = false;
+      if (frame !== null) window.cancelAnimationFrame(frame);
+    };
+  }, [delayFrames]);
+
+  if (!ready) {
+    return <div className="lite-device-details-progressive-placeholder" aria-busy="true" aria-label="Loading device awareness details" />;
+  }
+  return render();
+}
+
 export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
   if (!device) return null;
   const initialDeviceId = device?.id || '';
@@ -424,22 +454,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
     refetchInterval: false,
     refetchOnWindowFocus: false,
   });
-  const historyItems = Array.isArray(historyQuery.data?.items) && historyQuery.data.items.length
-    ? historyQuery.data.items
-    : deviceHistoryItems({ ...device, recent_events: device?.recent_lifecycle });
-  const capabilities = capabilityRows(device);
-  const capabilitySummary = deviceCapabilitySummary(device);
-  const runtimeServices = deviceRuntimeServices(device);
-  const restartAssessment = deviceRestartAssessment(device) || {};
-  const dependencies = device?.dependencies || {};
-  const removal = device?.removal_assessment || {};
   const isProtectedServer = String(device?.role || '').toLowerCase() === 'server_host' || device?.is_current || device?.isCurrent;
-  const healthResources = proactiveHealth ? healthResourceRows(proactiveHealth, device) : [];
-  const healthAttention = healthAttentionCurrent && Array.isArray(proactiveHealth?.attention_items)
-    ? proactiveHealth.attention_items.slice(0, 12)
-    : [];
-  const healthTransitions = healthHistoryItems(healthHistoryQuery.data || {});
-  const recommendationTargetScreen = recommendationScreen(proactiveHealth?.recommended_action);
   const healthReviewFlow = useLiteDeviceHealthReviewFlow({
     nodeId: initialDeviceId,
     healthRevision: proactiveHealth?.health_revision || '',
@@ -489,7 +504,14 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
         ) : null}
       </section>
 
-      <section className={`lite-device-proactive-health is-${normalizeStatus(proactiveHealth?.status || 'unknown')}`} aria-label="Proactive device health">
+      <LiteDeferredDetails delayFrames={DEVICE_DETAILS_NONCRITICAL_DELAY_FRAMES} render={() => {
+        const healthResources = proactiveHealth ? healthResourceRows(proactiveHealth, device) : [];
+        const healthAttention = healthAttentionCurrent && Array.isArray(proactiveHealth?.attention_items)
+          ? proactiveHealth.attention_items.slice(0, 12)
+          : [];
+        const healthTransitions = healthHistoryItems(healthHistoryQuery.data || {});
+        const recommendationTargetScreen = recommendationScreen(proactiveHealth?.recommended_action);
+        return (<section className={`lite-device-proactive-health is-${normalizeStatus(proactiveHealth?.status || 'unknown')}`} aria-label="Proactive device health">
         <div className="lite-device-proactive-health-head">
           <span className="lite-device-proactive-health-icon">
             {healthAttention.length ? <AlertTriangle className="h-5 w-5" /> : <HeartPulse className="h-5 w-5" />}
@@ -607,9 +629,17 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
             </div>
           </>
         ) : <p>Health will appear after the next prepared fleet refresh.</p>}
-      </section>
+      </section>);
+      }} />
 
-      <div className="lite-device-awareness-grid">
+      <LiteDeferredDetails delayFrames={DEVICE_DETAILS_NONCRITICAL_DELAY_FRAMES} render={() => {
+        const capabilities = capabilityRows(device);
+        const capabilitySummary = deviceCapabilitySummary(device);
+        const runtimeServices = deviceRuntimeServices(device);
+        const restartAssessment = deviceRestartAssessment(device) || {};
+        const dependencies = device?.dependencies || {};
+        const removal = device?.removal_assessment || {};
+        return (<div className="lite-device-awareness-grid">
         <section className="lite-device-awareness-section" aria-label="Connection lifecycle">
           <span>Connection</span>
           <strong>{deviceConnectionLabel(device)}</strong>
@@ -708,40 +738,50 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
             <ul>{removal.blockers.map((item) => <li key={item.code}>{item.summary}</li>)}</ul>
           ) : <p>{removal.protected ? 'This control device cannot be removed.' : 'No dependency blockers are currently reported.'}</p>}
         </section>
-      </div>
+      </div>);
+      }} />
 
       <details className="lite-device-advanced-details">
         <summary>
           <span>Diagnostics and history</span>
           <small>Technical details, safe activity summary, and troubleshooting records</small>
         </summary>
-        <LiteProgressiveDetails
-          title={title}
-          status={status}
-          statusLabel={deviceStatusLabel(effectiveStatus)}
-          summary={deviceSummary(device)}
-          what_happened={deviceWhatHappened(device)}
-          what_changed={deviceWhatChanged(device)}
-          what_needs_attention={deviceAttention(device)}
-          what_did_not_happen={deviceWhatDidNotHappen()}
-          saved_for_troubleshooting={{
-            saved: Boolean(device?.last_seen || device?.id),
-            backend_only: true,
-            summary: 'Device events and troubleshooting records stay backend-owned and protected.',
-          }}
-          next_step={deviceAttention(device).length ? (restartAssessment.allowed ? 'Restart the device agent through Pocket Lab.' : restartAssessment.summary || 'Check power, network, Tailscale, and the local supervisor on the device.') : 'No action is needed right now.'}
-          technicalDetails={technicalRows(device)}
-          history={{
-            title: 'Device history',
-            domain: 'default',
-            datasetKey: `device:${device?.id || device?.name || device?.hostname || 'unknown'}`,
-            summary: historyQuery.loading ? 'Loading recent device activity…' : historyItems.length ? `${historyItems.length} safe event${historyItems.length === 1 ? '' : 's'} available.` : 'No device history has been reported yet.',
-            items: historyItems,
-            totalCount: Math.max(historyItems.length, Number(historyQuery.data?.total_count || historyQuery.data?.total || 0)),
-            enabled: true,
-            emptyMessage: 'No device history has been reported yet.',
-          }}
-        />
+        <LiteDeferredDetails delayFrames={DEVICE_DETAILS_NONCRITICAL_DELAY_FRAMES} render={() => {
+          const historyItems = Array.isArray(historyQuery.data?.items) && historyQuery.data.items.length
+            ? historyQuery.data.items
+            : deviceHistoryItems({ ...device, recent_events: device?.recent_lifecycle });
+          const restartAssessment = deviceRestartAssessment(device) || {};
+          const attention = deviceAttention(device);
+          return (
+            <LiteProgressiveDetails
+              title={title}
+              status={status}
+              statusLabel={deviceStatusLabel(effectiveStatus)}
+              summary={deviceSummary(device)}
+              what_happened={deviceWhatHappened(device)}
+              what_changed={deviceWhatChanged(device)}
+              what_needs_attention={attention}
+              what_did_not_happen={deviceWhatDidNotHappen()}
+              saved_for_troubleshooting={{
+                saved: Boolean(device?.last_seen || device?.id),
+                backend_only: true,
+                summary: 'Device events and troubleshooting records stay backend-owned and protected.',
+              }}
+              next_step={attention.length ? (restartAssessment.allowed ? 'Restart the device agent through Pocket Lab.' : restartAssessment.summary || 'Check power, network, Tailscale, and the local supervisor on the device.') : 'No action is needed right now.'}
+              technicalDetails={technicalRows(device)}
+              history={{
+                title: 'Device history',
+                domain: 'default',
+                datasetKey: `device:${device?.id || device?.name || device?.hostname || 'unknown'}`,
+                summary: historyQuery.loading ? 'Loading recent device activity…' : historyItems.length ? `${historyItems.length} safe event${historyItems.length === 1 ? '' : 's'} available.` : 'No device history has been reported yet.',
+                items: historyItems,
+                totalCount: Math.max(historyItems.length, Number(historyQuery.data?.total_count || historyQuery.data?.total || 0)),
+                enabled: true,
+                emptyMessage: 'No device history has been reported yet.',
+              }}
+            />
+          );
+        }} />
       </details>
     </section>
   );

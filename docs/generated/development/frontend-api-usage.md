@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 288ef8479a86b00bed95d19d5a93afdcfcd138b2b8d58a9ada83d529d22f8505
+source_fingerprint: 3fff0f6e492e04a3c39e2471caf8d68074dc92c63fd263e984acfcf12a67f57a
 schema_revision: 1
 validation_status: generated
 ---
@@ -25,6 +25,8 @@ validation_status: generated
 | src/hooks/useLiteHotPathDiagnostics.js | liteApi.hotPathDiagnostics | GET | `/api/lite/diagnostics/runtime` | query | no | static |
 | src/hooks/useLiteSecurityEvents.js | liteApi.securityProgress | GET | `/api/lite/security/progress` | query | no | static |
 | src/hooks/useLiteStatus.js | liteApi.status | GET | `/api/lite/status` | query | no | static |
+| src/lite/LiteApp.jsx | liteApi.appActions | GET | `/api/lite/apps/photoprism/actions` | query | no | static |
+| src/lite/LiteApp.jsx | liteApi.appActions | GET | `/api/lite/apps/{param}/actions` | query | no | dynamic |
 | src/lite/LiteApp.jsx | liteApi.catalog | GET | `/api/lite/catalog` | query | no | static |
 | src/lite/LiteDevices.jsx | liteApi.deviceRemovalAssessment | GET | `/api/lite/devices/{param}/removal-assessment` | query | no | dynamic |
 | src/lite/LiteDevices.jsx | liteApi.fleet | GET | `/api/lite/fleet` | query | no | static |
@@ -54,6 +56,7 @@ validation_status: generated
 | src/lite/LiteIdentityEnterprise.jsx | liteApi.verifyPasskeyStepUp | POST | `/api/lite/identity/step-up/verify` | mutation | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.backupApp | POST | `/api/lite/apps/{param}/backup` | mutation | no | dynamic |
 | src/lite/LiteRecovery.jsx | liteApi.backupNow | POST | `/api/lite/recovery/backup` | mutation | no | static |
+| src/lite/LiteRecovery.jsx | liteApi.recoveryHistory | GET | `/api/lite/recovery/backups` | query | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.verifyBackup | POST | `/api/lite/recovery/backups/{param}/verify` | mutation | no | dynamic |
 | src/lite/LiteRecovery.jsx | liteApi.databaseRecovery | GET | `/api/lite/recovery/database` | query | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.backupDatabase | POST | `/api/lite/recovery/database/backup` | mutation | no | static |
@@ -155,6 +158,7 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery/backups/:backupId` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/recovery/backups/:backupId/verify` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery/database` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery/details` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery/locations` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/recovery/locations/discover` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/recovery/locations/forget` | mock | yes | static |
@@ -306,6 +310,7 @@ validation_status: generated
 - `/api/lite/harness/bootstrap/challenge`
 - `/api/lite/harness/bootstrap/complete`
 - `/api/lite/harness/bootstrap/grants`
+- `/api/lite/harness/browser/bridge`
 - `/api/lite/harness/capabilities`
 - `/api/lite/harness/challenge`
 - `/api/lite/harness/principal/revoke`

@@ -106,10 +106,14 @@ export function createLiteScreenPreloader({
 
 export function prefersLiteReducedMotion(windowObject = typeof window === 'undefined' ? null : window) {
   try {
-    return Boolean(windowObject?.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+    return isLitePerformanceMode() || Boolean(windowObject?.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
   } catch {
     return false;
   }
+}
+
+export function isLitePerformanceMode() {
+  return import.meta.env.VITE_POCKETLAB_PERF_TEST === '1';
 }
 
 export function startLiteViewTransition(commit, {

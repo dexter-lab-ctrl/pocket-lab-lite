@@ -13,6 +13,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+from .. import deps
 from ..db.connection import begin_immediate, connection
 from ..db.migrations import apply_migrations
 from . import lite_enterprise_identity, lite_identity_auth, lite_webauthn
@@ -462,6 +463,62 @@ def complete_login(*, origin: str, challenge: str, payload: dict[str, Any]) -> d
 
 
 def unified_identity_projection(auth_context: dict[str, Any] | None) -> dict[str, Any]:
+    # The exceptional qualification-owner is a backend-owned synthetic
+    # principal, not a human identity.  It still needs to render the
+    # Owner-gated Identity presentation during safe UI qualification, but it
+    # must never borrow or expose a human Owner record.  Keep this projection
+    # deliberately read-only: the normal Identity mutation routes continue to
+    # require a human session and therefore fail closed if a browser attempts
+    # to submit one of the displayed actions.
+    if deps.is_qualification_owner_context(auth_context):
+        harness = (auth_context or {}).get("harness") or {}
+        session_context = (auth_context or {}).get("session") or {}
+        expires_at = str(harness.get("expires_at") or "")[:64] or None
+        return {
+            "status": "qualification",
+            "summary": "Synthetic qualification Owner presentation. No human identity or credential is created.",
+            "setup_required": False,
+            "authenticated": True,
+            "synthetic": True,
+            "qualification_read_only": True,
+            "owner": None,
+            "person": {
+                "display_name": "Synthetic qualification principal",
+                "status": "qualification",
+                "role": "Owner",
+                "is_local_owner": False,
+                "synthetic": True,
+            },
+            "session": {
+                "session_id": "qualification-browser-session",
+                "authenticated": True,
+                "auth_method": str(session_context.get("auth_method") or "harness_session")[:48],
+                "absolute_expires_at": expires_at,
+                "expiry_mode": "short_lived",
+                "assurance": [],
+            },
+            "sessions": [{
+                "session_id": "qualification-browser-session",
+                "auth_method": "harness_session",
+                "absolute_expires_at": expires_at,
+                "expiry_mode": "short_lived",
+                "active": True,
+                "current": True,
+                "synthetic": True,
+            }],
+            "passkeys": [],
+            "recovery": {"configured": False, "remaining": 0, "generation": 0},
+            "recent_activity": [],
+            "sign_in_methods": {"password": False, "passkey": False, "oidc": False},
+            "enterprise": {
+                "enabled": False,
+                "current_membership": None,
+                "roles": [],
+                "updated_at": _iso(),
+            },
+            "session_expiry_mode": "short_lived",
+            "updated_at": _iso(),
+        }
     base = lite_identity_auth.identity_projection(auth_context)
     actor_id = str(((auth_context or {}).get("actor") or {}).get("identity_id") or "")
     if not actor_id:

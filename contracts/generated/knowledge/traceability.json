@@ -1807,6 +1807,17 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:post:/api/lite/harness/browser/bridge",
+      "name": "POST /api/lite/harness/browser/bridge",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:post:/api/lite/harness/challenge",
       "name": "POST /api/lite/harness/challenge",
       "note": "A test link does not by itself prove runtime verification.",
@@ -2627,6 +2638,7 @@
         "test:tests/backend/test_lite_n6b_install_surface.py",
         "test:tests/backend/test_lite_native_release.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_lite_ui_candidate_server.py",
         "test:tests/backend/test_release_process_isolation.py",
         "test:tests/dev/test_frontend_resource_policy.py",
         "test:tests/docs/test_docs_runtime_network_fence.py",
@@ -2942,6 +2954,8 @@
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/e2e/lite-content-stress.spec.ts",
+        "test:tests/e2e/lite-performance-live.spec.ts",
+        "test:tests/e2e/lite-performance.spec.ts",
         "test:tests/e2e/lite-visual-overlays.spec.ts",
         "test:tests/parity/test_planned_runtime_parity_policy.py",
         "test:tests/parity/test_runtime_drift_reporting.py"
@@ -3505,6 +3519,7 @@
         "test:tests/docs/test_security_assurance_report.py",
         "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
+        "test:tests/e2e/lite-performance.spec.ts",
         "test:tests/e2e/lite-phase9-qualification.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/parity/test_intelligent_runtime_parity.py"
@@ -3713,6 +3728,7 @@
         "test:tests/backend/test_lite_security_worker_sqlite_commit.py",
         "test:tests/backend/test_lite_sqlite_performance.py",
         "test:tests/backend/test_lite_startup_workload_isolation.py",
+        "test:tests/backend/test_lite_windows_adb_qualification_tools.py",
         "test:tests/backend/test_lite_worker_recovery.py",
         "test:tests/backend/test_lite_workload_admission.py",
         "test:tests/docs/documentation-ia.spec.ts",
@@ -3736,6 +3752,8 @@
         "test:tests/e2e/lite-accessibility-states.spec.ts",
         "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
+        "test:tests/e2e/lite-performance-live.spec.ts",
+        "test:tests/e2e/lite-performance.spec.ts",
         "test:tests/e2e/lite-phase9-qualification.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/e2e/lite-visual-overlays.spec.ts",
@@ -4297,6 +4315,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "88b464765e46595bc330bc08b22e96b0c0566063be7144f0a247d8fb95dd59ab"
+    "source_fingerprint": "96d700906f483953483600a8a29ec4497c347792296ed0eaa68b64571cc51d9c"
   }
 }

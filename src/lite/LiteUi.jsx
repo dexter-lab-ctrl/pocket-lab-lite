@@ -79,7 +79,7 @@ export function LiteRefreshButton({
   }
 
   return (
-    <div className={`lite-refresh-control ${copy.stale ? 'is-stale' : 'is-live'} ${open ? 'is-open' : ''} ${className}`.trim()}>
+    <div className={`lite-refresh-control ${copy.stale ? 'is-stale' : 'is-live'} ${open ? 'is-open' : ''} ${className}`.trim()} data-lite-perf-primitive="refresh-control">
       <LiteButton onClick={handleClick} tone={tone}>
         <RefreshCw className={`h-4 w-4 lite-refresh-icon ${refreshing ? 'is-refreshing' : ''}`} />
         {refreshing ? 'Refreshing…' : label}
@@ -818,7 +818,7 @@ export function securityExecutionTimeline({ executionTimeline, currentRunId, run
 
 export function PageHeader({ eyebrow = 'Pocket Lab Lite', title, description, actions }) {
   return (
-    <div className="mb-5 flex flex-col gap-4 rounded-[2rem] border border-white/10 bg-slate-900/65 p-5 shadow-2xl shadow-black/20 backdrop-blur-xl sm:flex-row sm:items-end sm:justify-between">
+    <div className="lite-page-header mb-5 flex flex-col gap-4 rounded-[2rem] border border-white/10 bg-slate-900/65 p-5 shadow-2xl shadow-black/20 backdrop-blur-xl sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200">{eyebrow}</p>
         <h1 className="mt-2 text-3xl font-black tracking-tight text-white sm:text-4xl">{title}</h1>
@@ -853,6 +853,8 @@ export function LiteButton({ children, onClick, disabled = false, tone = 'primar
       aria-label={ariaLabel}
       title={title || ariaLabel}
       className={`pocket-button ${toneClass} ${className}`.trim()}
+      data-lite-perf-primitive="button"
+      data-lite-perf-motion="compositor"
     >
       {children}
     </button>
@@ -914,6 +916,9 @@ function StoryAction({ action, fallbackTone = 'secondary' }) {
         ariaLabel={action.ariaLabel || action.label}
         aria-expanded={typeof action.ariaExpanded === 'boolean' ? action.ariaExpanded : undefined}
         buttonRef={action.buttonRef}
+        onPointerEnter={action.onPointerEnter}
+        onFocus={action.onFocus}
+        onTouchStart={action.onTouchStart}
       >
         {action.label}
       </LiteButton>

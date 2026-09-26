@@ -33,6 +33,7 @@ from ..db.connection import begin_immediate, connection
 from ..db.migrations import apply_migrations
 
 HARNESS_SESSION_HEADER = "x-pocket-lab-harness-session"
+HARNESS_BROWSER_BRIDGE_HEADER = "x-pocket-lab-qualification-bridge"
 HARNESS_TARGET_SCOPE = "local_server_host_only"
 HARNESS_RUNTIME_ENVIRONMENT = "qualification"
 HARNESS_AUTH_METHOD = "harness_session"
@@ -44,6 +45,13 @@ HARNESS_BOOTSTRAP_FINGERPRINT_ENV = "POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FING
 HARNESS_BOOTSTRAP_PROFILE_ENV = "POCKETLAB_HARNESS_BOOTSTRAP_PROFILE"
 HARNESS_BOOTSTRAP_PROFILE = "security-assurance-runner"
 HARNESS_BOOTSTRAP_PURPOSE = "security.assurance"
+HARNESS_UI_PERFORMANCE_PROFILE = "qualification-owner"
+HARNESS_UI_PERFORMANCE_PURPOSE = "ui-performance-60fps"
+HARNESS_BOOTSTRAP_PROFILES = frozenset({HARNESS_BOOTSTRAP_PROFILE, HARNESS_UI_PERFORMANCE_PROFILE})
+HARNESS_BOOTSTRAP_PURPOSES = MappingProxyType({
+    HARNESS_BOOTSTRAP_PROFILE: HARNESS_BOOTSTRAP_PURPOSE,
+    HARNESS_UI_PERFORMANCE_PROFILE: HARNESS_UI_PERFORMANCE_PURPOSE,
+})
 HARNESS_BOOTSTRAP_TTL_SECONDS = 5 * 60
 HARNESS_PRINCIPAL_TTL_SECONDS = 12 * 60 * 60
 HARNESS_PRINCIPAL_TTL_MIN_SECONDS = 60 * 60
@@ -114,9 +122,23 @@ class _BootstrapChallenge:
     failed_attempts: int = 0
 
 
+@dataclass
+class _BrowserBridge:
+    token_hash: str
+    session_id: str
+    principal_id: str
+    profile: str
+    purpose: str
+    target_scope: str
+    runtime_id: str
+    issued_at: str
+    expires_at: str
+
+
 _BOOTSTRAP_LOCK = threading.RLock()
 _BOOTSTRAP_GRANTS: dict[str, _BootstrapGrant] = {}
 _BOOTSTRAP_CHALLENGES: dict[str, _BootstrapChallenge] = {}
+_BROWSER_BRIDGES: dict[str, _BrowserBridge] = {}
 
 
 _PROFILE_DATA: dict[str, dict[str, Any]] = {
@@ -201,7 +223,7 @@ _PROFILE_DATA: dict[str, dict[str, Any]] = {
             "health.probe", "backup.create", "backup.verify", "backup.location.manage",
             "restore.preview", "restore.apply", "device.remove", "catalog.install",
             "identity.passkey.revoke", "rules.read", "rules.simulate", "rules.draft",
-            "rules.activate", "rules.rollback",
+            "rules.activate", "rules.rollback", "qualification.cleanup",
         ),
         "destructive_capabilities": ("device.remove", "restore.apply", "backup.location.manage", "rules.activate", "rules.rollback"),
     },
@@ -233,6 +255,8 @@ _ACTION_CAPABILITY: Mapping[str, str] = MappingProxyType({
     "security.assurance.cleanup": "security.assurance.cleanup",
     "security.assurance.policy_sync": "security.assurance.policy_sync",
     "security.assurance.fault_control": "security.assurance.fault_control",
+    "qualification.cleanup": "qualification.cleanup",
+    "qualification.browser_bridge": "qualification.read",
     "backup.create": "backup.create",
     "backup.verify": "backup.verify",
     "backup.location.manage": "backup.location.manage",
@@ -292,6 +316,28 @@ def qualification_owner_enabled() -> bool:
     return _flag("POCKETLAB_QUALIFICATION_OWNER")
 
 
+def _bootstrap_profile_flags_match(profile: str, *, destructive: bool, owner: bool, test_bypass: bool) -> bool:
+    """Keep each operator-approved bootstrap profile bound to its safe gates."""
+    profile_name = str(profile or "").strip().casefold()
+    if profile_name not in HARNESS_BOOTSTRAP_PROFILES or destructive or test_bypass:
+        return False
+    if profile_name == HARNESS_UI_PERFORMANCE_PROFILE:
+        return owner
+    return not owner
+
+
+def _bootstrap_profile_purpose(profile: str) -> str:
+    profile_name = str(profile or "").strip().casefold()
+    purpose = HARNESS_BOOTSTRAP_PURPOSES.get(profile_name)
+    if purpose is None:
+        raise HarnessError(
+            "harness_bootstrap_profile_invalid",
+            "The requested key-bound qualification profile is not allowed.",
+            status_code=403,
+        )
+    return purpose
+
+
 def _runtime_id() -> str:
     configured = os.environ.get("POCKETLAB_HARNESS_RUNTIME_ID", "").strip()
     if configured:
@@ -332,7 +378,12 @@ def validate_startup_configuration(*, environment_name: str | None = None) -> di
         bootstrap_approval
         and _PRINCIPAL_ID_RE.fullmatch(bootstrap_principal)
         and re.fullmatch(r"sha256:[0-9a-f]{64}", bootstrap_fingerprint)
-        and bootstrap_profile == HARNESS_BOOTSTRAP_PROFILE
+        and _bootstrap_profile_flags_match(
+            bootstrap_profile,
+            destructive=destructive,
+            owner=owner,
+            test_bypass=test_bypass,
+        )
     )
     unsafe_flags = harness or destructive or owner or test_bypass or bootstrap_metadata_present
     if env in _PRODUCTION_ENVIRONMENTS and unsafe_flags:
@@ -363,9 +414,6 @@ def validate_startup_configuration(*, environment_name: str | None = None) -> di
         env != HARNESS_RUNTIME_ENVIRONMENT
         or not harness
         or not bootstrap_metadata_valid
-        or destructive
-        or owner
-        or test_bypass
     ):
         raise HarnessConfigurationError(
             "harness_bootstrap_invalid",
@@ -465,7 +513,8 @@ def _bootstrap_approval_configured(
         return False
     if not configured.get("enabled") or not _flag(HARNESS_BOOTSTRAP_APPROVAL_ENV):
         return False
-    if str(profile).casefold() != HARNESS_BOOTSTRAP_PROFILE:
+    profile_name = str(profile or "").strip().casefold()
+    if profile_name not in HARNESS_BOOTSTRAP_PROFILES:
         return False
     expected_principal = os.environ.get(HARNESS_BOOTSTRAP_PRINCIPAL_ENV, "").strip().casefold()
     expected_fingerprint = os.environ.get(HARNESS_BOOTSTRAP_FINGERPRINT_ENV, "").strip().casefold()
@@ -475,10 +524,13 @@ def _bootstrap_approval_configured(
         and hmac.compare_digest(expected_principal, str(principal_id).casefold())
         and hmac.compare_digest(expected_fingerprint, str(public_key_fingerprint).casefold())
         and str(os.environ.get(HARNESS_BOOTSTRAP_PROFILE_ENV, "")).strip().casefold()
-        == HARNESS_BOOTSTRAP_PROFILE
-        and not destructive_enabled()
-        and not qualification_owner_enabled()
-        and not _flag("POCKETLAB_TEST_AUTH_BYPASS")
+        == profile_name
+        and _bootstrap_profile_flags_match(
+            profile_name,
+            destructive=destructive_enabled(),
+            owner=qualification_owner_enabled(),
+            test_bypass=_flag("POCKETLAB_TEST_AUTH_BYPASS"),
+        )
     )
 
 
@@ -557,10 +609,13 @@ def _safe_bootstrap_challenge(
 def create_bootstrap_grant(*, principal_id: str, public_key: str) -> dict[str, Any]:
     """Create one ephemeral grant from an explicitly started qualification runtime."""
     _require_enabled()
+    bootstrap_profile = os.environ.get(HARNESS_BOOTSTRAP_PROFILE_ENV, "").strip().casefold()
+    bootstrap_purpose = _bootstrap_profile_purpose(bootstrap_profile)
     identifier = _safe_principal_id(principal_id)
     if not _bootstrap_approval_configured(
         principal_id=identifier,
         public_key_fingerprint="",
+        profile=bootstrap_profile,
     ):
         # The fingerprint is filled after key validation; this early check
         # prevents malformed input from becoming an approval oracle.
@@ -584,6 +639,7 @@ def create_bootstrap_grant(*, principal_id: str, public_key: str) -> dict[str, A
     if not _bootstrap_approval_configured(
         principal_id=identifier,
         public_key_fingerprint=fingerprint,
+        profile=bootstrap_profile,
     ):
         raise HarnessError(
             "bootstrap_approval_required",
@@ -605,8 +661,8 @@ def create_bootstrap_grant(*, principal_id: str, public_key: str) -> dict[str, A
         principal_id=identifier,
         public_key=_b64u_encode(public_bytes),
         public_key_fingerprint=fingerprint,
-        profile=HARNESS_BOOTSTRAP_PROFILE,
-        purpose=HARNESS_BOOTSTRAP_PURPOSE,
+        profile=bootstrap_profile,
+        purpose=bootstrap_purpose,
         target_scope=HARNESS_TARGET_SCOPE,
         runtime_id=_runtime_id(),
         revision_sha=revision,
@@ -678,6 +734,7 @@ def issue_bootstrap_challenge(*, grant_id: str) -> dict[str, Any]:
         if not _bootstrap_approval_configured(
             principal_id=grant.principal_id,
             public_key_fingerprint=grant.public_key_fingerprint,
+            profile=grant.profile,
         ):
             raise HarnessError("bootstrap_approval_required", "The qualification bootstrap approval is no longer active.", status_code=401)
         with connection() as conn:
@@ -779,6 +836,7 @@ def complete_bootstrap(
         if not _bootstrap_approval_configured(
             principal_id=grant.principal_id,
             public_key_fingerprint=grant.public_key_fingerprint,
+            profile=grant.profile,
         ):
             raise HarnessError("bootstrap_approval_required", "The qualification bootstrap approval is no longer active.", status_code=401)
         if (
@@ -814,7 +872,14 @@ def complete_bootstrap(
                 "The bootstrap possession proof is invalid.",
                 status_code=401,
             ) from None
-        profile = PROFILE_DATA[HARNESS_BOOTSTRAP_PROFILE]
+        profile_name = str(grant.profile or "").strip().casefold()
+        profile = PROFILE_DATA.get(profile_name)
+        if profile is None or grant.purpose != _bootstrap_profile_purpose(profile_name):
+            raise HarnessError(
+                "bootstrap_binding_mismatch",
+                "The bootstrap grant is bound to an unsupported qualification profile.",
+                status_code=401,
+            )
         principal_ttl = _bounded_int(
             "POCKETLAB_HARNESS_PRINCIPAL_TTL_SECONDS",
             HARNESS_PRINCIPAL_TTL_SECONDS,
@@ -855,12 +920,14 @@ def complete_bootstrap(
                     identifier,
                     "synthetic_machine",
                     "qualification",
-                    "Ephemeral runtime security assurance runner",
+                    "Ephemeral runtime qualification owner UI runner"
+                    if profile_name == HARNESS_UI_PERFORMANCE_PROFILE
+                    else "Ephemeral runtime security assurance runner",
                     1,
                     environment(),
                     HARNESS_TARGET_SCOPE,
-                    _canonical([HARNESS_BOOTSTRAP_PROFILE]),
-                    HARNESS_BOOTSTRAP_PROFILE,
+                    _canonical([profile_name]),
+                    profile_name,
                     "ed25519",
                     _b64u_encode(public_bytes),
                     fingerprint,
@@ -878,8 +945,8 @@ def complete_bootstrap(
                     session_id,
                     identifier,
                     "qualification",
-                    HARNESS_BOOTSTRAP_PURPOSE,
-                    HARNESS_BOOTSTRAP_PROFILE,
+                    grant.purpose,
+                    profile_name,
                     _canonical(capabilities),
                     HARNESS_TARGET_SCOPE,
                     grant.runtime_id,
@@ -910,8 +977,8 @@ def complete_bootstrap(
                 reason_code="bootstrap_grant_consumed",
                 principal_id=identifier,
                 principal_class="qualification",
-                purpose=HARNESS_BOOTSTRAP_PURPOSE,
-                capability=HARNESS_BOOTSTRAP_PROFILE,
+                purpose=grant.purpose,
+                capability=profile_name,
                 target_scope=HARNESS_TARGET_SCOPE,
                 operation_id=grant.grant_id,
                 result="accepted",
@@ -925,8 +992,8 @@ def complete_bootstrap(
                 principal_id=identifier,
                 principal_class="qualification",
                 harness_session_id=session_id,
-                purpose=HARNESS_BOOTSTRAP_PURPOSE,
-                capability=HARNESS_BOOTSTRAP_PROFILE,
+                purpose=grant.purpose,
+                capability=profile_name,
                 target_scope=HARNESS_TARGET_SCOPE,
                 result="accepted",
                 summary="The bootstrap machine-key proof was verified.",
@@ -939,8 +1006,8 @@ def complete_bootstrap(
                 principal_id=identifier,
                 principal_class="qualification",
                 harness_session_id=session_id,
-                purpose=HARNESS_BOOTSTRAP_PURPOSE,
-                capability=HARNESS_BOOTSTRAP_PROFILE,
+                purpose=grant.purpose,
+                capability=profile_name,
                 target_scope=HARNESS_TARGET_SCOPE,
                 result="accepted",
                 summary="Short-lived harness session created from the bootstrap proof.",
@@ -970,12 +1037,14 @@ def complete_bootstrap(
             "principal_id": identifier,
             "principal_type": "synthetic_machine",
             "principal_class": "qualification",
-            "display_name": "Ephemeral runtime security assurance runner",
+            "display_name": "Ephemeral runtime qualification owner UI runner"
+            if profile_name == HARNESS_UI_PERFORMANCE_PROFILE
+            else "Ephemeral runtime security assurance runner",
             "enabled": 1,
             "environment_scope": environment(),
             "target_scope": HARNESS_TARGET_SCOPE,
-            "allowed_profiles_json": _canonical([HARNESS_BOOTSTRAP_PROFILE]),
-            "default_profile": HARNESS_BOOTSTRAP_PROFILE,
+            "allowed_profiles_json": _canonical([profile_name]),
+            "default_profile": profile_name,
             "algorithm": "ed25519",
             "public_key_fingerprint": fingerprint,
             "created_at": _iso(now),
@@ -1297,7 +1366,8 @@ def revoke_principal(principal_id: str, *, reason_code: str = "principal_revoked
                 target_scope=str(row["target_scope"]), result="accepted",
                 summary="Synthetic machine principal revoked.",
                 )
-            if str(row["default_profile"] or "") == HARNESS_BOOTSTRAP_PROFILE:
+            default_profile = str(row["default_profile"] or "").strip().casefold()
+            if default_profile in HARNESS_BOOTSTRAP_PROFILES:
                 _insert_audit(
                     tx,
                     event_type="bootstrap_principal_revoked",
@@ -1316,7 +1386,7 @@ def revoke_principal(principal_id: str, *, reason_code: str = "principal_revoked
                     reason_code="principal_revoked",
                     principal_id=identifier,
                     principal_class=str(row["principal_class"]),
-                    purpose=HARNESS_BOOTSTRAP_PURPOSE,
+                    purpose=HARNESS_BOOTSTRAP_PURPOSES.get(default_profile, HARNESS_BOOTSTRAP_PURPOSE),
                     capability="security.assurance.cancel",
                     target_scope=str(row["target_scope"]),
                     result="accepted",
@@ -1346,9 +1416,10 @@ def revoke_authenticated_principal(
     harness = auth_context.get("harness") if isinstance(auth_context, Mapping) else None
     if not isinstance(harness, Mapping):
         raise HarnessError("harness_session_required", "A signed assurance session is required for principal cleanup.", status_code=401)
+    profile_name = str(harness.get("profile") or "").strip().casefold()
     if (
-        str(harness.get("profile") or "") != HARNESS_BOOTSTRAP_PROFILE
-        or str(harness.get("purpose") or "") != HARNESS_BOOTSTRAP_PURPOSE
+        profile_name not in HARNESS_BOOTSTRAP_PROFILES
+        or str(harness.get("purpose") or "") != _bootstrap_profile_purpose(profile_name)
         or str(harness.get("principal_class") or "") != "qualification"
         or str(harness.get("target_scope") or "") != HARNESS_TARGET_SCOPE
         or not bool(harness.get("qualification_environment"))
@@ -1501,6 +1572,142 @@ def _session_context(row: Mapping[str, Any]) -> dict[str, Any]:
         },
         "harness": harness,
     }
+
+
+def _cleanup_browser_bridges(now: datetime | None = None) -> None:
+    current = now or _now()
+    with _BOOTSTRAP_LOCK:
+        for token_hash, bridge in list(_BROWSER_BRIDGES.items()):
+            expires = _parse_iso(bridge.expires_at)
+            if expires is None or expires <= current:
+                _BROWSER_BRIDGES.pop(token_hash, None)
+
+
+def create_browser_bridge(
+    auth_context: Mapping[str, Any], *, ttl_seconds: int = 5 * 60
+) -> dict[str, Any]:
+    """Mint a short-lived browser projection from a verified UI qualification session."""
+    harness = auth_context.get("harness") if isinstance(auth_context, Mapping) else None
+    if not isinstance(harness, Mapping):
+        raise HarnessError(
+            "harness_session_required",
+            "A signed qualification session is required for the browser bridge.",
+            status_code=401,
+        )
+    profile_name = str(harness.get("profile") or "").strip().casefold()
+    if (
+        profile_name != HARNESS_UI_PERFORMANCE_PROFILE
+        or str(harness.get("purpose") or "") != HARNESS_UI_PERFORMANCE_PURPOSE
+        or str(harness.get("target_scope") or "") != HARNESS_TARGET_SCOPE
+        or str(harness.get("runtime_id") or "") != _runtime_id()
+        or not bool(harness.get("qualification_environment"))
+        or bool(harness.get("destructive_allowed"))
+    ):
+        raise HarnessError(
+            "browser_bridge_binding_mismatch",
+            "Only the non-destructive UI-performance qualification session may create a browser bridge.",
+            status_code=403,
+        )
+    session_id = str(harness.get("session_id") or "").strip()
+    principal_id = _safe_principal_id(str(harness.get("principal_id") or ""))
+    now = _now()
+    with connection() as conn:
+        row = conn.execute(
+            "SELECT s.*,p.display_name FROM harness_sessions s JOIN synthetic_principals p ON p.principal_id=s.principal_id WHERE s.harness_session_id=?",
+            (session_id,),
+        ).fetchone()
+    if not row or str(row["principal_id"]) != principal_id or str(row["status"]) != "active":
+        raise HarnessError("harness_session_revoked", "The qualification session is no longer active.", status_code=401)
+    session_expires = _parse_iso(str(row["expires_at"] or ""))
+    if session_expires is None or session_expires <= now:
+        raise HarnessError("harness_session_expired", "The qualification session has expired.", status_code=401)
+    bridge_expires = min(session_expires, now + timedelta(seconds=max(30, min(int(ttl_seconds), 5 * 60))))
+    token = secrets.token_urlsafe(32)
+    token_hash = _hash_opaque(token)
+    bridge = _BrowserBridge(
+        token_hash=token_hash,
+        session_id=session_id,
+        principal_id=principal_id,
+        profile=profile_name,
+        purpose=HARNESS_UI_PERFORMANCE_PURPOSE,
+        target_scope=HARNESS_TARGET_SCOPE,
+        runtime_id=_runtime_id(),
+        issued_at=_iso(now),
+        expires_at=_iso(bridge_expires),
+    )
+    with _BOOTSTRAP_LOCK:
+        _cleanup_browser_bridges(now)
+        _BROWSER_BRIDGES[token_hash] = bridge
+    with connection() as conn, begin_immediate(conn) as tx:
+        _insert_audit(
+            tx,
+            event_type="browser_bridge_created",
+            reason_code="browser_bridge_created",
+            principal_id=principal_id,
+            principal_class="qualification",
+            harness_session_id=session_id,
+            purpose=bridge.purpose,
+            capability="qualification.read",
+            target_scope=bridge.target_scope,
+            result="accepted",
+            summary="A short-lived non-destructive browser qualification bridge was created.",
+            correlation_id=session_id,
+        )
+    return {
+        "browser_bridge": {
+            "profile": bridge.profile,
+            "purpose": bridge.purpose,
+            "target_scope": bridge.target_scope,
+            "runtime_id": bridge.runtime_id,
+            "issued_at": bridge.issued_at,
+            "expires_at": bridge.expires_at,
+            "sanitized": True,
+        },
+        "browser_bridge_token": token,
+        "sanitized": True,
+    }
+
+
+def authenticate_browser_bridge(request: Any) -> dict[str, Any]:
+    """Resolve only the backend-issued bridge header for the physical browser."""
+    if not harness_enabled() or environment() != HARNESS_RUNTIME_ENVIRONMENT:
+        raise HarnessError("harness_disabled", "The synthetic qualification harness is not enabled on this runtime.", status_code=401)
+    if request.headers.get("x-role", "").strip() or request.headers.get("authorization", "").strip() or request.headers.get("x-pocket-lab-token", "").strip() or request.headers.get("cookie", "").strip():
+        raise HarnessError("browser_bridge_mixed_auth", "The browser qualification bridge cannot be combined with human or service credentials.", status_code=403)
+    if harness_headers_present(request):
+        raise HarnessError("browser_bridge_mixed_auth", "The browser qualification bridge cannot be combined with a direct harness header.", status_code=403)
+    token = str(request.headers.get(HARNESS_BROWSER_BRIDGE_HEADER, "")).strip()
+    if len(token) < 32 or len(token) > 128:
+        raise HarnessError("browser_bridge_invalid", "The browser qualification bridge is invalid or expired.", status_code=401)
+    now = _now()
+    token_hash = _hash_opaque(token)
+    with _BOOTSTRAP_LOCK:
+        _cleanup_browser_bridges(now)
+        bridge = _BROWSER_BRIDGES.get(token_hash)
+    if bridge is None or bridge.runtime_id != _runtime_id():
+        raise HarnessError("browser_bridge_invalid", "The browser qualification bridge is invalid or expired.", status_code=401)
+    expires = _parse_iso(bridge.expires_at)
+    if expires is None or expires <= now:
+        raise HarnessError("browser_bridge_expired", "The browser qualification bridge is expired.", status_code=401)
+    with connection() as conn:
+        row = conn.execute(
+            "SELECT s.*,p.display_name FROM harness_sessions s JOIN synthetic_principals p ON p.principal_id=s.principal_id WHERE s.harness_session_id=?",
+            (bridge.session_id,),
+        ).fetchone()
+    if (
+        not row
+        or str(row["principal_id"]) != bridge.principal_id
+        or str(row["capability_profile"]) != bridge.profile
+        or str(row["purpose"]) != bridge.purpose
+        or str(row["target_scope"]) != bridge.target_scope
+        or str(row["runtime_id"]) != bridge.runtime_id
+        or str(row["status"]) != "active"
+    ):
+        raise HarnessError("browser_bridge_revoked", "The qualification session behind the browser bridge is no longer active.", status_code=401)
+    session_expires = _parse_iso(str(row["expires_at"] or ""))
+    if session_expires is None or session_expires <= now:
+        raise HarnessError("browser_bridge_revoked", "The qualification session behind the browser bridge is no longer active.", status_code=401)
+    return _session_context(dict(row))
 
 
 def _safe_session(row: Mapping[str, Any]) -> dict[str, Any]:

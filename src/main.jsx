@@ -13,8 +13,15 @@ import {
 } from './lib/liteServiceWorkerRuntime.js';
 import './index.css';
 
+if (typeof document !== 'undefined') {
+  document.documentElement.dataset.litePerfMode = import.meta.env.VITE_POCKETLAB_PERF_TEST === '1'
+    ? 'true'
+    : 'false';
+}
+
 let updateSW = () => {};
-if (typeof window !== 'undefined') {
+const qualificationCandidateBuild = import.meta.env.VITE_POCKETLAB_UI_PERF_CANDIDATE === '1';
+if (typeof window !== 'undefined' && !qualificationCandidateBuild) {
   captureOwnerClaimFromUrl();
   updateSW = registerSW({
     immediate: true,
@@ -39,16 +46,17 @@ async function bootstrapPocketLabLite() {
     await startPocketLabMocks();
   }
 
+  const appTree = (
+    <ExperienceModeProvider>
+      <GovernanceModeProvider>
+        <ToastProvider>
+          <App />
+        </ToastProvider>
+      </GovernanceModeProvider>
+    </ExperienceModeProvider>
+  );
   ReactDOM.createRoot(document.getElementById('root')).render(
-    <React.StrictMode>
-      <ExperienceModeProvider>
-        <GovernanceModeProvider>
-          <ToastProvider>
-            <App />
-          </ToastProvider>
-        </GovernanceModeProvider>
-      </ExperienceModeProvider>
-    </React.StrictMode>,
+    import.meta.env.VITE_POCKETLAB_PERF_TEST === '1' ? appTree : <React.StrictMode>{appTree}</React.StrictMode>,
   );
 }
 

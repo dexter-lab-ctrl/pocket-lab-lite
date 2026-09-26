@@ -4664,7 +4664,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 486,
+  "page_count": 487,
   "page_types": [
     "overview",
     "guide",
@@ -17503,10 +17503,33 @@
       "source_or_generator": "validation/security-assurance/README.md",
       "title": "Pocket Lab Lite Security Assurance Playbook",
       "url": "/validation/security-assurance/README/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/ui-performance-qualification.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "testing",
+      "generated": false,
+      "id": "page:validation/ui-performance-qualification",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "validation/ui-performance-qualification.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "validation/ui-performance-qualification.md",
+      "title": "Pocket Lab Lite UI Performance Qualification",
+      "url": "/validation/ui-performance-qualification/"
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "de1639a4d689b744547556b6ab5dd141795bc6ed3dac648117bb7f9a0c585b95",
+  "source_fingerprint": "ef784ae30751d907cefe9f612136be3835ca0df262169326b9310e6547cdfb67",
   "top_level": [
     "start-here",
     "use",

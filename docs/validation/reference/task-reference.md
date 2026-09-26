@@ -19,6 +19,7 @@ interface.
 | `lite:harness:session:start` | `harness.py session-start ...` | approved client with registered principal/key | creates a short-lived signed session |
 | `lite:qualification:start` | `start-qualification.sh` | operator-controlled qualification | legacy token-based startup; keep separate from normal startup |
 | `lite:qualification:start:key-bound` | bounded `task_runtime.py` → `start-qualification.sh --bootstrap-*` | Server Phone operator + approved public key | scrubs DEV state then enables key-bound qualification, non-destructive |
+| `lite:qualification:start:key-bound:ui-performance` | bounded `task_runtime.py` → `start-qualification.sh --bootstrap-* --bootstrap-profile qualification-owner` | Server Phone operator + explicit qualification-owner gate | enables the synthetic qualification-owner UI-performance profile; destructive authority remains off |
 | `lite:qualification:start:key-bound:faults` | bounded task runtime plus fixed fault-control enablement | explicit Server Phone qualification only | scrubs DEV state then enables registered non-destructive fault controls |
 
 The private key is never a Taskfile value printed into output. The key-bound

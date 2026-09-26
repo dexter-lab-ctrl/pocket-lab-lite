@@ -30,8 +30,8 @@ import {
   SECURITY_DETAILS_GC_TIME_MS,
   SECURITY_INSTANT_FEEL_FRONTEND_BUNDLE,
   SECURITY_SUMMARY_GC_TIME_MS,
-  prefetchSecurityManageOnIntent,
   preloadSecurityDetails,
+  preloadSecurityFindingDetails,
   preloadSecurityHistory,
   preloadSecurityManageChunks,
   securityDetailsStaleTime,
@@ -49,7 +49,9 @@ import {
 } from '../lib/liteViewModels.js';
 import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy.js';
 import { acceptSecurityProgressEvent } from '../lib/securityProgressEvents.js';
+import { shouldUseLiteSecurityProgressStream } from '../lib/liteSecurityProgressPolicy.js';
 import { LiteSheet } from './LiteOverlay.jsx';
+import { isLitePerformanceMode } from './liteNavigationRuntime.js';
 import {
   GlassCard,
   StatusBadge,
@@ -1239,12 +1241,12 @@ export function deriveSecurityHealthBanner(securityData, confidence, findings = 
 
 
 function useSecurityReducedMotion() {
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(() => isLitePerformanceMode());
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return undefined;
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => setReducedMotion(Boolean(query.matches));
+    const update = () => setReducedMotion(isLitePerformanceMode() || Boolean(query.matches));
     update();
     query.addEventListener?.('change', update);
     return () => query.removeEventListener?.('change', update);
@@ -1466,6 +1468,50 @@ function SecurityRemediationDrawer({ finding, context, onClose }) {
           <p className="lite-security-remediation-note">This guidance does not run commands or change your device. Any future fix action must stay backend-owned and evidence-backed.</p>
         </div>
       ) : null}
+    </LiteSheet>
+  );
+}
+
+function SecurityFindingDetailsPortal({ findings, context, triggerRef }) {
+  const expandedSecurityFindingId = useLiteUiStore((state) => state.expandedSecurityFindingId);
+  const setExpandedSecurityFindingId = useLiteUiStore((state) => state.setExpandedSecurityFindingId);
+  const selectedFinding = useMemo(() => {
+    if (!expandedSecurityFindingId) return null;
+    return findings.find((finding) => securityFindingUiId(finding) === expandedSecurityFindingId) || null;
+  }, [expandedSecurityFindingId, findings]);
+
+  const closeFindingDetails = useCallback(() => {
+    setExpandedSecurityFindingId(null);
+    window.setTimeout(() => triggerRef?.current?.focus?.(), 0);
+  }, [setExpandedSecurityFindingId, triggerRef]);
+
+  useEffect(() => {
+    if (expandedSecurityFindingId && findings.length && !selectedFinding) {
+      setExpandedSecurityFindingId(null);
+    }
+  }, [expandedSecurityFindingId, findings.length, selectedFinding, setExpandedSecurityFindingId]);
+
+  if (!selectedFinding) return null;
+  return (
+    <LiteSheet
+      open={Boolean(selectedFinding)}
+      onClose={closeFindingDetails}
+      eyebrow="Finding Details"
+      title={securityFindingLabel(selectedFinding)}
+      description="Review one finding at a time. Technical details stay collapsed and sanitized."
+      layerClassName="lite-security-phase3-layer lite-security-detail-layer"
+      className="lite-security-phase3-panel lite-security-phase3-finding-shell lite-security-phase4-panel-motion"
+      bodyClassName="lite-security-phase3-scroll"
+      headerClassName="lite-security-phase3-head"
+      closeClassName="lite-security-phase3-close"
+      gripClassName="lite-security-phase3-grip"
+      variant="security"
+      motion="safe-grip"
+      surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'finding-details' }}
+    >
+      <Suspense fallback={<div className="lite-security-details-loading">Loading finding details…</div>}>
+        <SecurityFindingDetailsLazy finding={selectedFinding} context={context} onClose={closeFindingDetails} />
+      </Suspense>
     </LiteSheet>
   );
 }
@@ -1888,6 +1934,7 @@ export default function SecurityScreen() {
   const [directSecurityProgressData, setDirectSecurityProgressData] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [securityCompletionSettling, setSecurityCompletionSettling] = useState(false);
   const securityManageOpen = useLiteUiStore((state) => state.securityManageOpen);
   const setSecurityManageOpen = useLiteUiStore((state) => state.setSecurityManageOpen);
   const activeSecurityDetails = useLiteUiStore((state) => state.activeSecurityDetailsPanel);
@@ -1896,7 +1943,6 @@ export default function SecurityScreen() {
   const setSecurityManageSection = useLiteUiStore((state) => state.setActiveSecurityManageSection);
   const selectedScanProfile = useLiteUiStore((state) => state.activeSecurityProfile);
   const setSelectedScanProfile = useLiteUiStore((state) => state.setActiveSecurityProfile);
-  const expandedSecurityFindingId = useLiteUiStore((state) => state.expandedSecurityFindingId);
   const setExpandedSecurityFindingId = useLiteUiStore((state) => state.setExpandedSecurityFindingId);
   const setLastSecurityRunIdViewed = useLiteUiStore((state) => state.setLastSecurityRunIdViewed);
   const activeSecurityHistoryLimit = useLiteUiStore((state) => state.activeSecurityHistoryLimit);
@@ -1908,6 +1954,7 @@ export default function SecurityScreen() {
   const scanProfile = normalizeSecurityProfileId(selectedScanProfile || result?.scan_profile || 'quick');
   const queryClient = useQueryClient();
   const securityScanSubmitGuardRef = useRef(false);
+  const securityCompletionTimerRef = useRef(null);
   const lastSecurityFreshnessRef = useRef(null);
   const securityPollingProfile = scanProfile;
   const securityPollingPolicy = useCallback((payload) => (
@@ -1917,14 +1964,19 @@ export default function SecurityScreen() {
     const policy = securityPollingPolicy(payload);
     return Boolean(busy) || policy.live || isLiteSecurityViewLive(payload) || hasLiveSecurityOperation(result);
   }, [busy, result, securityPollingPolicy]);
-  const shouldLoadSecurityDetails = securityManageOpen || Boolean(activeSecurityDetails);
+  const shouldLoadSecurityDetails = Boolean(activeSecurityDetails) || (
+    securityManageOpen
+    && SECURITY_MANAGE_SECTIONS.some((section) => section.id === securityManageSection && section.id !== 'overview')
+  );
   const shouldLoadSecurityHistory = securityManageOpen && securityManageSection === 'history' || activeSecurityDetails === 'history';
   const localSecurityProgressActive = hasOptimisticSecurityProgress(result) || hasLiveSecurityOperation(result);
   const rootOwnsAcceptedSecurityRun = Boolean(securityObservation?.active && securityObservation?.runId);
   const shouldLoadSecurityProgress = busy || localSecurityProgressActive;
-  const shouldUseSecurityProgressStream = Boolean(
-    !rootOwnsAcceptedSecurityRun && (shouldLoadSecurityProgress || securityManageOpen || activeSecurityDetails === 'checkPath'),
-  );
+  const shouldUseSecurityProgressStream = shouldUseLiteSecurityProgressStream({
+    rootOwnsAcceptedSecurityRun,
+    shouldLoadSecurityProgress,
+    activeSecurityDetails,
+  });
   const securityFreshnessLoader = useCallback(() => liteApi.securityFreshness(), []);
   const { data: securityFreshnessData } = useLiteResource(securityFreshnessLoader, [], {
     queryKey: liteQueryKeys.securityFreshness(),
@@ -1966,14 +2018,15 @@ export default function SecurityScreen() {
     snapshotSelect: selectSecurityScreenView,
   });
   const securityProfileAppId = scanProfile === 'app' ? 'photoprism' : '';
+  const normalizedProfile = scanProfile;
+  const securityProfileQueryKey = liteQueryKeys.securityProfile(normalizedProfile, normalizedProfile === 'app' ? 'photoprism' : '');
   const securityProfileLoader = useCallback(() => liteApi.securityProfile(scanProfile, securityProfileAppId), [scanProfile, securityProfileAppId]);
   const securityHistoryLoader = useCallback(() => liteApi.securityHistory(activeSecurityHistoryLimit || 20), [activeSecurityHistoryLimit]);
   const {
     data: securityProfileData,
     refreshing: profileRefreshing,
-    refresh: refreshSecurityDetails,
   } = useLiteResource(securityProfileLoader, [scanProfile], {
-    queryKey: liteQueryKeys.securityProfile(scanProfile, securityProfileAppId),
+    queryKey: securityProfileQueryKey,
     path: liteQueryPaths.securityProfile(scanProfile, securityProfileAppId),
     enabled: shouldLoadSecurityDetails,
     pollingMode: 'relaxed',
@@ -2034,17 +2087,26 @@ export default function SecurityScreen() {
     const resultRunId = result.run_id || result.job_id || result.command_id || result.scan_progress?.run_id || '';
     const progressRunId = liveSecurityProgressData.run_id || '';
     if (resultRunId && progressRunId && resultRunId !== progressRunId) return;
+    setSecurityCompletionSettling(true);
+    if (securityCompletionTimerRef.current) window.clearTimeout(securityCompletionTimerRef.current);
+    securityCompletionTimerRef.current = window.setTimeout(() => {
+      securityCompletionTimerRef.current = null;
+      setSecurityCompletionSettling(false);
+    }, 2000);
     setResult((current) => current ? settleSecurityResultFromProgress(current, liveSecurityProgressData) : current);
     setBusy(false);
   }, [result, liveSecurityProgressData]);
 
+  useEffect(() => () => {
+    if (securityCompletionTimerRef.current) window.clearTimeout(securityCompletionTimerRef.current);
+  }, []);
+
   const splitSecurityData = useMemo(() => {
     const base = securitySummaryData || {};
-    if (!securityProfileData && !securityHistoryData && !liveSecurityProgressData) return securitySummaryData;
+    if (!securityProfileData && !securityHistoryData) return securitySummaryData;
     const profileId = normalizeSecurityProfileId(securityProfileData?.profile || scanProfile);
     return {
       ...base,
-      ...(liveSecurityProgressData ? { scan_progress: liveSecurityProgressData } : {}),
       history: Array.isArray(securityHistoryData?.history) ? securityHistoryData.history : base.history,
       security_profiles: {
         ...(base.security_profiles || {}),
@@ -2059,10 +2121,12 @@ export default function SecurityScreen() {
         ...(securityProfileData?.updated_at ? { [profileId]: { checked_at: securityProfileData.updated_at, label: 'Fresh just now' } } : {}),
       },
     };
-  }, [scanProfile, securityHistoryData, securityProfileData, liveSecurityProgressData, securitySummaryData]);
+  }, [scanProfile, securityHistoryData, securityProfileData, securitySummaryData]);
   const data = splitSecurityData || securitySummaryData;
   const securityPrecedence = useMemo(() => selectSecurityStatePrecedence(data || {}, scanProfile, securityProfileAppId), [data, scanProfile, securityProfileAppId]);
-  const securityProfileCards = useMemo(() => SECURITY_SCAN_PROFILES.map((profile) => {
+  const securityProfileCards = useMemo(() => {
+    if (busy || localSecurityProgressActive || hasOptimisticSecurityProgress(result)) return [];
+    return SECURITY_SCAN_PROFILES.map((profile) => {
     const profileView = data?.security_profiles?.[profile.id] || selectSecurityProfileView(data || {}, profile.id);
     const snapshot = selectSecurityProfileSnapshotView({
       ...(data || {}),
@@ -2084,7 +2148,8 @@ export default function SecurityScreen() {
       changeLabel: isActive ? 'Saved result stays visible after completion' : profileChangeSummary(snapshot),
       offline: Boolean(snapshot?.freshness?.is_saved || snapshot?.freshness?.is_stale),
     };
-  }), [data, securityPrecedence]);
+    });
+  }, [busy, data, localSecurityProgressActive, result, securityPrecedence]);
   const refreshing = summaryRefreshing || (shouldLoadSecurityDetails && profileRefreshing) || (shouldLoadSecurityHistory && historyRefreshing);
 
   useEffect(() => {
@@ -2100,11 +2165,12 @@ export default function SecurityScreen() {
 
     const previousProfiles = previous.profile_revisions || {};
     const currentProfiles = securityFreshnessData.profile_revisions || {};
-    ['quick', 'full', 'app'].forEach((profile) => {
-      if (previousProfiles[profile] !== currentProfiles[profile]) {
-        invalidate(liteQueryKeys.securityProfile(profile, profile === 'app' ? 'photoprism' : ''));
-      }
-    });
+    const invalidateSecurityQuery = (profile) => invalidate(
+      liteQueryKeys.securityProfile(profile, profile === 'app' ? 'photoprism' : ''),
+    );
+    if (previousProfiles.quick !== currentProfiles.quick) invalidateSecurityQuery('quick');
+    if (previousProfiles.full !== currentProfiles.full) invalidateSecurityQuery('full');
+    if (previousProfiles.app !== currentProfiles.app) invalidateSecurityQuery('app');
 
     if (previous.history_revision !== securityFreshnessData.history_revision) {
       invalidate(liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20));
@@ -2143,6 +2209,7 @@ export default function SecurityScreen() {
   const [appCheckTarget, setAppCheckTarget] = useState({ app_id: 'photoprism', app_label: 'PhotoPrism' });
   const findingDetailTriggerRef = useRef(null);
   const securityDetailsTriggerRef = useRef(null);
+  const securityLiveShellRef = useRef(null);
   const remediationTriggerRef = useRef(null);
   const securityMotionReduced = useSecurityReducedMotion();
 
@@ -2150,7 +2217,7 @@ export default function SecurityScreen() {
   const securityHistory = Array.isArray(data?.history) ? data.history : [];
   const localScanProfile = hasOptimisticSecurityProgress(result) ? normalizeSecurityProfileId(result?.scan_profile || result?.profile || 'quick') : null;
   const latestScanProfile = normalizeSecurityProfileId(localScanProfile || data?.scan_profile || lastRun?.scan_profile || result?.scan_profile || 'quick');
-  const profileRunsById = useMemo(() => buildSecurityProfileRuns({ data, lastRun, evidenceRun: evidence?.run || null, result, history: securityHistory, profileLatest: data?.profile_latest || {} }), [data, lastRun, evidence, result, securityHistory]);
+  const profileRunsById = useMemo(() => buildSecurityProfileRuns({ data, lastRun, evidenceRun: evidence?.run || null, result: busy || localSecurityProgressActive ? null : result, history: securityHistory, profileLatest: data?.profile_latest || {} }), [busy, data, lastRun, evidence, localSecurityProgressActive, result, securityHistory]);
   const activeProfileView = useMemo(() => (data?.security_profiles?.[scanProfile] || selectSecurityProfileView(data || {}, scanProfile)), [data, scanProfile]);
   const profileFreshness = data?.profile_freshness || {};
   const activeProfileFreshness = activeProfileView?.freshness || profileFreshness?.[scanProfile] || null;
@@ -2160,8 +2227,14 @@ export default function SecurityScreen() {
   const activeProfileMeta = securityProfileMeta(scanProfile);
   const findings = Number(activeProfileView?.items_to_review ?? activeProfileView?.findings_count ?? activeProfileRun?.items_to_review ?? 0);
   const checks = Number(activeProfileRun?.checks_reviewed ?? activeProfileRun?.checks_count ?? data?.checks_reviewed ?? data?.checks_count ?? 0);
-  const criticalIssues = Array.isArray(activeProfileView?.critical_issues) ? activeProfileView.critical_issues : [];
-  const reviewItems = Array.isArray(activeProfileView?.findings) ? activeProfileView.findings : [];
+  const preparedPayloadProfile = normalizeSecurityProfileId(data?.scan_profile || data?.last_run?.scan_profile || (data?.app_id ? 'app' : 'quick'));
+  const preparedPayloadIsActiveProfile = preparedPayloadProfile === scanProfile;
+  const criticalIssues = Array.isArray(activeProfileView?.critical_issues) && activeProfileView.critical_issues.length
+    ? activeProfileView.critical_issues
+    : preparedPayloadIsActiveProfile && Array.isArray(data?.critical_issues) ? data.critical_issues : [];
+  const reviewItems = Array.isArray(activeProfileView?.findings) && activeProfileView.findings.length
+    ? activeProfileView.findings
+    : preparedPayloadIsActiveProfile && Array.isArray(data?.findings) ? data.findings : [];
   const evidenceRefs = profileEvidenceRefs(activeProfileRun, activeProfileView?.evidence_refs || []);
   const componentPosture = Array.isArray(data?.component_posture) ? data.component_posture : [];
   const healthyComponents = componentPosture.filter((item) => normalizeBackendState(item?.status) === 'ready').length;
@@ -2170,10 +2243,6 @@ export default function SecurityScreen() {
   ];
   const evidenceFindings = Array.isArray(evidence?.findings) ? evidence.findings : [];
   const allReviewFindings = useMemo(() => [...criticalIssues, ...reviewItems], [criticalIssues, reviewItems]);
-  const selectedFinding = useMemo(() => {
-    if (!expandedSecurityFindingId) return null;
-    return allReviewFindings.find((finding) => securityFindingUiId(finding) === expandedSecurityFindingId) || null;
-  }, [allReviewFindings, expandedSecurityFindingId]);
   const evidenceRun = evidence?.run || null;
   const toolResults = (activeProfileIsLatest ? evidenceRun?.tool_results : null) || activeProfileView?.tool_results || activeProfileRun?.tool_results || {};
   const coverageFallback = profileFallbackCoverage(scanProfile);
@@ -2228,7 +2297,11 @@ export default function SecurityScreen() {
   const runStatus = activeProfileIsLatest ? currentRunStatus : displayRunStatus;
   const activeSecurityRunId = activeSecurityProgressRunId || data?.scan_progress?.run_id || '';
   const scanProgress = activeProfileIsLatest ? selectLiveSecurityProgress(result?.scan_progress, liveSecurityProgressData, data?.scan_progress, activeSecurityRunId) : null;
-  const scanInProgress = activeProfileIsLatest && (busy || hasOptimisticSecurityProgress(result) || ['queued', 'accepted', 'running', 'working', 'in_progress'].includes(currentRunStatus));
+  const scanInProgress = activeProfileIsLatest && (busy || hasOptimisticSecurityProgress(result) || liveSecurityProgressData?.active_scan === true || ['queued', 'accepted', 'running', 'working', 'in_progress'].includes(currentRunStatus));
+  const terminalSecurityProgress = Boolean(liveSecurityProgressData && isTerminalSecurityResult(liveSecurityProgressData));
+  const securityLivePresentation = scanInProgress
+    || securityCompletionSettling
+    || (terminalSecurityProgress && hasOptimisticSecurityProgress(result));
   useLiteServiceWorkerUpdateBlocker('security-workflow', Boolean(
     scanInProgress
     || liveSecurityProgressData?.active_scan
@@ -2317,7 +2390,13 @@ export default function SecurityScreen() {
   const securityFlow = useLiteSecurityCheckFlow({ security: data, backendReachable: effectiveBackendReachable, savedStateOnly: savedStateOnly && !scanInProgress });
   const lastKnownGood = deriveLastKnownGood(activeProfileIsLatest ? data : { ...data, last_run: activeProfileRun }, allReviewFindings);
   const postureComparison = deriveSecurityPostureComparison(activeProfileIsLatest ? data : { ...data, history: profileHistory });
-  const remediationContext = { data, lastRun: activeProfileRun, evidence, evidenceRefs: currentEvidenceRefs, toolResults };
+  const remediationContext = useMemo(() => ({
+    data,
+    lastRun: activeProfileRun,
+    evidence,
+    evidenceRefs: currentEvidenceRefs,
+    toolResults,
+  }), [activeProfileRun, currentEvidenceRefs, data, evidence, toolResults]);
   const trustSignals = [
     {
       icon: Server,
@@ -2389,31 +2468,6 @@ export default function SecurityScreen() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [remediationFinding]);
 
-  React.useEffect(() => {
-    if (!selectedFinding) return undefined;
-    function handleKeyDown(event) {
-      if (event.key === 'Escape') {
-        closeFindingDetails();
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedFinding]);
-
-  React.useEffect(() => {
-    if (!expandedSecurityFindingId || !allReviewFindings.length || selectedFinding) return;
-    setExpandedSecurityFindingId(null);
-  }, [allReviewFindings.length, expandedSecurityFindingId, selectedFinding, setExpandedSecurityFindingId]);
-
-  function invalidateSecurityQuery(profile = scanProfile) {
-    const normalizedProfile = normalizeSecurityProfileId(profile || 'quick');
-    [
-      liteQueryKeys.security(),
-      liteQueryKeys.securityProfile(normalizedProfile, normalizedProfile === 'app' ? 'photoprism' : ''),
-      liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20),
-    ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
-  }
-
   function releaseSecurityScanSubmitGuard(delayMs = 0) {
     const release = () => { securityScanSubmitGuardRef.current = false; };
     if (delayMs > 0 && typeof window !== 'undefined') {
@@ -2437,10 +2491,10 @@ export default function SecurityScreen() {
     let acceptedScan = false;
     const flowCheck = securityFlow.requestRun();
     if (!flowCheck.ok) { releaseSecurityScanSubmitGuard(); setActionError(flowCheck.reason); return; }
+    securityLiveShellRef.current?.classList.add('lite-security-phase4-live');
     setSelectedScanProfile('quick');
     setBusy(true);
     const optimistic = createOptimisticSecurityResult('quick');
-    setDirectSecurityProgressData(optimistic.scan_progress || null);
     setResult(optimistic);
     setActionError(null);
     setEvidence(null);
@@ -2453,7 +2507,6 @@ export default function SecurityScreen() {
       acceptedScan = true;
       setSecurityObservation({ active: true, runId: payload?.run_id || payload?.job_id || payload?.command_id || '' });
       setResult(mergeSecurityAcceptedResult(optimistic, payload, 'quick'));
-      invalidateSecurityQuery('quick');
     } catch (err) {
       securityFlow.fail(err);
       setResult(null);
@@ -2492,11 +2545,11 @@ export default function SecurityScreen() {
     let acceptedScan = false;
     const flowCheck = securityFlow.requestRun();
     if (!flowCheck.ok) { releaseSecurityScanSubmitGuard(); setActionError(flowCheck.reason); return; }
+    securityLiveShellRef.current?.classList.add('lite-security-phase4-live');
     setFullLocalConfirmOpen(false);
     setSelectedScanProfile('full');
     setBusy(true);
     const optimistic = createOptimisticSecurityResult('full');
-    setDirectSecurityProgressData(optimistic.scan_progress || null);
     setResult(optimistic);
     setActionError(null);
     setEvidence(null);
@@ -2509,7 +2562,6 @@ export default function SecurityScreen() {
       acceptedScan = true;
       setSecurityObservation({ active: true, runId: payload?.run_id || payload?.job_id || payload?.command_id || '' });
       setResult(mergeSecurityAcceptedResult(optimistic, payload, 'full'));
-      invalidateSecurityQuery('full');
     } catch (err) {
       securityFlow.fail(err);
       setResult(null);
@@ -2533,11 +2585,11 @@ export default function SecurityScreen() {
     if (!app?.app_id) { releaseSecurityScanSubmitGuard(); return; }
     const flowCheck = securityFlow.requestRun();
     if (!flowCheck.ok) { releaseSecurityScanSubmitGuard(); setActionError(flowCheck.reason); return; }
+    securityLiveShellRef.current?.classList.add('lite-security-phase4-live');
     setAppCheckConfirmOpen(false);
     setSelectedScanProfile('app');
     setBusy(true);
     const optimistic = createOptimisticSecurityResult('app', app);
-    setDirectSecurityProgressData(optimistic.scan_progress || null);
     setResult(optimistic);
     setActionError(null);
     setEvidence(null);
@@ -2550,7 +2602,6 @@ export default function SecurityScreen() {
       acceptedScan = true;
       setSecurityObservation({ active: true, runId: payload?.run_id || payload?.job_id || payload?.command_id || '' });
       setResult(mergeSecurityAcceptedResult(optimistic, payload, 'app'));
-      invalidateSecurityQuery('app');
     } catch (err) {
       securityFlow.fail(err);
       setResult(null);
@@ -2621,11 +2672,6 @@ export default function SecurityScreen() {
     setExpandedSecurityFindingId(securityFindingUiId(finding));
   }
 
-  function closeFindingDetails() {
-    setExpandedSecurityFindingId(null);
-    window.setTimeout(() => findingDetailTriggerRef.current?.focus?.(), 0);
-  }
-
   function openSecurityDetails(type, event) {
     preloadSecurityManageChunks();
     if (type === 'history') preloadSecurityHistory();
@@ -2648,11 +2694,9 @@ export default function SecurityScreen() {
   }
 
   function openSecurityManage(event) {
+    preloadSecurityFindingDetails();
     securityDetailsTriggerRef.current = event?.currentTarget || null;
     setSecurityManageOpen(true);
-    if (typeof refreshSecurityDetails === 'function') {
-      refreshSecurityDetails().catch(() => {});
-    }
   }
 
   function closeSecurityManage() {
@@ -2664,6 +2708,7 @@ export default function SecurityScreen() {
     setSecurityManageSection(sectionId);
     if (['changes', 'issues', 'coverage', 'check_path', 'evidence', 'history', 'technical_details'].includes(sectionId)) {
       preloadSecurityManageChunks();
+      if (sectionId === 'issues') preloadSecurityFindingDetails();
       if (sectionId === 'history') preloadSecurityHistory();
     }
   }
@@ -2699,11 +2744,10 @@ export default function SecurityScreen() {
 
   const warmSecurityManageIntent = useCallback(() => {
     preloadSecurityManageChunks();
-    prefetchSecurityManageOnIntent(queryClient, {
-      backendHealthy: effectiveBackendReachable !== false,
-      activeScan: scanInProgress,
-    });
-  }, [effectiveBackendReachable, queryClient, scanInProgress]);
+    // Finding details are lazy, but a Manage intent is the safe boundary to
+    // warm their module before the first read-only finding interaction.
+    preloadSecurityFindingDetails();
+  }, []);
 
   function openSecurityDetailFromManage(type, event) {
     if (type === 'history') preloadSecurityHistory();
@@ -2850,17 +2894,17 @@ export default function SecurityScreen() {
   const safetyShellSpring = useSpring({
     from: { opacity: 0, y: 10 },
     to: { opacity: 1, y: 0 },
-    immediate: securityMotionReduced,
+    immediate: securityMotionReduced || securityLivePresentation,
     config: SECURITY_SPRING_CONFIG.calm,
   });
   const safetyCardSpring = useSpring({
     to: {
-      scale: scanInProgress ? 1.006 : 1,
-      boxShadow: scanInProgress
+      scale: securityLivePresentation ? 1.006 : 1,
+      boxShadow: securityLivePresentation
         ? '0 24px 70px rgba(14, 165, 233, 0.17), 0 12px 32px rgba(15, 23, 42, 0.08)'
         : '0 18px 54px rgba(15, 23, 42, 0.09), 0 1px 0 rgba(255, 255, 255, 0.82) inset',
     },
-    immediate: securityMotionReduced,
+    immediate: securityMotionReduced || securityLivePresentation,
     config: SECURITY_SPRING_CONFIG.micro,
   });
   const manageSectionSpring = useSpring({
@@ -2885,11 +2929,11 @@ export default function SecurityScreen() {
   });
   const liveProgressSpring = useSpring({
     to: {
-      opacity: scanInProgress ? 1 : 0,
-      y: scanInProgress ? 0 : 5,
-      scale: scanInProgress ? 1 : 0.994,
+      opacity: securityLivePresentation ? 1 : 0,
+      y: securityLivePresentation ? 0 : 5,
+      scale: securityLivePresentation ? 1 : 0.994,
     },
-    immediate: securityMotionReduced,
+    immediate: securityMotionReduced || securityLivePresentation,
     config: SECURITY_SPRING_CONFIG.micro,
   });
   const manageScrollSpring = useSpring({
@@ -2900,6 +2944,8 @@ export default function SecurityScreen() {
     immediate: securityMotionReduced,
     config: SECURITY_SPRING_CONFIG.section,
   });
+  const ManageMotionDiv = securityMotionReduced ? 'div' : animated.div;
+  const ManageMotionSection = securityMotionReduced ? 'section' : animated.section;
   const scoreRingStyle = {
     '--score': scoreSpring.number.to((value) => `${Math.max(0, Math.min(100, Math.round(value)))}%`),
   };
@@ -2913,33 +2959,35 @@ export default function SecurityScreen() {
         description={securityPrecedence.active ? `${securityProfileMeta(securityPrecedence.profile).label} is active. Live progress is shown while your latest saved result remains available.` : "Review current safety, run the right level of check, and open deeper details only when you need them."}
       />
 
-      <animated.section className="lite-security-phase5-shell lite-security-phase4-motion lite-security-native-polish" data-security-native-polish="true" style={safetyShellSpring} aria-label="Safety Center" data-security-phase5-summary-first="true" data-security-phase4-motion="shell" data-security-react-spring="summary-shell">
-        <LiteOperationalStory
-          className="lite-security-operational-story"
-          story={safetyStory}
-          primaryAction={safetyStory.primaryAction?.id === 'run' ? {
-            label: safetyStory.primaryAction.label,
-            onClick: (event) => runSecurityProfile('quick', event),
-            disabled: scanInProgress || securityFlow.writeBlocked,
-            disabledReason: securityFlow.writeBlocked ? securityFlow.blockedReason : '',
-          } : safetyStory.primaryAction?.id === 'refresh' ? {
-            label: safetyStory.primaryAction.label,
-            onClick: refresh,
-          } : safetyStory.primaryAction?.id === 'manage' ? {
-            label: safetyStory.primaryAction.label,
-            onClick: () => { setSecurityManageSection(safetyStory.primaryAction.section || 'overview'); setSecurityManageOpen(true); },
-          } : null}
-          manageAction={{ label: 'Manage Safety', onClick: openSecurityManage }}
-        />
-        <LiteActionRow
-          className="lite-security-latest-check-row"
-          label="Latest check"
-          value={activeProfileMeta.label}
-          summary={lastCheckedLabel}
-          attention={safetyStory.tone === 'review' || safetyStory.tone === 'danger'}
-          action={{ label: 'View details', onClick: () => { setSecurityManageSection('overview'); setSecurityManageOpen(true); } }}
-        />
-        {scanInProgress ? <LiteFlowStatusPanel
+      <animated.section ref={securityLiveShellRef} className={`lite-security-phase5-shell lite-security-phase4-motion lite-security-native-polish ${securityLivePresentation ? 'lite-security-phase4-live' : ''}`.trim()} data-security-native-polish="true" style={safetyShellSpring} aria-label="Safety Center" data-security-phase5-summary-first="true" data-security-phase4-motion="shell" data-security-react-spring="summary-shell">
+        {!securityLivePresentation ? <>
+          <LiteOperationalStory
+            className="lite-security-operational-story"
+            story={safetyStory}
+            primaryAction={safetyStory.primaryAction?.id === 'run' ? {
+              label: safetyStory.primaryAction.label,
+              onClick: (event) => runSecurityProfile('quick', event),
+              disabled: securityFlow.writeBlocked,
+              disabledReason: securityFlow.writeBlocked ? securityFlow.blockedReason : '',
+            } : safetyStory.primaryAction?.id === 'refresh' ? {
+              label: safetyStory.primaryAction.label,
+              onClick: refresh,
+            } : safetyStory.primaryAction?.id === 'manage' ? {
+              label: safetyStory.primaryAction.label,
+              onClick: () => { setSecurityManageSection(safetyStory.primaryAction.section || 'overview'); setSecurityManageOpen(true); },
+            } : null}
+            manageAction={{ label: 'Manage Safety', onClick: openSecurityManage }}
+          />
+          <LiteActionRow
+            className="lite-security-latest-check-row"
+            label="Latest check"
+            value={activeProfileMeta.label}
+            summary={lastCheckedLabel}
+            attention={safetyStory.tone === 'review' || safetyStory.tone === 'danger'}
+            action={{ label: 'View details', onClick: () => { setSecurityManageSection('overview'); setSecurityManageOpen(true); } }}
+          />
+        </> : null}
+        {securityLivePresentation ? <LiteFlowStatusPanel
           className="lite-security-live-progress"
           title={activeProfileMeta.label}
           label={scanProgressLabel || 'Checking safety'}
@@ -2947,13 +2995,25 @@ export default function SecurityScreen() {
           note={scanProgressStatusText || 'Progress is reported by Pocket Lab.'}
           tone="checking"
         /> : null}
-        {!scanInProgress && activeProfileHasRun ? <LiteOutcomeNotice outcome={{
+        {!securityLivePresentation && activeProfileHasRun ? <LiteOutcomeNotice outcome={{
           tone: safetyStory.tone,
           headline: safetyStory.headline,
           summary: safetyStory.latestCheck.summary || safetyStory.summary,
           consequence: safetyStory.consequence,
         }} className="lite-security-latest-outcome" /> : null}
-        <GlassCard hidden as={animated.section} style={safetyCardSpring} className={`lite-security-safety-center-card lite-security-phase1-hero lite-security-phase1-hero-${safetyState} lite-security-phase4-score-settle`} data-security-phase4-motion="score-settle" data-security-react-spring="safety-card">
+        {securityLivePresentation ? (
+          <animated.div style={liveProgressSpring} className="lite-security-safety-center-live lite-security-phase4-live-motion lite-security-premium-v2-live-progress-motion" aria-live="polite" data-security-phase4-motion="live-check" data-security-react-spring="live-progress">
+            <div>
+              <strong>{scanProgressLabel}</strong>
+              <span>{executionActiveStep?.title || securityFlow.label}</span>
+            </div>
+            <div className="lite-security-progress-track lite-security-phase4-progress-shine" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={scanProgressPercent} aria-label="Safety check progress">
+              <span style={{ width: `${scanProgressPercent}%` }} />
+            </div>
+            <p>{scanProgressPercent}% · {scanProgressStatusText} · {activeProfileMeta.label} is working.</p>
+          </animated.div>
+        ) : null}
+        {!securityLivePresentation ? <GlassCard hidden as={animated.section} style={safetyCardSpring} className={`lite-security-safety-center-card lite-security-phase1-hero lite-security-phase1-hero-${safetyState} lite-security-phase4-score-settle`} data-security-phase4-motion="score-settle" data-security-react-spring="safety-card">
           <div className="lite-security-safety-center-copy">
             <div className="lite-home-pill">
               <span className="lite-ready-dot" />
@@ -3004,19 +3064,7 @@ export default function SecurityScreen() {
             <StatusBadge status={backendBadgeStatus(safetyStatus)}>{safetyLabel}</StatusBadge>
           </div>
 
-          {scanInProgress ? (
-            <animated.div style={liveProgressSpring} className="lite-security-safety-center-live lite-security-phase4-live-motion lite-security-premium-v2-live-progress-motion" aria-live="polite" data-security-phase4-motion="live-check" data-security-react-spring="live-progress">
-              <div>
-                <strong>{scanProgressLabel}</strong>
-                <span>{executionActiveStep?.title || securityFlow.label}</span>
-              </div>
-              <div className="lite-security-progress-track lite-security-phase4-progress-shine" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={scanProgressPercent} aria-label="Safety check progress">
-                <span style={{ width: `${scanProgressPercent}%` }} />
-              </div>
-              <p>{scanProgressPercent}% · {scanProgressStatusText} · {activeProfileMeta.label} is working.</p>
-            </animated.div>
-          ) : null}
-        </GlassCard>
+        </GlassCard> : null}
         <div hidden className="lite-security-s7-profile-cards lite-render-containment lite-render-containment--security" aria-label="Saved Security profile results" data-security-s7-profile-cards="true">
           {securityProfileCards.map((card) => (
             <button
@@ -3060,24 +3108,24 @@ export default function SecurityScreen() {
         />
       ) : null}
 
-      <LiteSheet
+      {securityManageOpen ? <LiteSheet
         open={securityManageOpen}
         onClose={closeSecurityManage}
         eyebrow="Safety Center"
         title="Manage Security"
         description="Review changes, coverage, activity, and protected check records in one focused workspace."
         layerClassName="lite-security-manage-layer"
-        className="lite-security-manage-shell lite-security-manage-panel lite-security-phase4-panel-motion"
+        className={`lite-security-manage-shell lite-security-manage-panel ${securityMotionReduced ? '' : 'lite-security-phase4-panel-motion'}`.trim()}
         bodyClassName="lite-security-manage-scroll"
         headerClassName="lite-security-manage-head"
         closeClassName="lite-security-manage-close"
         gripClassName="lite-security-manage-grip"
         variant="security"
-        motion="safe-grip"
+        motion={securityMotionReduced ? 'none' : 'safe-grip'}
         surfaceProps={{ 'data-security-phase5-manage-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'manage-shell' }}
       >
-        <animated.div style={manageScrollSpring} className="lite-security-manage-scroll-frame" data-security-react-spring="manage-scroll-frame">
-        <animated.div style={manageTabsSpring} className="lite-security-manage-tabs lite-security-premium-v2-manage-tabs-motion" role="tablist" aria-label="Security Manage sections" data-security-react-spring="manage-tabs">
+        <ManageMotionDiv style={securityMotionReduced ? undefined : manageScrollSpring} className="lite-security-manage-scroll-frame" data-security-react-spring="manage-scroll-frame">
+        <ManageMotionDiv style={securityMotionReduced ? undefined : manageTabsSpring} className="lite-security-manage-tabs lite-security-premium-v2-manage-tabs-motion" role="tablist" aria-label="Security Manage sections" data-security-react-spring="manage-tabs">
           {SECURITY_MANAGE_SECTIONS.map((section) => (
             <button
               key={section.id}
@@ -3091,9 +3139,9 @@ export default function SecurityScreen() {
               {section.label}
             </button>
           ))}
-        </animated.div>
+        </ManageMotionDiv>
 
-        <animated.section style={manageSectionSpring} className={`lite-security-manage-section lite-security-manage-section-${activeManageSection}`} aria-label={activeManageSectionMeta.label} data-security-manage-section={activeManageSection} data-security-react-spring="manage-section">
+        <ManageMotionSection style={securityMotionReduced ? undefined : manageSectionSpring} className={`lite-security-manage-section lite-security-manage-section-${activeManageSection}`} aria-label={activeManageSectionMeta.label} data-security-manage-section={activeManageSection} data-security-react-spring="manage-section">
           <div className="lite-security-manage-section-head">
             <span>{activeManageSectionMeta.label}</span>
             <h3>{activeManageSectionMeta.label}</h3>
@@ -3336,11 +3384,11 @@ export default function SecurityScreen() {
               </div>
             </div>
           ) : null}
-        </animated.section>
-        </animated.div>
-      </LiteSheet>
+        </ManageMotionSection>
+        </ManageMotionDiv>
+      </LiteSheet> : null}
 
-      <LiteSheet
+      {fullLocalConfirmOpen ? <LiteSheet
         open={fullLocalConfirmOpen}
         onClose={closeFullLocalConfirm}
         eyebrow="Security"
@@ -3365,9 +3413,9 @@ export default function SecurityScreen() {
             <LiteButton onClick={startFullLocalCheck} disabled={scanInProgress || securityFlow.writeBlocked}>Start Full Local Check</LiteButton>
           </div>
         </div>
-      </LiteSheet>
+      </LiteSheet> : null}
 
-      <LiteSheet
+      {appCheckConfirmOpen ? <LiteSheet
         open={appCheckConfirmOpen}
         onClose={closeAppCheckConfirm}
         eyebrow="Security"
@@ -3392,9 +3440,9 @@ export default function SecurityScreen() {
             <LiteButton onClick={startAppCheck} disabled={scanInProgress || securityFlow.writeBlocked}>Start App Check</LiteButton>
           </div>
         </div>
-      </LiteSheet>
+      </LiteSheet> : null}
 
-      <LiteSheet
+      {activeSecurityDetails ? <LiteSheet
         open={Boolean(activeSecurityDetails)}
         onClose={closeSecurityDetails}
         eyebrow={activeSecurityDetailsMeta.eyebrow}
@@ -3413,30 +3461,9 @@ export default function SecurityScreen() {
         <Suspense fallback={<div className="lite-security-details-loading">Loading Security details…</div>}>
           <SecurityProgressiveDetailsLazy type={activeSecurityDetails || 'evidence'} model={securityProgressiveDetailsModel} onClose={closeSecurityDetails} />
         </Suspense>
-      </LiteSheet>
+      </LiteSheet> : null}
 
-      <LiteSheet
-        open={Boolean(selectedFinding)}
-        onClose={closeFindingDetails}
-        eyebrow="Finding Details"
-        title={selectedFinding ? securityFindingLabel(selectedFinding) : 'Finding details'}
-        description="Review one finding at a time. Technical details stay collapsed and sanitized."
-        layerClassName="lite-security-phase3-layer lite-security-detail-layer"
-        className="lite-security-phase3-panel lite-security-phase3-finding-shell lite-security-phase4-panel-motion"
-        bodyClassName="lite-security-phase3-scroll"
-        headerClassName="lite-security-phase3-head"
-        closeClassName="lite-security-phase3-close"
-        gripClassName="lite-security-phase3-grip"
-        variant="security"
-        motion="safe-grip"
-        surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'finding-details' }}
-      >
-        {selectedFinding ? (
-          <Suspense fallback={<div className="lite-security-details-loading">Loading finding details…</div>}>
-            <SecurityFindingDetailsLazy finding={selectedFinding} context={remediationContext} onClose={closeFindingDetails} />
-          </Suspense>
-        ) : null}
-      </LiteSheet>
+      <SecurityFindingDetailsPortal findings={allReviewFindings} context={remediationContext} triggerRef={findingDetailTriggerRef} />
 
       {activeSecurityDetails === 'legacyEvidenceNeverMounts' && (evidence || evidenceError || evidenceLoading) ? (
         <section className="lite-security-evidence-dropdown" aria-label="Sanitized security evidence summary" aria-live="polite">

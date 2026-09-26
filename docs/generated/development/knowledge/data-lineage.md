@@ -18,12 +18,14 @@ Verified relationships are generated from frontend API usage, parity field mappi
 
 | API | UI | SQLite | Confidence |
 | --- | --- | --- | --- |
+| `GET /api/lite/apps/{app_id}/actions` | ui:liteapp | table:app_action_lifecycle, table:app_current_state | contract-derived |
 | `GET /api/lite/catalog` | ui:liteapp | table:app_action_lifecycle, table:app_current_state | contract-derived |
 | `GET /api/lite/devices/{device_id}/removal-assessment` | ui:litedevices | — | unvalidated |
 | `GET /api/lite/fleet` | ui:litedevices, ui:literulesenterprise | table:device_awareness_state, table:device_enrollment_registry, table:device_health_attention, table:device_health_current, table:device_health_transitions, table:device_heartbeats, table:device_identity_guards, table:device_invite_lifecycle, table:device_lifecycle_events, table:device_lifecycle_transactions, table:device_recovery_history, table:device_removal_receipts, table:device_supervisor_state, table:device_system_profiles | contract-derived |
 | `GET /api/lite/fleet/devices/{node_id}/restart-agent/status` | ui:litedevices | — | unvalidated |
 | `GET /api/lite/identity/owner-claim/status` | ui:liteidentity | — | unvalidated |
 | `GET /api/lite/policy` | ui:literules | — | unvalidated |
+| `GET /api/lite/recovery/backups` | ui:literecovery | — | unvalidated |
 | `GET /api/lite/recovery/database` | ui:literecovery | — | unvalidated |
 | `GET /api/lite/recovery/details` | ui:literecovery | table:backup_manifest_index, table:recovery_backup_location_events, table:recovery_backup_locations, table:recovery_code_batches, table:recovery_codes, table:recovery_current_state, table:recovery_operations | contract-derived |
 | `GET /api/lite/recovery/locations` | ui:literecovery | — | unvalidated |

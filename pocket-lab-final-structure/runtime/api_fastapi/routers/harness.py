@@ -227,13 +227,37 @@ def revoke_authenticated_principal(request: Request, response: Response) -> dict
     _require_direct(request)
     try:
         auth = lite_harness.authenticate_request(request)
+        auth_profile = str((auth.get("harness") or {}).get("profile") or "").strip().casefold()
         lite_harness.enforce_capability(
             auth,
-            action_id="security.assurance.cleanup",
+            action_id=(
+                "qualification.cleanup"
+                if auth_profile == lite_harness.HARNESS_UI_PERFORMANCE_PROFILE
+                else "security.assurance.cleanup"
+            ),
             target_type="security_assurance",
             target_id="local-server",
         )
         result = lite_harness.revoke_authenticated_principal(auth)
+    except lite_harness.HarnessError as exc:
+        _raise(exc)
+    _no_store(response)
+    return result
+
+
+@router.post("/browser/bridge")
+def browser_bridge(request: Request, response: Response) -> dict[str, Any]:
+    """Create a process-ephemeral bridge for a physical qualification browser."""
+    _require_direct(request)
+    try:
+        auth = lite_harness.authenticate_request(request)
+        lite_harness.enforce_capability(
+            auth,
+            action_id="qualification.browser_bridge",
+            target_type="qualification_browser",
+            target_id="local-server",
+        )
+        result = lite_harness.create_browser_bridge(auth)
     except lite_harness.HarnessError as exc:
         _raise(exc)
     _no_store(response)

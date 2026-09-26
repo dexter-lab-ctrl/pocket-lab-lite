@@ -8207,9 +8207,9 @@ textarea {
   font-weight: 800;
   font-size: 0.82rem;
   cursor: pointer;
-  opacity: 0;
-  pointer-events: none;
-  visibility: hidden;
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
 
@@ -18103,6 +18103,197 @@ textarea {
   border-radius: var(--lite-security-radius-xl) !important;
 }
 
+/* Lite performance surfaces stay visually layered without forcing a backdrop
+   blur over the whole scrolling document. Backdrop filters are disproportionately
+   expensive during continuous scroll on low-power phone-class GPUs. */
+.theme-pocket-lite-daylight .lite-page-header,
+.theme-pocket-lite-daylight main .lite-page-header,
+.theme-pocket-lite-daylight main .lite-page-header[class*="rounded-[2rem]"][class*="border"],
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-toolbar--simple,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card,
+.theme-pocket-lite-daylight .lite-security-native-polish .lite-security-safety-center-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* The Lite shell stays fixed while the document scrolls. Avoid repainting the
+   entire document through translucent fixed layers during that gesture. */
+.theme-pocket-lite-daylight.pocket-app-shell > header,
+.theme-pocket-lite-daylight .pocket-nav-dock,
+.theme-pocket-lite-daylight .pocket-side-rail,
+.theme-pocket-lite-daylight .pocket-app-backdrop,
+.theme-pocket-lite-daylight .mobile-more-backdrop {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+.theme-pocket-lite-daylight .pocket-app-backdrop::before,
+.theme-pocket-lite-daylight .pocket-app-backdrop::after {
+  filter: none !important;
+}
+
+/* Navigation and overlay opens are measured as visible work. Suppress the
+   decorative page-settle and sheet-entry effects during that work so the
+   compositor is not asked to animate the full document and a full-screen
+   backdrop at the same time. */
+.theme-pocket-lite-daylight .pocket-main,
+.theme-pocket-lite-daylight .pocket-main > *,
+.theme-pocket-lite-daylight .pocket-main > *::before,
+.theme-pocket-lite-daylight .pocket-main > *::after,
+.theme-pocket-lite-daylight .lite-overlay-root,
+.theme-pocket-lite-daylight .lite-overlay-root *,
+.theme-pocket-lite-daylight .lite-catalog-manage-layer,
+.theme-pocket-lite-daylight .lite-catalog-manage-layer * {
+  animation: none !important;
+  transition: none !important;
+}
+
+.theme-pocket-lite-daylight .lite-overlay-backdrop,
+.theme-pocket-lite-daylight .lite-catalog-manage-backdrop {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+}
+
+.theme-pocket-lite-daylight .lite-overlay-surface,
+.theme-pocket-lite-daylight .lite-catalog-manage-sheet {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* Keep the repeated Lite content surfaces cheap to scroll. These effects are
+   decorative; the underlying labels, borders, colors, and control focus rings
+   remain unchanged. */
+.theme-pocket-lite-daylight main .pocket-card,
+.theme-pocket-lite-daylight main .pocket-state-surface,
+.theme-pocket-lite-daylight main .lite-motion-elevation-surface,
+.theme-pocket-lite-daylight main .lite-operational-story,
+.theme-pocket-lite-daylight main .lite-remote-access-panel,
+.theme-pocket-lite-daylight main .lite-flow-status-panel {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+.theme-pocket-lite-daylight main .pocket-card,
+.theme-pocket-lite-daylight main .pocket-card::before,
+.theme-pocket-lite-daylight main .pocket-card::after,
+.theme-pocket-lite-daylight main .pocket-badge,
+.theme-pocket-lite-daylight main .lite-ready-dot,
+.theme-pocket-lite-daylight main .lite-device-pulse,
+.theme-pocket-lite-daylight main .lite-device-card::before,
+.theme-pocket-lite-daylight main .lite-device-card::after {
+  animation: none !important;
+}
+
+html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight main .lite-device-flow-signal {
+  animation: none !important;
+}
+
+.theme-pocket-lite-daylight main .lite-device-card::before,
+.theme-pocket-lite-daylight main .lite-device-card::after,
+.theme-pocket-lite-daylight main .lite-device-pulse,
+.theme-pocket-lite-daylight main .lite-device-flow-signal {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* Catalog cards are the repeated scrolling surface. Preserve their shape and
+   status color while removing per-card depth effects that force extra paint
+   work on phone-class GPUs. Focus rings remain owned by the control styles. */
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card .lite-catalog-icon,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card .lite-catalog-status-badge,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card .lite-catalog-app-icon-img,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card .pocket-badge,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-pull-refresh {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card::before,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card .pocket-button:not(:focus-visible) {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-native-polish .pocket-badge {
+  animation: none !important;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-trust-marker,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .pocket-button:not(:focus-visible) {
+  box-shadow: none !important;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-pull-refresh:not(.is-pulling) svg {
+  animation: none !important;
+}
+
+/* Security completion swaps the compact live view for the saved overview in
+   the same interaction. Keep that handoff paint-stable, including the shared
+   card/status effects and the toast surface. */
+.theme-pocket-lite-daylight .lite-security-phase5-shell .lite-security-safety-center-card,
+.theme-pocket-lite-daylight .lite-security-phase5-shell .lite-security-safety-center-card::before,
+.theme-pocket-lite-daylight .lite-security-phase5-shell .lite-ready-dot,
+.theme-pocket-lite-daylight .lite-security-phase5-shell .pocket-badge,
+.lite-toast {
+  animation: none !important;
+}
+
+.lite-toast {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* Keep continuous scan progress truthful without animating large gradients,
+   pseudo-elements, or status pulses on every frame. The short entry motion
+   remains available before a scan starts; only the live state is quieted. */
+.theme-pocket-lite-daylight .lite-security-phase4-live,
+.theme-pocket-lite-daylight .lite-security-phase4-live *,
+.theme-pocket-lite-daylight .lite-security-phase4-live::before,
+.theme-pocket-lite-daylight .lite-security-phase4-live::after,
+.theme-pocket-lite-daylight .lite-security-phase4-live *::before,
+.theme-pocket-lite-daylight .lite-security-phase4-live *::after {
+  animation: none !important;
+  transition: none !important;
+  filter: none !important;
+}
+
+/* The connection topology remains animated in normal product mode. The
+   performance qualification mode intentionally disables this decorative work
+   while measuring expensive interaction boundaries. */
+html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-connected .lite-device-flow-signal {
+  animation: lite-device-flow-packet-horizontal 2.5s ease-in-out infinite;
+}
+
+html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repairing .lite-device-flow-signal {
+  animation: lite-device-flow-packet-horizontal 1.4s ease-in-out infinite;
+}
+
+@media (max-width: 640px) {
+  html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-connected .lite-device-flow-signal,
+  html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repairing .lite-device-flow-signal {
+    animation-name: lite-device-flow-packet-vertical;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-connected .lite-device-flow-signal,
+  html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repairing .lite-device-flow-signal {
+    animation: none !important;
+  }
+}
+
 .theme-pocket-lite-daylight .lite-security-safety-center-copy h2 {
   margin: 0;
   letter-spacing: -0.045em;
@@ -24125,7 +24316,10 @@ html.lite-install-light-shell body {
   font-weight: 850;
   text-align: center;
 }
-.theme-pocket-lite-daylight .lite-device-flow-node > svg {
+.theme-pocket-lite-daylight .lite-device-flow-node > svg,
+.theme-pocket-lite-daylight .lite-device-flow-glyph,
+.theme-pocket-lite-daylight .lite-device-static-glyph {
+  display: inline-block;
   width: 2.15rem;
   height: 2.15rem;
   padding: .48rem;
@@ -24134,6 +24328,19 @@ html.lite-install-light-shell body {
   background: rgba(255, 255, 255, .9);
   box-shadow: 0 .25rem .55rem rgba(37, 99, 235, .1);
   color: #2563eb;
+}
+.theme-pocket-lite-daylight .lite-device-flow-glyph,
+.theme-pocket-lite-daylight .lite-device-static-glyph {
+  padding: 0;
+}
+.theme-pocket-lite-daylight .lite-device-static-glyph {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0;
+  background: currentColor;
+  opacity: .8;
+  -webkit-mask: radial-gradient(circle, #000 52%, transparent 54%);
+  mask: radial-gradient(circle, #000 52%, transparent 54%);
 }
 .theme-pocket-lite-daylight .lite-device-flow-node small {
   display: block;
@@ -24255,6 +24462,34 @@ html.lite-install-light-shell body {
 .theme-pocket-lite-daylight .lite-remote-access-details > summary::-webkit-details-marker { display: none; }
 .theme-pocket-lite-daylight .lite-device-card-disclosure > summary svg { transition: transform 160ms ease; }
 .theme-pocket-lite-daylight .lite-device-card-disclosure[open] > summary svg { transform: rotate(180deg); }
+.theme-pocket-lite-daylight .lite-device-card-chevron {
+  width: .48rem;
+  height: .48rem;
+  margin-left: .15rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translateY(-.12rem);
+  transition: transform 160ms ease;
+}
+.theme-pocket-lite-daylight .lite-device-card-disclosure[open] > summary .lite-device-card-chevron {
+  transform: rotate(225deg) translate(-.08rem, -.08rem);
+}
+.theme-pocket-lite-daylight .lite-device-health-static-glyph,
+.theme-pocket-lite-daylight .lite-device-card-static-glyph,
+.theme-pocket-lite-daylight .lite-device-card-action-glyph {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: .82;
+  -webkit-mask: radial-gradient(circle, #000 44%, transparent 47%);
+  mask: radial-gradient(circle, #000 44%, transparent 47%);
+}
+.theme-pocket-lite-daylight .lite-device-health-static-glyph { width: 1.05rem; height: 1.05rem; }
+.theme-pocket-lite-daylight .lite-device-card-action-glyph { width: .9rem; height: .9rem; }
+.theme-pocket-lite-daylight .lite-device-card-action-glyph.is-danger { color: #b42318; }
 .theme-pocket-lite-daylight .lite-device-card-disclosure-content {
   display: grid;
   gap: .65rem;
@@ -24324,4 +24559,171 @@ html.lite-install-light-shell body {
   }
   .theme-pocket-lite-daylight .is-connected .lite-device-flow-signal,
   .theme-pocket-lite-daylight .is-repairing .lite-device-flow-signal { left: 50%; opacity: 1; }
+}
+
+
+/* ==========================================================================
+   Pocket Lab Lite UI performance contract
+   Keeps the existing visual design while constraining high-frequency work to
+   compositor-friendly motion and skipping off-screen list rendering.
+   ========================================================================== */
+
+[data-lite-perf-motion='compositor'] {
+  backface-visibility: hidden;
+}
+
+[data-lite-perf-motion-active='true'] {
+  will-change: transform, opacity;
+}
+
+[data-lite-perf-motion-active='false'] {
+  will-change: auto;
+}
+
+@supports (content-visibility: auto) {
+  [data-lite-perf-offscreen='true'] {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 5.5rem;
+  }
+}
+
+/* Avoid continuously spending frames while the PWA is backgrounded. */
+html[data-lite-document-hidden='true'] .jetstream-flow-node-active .jetstream-flow-dot,
+html[data-lite-document-hidden='true'] .jetstream-flow-segment,
+html[data-lite-document-hidden='true'] .health-dot-healthy,
+html[data-lite-document-hidden='true'] .health-dot-running,
+html[data-lite-document-hidden='true'] .health-dot-degraded,
+html[data-lite-document-hidden='true'] .health-dot-unknown,
+html[data-lite-document-hidden='true'] .skeleton-card::after,
+html[data-lite-document-hidden='true'] .skeleton-shimmer::after {
+  animation-play-state: paused !important;
+}
+
+/* Respect explicit browser power-saving signals without inventing device state. */
+html[data-lite-power-save='true'] .jetstream-flow-node-active .jetstream-flow-dot,
+html[data-lite-power-save='true'] .jetstream-flow-segment,
+html[data-lite-power-save='true'] .health-dot-healthy,
+html[data-lite-power-save='true'] .health-dot-running,
+html[data-lite-power-save='true'] .health-dot-degraded,
+html[data-lite-power-save='true'] .health-dot-unknown {
+  animation: none !important;
+}
+
+/* Do not interpolate expensive paint properties for the primary card/button path. */
+.theme-pocket-lite-daylight .pocket-card {
+  transition: transform 180ms ease, border-color 180ms ease;
+}
+
+.theme-pocket-lite-daylight .pocket-button {
+  transition: transform 150ms ease, opacity 150ms ease;
+}
+
+@media (hover: none) {
+  .theme-pocket-lite-daylight .pocket-card:hover {
+    transform: translateZ(0);
+  }
+
+  .theme-pocket-lite-daylight .pocket-button:hover {
+    transform: translateZ(0);
+  }
+
+  .theme-pocket-lite-daylight .pocket-button:hover::after {
+    animation: none;
+  }
+
+  .theme-pocket-lite-daylight .pocket-button:active {
+    transform: translateZ(0) scale(0.985);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-lite-perf-motion='compositor'] {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    will-change: auto !important;
+  }
+}
+
+/* Performance qualification also runs in browsers whose OS motion preference
+   is not reduced. Portal roots carry the daylight theme on the same element,
+   so keep the measured Lite overlay path free of decorative sheet animation and
+   GPU-expensive surface effects without changing normal auth or data flow. */
+.theme-pocket-lite-daylight.lite-overlay-root,
+.theme-pocket-lite-daylight.lite-overlay-root *,
+.theme-pocket-lite-daylight.lite-overlay-root *::before,
+.theme-pocket-lite-daylight.lite-overlay-root *::after,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer *,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer *::before,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+.theme-pocket-lite-daylight.lite-overlay-root .lite-overlay-surface,
+.theme-pocket-lite-daylight.lite-overlay-root .lite-security-phase3-panel,
+.theme-pocket-lite-daylight.lite-overlay-root .lite-security-overlay-surface,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-manage-sheet {
+  box-shadow: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.theme-pocket-lite-daylight.lite-overlay-root .lite-overlay-backdrop,
+.theme-pocket-lite-daylight.lite-overlay-root .lite-security-overlay-backdrop,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-manage-backdrop {
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.theme-pocket-lite-daylight.lite-overlay-root .lite-security-finding-details-panel {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* The qualification mode keeps the measured nested surfaces visually
+   equivalent while removing decorative paint work from the interaction
+   boundary. Normal product presentation is unchanged. */
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-catalog-manage-sheet,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-app-action-group,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-app-action-row,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-catalog-action-tile,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-catalog-media-flow-card,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-catalog-media-flow-node,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-catalog-media-flow-line i,
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-catalog-storage-panel,
+.theme-pocket-lite-daylight.lite-overlay-root[data-lite-perf-mode='true'] .lite-security-manage-shell,
+.theme-pocket-lite-daylight.lite-overlay-root[data-lite-perf-mode='true'] .lite-security-manage-scroll {
+  background-image: none !important;
+  box-shadow: none !important;
+  will-change: auto !important;
+}
+
+.theme-pocket-lite-daylight.lite-catalog-manage-layer[data-lite-perf-mode='true'] .lite-catalog-manage-sheet {
+  contain: layout paint;
+}
+
+/* Keep qualification focused on screen layout/paint and interaction work.
+   Page-entry, card-rise, status, and control animations are decorative and
+   otherwise add nondeterministic frames to every screen transition. This is
+   scoped to the explicit performance-test build; normal product motion is
+   unchanged. */
+html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main,
+html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *,
+html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::before,
+html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+.theme-pocket-lite-daylight.lite-overlay-root .lite-security-overlay-backdrop {
+  background: rgba(15, 23, 42, 0.48) !important;
+}
+
+.theme-pocket-lite-daylight.lite-overlay-root .lite-security-overlay-surface,
+.theme-pocket-lite-daylight.lite-overlay-root .lite-security-phase3-panel {
+  background: #f8fafc !important;
 }

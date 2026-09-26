@@ -2921,14 +2921,15 @@ def test_lite_app_action_sheet_ui_source_is_present():
     assert "lite-app-action-row" in ui
     assert "@use-gesture/react" in ui
     assert "@react-spring/web" in ui
-    assert "bindManageSheetDrag" in ui
     assert "bindCatalogPull" in ui
     assert "bindAppCardLongPress" in ui
-    assert "bindManageSectionSwipe" in ui
+    # The current portal keeps sheet and section gestures off the action-owning
+    # surface. This prevents gesture recognizers from competing with the
+    # measured Manage controls while the explicit tab/close controls remain.
+    assert "lite-catalog-manage-section-viewport" in ui
+    assert "data-lite-perf-mode" in ui
     assert "{...bindCatalogPull()}" not in ui
     assert "{...bindAppCardLongPress(" not in ui
-    assert "{...bindManageSectionSwipe()}" not in ui
-    assert "Drag app actions sheet" in ui
     assert "lite-catalog-search-wrap" not in ui
     assert "lite-catalog-search-wrap" not in css
     assert "lite-catalog-filter-pills" not in ui
@@ -5467,7 +5468,8 @@ def test_lite_devices_tab_uses_lazy_progressive_details_foundation():
     assert "React.lazy" in devices
     assert "import('./devices/DeviceDetailsLazy.jsx')" in devices
     assert "<Suspense" in devices
-    assert "activeDetailsDevice ? (" in devices
+    assert "if (!activeDetailsDevice) return null;" in devices
+    assert "detailsBodyReady ? (" in devices
     assert "React.memo(DeviceCard" in card
     assert "DEVICES_CARD_ACTIONS_OWN_CLICKS" in card
     assert "LiteProgressiveDetails" in details

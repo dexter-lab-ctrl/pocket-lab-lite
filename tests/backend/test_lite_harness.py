@@ -329,6 +329,105 @@ def test_key_bound_bootstrap_applies_bounded_requested_session_ttl(harness_runti
     assert cleanup.status_code == 200, cleanup.text
 
 
+def test_key_bound_ui_performance_bootstrap_projects_synthetic_owner_without_destructive_authority(harness_runtime, monkeypatch):
+    client = _client()
+    private, public = _key()
+    principal_id = "codex-ui-performance-qualification"
+    public_key = _b64u(public)
+    fingerprint = "sha256:" + hashlib.sha256(public).hexdigest()
+    monkeypatch.setenv("POCKETLAB_QUALIFICATION_OWNER", "1")
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_APPROVED", "1")
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PRINCIPAL_ID", principal_id)
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT", fingerprint)
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PROFILE", "qualification-owner")
+    monkeypatch.setenv("POCKETLAB_HARNESS_DESTRUCTIVE", "0")
+    monkeypatch.setenv("POCKETLAB_TEST_AUTH_BYPASS", "0")
+
+    grant_response = client.post(
+        "/api/lite/harness/bootstrap/grants",
+        json={"principal_id": principal_id, "public_key": public_key},
+    )
+    assert grant_response.status_code == 201, grant_response.text
+    grant = grant_response.json()
+    assert grant["profile"] == "qualification-owner"
+    assert grant["purpose"] == "ui-performance-60fps"
+    assert grant["target_scope"] == TARGET_SCOPE
+
+    challenge_response = client.post(
+        "/api/lite/harness/bootstrap/challenge",
+        json={"grant_id": grant["grant_id"]},
+    )
+    assert challenge_response.status_code == 200, challenge_response.text
+    challenge = challenge_response.json()
+    complete_response = client.post(
+        "/api/lite/harness/bootstrap/complete",
+        json={
+            "challenge_id": challenge["challenge_id"],
+            "grant_id": grant["grant_id"],
+            "principal_id": principal_id,
+            "public_key": public_key,
+            "signature": _b64u(private.sign(challenge["signing_payload"].encode("utf-8"))),
+            "ttl_seconds": 60,
+        },
+    )
+    assert complete_response.status_code == 201, complete_response.text
+    session = complete_response.json()
+    assert session["bootstrap"]["purpose"] == "ui-performance-60fps"
+    assert session["principal"]["default_profile"] == "qualification-owner"
+    assert session["session"]["capability_profile"] == "qualification-owner"
+    assert session["session"]["destructive_allowed"] is False
+    assert "qualification.cleanup" in session["session"]["capabilities"]
+
+    access = client.get(
+        "/api/lite/enterprise/access",
+        headers={HARNESS_HEADER: session["session_token"]},
+    )
+    assert access.status_code == 200, access.text
+    assert access.json()["current_role"] == "Owner"
+    assert access.json()["owner_authority"] is True
+    assert access.json()["principal"] == {
+        "type": "qualification",
+        "synthetic": True,
+        "auth_method": "harness_session",
+    }
+
+    bridge_response = client.post(
+        "/api/lite/harness/browser/bridge",
+        headers={HARNESS_HEADER: session["session_token"]},
+    )
+    assert bridge_response.status_code == 200, bridge_response.text
+    bridge = bridge_response.json()
+    assert bridge["browser_bridge"]["profile"] == "qualification-owner"
+    assert bridge["browser_bridge"]["purpose"] == "ui-performance-60fps"
+    assert bridge["browser_bridge"]["target_scope"] == TARGET_SCOPE
+    bridge_access = client.get(
+        "/api/lite/enterprise/access",
+        headers={"X-Pocket-Lab-Qualification-Bridge": bridge["browser_bridge_token"]},
+    )
+    assert bridge_access.status_code == 200, bridge_access.text
+    assert bridge_access.json()["owner_authority"] is True
+    mixed_bridge = client.get(
+        "/api/lite/enterprise/access",
+        headers={
+            "X-Pocket-Lab-Qualification-Bridge": bridge["browser_bridge_token"],
+            HARNESS_HEADER: session["session_token"],
+        },
+    )
+    assert mixed_bridge.status_code == 403
+
+    cleanup = client.post(
+        "/api/lite/harness/principal/revoke",
+        headers={HARNESS_HEADER: session["session_token"]},
+    )
+    assert cleanup.status_code == 200, cleanup.text
+    assert cleanup.json()["active_assurance_runs_cancelled"] == 0
+    revoked_bridge = client.get(
+        "/api/lite/enterprise/access",
+        headers={"X-Pocket-Lab-Qualification-Bridge": bridge["browser_bridge_token"]},
+    )
+    assert revoked_bridge.status_code == 401
+
+
 def test_bootstrap_rejects_wrong_key_and_forwarded_transport(harness_runtime, monkeypatch):
     client = _client()
     private, public = _key()
@@ -1371,6 +1470,8 @@ def test_qualification_launcher_owns_lite_profile(harness_runtime):
 def test_no_frontend_projection_or_harness_mcp_extension(harness_runtime):
     forbidden = (
         "/api/lite/harness",
+        "qualification-bridge",
+        "POCKETLAB_HARNESS_BROWSER",
         "POCKETLAB_HARNESS",
         "qualification-owner",
         "maintenance-runner",

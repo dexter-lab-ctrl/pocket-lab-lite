@@ -28,6 +28,7 @@ Pydantic models.
 | POST /api/lite/harness/session | Create a normal short-lived harness session | direct loopback; valid one-use challenge/signature | body challenge ID, exact signing payload, signature, optional bindings/TTL; returns session metadata and token only to the process response |
 | GET /api/lite/harness/session/{session_id} | Read session status | direct loopback; session header for the same session | path/session header; returns sanitized lifecycle status |
 | DELETE /api/lite/harness/session/{session_id} | Revoke a session | direct loopback; session header for the same session | path/session header; returns bounded revocation result |
+| POST /api/lite/harness/browser/bridge | Create a short-lived browser projection for UI qualification | direct loopback; authenticated `qualification-owner` session with `qualification.browser_bridge` capability; never a browser authority source | no body; returns process-only bridge metadata/token to the runner; browser receives only the bounded bridge header |
 
 The legacy manual registration path is retained for compatibility. The
 operator-approved key-bound bootstrap is the preferred automated qualification

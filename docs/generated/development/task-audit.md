@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: b69c196f9e78638982a01e4c85175a5b4ef448b2610f18cd4252aaa3d0b6332f
+source_fingerprint: 9c5b5ddb00ee5bc852fcb16a8b265047bba2abfcdefc70decd4cec75d04e79c3
 schema_revision: 1
 validation_status: generated
 ---
@@ -277,6 +277,7 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:qualification:start`
 - `lite:qualification:start:key-bound`
 - `lite:qualification:start:key-bound:faults`
+- `lite:qualification:start:key-bound:ui-performance`
 - `lite:release:artifact-check`
 - `lite:release:dry-run`
 - `lite:runtime:resilience:check`
@@ -335,6 +336,10 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:test:storybook`
 - `lite:test:visual`
 - `lite:test:visual:update`
+- `lite:ui:perf:android:baseline`
+- `lite:ui:perf:android:baseline:analyze`
+- `lite:ui:perf:android:baseline:check`
+- `lite:ui:perf:qualified`
 - `lite:validation:check`
 - `lite:validation:evidence`
 - `lite:validation:record`

@@ -27,7 +27,7 @@ generator_version: 3
 | `GET /api/lite/apps/photoprism/storage-mappings` | apps | — | get_photoprism_storage_mappings_api_lite_apps_photoprism_storage_mappings_get | contract-derived |
 | `GET /api/lite/apps/photoprism/storage-preview` | apps | — | get_photoprism_storage_preview_api_lite_apps_photoprism_storage_preview_get | contract-derived |
 | `GET /api/lite/apps/{app_id}/action-history` | apps | — | get_lite_app_action_history_api_lite_apps__app_id__action_history_get | contract-derived |
-| `GET /api/lite/apps/{app_id}/actions` | apps | — | get_lite_app_actions_api_lite_apps__app_id__actions_get | contract-derived |
+| `GET /api/lite/apps/{app_id}/actions` | apps | LiteApp | get_lite_app_actions_api_lite_apps__app_id__actions_get | contract-derived |
 | `GET /api/lite/apps/{app_id}/backup` | apps | — | get_lite_app_backup_status_api_lite_apps__app_id__backup_get | contract-derived |
 | `GET /api/lite/apps/{app_id}/backups` | apps | — | list_lite_app_backups_api_lite_apps__app_id__backups_get | contract-derived |
 | `GET /api/lite/apps/{app_id}/backups/{backup_id}/receipt` | apps | — | get_lite_app_backup_receipt_api_lite_apps__app_id__backups__backup_id__receipt_get | contract-derived |
@@ -96,7 +96,7 @@ generator_version: 3
 | `GET /api/lite/recovery/apps/{app_id}` | recovery | — | get_lite_recovery_app_api_lite_recovery_apps__app_id__get | contract-derived |
 | `GET /api/lite/recovery/apps/{app_id}/backup-targets` | recovery | — | get_lite_recovery_app_backup_targets_api_lite_recovery_apps__app_id__backup_targets_get | contract-derived |
 | `GET /api/lite/recovery/backup-targets` | recovery | — | get_lite_backup_targets_api_lite_recovery_backup_targets_get | contract-derived |
-| `GET /api/lite/recovery/backups` | recovery | — | list_lite_backups_api_lite_recovery_backups_get | contract-derived |
+| `GET /api/lite/recovery/backups` | recovery | LiteRecovery | list_lite_backups_api_lite_recovery_backups_get | contract-derived |
 | `GET /api/lite/recovery/backups/{backup_id}` | recovery | — | get_lite_backup_api_lite_recovery_backups__backup_id__get | contract-derived |
 | `GET /api/lite/recovery/database` | recovery | LiteRecovery | get_lite_database_recovery_api_lite_recovery_database_get | contract-derived |
 | `GET /api/lite/recovery/database/backups` | recovery | — | list_lite_database_backups_api_lite_recovery_database_backups_get | contract-derived |
@@ -180,6 +180,7 @@ generator_version: 3
 | `POST /api/lite/harness/bootstrap/challenge` | harness | — | bootstrap_challenge_api_lite_harness_bootstrap_challenge_post | contract-derived |
 | `POST /api/lite/harness/bootstrap/complete` | harness | — | bootstrap_complete_api_lite_harness_bootstrap_complete_post | contract-derived |
 | `POST /api/lite/harness/bootstrap/grants` | harness | — | bootstrap_grant_api_lite_harness_bootstrap_grants_post | contract-derived |
+| `POST /api/lite/harness/browser/bridge` | harness | — | browser_bridge_api_lite_harness_browser_bridge_post | contract-derived |
 | `POST /api/lite/harness/challenge` | harness | — | challenge_api_lite_harness_challenge_post | contract-derived |
 | `POST /api/lite/harness/principal/revoke` | harness | — | revoke_authenticated_principal_api_lite_harness_principal_revoke_post | contract-derived |
 | `POST /api/lite/harness/principals` | harness | — | register_principal_api_lite_harness_principals_post | contract-derived |
@@ -240,11 +241,11 @@ generator_version: 3
 
 | UI | APIs |
 | --- | --- |
-| LiteApp | GET /api/lite/catalog |
+| LiteApp | GET /api/lite/apps/{app_id}/actions, GET /api/lite/catalog |
 | LiteDevices | GET /api/lite/devices/{device_id}/removal-assessment, GET /api/lite/fleet, GET /api/lite/fleet/devices/{node_id}/restart-agent/status, POST /api/lite/fleet/add-device, POST /api/lite/fleet/devices/{node_id}/restart-agent, POST /api/lite/fleet/remove-device |
 | LiteIdentity | GET /api/lite/identity/owner-claim/status, POST /api/lite/identity/login, POST /api/lite/identity/logout, POST /api/lite/identity/owner-claim/consume, POST /api/lite/identity/owner-claim/passkey/options, POST /api/lite/identity/owner-claim/passkey/verify, POST /api/lite/identity/passkeys/registration/options, POST /api/lite/identity/passkeys/registration/verify, POST /api/lite/identity/password, POST /api/lite/identity/recover, POST /api/lite/identity/recovery/regenerate, POST /api/lite/identity/sessions/revoke-others, POST /api/lite/identity/setup, POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify, PUT /api/lite/identity/passkeys/{credential_id} |
 | LiteIdentityEnterprise | POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify |
-| LiteRecovery | GET /api/lite/recovery/database, GET /api/lite/recovery/details, GET /api/lite/recovery/locations, GET /api/lite/recovery/summary, POST /api/lite/apps/{app_id}/backup, POST /api/lite/recovery/backup, POST /api/lite/recovery/backups/{backup_id}/verify, POST /api/lite/recovery/database/backup, POST /api/lite/recovery/database/backups/{backup_id}/preview, POST /api/lite/recovery/database/backups/{backup_id}/restore, POST /api/lite/recovery/database/backups/{backup_id}/verify, POST /api/lite/recovery/locations/discover, POST /api/lite/recovery/locations/forget, POST /api/lite/recovery/locations/select, POST /api/lite/recovery/restore, POST /api/lite/recovery/restore/preview |
+| LiteRecovery | GET /api/lite/recovery/backups, GET /api/lite/recovery/database, GET /api/lite/recovery/details, GET /api/lite/recovery/locations, GET /api/lite/recovery/summary, POST /api/lite/apps/{app_id}/backup, POST /api/lite/recovery/backup, POST /api/lite/recovery/backups/{backup_id}/verify, POST /api/lite/recovery/database/backup, POST /api/lite/recovery/database/backups/{backup_id}/preview, POST /api/lite/recovery/database/backups/{backup_id}/restore, POST /api/lite/recovery/database/backups/{backup_id}/verify, POST /api/lite/recovery/locations/discover, POST /api/lite/recovery/locations/forget, POST /api/lite/recovery/locations/select, POST /api/lite/recovery/restore, POST /api/lite/recovery/restore/preview |
 | LiteReleaseUpdateCard | GET /api/lite/release, POST /api/lite/release/apply, POST /api/lite/release/check |
 | LiteRevisionSyncBridge | GET /api/lite/revisions |
 | LiteRules | GET /api/lite/policy, POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify |

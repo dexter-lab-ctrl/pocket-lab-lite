@@ -28,6 +28,7 @@ import {
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 
 const REVISION_SYNC_META_KEY = 'lite_revision_sync_state_v1';
+const SECURITY_COMPLETION_REFRESH_DEFER_MS = 2000;
 
 function browserOnline() {
   return typeof navigator === 'undefined' || navigator.onLine !== false;
@@ -268,11 +269,12 @@ export default function LiteRevisionSyncBridge() {
     const completion = claimObservedSecurityCompletion(event, securityObservation, securityCompletionIds.current);
     if (!completion) return;
     setSecurityObservation(completion.observation);
-    [
+    const refresh = () => [
       liteQueryKeys.security(),
       liteQueryKeys.securityProfile(completion.profile, completion.profile === 'app' ? 'photoprism' : ''),
       liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20),
     ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
+    window.setTimeout(refresh, SECURITY_COMPLETION_REFRESH_DEFER_MS);
     triggerLiteHaptic(completion.haptic);
     pushToast(completion.toast);
   }), [activeSecurityHistoryLimit, pushToast, queryClient, securityObservation?.active, securityObservation?.runId, setSecurityObservation]);

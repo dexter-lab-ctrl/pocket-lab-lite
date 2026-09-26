@@ -766,12 +766,20 @@ def build_browser_projection(model: dict[str, Any]) -> dict[str, Any]:
         for ref in node["arch"] + node["boundaries"] + node["knowledge"]:
             external_terms.append(str(external.get(ref, {}).get("name") or ref))
         symbol_terms = [str(x.get("name") or "") for x in node["symbols"]]
-        tokens = " ".join([node["p"], PurePosixPath(node["p"]).name, node["purpose"], node["r"], node["l"] or "", node["o"], node["c"], *external_terms, *symbol_terms]).lower()
-        search[node["id"]] = re.sub(r"[^a-z0-9_./:@ -]+", " ", tokens)[:900]
+        # The basename is already present in the full path; omitting the duplicate token keeps the static browser index compact without changing search semantics.
+        tokens = " ".join([node["p"], node["purpose"], node["r"], node["l"] or "", node["o"], node["c"], *external_terms, *symbol_terms]).lower()
+        # Keep the static browser projection below its deliberately bounded
+        # payload budget as the tracked repository grows.  The path and the
+        # highest-value labels appear first; the bounded tail is only a
+        # compact search aid and is not canonical source evidence.
+        search[node["id"]] = re.sub(r"[^a-z0-9_./:@ -]+", " ", tokens)[:800]
     projection = {
         "schema_version": "1.0.0", "source_fingerprint": model["source_fingerprint"], "root_id": model["topology"]["root_id"], "live_runtime": False,
         "statistics": model["statistics"], "documentation_health": model["documentation_health"], "nodes": nodes, "relationships": rels,
-        "external": {k: {"kind": v.get("kind"), "name": v.get("name"), "source": v.get("source")} for k, v in external.items() if v.get("kind") != "symbol"},
+        # The browser inspector only needs labels for external relationship
+        # targets.  Keep kind/source metadata in the canonical model while
+        # omitting that duplicate metadata from the static browser payload.
+        "external": {k: {"name": v.get("name")} for k, v in external.items() if v.get("kind") != "symbol"},
         "indexes": {"by_path": model["indexes"]["by_path"], "children_by_parent": model["indexes"]["children_by_parent"], "relationships_from": model["indexes"]["relationships_from"], "relationships_to": model["indexes"]["relationships_to"], "search": search},
         "capabilities": model["capabilities"],
     }

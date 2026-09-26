@@ -155,6 +155,71 @@ def test_qualification_owner_is_ephemeral_and_projects_owner_authority(qualifica
     assert deps.is_qualification_owner_context(context) is False
 
 
+def test_synthetic_owner_identity_projection_is_read_only_and_creates_no_human_record(
+    qualification_runtime,
+    monkeypatch,
+):
+    from api_fastapi import deps
+    from api_fastapi.services import lite_enterprise_enrollment
+
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "qualification")
+    monkeypatch.setenv("POCKETLAB_HARNESS_ENABLED", "1")
+    monkeypatch.setenv("POCKETLAB_QUALIFICATION_OWNER", "1")
+    monkeypatch.setenv("POCKETLAB_TEST_AUTH_BYPASS", "0")
+    context = {
+        "actor": {
+            "identity_id": "codex-ui-performance-qualification",
+            "type": "qualification",
+            "display_name": "Synthetic qualification principal",
+        },
+        "session": {
+            "authenticated": True,
+            "auth_method": "harness_session",
+        },
+        "auth_method": "harness_session",
+        "authorization": {
+            "role": "Owner",
+            "owner_authority": True,
+            "membership_active": False,
+            "identity_class": "synthetic_machine",
+            "enterprise_enabled": False,
+        },
+        "harness": {
+            "enabled": True,
+            "profile": "qualification-owner",
+            "principal_class": "qualification",
+            "qualification_environment": True,
+            "purpose": "ui-performance-60fps",
+            "target_scope": "local_server_host_only",
+            "expires_at": "2026-09-25T12:00:00Z",
+        },
+    }
+
+    assert deps.is_qualification_owner_context(context) is True
+    projection = lite_enterprise_enrollment.unified_identity_projection(context)
+
+    assert projection["authenticated"] is True
+    assert projection["synthetic"] is True
+    assert projection["qualification_read_only"] is True
+    assert projection["owner"] is None
+    assert projection["person"] == {
+        "display_name": "Synthetic qualification principal",
+        "status": "qualification",
+        "role": "Owner",
+        "is_local_owner": False,
+        "synthetic": True,
+    }
+    assert projection["sessions"][0]["session_id"] == "qualification-browser-session"
+    assert projection["passkeys"] == []
+    assert "human_id" not in json.dumps(projection)
+
+    from api_fastapi.db.connection import connection
+
+    with connection() as conn:
+        assert conn.execute("SELECT COUNT(*) AS count FROM human_identities").fetchone()["count"] == 0
+        assert conn.execute("SELECT COUNT(*) AS count FROM enterprise_memberships").fetchone()["count"] == 0
+
+
 def test_qualification_source_sync_records_principal_without_human_identity(qualification_runtime, monkeypatch):
     _enable_qualification(monkeypatch)
 

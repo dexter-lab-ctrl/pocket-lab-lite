@@ -14,7 +14,7 @@
     "scenario": "devices-capability-pending",
     "schema_revision": 1,
     "source_commit": "uncommitted",
-    "source_fingerprint": "5ceaeb837c66474b394fd61e509076028550d008db621fa652900e24d59f12e1",
+    "source_fingerprint": "70f8c7f52aa65469d02746d5afdd60fd812b7ee473fe4ad4b052a20448d5356b",
     "validation_status": "generated"
   }
 }

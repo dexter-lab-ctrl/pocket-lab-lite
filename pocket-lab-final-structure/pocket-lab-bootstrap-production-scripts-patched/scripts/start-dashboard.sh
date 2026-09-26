@@ -464,6 +464,16 @@ validate_caddyfile() {
 write_caddy_site() {
   local site_label="$1"
   local tls_block="${2:-}"
+  local qualification_bridge_forward=""
+
+  # The browser bridge is a short-lived backend-signed proof, not a Caddy
+  # authority.  Forward it only on the fixed loopback listener used by the
+  # DEV-PC qualification tunnel; the public/Tailnet site never forwards it.
+  # FastAPI still validates the bridge binding, session, runtime, purpose,
+  # target scope, and expiry before building authorization context.
+  if [[ "$site_label" == ":${DASH_PORT}" ]]; then
+    qualification_bridge_forward='      header_up X-Pocket-Lab-Qualification-Bridge {http.request.header.X-Pocket-Lab-Qualification-Bridge}'
+  fi
 
   printf '%s {\n' "$site_label"
 
@@ -546,6 +556,7 @@ write_caddy_site() {
       header_up -X-Pocket-Lab-Harness-Purpose
       header_up -X-Pocket-Lab-Harness-Signature
       header_up -X-Pocket-Lab-Harness-Target-Scope
+${qualification_bridge_forward}
     }
   }
 
@@ -561,6 +572,7 @@ write_caddy_site() {
       header_up -X-Pocket-Lab-Harness-Purpose
       header_up -X-Pocket-Lab-Harness-Signature
       header_up -X-Pocket-Lab-Harness-Target-Scope
+${qualification_bridge_forward}
     }
   }
   handle /openapi.json {

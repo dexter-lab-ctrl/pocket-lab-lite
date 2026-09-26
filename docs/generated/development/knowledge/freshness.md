@@ -15,7 +15,7 @@ generator_version: 3
 | Signal | Value |
 | --- | --- |
 | adr_count | 6 |
-| ai_knowledge_export_freshness | 88b464765e46595bc330bc08b22e96b0c0566063be7144f0a247d8fb95dd59ab |
+| ai_knowledge_export_freshness | 96d700906f483953483600a8a29ec4497c347792296ed0eaa68b64571cc51d9c |
 | api_drift | owned-by-existing-openapi-gates |
 | architecture_source | architecture/metadata/pocket-lab-architecture.json |
 | current_repository_commit | uncommitted |
@@ -24,7 +24,7 @@ generator_version: 3
 | limitations_count | 18 |
 | openapi_source | contracts/generated/lite-openapi.json |
 | operational_degradation | home, recovery |
-| operational_health_source_fingerprint | f9ae43b8ad7ae6d7512804e875a22bc8bfe4a03442fcf6de745a7a837bf8e036 |
+| operational_health_source_fingerprint | 6bcfc91e99d2488daf7791374fdc9375f695ade53349666b51507132924b6b1b |
 | partial_parity_domains | identity, rules |
 | promoted_at | 2026-08-12T16:00:40Z |
 | promoted_release | lite-2026.08.12.2 |
@@ -34,6 +34,6 @@ generator_version: 3
 | runtime_evidence_sanitized | yes |
 | runtime_topology_freshness | 2026-08-12T16:00:40Z |
 | schema_drift | checked-by-knowledge-schema-validation |
-| source_fingerprint | 88b464765e46595bc330bc08b22e96b0c0566063be7144f0a247d8fb95dd59ab |
+| source_fingerprint | 96d700906f483953483600a8a29ec4497c347792296ed0eaa68b64571cc51d9c |
 | sqlite_source | contracts/generated/lite-sqlite-schema.json |
 | unresolved_incidents_count | 0 |

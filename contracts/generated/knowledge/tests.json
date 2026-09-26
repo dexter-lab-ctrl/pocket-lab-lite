@@ -173,6 +173,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_android_performance_baseline.py",
+      "name": "tests/backend/test_lite_android_performance_baseline.py",
+      "source_refs": [
+        "tests/backend/test_lite_android_performance_baseline.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_api.py",
       "name": "tests/backend/test_lite_api.py",
       "source_refs": [
@@ -1503,6 +1513,36 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_ui_candidate_server.py",
+      "name": "tests/backend/test_lite_ui_candidate_server.py",
+      "source_refs": [
+        "tests/backend/test_lite_ui_candidate_server.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_ui_performance_runner.py",
+      "name": "tests/backend/test_lite_ui_performance_runner.py",
+      "source_refs": [
+        "tests/backend/test_lite_ui_performance_runner.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_windows_adb_qualification_tools.py",
+      "name": "tests/backend/test_lite_windows_adb_qualification_tools.py",
+      "source_refs": [
+        "tests/backend/test_lite_windows_adb_qualification_tools.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_worker_recovery.py",
       "name": "tests/backend/test_lite_worker_recovery.py",
       "source_refs": [
@@ -2153,6 +2193,46 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-performance-contract.ts",
+      "name": "tests/e2e/lite-performance-contract.ts",
+      "source_refs": [
+        "tests/e2e/lite-performance-contract.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-performance-helpers.ts",
+      "name": "tests/e2e/lite-performance-helpers.ts",
+      "source_refs": [
+        "tests/e2e/lite-performance-helpers.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-performance-live.spec.ts",
+      "name": "tests/e2e/lite-performance-live.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-performance-live.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-performance.spec.ts",
+      "name": "tests/e2e/lite-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-phase9-qualification.spec.ts",
       "name": "tests/e2e/lite-phase9-qualification.spec.ts",
       "source_refs": [
@@ -2397,6 +2477,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "88b464765e46595bc330bc08b22e96b0c0566063be7144f0a247d8fb95dd59ab"
+    "source_fingerprint": "96d700906f483953483600a8a29ec4497c347792296ed0eaa68b64571cc51d9c"
   }
 }

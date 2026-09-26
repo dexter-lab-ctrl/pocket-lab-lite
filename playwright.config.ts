@@ -3,6 +3,11 @@ import { resolveLiteBrowser } from './scripts/dev/lite/resolve-browser.mjs';
 
 const mode = process.env.LITE_E2E_MODE || 'mocked';
 const live = mode === 'live';
+const browserBridge = String(process.env.POCKETLAB_HARNESS_BROWSER_BRIDGE || '').trim();
+const browserBridgeEnabled = process.env.LITE_QUALIFICATION_BROWSER_BRIDGE === '1';
+if (browserBridgeEnabled !== Boolean(browserBridge) || (browserBridge && !live)) {
+  throw new Error('Synthetic browser bridge requires LITE_E2E_MODE=live and an explicit LITE_QUALIFICATION_BROWSER_BRIDGE=1.');
+}
 const browser = resolveLiteBrowser();
 const launchOptions = browser.executable_path
   ? { executablePath: browser.executable_path }
@@ -20,6 +25,7 @@ const commonUse = {
     ? ('off' as const)
     : ('retain-on-failure' as const),
   serviceWorkers: live ? ('allow' as const) : ('allow' as const),
+  ...(browserBridge ? { extraHTTPHeaders: { 'X-Pocket-Lab-Qualification-Bridge': browserBridge } } : {}),
 };
 
 const mockedHar = (project: string) => ({
@@ -36,7 +42,10 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : 1,
+  // Frame and Long Animation Frame samples are renderer measurements. Keep
+  // the performance lane single-worker even on CI so another browser worker
+  // cannot contend for the same runner and create false target misses.
+  workers: process.env.VITE_POCKETLAB_PERF_TEST === '1' ? 1 : process.env.CI ? 2 : 1,
   outputDir: '.pocketlab-dev/test-results',
   globalSetup: './tests/e2e/global-setup.ts',
   reporter: [
@@ -56,22 +65,22 @@ export default defineConfig({
   projects: [
     {
       name: 'mocked-desktop',
-      testMatch: /lite-(mocked|accessibility(?:-states)?|content-stress|phase9-qualification|rules-activation-progress|visual(?:-(?:devices|states|overlays))?|parity)\.spec\.ts/,
+      testMatch: /lite-(mocked|accessibility(?:-states)?|content-stress|phase9-qualification|rules-activation-progress|visual(?:-(?:devices|states|overlays))?|parity|performance)\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], ...commonUse, recordHar: mockedHar('mocked-desktop') },
     },
     {
       name: 'mocked-mobile',
-      testMatch: /lite-(mocked|accessibility(?:-states)?|content-stress|phase9-qualification|rules-activation-progress|visual(?:-(?:devices|states|overlays))?|parity)\.spec\.ts/,
+      testMatch: /lite-(mocked|accessibility(?:-states)?|content-stress|phase9-qualification|rules-activation-progress|visual(?:-(?:devices|states|overlays))?|parity|performance)\.spec\.ts/,
       use: { ...devices['Pixel 7'], ...commonUse, recordHar: mockedHar('mocked-mobile') },
     },
     {
       name: 'live-desktop',
-      testMatch: /lite-live\.spec\.ts/,
+      testMatch: /lite-(?:live|performance-live)\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], ...commonUse },
     },
     {
       name: 'live-mobile',
-      testMatch: /lite-live\.spec\.ts/,
+      testMatch: /lite-(?:live|performance-live)\.spec\.ts/,
       use: { ...devices['Pixel 7'], ...commonUse },
     },
   ],

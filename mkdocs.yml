@@ -324,6 +324,7 @@ nav:
       - Lite Security model: security/lite-security-model.md
       - Backup & restore reference: recovery/backup-restore.md
       - Lite validation: validation/lite-validation.md
+      - UI performance qualification: validation/ui-performance-qualification.md
   - Documentation Platform:
       - Overview: generated/enterprise/documentation-platform/index.md
       - How to use these docs: generated/enterprise/documentation-platform/how-to-use.md

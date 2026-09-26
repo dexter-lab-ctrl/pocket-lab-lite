@@ -140,6 +140,49 @@ tasks:
         --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}"
         --bootstrap-profile security-assurance-runner
 
+  lite:qualification:start:key-bound:ui-performance:
+    desc: Explicitly start qualification with the operator-approved synthetic qualification-owner UI-performance bootstrap; destructive authority remains off
+    requires:
+      vars: [PRINCIPAL_ID, PUBLIC_KEY_FILE]
+    cmds:
+      - >-
+        POCKETLAB_QUALIFICATION_OWNER=1
+        python3 scripts/dev/lite/task_runtime.py shell -- scripts/dev/lite/start-qualification.sh
+        --bootstrap-principal-id "{{.PRINCIPAL_ID}}"
+        --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}"
+        --bootstrap-profile qualification-owner
+
+  lite:ui:perf:qualified:
+    desc: Run renewable synthetic qualification-owner UI performance with bounded between-interaction session/bridge rotation
+    requires:
+      vars: [PRINCIPAL_ID, KEY_FILE]
+    vars:
+      MODE: '{{default "live" .MODE}}'
+      TTL_SECONDS: '{{default "180" .TTL_SECONDS}}'
+    cmds:
+      - >-
+        LITE_BASE_URL="{{if eq .MODE "live"}}http://127.0.0.1:18444{{else}}{{.LITE_BASE_URL}}{{end}}"
+        {{.PYTHON}} scripts/dev/lite/run-ui-performance-qualified.py
+        --mode "{{.MODE}}"
+        --principal-id "{{.PRINCIPAL_ID}}"
+        --key-file "{{.KEY_FILE}}"
+        --ttl-seconds "{{.TTL_SECONDS}}"
+
+  lite:ui:perf:android:baseline:
+    desc: Run repeated exact-SHA physical Android qualification with contemporaneous platform controls and normalized attribution
+    cmds:
+      - npm run test:perf:android-baseline
+
+  lite:ui:perf:android:baseline:analyze:
+    desc: Re-analyze existing repeated Android baseline evidence without touching the Server Phone
+    cmds:
+      - npm run analyze:perf:android-baseline
+
+  lite:ui:perf:android:baseline:check:
+    desc: Fail when normalized repeated Android evidence shows material app incremental cost
+    cmds:
+      - npm run check:perf:android-baseline
+
   lite:qualification:start:key-bound:faults:
     desc: Explicitly start key-bound qualification with fixed non-destructive service-fault controls; Server Phone DEV state is scrubbed first
     requires:

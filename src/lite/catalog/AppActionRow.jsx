@@ -1,6 +1,7 @@
 import React from 'react';
 import { StatusBadge, LiteButton } from '../LiteUi.jsx';
 import { LiteElevationSurface } from '../LiteMotion.jsx';
+import { isLitePerformanceMode } from '../liteNavigationRuntime.js';
 
 function AppActionRow({
   actionId,
@@ -23,14 +24,8 @@ function AppActionRow({
   resultSlot,
 }) {
   const isDisabled = Boolean(disabled);
-  return (
-    <LiteElevationSurface
-      className={className}
-      data-action-id={actionId}
-      disabled={isDisabled}
-      active={active}
-      settle
-    >
+  const content = (
+    <>
       <div className="lite-app-action-row-main">
         <span className="lite-catalog-action-tile-icon lite-app-action-row-icon">
           {icon}
@@ -57,6 +52,20 @@ function AppActionRow({
       {disabledReason}
       {progressSlot}
       {resultSlot}
+    </>
+  );
+  if (isLitePerformanceMode()) {
+    return <div className={className} data-action-id={actionId}>{content}</div>;
+  }
+  return (
+    <LiteElevationSurface
+      className={className}
+      data-action-id={actionId}
+      disabled={isDisabled}
+      active={active}
+      settle
+    >
+      {content}
     </LiteElevationSurface>
   );
 }

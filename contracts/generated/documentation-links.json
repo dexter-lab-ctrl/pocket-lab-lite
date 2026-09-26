@@ -709,6 +709,10 @@
         "title": "POST /api/lite/harness/bootstrap/grants",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-bootstrap-grants"
       },
+      "endpoint:POST:/api/lite/harness/browser/bridge": {
+        "title": "POST /api/lite/harness/browser/bridge",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-browser-bridge"
+      },
       "endpoint:POST:/api/lite/harness/challenge": {
         "title": "POST /api/lite/harness/challenge",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-challenge"
@@ -3190,7 +3194,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "07befe95c76314059d24cd43625495d279a3fae4aa768a16bcaab38c2963bfb8",
+    "aggregate_fingerprint": "11d75702a9f1b47676b85c5360968a866656c2a7ed286d72dfcf8d8ffc8b2d68",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3200,7 +3204,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "683093d477f48a1e54959ed51de4498003d3854e51b55b957ec75ad84d6bc929",
+      "contracts/generated/lite-openapi.json": "8d70d2565517e6782d0afafcaf1e9d6090b6fe9c73cf9eb2feeaa0892ea3737b",
       "contracts/metadata/documentation-platform.json": "c71f6ce0bb40f489bb1f65cf513e6e10572e9e752883827a6588763bfd864313",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",

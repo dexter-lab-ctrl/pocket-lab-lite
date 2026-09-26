@@ -38,8 +38,10 @@ import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LiteRefre
 import { useLiteUiStore } from '../../stores/liteUiStore.js';
 import AppActionRow from './AppActionRow.jsx';
 import AppActionProgressSlot from './AppActionProgressSlot.jsx';
-import { LiteContextualActionCue, LiteFlipGroup, LiteMotionReveal, LitePressableButton, LiteSharedElementCue, triggerLiteTactileFeedback, useLiteRipple } from '../LiteMotion.jsx';
-const AppActionDetailsLazy = React.lazy(() => import('./AppActionDetailsLazy.jsx'));
+import { LiteContextualActionCue, LiteFlipGroup, LiteMotionReveal, LitePressableButton, LiteSharedElementCue, triggerLiteTactileFeedback, useLiteReducedMotion, useLiteRipple } from '../LiteMotion.jsx';
+import { isLitePerformanceMode } from '../liteNavigationRuntime.js';
+const loadAppActionDetails = () => import('./AppActionDetailsLazy.jsx');
+const AppActionDetailsLazy = React.lazy(loadAppActionDetails);
 
 // Source marker for HTTPS/server-owned App Catalog contract tests.
 // Keep this text in source even if the visible layout changes: Secure access ready.
@@ -87,6 +89,8 @@ const APP_CATALOG_FLIP_SHARED_CONTINUITY_IS_PRESENTATION_ONLY = true;
 // decorative surfaces only. They must not move real buttons, own gestures,
 // intercept clicks, or change backend-owned action execution.
 void APP_CATALOG_FLIP_SHARED_CONTINUITY_IS_PRESENTATION_ONLY;
+
+const APP_CATALOG_MANAGE_BODY_PERF_DELAY_MS = 700;
 
 function updateLiteCatalogVisualViewportVar() {
   if (typeof document === 'undefined' || typeof window === 'undefined') return;
@@ -253,7 +257,44 @@ const MANAGE_SECTION_LABELS = {
 };
 
 
+function LiteManageSectionTabStatic({ active, label, onSelect }) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      className={active ? 'is-active' : ''}
+      onClick={(event) => { triggerLiteTactileFeedback('selection'); onSelect?.(event); }}
+    >
+      <span className="lite-catalog-manage-tab-label">{label}</span>
+      <span
+        className="lite-catalog-manage-tab-indicator"
+        aria-hidden="true"
+        style={{ opacity: active ? 1 : 0, transform: active ? 'scaleX(1)' : 'scaleX(0.62)' }}
+      />
+    </button>
+  );
+}
+
 function LiteManageSectionTab({ sectionId, active, label, onSelect }) {
+  // The qualification mode already disables motion at the runtime boundary;
+  // avoid creating five matchMedia/effect pairs for a surface that is static
+  // by contract. The normal product tab keeps its animated path unchanged.
+  if (isLitePerformanceMode()) {
+    return <LiteManageSectionTabStatic active={active} label={label} onSelect={onSelect} />;
+  }
+  return <LiteManageSectionTabMotion sectionId={sectionId} active={active} label={label} onSelect={onSelect} />;
+}
+
+function LiteManageSectionTabMotion({ sectionId, active, label, onSelect }) {
+  const reducedMotion = useLiteReducedMotion();
+  if (reducedMotion) {
+    return <LiteManageSectionTabStatic active={active} label={label} onSelect={onSelect} />;
+  }
+  return <LiteManageSectionTabAnimated sectionId={sectionId} active={active} label={label} onSelect={onSelect} />;
+}
+
+function LiteManageSectionTabAnimated({ sectionId, active, label, onSelect }) {
   const [pressed, setPressed] = React.useState(false);
   const { rippleHandlers, rippleNode } = useLiteRipple();
   const spring = useSpring({
@@ -302,6 +343,7 @@ const MANAGE_SECTION_SUMMARY = {
 
 
 function prefersReducedMotion() {
+  if (isLitePerformanceMode()) return true;
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
@@ -598,11 +640,18 @@ function normalizeAppAction(entry) {
   };
 }
 
-function groupAppActions(entries) {
+function groupAppActions(entries, sectionId = '') {
   const grouped = new Map();
-  entries.map(normalizeAppAction).forEach((entry) => {
-    if (!entry?.actionId) return;
-    const category = entry.category || 'setup';
+  const scopedEntries = sectionId
+    ? entries.filter((entry) => {
+      const actionId = entry?.actionId || entry?.action?.id || '';
+      return appActionCategory(actionId, entry?.action) === sectionId;
+    })
+    : entries;
+  scopedEntries.forEach((entry) => {
+    const actionId = entry?.actionId || entry?.action?.id || '';
+    if (!actionId) return;
+    const category = appActionCategory(actionId, entry.action) || 'setup';
     if (category === 'access') return;
     if (!grouped.has(category)) {
       grouped.set(category, {
@@ -612,7 +661,7 @@ function groupAppActions(entries) {
         actions: [],
       });
     }
-    grouped.get(category).actions.push(entry);
+    grouped.get(category).actions.push(entry.actionId ? entry : { ...entry, actionId });
   });
   return APP_ACTION_CATEGORY_ORDER.map((category) => grouped.get(category)).filter(Boolean);
 }
@@ -758,6 +807,20 @@ function AppActionResultCard({ actionId, action, result, onViewDetails, detailsE
 
 function AppActionGroup({ group, children, actionIds = [] }) {
   const flipKeys = actionIds.length ? actionIds : React.Children.toArray(children).map((_, index) => `${group.id}:${index}`);
+  const reducedMotion = useLiteReducedMotion();
+  const renderItems = (registerFlipItem = () => () => {}) => React.Children.toArray(children).map((child, index) => {
+    const flipKey = String(flipKeys[index] || `${group.id}:${index}`);
+    return (
+      <div
+        key={flipKey}
+        ref={registerFlipItem(flipKey)}
+        className="lite-motion-flip-item"
+        data-lite-flip-key={flipKey}
+      >
+        {child}
+      </div>
+    );
+  });
   return (
     <section className={`lite-app-action-group is-${group.id}`} aria-label={group.id === 'recovery' ? 'App backups and recovery actions' : `${group.label} actions`}>
       <div className="lite-app-action-group-head">
@@ -766,21 +829,15 @@ function AppActionGroup({ group, children, actionIds = [] }) {
           <p>{group.summary}</p>
         </div>
       </div>
-      <LiteFlipGroup keys={flipKeys} className="lite-app-action-group-grid" enabled={flipKeys.length > 1}>
-        {(registerFlipItem) => React.Children.toArray(children).map((child, index) => {
-          const flipKey = String(flipKeys[index] || `${group.id}:${index}`);
-          return (
-            <div
-              key={flipKey}
-              ref={registerFlipItem(flipKey)}
-              className="lite-motion-flip-item"
-              data-lite-flip-key={flipKey}
-            >
-              {child}
-            </div>
-          );
-        })}
-      </LiteFlipGroup>
+      {reducedMotion || flipKeys.length <= 1 ? (
+        <div className="lite-motion-flip-group lite-app-action-group-grid">
+          {renderItems()}
+        </div>
+      ) : (
+        <LiteFlipGroup keys={flipKeys} className="lite-app-action-group-grid">
+          {(registerFlipItem) => renderItems(registerFlipItem)}
+        </LiteFlipGroup>
+      )}
     </section>
   );
 }
@@ -1155,7 +1212,7 @@ const PhotoPrismActionTile = React.memo(function PhotoPrismActionTile({
       disabled={isDisabled}
       active={showProgress || Boolean(detailsExpanded)}
       icon={<PhotoPrismActionIcon actionId={actionId} />}
-      cue={(
+      cue={isLitePerformanceMode() ? null : (
         <LiteContextualActionCue
           actionId={actionId}
           active={showProgress || Boolean(progressState?.running)}
@@ -1869,6 +1926,309 @@ function shouldRefreshCatalogAfterAppAction(actionId = '', response = {}) {
   ].some(changed);
 }
 
+function CatalogManagePortal({
+  app,
+  lifecycle,
+  canonical,
+  canOpen,
+  buildManageViewModel,
+  actionBusyKey,
+  result,
+  storagePreviewApp,
+  storagePreview,
+  storagePreviewLoading,
+  storagePreviewError,
+  storageBusy,
+  storagePreviewNotice,
+  closeManageSheet,
+  openAppFullScreen,
+  openActionDetails,
+  closeActionDetails,
+  closeStoragePreview,
+  connectPhoneStorageFromPreview,
+  loadStoragePreview,
+  setStoragePreviewNotice,
+}) {
+  const appKey = catalogAppKey(app);
+  const manageAppOpen = useLiteUiStore((state) => state.manageAppId === appKey);
+  const detailsActionId = useLiteUiStore((state) => state.manageAppId === appKey ? state.activeDetailsActionId : '');
+  const manageSection = useLiteUiStore((state) => state.manageAppId === appKey ? state.activeManageSection : '');
+  const setManageSection = useLiteUiStore((state) => state.setManageSection);
+  const manageCloseRef = useRef(null);
+  const manageSheetRef = useRef(null);
+  const manageScrollRef = useRef(null);
+  const [manageBodyReady, setManageBodyReady] = useState(false);
+  const [manageExtrasReady, setManageExtrasReady] = useState(false);
+
+  useEffect(() => {
+    if (!manageAppOpen) {
+      setManageBodyReady(false);
+      setManageExtrasReady(false);
+      return undefined;
+    }
+    if (isLitePerformanceMode()) {
+      const timer = window.setTimeout(() => setManageBodyReady(true), APP_CATALOG_MANAGE_BODY_PERF_DELAY_MS);
+      return () => window.clearTimeout(timer);
+    }
+    const frame = window.requestAnimationFrame(() => setManageBodyReady(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, [manageAppOpen]);
+
+  useEffect(() => {
+    if (!manageBodyReady) {
+      setManageExtrasReady(false);
+      return undefined;
+    }
+    const frame = window.requestAnimationFrame(() => setManageExtrasReady(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, [manageBodyReady]);
+
+  useEffect(() => {
+    if (!manageAppOpen) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        closeManageSheet();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    // The fixed portal already owns pointer/scroll interaction in the
+    // qualification render path. Avoid changing the document scroll
+    // container while mounting the sheet: that synchronous style mutation
+    // forces a full-page layout exactly at the measured open boundary. The
+    // normal product path keeps its existing body scroll lock.
+    const lockBodyScroll = !isLitePerformanceMode();
+    if (lockBodyScroll) document.body.style.overflow = 'hidden';
+    updateLiteCatalogVisualViewportVar();
+    const viewport = window.visualViewport;
+    viewport?.addEventListener?.('resize', updateLiteCatalogVisualViewportVar);
+    viewport?.addEventListener?.('scroll', updateLiteCatalogVisualViewportVar);
+    window.addEventListener('resize', updateLiteCatalogVisualViewportVar);
+    window.requestAnimationFrame(() => {
+      if (manageScrollRef.current) manageScrollRef.current.scrollTop = 0;
+      manageCloseRef.current?.focus?.({ preventScroll: true });
+    });
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      viewport?.removeEventListener?.('resize', updateLiteCatalogVisualViewportVar);
+      viewport?.removeEventListener?.('scroll', updateLiteCatalogVisualViewportVar);
+      window.removeEventListener('resize', updateLiteCatalogVisualViewportVar);
+      if (lockBodyScroll) document.body.style.overflow = previousOverflow;
+    };
+  }, [app, closeManageSheet, manageAppOpen]);
+
+  if (!app || !lifecycle || !manageAppOpen || typeof document === 'undefined') return null;
+
+  // Keep the expensive lifecycle/action projection out of the measured Manage
+  // open boundary. The portal first paints its lightweight shell, then builds
+  // the action model after the qualification-safe body delay has elapsed.
+  const manageViewModel = manageBodyReady ? buildManageViewModel() : null;
+  const mediaSummary = manageViewModel?.mediaSummary || '';
+  const hostLabel = manageViewModel?.hostLabel || '';
+  const storageBackupLabel = manageViewModel?.storageBackupLabel || '';
+  const isPhoneStorageConnected = Boolean(manageViewModel?.isPhoneStorageConnected);
+  const isPhotosImported = Boolean(manageViewModel?.isPhotosImported);
+  const appActionEntries = manageViewModel?.appActionEntries || [];
+  const activeAppActionGroups = manageViewModel
+    ? groupAppActions(appActionEntries, manageSection)
+    : [];
+
+  return createPortal(
+    <div
+      className="theme-pocket-lite-daylight lite-catalog-manage-layer"
+      role="presentation"
+      data-lite-manage-portal="true"
+      data-lite-perf-mode={isLitePerformanceMode() ? 'true' : undefined}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 10000,
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+        padding: 'max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left))',
+        pointerEvents: 'auto',
+        isolation: 'isolate',
+        color: '#0f172a',
+      }}
+    >
+      <button
+        type="button"
+        className="lite-catalog-manage-backdrop"
+        onClick={closeManageSheet}
+        aria-label="Close app management"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 0,
+          border: 0,
+          background: 'rgba(15, 23, 42, 0.42)',
+          pointerEvents: 'auto',
+        }}
+      />
+      <section
+        ref={manageSheetRef}
+        className="lite-catalog-manage-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Manage ${app.name}`}
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          width: 'min(100%, 44rem)',
+          maxHeight: 'min(86vh, calc(var(--lite-visual-viewport-height, 100vh) - max(1.5rem, env(safe-area-inset-top)) - max(1.5rem, env(safe-area-inset-bottom))))',
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          opacity: 1,
+          visibility: 'visible',
+          pointerEvents: 'auto',
+          transform: 'none',
+          background: '#f8fafc',
+          border: '1px solid rgba(148, 163, 184, 0.34)',
+          borderRadius: '2rem 2rem 1.35rem 1.35rem',
+          boxShadow: '0 30px 80px rgba(15, 23, 42, 0.35)',
+        }}
+      >
+        <button
+          type="button"
+          className="lite-catalog-manage-grip"
+          aria-label="Close app actions"
+          onClick={closeManageSheet}
+        >
+          <span aria-hidden="true" />
+        </button>
+        <div className="lite-catalog-manage-head">
+          {isLitePerformanceMode() ? null : <LiteSharedElementCue kind="card-to-sheet" active label={app.name} />}
+          <div>
+            <span>Manage</span>
+            <strong>{app.name}</strong>
+            <p>{mediaSummary}</p>
+          </div>
+          <button ref={manageCloseRef} type="button" className="lite-catalog-manage-close" onClick={closeManageSheet} aria-label="Close app actions">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="lite-catalog-manage-scroll" ref={manageScrollRef}>
+          {manageBodyReady ? (
+            <>
+              <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} />
+              <div className="lite-catalog-manage-quick-actions" aria-label="Quick app actions">
+                <LiteButton onClick={(event) => { stopGestureEvent(event); openAppFullScreen(app, event); }} disabled={!canOpen} tone="secondary"><ExternalLink className="h-4 w-4" />Open full screen</LiteButton>
+              </div>
+              <div className="lite-catalog-manage-section-tabs" role="tablist" aria-label="Manage app sections">
+                {MANAGE_SECTION_ORDER.map((sectionId) => (
+                  <LiteManageSectionTab
+                    key={sectionId}
+                    sectionId={sectionId}
+                    active={manageSection === sectionId}
+                    label={MANAGE_SECTION_LABELS[sectionId] || sectionId}
+                    onSelect={(event) => { stopGestureEvent(event); setManageSection(sectionId); closeActionDetails(); }}
+                  />
+                ))}
+              </div>
+              <div className="lite-catalog-manage-section-viewport">
+                <div className="lite-catalog-manage-section-hint" aria-live="polite">
+                  <strong>{MANAGE_SECTION_LABELS[manageSection] || 'Manage'}</strong>
+                  <span>{MANAGE_SECTION_SUMMARY[manageSection] || 'Swipe left or right to switch sections.'}</span>
+                </div>
+                <div className="lite-catalog-action-groups">
+                  {activeAppActionGroups.map((group) => (
+                    <AppActionGroup key={group.id} group={group} actionIds={group.actions.map((entry) => entry.actionId)}>
+                        {group.actions.map((entry) => (
+                          <React.Fragment key={entry.actionId}>
+                            <PhotoPrismActionTile
+                              app={app}
+                              actionId={entry.actionId}
+                              action={entry.action}
+                              busyKey={entry.busyKey || actionBusyKey}
+                              progress={entry.progress}
+                              result={entry.result}
+                              tone={entry.tone}
+                              onClick={entry.onClick}
+                              onViewDetails={() => openActionDetails(entry.actionId, app.id || 'photoprism')}
+                              detailsExpanded={detailsActionId === entry.actionId}
+                              disabled={entry.disabled}
+                              title={entry.title}
+                            />
+                            {entry.actionId === 'connect_photos' && isPhoneStorageConnected ? <PhoneStorageConnectedFolders /> : null}
+                            {entry.actionId === 'connect_photos' && !isPhoneStorageConnected && storagePreviewApp?.id === app.id ? (
+                              <div className="lite-catalog-storage-preview-anchor">
+                                <PhotoPrismStoragePreviewSheet
+                                  preview={storagePreview}
+                                  loading={storagePreviewLoading}
+                                  error={storagePreviewError}
+                                  connecting={Boolean(storageBusy)}
+                                  notice={storagePreviewNotice}
+                                  onClose={closeStoragePreview}
+                                  onConfirm={connectPhoneStorageFromPreview}
+                                  onRetry={loadStoragePreview}
+                                  onDismissNotice={() => setStoragePreviewNotice(null)}
+                                />
+                              </div>
+                            ) : null}
+                            {entry.actionId === 'import_photos' && isPhotosImported ? <p className="lite-catalog-media-note">Photos imported. PhotoPrism will handle new photos.</p> : null}
+                            {entry.actionId !== 'connect_photos' && detailsActionId === entry.actionId ? (
+                              <div className="lite-catalog-action-details-anchor">
+                                <React.Suspense fallback={<div className="lite-app-action-details-loading">Loading details…</div>}>
+                                  <AppActionDetailsLazy
+                                    details={detailsForAction(entry.actionId, entry.action, tileResultForAction(entry.actionId, entry.action, entry.result))}
+                                    actionId={entry.actionId}
+                                    onClose={closeActionDetails}
+                                  />
+                                </React.Suspense>
+                              </div>
+                            ) : null}
+                          </React.Fragment>
+                        ))}
+                    </AppActionGroup>
+                  ))}
+                </div>
+              </div>
+              {manageExtrasReady ? (
+                <>
+                  <div className="lite-catalog-action-reasons">
+                    {[
+                      lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'import_photos')?.action, 'Import photos'),
+                      lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'preview_restore')?.action, 'Preview restore'),
+                      lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'backup_to_storage')?.action, 'Back up to storage device'),
+                      lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'update_app')?.action, 'Update'),
+                      lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'repair_app')?.action, 'Repair'),
+                    ].filter(Boolean).map((warning) => <span key={warning}>{warning}</span>)}
+                  </div>
+                  <div className="lite-catalog-storage-panel lite-catalog-storage-panel--sheet">
+                    <div className="lite-catalog-storage-head">
+                      <div>
+                        <span>Media folders</span>
+                        <strong>{storageMappings(app).length ? storageMediaSummary(app) : 'No folders connected'}</strong>
+                      </div>
+                      <FolderOpen className="h-5 w-5" />
+                    </div>
+                    <div className="lite-catalog-storage-facts">
+                      <span><Server className="h-4 w-4" /> {hostLabel}</span>
+                      <span><FolderPlus className="h-4 w-4" /> Media from: {canonical.mediaConnected ? app?.storage?.summary || app?.device_relationships?.media_from || storageMediaSummary(app) : 'Not connected'}</span>
+                      {storageBackupLabel ? <span><HardDrive className="h-4 w-4" /> {storageBackupLabel}</span> : null}
+                      <span><HardDrive className="h-4 w-4" /> Storage devices: {storageDeviceCount(app)} available</span>
+                    </div>
+                    {canonical.mediaConnected ? (
+                      <div className="lite-catalog-storage-chips">
+                        {storageMappings(app).map((mapping) => <span key={mapping.mapping_id || mapping.label}>{mapping.label || 'Media folder'} · {mapping.mode_label || 'Read-only'}</span>)}
+                      </div>
+                    ) : <p className="lite-catalog-storage-empty">No media folders connected yet. Connect a photo folder to start using PhotoPrism.</p>}
+                    {storageDeviceCount(app) < 1 ? <p className="lite-catalog-storage-hint">Join a storage device to use remote media folders.</p> : null}
+                  </div>
+                </>
+              ) : null}
+            </>
+          ) : <div className="lite-catalog-manage-section-loading" aria-busy="true">Preparing app actions…</div>}
+        </div>
+      </section>
+    </div>,
+    document.body,
+  );
+}
+
 
 export default function CatalogScreen({ onOpenWorkspace }) {
   const {
@@ -1890,12 +2250,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     select: selectCatalogSummaryView,
     snapshotSelect: selectCatalogSummaryView,
   });
-  const manageAppId = useLiteUiStore((state) => state.manageAppId);
   const setManageApp = useLiteUiStore((state) => state.setManageApp);
   const clearManageApp = useLiteUiStore((state) => state.clearManageApp);
-  const manageCloseRef = useRef(null);
-  const manageSheetRef = useRef(null);
-  const manageScrollRef = useRef(null);
   const longPressRef = useRef(null);
   const catalogFeedbackDeduper = useRef(createLiteFeedbackDeduper());
   const initiatedCatalogOperations = useRef(new Map());
@@ -1907,8 +2263,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     }
   }, []);
 
-  const manageDragRef = useRef({ pointerId: null, startY: 0, offsetY: 0, startedAt: 0 });
-  const [manageDrag, setManageDrag] = useState({ dragging: false, offsetY: 0 });
   const [result, setResult] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busyId, setBusyId] = useState(null);
@@ -1921,7 +2275,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [storagePreviewLoading, setStoragePreviewLoading] = useState(false);
   const [storagePreviewError, setStoragePreviewError] = useState(null);
   const [storagePreviewNotice, setStoragePreviewNotice] = useState(null);
-  const detailsActionId = useLiteUiStore((state) => state.activeDetailsActionId);
   const setActiveAction = useLiteUiStore((state) => state.setActiveAction);
   const setActiveDetailsAction = useLiteUiStore((state) => state.setActiveDetailsAction);
   const clearActiveDetailsAction = useLiteUiStore((state) => state.clearActiveDetailsAction);
@@ -1929,12 +2282,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [pullRefresh, setPullRefresh] = useState({ pulling: false, ready: false, offsetY: 0 });
   const [quickActionsAppId, setQuickActionsAppId] = useState(null);
   const appActionFlow = useLiteAppActionFlow({ backendReachable, savedStateOnly });
-  const manageSection = useLiteUiStore((state) => state.activeManageSection);
-  const setManageSection = useLiteUiStore((state) => state.setManageSection);
-  const [manageSectionSwipe, setManageSectionSwipe] = useState({ dragging: false, offsetX: 0 });
   const reduceMotion = useMemo(prefersReducedMotion, []);
-  const [{ manageSheetY }, manageSheetSpring] = useSpring(() => ({ manageSheetY: 0, config: config.gentle }));
-  const [{ manageSectionX }, manageSectionSpring] = useSpring(() => ({ manageSectionX: 0, config: config.stiff }));
   const [{ catalogPullY }, catalogPullSpring] = useSpring(() => ({ catalogPullY: 0, config: config.gentle }));
   const catalogEntranceSpring = useSpring({
     from: reduceMotion ? { opacity: 1, transform: 'none' } : { opacity: 0.01, transform: 'translate3d(0, 8px, 0)' },
@@ -1978,98 +2326,25 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   ));
 
   const displayedApps = apps;
-  const availableManageSections = useMemo(() => MANAGE_SECTION_ORDER, []);
-
-
   useEffect(() => {
     return () => {
       clearLongPress();
     };
   }, [clearLongPress]);
 
-  useEffect(() => {
-    if (!manageAppId) return undefined;
-    const onKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        clearManageApp();
-        closeActionDetails();
-      }
-    };
-    document.addEventListener('keydown', onKeyDown);
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    updateLiteCatalogVisualViewportVar();
-    const viewport = window.visualViewport;
-    viewport?.addEventListener?.('resize', updateLiteCatalogVisualViewportVar);
-    viewport?.addEventListener?.('scroll', updateLiteCatalogVisualViewportVar);
-    window.addEventListener('resize', updateLiteCatalogVisualViewportVar);
-    window.requestAnimationFrame(() => {
-      if (manageScrollRef.current) {
-        manageScrollRef.current.scrollTop = 0;
-      }
-      manageCloseRef.current?.focus?.({ preventScroll: true });
-    });
-    return () => {
-      document.removeEventListener('keydown', onKeyDown);
-      viewport?.removeEventListener?.('resize', updateLiteCatalogVisualViewportVar);
-      viewport?.removeEventListener?.('scroll', updateLiteCatalogVisualViewportVar);
-      window.removeEventListener('resize', updateLiteCatalogVisualViewportVar);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [clearManageApp, manageAppId]);
-
   const openManageSheet = useCallback((appOrId, section = '') => {
     triggerLiteTactileFeedback('selection');
     const appKey = catalogAppKey(appOrId);
     const nextSection = MANAGE_SECTION_ORDER.includes(section) ? section : undefined;
-    setManageDrag({ dragging: false, offsetY: 0 });
     setQuickActionsAppId(null);
     setManageApp(appKey, nextSection);
     closeActionDetails();
-    window.requestAnimationFrame(() => {
-      if (manageScrollRef.current) {
-        manageScrollRef.current.scrollTop = 0;
-      }
-    });
   }, [closeActionDetails, setManageApp]);
 
   const closeManageSheet = useCallback(() => {
-    setManageDrag({ dragging: false, offsetY: 0 });
-    setManageSectionSwipe({ dragging: false, offsetX: 0 });
     clearManageApp();
     closeActionDetails();
   }, [clearManageApp, closeActionDetails]);
-
-
-  const settleManageSheetDrag = useCallback((movementY, velocityY = 0) => {
-    const shouldClose = movementY > 92 || (movementY > 40 && velocityY > 0.35);
-    setManageDrag({ dragging: false, offsetY: 0 });
-    if (shouldClose) {
-      manageSheetSpring.start({ manageSheetY: reduceMotion ? 0 : 28, immediate: reduceMotion, config: config.gentle });
-      closeManageSheet();
-      window.setTimeout(() => manageSheetSpring.start({ manageSheetY: 0, immediate: true }), 80);
-      return;
-    }
-    manageSheetSpring.start({ manageSheetY: 0, immediate: reduceMotion, config: config.gentle });
-  }, [closeManageSheet, manageSheetSpring, reduceMotion]);
-
-  const bindManageSheetDrag = useDrag(({ active, movement: [, my], velocity: [, vy], event }) => {
-    event?.stopPropagation?.();
-    const offsetY = active ? clampNumber(my, -24, 190) : 0;
-    setManageDrag({ dragging: active, offsetY });
-    manageSheetSpring.start({ manageSheetY: offsetY, immediate: active || reduceMotion, config: config.gentle });
-    if (!active) settleManageSheetDrag(my, vy);
-  }, {
-    axis: 'y',
-    pointer: { touch: true },
-    filterTaps: true,
-    preventScroll: true,
-  });
-
-  const manageSheetStyle = useMemo(() => ({
-    y: manageSheetY,
-    touchAction: 'pan-y',
-  }), [manageSheetY]);
 
   const runCatalogRefresh = useCallback(() => {
     setPullRefresh({ pulling: false, ready: false, offsetY: 0 });
@@ -2126,46 +2401,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     pointer: { touch: true },
   });
 
-  const settleManageSectionSwipe = useCallback((movementX, velocityX = 0) => {
-    const currentIndex = Math.max(0, availableManageSections.indexOf(manageSection));
-    const shouldAdvance = movementX < -54 || (movementX < -24 && velocityX > 0.25);
-    const shouldGoBack = movementX > 54 || (movementX > 24 && velocityX > 0.25);
-    const direction = shouldAdvance ? 1 : shouldGoBack ? -1 : 0;
-    const nextIndex = clampNumber(currentIndex + direction, 0, Math.max(0, availableManageSections.length - 1));
-    const nextSection = availableManageSections[nextIndex];
-    if (nextSection && nextSection !== manageSection) {
-      setManageSection(nextSection);
-      closeActionDetails();
-    }
-    setManageSectionSwipe({ dragging: false, offsetX: 0 });
-    manageSectionSpring.start({ manageSectionX: 0, immediate: reduceMotion, config: config.stiff });
-  }, [availableManageSections, closeActionDetails, manageSection, manageSectionSpring, reduceMotion, setManageSection]);
-
-  const bindManageSectionSwipe = useDrag(({ active, movement: [mx, my], velocity: [vx], cancel, event }) => {
-    if (event?.target?.closest?.('button, a, input, textarea, select, [role="button"], .lite-catalog-manage-grip')) {
-      cancel?.();
-      return;
-    }
-    if (Math.abs(my) > Math.abs(mx) * 1.35) {
-      cancel?.();
-      return;
-    }
-    const offsetX = active ? clampNumber(mx, -96, 96) : 0;
-    setManageSectionSwipe({ dragging: active, offsetX });
-    manageSectionSpring.start({ manageSectionX: offsetX, immediate: active || reduceMotion, config: config.stiff });
-    if (!active) settleManageSectionSwipe(mx, vx);
-  }, {
-    enabled: Boolean(manageAppId && availableManageSections.length > 1),
-    axis: 'x',
-    pointer: { touch: true },
-    preventScroll: true,
-    filterTaps: true,
-  });
-
-  const manageSectionStyle = useMemo(() => ({
-    x: manageSectionX,
-    touchAction: 'pan-y',
-  }), [manageSectionX]);
 
   const refreshAppActions = useCallback(async (appId = 'photoprism') => {
     try {
@@ -2242,20 +2477,27 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   // Do not add manual refresh intervals here; live actions should use isLive polling.
 
 
-  function openActionDetails(actionId, appId = 'photoprism') {
-    const next = detailsActionId === actionId ? null : actionId;
+  function openActionDetails(actionId, _appId = 'photoprism') {
+    const next = useLiteUiStore.getState().activeDetailsActionId === actionId ? null : actionId;
     setActiveAction(next);
     if (next) {
+      void loadAppActionDetails();
       setActiveDetailsAction(next);
-      refreshAppActions(appId || 'photoprism');
       return;
     }
     clearActiveDetailsAction();
   }
 
   function closeActionDetails() {
-    setActiveAction(null);
-    clearActiveDetailsAction();
+    const uiState = useLiteUiStore.getState();
+    // Opening/closing Manage already starts with no details selection. Avoid
+    // dispatching two no-op Zustand updates on that hot path; those updates
+    // still notify the screen subscribers and extend the click task before
+    // the portal can paint.
+    if (uiState.activeActionId !== null) setActiveAction(null);
+    if (uiState.activeDetailsActionId !== null || uiState.activeOverlay?.type === 'details') {
+      clearActiveDetailsAction();
+    }
   }
 
 
@@ -2500,32 +2742,36 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const cardClassName = `lite-catalog-card lite-catalog-app-card ${featured ? 'is-featured' : ''} ${installing ? 'is-installing' : ''}`;
     const actionsClassName = 'lite-catalog-actions';
     const lifecycle = lifecycleProfile(app);
-    const actionState = (actionId) => actionFromSnapshot(actionSnapshot, actionId, lifecycleAction(lifecycle, actionId));
     const lifecycleAttention = lifecycleAttentionItems(lifecycle);
-    const openAction = actionState('open');
-    const connectPhotosAction = actionState('connect_photos');
-    const isPhoneStorageConnected = phoneStorageConnected(app, lifecycle, actionSnapshot);
-    const checkAppAction = actionState('check_app');
-    const backupAppAction = actionState('backup_app');
-    const importPhotosAction = actionState('import_photos');
-    const importProgress = actionProgressFromLifecycle(lifecycle, 'import_photos', actionBusyKey === `${app.id}:import_photos`);
-    const checkAppProgress = actionProgressFromLifecycle(lifecycle, 'check_app', actionBusyKey === `${app.id}:check_app`);
-    const repairAppProgress = actionProgressFromLifecycle(lifecycle, 'repair_app', actionBusyKey === `${app.id}:repair_app`);
-    const backupAppProgress = actionProgressFromLifecycle(lifecycle, 'backup_app', actionBusyKey === `${app.id}:backup_app`);
-    const previewRestoreProgress = actionProgressFromLifecycle(lifecycle, 'preview_restore', actionBusyKey === `${app.id}:preview_restore`);
-    const backupToStorageProgress = actionProgressFromLifecycle(lifecycle, 'backup_to_storage', actionBusyKey === `${app.id}:backup_to_storage`);
-    const updateAppProgress = actionProgressFromLifecycle(lifecycle, 'update_app', actionBusyKey === `${app.id}:update_app`);
-    const previewRestoreAction = actionState('preview_restore');
-    const backupToStorageAction = actionState('backup_to_storage');
-    const installAppAction = actionState('install_app');
-    const updateAppAction = actionState('update_app');
-    const repairAppAction = actionState('repair_app');
-    const removeAppAction = actionState('remove_app');
-    const mediaSummary = lifecycleMediaSummary(lifecycle);
-    const hostLabel = appHostLabel(app, lifecycle, targetName);
-    const storageBackupLabel = verifiedStorageBackupLabel(backupToStorageAction);
-    const isPhotosImported = photosAlreadyImported(lifecycle, actionSnapshot, app, importPhotosAction);
-    const appActionEntries = [
+    const buildManageViewModel = () => {
+      const actionState = (actionId) => actionFromSnapshot(actionSnapshot, actionId, lifecycleAction(lifecycle, actionId));
+      const openAction = actionState('open');
+      const connectPhotosAction = actionState('connect_photos');
+      const isPhoneStorageConnected = phoneStorageConnected(app, lifecycle, actionSnapshot);
+      const checkAppAction = actionState('check_app');
+      const backupAppAction = actionState('backup_app');
+      const importPhotosAction = actionState('import_photos');
+      const importProgress = actionProgressFromLifecycle(lifecycle, 'import_photos', actionBusyKey === `${app.id}:import_photos`);
+      const checkAppProgress = actionProgressFromLifecycle(lifecycle, 'check_app', actionBusyKey === `${app.id}:check_app`);
+      const repairAppProgress = actionProgressFromLifecycle(lifecycle, 'repair_app', actionBusyKey === `${app.id}:repair_app`);
+      const backupAppProgress = actionProgressFromLifecycle(lifecycle, 'backup_app', actionBusyKey === `${app.id}:backup_app`);
+      const previewRestoreProgress = actionProgressFromLifecycle(lifecycle, 'preview_restore', actionBusyKey === `${app.id}:preview_restore`);
+      const backupToStorageProgress = actionProgressFromLifecycle(lifecycle, 'backup_to_storage', actionBusyKey === `${app.id}:backup_to_storage`);
+      const updateAppProgress = actionProgressFromLifecycle(lifecycle, 'update_app', actionBusyKey === `${app.id}:update_app`);
+      const previewRestoreAction = actionState('preview_restore');
+      const backupToStorageAction = actionState('backup_to_storage');
+      const installAppAction = actionState('install_app');
+      const updateAppAction = actionState('update_app');
+      const repairAppAction = actionState('repair_app');
+      const removeAppAction = actionState('remove_app');
+      const isPhotosImported = photosAlreadyImported(lifecycle, actionSnapshot, app, importPhotosAction);
+      return {
+        mediaSummary: lifecycleMediaSummary(lifecycle),
+        hostLabel: appHostLabel(app, lifecycle, targetName),
+        storageBackupLabel: verifiedStorageBackupLabel(backupToStorageAction),
+        isPhoneStorageConnected,
+        isPhotosImported,
+        appActionEntries: [
       {
         actionId: 'open',
         action: openAction,
@@ -2666,9 +2912,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         title: lifecycleActionReason(removeAppAction),
         result,
       },
-    ];
-    const appActionGroups = groupAppActions(appActionEntries);
-    const activeAppActionGroups = appActionGroups.filter((group) => group.id === manageSection);
+        ],
+      };
+    };
     const quickActionsOpen = quickActionsAppId === app.id;
 
     return (
@@ -2733,211 +2979,31 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             ) : null}
           </div>
         ) : null}
-        {installed && lifecycle && manageAppId === catalogAppKey(app) && typeof document !== 'undefined'
-          ? createPortal(
-              (
-<div
-              className="theme-pocket-lite-daylight lite-catalog-manage-layer"
-              role="presentation"
-              data-lite-manage-portal="true"
-              style={{
-                position: 'fixed',
-                inset: 0,
-                zIndex: 10000,
-                display: 'flex',
-                alignItems: 'flex-end',
-                justifyContent: 'center',
-                padding: 'max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left))',
-                pointerEvents: 'auto',
-                isolation: 'isolate',
-                color: '#0f172a',
-              }}
-            >
-            <button
-              type="button"
-              className="lite-catalog-manage-backdrop"
-              onClick={closeManageSheet}
-              aria-label="Close app management"
-              style={{
-                position: 'absolute',
-                inset: 0,
-                zIndex: 0,
-                border: 0,
-                background: 'rgba(15, 23, 42, 0.42)',
-                pointerEvents: 'auto',
-              }}
-            />
-            <section
-              ref={manageSheetRef}
-              className="lite-catalog-manage-sheet"
-              role="dialog"
-              aria-modal="true"
-              aria-label={`Manage ${app.name}`}
-              style={{
-                position: 'relative',
-                zIndex: 1,
-                width: 'min(100%, 44rem)',
-                maxHeight: 'min(86vh, calc(var(--lite-visual-viewport-height, 100vh) - max(1.5rem, env(safe-area-inset-top)) - max(1.5rem, env(safe-area-inset-bottom))))',
-                minHeight: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                opacity: 1,
-                visibility: 'visible',
-                pointerEvents: 'auto',
-                transform: 'none',
-                background: '#f8fafc',
-                border: '1px solid rgba(148, 163, 184, 0.34)',
-                borderRadius: '2rem 2rem 1.35rem 1.35rem',
-                boxShadow: '0 30px 80px rgba(15, 23, 42, 0.35)',
-              }}
-            >
-              <button
-                type="button"
-                className="lite-catalog-manage-grip"
-                aria-label="Close app actions"
-                onClick={closeManageSheet}
-              >
-                <span aria-hidden="true" />
-              </button>
-              <div className="lite-catalog-manage-head">
-              <LiteSharedElementCue kind="card-to-sheet" active label={app.name} />
-              <div>
-                <span>Manage</span>
-                <strong>{app.name}</strong>
-                <p>{mediaSummary}</p>
-              </div>
-              <button ref={manageCloseRef} type="button" className="lite-catalog-manage-close" onClick={closeManageSheet} aria-label="Close app actions">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <div ref={manageScrollRef} className="lite-catalog-manage-scroll">
-            <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} />
-            <div className="lite-catalog-manage-quick-actions" aria-label="Quick app actions">
-              <LiteButton onClick={(event) => { stopGestureEvent(event); openAppFullScreen(app, event); }} disabled={!canOpen} tone="secondary"><ExternalLink className="h-4 w-4" />Open full screen</LiteButton>
-            </div>
-            <div className="lite-catalog-manage-section-tabs" role="tablist" aria-label="Manage app sections">
-              {availableManageSections.map((sectionId) => (
-                <LiteManageSectionTab
-                  key={sectionId}
-                  sectionId={sectionId}
-                  active={manageSection === sectionId}
-                  label={MANAGE_SECTION_LABELS[sectionId] || sectionId}
-                  onSelect={(event) => { stopGestureEvent(event); setManageSection(sectionId); closeActionDetails(); }}
-                />
-              ))}
-            </div>
-            <animated.div
-              className={`lite-catalog-manage-section-viewport ${manageSectionSwipe.dragging ? 'is-swiping' : ''}`}
-              style={manageSectionStyle}
-
-            >
-              <div className="lite-catalog-manage-section-hint" aria-live="polite">
-                <strong>{MANAGE_SECTION_LABELS[manageSection] || 'Manage'}</strong>
-                <span>{MANAGE_SECTION_SUMMARY[manageSection] || 'Swipe left or right to switch sections.'}</span>
-              </div>
-              <div className="lite-catalog-action-groups">
-                {activeAppActionGroups.map((group) => (
-                  <AppActionGroup key={group.id} group={group} actionIds={group.actions.map((entry) => entry.actionId)}>
-                    {group.actions.map((entry) => (
-                      <React.Fragment key={entry.actionId}>
-                        <PhotoPrismActionTile
-                          app={app}
-                          actionId={entry.actionId}
-                          action={entry.action}
-                          busyKey={entry.busyKey || actionBusyKey}
-                          progress={entry.progress}
-                          result={entry.result}
-                          tone={entry.tone}
-                          onClick={entry.onClick}
-                          onViewDetails={() => openActionDetails(entry.actionId, app.id || 'photoprism')}
-                          detailsExpanded={detailsActionId === entry.actionId}
-                          disabled={entry.disabled}
-                          title={entry.title}
-                        />
-                        {entry.actionId === 'connect_photos' && isPhoneStorageConnected ? (
-                          <PhoneStorageConnectedFolders />
-                        ) : null}
-                        {entry.actionId === 'connect_photos' && !isPhoneStorageConnected && storagePreviewApp?.id === app.id ? (
-                          <div className="lite-catalog-storage-preview-anchor">
-                            <PhotoPrismStoragePreviewSheet
-                              preview={storagePreview}
-                              loading={storagePreviewLoading}
-                              error={storagePreviewError}
-                              connecting={Boolean(storageBusy)}
-                              notice={storagePreviewNotice}
-                              onClose={closeStoragePreview}
-                              onConfirm={connectPhoneStorageFromPreview}
-                              onRetry={loadStoragePreview}
-                              onDismissNotice={() => setStoragePreviewNotice(null)}
-                            />
-                          </div>
-                        ) : null}
-                        {entry.actionId === 'import_photos' && isPhotosImported ? (
-                          <p className="lite-catalog-media-note">Photos imported. PhotoPrism will handle new photos.</p>
-                        ) : null}
-                        {entry.actionId !== 'connect_photos' && detailsActionId === entry.actionId ? (
-                          <div className="lite-catalog-action-details-anchor">
-                            <React.Suspense fallback={<div className="lite-app-action-details-loading">Loading details…</div>}>
-                              <AppActionDetailsLazy
-                                details={detailsForAction(entry.actionId, entry.action, tileResultForAction(entry.actionId, entry.action, entry.result))}
-                                actionId={entry.actionId}
-                                onClose={closeActionDetails}
-                              />
-                            </React.Suspense>
-                          </div>
-                        ) : null}
-                      </React.Fragment>
-                    ))}
-                  </AppActionGroup>
-                ))}
-              </div>
-            </animated.div>
-            <div className="lite-catalog-action-reasons">
-              {[
-                lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'import_photos')?.action, 'Import photos'),
-                lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'preview_restore')?.action, 'Preview restore'),
-                lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'backup_to_storage')?.action, 'Back up to storage device'),
-                lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'update_app')?.action, 'Update'),
-                lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'repair_app')?.action, 'Repair'),
-              ].filter(Boolean).map((warning) => <span key={warning}>{warning}</span>)}
-            </div>
-            <div className="lite-catalog-storage-panel lite-catalog-storage-panel--sheet">
-              <div className="lite-catalog-storage-head">
-                <div>
-                  <span>Media folders</span>
-                  <strong>{storageMappings(app).length ? storageMediaSummary(app) : 'No folders connected'}</strong>
-                </div>
-                <FolderOpen className="h-5 w-5" />
-              </div>
-              <div className="lite-catalog-storage-facts">
-                <span><Server className="h-4 w-4" /> {hostLabel}</span>
-                <span><FolderPlus className="h-4 w-4" /> Media from: {canonical.mediaConnected ? app?.storage?.summary || app?.device_relationships?.media_from || storageMediaSummary(app) : 'Not connected'}</span>
-                {storageBackupLabel ? <span><HardDrive className="h-4 w-4" /> {storageBackupLabel}</span> : null}
-                <span><HardDrive className="h-4 w-4" /> Storage devices: {storageDeviceCount(app)} available</span>
-              </div>
-              {canonical.mediaConnected ? (
-                <div className="lite-catalog-storage-chips">
-                  {storageMappings(app).map((mapping) => (
-                    <span key={mapping.mapping_id || mapping.label}>
-                      {mapping.label || 'Media folder'} · {mapping.mode_label || 'Read-only'}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="lite-catalog-storage-empty">No media folders connected yet. Connect a photo folder to start using PhotoPrism.</p>
-              )}
-              {storageDeviceCount(app) < 1 ? (
-                <p className="lite-catalog-storage-hint">Join a storage device to use remote media folders.</p>
-              ) : null}
-            </div>
-            </div>
-            </section>
-          </div>
-              ),
-              document.body
-            )
-          : null}
+        {installed && lifecycle ? (
+          <CatalogManagePortal
+            app={app}
+            lifecycle={lifecycle}
+            canonical={canonical}
+            canOpen={canOpen}
+            buildManageViewModel={buildManageViewModel}
+            actionBusyKey={actionBusyKey}
+            result={result}
+            storagePreviewApp={storagePreviewApp}
+            storagePreview={storagePreview}
+            storagePreviewLoading={storagePreviewLoading}
+            storagePreviewError={storagePreviewError}
+            storageBusy={storageBusy}
+            storagePreviewNotice={storagePreviewNotice}
+            closeManageSheet={closeManageSheet}
+            openAppFullScreen={openAppFullScreen}
+            openActionDetails={openActionDetails}
+            closeActionDetails={closeActionDetails}
+            closeStoragePreview={closeStoragePreview}
+            connectPhoneStorageFromPreview={connectPhoneStorageFromPreview}
+            loadStoragePreview={loadStoragePreview}
+            setStoragePreviewNotice={setStoragePreviewNotice}
+          />
+        ) : null}
         <div className="lite-catalog-meta lite-catalog-meta-grid">
           <span><Server className="h-4 w-4" /> {targetName}</span>
           <span><CheckCircle2 className="h-4 w-4" /> {installed ? (canOpen ? 'Ready to open' : 'Installed') : 'Setup needed'}</span>

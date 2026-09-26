@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 118b1f3d11ad9a1db5a586f17bddb7b8190f472910f4cdce108bc035cc05ed55
+source_fingerprint: 2f6c8073ac4a457dd8443811feca3eaa66429e1396b1be70be79c5c6d573937c
 schema_revision: 1
 validation_status: generated
 ---
@@ -2079,6 +2079,22 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | 201 | Successful Response | application/json: `object` |
 | 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-harness-browser-bridge"></a>
+## POST `/api/lite/harness/browser/bridge`
+
+- Operation ID: `browser_bridge_api_lite_harness_browser_bridge_post`
+- Summary: Browser Bridge
+- Deprecated: no
+- Tags: `lite-harness`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-harness-capabilities"></a>

@@ -42,6 +42,11 @@ LOCAL_FORWARD_MAP = {
 }
 CADDY_LOCAL_PORT = 18443
 CADDY_REMOTE_PORT = 443
+CADDY_HTTP_LOCAL_PORT = 18444
+CADDY_HTTP_REMOTE_PORT = 8443
+UI_TUNNEL_READINESS_TIMEOUT_SECONDS = 30.0
+UI_TUNNEL_READY_STREAK = 3
+UI_TUNNEL_PROBE_INTERVAL_SECONDS = 0.25
 API_HEALTH = "http://127.0.0.1:18080/health"
 VERSION = "1.0.0"
 
@@ -126,7 +131,12 @@ def _ssh_config() -> dict[str, str]:
         "stricthostkeychecking": "yes",
         "identitiesonly": "yes",
     }
-    if any(config.get(k, "").casefold() != v for k, v in required.items()):
+    strict_host_key = config.get("stricthostkeychecking", "").casefold()
+    if any(
+        config.get(key, "").casefold() != value
+        for key, value in required.items()
+        if key != "stricthostkeychecking"
+    ) or strict_host_key not in {"yes", "true"}:
         raise RuntimeTunnelError("runtime_ssh_alias_policy_unsafe")
     known_hosts = config.get("userknownhostsfile", "")
     if not known_hosts or known_hosts.casefold() in {"/dev/null", "none"}:
@@ -234,16 +244,18 @@ def discover_runtime_facts() -> tuple[dict[str, Any], dict[str, str]]:
     return _parse_runtime_facts(result.stdout, config, caddy_sni=_approved_sni()), config
 
 
-def build_tunnel_argv(facts: Mapping[str, Any], config: Mapping[str, str]) -> list[str]:
+def build_tunnel_argv(
+    facts: Mapping[str, Any],
+    config: Mapping[str, str],
+    *,
+    include_caddy_http: bool = False,
+) -> list[str]:
     server_ip = _safe_server_ipv4(str(facts.get("server_phone_ip") or ""))
     tailscale_ip = _tailnet_ipv4(str(facts.get("tailscale_ipv4") or ""))
     server_port = int(facts.get("ssh_server_port") or 0)
     remote_user = str(facts.get("ssh_user") or "")
-    host_key_alias = str(config.get("hostname") or "")
     if not 1 <= server_port <= 65535 or not USER_RE.fullmatch(remote_user):
         raise RuntimeTunnelError("runtime_tunnel_facts_invalid")
-    if not _safe_ssh_host(host_key_alias):
-        raise RuntimeTunnelError("runtime_ssh_hostkey_alias_invalid")
     argv = [
         str(SSH), "-N",
         "-o", "BatchMode=yes",
@@ -259,13 +271,19 @@ def build_tunnel_argv(facts: Mapping[str, Any], config: Mapping[str, str]) -> li
         "-o", "PreferredAuthentications=publickey",
         "-o", "PermitLocalCommand=no",
         "-o", f"Hostname={server_ip}",
-        "-o", f"HostKeyAlias={host_key_alias}",
         "-p", str(server_port),
         "-l", remote_user,
     ]
     for local_port, (remote_host, remote_port) in LOCAL_FORWARD_MAP.items():
         argv.extend(["-L", f"127.0.0.1:{local_port}:{remote_host}:{remote_port}"])
     argv.extend(["-L", f"127.0.0.1:{CADDY_LOCAL_PORT}:{tailscale_ip}:{CADDY_REMOTE_PORT}"])
+    if include_caddy_http:
+        # The qualification candidate uses the Server Phone's loopback Caddy
+        # listener.  This preserves the normal Caddy -> FastAPI route and
+        # avoids trusting an expired public certificate on an otherwise
+        # loopback-only SSH transport.  The listener remains unreachable from
+        # the LAN because both ends of this forward are explicit loopbacks.
+        argv.extend(["-L", f"127.0.0.1:{CADDY_HTTP_LOCAL_PORT}:127.0.0.1:{CADDY_HTTP_REMOTE_PORT}"])
     argv.append(SSH_ALIAS)
     return argv
 
@@ -298,7 +316,26 @@ def _tls_ready(sni: str) -> bool:
         return False
 
 
-def _write_state(facts: Mapping[str, Any], *, created_by_harness: bool, pid: int | None) -> None:
+def _caddy_http_ready() -> bool:
+    request = urllib.request.Request(
+        f"http://127.0.0.1:{CADDY_HTTP_LOCAL_PORT}/health",
+        headers={"Accept": "application/json", "Cache-Control": "no-cache"},
+    )
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    try:
+        with opener.open(request, timeout=2.0) as response:
+            return int(response.status) == 200
+    except (OSError, urllib.error.URLError, urllib.error.HTTPError):
+        return False
+
+
+def _write_state(
+    facts: Mapping[str, Any],
+    *,
+    created_by_harness: bool,
+    pid: int | None,
+    local_forward_ports: list[int] | None = None,
+) -> None:
     STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
     os.chmod(STATE_FILE.parent, 0o700)
     payload = {
@@ -306,7 +343,7 @@ def _write_state(facts: Mapping[str, Any], *, created_by_harness: bool, pid: int
         "created_by_harness": bool(created_by_harness),
         "ssh_pid": int(pid) if pid else None,
         "active": True,
-        "local_forward_ports": [*LOCAL_FORWARD_MAP.keys(), CADDY_LOCAL_PORT],
+        "local_forward_ports": local_forward_ports or [*LOCAL_FORWARD_MAP.keys(), CADDY_LOCAL_PORT],
     }
     encoded = (json.dumps(payload, ensure_ascii=True, sort_keys=True, indent=2) + "\n").encode("utf-8")
     temporary = STATE_FILE.with_name(f".{STATE_FILE.name}.{os.getpid()}.tmp")
@@ -369,6 +406,81 @@ def fixed_runtime_tunnel() -> Iterator[dict[str, Any]]:
                 raise RuntimeTunnelError("runtime_tunnel_readiness_failed")
         state = {**facts, "created_by_harness": created}
         _write_state(state, created_by_harness=created, pid=process.pid if process else None)
+        yield state
+    finally:
+        try:
+            STATE_FILE.unlink()
+        except FileNotFoundError:
+            pass
+        if process is not None and process.poll() is None:
+            process.terminate()
+            try:
+                process.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=2)
+
+
+@contextlib.contextmanager
+def ui_performance_runtime_tunnel() -> Iterator[dict[str, Any]]:
+    """Provide the bounded Caddy/FastAPI transport for UI qualification.
+
+    The browser-facing candidate server must use the same-origin Caddy route,
+    while the harness bootstrap itself remains on direct loopback FastAPI.
+    This lane therefore adds one fixed SSH forward to the phone's loopback
+    Caddy HTTP listener.  It never accepts a caller-selected host, port, or
+    destination and refuses occupied ports rather than adopting an unknown
+    process.
+    """
+    facts, config = discover_runtime_facts()
+    ports = [*LOCAL_FORWARD_MAP.keys(), CADDY_LOCAL_PORT, CADDY_HTTP_LOCAL_PORT]
+    occupied = [port for port in ports if _port_open(port)]
+    if occupied:
+        raise RuntimeTunnelError("runtime_ui_tunnel_port_collision")
+
+    process: subprocess.Popen[bytes] | None = None
+    try:
+        process = subprocess.Popen(
+            build_tunnel_argv(facts, config, include_caddy_http=True),
+            shell=False,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+            env={"PATH": "/usr/bin:/bin", "HOME": str(Path.home()), "LC_ALL": "C", "LANG": "C"},
+        )
+        deadline = time.monotonic() + UI_TUNNEL_READINESS_TIMEOUT_SECONDS
+        ready_streak = 0
+        while time.monotonic() < deadline:
+            if process.poll() is not None:
+                raise RuntimeTunnelError("runtime_ui_tunnel_exited_early")
+            ready = (
+                all(_port_open(port) for port in ports)
+                and _api_ready()
+                and _caddy_http_ready()
+            )
+            if ready:
+                ready_streak += 1
+                if ready_streak >= UI_TUNNEL_READY_STREAK:
+                    break
+            else:
+                ready_streak = 0
+            time.sleep(UI_TUNNEL_PROBE_INTERVAL_SECONDS)
+        else:
+            raise RuntimeTunnelError("runtime_ui_tunnel_readiness_failed")
+
+        state = {
+            **facts,
+            "created_by_harness": True,
+            "transport": "ssh_loopback_caddy_http",
+            "caddy_http_local_port": CADDY_HTTP_LOCAL_PORT,
+        }
+        _write_state(
+            state,
+            created_by_harness=True,
+            pid=process.pid,
+            local_forward_ports=ports,
+        )
         yield state
     finally:
         try:

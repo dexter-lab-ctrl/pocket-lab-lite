@@ -3,9 +3,17 @@ import HomeScreen from './LiteHome.jsx';
 import { DEFAULT_LITE_SCREEN_ID, NAV_ITEMS, normalizeLiteScreenId } from './liteNavigationConfig.js';
 import { createLiteScreenPreloader } from './liteNavigationRuntime.js';
 
+function memoLiteScreen(Component, label) {
+  const Memoized = React.memo(Component);
+  Memoized.displayName = `MemoLite${label}Screen`;
+  return Memoized;
+}
+
+const MemoHomeScreen = memoLiteScreen(HomeScreen, 'Home');
+
 const SCREEN_DEFINITIONS = Object.freeze({
   home: Object.freeze({
-    component: HomeScreen,
+    component: MemoHomeScreen,
     intrinsicSize: '44rem',
     idlePreload: 'catalog',
   }),
@@ -86,7 +94,8 @@ export function getLiteScreenComponent(screenId, retryGeneration = 0) {
 
   const cacheKey = `${entry.id}:${Math.max(0, Number(retryGeneration) || 0)}`;
   if (!lazyComponents.has(cacheKey)) {
-    lazyComponents.set(cacheKey, React.lazy(() => loadScreenModule(entry.id)));
+    const LazyScreen = React.lazy(() => loadScreenModule(entry.id));
+    lazyComponents.set(cacheKey, memoLiteScreen(LazyScreen, entry.id));
   }
   return lazyComponents.get(cacheKey);
 }

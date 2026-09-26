@@ -106,9 +106,13 @@ jobs:
           npx playwright install --with-deps chromium
           VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-mocked.spec.ts tests/e2e/lite-parity.spec.ts tests/e2e/lite-accessibility.spec.ts --project=mocked-desktop --project=mocked-mobile
           task lite:test:docs
+      - name: Qualify UI performance contract
+        env:
+          LITE_PERF_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: npm run test:perf:qualification
       - name: Redaction and evidence
         run: |
-          .venv/bin/python scripts/dev/lite/redaction_check.py --paths contracts/generated src/test/fixtures/generated docs/generated .pocketlab-dev/validation
+          .venv/bin/python scripts/dev/lite/redaction_check.py --paths contracts/generated src/test/fixtures/generated docs/generated .pocketlab-dev/validation .pocketlab-dev/performance
           .venv/bin/python scripts/dev/lite/validation_evidence.py allure --validation-dir .pocketlab-dev/validation --output allure-results
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
@@ -117,6 +121,7 @@ jobs:
           path: |
             .pocketlab-dev/validation
             .pocketlab-dev/playwright-report
+            .pocketlab-dev/performance
             allure-results
             site
           if-no-files-found: warn

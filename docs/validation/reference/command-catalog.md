@@ -6,7 +6,7 @@ tool manager. A placeholder such as `<run-id>` means a value returned by the
 same server-owned workflow; it does not permit an arbitrary target or command.
 
 The current CLI command inventory is: `keygen`, `principal-create`,
-`principal-revoke`, `session-start`, `bootstrap`, `session-status`,
+`principal-revoke`, `session-start`, `bootstrap`, `browser-bridge`, `session-status`,
 `session-stop`, `status`, `profiles`, `verify-off`, `check`, `preflight`,
 `policy-sync`, `fault`, `run`, `scenario`, `qualify`, `report`, and `compare`.
 
@@ -224,6 +224,29 @@ Status: **SUPPORTED**
   qualification and run `task lite:harness:verify-off` afterward.
 - Related playbook: [getting started](../security-assurance/02-getting-started.md).
 - Implementation source: `scripts/dev/lite/start-qualification.sh`
+
+### SA-AUTH-008
+Status: **SUPPORTED**
+
+- Purpose: project a short-lived synthetic qualification-owner session into a
+  constrained browser run for read-only UI performance qualification.
+- Environment: `[DEV PC]` runner through the bounded Server Phone loopback
+  tunnel; the backend must already be in explicit qualification mode.
+- Authority/prerequisites: key-bound `qualification-owner` bootstrap, purpose
+  `ui-performance-60fps`, target `local_server_host_only`, destructive and
+  test-auth gates off; the bridge is created only after normal backend
+  authorization.
+- Mutating: yes, ephemeral bridge/session state only. Risk: SAFE_ACTIVE. Safe
+  for machine automation: only through the fixed runner.
+- Exact command: `python3 scripts/dev/lite/harness.py browser-bridge --session-token <process-only-session-token>`.
+- Expected output/exit: sanitized bridge metadata; the reusable bridge value is
+  held only by the runner process and is never written to browser storage,
+  URLs, logs, or evidence.
+- Evidence/failure/cleanup: browser requests remain same-origin and pass
+  through Caddy/FastAPI; revoke the authenticated principal while the owned
+  tunnel is still active, then verify the harness returns to default-off.
+- Related playbook: [harness maintenance](../qualification-maintenance-harness.md).
+- Implementation source: `scripts/dev/lite/harness.py`
 
 ## Preflight and suites
 

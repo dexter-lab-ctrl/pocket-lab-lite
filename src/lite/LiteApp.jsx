@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import {
@@ -13,7 +13,7 @@ import {
 import { useOnlineStatus } from '../hooks/useOnlineStatus.js';
 import { useLiteResource, useLiteStatus } from '../hooks/useLiteStatus.js';
 import { liteApi } from '../lib/liteApi.js';
-import { liteQueryClient } from '../lib/liteQueryClient.js';
+import { liteQueryClient, liteQueryKeys } from '../lib/liteQueryClient.js';
 import {
   SECURITY_PREFETCH_SETTLE_MS,
   prefetchSecuritySummary,
@@ -37,6 +37,8 @@ import LiteToastHost from './LiteToastHost.jsx';
 import LiteServiceWorkerUpdateNotice from './LiteServiceWorkerUpdateNotice.jsx';
 import LiteNativeInstallSurface from './LiteNativeInstallSurface.jsx';
 import LiteRevisionSyncBridge from './LiteRevisionSyncBridge.jsx';
+import { preloadDeviceCard } from './devices/devicesPreload.js';
+import { LitePerformanceProfiler, useLitePerformanceRuntime } from '../performance/LitePerformanceRuntime.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 import {
   GlassCard,
@@ -48,6 +50,10 @@ import {
   backendLabel,
   resolveSafeAppOpenPath,
 } from './LiteUi.jsx';
+
+const LITE_CATALOG_PREFETCH_SETTLE_MS = 0;
+const LITE_CATALOG_PREFETCH_STALE_TIME_MS = 60_000;
+const LITE_CATALOG_PREFETCH_GC_TIME_MS = 5 * 60_000;
 
 function currentWorkspaceFromLocation() {
   if (typeof window === 'undefined') return null;
@@ -421,6 +427,7 @@ class LiteErrorBoundary extends React.Component {
 }
 
 function LiteAppShell() {
+  useLitePerformanceRuntime();
   const active = useLiteUiStore((state) => state.activeTab);
   const setActiveTab = useLiteUiStore((state) => state.setActiveTab);
   const menuOpen = useLiteUiStore((state) => state.mobileMenuOpen);
@@ -486,6 +493,28 @@ function LiteAppShell() {
   }, [activeScreenId, backendHealthyForPrefetch]);
 
   useEffect(() => {
+    if (activeScreenId === 'catalog' || workspaceApp || !online) return undefined;
+    const timer = window.setTimeout(() => {
+      const prefetches = [
+        liteQueryClient.prefetchQuery({
+          queryKey: liteQueryKeys.catalog(),
+          queryFn: liteApi.catalog,
+          staleTime: LITE_CATALOG_PREFETCH_STALE_TIME_MS,
+          gcTime: LITE_CATALOG_PREFETCH_GC_TIME_MS,
+        }),
+        liteQueryClient.prefetchQuery({
+          queryKey: liteQueryKeys.appActions('photoprism'),
+          queryFn: () => liteApi.appActions('photoprism'),
+          staleTime: 10_000,
+          gcTime: LITE_CATALOG_PREFETCH_GC_TIME_MS,
+        }),
+      ];
+      Promise.allSettled(prefetches).catch(() => null);
+    }, LITE_CATALOG_PREFETCH_SETTLE_MS);
+    return () => window.clearTimeout(timer);
+  }, [activeScreenId, online, workspaceApp]);
+
+  useEffect(() => {
     if (workspaceApp || !activeScreenEntry?.idlePreload) return undefined;
     let idleId = null;
     let timeoutId = null;
@@ -514,33 +543,36 @@ function LiteAppShell() {
     return () => window.cancelAnimationFrame(frame);
   }, [activeScreenId, activeRetryGeneration, workspaceApp]);
 
-  const warmScreenOnNavIntent = (tabId) => {
+  const warmScreenOnNavIntent = useCallback((tabId) => {
     const normalizedId = normalizeLiteScreenId(tabId);
     preloadLiteScreen(normalizedId).catch(() => null);
+    if (normalizedId === 'devices') preloadDeviceCard().catch(() => null);
     if (normalizedId !== 'security') return;
     prefetchSecuritySummary(liteQueryClient, {
       backendHealthy: backendHealthyForPrefetch,
       activeScan: false,
     });
-  };
+  }, [backendHealthyForPrefetch]);
 
-  const commitScreenNavigation = (tabId, event = null) => {
+  const commitScreenNavigation = useCallback((tabId, event = null) => {
     const nextScreenId = normalizeLiteScreenId(tabId);
     focusScreenAfterNavigationRef.current = Boolean(event && event.detail === 0);
 
     const commit = () => {
-      flushSync(() => {
+      const updateScreen = () => {
         if (workspaceApp) setWorkspaceApp(null);
         setActiveTab(nextScreenId);
         setMenuOpen(false);
-      });
+      };
+      if (import.meta.env.VITE_POCKETLAB_PERF_TEST === '1') startTransition(updateScreen);
+      else flushSync(updateScreen);
       if (workspaceApp) pushPocketLabPath('/');
       replaceLiteScreenLaunch(nextScreenId);
     };
 
     const result = startLiteViewTransition(commit, {
       documentObject: document,
-      reducedMotion: prefersLiteReducedMotion(window),
+      reducedMotion: prefersLiteReducedMotion(window) || import.meta.env.VITE_POCKETLAB_PERF_TEST === '1',
       previousTransition: transitionRef.current,
     });
     transitionRef.current = result.transition;
@@ -551,9 +583,9 @@ function LiteAppShell() {
         })
         .catch(() => null);
     }
-  };
+  }, [setActiveTab, setMenuOpen, workspaceApp]);
 
-  const openWorkspace = (app, openUrl) => {
+  const openWorkspace = useCallback((app, openUrl) => {
     const appId = app?.id || app?.app_id;
     if (!appId || !resolveSafeAppOpenPath(openUrl || app)) return;
     setWorkspaceApp({
@@ -567,37 +599,52 @@ function LiteAppShell() {
     setActiveTab('catalog');
     setMenuOpen(false);
     pushPocketLabPath(workspacePathForApp(appId));
-  };
+  }, [activeScreenId, setActiveTab, setMenuOpen]);
 
-  const openFullScreen = (openUrl) => {
+  const openFullScreen = useCallback((openUrl) => {
     const target = resolveSafeAppOpenPath(openUrl);
     if (!target) return;
     window.location.assign(target);
-  };
+  }, []);
 
-  const retryActiveScreen = () => {
+  const retryActiveScreen = useCallback(() => {
     setScreenRetryGeneration((current) => ({
       ...current,
       [activeScreenId]: (current[activeScreenId] || 0) + 1,
     }));
-  };
+  }, [activeScreenId]);
 
-  const activeScreenProps = activeScreenId === 'home'
-    ? {
-      status,
-      loading,
-      error,
-      refresh,
-      cacheStatus,
-      refreshing,
-      savedStateOnly,
-      backendReachable,
-      lastUpdatedLabel,
-      onNavigate: commitScreenNavigation,
-    }
-    : activeScreenId === 'catalog'
-      ? { onOpenWorkspace: openWorkspace }
-      : {};
+  const activeScreenProps = useMemo(() => (
+    activeScreenId === 'home'
+      ? {
+        status,
+        loading,
+        error,
+        refresh,
+        cacheStatus,
+        refreshing,
+        savedStateOnly,
+        backendReachable,
+        lastUpdatedLabel,
+        onNavigate: commitScreenNavigation,
+      }
+      : activeScreenId === 'catalog'
+        ? { onOpenWorkspace: openWorkspace }
+        : {}
+  ), [
+    activeScreenId,
+    backendReachable,
+    cacheStatus,
+    commitScreenNavigation,
+    error,
+    lastUpdatedLabel,
+    loading,
+    openWorkspace,
+    refresh,
+    refreshing,
+    savedStateOnly,
+    status,
+  ]);
 
   const content = workspaceApp ? (
     <LiteAppWorkspace
@@ -611,6 +658,7 @@ function LiteAppShell() {
       ref={screenStageRef}
       className={`lite-screen-stage lite-screen-stage-${activeScreenId}`}
       data-lite-screen-id={activeScreenId}
+      data-lite-perf-screen={activeScreenId}
       style={{ '--lite-screen-intrinsic-size': activeScreenEntry.intrinsicSize }}
       tabIndex={-1}
       aria-label={`${activeScreenEntry.label} screen`}
@@ -622,7 +670,9 @@ function LiteAppShell() {
         onRetry={retryActiveScreen}
       >
         <Suspense fallback={<LiteScreenLoading label={activeScreenEntry.label} intrinsicSize={activeScreenEntry.intrinsicSize} />}>
-          <ActiveScreen {...activeScreenProps} />
+          <LitePerformanceProfiler id={`screen:${activeScreenId}`}>
+            <ActiveScreen {...activeScreenProps} />
+          </LitePerformanceProfiler>
         </Suspense>
       </LiteScreenErrorBoundary>
     </section>
@@ -631,7 +681,7 @@ function LiteAppShell() {
   const shellClassName = `pocket-app-shell theme-pocket-lite-daylight lite-motion-system ${workspaceApp ? 'is-app-workspace' : ''}`;
 
   return (
-    <div className={shellClassName}>
+    <div className={shellClassName} data-lite-perf-primitive="app-shell">
       <a href="#pocket-lite-main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[80] focus:rounded-xl focus:bg-indigo-500 focus:px-4 focus:py-2 focus:text-sm focus:font-black focus:text-white">Skip to Pocket Lab Lite content</a>
       <div className="pocket-app-backdrop" aria-hidden="true" />
       <LiteToastHost />
@@ -665,7 +715,7 @@ function LiteAppShell() {
         </div>
       </header>
 
-      <nav className="pocket-nav-dock scrollbar-none" aria-label="Pocket Lab Lite sections">
+      <nav className="pocket-nav-dock scrollbar-none" aria-label="Pocket Lab Lite sections" data-lite-perf-primitive="navigation">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = activeScreenId === item.id;
@@ -678,7 +728,7 @@ function LiteAppShell() {
         })}
       </nav>
 
-      <nav className="pocket-side-rail" aria-label="Pocket Lab Lite primary sections">
+      <nav className="pocket-side-rail" aria-label="Pocket Lab Lite primary sections" data-lite-perf-primitive="navigation">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = activeScreenId === item.id;
@@ -691,7 +741,7 @@ function LiteAppShell() {
       </nav>
 
       {menuOpen && <div className="mobile-more-backdrop" onClick={() => setMenuOpen(false)} aria-hidden="true" />}
-      <aside className={`mobile-more-sheet ${menuOpen ? 'mobile-more-sheet-open' : ''}`} aria-hidden={!menuOpen} aria-label="Pocket Lab Lite sections">
+      <aside className={`mobile-more-sheet ${menuOpen ? 'mobile-more-sheet-open' : ''}`} aria-hidden={!menuOpen} aria-label="Pocket Lab Lite sections" data-lite-perf-primitive="navigation">
         <div className="flex items-center justify-between gap-3 border-b border-white/10 p-4">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-200">Sections</p>

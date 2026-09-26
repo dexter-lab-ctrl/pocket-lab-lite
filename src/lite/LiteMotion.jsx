@@ -1,6 +1,7 @@
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { animated, useSpring } from '@react-spring/web';
 import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
+import { isLitePerformanceMode } from './liteNavigationRuntime.js';
 
 const LITE_MOTION_TRANSFORM_IDLE = 'translate3d(0, 0, 0) scale(1)';
 const LITE_MOTION_TRANSFORM_ENTER = 'translate3d(0, 6px, 0) scale(0.992)';
@@ -9,6 +10,7 @@ const LITE_MOTION_TRANSFORM_LIFT = 'translate3d(0, -1px, 0) scale(1.002)';
 
 export function useLiteReducedMotion() {
   const [reduced, setReduced] = useState(() => {
+    if (isLitePerformanceMode()) return true;
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
@@ -16,7 +18,7 @@ export function useLiteReducedMotion() {
   React.useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => setReduced(query.matches);
+    const update = () => setReduced(isLitePerformanceMode() || query.matches);
     update();
     query.addEventListener?.('change', update);
     return () => query.removeEventListener?.('change', update);
@@ -259,7 +261,11 @@ export function useLiteFlipList(keys = [], { enabled = true } = {}) {
   }, []);
 
   useLayoutEffect(() => {
-    if (!enabled || reducedMotion || typeof window === 'undefined') {
+    if (!enabled) {
+      previousRectsRef.current.clear();
+      return;
+    }
+    if (reducedMotion || typeof window === 'undefined') {
       const nextRects = new Map();
       nodesRef.current.forEach((node, key) => {
         if (node?.getBoundingClientRect) nextRects.set(key, node.getBoundingClientRect());
