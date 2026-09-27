@@ -86,6 +86,7 @@ import {
   restartStepStateLabel,
   safeRestartSteps
 } from './LiteUi.jsx';
+import { LiteFreshness } from './LiteUx.jsx';
 import DeviceActionPortal from './devices/DeviceActionPortal.jsx';
 import LiteVirtualList from './components/LiteVirtualList.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
@@ -141,6 +142,37 @@ void DEVICES_DETAILS_ARE_LAZY;
 void DEVICES_ACTION_ROWS_OWN_CLICKS;
 void DEVICES_LINKED_CARD_CLASS_MARKER;
 void DEVICES_CONNECTION_COPY_MARKER;
+
+function DeviceRelationshipMap({ devices = [] }) {
+  const server = devices.find((device) => deviceLinkState(device) === 'server') || null;
+  const peers = devices.filter((device) => device !== server);
+  const serverName = server?.name || server?.hostname || 'Server Phone';
+  return (
+    <section className="lite-device-relationship-map" aria-label="Pocket Lab device connections">
+      <div className="lite-device-relationship-head">
+        <span>Your device connections</span>
+        <strong>{peers.length ? `${peers.length} connected device${peers.length === 1 ? '' : 's'} in this workspace` : 'Your server is ready for devices'}</strong>
+        <p>See whether Pocket Lab can reach each device without needing to understand the connection services underneath.</p>
+      </div>
+      <div className="lite-device-relationship-flow">
+        <div className="lite-device-relationship-node is-server"><Server className="h-4 w-4" /><span>{serverName}</span></div>
+        {peers.length ? peers.map((device) => {
+          const state = deviceLinkState(device);
+          return (
+            <React.Fragment key={deviceListKey(device)}>
+              <span className={`lite-device-relationship-link is-${state}`} aria-hidden="true"><i /></span>
+              <div className={`lite-device-relationship-node is-${state}`}>
+                <Network className="h-4 w-4" />
+                <span>{device.name || device.hostname || 'Device'}</span>
+                <small>{state === 'joined' ? 'Connected' : state === 'repairing' ? 'Repairing' : 'Disconnected'}</small>
+              </div>
+            </React.Fragment>
+          );
+        }) : <span className="lite-device-relationship-empty">Add a device when you want to expand this workspace.</span>}
+      </div>
+    </section>
+  );
+}
 
 function deviceListKey(device) {
   return device?.id || device?.name;
@@ -396,7 +428,7 @@ export default function DevicesScreen() {
     || isLiteDevicesViewLive(fleetPayload)
     || hasLiveDeviceFleetOperation(fleetPayload)
   ), [busy, restartBusy, removeBusy, restartProgress, result]);
-  const { data, loading, error, refresh, cacheStatus, refreshing, backendReachable, savedStateOnly } = useLiteResource(liteApi.fleet, [], {
+  const { data, loading, error, refresh, cacheStatus, refreshing, backendReachable, savedStateOnly, lastUpdatedLabel, isExpired } = useLiteResource(liteApi.fleet, [], {
     pollingMode: 'slow',
     isLive: fleetPollingIsLive,
     staleTime: 15_000,
@@ -731,11 +763,19 @@ export default function DevicesScreen() {
       <PageHeader
         eyebrow="Devices"
         title="Devices"
-        description="See what Pocket Lab can reach and what needs attention."
+        description="See how your devices are connected, what needs attention, and what you can safely do next."
         actions={<LiteRefreshButton scope="devices" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
       <LiteOperationalStory className="lite-devices-operational-story" story={fleetStory} />
+      <LiteFreshness
+        saved={savedStateOnly}
+        stale={isExpired}
+        refreshing={refreshing}
+        lastUpdatedLabel={lastUpdatedLabel}
+        backendReachable={backendReachable}
+      />
+      <DeviceRelationshipMap devices={devices} />
 
       <section className={`lite-remote-access-panel ${remoteAccessReady ? 'lite-remote-access-ready' : 'lite-remote-access-not-ready'}`} aria-live="polite">
         <div className="lite-remote-access-icon">
@@ -826,7 +866,7 @@ export default function DevicesScreen() {
             title="Add Device"
             label={addDeviceFlow.label}
             steps={addDeviceFlow.steps}
-            note={addDeviceFlow.writeBlocked ? addDeviceFlow.blockedReason : 'Invite creation stays backend-owned.'}
+            note={addDeviceFlow.writeBlocked ? addDeviceFlow.blockedReason : 'Pocket Lab prepares the invite safely and confirms it before anything is shown as ready.'}
             className="mt-4"
           />
 
