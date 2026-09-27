@@ -621,7 +621,7 @@ const DEFAULT_QUICK_COVERAGE_SUMMARY = {
     'Termux host posture',
     'Pocket Lab Lite files',
     'Caddy route config',
-    'NATS config posture',
+    'Private device connection',
     'Services summary',
     'Security evidence state',
   ],
@@ -790,12 +790,12 @@ function deriveSecurityConfidence({ lastRun, runStatus, executionSteps, evidence
   }
 
   if (failedCoreStep || missingTool || (!evidenceSaved && ['succeeded', 'completed', 'degraded', 'failed'].includes(status))) {
-    const missingReason = missingTool ? 'A required security tool is missing.' : 'The worker did not finish with usable evidence.';
+    const missingReason = missingTool ? 'A required security tool is missing.' : 'The safety check did not finish with a usable protected result.';
     return {
       level: 'Low',
       tone: 'danger',
       title: 'Confidence: Low',
-      summary: `${missingReason} Recheck after fixing the tool or worker issue.`,
+      summary: `${missingReason} Recheck after fixing the safety-tool or check issue.`,
       chips: [
         { label: lynisCompleted ? 'Lynis completed' : missingTool ? 'Tool missing' : 'Lynis not complete', tone: lynisCompleted ? 'ready' : 'danger' },
         { label: trivyCompleted ? 'Trivy completed' : missingTool ? 'Tool missing' : 'Trivy not complete', tone: trivyCompleted ? 'ready' : 'danger' },
@@ -892,7 +892,7 @@ function SecurityTrustBoundaryCard() {
         <span className="lite-security-soft-badge">Trust boundary</span>
       </div>
       <h2>Browser to evidence path</h2>
-      <div className="lite-security-boundary-flow" aria-label="Browser to FastAPI to Worker to Lynis and Trivy to sanitized evidence">
+      <div className="lite-security-boundary-flow" aria-label="This screen → Pocket Lab → local safety tools → protected result">
         {SECURITY_TRUST_BOUNDARY_STEPS.map((step, index) => (
           <React.Fragment key={step.label}>
             <div className="lite-security-boundary-node">
@@ -1105,7 +1105,7 @@ export function buildSecurityRemediation(finding, context = {}) {
     return {
       title: 'Protected runtime secret',
       action,
-      happened: 'Pocket Lab found a backend runtime secret in a protected server-side file.',
+      happened: 'Pocket Lab found a protected runtime value that needs review.',
       means: 'This can be expected when the file is locked down and never displayed in the browser.',
       recommended: 'Keep file permissions restricted. Do not copy this file into public repos or frontend assets.',
       risk: 'Expected if locked down server-side.',
@@ -1129,7 +1129,7 @@ export function buildSecurityRemediation(finding, context = {}) {
       action,
       happened: 'A required safety tool was not available on this device.',
       means: 'Pocket Lab could not complete that part of the safety check.',
-      recommended: 'Re-run the Lite bootstrap or install the missing tool through the backend-supported setup path.',
+      recommended: 'Use Pocket Lab setup or repair guidance to restore the missing safety tool, then run the check again.',
       risk: 'Action needed before confidence can be high.',
     };
   }
@@ -1151,7 +1151,7 @@ export function buildSecurityRemediation(finding, context = {}) {
       action,
       happened: 'Trivy found a secret-like value in a scanned path.',
       means: 'A sensitive value may be stored somewhere it should not be.',
-      recommended: 'Keep the value hidden, rotate it through the backend/Identity flow if needed, and verify it is not in frontend assets or public repos.',
+      recommended: 'Keep the value hidden, rotate it through the Access flow if needed, and verify it is not in public app files or repositories.',
       risk: 'Action needed.',
     };
   }
@@ -1162,7 +1162,7 @@ export function buildSecurityRemediation(finding, context = {}) {
       action,
       happened: 'Trivy or Lynis found a configuration concern.',
       means: 'A local setting may be weaker than recommended.',
-      recommended: 'Review the specific item, apply a backend-supported fix if available, then re-run the check.',
+      recommended: 'Review the specific item, apply the Pocket Lab-supported fix if available, then run the check again.',
       risk: ['critical', 'high', 'medium'].includes(findingSeverity(finding)) ? 'Action needed.' : 'Review recommended.',
     };
   }
@@ -1295,7 +1295,7 @@ function findingTitle(finding = {}) {
   const rawTitle = finding?.title || finding?.summary || finding?.name;
   if (rawTitle) return safeSecurityText(rawTitle, 'Security review item');
   const category = String(finding?.category || '').toLowerCase();
-  if (category === 'protected_runtime_secret') return 'Protected backend runtime secret';
+  if (category === 'protected_runtime_secret') return 'Protected runtime value';
   if (category === 'missing_tool') return 'Security tool missing';
   if (category === 'dependency_vulnerability') return 'Dependency vulnerability';
   if (category === 'secret_exposure') return 'Secret-like value found';
@@ -1325,7 +1325,7 @@ function deriveFindingSource(finding = {}) {
 
 function safeFindingComponentLabel(finding = {}) {
   const category = String(finding?.category || '').toLowerCase();
-  if (category === 'protected_runtime_secret') return 'Backend runtime file';
+  if (category === 'protected_runtime_secret') return 'Protected Pocket Lab setting';
   if (category === 'dependency_vulnerability') return safeSecurityText(finding?.component || finding?.package || finding?.target || 'Local dependency', 'Local dependency');
   if (category === 'host_hardening') return 'Host readiness';
   if (category === 'misconfiguration') return safeSecurityText(finding?.resource || finding?.target || finding?.component || 'Configuration', 'Configuration');
@@ -1643,7 +1643,7 @@ function friendlyDeltaItemLabel(items = [], fallback = 'review item') {
   const count = list.length;
   if (actionCount) return `${count} action-needed item${count === 1 ? '' : 's'}`;
   if (recheckCount) return `${count} recheck item${count === 1 ? '' : 's'}`;
-  if (expectedCount) return `${count} expected backend item${count === 1 ? '' : 's'}`;
+  if (expectedCount) return `${count} expected item${count === 1 ? '' : 's'}`;
   return `${count} ${fallback}${count === 1 ? '' : 's'}`;
 }
 
@@ -1735,7 +1735,7 @@ export function deriveScanQuality(securityData, evidenceReceipt, executionSteps 
     return {
       status: 'failed',
       title: 'Incomplete scan',
-      detail: evidenceSaved ? 'A required tool or worker step did not complete.' : 'Evidence is missing for the last terminal run.',
+      detail: evidenceSaved ? 'A required safety step did not complete.' : 'Evidence is missing for the last terminal run.',
       chips: [
         { label: evidenceSaved ? 'Evidence saved' : 'Evidence missing', tone: evidenceSaved ? 'safe' : 'danger' },
         { label: stepText.includes('missing') ? 'Tool missing' : 'Recheck recommended', tone: 'danger' },
@@ -2147,7 +2147,7 @@ export default function SecurityScreen() {
       hasRun,
       isActive,
       statusLabel: isActive ? profile.running : hasRun ? (snapshot.summary || (snapshot.score >= 95 ? 'Protected' : 'Something changed')) : 'Not checked',
-      ageLabel: isActive ? 'Live backend progress' : profileSavedAgeLabel(snapshot),
+      ageLabel: isActive ? 'Live check progress' : profileSavedAgeLabel(snapshot),
       changeLabel: isActive ? 'Saved result stays visible after completion' : profileChangeSummary(snapshot),
       offline: Boolean(snapshot?.freshness?.is_saved || snapshot?.freshness?.is_stale),
     };
@@ -2403,7 +2403,7 @@ export default function SecurityScreen() {
   const trustSignals = [
     {
       icon: Server,
-      title: 'Backend-run checks',
+      title: 'Runs on your Pocket Lab',
       summary: 'Security tools run on this device, not in your browser.',
     },
     {
