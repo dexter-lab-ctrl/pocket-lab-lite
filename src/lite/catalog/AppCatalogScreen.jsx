@@ -2263,6 +2263,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     refresh,
     cacheStatus,
     refreshing,
+    lastUpdatedLabel,
     backendReachable,
     savedStateOnly,
   } = useLiteQuery({
