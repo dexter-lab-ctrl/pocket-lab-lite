@@ -11,7 +11,7 @@ const SCREENS = [
   ['recovery', 'Backup & Restore'],
 ] as const;
 
-const FORBIDDEN_DEFAULT_UI = /\b(NATS|JetStream|FastAPI|backend-owned|durable consumer|projection stale|polling:)\b/i;
+const FORBIDDEN_DEFAULT_UI = /(NATS|JetStream|FastAPI|\bbackend\b|control plane|durable consumer|projection stale|polling:)/i;
 
 for (const [screenId, heading] of SCREENS) {
   test(`${screenId} default story is fresh, readable, and free of backend language`, async ({ page }) => {
