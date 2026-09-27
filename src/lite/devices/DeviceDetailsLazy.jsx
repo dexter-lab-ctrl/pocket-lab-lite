@@ -14,6 +14,7 @@ import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
 import { isLitePerformanceMode } from '../liteNavigationRuntime.js';
 import { useLiteUiStore } from '../../stores/liteUiStore.js';
 import { triggerLiteTactileFeedback } from '../LiteMotion.jsx';
+import { LiteHistoryTimeline } from '../LiteUx.jsx';
 import {
   LiteButton,
   backendBadgeStatus,
@@ -72,7 +73,7 @@ function supervisorStatusLabel(device) {
     return 'Needs attention';
   }
 
-  return 'No supervisor status reported';
+  return 'No recovery service status reported';
 }
 
 export function capabilityStatusLabel(value, reasonCode = '') {
@@ -120,7 +121,7 @@ function deviceSummary(device) {
   const connection = deviceConnectionLabel(device);
   if (effectiveDeviceStatus(device) === 'online') return `${name} is online and reporting normally.`;
   if (normalizeStatus(device?.status) === 'repairing' || deviceLinkState(device) === 'repairing') return `${name} is being checked or repaired.`;
-  if (normalizeStatus(device?.status) === 'agent_stopped') return `${name} has an agent that needs attention.`;
+  if (normalizeStatus(device?.status) === 'agent_stopped') return `${name} has a device service that needs attention.`;
   if (connection === 'Online') return `${name} is currently online.`;
   if (connection) return `${name} is currently ${connection.toLowerCase()}.`;
   return `${name} details are available.`;
@@ -128,7 +129,7 @@ function deviceSummary(device) {
 
 function deviceWhatHappened(device) {
   const happened = [
-    'Pocket Lab read the latest safe device summary from the Lite API.',
+    'Pocket Lab read the latest safe device summary.',
     deviceConnectionLabel(device) === 'Online'
       ? 'The device is currently online and reporting through Pocket Lab.'
       : `The device connection is currently ${deviceConnectionLabel(device).toLowerCase()}.`,
@@ -143,7 +144,7 @@ function deviceWhatHappened(device) {
   }
 
   const supervisorStatus = supervisorStatusLabel(device);
-  if (supervisorStatus !== 'No supervisor status reported') {
+  if (supervisorStatus !== 'No recovery service status reported') {
     happened.push(`Recovery service: ${supervisorStatus}.`);
   }
   return happened;
@@ -564,15 +565,14 @@ function DeviceHealthHistory({ deviceId }) {
       </LiteButton>
       {healthHistoryOpen ? (
         <div className="lite-device-health-history" role="region" aria-label="Device health history">
-          {healthHistoryQuery.loading ? <p>Loading safe health history…</p> : null}
-          {!healthHistoryQuery.loading && healthTransitions.length === 0 ? <p>No health transitions have been recorded yet.</p> : null}
-          {healthTransitions.map((item) => (
-            <article key={item.id}>
-              <strong>{item.title}</strong>
-              <span>{formatLiteTime(item.created_at)}</span>
-              <p>{item.summary}</p>
-            </article>
-          ))}
+          {healthHistoryQuery.loading ? <p>Loading health history…</p> : null}
+          {!healthHistoryQuery.loading ? (
+            <LiteHistoryTimeline
+              items={healthTransitions.map((item) => ({ id: item.id, title: item.title, summary: item.summary, time: item.created_at ? formatLiteTime(item.created_at) : '', state: item.status }))}
+              emptyTitle="No health changes yet"
+              emptyDescription="Health changes will appear here when Pocket Lab observes a meaningful transition."
+            />
+          ) : null}
         </div>
       ) : null}
     </div>
