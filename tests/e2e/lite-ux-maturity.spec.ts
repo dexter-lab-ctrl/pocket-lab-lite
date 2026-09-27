@@ -8,7 +8,7 @@ const SCREENS = [
   ['security', 'Safety Center'],
   ['identity', 'Identity & Access'],
   ['rules', 'Safety Rules'],
-  ['recovery', 'Recovery'],
+  ['recovery', 'Backup & Restore'],
 ] as const;
 
 const FORBIDDEN_DEFAULT_UI = /\b(NATS|JetStream|FastAPI|backend-owned|durable consumer|projection stale|polling:)\b/i;
