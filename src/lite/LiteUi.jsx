@@ -963,12 +963,12 @@ export function LiteActionRow({ label, value = '', summary = '', action, disable
   return (
     <div className={`lite-action-row ${attention ? 'is-attention' : ''} ${className}`.trim()}>
       <div>
-        <strong>{label}</strong>
-        {summary ? <p>{summary}</p> : null}
-        {disabledReason ? <small>{disabledReason}</small> : null}
+        <strong>{friendlyLiteText(label)}</strong>
+        {summary ? <p>{friendlyLiteText(summary)}</p> : null}
+        {disabledReason ? <small>{friendlyLiteText(disabledReason)}</small> : null}
       </div>
       <div className="lite-action-row-trailing">
-        {value ? <span>{value}</span> : null}
+        {value ? <span>{friendlyLiteText(value)}</span> : null}
         {action?.label ? <LiteButton onClick={action.onClick} disabled={Boolean(action.disabled)} tone={action.tone || 'secondary'} ariaLabel={action.ariaLabel || action.label}>{action.label}</LiteButton> : null}
       </div>
     </div>
