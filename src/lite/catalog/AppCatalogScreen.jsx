@@ -35,6 +35,7 @@ import { createLiteFeedbackDeduper } from '../../lib/liteNativeFeedback.js';
 import { liteQueryKeys, liteQueryPaths } from '../../lib/liteQueryClient.js';
 import { isLiteAppActionsViewLive, selectCanonicalAppState, selectCatalogSummaryView, selectPhotoPrismActionsView } from '../../lib/liteViewModels.js';
 import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LiteRefreshButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from '../LiteUi.jsx';
+import { LiteConsequenceSummary, LiteFreshness } from '../LiteUx.jsx';
 import { useLiteUiStore } from '../../stores/liteUiStore.js';
 import AppActionRow from './AppActionRow.jsx';
 import AppActionProgressSlot from './AppActionProgressSlot.jsx';
@@ -3108,11 +3109,15 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         )}
       />
 
+      <LiteFreshness
+        saved={catalogSaved}
+        stale={data?.degraded_reason === 'projection_too_old'}
+        refreshing={catalogRefreshing}
+        lastUpdatedLabel={lastUpdatedLabel || ''}
+        backendReachable={backendReachable}
+      />
       <div className="lite-catalog-toolbar lite-catalog-toolbar--simple">
         <p>{displayedApps.length} {displayedApps.length === 1 ? 'app available' : 'apps available'}</p>
-        {catalogSaved || catalogRefreshing ? (
-          <span>{catalogSaved ? 'Showing saved app status' : 'Current app status'}{catalogRefreshing ? ' · Refreshing…' : ''}</span>
-        ) : null}
       </div>
 
       {featuredApp ? (
@@ -3125,9 +3130,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
 
 
-      {error ? <StateSurface tone="degraded" title="Catalog needs a moment" description={error} className="mb-5" /> : null}
+      {error ? <StateSurface tone="degraded" title="Apps are temporarily unavailable" description="Pocket Lab could not confirm the latest app information. Saved app information remains visible when available." className="mb-5" /> : null}
       {loading ? <CatalogSkeletons /> : null}
-      {loading ? <LoadingCard label="Loading apps..." /> : null}
+      {loading ? <LoadingCard label="Checking your apps…" /> : null}
 
       <div className="lite-catalog-grid lite-render-containment lite-render-containment--catalog">
         {displayedApps.filter((app) => app.id !== featuredApp?.id).map((app) => renderAppCard(app))}
@@ -3150,10 +3155,14 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <h2>Remove PhotoPrism?</h2>
             <p>This removes the app runtime and Pocket Lab route when removal support is enabled. Your photo files and backups will not be deleted by default. Troubleshooting records are kept.</p>
           </div>
-          <div className="lite-catalog-remove-confirm-grid">
-            <span><strong>What will happen</strong>Remove app runtime and route after backend support is enabled.</span>
-            <span><strong>What will not happen</strong>Your photo files and backups will not be deleted by default.</span>
-          </div>
+          <LiteConsequenceSummary value={{
+            title: 'Before PhotoPrism is removed',
+            summary: 'Review the effect on this app before continuing.',
+            will: ['Remove the PhotoPrism app service and its Pocket Lab access route when removal is available.'],
+            willNot: ['Delete your photo files.', 'Delete existing backups by default.'],
+            reversible: 'Reinstalling the app can restore the app service. Your data protection depends on the backups you keep.',
+            availability: 'PhotoPrism will be unavailable after removal until it is installed again.',
+          }} />
           <div className="lite-catalog-remove-confirm-actions">
             <LiteButton tone="danger" onClick={(event) => confirmRemoveApp(removeConfirmApp, event)}>Confirm remove</LiteButton>
             <LiteButton tone="secondary" onClick={() => setRemoveConfirmApp(null)}>Cancel</LiteButton>
