@@ -284,11 +284,11 @@ export default function RecoveryScreen() {
 
   const evidenceItems = [
     { label: 'Backup ID', value: latestBackup?.backup_id },
-    { label: 'Snapshot ID', value: latestBackup?.snapshot_id },
-    { label: 'Manifest checksum', value: latestBackup?.manifest_checksum },
-    { label: 'Preview ID', value: latestPreview?.preview_id },
-    { label: 'Checkpoint ID', value: checkpoint?.checkpoint_id || lastRestore?.checkpoint_id },
-    { label: 'Restore ID', value: lastRestore?.restore_id },
+    { label: 'Backup reference', value: latestBackup?.snapshot_id },
+    { label: 'Verification fingerprint', value: latestBackup?.manifest_checksum },
+    { label: 'Preview reference', value: latestPreview?.preview_id },
+    { label: 'Safety checkpoint reference', value: checkpoint?.checkpoint_id || lastRestore?.checkpoint_id },
+    { label: 'Restore reference', value: lastRestore?.restore_id },
   ].filter((item) => item.value);
 
   const actionPanelMeta = {
@@ -307,7 +307,7 @@ export default function RecoveryScreen() {
       subtitle: latestPreviewReady ? `${latestPreview?.change_count || 0} item(s) checked without changing local state.` : 'Pocket Lab will inspect the restore point safely.',
       next: 'Restore Latest',
       logs: [
-        'Preview runs through the worker and does not restore files.',
+        'Preview checks the restore point without changing files.',
         latestPreviewReady ? `${latestPreview?.change_count || 0} item(s) would be restored.` : 'Restore changes will be counted first.',
         'Raw secrets remain excluded from this restore point.',
       ],
@@ -319,8 +319,8 @@ export default function RecoveryScreen() {
       logs: [
         checkpoint?.checkpoint_id ? `Checkpoint saved: ${shortId(checkpoint.checkpoint_id)}` : 'Checkpoint will be saved before restore.',
         restoreSucceeded ? `${lastRestore?.restored_file_count || 0} Lite state file(s) restored.` : 'Restore is waiting for confirmation.',
-        serviceRestart?.status ? `Service restart: ${serviceRestart.status}` : 'Service restart will be checked after restore.',
-        healthValidation?.status ? `Lite API health: ${healthValidation.status}` : 'Lite API health will be checked after restore.',
+        serviceRestart?.status ? `Workspace services: ${serviceRestart.status}` : 'Workspace services will be checked after restore.',
+        healthValidation?.status ? `Workspace health: ${healthValidation.status}` : 'Workspace health will be checked after restore.',
       ],
     },
   };
