@@ -269,7 +269,7 @@ function buildDetails({ type, model = {} }) {
       saved_for_troubleshooting: {
         saved: Boolean(lastRun?.run_id),
         backend_only: true,
-        summary: 'Coverage metadata is saved with sanitized evidence. Raw scanner output stays backend-owned.',
+        summary: 'Coverage is saved with the protected check record. Scanner output stays protected.',
       },
       next_step: partial.length || timedOut.length ? 'Run the check again while charging, then review any timed-out or partial targets.' : appProfile ? 'Use App Check after PhotoPrism settings, route, or backup changes.' : fullProfile ? 'Use Full Local Check after major updates or route/security changes.' : 'Use Quick Safety Check daily for a fast safety signal.',
       technicalDetails: [
@@ -309,7 +309,7 @@ function buildDetails({ type, model = {} }) {
       what_did_not_happen: [
         'The browser did not load raw scanner output.',
         'Raw evidence files were not opened in this view.',
-        'Private paths and backend logs stay hidden.',
+        'Private device paths and service logs stay hidden.',
       ],
       saved_for_troubleshooting: {
         saved: Boolean(safeHistory.length),
@@ -341,7 +341,7 @@ function buildDetails({ type, model = {} }) {
       statusLabel: savedStateOnly ? 'Saved state only' : backendReachable === false ? 'Pocket Lab not reachable' : 'Safe metadata',
       summary: 'Technical details are collapsed by default and only show safe metadata.',
       what_happened: [
-        'Security checks remain backend-owned.',
+        'Safety checks continue to run through Pocket Lab.',
         `Visible stage: ${safeText(scanProgressLabel, 'Ready for the next safety check')}`,
         `Tools summarized: ${safeToolNames.join(' + ')}`,
       ],
@@ -350,12 +350,12 @@ function buildDetails({ type, model = {} }) {
         'No raw scanner output was shown.',
         'No raw logs were shown.',
         'No private Android paths were shown.',
-        'No backend command payloads or secrets were shown.',
+        'No private action details or secrets were shown.',
       ],
       saved_for_troubleshooting: {
         saved: Boolean(lastRun?.run_id),
         backend_only: true,
-        summary: 'Detailed evidence and troubleshooting records stay backend-owned and sanitized before display.',
+        summary: 'Detailed check and troubleshooting records stay protected before display.',
       },
       next_step: backendReachable === false ? 'Reconnect to Pocket Lab before running a new safety check.' : 'Use these details only for support or troubleshooting.',
       technicalDetails: [
@@ -414,12 +414,12 @@ function buildDetails({ type, model = {} }) {
     what_did_not_happen: [
       'Raw evidence was not loaded into the normal UI.',
       'Raw scanner output was not shown.',
-      'Secrets, tokens, private paths, and backend command payloads stay hidden.',
+      'Secrets, tokens, private device paths, and private action details stay hidden.',
     ],
     saved_for_troubleshooting: {
       saved: Boolean(latestEvidenceReceipt || evidenceReceipt || currentEvidenceRefs.length),
       backend_only: true,
-      summary: 'Sanitized evidence metadata is shown here. Full backend evidence remains protected.',
+      summary: 'Safe check-record details are shown here. Full troubleshooting records remain protected.',
     },
     next_step: latestEvidenceReceipt || evidenceReceipt ? 'Use this summary for support or audit review without exposing secrets.' : 'Run Safety Check to create fresh evidence.',
     technicalDetails: [
