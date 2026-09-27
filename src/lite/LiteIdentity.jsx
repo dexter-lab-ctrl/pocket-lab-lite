@@ -45,7 +45,7 @@ function ActionNotice({ notice, actionStage }) {
       <StateSurface
         tone={notice?.error ? 'degraded' : actionStage === 'completed' ? 'healthy' : 'neutral'}
         title={notice?.title || identityActionStageLabel(actionStage) || 'Working'}
-        description={notice?.message || 'Pocket Lab is verifying this change with the server.'}
+        description={notice?.message || 'Pocket Lab is verifying this access change.'}
       />
     </div>
   );
@@ -151,14 +151,14 @@ export default function IdentityScreen() {
   async function run(name, callback, successMessage, { refreshAfter = true, signedOutAfter = false } = {}) {
     setBusy(name);
     setActionStage('preparing');
-    setNotice({ title: 'Preparing', message: 'Pocket Lab is preparing this protected identity change.' });
+    setNotice({ title: 'Preparing', message: 'Pocket Lab is preparing this protected access change.' });
     try {
       setActionStage('pending');
-      setNotice({ title: 'Waiting for Pocket Lab', message: 'Nothing is shown as completed until the server accepts the request.' });
+      setNotice({ title: 'Waiting for Pocket Lab', message: 'Nothing is shown as completed until Pocket Lab accepts the request.' });
       const result = await callback();
       if (signedOutAfter) clearLiteIdentityCsrf();
       setActionStage('verifying');
-      setNotice({ title: 'Server accepted', message: 'Pocket Lab accepted the request. Reading current Identity state now.' });
+      setNotice({ title: 'Pocket Lab accepted', message: 'Pocket Lab accepted the request. Reading current access information now.' });
       if (refreshAfter) await refresh();
       setActionStage('completed');
       setNotice({ title: 'Completed', message: result?.summary || successMessage });
