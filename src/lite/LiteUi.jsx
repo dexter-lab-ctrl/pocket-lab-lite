@@ -262,7 +262,7 @@ export function canonicalDevicePresentation(device) {
   const connection = String(device?.connection_truth?.state || device?.connection || '').toLowerCase();
   const status = String(device?.status || '').toLowerCase();
   if (connection === 'repairing' || ['repairing', 'supervisor_repairing'].includes(status)) return { state: 'repairing', label: 'Repairing' };
-  if (connection === 'stopped' || ['agent_stopped', 'stopped'].includes(status)) return { state: 'agent_stopped', label: 'Agent stopped' };
+  if (connection === 'stopped' || ['agent_stopped', 'stopped'].includes(status)) return { state: 'agent_stopped', label: 'Device service stopped' };
   if (connection === 'offline' || ['offline', 'failed', 'unhealthy', 'degraded', 'stale'].includes(status)) return { state: 'offline', label: 'Offline' };
   if (connection === 'online') return { state: 'online', label: 'Online' };
   if (connection === 'joining' || ['joining', 'accepted', 'setup_started'].includes(status)) return { state: 'joining', label: 'Joining' };
@@ -510,8 +510,8 @@ export function liveSecurityProgress(progress, runStatus, busy, nowMs) {
 
 export function securityProgressStage(progress, runStatus) {
   if (progress?.stage) return progress.stage;
-  if (runStatus === 'queued') return 'Waiting for the backend worker';
-  if (runStatus === 'running') return 'Running Lynis and Trivy';
+  if (runStatus === 'queued') return 'Waiting for the local safety check';
+  if (runStatus === 'running') return 'Checking system, apps and settings';
   return 'Preparing safety check';
 }
 
@@ -1052,8 +1052,8 @@ export function deviceLinkState(device) {
 export function restartProgressTitle(progress = {}) {
   const status = String(progress?.status || '').toLowerCase();
   if (status === 'completed') return 'Device is back online';
-  if (status === 'agent_stopped') return 'Device agent is stopped';
-  if (status === 'repairing') return 'Supervisor is repairing the agent';
+  if (status === 'agent_stopped') return 'Device service is stopped';
+  if (status === 'repairing') return 'Recovery service is repairing the device service';
   if (status === 'failed') return 'Restart needs attention';
   if (status === 'starting') return 'Preparing restart';
   return 'Restart in progress';
