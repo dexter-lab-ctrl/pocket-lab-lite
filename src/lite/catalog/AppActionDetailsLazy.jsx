@@ -174,7 +174,7 @@ export default function AppActionDetailsLazy({ details, actionId = '', onClose }
   const technical = actionDetailList(actionId, details.technical_details);
   const saved = details.saved_for_troubleshooting && typeof details.saved_for_troubleshooting === 'object'
     ? details.saved_for_troubleshooting
-    : { saved: false, backend_only: true, summary: 'No backend record was saved because this action did not run.' };
+    : { saved: false, backend_only: true, summary: 'No troubleshooting record was saved because this action did not run.' };
   const detailsTone = actionDetailsTone(details, saved);
   const runLabels = actionDetailRunHistoryLabels(actionId);
   const display = getActionDisplayState(details.status || 'ready');
