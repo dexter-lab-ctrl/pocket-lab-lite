@@ -35,7 +35,7 @@ import { createLiteFeedbackDeduper } from '../../lib/liteNativeFeedback.js';
 import { liteQueryKeys, liteQueryPaths } from '../../lib/liteQueryClient.js';
 import { isLiteAppActionsViewLive, selectCanonicalAppState, selectCatalogSummaryView, selectPhotoPrismActionsView } from '../../lib/liteViewModels.js';
 import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LiteRefreshButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from '../LiteUi.jsx';
-import { LiteConsequenceSummary, LiteFreshness } from '../LiteUx.jsx';
+import { LiteConsequenceSummary, LiteEmptyState, LiteFreshness } from '../LiteUx.jsx';
 import { useLiteUiStore } from '../../stores/liteUiStore.js';
 import AppActionRow from './AppActionRow.jsx';
 import AppActionProgressSlot from './AppActionProgressSlot.jsx';
@@ -1350,13 +1350,13 @@ function PhotoPrismStoragePreviewSheet({
         ) : error ? (
           <div className="lite-catalog-storage-preview-empty is-error" role="alert">
             <strong>Storage preview needs a moment</strong>
-            <p>{error}</p>
+            <p>Pocket Lab could not read the latest storage information. Try again when the device is reachable.</p>
             <LiteButton type="button" tone="secondary" onClick={onRetry}>Try again</LiteButton>
           </div>
         ) : notReady ? (
           <div className="lite-catalog-storage-preview-empty" role="status">
             <strong>Phone storage is not ready yet.</strong>
-            <p>{preview?.reason || 'Run termux-setup-storage in Termux and allow storage access.'}</p>
+            <p>{preview?.reason || 'Allow Android storage access for Pocket Lab on this device, then try again.'}</p>
           </div>
         ) : folders.length ? (
           <div className="lite-catalog-storage-preview-list" aria-label="Visible folders included with phone storage">
@@ -1558,7 +1558,7 @@ function actionDetailSavedSummary(actionId, saved) {
       ? 'A safe backend troubleshooting record was saved.'
       : 'No backend troubleshooting record was saved because this action did not run.';
   }
-  return saved?.summary || (saved?.saved ? 'A backend record was saved for troubleshooting.' : 'No backend record was saved because this action did not run.');
+  return saved?.summary || (saved?.saved ? 'A protected troubleshooting record was saved.' : 'No troubleshooting record was saved because this action did not run.');
 }
 
 function actionDetailRunHistoryLabels(actionId) {
@@ -1590,10 +1590,10 @@ function fallbackActionDetails(actionId, action = {}, result = null) {
     what_happened: disabled
       ? [`This action is paused because ${String(action?.disabled_reason || action?.reason || 'it is not ready yet.').replace(/^./, (char) => char.toLowerCase())}`]
       : [summary],
-    what_changed: [browserOnly || disabled ? 'Nothing changed.' : 'Pocket Lab will update this action after the backend finishes.'],
+    what_changed: [browserOnly || disabled ? 'Nothing changed.' : 'Pocket Lab will update this action when the work finishes.'],
     what_did_not_happen: browserOnly
-      ? ['No worker command was queued.', 'No app files were changed.', 'No photos were changed.']
-      : ['No unsafe action was started from the browser.'],
+      ? ['No device action was started.', 'No app files were changed.', 'No photos were changed.']
+      : ['No unsafe change was started.'],
     saved_for_troubleshooting: {
       saved: Boolean(result?.summary && !browserOnly),
       backend_only: true,
@@ -1602,7 +1602,7 @@ function fallbackActionDetails(actionId, action = {}, result = null) {
         : 'No backend record was saved because this action did not run.',
     },
     technical_details: [
-      `Execution owner: ${String(action?.execution_owner || (browserOnly ? 'browser navigation' : 'backend worker')).replace(/_/g, ' ')}`,
+      `Run by: ${browserOnly ? 'This screen' : 'Pocket Lab'}`,
       `Action: ${actionId}`,
       `Status: ${action?.status || 'ready'}`,
     ],
@@ -3140,21 +3140,19 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       </div>
 
       {!loading && displayedApps.length === 0 ? (
-        <GlassCard className="lite-catalog-empty-state">
-          <div className="lite-catalog-empty-icon"><ImageIcon className="h-5 w-5" /></div>
-          <div>
-            <h2>{apps.length ? 'No apps available' : 'No apps installed yet'}</h2>
-            <p>{apps.length ? 'Refresh the App Catalog to check again.' : 'Install your first local app to start using this self-hosted workspace.'}</p>
-          </div>
-          <LiteRefreshButton scope="apps" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} label="Check again" />
-        </GlassCard>
+        <LiteEmptyState
+          className="lite-catalog-empty-state"
+          title={apps.length ? 'No apps available' : 'No apps installed yet'}
+          description={apps.length ? 'Pocket Lab did not find an app it can show right now.' : 'Install your first self-hosted app when you are ready.'}
+          action={{ label: apps.length ? 'Check again' : 'Refresh Apps', onClick: refresh }}
+        />
       ) : null}
       {removeConfirmApp ? (
         <GlassCard className="lite-catalog-remove-confirm" role="dialog" aria-label="Confirm remove">
           <div>
             <span>Confirm remove</span>
             <h2>Remove PhotoPrism?</h2>
-            <p>This removes the app runtime and Pocket Lab route when removal support is enabled. Your photo files and backups will not be deleted by default. Troubleshooting records are kept.</p>
+            <p>This removes PhotoPrism from this Pocket Lab when removal is available. Your photo files and existing backups stay protected.</p>
           </div>
           <LiteConsequenceSummary value={{
             title: 'Before PhotoPrism is removed',
