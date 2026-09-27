@@ -1,0 +1,251 @@
+{
+  "schema_version": 1,
+  "contract_id": "pocket-lab-lite-ux-maturity-v1",
+  "status": "source_implemented_runtime_qualification_pending",
+  "story_model": [
+    "what_is_happening",
+    "does_it_matter",
+    "what_should_i_do",
+    "what_happened_when_i_acted",
+    "deeper_detail_on_request"
+  ],
+  "disclosure_model": [
+    "summary",
+    "next_best_action",
+    "manage",
+    "focused_details",
+    "technical_details"
+  ],
+  "default_ui_forbidden_terms": [
+    "NATS",
+    "JetStream",
+    "FastAPI",
+    "backend",
+    "control plane",
+    "worker",
+    "durable consumer",
+    "polling policy",
+    "projection stale",
+    "ETag",
+    "SQLite",
+    "raw reason code",
+    "private path",
+    "command payload"
+  ],
+  "technical_details": {
+    "default": "collapsed",
+    "purpose": "safe operational facts",
+    "expected_fields": [
+      "checked_or_observed_time",
+      "device_or_scope",
+      "current_state",
+      "duration_when_available",
+      "change_made",
+      "protected_data",
+      "troubleshooting_reference_when_available"
+    ],
+    "prohibited": [
+      "raw logs",
+      "raw evidence",
+      "tokens",
+      "passwords",
+      "api keys",
+      "private keys",
+      "private Android paths",
+      "command payloads"
+    ]
+  },
+  "freshness": {
+    "states": [
+      "up_to_date",
+      "refreshing",
+      "saved_information",
+      "may_be_out_of_date",
+      "unavailable"
+    ],
+    "implementation_mechanics_hidden": true
+  },
+  "confirmation": {
+    "required_questions": [
+      "what_will_happen",
+      "what_will_not_happen",
+      "can_it_be_undone",
+      "availability_impact"
+    ]
+  },
+  "history": {
+    "language": "event_outcome_time_optional_detail",
+    "shared_primitives": [
+      "LiteHistoryTimeline",
+      "LiteHistorySection"
+    ]
+  },
+  "requirements": [
+    {
+      "id": 1,
+      "name": "semantic_design_system",
+      "evidence": [
+        "src/lite/LiteUx.jsx",
+        "src/lib/liteUxPresentation.js",
+        "src/index.css"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "plain_language_translation",
+      "evidence": [
+        "src/lib/liteUxPresentation.js",
+        "src/lite/LiteUi.jsx"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "meaningful_technical_details",
+      "evidence": [
+        "src/lite/LiteUx.jsx",
+        "src/lite/components/LiteTechnicalDetails.jsx"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "home_workspace_narrative",
+      "evidence": [
+        "src/lite/LiteHome.jsx"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "apps_experience",
+      "evidence": [
+        "src/lite/catalog/AppCatalogScreen.jsx",
+        "src/lite/catalog/AppActionDetailsLazy.jsx"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "device_relationship_experience",
+      "evidence": [
+        "src/lite/LiteDevices.jsx",
+        "src/lite/devices/DeviceDetailsLazy.jsx"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "safety_center",
+      "evidence": [
+        "src/lite/LiteSecurity.jsx",
+        "src/lite/security/SecurityProgressiveDetailsLazy.jsx",
+        "src/lite/security/SecurityFindingDetailsLazy.jsx"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "access_simplification",
+      "evidence": [
+        "src/lite/LiteIdentity.jsx"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "rules_protection_story",
+      "evidence": [
+        "src/lite/LiteRules.jsx"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "recovery_confidence_story",
+      "evidence": [
+        "src/lite/LiteRecovery.jsx",
+        "src/lite/recovery/RecoveryConfirmSheetLazy.jsx"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "navigation_modernization",
+      "evidence": [
+        "src/lite/liteNavigationMetadata.js",
+        "src/lite/LiteApp.jsx"
+      ]
+    },
+    {
+      "id": 12,
+      "name": "intentional_loading_empty_degraded_failure_states",
+      "evidence": [
+        "src/lite/LiteUx.jsx",
+        "src/lite/LiteUi.jsx",
+        "src/lite/catalog/AppCatalogScreen.jsx"
+      ]
+    },
+    {
+      "id": 13,
+      "name": "freshness_first_ux",
+      "evidence": [
+        "src/lite/LiteUx.jsx",
+        "src/lite/LiteHome.jsx",
+        "src/lite/LiteDevices.jsx",
+        "src/lite/LiteSecurity.jsx",
+        "src/lite/LiteRecovery.jsx",
+        "src/lite/LiteIdentity.jsx",
+        "src/lite/LiteRules.jsx"
+      ]
+    },
+    {
+      "id": 14,
+      "name": "unified_history_language",
+      "evidence": [
+        "src/lite/LiteUx.jsx",
+        "src/lite/components/LiteHistorySection.jsx",
+        "src/lite/devices/DeviceDetailsLazy.jsx"
+      ]
+    },
+    {
+      "id": 15,
+      "name": "consequence_oriented_confirmations",
+      "evidence": [
+        "src/lite/LiteUx.jsx",
+        "src/lite/LiteDevices.jsx",
+        "src/lite/LiteSecurity.jsx",
+        "src/lite/LiteIdentity.jsx",
+        "src/lite/recovery/RecoveryConfirmSheetLazy.jsx",
+        "src/lite/catalog/AppCatalogScreen.jsx"
+      ]
+    },
+    {
+      "id": 16,
+      "name": "contextual_explain_this",
+      "evidence": [
+        "src/lite/LiteHelp.jsx"
+      ]
+    },
+    {
+      "id": 17,
+      "name": "global_surface_modernization",
+      "evidence": [
+        "src/lite/LiteApp.jsx",
+        "src/lite/LiteToastHost.jsx",
+        "src/lite/LiteServiceWorkerUpdateNotice.jsx"
+      ]
+    },
+    {
+      "id": 18,
+      "name": "repository_owned_ux_contract",
+      "evidence": [
+        "contracts/metadata/lite-ux-maturity.json",
+        "src/lib/liteUxPresentation.test.js",
+        "src/lite/LiteUx.stories.jsx",
+        "tests/backend/test_lite_ux_maturity_contract.py",
+        "tests/e2e/lite-ux-maturity.spec.ts"
+      ]
+    }
+  ],
+  "architecture_invariants": [
+    "frontend_never_talks_directly_to_nats",
+    "frontend_never_executes_shell_commands",
+    "frontend_never_stores_backend_secrets",
+    "fastapi_remains_frontend_facing_control_api",
+    "workers_agents_supervisors_own_execution_and_recovery",
+    "saved_offline_mode_is_read_only",
+    "android_termux_arm64_low_power_remain_first_class"
+  ]
+}
