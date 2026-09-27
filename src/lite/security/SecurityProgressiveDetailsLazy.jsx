@@ -86,8 +86,8 @@ function findingSummary(finding = {}) {
 
 function sourceLabel(finding = {}) {
   const raw = `${finding.source || ''} ${finding.tool || ''} ${finding.category || ''}`.toLowerCase();
-  if (raw.includes('lynis') || raw.includes('host')) return 'Lynis';
-  if (raw.includes('trivy') || raw.includes('dependency') || raw.includes('secret')) return 'Trivy';
+  if (raw.includes('lynis') || raw.includes('host')) return 'System safety check';
+  if (raw.includes('trivy') || raw.includes('dependency') || raw.includes('secret')) return 'Apps and settings check';
   return 'Security check';
 }
 
@@ -178,7 +178,7 @@ function buildDetails({ type, model = {} }) {
       saved_for_troubleshooting: {
         saved: Boolean(lastRun?.run_id),
         backend_only: true,
-        summary: savedDetailsNote || (savedStateOnly ? 'Showing saved state. Fresh details will refresh when Pocket Lab is reachable.' : 'Backend keeps the full safety record protected.'),
+        summary: savedDetailsNote || (savedStateOnly ? 'Showing saved state. Fresh details will refresh when Pocket Lab is reachable.' : 'Pocket Lab keeps the full safety record protected.'),
       },
       next_step: Number(findingDelta?.new_count || 0) ? 'Review the new items, then rerun Safety Check after taking action.' : 'No action is needed right now.',
       technicalDetails: [
@@ -209,7 +209,7 @@ function buildDetails({ type, model = {} }) {
       saved_for_troubleshooting: {
         saved: Boolean(lastRun?.run_id),
         backend_only: true,
-        summary: savedDetailsNote || 'Full troubleshooting records stay backend-only. This view shows safe summaries.',
+        summary: savedDetailsNote || 'Full troubleshooting records stay protected. This view shows safe summaries.',
       },
       next_step: rows.length ? 'Open one finding at a time for the safest next step.' : 'Run Safety Check again later to keep evidence fresh.',
       technicalDetails: [
@@ -226,8 +226,8 @@ function buildDetails({ type, model = {} }) {
     const profile = safeText(scanProfile, 'quick').toLowerCase();
     const fullProfile = profile === 'full';
     const appProfile = profile === 'app';
-    const checked = safeList(checkedCoverageTargets, appProfile ? ['PhotoPrism route', 'App files', 'App settings', 'Backup metadata', 'Action state'] : fullProfile ? ['Termux host', 'Pocket Lab Lite', 'Runtime config', 'PROot Ubuntu', 'PhotoPrism', 'Backup metadata'] : ['Termux host posture', 'Pocket Lab Lite files', 'Caddy route config', 'NATS config posture', 'Services summary', 'Security evidence state']);
-    const skipped = safeList(skippedCoverageTargets, appProfile ? ['Photos and originals', 'Import media', 'Thumbnails and sidecars', 'PhotoPrism database', 'Backup payloads', 'Logs and caches'] : fullProfile ? ['Photo library/media', 'Android shared storage', 'Backup payloads', 'Restic repository contents', 'PM2 logs', 'Go/npm/tool caches'] : ['Photo library/media', 'Backup payloads', 'PROot Ubuntu full filesystem', 'Go/npm/cache folders', 'Old PWA builds', 'Large runtime histories']);
+    const checked = safeList(checkedCoverageTargets, appProfile ? ['PhotoPrism route', 'App files', 'App settings', 'Backup records', 'Action state'] : fullProfile ? ['System safety settings', 'Pocket Lab Lite', 'Pocket Lab settings', 'App environment', 'PhotoPrism', 'Backup records'] : ['System safety settings', 'Pocket Lab Lite files', 'Secure web access', 'Private device connection', 'Pocket Lab services', 'Protected check records']);
+    const skipped = safeList(skippedCoverageTargets, appProfile ? ['Photos and originals', 'Import media', 'Thumbnails and sidecars', 'PhotoPrism database', 'Backup payloads', 'Logs and caches'] : fullProfile ? ['Photo library/media', 'Android shared storage', 'Backup payloads', 'Backup storage contents', 'Service logs', 'Tool caches'] : ['Photo library/media', 'Backup payloads', 'PROot Ubuntu full filesystem', 'Go/npm/cache folders', 'Old PWA builds', 'Large runtime histories']);
     const partial = safeList(partialCoverageTargets);
     const timedOut = safeList(timedOutCoverageTargets);
     const missing = safeList(missingCoverageTargets);
@@ -257,7 +257,7 @@ function buildDetails({ type, model = {} }) {
         'The browser did not access PhotoPrism internals.',
       ] : fullProfile ? [
         'Photo libraries and user media were not scanned.',
-        'Backup payloads and restic repository contents were not scanned.',
+        'Backup contents were not scanned.',
         'Android shared storage was not scanned.',
         'Logs, caches, thumbnails, sidecars, and old PWA builds were skipped.',
       ] : [
@@ -314,14 +314,14 @@ function buildDetails({ type, model = {} }) {
       saved_for_troubleshooting: {
         saved: Boolean(safeHistory.length),
         backend_only: true,
-        summary: savedStateOnly ? 'Showing saved state. Fresh history will refresh when Pocket Lab is reachable.' : 'Backend keeps detailed history and evidence protected.',
+        summary: savedStateOnly ? 'Showing saved state. Fresh history will refresh when Pocket Lab is reachable.' : 'Pocket Lab keeps detailed history and check records protected.',
       },
       next_step: safeHistory.length ? 'Use history to spot score drift, then run Safety Check when needed.' : 'Run Safety Check to create the first history entry.',
       technicalDetails: [
         { label: 'Latest run', value: shortId(latestHistory?.run_id || lastRun?.run_id) || 'not available' },
         { label: 'Previous run', value: shortId(previousHistory?.run_id) || 'not available' },
         { label: 'Shown checks', value: safeHistory.length },
-        { label: 'Snapshot state', value: savedStateOnly ? 'Saved state' : 'Fresh state' },
+        { label: 'Information', value: savedStateOnly ? 'Saved information' : 'Current information' },
       ],
       history: {
         title: 'Recent safety checks',
@@ -359,13 +359,13 @@ function buildDetails({ type, model = {} }) {
       },
       next_step: backendReachable === false ? 'Reconnect to Pocket Lab before running a new safety check.' : 'Use these details only for support or troubleshooting.',
       technicalDetails: [
-        { label: 'Execution owner', value: 'FastAPI and worker' },
-        { label: 'Polling policy', value: 'slow' },
-        { label: 'Snapshot state', value: savedStateOnly ? 'Saved state' : 'Fresh state' },
-        { label: 'Backend reachable', value: backendReachable === false ? 'No' : 'Yes' },
+        { label: 'Run by', value: 'Pocket Lab' },
+        { label: 'Refresh behavior', value: 'Updates automatically when needed' },
+        { label: 'Information', value: savedStateOnly ? 'Saved information' : 'Current information' },
+        { label: 'Pocket Lab reachable', value: backendReachable === false ? 'No' : 'Yes' },
         { label: 'Latest run', value: shortId(lastRun?.run_id) || 'not available' },
-        { label: 'Evidence refs', value: Number(evidenceFileCount || currentEvidenceRefs.length || 0) },
-        { label: 'Details hydrated', value: detailsHydrated ? 'Yes' : 'No' },
+        { label: 'Protected records', value: Number(evidenceFileCount || currentEvidenceRefs.length || 0) },
+        { label: 'Details loaded', value: detailsHydrated ? 'Yes' : 'No' },
         { label: 'Detail type', value: safeText(detailsHydration?.type || type, 'not open') },
       ],
     };
@@ -374,37 +374,37 @@ function buildDetails({ type, model = {} }) {
   if (type === 'checkPath') {
     const rows = timelineRows(executionSteps);
     return {
-      title: 'Check path',
+      title: 'How this check ran',
       status: rows.some((row) => row.toLowerCase().includes('failed')) ? 'review' : 'ready',
-      statusLabel: executionLiveLabelAligned || 'Backend-owned check path',
-      summary: 'This path shows the safe backend-owned handoff for the latest safety check.',
+      statusLabel: executionLiveLabelAligned || 'Protected check path',
+      summary: 'This shows how the latest safety check moved through its protected stages.',
       what_happened: rows.length ? rows : ['The check path appears after a safety check starts.'],
       what_changed: ['Opening this view did not start a new check.'],
       what_did_not_happen: [
-        'The frontend did not talk directly to NATS.',
-        'The frontend did not run shell commands.',
-        'The frontend did not run Lynis or Trivy.',
-        'No backend command payload was shown.',
+        'This screen did not connect directly to device messaging.',
+        'This screen did not run system commands.',
+        'Safety tools ran locally through Pocket Lab, not in this screen.',
+        'No private action details were shown.',
       ],
       saved_for_troubleshooting: {
         saved: Boolean(lastRun?.run_id),
         backend_only: true,
-        summary: 'Backend events and evidence remain protected. This view shows only the safe step summary.',
+        summary: 'Detailed check records stay protected. This view shows only the safe step summary.',
       },
-      next_step: rows.length ? 'Use this path to confirm request, worker, tool, and evidence progress.' : 'Run Safety Check to create a fresh check path.',
+      next_step: rows.length ? 'Use this path to confirm the request, local check, safety tools, and saved-result progress.' : 'Run Safety Check to create a fresh check path.',
       technicalDetails: [
         { label: 'Latest run', value: shortId(lastRun?.run_id) || 'not available' },
         { label: 'Step count', value: rows.length },
-        { label: 'Execution owner', value: 'FastAPI and worker' },
+        { label: 'Run by', value: 'Pocket Lab' },
       ],
     };
   }
 
   return {
-    title: 'Evidence summary',
+    title: 'Protected check record',
     status: latestEvidenceReceipt || evidenceReceipt ? 'ready' : 'review',
-    statusLabel: latestEvidenceReceipt?.status || evidenceReceipt?.status || 'Evidence summary',
-    summary: latestEvidenceReceipt?.summary || 'Evidence appears after a completed safety check.',
+    statusLabel: latestEvidenceReceipt?.status || evidenceReceipt?.status || 'Check record',
+    summary: latestEvidenceReceipt?.summary || 'A protected check record appears after a completed safety check.',
     what_happened: [
       `Tools: ${(Array.isArray(toolNames) && toolNames.length ? toolNames : ['Lynis', 'Trivy']).join(' + ')}`,
       sbomSaved ? 'SBOM was saved.' : 'SBOM is pending or not available yet.',
