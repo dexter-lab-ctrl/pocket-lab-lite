@@ -225,7 +225,10 @@ export function LiteSheet({
   }, [surfaceRef]);
   const variantClasses = LITE_SHEET_VARIANTS[variant] || LITE_SHEET_VARIANTS.manage;
   const reducedMotionRef = useReducedMotionPreference();
-  const safeMotionEnabled = motion === 'safe-grip' && open;
+  // Qualification mode already disables sheet motion at the CSS/runtime
+  // boundary. Keep the same semantic sheet surface, but avoid instantiating
+  // the gesture-driven spring path for measured Android interactions.
+  const safeMotionEnabled = motion === 'safe-grip' && open && !isLitePerformanceMode();
 
   useVisualViewportHeight(open);
   // The fixed qualification sheet already owns the interaction surface. Avoid

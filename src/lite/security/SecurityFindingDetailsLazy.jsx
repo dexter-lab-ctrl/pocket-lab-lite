@@ -176,6 +176,7 @@ export default function SecurityFindingDetailsLazy({ finding, context = {}, onCl
 
       <FindingContent className="lite-security-finding-premium-content" data-security-react-spring="finding-details-content" style={securityFindingMotionReduced ? undefined : findingContentSpring}>
       <LiteProgressiveDetails
+        sectionRenderMode="css-contained"
         title={title}
         status={tone}
         statusLabel={`Severity: ${severity}`}
