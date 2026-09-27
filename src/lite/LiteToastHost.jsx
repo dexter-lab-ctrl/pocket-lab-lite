@@ -1,6 +1,7 @@
 import React from 'react';
 import { CheckCircle2, Info, TriangleAlert, X, XCircle } from 'lucide-react';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
+import { friendlyLiteText } from '../lib/liteUxPresentation.js';
 
 const TOAST_ICONS = {
   success: CheckCircle2,
@@ -39,8 +40,8 @@ export default function LiteToastHost() {
           <div key={toast.id} className={`lite-toast is-${toast.kind || 'info'}`}>
             <Icon className="h-4 w-4" aria-hidden="true" />
             <div className="lite-toast-copy">
-              <strong>{toast.title}</strong>
-              {toast.message ? <p>{toast.message}</p> : null}
+              <strong>{friendlyLiteText(toast.title, 'Pocket Lab update')}</strong>
+              {toast.message ? <p>{friendlyLiteText(toast.message)}</p> : null}
             </div>
             <button type="button" className="lite-toast-close" onClick={() => dismissToast(toast.id)} aria-label="Dismiss message">
               <X className="h-4 w-4" />
