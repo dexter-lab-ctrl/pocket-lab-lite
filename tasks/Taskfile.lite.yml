@@ -378,6 +378,7 @@ tasks:
         tests/backend/test_lite_api.py
         tests/backend/test_lite_recovery.py
         tests/backend/test_lite_security.py
+        tests/backend/test_lite_ux_maturity_contract.py
 
   lite:test:frontend:
     desc: Run all frontend unit tests
