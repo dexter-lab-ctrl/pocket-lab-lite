@@ -22,7 +22,11 @@ function formatDuration(durationMs, durationSeconds) {
 }
 
 function safeToolLabels(toolStatus = []) {
-  return (Array.isArray(toolStatus) ? toolStatus : []).slice(0, 4).map((item) => `${String(item?.tool || 'tool').slice(0, 28)} ${String(item?.status || 'recorded').slice(0, 28)}`);
+  return (Array.isArray(toolStatus) ? toolStatus : []).slice(0, 4).map((item) => {
+    const raw = String(item?.tool || '').toLowerCase();
+    const label = raw.includes('lynis') ? 'System safety' : raw.includes('trivy') ? 'Apps and settings' : 'Safety check';
+    return `${label} ${String(item?.status || 'recorded').slice(0, 28)}`;
+  });
 }
 
 function initialHistoryPage(initialPage, history) {
@@ -56,7 +60,7 @@ export default function SecurityHistoryLazy({ history = [], initialPage = null, 
         <div><span>Trend</span><strong>{trendLabel || 'Not enough history'}</strong>{trendDetail ? <small>{trendDetail}</small> : null}</div>
       </div>
       {savedStateOnly ? <p className="lite-security-s7-saved-note">Showing saved history. Reconnect to load older checks.</p> : null}
-      {query.error ? <p role="alert">History needs a moment. {String(query.error?.message || query.error).slice(0, 140)}</p> : null}
+      {query.error ? <p role="alert">Safety history is temporarily unavailable. Reconnect or try again shortly.</p> : null}
       <LiteVirtualList
         items={rows}
         domain="securityHistory"
@@ -75,7 +79,7 @@ export default function SecurityHistoryLazy({ history = [], initialPage = null, 
         savedLoadMoreLabel="Reconnect to load older checks"
         onLoadMore={() => query.fetchNextPage({ cancelRefetch: false })}
         emptyState={<p>History will appear here after completed safety checks.</p>}
-        endState={rows.length ? <p className="lite-virtual-list__end">{allRows.length >= SECURITY_HISTORY_BROWSER_ROW_LIMIT && latestPage?.has_more ? 'Loaded Security history limit reached.' : 'End of loaded Security history.'}</p> : null}
+        endState={rows.length ? <p className="lite-virtual-list__end">{allRows.length >= SECURITY_HISTORY_BROWSER_ROW_LIMIT && latestPage?.has_more ? 'Loaded safety-history limit reached.' : 'End of loaded safety history.'}</p> : null}
         testId="security-history-list"
         renderItem={(entry) => {
           const counts = entry?.finding_counts || {};
@@ -90,7 +94,7 @@ export default function SecurityHistoryLazy({ history = [], initialPage = null, 
                 {tools.length ? <small>{tools.join(' · ')}</small> : null}
                 {entry?.timeout?.summary ? <small>{entry.timeout.summary}</small> : null}
                 {!entry?.timeout?.summary && entry?.status === 'failed' ? <small>{entry?.failure_message || 'The safety check did not finish.'}</small> : null}
-                {entry?.evidence_saved ? <small>Evidence saved</small> : null}
+                {entry?.evidence_saved ? <small>Protected result saved</small> : null}
               </div>
               <time dateTime={completedAt || undefined} title={completedAt ? formatLiteTime(completedAt) : 'Time unavailable'}>{completedAt ? formatLiteTime(completedAt) : 'Time unavailable'}</time>
             </div>
