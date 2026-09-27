@@ -21,7 +21,6 @@ function safeHistoryItems(history = [], latestPreviewReady = false) {
       title: backup.verification_status === 'verified' ? 'Backup verified and ready' : backup.summary || 'Backup created',
       meta: [
         backup.created_at ? formatLiteTime(backup.created_at) : '',
-        backup.engine || 'restic',
         `${backup.included_file_count || 0} item(s)`,
         backup.verification_status === 'verified' ? 'Verified' : 'Needs verification',
         backup.location?.display_name ? `From ${backup.location.display_name}` : '',
