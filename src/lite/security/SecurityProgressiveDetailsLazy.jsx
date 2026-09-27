@@ -458,9 +458,11 @@ export default function SecurityProgressiveDetailsLazy({ type = 'evidence', mode
     config: { tension: 240, friction: 30, mass: 0.8 },
     immediate: securityDetailsMotionReduced,
   });
+  const DetailsPanel = securityDetailsMotionReduced ? 'section' : animated.section;
+  const DetailsContent = securityDetailsMotionReduced ? 'div' : animated.div;
 
   return (
-    <animated.section
+    <DetailsPanel
       className={`lite-security-phase2-details-panel lite-security-details-premium-panel is-${details.status || 'neutral'}`}
       role="region"
       aria-label={`${details.title} details`}
@@ -468,7 +470,7 @@ export default function SecurityProgressiveDetailsLazy({ type = 'evidence', mode
       data-security-react-spring="details-panel"
       data-security-progressive-details-hydrated={detailsHydrated ? 'true' : 'false'}
       data-security-progressive-details-type={safeText(detailsHydration?.type || type, 'evidence')}
-      style={detailsPanelSpring}
+      style={securityDetailsMotionReduced ? undefined : detailsPanelSpring}
     >
       <div className="lite-security-phase2-details-head lite-security-details-premium-head">
         <div>
@@ -480,9 +482,10 @@ export default function SecurityProgressiveDetailsLazy({ type = 'evidence', mode
           <X className="h-4 w-4" />
         </button>
       </div>
-      <animated.div className="lite-security-details-premium-content" data-security-react-spring="details-content" style={detailsContentSpring}>
+      <DetailsContent className="lite-security-details-premium-content" data-security-react-spring="details-content" style={securityDetailsMotionReduced ? undefined : detailsContentSpring}>
         <LiteProgressiveDetails
           {...details}
+          sectionRenderMode="css-contained"
           history={type === 'history' ? {
             ...details.history,
             title: details.history?.title || 'History',
@@ -503,7 +506,7 @@ export default function SecurityProgressiveDetailsLazy({ type = 'evidence', mode
             ),
           } : details.history}
         />
-      </animated.div>
-    </animated.section>
+      </DetailsContent>
+    </DetailsPanel>
   );
 }

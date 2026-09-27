@@ -98,6 +98,25 @@ describe('Pocket Lab Lite UI performance policy guards', () => {
     expect(overlay).toContain('product overlays retain the existing body scroll lock.');
   });
 
+  it('keeps reduced-motion Security details on the static contained path', () => {
+    const overlay = read('src/lite/LiteOverlay.jsx');
+    const progressive = read('src/lite/security/SecurityProgressiveDetailsLazy.jsx');
+    const finding = read('src/lite/security/SecurityFindingDetailsLazy.jsx');
+    expect(overlay).toContain("motion === 'safe-grip' && open && !isLitePerformanceMode()");
+    expect(progressive).toContain('sectionRenderMode="css-contained"');
+    expect(finding).toContain('sectionRenderMode="css-contained"');
+    expect(progressive).toContain("securityDetailsMotionReduced ? 'section' : animated.section");
+  });
+
+  it('keeps below-the-fold detail cards and refresh feedback cheap to paint', () => {
+    const css = read('src/index.css');
+    expect(css).toContain('.lite-progressive-details-grid > .lite-progressive-detail-section');
+    expect(css).toContain('content-visibility: auto;');
+    expect(css).toContain('contain-intrinsic-size: auto 7.5rem;');
+    expect(css).toContain('.lite-refresh-status-popover');
+    expect(css).toContain('backdrop-filter: none !important;');
+  });
+
   it('does not start passive Security Manage progress polling during overlay qualification', () => {
     const policy = read('src/lib/liteSecurityProgressPolicy.js');
     expect(policy).toContain('shouldLoadSecurityProgress');

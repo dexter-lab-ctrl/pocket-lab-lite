@@ -171,14 +171,21 @@ fi
 [[ "$LITE_PERF_SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ ]] || fail 'LITE_PERF_SOURCE_COMMIT must be an exact 40-character Git commit.'
 
 printf '[ui-performance-android-preflight] source commit: %s\n' "$LITE_PERF_SOURCE_COMMIT"
-if (( baseline_mode == 1 )); then
-  printf '[ui-performance-android-preflight] running repeated baseline-normalized Android qualification\n'
-  exec bash scripts/dev/lite/run-ui-performance-android-baseline.sh
-fi
 
+# The smoke probe above opens and closes a short-lived CDP page. On physical
+# Android Chrome that can leave the owned candidate renderer backgrounded even
+# though the browser remains attached and the DOM is readable. Re-activate
+# the exact candidate after the probe and before either qualification mode so
+# baseline control samples and interaction evidence both measure the physical
+# foreground renderer.
 if [[ "${POCKETLAB_ANDROID_WAKE_BEFORE_QUALIFICATION:-0}" == "1" ]]; then
   powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
     -File scripts/dev/lite/prepare-ui-performance-android-candidate.ps1 -Wake -OpenCandidate
+fi
+
+if (( baseline_mode == 1 )); then
+  printf '[ui-performance-android-preflight] running repeated baseline-normalized Android qualification\n'
+  exec bash scripts/dev/lite/run-ui-performance-android-baseline.sh
 fi
 
 printf '[ui-performance-android-preflight] running physical Android UI performance qualification\n'
