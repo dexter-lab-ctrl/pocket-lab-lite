@@ -871,7 +871,7 @@ export function ResultNotice({ result, error }) {
     <StateSurface
       tone="empty"
       title={result?.accepted ? 'Request sent safely' : 'Action recorded'}
-      description={reference ? `Pocket Lab queued this through the control plane. Reference: ${reference}` : (result?.summary || 'Pocket Lab accepted the request.')}
+      description={reference ? `Pocket Lab accepted this request. Reference: ${reference}` : (result?.summary || 'Pocket Lab accepted the request.')}
       className="mt-4"
     />
   );
@@ -987,9 +987,9 @@ export function LiteTechnicalDetails({ summary = 'Technical details', children, 
   return <details className={`lite-technical-details ${className}`.trim()}><summary>{summary}</summary><div>{children}</div></details>;
 }
 
-export function LoadingCard({ label = 'Loading Pocket Lab Lite...' }) {
+export function LoadingCard({ label = 'Getting the latest Pocket Lab information…' }) {
   return (
-    <GlassCard>
+    <GlassCard className="lite-loading-card" data-lite-loading-state="true">
       <div className="h-3 w-40 animate-pulse rounded-full bg-white/10" />
       <div className="mt-4 h-20 animate-pulse rounded-3xl bg-white/5" />
       <p className="mt-4 text-sm text-slate-400">{label}</p>
