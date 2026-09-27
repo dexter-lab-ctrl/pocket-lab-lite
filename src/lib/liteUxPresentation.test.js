@@ -12,7 +12,7 @@ import {
 describe('Pocket Lab Lite UX maturity presentation contract', () => {
   it('translates backend implementation language before it reaches normal UI', () => {
     expect(friendlyLiteText('FastAPI queued work for the backend worker over NATS/JetStream.')).toBe(
-      'Pocket Lab queued work for the backend Pocket Lab service over Pocket Lab connection.',
+      'Pocket Lab queued work for the Pocket Lab service over Pocket Lab connection.',
     );
     expect(assertPlainLanguage(friendlyLiteText('Polling: slow. Projection stale.'))).toEqual([]);
   });
@@ -25,6 +25,9 @@ describe('Pocket Lab Lite UX maturity presentation contract', () => {
       'backend-owned',
       'projection stale',
       'polling:',
+      'backend',
+      'control plane',
+      'reason code',
     ]));
   });
 
@@ -42,7 +45,7 @@ describe('Pocket Lab Lite UX maturity presentation contract', () => {
       { label: 'Polling', value: 'slow' },
     ]);
     expect(rows).toEqual([
-      expect.objectContaining({ label: 'Backend owner', value: 'Pocket Lab Pocket Lab service' }),
+      expect.objectContaining({ label: 'Pocket Lab owner', value: 'Pocket Lab service' }),
       expect.objectContaining({ label: 'Refreshing', value: 'slow' }),
     ]);
   });
