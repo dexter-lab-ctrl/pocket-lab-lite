@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, ArchiveRestore, Database, ShieldCheck } from 'lucide-react';
+import { ArchiveRestore, Database, ShieldCheck } from 'lucide-react';
 import { formatLiteTime } from '../../lib/liteApi.js';
 import { LiteButton, StatusBadge } from '../LiteUi.jsx';
 import { LiteConsequenceSummary } from '../LiteUx.jsx';
@@ -21,7 +21,7 @@ export default function RecoveryConfirmSheetLazy({
   onConfirm,
 }) {
   const databaseRestore = kind === 'database';
-  const title = databaseRestore ? 'Restore Pocket Lab database?' : 'Restore this backup?';
+  const title = databaseRestore ? 'Restore Pocket Lab data?' : 'Restore this backup?';
   const backupLabel = backup?.created_at ? formatLiteTime(backup.created_at) : 'Selected verified backup';
   const sizeLabel = backup?.size_bytes ? formatSize(backup.size_bytes) : null;
   const includedComponents = Array.isArray(preview?.included_components) ? preview.included_components : [];
