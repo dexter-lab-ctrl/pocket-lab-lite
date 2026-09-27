@@ -24766,3 +24766,125 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
 .theme-pocket-lite-daylight.lite-overlay-root .lite-security-phase3-panel {
   background: #f8fafc !important;
 }
+
+
+/* Pocket Lab Lite enterprise UX maturity primitives */
+.lite-ux-freshness {
+  display: flex;
+  align-items: flex-start;
+  gap: .65rem;
+  margin: .75rem 0 1rem;
+  padding: .7rem .85rem;
+  border: 1px solid rgba(148,163,184,.16);
+  border-radius: 1rem;
+  background: rgba(15,23,42,.42);
+  color: rgb(203 213 225);
+}
+.lite-ux-freshness span { display:flex; flex-direction:column; gap:.15rem; min-width:0; }
+.lite-ux-freshness strong { font-size:.82rem; color:rgb(226 232 240); }
+.lite-ux-freshness small { font-size:.72rem; color:rgb(148 163 184); }
+.lite-ux-freshness.is-saved,
+.lite-ux-freshness.is-stale { border-color:rgba(245,158,11,.28); background:rgba(120,53,15,.12); }
+.lite-ux-freshness.is-refreshing { border-color:rgba(34,211,238,.24); }
+
+.lite-ux-section-header {
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:1rem;
+  margin:1.25rem 0 .8rem;
+}
+.lite-ux-section-header > div { min-width:0; }
+.lite-ux-section-header span {
+  display:block;
+  margin-bottom:.2rem;
+  font-size:.68rem;
+  font-weight:800;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:rgb(103 232 249);
+}
+.lite-ux-section-header h2 { margin:0; font-size:1.15rem; line-height:1.3; color:white; }
+.lite-ux-section-header p { margin:.28rem 0 0; max-width:46rem; color:rgb(148 163 184); font-size:.84rem; line-height:1.55; }
+
+.lite-ux-technical-facts {
+  margin-top:1rem;
+  border:1px solid rgba(148,163,184,.16);
+  border-radius:1rem;
+  background:rgba(15,23,42,.38);
+  overflow:hidden;
+}
+.lite-ux-technical-facts > summary {
+  cursor:pointer;
+  list-style:none;
+  padding:.9rem 1rem;
+  font-weight:800;
+  color:rgb(226 232 240);
+}
+.lite-ux-technical-facts > summary::-webkit-details-marker { display:none; }
+.lite-ux-technical-facts > summary::after { content:"+"; float:right; color:rgb(103 232 249); }
+.lite-ux-technical-facts[open] > summary::after { content:"−"; }
+.lite-ux-technical-facts-body { border-top:1px solid rgba(148,163,184,.12); padding:1rem; }
+.lite-ux-technical-facts-body > p { margin:0 0 .8rem; color:rgb(148 163 184); font-size:.8rem; }
+.lite-ux-technical-facts dl { margin:0; display:grid; gap:.5rem; }
+.lite-ux-technical-facts dl > div {
+  display:grid;
+  grid-template-columns:minmax(7rem,.8fr) minmax(0,1.6fr);
+  gap:.8rem;
+  padding:.7rem .75rem;
+  border-radius:.75rem;
+  background:rgba(30,41,59,.46);
+}
+.lite-ux-technical-facts dt { color:rgb(148 163 184); font-size:.75rem; }
+.lite-ux-technical-facts dd { margin:0; color:rgb(226 232 240); font-size:.78rem; overflow-wrap:anywhere; }
+.lite-ux-technical-facts dd small { display:block; margin-top:.16rem; color:rgb(148 163 184); }
+
+.lite-ux-history-timeline { list-style:none; margin:.75rem 0 0; padding:0; display:grid; gap:.2rem; }
+.lite-ux-history-timeline li { position:relative; display:grid; grid-template-columns:1rem 1fr; gap:.7rem; padding:.72rem 0; }
+.lite-ux-history-marker { width:.58rem; height:.58rem; margin-top:.3rem; border-radius:999px; background:rgb(103 232 249); box-shadow:0 0 0 4px rgba(34,211,238,.08); }
+.lite-ux-history-timeline strong { color:white; font-size:.82rem; }
+.lite-ux-history-timeline p { margin:.18rem 0; color:rgb(203 213 225); font-size:.78rem; line-height:1.5; }
+.lite-ux-history-timeline time { color:rgb(100 116 139); font-size:.7rem; }
+
+.lite-ux-action-outcome,
+.lite-ux-consequence-summary {
+  display:grid;
+  gap:.75rem;
+  margin-top:.9rem;
+  padding:1rem;
+  border-radius:1rem;
+  border:1px solid rgba(34,197,94,.22);
+  background:rgba(20,83,45,.12);
+}
+.lite-ux-consequence-summary { border-color:rgba(245,158,11,.26); background:rgba(120,53,15,.1); }
+.lite-ux-action-outcome-head,
+.lite-ux-consequence-head { display:flex; gap:.65rem; align-items:flex-start; }
+.lite-ux-action-outcome strong,
+.lite-ux-consequence-summary strong { color:white; }
+.lite-ux-action-outcome p,
+.lite-ux-consequence-summary p { margin:.18rem 0 0; color:rgb(203 213 225); font-size:.8rem; line-height:1.5; }
+.lite-ux-action-outcome > div > span,
+.lite-ux-consequence-summary > div > span {
+  display:block;
+  font-size:.68rem;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:rgb(148 163 184);
+}
+.lite-ux-consequence-summary ul { margin:.35rem 0 0 1rem; padding:0; color:rgb(203 213 225); font-size:.8rem; line-height:1.55; }
+
+.lite-ux-empty-state { margin:.75rem 0; }
+.lite-loading-card { overflow:hidden; }
+
+@media (max-width: 640px) {
+  .lite-ux-section-header { align-items:stretch; flex-direction:column; }
+  .lite-ux-technical-facts dl > div { grid-template-columns:1fr; gap:.2rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lite-ux-freshness,
+  .lite-ux-history-marker,
+  .lite-ux-action-outcome,
+  .lite-ux-consequence-summary { animation:none !important; transition:none !important; }
+}
