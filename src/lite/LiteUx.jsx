@@ -40,10 +40,9 @@ export function LiteEmptyState({ title, description, action = null, tone = 'neut
       className={`lite-ux-empty-state ${className}`.trim()}
       title={title}
       description={description}
-    >
-      <Icon className="h-5 w-5" aria-hidden="true" />
-      {action?.label ? <LiteButton tone={action.tone || 'secondary'} onClick={action.onClick} disabled={Boolean(action.disabled)}>{action.label}</LiteButton> : null}
-    </StateSurface>
+      icon={Icon}
+      action={action?.label ? <LiteButton tone={action.tone || 'secondary'} onClick={action.onClick} disabled={Boolean(action.disabled)}>{action.label}</LiteButton> : null}
+    />
   );
 }
 
