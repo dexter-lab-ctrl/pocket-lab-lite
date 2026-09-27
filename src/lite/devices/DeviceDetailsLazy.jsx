@@ -37,6 +37,7 @@ const DEVICE_DETAILS_TECHNICAL_DETAILS_COLLAPSED = true;
 const DEVICE_HEALTH_HISTORY_PROGRESSIVE_DISCLOSURE_D4 = true;
 const DEVICE_HEALTH_RECOMMENDATIONS_DO_NOT_EXECUTE_D4 = true;
 const DEVICE_DETAILS_NONCRITICAL_DELAY_FRAMES = isLitePerformanceMode() ? 45 : 2;
+const DEVICE_AWARENESS_NONCRITICAL_DELAY_FRAMES = isLitePerformanceMode() ? 90 : 2;
 void DEVICE_DETAILS_USES_PROGRESSIVE_FOUNDATION;
 void DEVICE_DETAILS_HISTORY_IS_LAZY;
 void DEVICE_DETAILS_BACKEND_EVIDENCE_BOUNDARY;
@@ -397,7 +398,7 @@ function LiteDeferredDetails({ render, delayFrames = 1 }) {
 }
 
 const DEVICE_AWARENESS_INITIAL_SECTION_COUNT = 1;
-const DEVICE_AWARENESS_SECTION_BATCH_SIZE = 1;
+const DEVICE_AWARENESS_SECTION_BATCH_SIZE = 2;
 
 function DeviceAwarenessDetails({ device }) {
   const sections = React.useMemo(() => {
@@ -779,7 +780,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
       </section>);
       }} />
 
-      <LiteDeferredDetails delayFrames={DEVICE_DETAILS_NONCRITICAL_DELAY_FRAMES} render={() => <DeviceAwarenessDetails device={device} />} />
+      <LiteDeferredDetails delayFrames={DEVICE_AWARENESS_NONCRITICAL_DELAY_FRAMES} render={() => <DeviceAwarenessDetails device={device} />} />
 
       <details className="lite-device-advanced-details">
         <summary>
@@ -794,7 +795,6 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
           const attention = deviceAttention(device);
           return (
             <LiteProgressiveDetails
-              sectionRenderMode="css-contained"
               title={title}
               status={status}
               statusLabel={deviceStatusLabel(effectiveStatus)}
