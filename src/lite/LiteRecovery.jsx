@@ -34,6 +34,7 @@ import {
   LoadingCard,
   LiteFlowStatusPanel,
 } from './LiteUi.jsx';
+import { LiteFreshness, LiteHistoryTimeline } from './LiteUx.jsx';
 
 const RECOVERY_LAYOUT_SIMPLIFICATION_PHASE_R1 = true;
 const RECOVERY_SHARED_MANAGE_SHELL_PHASE_R2 = true;
@@ -104,6 +105,8 @@ export default function RecoveryScreen() {
     backendDegraded: summaryBackendDegraded,
     degradedReason: summaryDegradedReason,
     dataSource: summaryDataSource,
+    lastUpdatedLabel,
+    isExpired,
   } = useLiteResource(liteApi.recoverySummary, [], {
     pollingMode: 'slow',
     isLive: recoveryPollingIsLive,
@@ -351,16 +354,18 @@ export default function RecoveryScreen() {
   });
   const latestActivity = [
     latestBackup ? {
-      key: 'backup',
-      icon: ArchiveRestore,
+      id: 'backup',
       title: latestBackupVerified ? 'Backup verified' : 'Backup saved',
-      detail: latestBackup.created_at ? formatLiteTime(latestBackup.created_at) : 'Time unavailable',
+      summary: latestBackupVerified ? 'This restore point passed its verification check.' : 'Verify this backup before relying on it for recovery.',
+      time: latestBackup.created_at ? formatLiteTime(latestBackup.created_at) : 'Time unavailable',
+      state: latestBackupVerified ? 'completed' : 'review',
     } : null,
     lastRestore?.restore_id ? {
-      key: 'restore',
-      icon: RotateCcw,
+      id: 'restore',
       title: lastRestore.summary || 'Restore recorded',
-      detail: lastRestore.completed_at ? formatLiteTime(lastRestore.completed_at) : lastRestore.status || 'Recorded',
+      summary: restoreSucceeded ? 'Pocket Lab completed the restore and checked the workspace afterward.' : 'Review this restore result before relying on the recovered state.',
+      time: lastRestore.completed_at ? formatLiteTime(lastRestore.completed_at) : lastRestore.status || 'Recorded',
+      state: restoreSucceeded ? 'completed' : 'review',
     } : null,
   ].filter(Boolean);
 
@@ -693,12 +698,19 @@ export default function RecoveryScreen() {
         primaryAction={recoveryStory.nextAction?.id === 'backup' ? { label: 'Back Up Now', onClick: backup, disabled: Boolean(busy) || recoveryWriteBlocked, disabledReason: recoveryWriteBlockedReason } : recoveryStory.nextAction?.id === 'verify' ? { label: 'Verify Backup', onClick: verifyLatestBackup, disabled: Boolean(busy) || recoveryWriteBlocked, disabledReason: recoveryWriteBlockedReason } : recoveryStory.nextAction?.id === 'preview' ? { label: 'Preview Restore', onClick: previewLatestRestore, disabled: Boolean(busy) || recoveryWriteBlocked, disabledReason: recoveryWriteBlockedReason } : recoveryStory.nextAction?.id === 'refresh' ? { label: 'Refresh Recovery', onClick: refreshSummary } : recoveryStory.nextAction?.id === 'manage' ? { label: recoveryStory.nextAction.label, onClick: () => openRecoveryManage(recoveryStory.nextAction.section) } : null}
         manageAction={{ label: 'Manage Recovery', onClick: () => openRecoveryManage('backup') }}
       />
+      <LiteFreshness
+        saved={savedStateOnly}
+        stale={projectionStale || isExpired}
+        refreshing={refreshing}
+        lastUpdatedLabel={lastUpdatedLabel}
+        backendReachable={backendReachable}
+      />
 
       <LiteActionRow
         className="lite-recovery-runtime-row"
         label="System recovery"
         value={runtimeRecoveryLabel}
-        summary={runtimeRecovery?.summary || 'Pocket Lab is checking the protected server runtime.'}
+        summary={runtimeRecovery?.summary || 'Pocket Lab is checking whether the workspace can recover automatically.'}
         attention={!runtimeRecovery?.stable}
       />
 
@@ -822,12 +834,12 @@ export default function RecoveryScreen() {
             <div><Activity className="h-5 w-5" /><span><strong>Recent activity</strong><small>Latest backup and restore events</small></span></div>
             <StatusBadge status={latestActivity.length ? 'healthy' : 'unknown'}>{latestActivity.length ? 'Updated' : 'Quiet'}</StatusBadge>
           </div>
-          <div className="lite-recovery-r1-activity-list">
-            {latestActivity.length ? latestActivity.map((item) => {
-              const Icon = item.icon;
-              return <div key={item.key}><Icon className="h-4 w-4" /><span><strong>{item.title}</strong><small>{item.detail}</small></span></div>;
-            }) : <p>No recovery activity yet. Create a backup to begin.</p>}
-          </div>
+          <LiteHistoryTimeline
+            items={latestActivity}
+            emptyTitle="No recovery activity yet"
+            emptyDescription="Create a backup to begin building a recovery history."
+            className="lite-recovery-r1-activity-list"
+          />
           <LiteButton tone="secondary" onClick={() => openRecoveryManage('history')}>View activity</LiteButton>
         </GlassCard>
       </LiteMotionReveal>
@@ -842,7 +854,7 @@ export default function RecoveryScreen() {
         className="lite-recovery-manage-sheet"
         bodyClassName="lite-recovery-manage-scroll"
       >
-        <React.Suspense fallback={<div className="lite-recovery-details-loading">Loading backup and restore tools…</div>}>
+        <React.Suspense fallback={<div className="lite-recovery-details-loading">Opening recovery tools…</div>}>
           <RecoveryManageSheetLazy
             section={recoveryManageSection}
             onSectionChange={setRecoveryManageSection}
