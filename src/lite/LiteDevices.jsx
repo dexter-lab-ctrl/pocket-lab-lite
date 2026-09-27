@@ -906,7 +906,7 @@ export default function DevicesScreen() {
                 </div>
               </div>
 
-              <p>Run this in Termux on the new phone. Pocket Lab will set up the secure connection and start the device agent automatically.</p>
+              <p>Run this in Termux on the new phone. Pocket Lab will set up the secure connection and start the device service automatically.</p>
 
               {inviteCommand(latestInvite) ? (
                 <>
@@ -927,18 +927,18 @@ export default function DevicesScreen() {
                       <li>Saves this device’s connection file.</li>
                       <li>Checks the secure Pocket Lab connection.</li>
                       <li>Downloads Pocket Lab Lite if needed.</li>
-                      <li>Starts the small device agent.</li>
-                      <li>The device appears Online when heartbeats arrive.</li>
+                      <li>Starts the small Pocket Lab device service.</li>
+                      <li>The device appears Online after it connects and reports back.</li>
                     </ul>
                   </details>
 
                   <details className="lite-invite-details">
                     <summary>Troubleshooting</summary>
                     <ol>
-                      <li>Check that Tailscale is connected.</li>
-                      <li>Run: <code>source ~/.pocketlab-lite-agent.env && echo $POCKETLAB_NATS_URL</code></li>
-                      <li>The value should not be <code>nats://127.0.0.1:4222</code> on a secondary phone.</li>
-                      <li>Run: <code>tail -n 80 ~/pocketlab-agent-*.log</code></li>
+                      <li>Check that the device is connected to your private network.</li>
+                      <li>Open the device card and review Connection and Health.</li>
+                      <li>If the device service is stopped, use the guided restart or recovery action when available.</li>
+                      <li>If the device identity does not match, use the explicit repair or rejoin flow instead of reusing an old invite.</li>
                     </ol>
                   </details>
                 </>
@@ -953,22 +953,22 @@ export default function DevicesScreen() {
         <section className="lite-devices-list-area" aria-busy={loading ? 'true' : 'false'}>
           <div className="lite-devices-section-title">
             <div>
-              <p>Fleet</p>
+              <p>Workspace</p>
               <h2>Devices</h2>
               <small>Current connection, system identity, and health at a glance.</small>
             </div>
             <div className="lite-devices-section-metrics" aria-label="Device totals">
               {savedStateOnly ? <span><strong>Saved</strong> information</span> : <span><strong>{onlineDevices}</strong> online</span>}
               <span><strong>{devices.length}</strong> total</span>
-              {healthAttentionCurrent ? <span><strong>{healthAttentionCount}</strong> health attention</span> : null}
+              {healthAttentionCurrent ? <span><strong>{healthAttentionCount}</strong> need attention</span> : null}
             </div>
           </div>
 
           {error ? (
             <StateSurface
               tone="degraded"
-              title="Device list needs a moment"
-              description={error}
+              title="Devices are temporarily unavailable"
+              description="Pocket Lab could not confirm the latest device information. Saved information remains visible when available."
               className="mb-4"
             />
           ) : null}
