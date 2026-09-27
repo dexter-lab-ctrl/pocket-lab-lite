@@ -1,4 +1,9 @@
 const BACKEND_LANGUAGE_REPLACEMENTS = Object.freeze([
+  [/\bbackend[- ]owned\b/gi, 'Pocket Lab-managed'],
+  [/\bbackend worker(?:s)?\b/gi, 'Pocket Lab service'],
+  [/\bbackend\b/gi, 'Pocket Lab'],
+  [/\bcontrol plane\b/gi, 'Pocket Lab'],
+  [/\breason code\b/gi, 'support reference'],
   [/\bNATS(?:\/JetStream)?\b/gi, 'Pocket Lab connection'],
   [/\bJetStream\b/gi, 'Pocket Lab connection'],
   [/\bFastAPI\b/gi, 'Pocket Lab'],
@@ -27,6 +32,9 @@ export const LITE_DEFAULT_UI_FORBIDDEN_TERMS = Object.freeze([
   'sqlite',
   'command payload',
   'durable consumer',
+  'backend',
+  'control plane',
+  'reason code',
 ]);
 
 export function friendlyLiteText(value, fallback = '') {
