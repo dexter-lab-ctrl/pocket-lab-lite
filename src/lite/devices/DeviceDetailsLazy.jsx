@@ -144,7 +144,7 @@ function deviceWhatHappened(device) {
 
   const supervisorStatus = supervisorStatusLabel(device);
   if (supervisorStatus !== 'No supervisor status reported') {
-    happened.push(`Supervisor: ${supervisorStatus}.`);
+    happened.push(`Recovery service: ${supervisorStatus}.`);
   }
   return happened;
 }
@@ -315,7 +315,7 @@ function technicalRows(device) {
           || device?.last_seen,
       ),
     },
-    { label: 'Supervisor', value: supervisorStatusLabel(device) },
+    { label: 'Recovery service', value: supervisorStatusLabel(device) },
     { label: 'Capabilities', value: deviceCapabilityLabels(device).join(', ') },
     { label: 'OS family', value: device?.system_profile?.os_family },
     { label: 'Operating system', value: [device?.system_profile?.os_name, device?.system_profile?.os_version].filter(Boolean).join(' ') },
@@ -333,8 +333,8 @@ function technicalRows(device) {
     { label: 'Python', value: device?.system_profile?.python_version },
     { label: 'Agent version', value: agentSoftware.version || device?.system_profile?.agent_version },
     { label: 'Agent version freshness', value: agentSoftware.version ? titleCase(agentSoftware.freshness, 'Unknown') : '' },
-    { label: 'Supervisor version', value: supervisorSoftware.version || device?.system_profile?.supervisor_version },
-    { label: 'Supervisor version freshness', value: supervisorSoftware.version ? titleCase(supervisorSoftware.freshness, 'Unknown') : '' },
+    { label: 'Recovery service version', value: supervisorSoftware.version || device?.system_profile?.supervisor_version },
+    { label: 'Recovery service version freshness', value: supervisorSoftware.version ? titleCase(supervisorSoftware.freshness, 'Unknown') : '' },
     { label: 'Uptime', value: device?.system_health?.uptime_label },
     { label: 'System load', value: device?.system_health?.load_status ? device.system_health.load_status.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()) : '' },
     { label: 'Load average', value: Array.isArray(device?.system_health?.load_average) ? device.system_health.load_average.filter((value) => value !== null).join(' / ') : '' },
@@ -409,7 +409,7 @@ function DeviceAwarenessDetails({ device }) {
     const dependencies = device?.dependencies || {};
     const removal = device?.removal_assessment || {};
     return [
-      <section key="connection" className="lite-device-awareness-section" aria-label="Connection lifecycle">
+      <section key="connection" className="lite-device-awareness-section" aria-label="Connection status">
         <span>Connection</span>
         <strong>{deviceConnectionLabel(device)}</strong>
         <p>
@@ -424,18 +424,18 @@ function DeviceAwarenessDetails({ device }) {
         </p>
         <dl>
           <div>
-            <dt>Heartbeat</dt>
+            <dt>Device check-in</dt>
             <dd>{formatDeviceTime(
               device?.last_seen_state?.last_heartbeat_at,
               'No heartbeat reported',
             )}</dd>
           </div>
           <div>
-            <dt>Supervisor</dt>
+            <dt>Recovery service</dt>
             <dd>{formatDeviceTime(
               device?.last_seen_state?.last_supervisor_heartbeat_at
                 || device?.last_supervisor_at,
-              'No supervisor heartbeat reported',
+              'No recovery-service check-in reported',
             )}</dd>
           </div>
           <div>
@@ -486,7 +486,7 @@ function DeviceAwarenessDetails({ device }) {
               </li>
             ))}
           </ul>
-        ) : <p>Service status will appear after the next supervisor report.</p>}
+        ) : <p>Service status will appear after the device reports again.</p>}
         {!restartAssessment.allowed ? <p>{restartAssessment.summary || 'Restart actions are unavailable until the device reports a safe recovery state.'}</p> : null}
       </section>,
 
@@ -497,7 +497,7 @@ function DeviceAwarenessDetails({ device }) {
           <ul>{dependencies.hosted_apps.map((app) => <li key={app.app_id}><strong>{app.label}</strong> · {titleCase(app.status)}</li>)}</ul>
         ) : <p>No hosted apps reported.</p>}
         {Number(dependencies.backup_set_count || 0) > 0 ? <p>Stores {dependencies.backup_set_count} verified backup set{Number(dependencies.backup_set_count) === 1 ? '' : 's'}.</p> : null}
-        <p>Command delivery: {deviceCommandDeliveryLabel(device)}</p>
+        <p>Action delivery: {deviceCommandDeliveryLabel(device)}</p>
       </section>,
 
       <section key="removal" className="lite-device-awareness-section lite-device-awareness-removal" aria-label="Removal impact">
@@ -784,8 +784,8 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
 
       <details className="lite-device-advanced-details">
         <summary>
-          <span>Diagnostics and history</span>
-          <small>Technical details, safe activity summary, and troubleshooting records</small>
+          <span>Connection, health and history</span>
+          <small>Safe operational facts, recent health changes, and troubleshooting context</small>
         </summary>
         <LiteDeferredDetails delayFrames={DEVICE_DETAILS_NONCRITICAL_DELAY_FRAMES} render={() => {
           const historyItems = Array.isArray(historyQuery.data?.items) && historyQuery.data.items.length
