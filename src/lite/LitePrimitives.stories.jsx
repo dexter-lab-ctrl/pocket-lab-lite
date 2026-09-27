@@ -30,7 +30,7 @@ const shell = (children) => (
 
 export const OperationalReady = {
   render: () => shell(
-    <LiteOperationalStory story={{ state: 'ready', tone: 'ready', headline: 'Everything looks good', summary: 'Pocket Lab is showing current server-owned state.', freshness: { label: 'Fresh just now', state: 'live' } }} manageAction={{ label: 'Manage', onClick: () => {} }} />,
+    <LiteOperationalStory story={{ state: 'ready', tone: 'ready', headline: 'Everything looks good', summary: 'Pocket Lab is showing current workspace information.', freshness: { label: 'Fresh just now', state: 'live' } }} manageAction={{ label: 'Manage', onClick: () => {} }} />,
   ),
 };
 
@@ -42,20 +42,20 @@ export const OperationalAttention = {
 
 export const OperationalSaved = {
   render: () => shell(
-    <LiteOperationalStory story={{ state: 'saved', tone: 'saved', headline: 'Showing saved state', summary: 'Reconnect to refresh current information.', freshness: { label: 'Saved 12 minutes ago', state: 'saved' } }} />,
+    <LiteOperationalStory story={{ state: 'saved', tone: 'saved', headline: 'Showing saved information', summary: 'Reconnect to refresh current information.', freshness: { label: 'Saved 12 minutes ago', state: 'saved' } }} />,
   ),
 };
 
 export const LongCopy = {
   render: () => shell(
-    <LiteOperationalStory story={{ state: 'attention', tone: 'attention', headline: 'A deliberately long workspace status heading remains readable without forcing horizontal scrolling on narrow screens', summary: 'This intentionally long summary exercises wrapping for worst-plausible explanatory copy while keeping the next action reachable and the state meaning intact.', consequence: 'No backend capability is invented by this presentation-only stress story.' }} primaryAction={{ label: 'Review the current state', onClick: () => {} }} />,
+    <LiteOperationalStory story={{ state: 'attention', tone: 'attention', headline: 'A deliberately long workspace status heading remains readable without forcing horizontal scrolling on narrow screens', summary: 'This intentionally long summary exercises wrapping for worst-plausible explanatory copy while keeping the next action reachable and the state meaning intact.', consequence: 'No unavailable capability is implied by this presentation-only stress story.' }} primaryAction={{ label: 'Review the current state', onClick: () => {} }} />,
   ),
   parameters: { viewport: { defaultViewport: 'mobile360' } },
 };
 
 export const ActionRowReady = {
   render: () => shell(
-    <LiteActionRow label="Restart Agent" value="Ready" summary="Pocket Lab can send this request through the control plane." action={{ label: 'Restart Agent', onClick: () => {} }} />,
+    <LiteActionRow label="Restart Device Service" value="Ready" summary="Pocket Lab can safely send this request to the device." action={{ label: 'Restart Device Service', onClick: () => {} }} />,
   ),
 };
 
@@ -76,13 +76,13 @@ export const OutcomeFailed = {
 
 export const FlowWorking = {
   render: () => shell(
-    <LiteFlowStatusPanel title="Restart Agent" label="Repairing" tone="info" note="Progress remains backend-owned." steps={[{ id: 'accepted', label: 'Request accepted', state: 'complete' }, { id: 'restart', label: 'Agent restarting', state: 'active' }, { id: 'heartbeat', label: 'Waiting for fresh heartbeat', state: 'waiting' }]} />,
+    <LiteFlowStatusPanel title="Restart Device Service" label="Repairing" tone="info" note="Pocket Lab reports each completed stage." steps={[{ id: 'accepted', label: 'Request accepted', state: 'complete' }, { id: 'restart', label: 'Device service restarting', state: 'active' }, { id: 'heartbeat', label: 'Waiting for the device to report again', state: 'waiting' }]} />,
   ),
 };
 
 export const FlowFailed = {
   render: () => shell(
-    <LiteFlowStatusPanel title="Restart Agent" label="Needs attention" tone="danger" note="No false completion is shown." steps={[{ id: 'accepted', label: 'Request accepted', state: 'complete' }, { id: 'restart', label: 'Agent restart failed', state: 'failed' }, { id: 'heartbeat', label: 'Fresh heartbeat', state: 'waiting' }]} />,
+    <LiteFlowStatusPanel title="Restart Device Service" label="Needs attention" tone="danger" note="No false completion is shown." steps={[{ id: 'accepted', label: 'Request accepted', state: 'complete' }, { id: 'restart', label: 'Device service restart failed', state: 'failed' }, { id: 'heartbeat', label: 'Fresh device check-in', state: 'waiting' }]} />,
   ),
 };
 
@@ -93,7 +93,7 @@ function SheetHarness({ details = false }) {
       <button type="button" onClick={() => setOpen(true)}>Open Manage</button>
       {details ? (
         <LiteDetailsPanel open={open} onClose={() => setOpen(false)} title="Action details" description="Focused details stay contained.">
-          <LiteActionRow label="Outcome" value="Saved" summary="Sanitized presentation only." />
+          <LiteActionRow label="Outcome" value="Saved" summary="Safe operational summary only." />
         </LiteDetailsPanel>
       ) : (
         <LiteSheet open={open} onClose={() => setOpen(false)} title="Manage details" description="Responsive side panel or bottom sheet.">
