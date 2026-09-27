@@ -75,8 +75,8 @@ function RulesActivationProgress({ activation, backendReachable }) {
             : recovery
               ? 'The candidate did not complete verification. Pocket Lab is restoring the previous known-good revision before allowing protected changes.'
               : backendReachable
-                ? 'Protected changes stay fail-closed while the supervisor advances each server-reported phase.'
-                : 'Fresh supervisor proof is temporarily unavailable. Pocket Lab will not advance this progress view from saved state alone.'}
+                ? 'Protected changes stay blocked while Pocket Lab safely advances and verifies each update stage.'
+                : 'Current protection confirmation is temporarily unavailable. Pocket Lab will not advance this progress view from saved information alone.'}
       </p>
       <ol className="lite-rules-activation-steps" aria-label="Safety Rules update progress" aria-live="polite">
         {RULE_ACTIVATION_STEPS.map((step, index) => {
