@@ -692,8 +692,8 @@ function LiteAppShell() {
           <div className="flex items-start gap-3">
             <div className="rounded-2xl border border-slate-300/20 bg-slate-500/10 p-2 text-slate-200"><WifiOff className="h-5 w-5" /></div>
             <div className="min-w-0">
-              <p className="text-sm font-black text-white">You are offline</p>
-              <p className="mt-1 text-sm text-slate-300">Pocket Lab Lite will show cached information where possible. Changes are paused until your connection returns.</p>
+              <p className="text-sm font-black text-white">Using saved information</p>
+              <p className="mt-1 text-sm text-slate-300">You can keep reviewing your workspace. Actions that need a live connection will be available again after you reconnect.</p>
             </div>
           </div>
         </div>
@@ -715,7 +715,7 @@ function LiteAppShell() {
         </div>
       </header>
 
-      <nav className="pocket-nav-dock scrollbar-none" aria-label="Pocket Lab Lite sections" data-lite-perf-primitive="navigation">
+      <nav className="pocket-nav-dock scrollbar-none" aria-label="Pocket Lab sections" data-lite-perf-primitive="navigation">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = activeScreenId === item.id;
