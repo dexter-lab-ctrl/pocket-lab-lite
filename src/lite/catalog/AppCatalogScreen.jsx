@@ -190,7 +190,7 @@ const PHOTO_PRISM_ACTION_COPY = {
   remove_app: {
     eyebrow: 'Danger zone',
     label: 'Remove app',
-    description: 'Remove PhotoPrism while preserving photos, backups, and backend records by default.',
+    description: 'Remove PhotoPrism while preserving photos, backups, and protected troubleshooting records by default.',
   },
 };
 
@@ -223,7 +223,7 @@ function actionCopy(actionId) {
   return PHOTO_PRISM_ACTION_COPY[actionId] || {
     eyebrow: 'Action',
     label: actionId.replace(/_/g, ' '),
-    description: 'Pocket Lab will run this safely through the backend.',
+    description: 'Pocket Lab will run this through its protected local service.',
   };
 }
 
@@ -246,7 +246,7 @@ function busyActionLabel(actionId) {
 const APP_ACTION_CATEGORY_ORDER = ['media', 'safety', 'recovery', 'setup', 'danger'];
 
 const APP_ACTION_CATEGORY_COPY = {
-  media: { label: 'Photos', summary: 'Connect and import photos through backend-owned actions.' },
+  media: { label: 'Photos', summary: 'Connect and import photos through Pocket Lab-managed actions.' },
   safety: { label: 'Safety', summary: 'Check app health and protected records.' },
   recovery: { label: 'Recovery', summary: 'Back up, preview restore, and repair safely.' },
   setup: { label: 'App setup', summary: 'Install or check update readiness.' },
@@ -1533,8 +1533,8 @@ function actionDetailList(actionId, items, fallback = []) {
   if (actionId !== 'backup_app') return filtered;
   return filtered
     .map((item) => {
-      if (item === 'Pocket Lab queued or ran an app backup through the backend worker path.') {
-        return 'Pocket Lab asked the backend worker to save PhotoPrism app records.';
+      if (item === 'Pocket Lab saved the approved app records through its protected local service.') {
+        return 'Pocket Lab saved the approved PhotoPrism app records.';
       }
       if (item === 'PhotoPrism settings, mappings, route records, and safe app records may be saved.') {
         return 'PhotoPrism settings, mappings, route records, and safe app records were prepared for backup.';
@@ -1555,8 +1555,8 @@ function actionDetailList(actionId, items, fallback = []) {
 function actionDetailSavedSummary(actionId, saved) {
   if (actionId === 'backup_app') {
     return saved?.saved
-      ? 'A safe backend troubleshooting record was saved.'
-      : 'No backend troubleshooting record was saved because this action did not run.';
+      ? 'A protected troubleshooting record was saved.'
+      : 'No troubleshooting record was saved because this action did not run.';
   }
   return saved?.summary || (saved?.saved ? 'A protected troubleshooting record was saved.' : 'No troubleshooting record was saved because this action did not run.');
 }
@@ -1598,8 +1598,8 @@ function fallbackActionDetails(actionId, action = {}, result = null) {
       saved: Boolean(result?.summary && !browserOnly),
       backend_only: true,
       summary: result?.summary && !browserOnly
-        ? 'A backend record was saved for troubleshooting.'
-        : 'No backend record was saved because this action did not run.',
+        ? 'A protected troubleshooting record was saved.'
+        : 'No troubleshooting record was saved because this action did not run.',
     },
     technical_details: [
       `Run by: ${browserOnly ? 'This screen' : 'Pocket Lab'}`,
@@ -1639,8 +1639,8 @@ function detailsForAction(actionId, action = {}, result = null) {
       saved: hasEvidence,
       backend_only: true,
       summary: hasEvidence
-        ? 'A backend record was saved for troubleshooting.'
-        : 'No backend record was saved because this action did not run.',
+        ? 'A protected troubleshooting record was saved.'
+        : 'No troubleshooting record was saved because this action did not run.',
     },
   };
 }
