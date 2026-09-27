@@ -86,7 +86,7 @@ import {
   restartStepStateLabel,
   safeRestartSteps
 } from './LiteUi.jsx';
-import { LiteFreshness } from './LiteUx.jsx';
+import { LiteConsequenceSummary, LiteFreshness } from './LiteUx.jsx';
 import DeviceActionPortal from './devices/DeviceActionPortal.jsx';
 import LiteVirtualList from './components/LiteVirtualList.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
@@ -515,10 +515,10 @@ export default function DevicesScreen() {
       pushToast({
         id,
         kind: status === 'completed' ? 'success' : 'warning',
-        title: status === 'completed' ? 'Agent restarted' : 'Agent restart needs attention',
+        title: status === 'completed' ? 'Device service restarted' : 'Device service restart needs attention',
         message: restartProgress?.summary || (status === 'completed'
-          ? 'Pocket Lab confirmed the device agent is ready.'
-          : 'Pocket Lab could not confirm the device agent recovered.'),
+          ? 'Pocket Lab confirmed the device service is ready.'
+          : 'Pocket Lab could not confirm the device service recovered.'),
       });
     }
     pendingRestartId.current = '';
@@ -1010,7 +1010,7 @@ export default function DevicesScreen() {
               </ol>
               {['waiting', 'agent_stopped', 'repairing'].includes(String(restartProgress.status || '').toLowerCase()) ? (
                 <p className="lite-device-restart-hint">
-                  If the device agent is stopped, the local supervisor should start it. If this phone does not have the supervisor yet, open Termux on that phone and start it once.
+                  If the device service is stopped, its recovery service should start it automatically. If automatic recovery is unavailable, open the device details for guided recovery.
                 </p>
               ) : null}
             </GlassCard>
@@ -1040,7 +1040,7 @@ export default function DevicesScreen() {
                 </div>
 
                 <p className="lite-device-remove-copy">
-                  Pocket Lab checks hosted apps, backups, command delivery, recovery, and protected server responsibilities before removal.
+                  Pocket Lab checks hosted apps, backups, action delivery, recovery, and protected server responsibilities before removal.
                 </p>
 
                 <div className="lite-device-remove-facts">
@@ -1050,12 +1050,14 @@ export default function DevicesScreen() {
                   <div><span>Last seen</span><strong>{formatLiteTime(removeCandidate.last_seen)}</strong></div>
                 </div>
 
-                <ul className="lite-device-remove-safety">
-                  <li>This removes the saved record from this Pocket Lab server.</li>
-                  <li>It does not wipe the phone.</li>
-                  <li>It does not uninstall Pocket Lab.</li>
-                  <li>It does not stop a running agent on that device.</li>
-                </ul>
+                <LiteConsequenceSummary value={{
+                  title: 'Before this device is removed',
+                  summary: 'Pocket Lab removes only this device relationship after the safety check passes.',
+                  will: ['Remove the saved device relationship from this Pocket Lab.', 'Stop Pocket Lab from sending new actions to this device.'],
+                  willNot: ['Wipe the phone.', 'Delete the device files.', 'Uninstall Pocket Lab from the device.', 'Stop an already-running device service by itself.'],
+                  reversible: 'The device can join again later through a new explicit Add Device flow.',
+                  availability: 'Apps or backups that depend on this device may become unavailable, so Pocket Lab checks those responsibilities first.',
+                }} />
 
                 {removeAssessmentLoading ? <p className="lite-device-remove-assessment-state">Checking device responsibilities…</p> : null}
 
