@@ -25,12 +25,12 @@ import { LiteSheet } from './LiteOverlay.jsx';
 import { LiteFreshness, LiteHistoryTimeline, LiteTechnicalFacts } from './LiteUx.jsx';
 
 const RULE_ACTIVATION_STEPS = [
-  { id: 'pending', label: 'Accepted', detail: 'Owner confirmation was accepted and queued for the supervisor.' },
-  { id: 'validating', label: 'Validating', detail: 'Pocket Lab is checking the candidate and its immutable manifest.' },
-  { id: 'switching', label: 'Switching', detail: 'The supervisor is switching to the staged candidate under the activation lock.' },
-  { id: 'restarting', label: 'Restarting', detail: 'The local policy engine is restarting on the candidate revision.' },
-  { id: 'verifying', label: 'Verifying', detail: 'Pocket Lab is proving health and the exact running Rules revision.' },
-  { id: 'active', label: 'Succeeded', detail: 'The proved revision is active and known-good.' },
+  { id: 'pending', label: 'Accepted', detail: 'Owner confirmation was accepted. Pocket Lab is preparing the Safety Rules update.' },
+  { id: 'validating', label: 'Checking', detail: 'Pocket Lab is checking the Safety Rules package before anything changes.' },
+  { id: 'switching', label: 'Applying', detail: 'Pocket Lab is activating the approved Safety Rules.' },
+  { id: 'restarting', label: 'Applying safely', detail: 'Pocket Lab is restarting only the protected rule service needed for the update.' },
+  { id: 'verifying', label: 'Verifying', detail: 'Pocket Lab is confirming that protection is healthy after the update.' },
+  { id: 'active', label: 'Succeeded', detail: 'The new Safety Rules are active and verified.' },
 ];
 const RULE_ACTIVATION_NONTERMINAL = new Set(['pending', 'validating', 'switching', 'restarting', 'verifying', 'rolling_back']);
 
