@@ -157,8 +157,8 @@ function deviceWhatChanged(device) {
 
 function deviceWhatDidNotHappen() {
   return [
-    'No command was sent to this device.',
-    'No agent restart was started.',
+    'No action was sent to this device.',
+    'No device-service restart was started.',
     'No device record was removed.',
     'No secrets, raw logs, or private paths were loaded into this view.',
   ];
@@ -331,8 +331,8 @@ function technicalRows(device) {
     { label: 'Runtime', value: device?.system_profile?.runtime_type },
     { label: 'Termux', value: device?.system_profile?.termux_version },
     { label: 'Python', value: device?.system_profile?.python_version },
-    { label: 'Agent version', value: agentSoftware.version || device?.system_profile?.agent_version },
-    { label: 'Agent version freshness', value: agentSoftware.version ? titleCase(agentSoftware.freshness, 'Unknown') : '' },
+    { label: 'Device service version', value: agentSoftware.version || device?.system_profile?.agent_version },
+    { label: 'Device service version freshness', value: agentSoftware.version ? titleCase(agentSoftware.freshness, 'Unknown') : '' },
     { label: 'Recovery service version', value: supervisorSoftware.version || device?.system_profile?.supervisor_version },
     { label: 'Recovery service version freshness', value: supervisorSoftware.version ? titleCase(supervisorSoftware.freshness, 'Unknown') : '' },
     { label: 'Uptime', value: device?.system_health?.uptime_label },
@@ -472,7 +472,7 @@ function DeviceAwarenessDetails({ device }) {
         </ul>
       </section>,
 
-      <section key="services" className="lite-device-awareness-section" aria-label="Runtime services">
+      <section key="services" className="lite-device-awareness-section" aria-label="Device services">
         <span>Services</span>
         <strong>{runtimeServices.length ? `${runtimeServices.length} reported` : 'Not reported'}</strong>
         {runtimeServices.length ? (
@@ -664,7 +664,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
         </div>
         {isProtectedServer ? (
           <p className="lite-device-model-boundary" role="note">
-            Choosing a friendly model changes display metadata only. Server identity, technical model, and internal codename remain agent-owned.
+            Choosing a friendly model changes display metadata only. Server identity, technical model, and internal codename remain reported by the device.
           </p>
         ) : null}
         {onChooseModel ? (
@@ -721,7 +721,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
               <article>
                 <span>Software</span>
                 <strong>{titleCase(proactiveHealth.versions?.status)}</strong>
-                <p>Agent, supervisor, and schema posture are evaluated by the backend.</p>
+                <p>Device service, recovery service, and compatibility are checked by Pocket Lab.</p>
               </article>
               <article>
                 <span>Dependencies</span>
@@ -776,7 +776,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
 
             <DeviceHealthHistory deviceId={initialDeviceId} />
           </>
-        ) : <p>Health will appear after the next prepared fleet refresh.</p>}
+        ) : <p>Health will appear after the device reports again.</p>}
       </section>);
       }} />
 
@@ -806,9 +806,9 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
               saved_for_troubleshooting={{
                 saved: Boolean(device?.last_seen || device?.id),
                 backend_only: true,
-                summary: 'Device events and troubleshooting records stay backend-owned and protected.',
+                summary: 'Device events and troubleshooting records stay protected by Pocket Lab.',
               }}
-              next_step={attention.length ? (restartAssessment.allowed ? 'Restart the device agent through Pocket Lab.' : restartAssessment.summary || 'Check power, network, Tailscale, and the local supervisor on the device.') : 'No action is needed right now.'}
+              next_step={attention.length ? (restartAssessment.allowed ? 'Restart the device service through Pocket Lab.' : restartAssessment.summary || 'Check power, private network access, and the device recovery service.') : 'No action is needed right now.'}
               technicalDetails={technicalRows(device)}
               history={{
                 title: 'Device history',
