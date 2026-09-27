@@ -12,8 +12,8 @@ import {
   LoadingCard,
   LiteActionRow,
   LiteOperationalStory,
-  LiteTechnicalDetails,
 } from './LiteUi.jsx';
+import { LiteFreshness, LiteTechnicalFacts } from './LiteUx.jsx';
 import { LiteDetailsPanel } from './LiteOverlay.jsx';
 import LiteReleaseUpdateCard from './LiteReleaseUpdateCard.jsx';
 
@@ -29,7 +29,7 @@ export function homeWorkflowPresentation({ overallTone, attentionCount, savedSta
     return {
       state: 'checking',
       motion: 'checking',
-      eyebrow: 'Workspace pulse',
+      eyebrow: 'Workspace status',
       title: 'Checking your workspace flow',
       summary: 'Refreshing the latest signals from your Pocket Lab.',
       badge: 'Checking',
@@ -41,7 +41,7 @@ export function homeWorkflowPresentation({ overallTone, attentionCount, savedSta
     return {
       state: 'saved',
       motion: 'rest',
-      eyebrow: 'Workspace pulse',
+      eyebrow: 'Workspace status',
       title: 'Showing saved workspace state',
       summary: 'Reconnect to resume live workspace signals.',
       badge: 'Saved',
@@ -53,7 +53,7 @@ export function homeWorkflowPresentation({ overallTone, attentionCount, savedSta
     return {
       state: 'attention',
       motion: 'rest',
-      eyebrow: 'Workspace pulse',
+      eyebrow: 'Workspace status',
       title: 'Workspace flow needs attention',
       summary: `${attentionCount || 'Some'} ${attentionCount === 1 ? 'area needs' : 'areas need'} a review before everything is ready.`,
       badge: 'Review',
@@ -64,7 +64,7 @@ export function homeWorkflowPresentation({ overallTone, attentionCount, savedSta
   return {
     state: 'ready',
     motion: 'live',
-    eyebrow: 'Workspace pulse',
+    eyebrow: 'Workspace status',
     title: 'Your workspace is flowing smoothly',
     summary: 'Device, services, apps, and safety are all ready together.',
     badge: 'Live',
@@ -138,7 +138,7 @@ export default function HomeScreen({
       <PageHeader
         eyebrow="Workspace"
         title="Home"
-        description="Your workspace status and the next useful action."
+        description="What is ready, what needs you, and the next useful action for your workspace."
         actions={<LiteRefreshButton scope="home" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
@@ -152,18 +152,25 @@ export default function HomeScreen({
         } : null}
         manageAction={{ label: 'Workspace details', onClick: () => setWorkspaceDetailsOpen(true) }}
       />
+      <LiteFreshness
+        saved={effectiveSavedStateOnly}
+        stale={projectionStale}
+        refreshing={refreshing || status.refresh_pending === true}
+        lastUpdatedLabel={lastUpdatedLabel || overview.workspaceDetails.freshness}
+        backendReachable={backendReachable}
+      />
 
       <section className="lite-home-premium-services lite-render-containment lite-render-containment--home" aria-labelledby="lite-home-key-areas">
         <div className="lite-home-premium-section-head">
           <div>
-            <span>Key areas</span>
-            <h2 id="lite-home-key-areas">Where to look next</h2>
-            <p>Open an area when you want its current detail and available actions.</p>
+            <span>{overview.attentionCount ? 'What needs you' : 'Your workspace'}</span>
+            <h2 id="lite-home-key-areas">{overview.attentionCount ? 'Review these areas next' : 'Everything in one place'}</h2>
+            <p>{overview.attentionCount ? 'Only areas that need a closer look should interrupt you.' : 'Open an area when you want its current detail or available actions.'}</p>
           </div>
           {loading ? <span className="lite-home-premium-checking">Checking…</span> : null}
         </div>
 
-        {loading && !overview.keyAreas.length ? <LoadingCard label="Loading workspace status…" /> : overview.keyAreas.map((item) => (
+        {loading && !overview.keyAreas.length ? <LoadingCard label="Checking workspace status…" /> : overview.keyAreas.map((item) => (
           <LiteActionRow
             key={item.key}
             className="lite-home-key-area"
@@ -187,9 +194,13 @@ export default function HomeScreen({
             <LiteActionRow key={item.key} label={item.label} value={item.value} summary={item.note} attention={['review', 'danger'].includes(item.tone)} />
           ))}
           {overview.workspaceDetails.showWorkflow ? <HomeWorkspaceFlow overallTone={overview.overallTone} attentionCount={overview.attentionCount} savedStateOnly={effectiveSavedStateOnly} checking={loading || refreshing || status.refresh_pending === true} /> : null}
-          <LiteTechnicalDetails>
-            <p>{effectiveSavedStateOnly ? 'Showing saved workspace information.' : 'Showing current workspace information.'} Last status: {overview.workspaceDetails.freshness}.</p>
-          </LiteTechnicalDetails>
+          <LiteTechnicalFacts
+            facts={[
+              ...overview.workspaceDetails.resources.map((item) => ({ id: item.key, label: item.label, value: item.value, note: item.note, tone: item.tone })),
+              { id: 'information-state', label: 'Information', value: effectiveSavedStateOnly ? 'Saved information' : 'Current information' },
+              { id: 'last-update', label: 'Last update', value: overview.workspaceDetails.freshness || lastUpdatedLabel || 'Just now' },
+            ]}
+          />
           <LiteReleaseUpdateCard />
         </div>
       </LiteDetailsPanel>
