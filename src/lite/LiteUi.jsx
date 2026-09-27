@@ -5,6 +5,7 @@ import { GlassCard, StatusBadge, StateSurface } from '../components/ui.jsx';
 import { actionReference } from '../lib/liteApi.js';
 import { useLiteUiStore, useLiteRefreshFeedback } from '../stores/liteUiStore.js';
 import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
+import { friendlyLiteText } from '../lib/liteUxPresentation.js';
 
 export { GlassCard, StatusBadge, StateSurface };
 
@@ -12,12 +13,12 @@ function refreshStatusCopy(cacheStatus, error, refreshing = false, refreshFeedba
   const stale = Boolean(cacheStatus?.stale || error || ['saved', 'stale', 'expired', 'unreachable', 'failed'].includes(refreshFeedback?.result));
   return {
     stale,
-    title: refreshFeedback?.title || cacheStatus?.title || (refreshing ? 'Refreshing…' : stale ? 'Showing saved state' : 'Fresh state'),
+    title: refreshFeedback?.title || cacheStatus?.title || (refreshing ? 'Refreshing…' : stale ? 'Showing saved information' : 'Up to date'),
     summary: refreshFeedback?.summary || cacheStatus?.summary || error || (refreshing
-      ? 'Pocket Lab is checking for fresh state.'
+      ? 'Pocket Lab is checking for updates.'
       : stale
-        ? 'Pocket Lab is not reachable. Saved state only.'
-        : 'Pocket Lab is showing the latest saved status.'),
+        ? 'Pocket Lab is not reachable. Saved information remains available.'
+        : 'Pocket Lab is showing the latest confirmed information.'),
     detail: refreshFeedback?.detail || cacheStatus?.detail || '',
   };
 }
@@ -725,19 +726,26 @@ export function securityExecutionTimeline({ executionTimeline, currentRunId, run
 
   if (backendTimeline.length) {
     const keyTitleMap = {
-      request_accepted: 'Request accepted',
-      worker_picked_up: 'Worker picked it up',
-      lynis_host_check: 'Lynis host check',
-      trivy_dependency_secret_check: 'Trivy dependency & secret check',
-      evidence_saved: 'Evidence saved',
+      request_accepted: 'Check requested',
+      worker_picked_up: 'Started on your Pocket Lab',
+      lynis_host_check: 'System safety checked',
+      trivy_dependency_secret_check: 'Apps and settings checked',
+      evidence_saved: 'Protected result saved',
+    };
+    const keyDetailMap = {
+      request_accepted: 'Pocket Lab accepted the safety check.',
+      worker_picked_up: 'The local safety check started.',
+      lynis_host_check: 'System safety settings were checked.',
+      trivy_dependency_secret_check: 'Apps, settings, dependencies, and sensitive-value patterns were checked.',
+      evidence_saved: 'A protected check result was saved with sensitive values hidden.',
     };
 
     const normalizedBackendSteps = backendTimeline.map((step, index) => {
       const key = String(step?.key || `step_${index + 1}`);
       return {
         key,
-        title: step?.title || keyTitleMap[key] || `Step ${index + 1}`,
-        detail: step?.detail || step?.summary || step?.message || 'Security step update.',
+        title: keyTitleMap[key] || friendlyLiteText(step?.title, `Step ${index + 1}`),
+        detail: keyDetailMap[key] || friendlyLiteText(step?.detail || step?.summary || step?.message, 'Safety check update.'),
         state: securityExecutionStateFromBackend(step?.status),
       };
     });
@@ -765,19 +773,19 @@ export function securityExecutionTimeline({ executionTimeline, currentRunId, run
   const fallbackSteps = [
     {
       key: 'request_accepted',
-      title: 'Request accepted',
-      detail: queued ? 'FastAPI queued the check.' : 'FastAPI accepted the safety request.',
+      title: 'Check requested',
+      detail: queued ? 'Pocket Lab is preparing the safety check.' : 'Pocket Lab accepted the safety check.',
       state: queued ? 'active' : status ? 'done' : 'waiting',
     },
     {
       key: 'worker_picked_up',
-      title: 'Worker picked it up',
-      detail: running ? 'The backend worker is running local tools.' : terminal ? 'The backend worker finished the check.' : 'Waiting for the backend worker.',
+      title: 'Started on your Pocket Lab',
+      detail: running ? 'The local safety check is running.' : terminal ? 'The local safety check finished.' : 'Waiting for the local safety check to start.',
       state: running || terminal ? 'done' : 'waiting',
     },
     {
       key: 'lynis_host_check',
-      title: 'Lynis host check',
+      title: 'System safety checked',
       detail: lynis.status ? securityToolStatusLabel(lynis) : 'Checks host readiness.',
       state:
         lynis.status === 'completed'
@@ -792,8 +800,8 @@ export function securityExecutionTimeline({ executionTimeline, currentRunId, run
     },
     {
       key: 'trivy_dependency_secret_check',
-      title: 'Trivy dependency & secret check',
-      detail: trivy.status ? `${securityToolStatusLabel(trivy)}${trivy.sbom_saved ? ' · SBOM saved' : ''}` : 'Checks dependencies, config, secret-like values, and SBOM evidence.',
+      title: 'Apps and settings checked',
+      detail: trivy.status ? `${securityToolStatusLabel(trivy)}${trivy.sbom_saved ? ' · Dependency record saved' : ''}` : 'Checks dependencies, settings, and sensitive-value patterns.',
       state:
         trivy.status === 'completed'
           ? 'done'
@@ -807,7 +815,7 @@ export function securityExecutionTimeline({ executionTimeline, currentRunId, run
     },
     {
       key: 'evidence_saved',
-      title: 'Evidence saved',
+      title: 'Protected result saved',
       detail: hasCurrentRunEvidence ? `${evidenceRefs?.length || evidenceRun?.evidence_refs?.length || (sbomSaved ? 1 : 0)} sanitized file(s) ready.` : 'Sanitized evidence appears after completion.',
       state: hasCurrentRunEvidence || terminal ? 'done' : 'waiting',
     },
@@ -864,7 +872,7 @@ export function LiteButton({ children, onClick, disabled = false, tone = 'primar
 export function ResultNotice({ result, error }) {
   if (!result && !error) return null;
   if (error) {
-    return <StateSurface tone="degraded" title="Needs attention" description={error} className="mt-4" />;
+    return <StateSurface tone="degraded" title="Needs attention" description={friendlyLiteText(error, 'Pocket Lab could not complete that action. Review the current status and try again when it is safe.')} className="mt-4" />;
   }
   const reference = actionReference(result);
   return (
@@ -886,10 +894,10 @@ export function operationalStoryPresentation(story = {}) {
   if (state === 'unknown') tone = 'unknown';
   if (state === 'saved' && ['ready', 'live'].includes(tone)) tone = 'saved';
   if (state === 'stale' && ['ready', 'live'].includes(tone)) tone = 'stale';
-  const headline = String(story?.headline || '').trim() || 'Status not available';
-  const summary = String(story?.summary || '').trim();
-  const consequence = String(story?.consequence || '').trim();
-  const attention = String(story?.attention || '').trim();
+  const headline = friendlyLiteText(story?.headline, 'Status not available');
+  const summary = friendlyLiteText(story?.summary, '');
+  const consequence = friendlyLiteText(story?.consequence, '');
+  const attention = friendlyLiteText(story?.attention, '');
   const freshness = story?.freshness && typeof story.freshness === 'object'
     ? {
         label: String(story.freshness.label || '').trim(),
