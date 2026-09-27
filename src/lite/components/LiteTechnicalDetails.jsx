@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { friendlyLiteText } from '../../lib/liteUxPresentation.js';
 
 const TECHNICAL_DETAILS_COLLAPSED_BY_DEFAULT = true;
 const TECHNICAL_DETAILS_SANITIZED_GUARD = 'sanitized technical details only; protected values stay hidden';
@@ -11,7 +12,7 @@ function toSafeText(value) {
   if (value === null || value === undefined) return '';
   const text = String(value).trim();
   if (!text || SENSITIVE_DETAIL_PATTERN.test(text)) return '';
-  return text;
+  return friendlyLiteText(text, '');
 }
 
 function normalizeTechnicalRows(rows) {
@@ -35,12 +36,12 @@ function normalizeTechnicalRows(rows) {
 export default function LiteTechnicalDetails({
   rows = [],
   title = 'Technical details',
-  summary = 'Technical details are sanitized and collapsed by default.',
+  summary = 'Safe operational facts are available when you need them.',
   defaultOpen = false,
 }) {
   const [open, setOpen] = useState(Boolean(defaultOpen));
   const safeRows = useMemo(() => normalizeTechnicalRows(rows), [rows]);
-  const safeSummary = toSafeText(summary) || 'Technical details are sanitized and collapsed by default.';
+  const safeSummary = toSafeText(summary) || 'Safe operational facts are available when you need them.';
 
   if (!safeRows.length) return null;
 
