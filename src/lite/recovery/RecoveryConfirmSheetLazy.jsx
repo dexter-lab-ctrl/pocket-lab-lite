@@ -2,6 +2,7 @@ import React from 'react';
 import { AlertTriangle, ArchiveRestore, Database, ShieldCheck } from 'lucide-react';
 import { formatLiteTime } from '../../lib/liteApi.js';
 import { LiteButton, StatusBadge } from '../LiteUi.jsx';
+import { LiteConsequenceSummary } from '../LiteUx.jsx';
 
 function formatSize(bytes) {
   const value = Number(bytes || 0);
@@ -46,14 +47,21 @@ export default function RecoveryConfirmSheetLazy({
         {!databaseRestore ? <span>Restore to: This Server Phone</span> : null}
       </section>
 
-      <section className="lite-recovery-native-confirm-section">
-        <div><ShieldCheck className="h-5 w-5" /><strong>What will happen</strong></div>
-        <ul>
-          <li>A protected checkpoint is created before local state changes.</li>
-          <li>{databaseRestore ? 'The verified SQLite backup is promoted and validated.' : `${Number(preview?.change_count || 0)} item(s) from the preview are eligible for restore.`}</li>
-          <li>Pocket Lab checks health and keeps rollback evidence afterward.</li>
-        </ul>
-      </section>
+      <LiteConsequenceSummary value={{
+        title: 'Before Pocket Lab restores anything',
+        summary: 'Pocket Lab will create a safety checkpoint first and check the workspace again afterward.',
+        will: [
+          'Create a protected checkpoint before local state changes.',
+          databaseRestore ? 'Restore the verified Pocket Lab data backup and check it.' : `${Number(preview?.change_count || 0)} item(s) from the preview are eligible for restore.`,
+          'Check workspace health after the restore and save a recovery record.',
+        ],
+        willNot: [
+          'Expose secrets, tokens, or private keys in this screen.',
+          'Change photos, media, Android shared storage, or anything excluded by the preview.',
+        ],
+        reversible: 'The pre-restore checkpoint is kept so recovery has a known safe point.',
+        availability: 'Pocket Lab may briefly restart protected services while the restore is verified.',
+      }} />
 
       {includedComponents.length || excludedComponents.length ? (
         <section className="lite-recovery-native-confirm-section" aria-label="Restore scope">
@@ -63,14 +71,6 @@ export default function RecoveryConfirmSheetLazy({
           <p>Photo/media files and Android shared storage will not be changed.</p>
         </section>
       ) : null}
-
-      <section className="lite-recovery-native-confirm-section is-muted">
-        <div><AlertTriangle className="h-5 w-5" /><strong>What will not happen</strong></div>
-        <ul>
-          <li>Secrets, tokens, and private keys are not exposed in the browser.</li>
-          <li>Media and excluded runtime files are not silently replaced.</li>
-        </ul>
-      </section>
 
       <div className="lite-recovery-native-confirm-actions">
         <LiteButton tone="secondary" onClick={onCancel} disabled={busy}>Cancel</LiteButton>
