@@ -1,4 +1,6 @@
 const BACKEND_LANGUAGE_REPLACEMENTS = Object.freeze([
+  [/\bFastAPI(?:\s+and|\s*\/)\s*worker(?:s)?\b/gi, 'Pocket Lab'],
+  [/\bFastAPI\s+worker(?:s)?\b/gi, 'Pocket Lab service'],
   [/\bbackend[- ]owned\b/gi, 'Pocket Lab-managed'],
   [/\bbackend worker(?:s)?\b/gi, 'Pocket Lab service'],
   [/\bbackend\b/gi, 'Pocket Lab'],
