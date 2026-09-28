@@ -3050,7 +3050,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "3f220d9fe5e4e8f65dadd538e3cf04f42f64c9104acfc699fc4d0a843d03e1f9",
+    "aggregate_fingerprint": "8820e51f7243b2a31e99e04ca3a580b0afcb7ccc042919bc7780dcba9ef4f8d2",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3096,10 +3096,10 @@
       "src/lite/LiteSecurity.stories.jsx": "79f05679742bc975fca3e92795870e4d425415c83c83096a380c58467e74f2d5",
       "src/lite/LiteServiceWorkerUpdateNotice.jsx": "450c8d4f9d858bcfd2781e55ae52101c8f37bc57deceb1dbe847c775ffc2288a",
       "src/lite/LiteToastHost.jsx": "4f06f72d896b56b05e9e4e9bded54c077128cff3a52bb6a3ecf2a52a83214995",
-      "src/lite/LiteUi.jsx": "96ae431a5a50fc3c8bc17165c5078d1a60786ab861c6e9d4601f392e6e21ced1",
-      "src/lite/LiteUi.test.jsx": "d98b7feb6defde57804139d1b9381c8ad382401736acd6a4c6aa08126e06f282",
+      "src/lite/LiteUi.jsx": "cf898a6dcf1ff8f94079640bca36ffee685118dcb4927a726c65005185d6bd9c",
+      "src/lite/LiteUi.test.jsx": "d09ad1e06cf21773a1d8ed93dc8071ef7516d872ebd3e3f44eafed0644ee8c50",
       "src/lite/LiteUx.jsx": "a915f121a438003fb3af973b7087f7e1d3f108e1ceaa30ad2ab0de02c5f6d6e3",
-      "src/lite/LiteUx.stories.jsx": "3b9ee5409f48cade936feaebc84159f2dd809fbdcc0c5433aa50c2d24a51d260",
+      "src/lite/LiteUx.stories.jsx": "a45605c9460b371143058035f733beab232d1374d4fa4eb77a9c4b3704843e5f",
       "src/mocks/handlers.js": "0956abf1de79a5b112545446132d283e056a9697e47228615d108cbda5613b92"
     },
     "validation_state": "generated"

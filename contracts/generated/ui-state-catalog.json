@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "fa5c17a67a0a47ed1a82b54a1151a23c320f578ac1fcf4dc24896b75ff7e9190",
+    "aggregate_fingerprint": "1adf828b50eef07efd37c9c6a92d0e1f6902e1ec6180cb6d204396abb60c5b23",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -21,7 +21,7 @@
       "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
       "src/lite/LiteRules.stories.jsx": "44b78ac3977a1f1a7837310d7aa7b760235673ee1ddfb7fd1005606a11602666",
       "src/lite/LiteSecurity.stories.jsx": "79f05679742bc975fca3e92795870e4d425415c83c83096a380c58467e74f2d5",
-      "src/lite/LiteUx.stories.jsx": "3b9ee5409f48cade936feaebc84159f2dd809fbdcc0c5433aa50c2d24a51d260",
+      "src/lite/LiteUx.stories.jsx": "a45605c9460b371143058035f733beab232d1374d4fa4eb77a9c4b3704843e5f",
       "src/mocks/handlers.js": "0956abf1de79a5b112545446132d283e056a9697e47228615d108cbda5613b92"
     },
     "validation_state": "generated"
