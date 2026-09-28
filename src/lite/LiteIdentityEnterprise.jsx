@@ -6,6 +6,7 @@ import { clearLiteIdentityCsrf, liteApi } from '../lib/liteApi.js';
 import { liteEnterpriseApi } from '../lib/liteEnterpriseApi.js';
 import { createLitePasskey, getLitePasskey } from '../lib/liteWebAuthn.js';
 import { getLiteReasonPresentation } from '../lib/identityRulesPresentation.js';
+import { useLiteUiStore } from '../stores/liteUiStore.js';
 import { GlassCard, LiteButton, StateSurface, StatusBadge } from './LiteUi.jsx';
 import { LiteSheet } from './LiteOverlay.jsx';
 import LiteHelp, { LiteHelpHeading } from './LiteHelp.jsx';
@@ -77,6 +78,7 @@ export default function LiteIdentityEnterprise({ enterprise, access: initialAcce
   const [modePreview, setModePreview] = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [draft, setDraft] = useState({ username: '', display_name: '', role: 'Operator' });
+  const pushToast = useLiteUiStore((state) => state.pushToast);
   const access = useLiteResource(liteEnterpriseApi.access, [], { enabled: Boolean(enterprise?.enabled) });
   const people = useLiteResource(liteEnterpriseApi.people, [], { enabled: Boolean(enterprise?.enabled && canManagePeople) });
   const accessData = access.data || initialAccess || {};
@@ -94,10 +96,22 @@ export default function LiteIdentityEnterprise({ enterprise, access: initialAcce
       if (refreshPeople) jobs.push(people.refresh?.());
       await Promise.all(jobs.filter(Boolean));
       setNotice({ title: 'Access updated', message: result?.summary || successMessage });
+      pushToast({
+        id: `identity-governance:${name}`,
+        kind: 'success',
+        title: 'Access updated',
+        message: result?.summary || successMessage,
+      });
       return result;
     } catch (error) {
       const reason = getLiteReasonPresentation(reasonCode(error), error?.message || 'Pocket Lab could not complete that access change.');
       setNotice({ error: true, title: reason.title, message: reason.message });
+      pushToast({
+        id: `identity-governance:${name}:problem`,
+        kind: reason.tone === 'blocked' ? 'warning' : 'error',
+        title: reason.title,
+        message: reason.message,
+      });
       return null;
     } finally {
       setBusy('');
@@ -147,6 +161,7 @@ export default function LiteIdentityEnterprise({ enterprise, access: initialAcce
     } catch (error) {
       const reason = getLiteReasonPresentation(reasonCode(error), error?.message || 'Pocket Lab could not preview this mode change.');
       setNotice({ error: true, title: reason.title, message: reason.message });
+      pushToast({ id: 'identity-governance:mode-preview:problem', kind: 'error', title: reason.title, message: reason.message });
     } finally {
       setBusy('');
     }

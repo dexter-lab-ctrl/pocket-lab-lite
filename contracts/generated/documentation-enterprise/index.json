@@ -2711,6 +2711,32 @@
         "affects_release": true,
         "affects_runtime": true,
         "default": "source-defined/unvalidated",
+        "name": "LITE_DEFAULT_UI_FORBIDDEN_TERMS",
+        "owner": "frontend",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "src/lib/liteUxPresentation.js",
+          "src/lib/liteUxPresentation.test.js",
+          "tests/backend/test_lite_ux_maturity_contract.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "frontend",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
         "name": "LITE_DEVICES_VIEW_MODEL_VERSION",
         "owner": "frontend",
         "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -6361,6 +6387,29 @@
         "secret": false,
         "source": [
           "src/stores/liteUiStore.js"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "frontend"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "LITE_UX_MATURITY_PRIMITIVES_READY",
+        "owner": "frontend",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "src/lite/LiteUx.jsx"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -38837,7 +38886,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 487,
+      "page_count": 488,
       "top_level": [
         "start-here",
         "use",
@@ -46357,7 +46406,7 @@
             "status": "observed",
             "value": {
               "bytes": 75,
-              "sha256": "008f14b9efb37bd860e52f512c131dfc43f14d47d078291667384c71c2a81086"
+              "sha256": "0196cb60a8a93c13941700fcbdb70803a1f3c207b82662b0f10a1fd4338c0287"
             }
           },
           "release_presence": {
@@ -46409,8 +46458,8 @@
             "source": "dist.zip",
             "status": "observed",
             "value": {
-              "bytes": 497372,
-              "sha256": "132bfbf778528ac910af2d589a31996c2cb6b73cf97ce5cf88eec840dfcea0d5"
+              "bytes": 542999,
+              "sha256": "ed53e497b42de1a1bc90e5d65427f307121c86a65226b28cbc271077a1f0a5a8"
             }
           },
           "release_presence": {
@@ -46721,7 +46770,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "c7efb2a97b0314a431a6494cd426a4053d2ce3fdd430312fbd9073b0e2167652",
-        "documentation": "ccabb45f24f783fd3921d7183852d22a9cfb8d3ddef62b8eeab48d65fcaa796e",
+        "documentation": "9202627e7f9cdf5d153f935aec51a06dfaa4bd158ec64aac40182160894cedc6",
         "openapi": "8d70d2565517e6782d0afafcaf1e9d6090b6fe9c73cf9eb2feeaa0892ea3737b",
         "operational_health": "e3ed9da163e04c1f14353da1c829b18e24aec607e40308a68585165ef56de7fc"
       },
@@ -48657,7 +48706,7 @@
         },
         {
           "path": "package.json",
-          "sha256": "17e9142dbcc93fbad7af9b015e1a134b3717efc90c39e5c366da6cb0228be4ef"
+          "sha256": "6781fedb3d4eb63c9f93bbe4cc25ce37b4bc759afad3984fbca692948598791a"
         },
         {
           "path": "requirements-dev.txt",
@@ -95495,7 +95544,7 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
-          "PYTHONPATH=tests:pocket-lab-final-structure/runtime PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONFAULTHANDLER=1 {{.PYTHON}} -m pytest -q -p pytest_timeout --timeout=60 --timeout-method=thread tests/backend/test_lite_api.py tests/backend/test_lite_recovery.py tests/backend/test_lite_security.py"
+          "PYTHONPATH=tests:pocket-lab-final-structure/runtime PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONFAULTHANDLER=1 {{.PYTHON}} -m pytest -q -p pytest_timeout --timeout=60 --timeout-method=thread tests/backend/test_lite_api.py tests/backend/test_lite_recovery.py tests/backend/test_lite_security.py tests/backend/test_lite_ux_maturity_contract.py"
         ],
         "dependencies": [
           "lite:dev:scratch:prepare"
@@ -95513,7 +95562,8 @@
         "inputs": [
           "tests/backend/test_lite_api.py",
           "tests/backend/test_lite_recovery.py",
-          "tests/backend/test_lite_security.py"
+          "tests/backend/test_lite_security.py",
+          "tests/backend/test_lite_ux_maturity_contract.py"
         ],
         "name": "lite:test:backend",
         "outputs": [],
@@ -95702,6 +95752,47 @@
         "source": "tasks/Taskfile.lite.yml",
         "validation_outcome": "gate-defined",
         "workflow_group": "Recovery-diagnostics loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:ux:maturity",
+          "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_ux_maturity_contract.py"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:test:ux:maturity",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "tests/backend/test_lite_ux_maturity_contract.py"
+        ],
+        "name": "lite:test:ux:maturity",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run the repository-owned Pocket Lab Lite UX maturity contract and mocked cross-tab qualification",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
       },
       {
         "aliases": [],
@@ -117123,5 +117214,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "e0df0da097d8497996a8e2a430f163d1e63d28cb0bf3d5690e75ca0618ac17dc"
+  "source_fingerprint": "f35fe3c8f62e5eec8dafa63e7ba2a2dc7fb171cf8a6397d416a30ef2f9aad6cc"
 }

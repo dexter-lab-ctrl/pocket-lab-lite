@@ -12,8 +12,8 @@ const PREMIUM_VIEWPORTS = [
 
 const PREMIUM_SCREENS = [
   ['Home', 'home'],
-  ['Security', 'security'],
-  ['Identity & Access', 'identity'],
+  ['Safety', 'security'],
+  ['Access', 'identity'],
   ['Rules', 'rules'],
 ] as const;
 
@@ -262,6 +262,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
 
     const completionToast = page.locator('.lite-toast', { hasText: 'Safety check completed' });
     await expect(completionToast).toHaveCount(1);
+    await expect(page.locator('body > .lite-toast-host')).toContainText('Safety check completed');
     expect(await page.evaluate((before) => window.__liteHapticCalls.slice(before), hapticCallsBeforeTerminal)).toEqual([[10, 30, 14]]);
     await expect.poll(() => page.evaluate(() => window.__liteControlledSecurityEvents.instances
       .filter((source) => source.url.includes('/api/lite/security/events') && !source.closed).length)).toBe(0);
@@ -270,7 +271,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     const refreshedSecurity = page.waitForRequest((request) => (
       /\/api\/lite\/security(?:\/summary)?(?:\?|$)/.test(request.url())
     ));
-    await openTab(page, 'Security', 'security');
+    await openTab(page, 'Safety', 'security');
     await refreshedSecurity;
     await expect(page.locator('[data-lite-screen-id="security"]')).toContainText(/No urgent safety issues|Protected|Safety score/i);
     await expect(completionToast).toHaveCount(1);
@@ -295,7 +296,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(identity).toContainText('Sessions');
     await expect(identity).toContainText('Recovery');
     await identity.getByRole('button', { name: /Manage access/i }).click();
-    await expect(page.getByRole('dialog', { name: 'Manage access' })).toContainText(/Manage your own passkeys, sessions, recovery/i);
+    await expect(page.getByRole('dialog', { name: 'Manage access' })).toContainText(/Manage how you sign in, where you are signed in, and how you recover access/i);
     await expect(identity).not.toContainText('local-admin');
 
     await page.goto('/?screen=rules');
@@ -367,7 +368,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
         })).toBe(true);
       }
 
-      await openTab(page, 'Identity & Access', 'identity');
+      await openTab(page, 'Access', 'identity');
       await page.getByRole('button', { name: /Manage access/i }).click();
       const identitySheet = page.getByRole('dialog', { name: 'Manage access' });
       await expect(identitySheet).toBeVisible();
@@ -447,7 +448,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
 
       const serverCard = devices.locator('.lite-device-card-server');
       await expect(serverCard).toContainText('Server host');
-      await expect(serverCard).toContainText('Protected control device');
+      await expect(serverCard).toContainText('Protected host for this self-hosted workspace');
       await expect(serverCard.getByRole('button', { name: /remove|review/i })).toHaveCount(0);
       await expect(serverCard.locator('.lite-device-protected-host')).toContainText(/Pocket Lab Server.*Protected/i);
       await expect(serverCard.locator('.lite-device-flow-track')).toHaveCount(0);
@@ -502,7 +503,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(serverCard.locator('[data-connection-state="server"]')).toBeVisible();
     await expect(serverCard.locator('.lite-device-protected-host')).toBeVisible();
     await expect(serverCard.locator('.lite-device-flow-track')).toHaveCount(0);
-    await expect(serverCard).toContainText('Protected control device');
+    await expect(serverCard).toContainText('Protected host for this self-hosted workspace');
     await expect(serverCard.getByRole('button', { name: /remove|review removal/i })).toHaveCount(0);
 
     const remote = devices.locator('.lite-remote-access-not-ready');

@@ -77,7 +77,7 @@ export function deviceConnectionFlowLabel(state, deviceName, isServerCard) {
 function deviceConnectionSummary(state) {
   if (state === 'connected') return 'Connected privately';
   if (state === 'repairing') return 'Repairing connection';
-  if (state === 'server') return 'Protected control plane';
+  if (state === 'server') return 'Protected server host';
   return 'Connection interrupted';
 }
 
@@ -134,7 +134,7 @@ function DeviceCard({
             {isServerCard ? 'Server host' : device?.role_label || roleLabel(device?.role)}
           </span>
           <h2>{deviceName}</h2>
-          {isServerCard ? <p>Protected control device for this self-hosted workspace.</p> : null}
+          {isServerCard ? <p>Protected host for this self-hosted workspace.</p> : null}
         </div>
 
         <div className={`lite-device-connection-flow is-${flowState}`} data-connection-state={flowState} role="img" aria-label={deviceConnectionFlowLabel(flowState, deviceName, isServerCard)}>

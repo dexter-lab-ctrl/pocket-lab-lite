@@ -5,17 +5,17 @@ export const LITE_SCREEN_METADATA = Object.freeze([
   Object.freeze({ id: 'home', label: 'Home' }),
   Object.freeze({
     id: 'catalog',
-    label: 'App Catalog',
+    label: 'Apps',
     shortcut: Object.freeze({
       name: 'Apps',
       shortName: 'Apps',
       description: 'Open the Pocket Lab Lite app workspace.',
     }),
   }),
-  Object.freeze({ id: 'identity', label: 'Identity & Access' }),
+  Object.freeze({ id: 'identity', label: 'Access' }),
   Object.freeze({
     id: 'security',
-    label: 'Security',
+    label: 'Safety',
     shortcut: Object.freeze({
       name: 'Security',
       shortName: 'Security',

@@ -1559,7 +1559,7 @@ def test_lite_security_ui_has_confidence_trust_boundary_and_coverage_matrix():
     assert "Confidence: Low" in ui
     assert "Both Lynis and Trivy completed. Evidence and SBOM were saved." in ui
     assert "You are protected because" in ui
-    assert "Browser never runs shell commands" in ui
+    assert "The browser only requests checks and displays summaries." in ui
     assert "Browser to evidence path" in ui
     assert "The browser only requests checks and displays summaries." in ui
     assert "Coverage: 7 protected areas" in ui
@@ -1591,7 +1591,7 @@ def test_lite_ui_has_error_boundary_and_safe_restart_steps():
     assert "LiteErrorBoundary" in ui
     assert "Pocket Lab needs a moment" in ui
     assert "safeRestartSteps" in ui
-    assert "Device agent is stopped" in ui
+    assert "Device service is stopped" in ui
 
 
 def test_lite_devices_ui_has_enterprise_polish_without_top_duplicate_refresh():
@@ -1743,7 +1743,7 @@ def test_lite_security_ui_preserves_backend_owned_boundaries():
         assert term not in ui
     assert "frontend never" not in ui
     assert "this guidance does not run commands or change your device" in ui
-    assert "backend-owned" in ui
+    assert "future fix action must stay protected and evidence-backed" in ui
 
 
 def test_lite_caddy_generator_adds_portal_only_photoprism_embed_policy():
@@ -3107,7 +3107,8 @@ def test_lite_storage_and_app_lifecycle_ui_source_is_present():
     assert "Saved to Storage Phone" in ui
     assert "Remove app" in ui
     assert "Confirm remove" in ui
-    assert "Your photo files and backups will not be deleted by default" in ui
+    assert "Delete your photo files." in ui
+    assert "Delete existing backups by default." in ui
     assert "Repair" in ui
     assert "Update" in ui
     assert "backup-targets" in api
@@ -4371,7 +4372,7 @@ def test_lite_app_catalog_details_prefer_fresh_action_state():
     assert "hasRunEvidence" in progress
     assert "Not run yet" in progress
     assert "Details saved" in progress
-    assert "No backend run needed" in progress
+    assert "No Pocket Lab action needed" in progress
     assert "Reconnect to continue" in progress
 
 
@@ -4645,7 +4646,7 @@ def test_lite_app_catalog_refresh_and_icon_source_is_scoped():
     assert "LiteSavedStateBanner()" in ui
     assert "return null;" in ui
     assert "LiteRefreshButton" in ui
-    assert "lite-refresh-status-popover" in ui
+    assert "lite-refresh-progress-ring" in ui
     assert "lite-saved-state-banner" not in catalog
     assert "PlugZap" in catalog
     assert "ImageUp" in catalog
@@ -4804,7 +4805,7 @@ def test_lite_tanstack_phase_preserves_app_catalog_safety_markers():
     assert "window.location.assign(target)" in catalog
     assert "LiteSavedStateBanner()" in ui
     assert "return null;" in ui
-    assert "lite-refresh-status-popover" in ui
+    assert "lite-refresh-progress-ring" in ui
     assert "navigateFallbackDenylist" in vite
     assert "LITE_WORKBOX_CACHE_NAMES.safeReads" in vite
     assert "apps" in vite
@@ -4939,7 +4940,7 @@ def test_lite_dexie_phase_preserves_no_browser_action_queue_and_pwa_denylist_sou
     assert "window.location.assign(target)" in catalog
     assert "LiteSavedStateBanner()" in ui
     assert "return null;" in ui
-    assert "lite-refresh-status-popover" in ui
+    assert "lite-refresh-progress-ring" in ui
     assert "navigateFallbackDenylist" in vite
     assert "LITE_WORKBOX_CACHE_NAMES.safeReads" in vite
     assert "apps" in vite
@@ -5010,7 +5011,7 @@ def test_lite_zustand_toast_and_refresh_are_wired_into_ui_source():
     assert "useLiteRefreshFeedback" in ui
     assert "beginRefresh(scope)" in ui
     assert "finishRefresh(scope" in ui
-    assert "lite-refresh-status-popover" in ui
+    assert "lite-refresh-progress-ring" in ui
     assert "LiteSavedStateBanner()" in ui
     assert "return null;" in ui
     assert "useLiteUiStore" in toast_host
@@ -5183,7 +5184,7 @@ def test_lite_app_catalog_progress_and_safety_details_followup_source():
     assert 'kind="card-to-sheet"' in catalog
     assert "lite-app-action-group.is-safety .lite-app-action-details-head .lite-shared-element-cue.is-row-to-details" in css
     assert "lite-catalog-flow-panel" not in css
-    assert "Pocket Lab asked the backend worker to save PhotoPrism app records." in catalog
+    assert "Pocket Lab saved the approved PhotoPrism app records." in catalog
     assert "Private backup details stayed hidden." in catalog
     assert "Backup history" in catalog
     assert "Latest backup" in catalog
@@ -5393,7 +5394,7 @@ def test_lite_app_catalog_details_preserve_backend_only_evidence_boundary():
     assert "PhotoPrismEvidenceCard" not in catalog
     assert "TECHNICAL_DETAILS_SANITIZED_GUARD" in technical
     assert "SENSITIVE_DETAIL_PATTERN" in technical
-    assert "Technical details are sanitized and collapsed by default." in technical
+    assert "Safe operational facts are available when you need them." in technical
     assert "raw JSON" not in catalog
 
 def test_lite_app_catalog_phase_s1_render_reduction_source_contract():
@@ -5505,7 +5506,7 @@ def test_lite_devices_details_preserve_backend_only_evidence_boundary():
 
     assert "DEVICE_DETAILS_BACKEND_EVIDENCE_BOUNDARY" in details
     assert "normal Devices details do not fetch backend evidence endpoints" in details
-    assert "Device events and troubleshooting records stay backend-owned and protected." in details
+    assert "Device events and troubleshooting records stay protected by Pocket Lab." in details
     assert "No secrets, raw logs, or private paths were loaded into this view." in details
     assert "liteApi.appEvidence" not in devices
     assert "/api/lite/apps/{app_id}/evidence" not in devices
@@ -5686,10 +5687,10 @@ def test_lite_security_details_preserve_backend_only_evidence_boundary():
 
     assert "SECURITY_BACKEND_ONLY_EVIDENCE_BOUNDARY" in finding_details
     assert "normal Security finding details do not fetch backend evidence endpoints" in finding_details
-    assert "A backend troubleshooting record stays protected" in finding_details
+    assert "A protected troubleshooting record is kept." in finding_details
     assert "The browser did not run security tools." in finding_details
     assert "Raw scanner output was not loaded into this view." in finding_details
-    assert "Secrets, private paths, and backend command payloads stay hidden." in finding_details
+    assert "Secrets, private device paths, and private action details stay hidden." in finding_details
     assert "liteApi.securityEvidence" not in finding_details
     assert "readJson(`/api/lite/security/evidence" not in finding_details
     assert "raw evidence" not in finding_details.lower()
@@ -6444,7 +6445,7 @@ def test_lite_security_phase2_redaction_guards_present():
     ]:
         assert forbidden_guard in details
     assert "Raw scanner output was not shown." in details
-    assert "Secrets, tokens, private paths, and backend command payloads stay hidden." in details
+    assert "Secrets, tokens, private device paths, and private action details stay hidden." in details
 
 
 def test_lite_security_phase3_responsive_shell_contract():
@@ -7681,7 +7682,7 @@ def test_lite_security_progressive_details_patch_d_contract():
     assert "App Check coverage" in details
     assert "Pocket Lab used the app scan profile." in details
     assert "Skipped by App Check" in details
-    assert "Details hydrated" in details
+    assert "Details loaded" in details
     assert "Detail type" in details
 
     manage_coverage = security.partition("activeManageSection === 'coverage'")[2].partition("activeManageSection === 'check_path'")[0]

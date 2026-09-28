@@ -78,11 +78,11 @@ export default function LiteServiceWorkerUpdateNotice() {
     <aside className="lite-service-worker-update-notice" role="status" aria-live="polite" data-lite-sw-update-ready="true">
       <div>
         <strong>App update ready</strong>
-        <p>{state.update_blocked ? 'Finish the active Pocket Lab operation before updating.' : 'Update when you are ready. Saved reads and backend work remain protected.'}</p>
+        <p>{state.update_blocked ? 'Finish the current Pocket Lab action before updating.' : 'Update when you are ready. Your saved information and any current device work stay protected.'}</p>
         {error ? <small role="alert">{error}</small> : null}
       </div>
       <LiteButton tone="secondary" onClick={applyUpdate} disabled={state.update_blocked || applying}>
-        {applying ? 'Updating…' : state.update_blocked ? 'Update paused' : 'Update app'}
+        {applying ? 'Updating…' : state.update_blocked ? 'Update paused' : 'Update Pocket Lab'}
       </LiteButton>
     </aside>
   );

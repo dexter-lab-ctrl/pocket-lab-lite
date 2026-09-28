@@ -73,6 +73,7 @@ CRITICAL_PREFIXES = (
 MAX_PARSE_BYTES = 1_000_000
 MAX_PURPOSE = 280
 MAX_SYMBOLS_PER_FILE = 200
+MAX_BROWSER_SEARCH_CHARS = 640
 
 
 def stable_json(value: Any) -> str:
@@ -772,7 +773,7 @@ def build_browser_projection(model: dict[str, Any]) -> dict[str, Any]:
         # payload budget as the tracked repository grows.  The path and the
         # highest-value labels appear first; the bounded tail is only a
         # compact search aid and is not canonical source evidence.
-        search[node["id"]] = re.sub(r"[^a-z0-9_./:@ -]+", " ", tokens)[:800]
+        search[node["id"]] = re.sub(r"[^a-z0-9_./:@ -]+", " ", tokens)[:MAX_BROWSER_SEARCH_CHARS]
     projection = {
         "schema_version": "1.0.0", "source_fingerprint": model["source_fingerprint"], "root_id": model["topology"]["root_id"], "live_runtime": False,
         "statistics": model["statistics"], "documentation_health": model["documentation_health"], "nodes": nodes, "relationships": rels,

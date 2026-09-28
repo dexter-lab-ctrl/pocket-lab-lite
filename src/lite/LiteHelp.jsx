@@ -7,7 +7,7 @@ import { LiteSheet } from './LiteOverlay.jsx';
 export default function LiteHelp({ helpKey, fallback = {}, label = '', className = '' }) {
   const [open, setOpen] = React.useState(false);
   const help = getLiteHelpContent(helpKey, fallback);
-  const accessibleLabel = label || `Help: ${help.title}`;
+  const accessibleLabel = label || `Explain: ${help.title}`;
   return (
     <>
       <button
@@ -23,7 +23,7 @@ export default function LiteHelp({ helpKey, fallback = {}, label = '', className
       <LiteSheet
         open={open}
         onClose={() => setOpen(false)}
-        eyebrow="Help"
+        eyebrow="Explain this"
         title={help.title}
         description={help.simple}
         className="lite-help-sheet"
@@ -36,11 +36,11 @@ export default function LiteHelp({ helpKey, fallback = {}, label = '', className
           </div>
           <div className="lite-help-story-row">
             <span className="lite-help-step" aria-hidden="true">→</span>
-            <div><strong>What to do</strong><p>{help.next}</p></div>
+            <div><strong>What you can do</strong><p>{help.next}</p></div>
           </div>
           {help.technical ? (
             <details className="lite-help-technical">
-              <summary>Technical detail</summary>
+              <summary>Technical details</summary>
               <p>{help.technical}</p>
             </details>
           ) : null}

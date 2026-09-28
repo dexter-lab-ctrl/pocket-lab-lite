@@ -12,6 +12,9 @@ Start here for the current operator experience:
   — the broader synthetic-principal and maintenance-harness contract.
 - [Lite validation](lite-validation.md) — local, browser, bootstrap, and
   platform validation for the Lite product.
+- [Lite UX Maturity Contract](lite-ux-maturity-contract.md) — the repository-owned
+  plain-language, storytelling, freshness, progressive-disclosure, history,
+  Technical Details, and consequence-confirmation contract for all Lite tabs.
 - [Historical PR #576 qualification evidence](evidence-history/runtime-security-assurance-qualification.md)
   — preserved audit history; not a current operating procedure.
 

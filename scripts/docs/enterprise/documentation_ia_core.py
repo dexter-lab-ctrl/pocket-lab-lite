@@ -851,6 +851,7 @@ def _owner(path: str) -> str:
         "security/lite-security-model.md": "reference",
         "recovery/backup-restore.md": "reference",
         "validation/lite-validation.md": "reference",
+        "validation/lite-ux-maturity-contract.md": "build-test",
         "validation/README.md": "build-test",
         "validation/qualification-maintenance-harness.md": "build-test",
         "validation/runtime-security-assurance-harness.md": "build-test",

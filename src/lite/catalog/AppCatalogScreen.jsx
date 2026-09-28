@@ -35,6 +35,7 @@ import { createLiteFeedbackDeduper } from '../../lib/liteNativeFeedback.js';
 import { liteQueryKeys, liteQueryPaths } from '../../lib/liteQueryClient.js';
 import { isLiteAppActionsViewLive, selectCanonicalAppState, selectCatalogSummaryView, selectPhotoPrismActionsView } from '../../lib/liteViewModels.js';
 import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LiteRefreshButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from '../LiteUi.jsx';
+import { LiteConsequenceSummary, LiteEmptyState, LiteFreshness } from '../LiteUx.jsx';
 import { useLiteUiStore } from '../../stores/liteUiStore.js';
 import AppActionRow from './AppActionRow.jsx';
 import AppActionProgressSlot from './AppActionProgressSlot.jsx';
@@ -189,7 +190,7 @@ const PHOTO_PRISM_ACTION_COPY = {
   remove_app: {
     eyebrow: 'Danger zone',
     label: 'Remove app',
-    description: 'Remove PhotoPrism while preserving photos, backups, and backend records by default.',
+    description: 'Remove PhotoPrism while preserving photos, backups, and protected troubleshooting records by default.',
   },
 };
 
@@ -222,7 +223,7 @@ function actionCopy(actionId) {
   return PHOTO_PRISM_ACTION_COPY[actionId] || {
     eyebrow: 'Action',
     label: actionId.replace(/_/g, ' '),
-    description: 'Pocket Lab will run this safely through the backend.',
+    description: 'Pocket Lab will run this through its protected local service.',
   };
 }
 
@@ -245,7 +246,7 @@ function busyActionLabel(actionId) {
 const APP_ACTION_CATEGORY_ORDER = ['media', 'safety', 'recovery', 'setup', 'danger'];
 
 const APP_ACTION_CATEGORY_COPY = {
-  media: { label: 'Photos', summary: 'Connect and import photos through backend-owned actions.' },
+  media: { label: 'Photos', summary: 'Connect and import photos through Pocket Lab-managed actions.' },
   safety: { label: 'Safety', summary: 'Check app health and protected records.' },
   recovery: { label: 'Recovery', summary: 'Back up, preview restore, and repair safely.' },
   setup: { label: 'App setup', summary: 'Install or check update readiness.' },
@@ -1117,8 +1118,8 @@ function AppCatalogResultNotice({ result, error, onDismiss }) {
       ? 'is-review'
       : 'is-success';
 
-  return (
-    <div className={`lite-catalog-action-notice ${toneClass}`} role={notice.tone === 'danger' ? 'alert' : 'status'} aria-live={notice.tone === 'danger' ? 'assertive' : 'polite'}>
+  const host = (
+    <div className={`lite-catalog-action-notice lite-catalog-action-notice--global ${toneClass}`} role={notice.tone === 'danger' ? 'alert' : 'status'} aria-live={notice.tone === 'danger' ? 'assertive' : 'polite'}>
       <div className="lite-catalog-action-notice-main">
         <span className="lite-catalog-action-notice-dot" aria-hidden="true" />
         <div>
@@ -1144,6 +1145,9 @@ function AppCatalogResultNotice({ result, error, onDismiss }) {
       ) : null}
     </div>
   );
+
+  if (typeof document === 'undefined') return null;
+  return createPortal(host, document.querySelector('.pocket-app-shell') || document.body);
 }
 
 const PhotoPrismActionTile = React.memo(function PhotoPrismActionTile({
@@ -1349,13 +1353,13 @@ function PhotoPrismStoragePreviewSheet({
         ) : error ? (
           <div className="lite-catalog-storage-preview-empty is-error" role="alert">
             <strong>Storage preview needs a moment</strong>
-            <p>{error}</p>
+            <p>Pocket Lab could not read the latest storage information. Try again when the device is reachable.</p>
             <LiteButton type="button" tone="secondary" onClick={onRetry}>Try again</LiteButton>
           </div>
         ) : notReady ? (
           <div className="lite-catalog-storage-preview-empty" role="status">
             <strong>Phone storage is not ready yet.</strong>
-            <p>{preview?.reason || 'Run termux-setup-storage in Termux and allow storage access.'}</p>
+            <p>{preview?.reason || 'Allow Android storage access for Pocket Lab on this device, then try again.'}</p>
           </div>
         ) : folders.length ? (
           <div className="lite-catalog-storage-preview-list" aria-label="Visible folders included with phone storage">
@@ -1532,8 +1536,8 @@ function actionDetailList(actionId, items, fallback = []) {
   if (actionId !== 'backup_app') return filtered;
   return filtered
     .map((item) => {
-      if (item === 'Pocket Lab queued or ran an app backup through the backend worker path.') {
-        return 'Pocket Lab asked the backend worker to save PhotoPrism app records.';
+      if (item === 'Pocket Lab saved the approved app records through its protected local service.') {
+        return 'Pocket Lab saved the approved PhotoPrism app records.';
       }
       if (item === 'PhotoPrism settings, mappings, route records, and safe app records may be saved.') {
         return 'PhotoPrism settings, mappings, route records, and safe app records were prepared for backup.';
@@ -1554,10 +1558,10 @@ function actionDetailList(actionId, items, fallback = []) {
 function actionDetailSavedSummary(actionId, saved) {
   if (actionId === 'backup_app') {
     return saved?.saved
-      ? 'A safe backend troubleshooting record was saved.'
-      : 'No backend troubleshooting record was saved because this action did not run.';
+      ? 'A protected troubleshooting record was saved.'
+      : 'No troubleshooting record was saved because this action did not run.';
   }
-  return saved?.summary || (saved?.saved ? 'A backend record was saved for troubleshooting.' : 'No backend record was saved because this action did not run.');
+  return saved?.summary || (saved?.saved ? 'A protected troubleshooting record was saved.' : 'No troubleshooting record was saved because this action did not run.');
 }
 
 function actionDetailRunHistoryLabels(actionId) {
@@ -1589,19 +1593,19 @@ function fallbackActionDetails(actionId, action = {}, result = null) {
     what_happened: disabled
       ? [`This action is paused because ${String(action?.disabled_reason || action?.reason || 'it is not ready yet.').replace(/^./, (char) => char.toLowerCase())}`]
       : [summary],
-    what_changed: [browserOnly || disabled ? 'Nothing changed.' : 'Pocket Lab will update this action after the backend finishes.'],
+    what_changed: [browserOnly || disabled ? 'Nothing changed.' : 'Pocket Lab will update this action when the work finishes.'],
     what_did_not_happen: browserOnly
-      ? ['No worker command was queued.', 'No app files were changed.', 'No photos were changed.']
-      : ['No unsafe action was started from the browser.'],
+      ? ['No device action was started.', 'No app files were changed.', 'No photos were changed.']
+      : ['No unsafe change was started.'],
     saved_for_troubleshooting: {
       saved: Boolean(result?.summary && !browserOnly),
       backend_only: true,
       summary: result?.summary && !browserOnly
-        ? 'A backend record was saved for troubleshooting.'
-        : 'No backend record was saved because this action did not run.',
+        ? 'A protected troubleshooting record was saved.'
+        : 'No troubleshooting record was saved because this action did not run.',
     },
     technical_details: [
-      `Execution owner: ${String(action?.execution_owner || (browserOnly ? 'browser navigation' : 'backend worker')).replace(/_/g, ' ')}`,
+      `Run by: ${browserOnly ? 'This screen' : 'Pocket Lab'}`,
       `Action: ${actionId}`,
       `Status: ${action?.status || 'ready'}`,
     ],
@@ -1638,8 +1642,8 @@ function detailsForAction(actionId, action = {}, result = null) {
       saved: hasEvidence,
       backend_only: true,
       summary: hasEvidence
-        ? 'A backend record was saved for troubleshooting.'
-        : 'No backend record was saved because this action did not run.',
+        ? 'A protected troubleshooting record was saved.'
+        : 'No troubleshooting record was saved because this action did not run.',
     },
   };
 }
@@ -2262,6 +2266,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     refresh,
     cacheStatus,
     refreshing,
+    lastUpdatedLabel,
     backendReachable,
     savedStateOnly,
   } = useLiteQuery({
@@ -3108,11 +3113,15 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         )}
       />
 
+      <LiteFreshness
+        saved={catalogSaved}
+        stale={data?.degraded_reason === 'projection_too_old'}
+        refreshing={catalogRefreshing}
+        lastUpdatedLabel={lastUpdatedLabel || ''}
+        backendReachable={backendReachable}
+      />
       <div className="lite-catalog-toolbar lite-catalog-toolbar--simple">
         <p>{displayedApps.length} {displayedApps.length === 1 ? 'app available' : 'apps available'}</p>
-        {catalogSaved || catalogRefreshing ? (
-          <span>{catalogSaved ? 'Showing saved app status' : 'Current app status'}{catalogRefreshing ? ' · Refreshing…' : ''}</span>
-        ) : null}
       </div>
 
       {featuredApp ? (
@@ -3125,35 +3134,37 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
 
 
-      {error ? <StateSurface tone="degraded" title="Catalog needs a moment" description={error} className="mb-5" /> : null}
+      {error ? <StateSurface tone="degraded" title="Apps are temporarily unavailable" description="Pocket Lab could not confirm the latest app information. Saved app information remains visible when available." className="mb-5" /> : null}
       {loading ? <CatalogSkeletons /> : null}
-      {loading ? <LoadingCard label="Loading apps..." /> : null}
+      {loading ? <LoadingCard label="Checking your apps…" /> : null}
 
       <div className="lite-catalog-grid lite-render-containment lite-render-containment--catalog">
         {displayedApps.filter((app) => app.id !== featuredApp?.id).map((app) => renderAppCard(app))}
       </div>
 
       {!loading && displayedApps.length === 0 ? (
-        <GlassCard className="lite-catalog-empty-state">
-          <div className="lite-catalog-empty-icon"><ImageIcon className="h-5 w-5" /></div>
-          <div>
-            <h2>{apps.length ? 'No apps available' : 'No apps installed yet'}</h2>
-            <p>{apps.length ? 'Refresh the App Catalog to check again.' : 'Install your first local app to start using this self-hosted workspace.'}</p>
-          </div>
-          <LiteRefreshButton scope="apps" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} label="Check again" />
-        </GlassCard>
+        <LiteEmptyState
+          className="lite-catalog-empty-state"
+          title={apps.length ? 'No apps available' : 'No apps installed yet'}
+          description={apps.length ? 'Pocket Lab did not find an app it can show right now.' : 'Install your first self-hosted app when you are ready.'}
+          action={{ label: apps.length ? 'Check again' : 'Refresh Apps', onClick: refresh }}
+        />
       ) : null}
       {removeConfirmApp ? (
         <GlassCard className="lite-catalog-remove-confirm" role="dialog" aria-label="Confirm remove">
           <div>
             <span>Confirm remove</span>
             <h2>Remove PhotoPrism?</h2>
-            <p>This removes the app runtime and Pocket Lab route when removal support is enabled. Your photo files and backups will not be deleted by default. Troubleshooting records are kept.</p>
+            <p>This removes PhotoPrism from this Pocket Lab when removal is available. Your photo files and existing backups stay protected.</p>
           </div>
-          <div className="lite-catalog-remove-confirm-grid">
-            <span><strong>What will happen</strong>Remove app runtime and route after backend support is enabled.</span>
-            <span><strong>What will not happen</strong>Your photo files and backups will not be deleted by default.</span>
-          </div>
+          <LiteConsequenceSummary value={{
+            title: 'Before PhotoPrism is removed',
+            summary: 'Review the effect on this app before continuing.',
+            will: ['Remove the PhotoPrism app service and its Pocket Lab access route when removal is available.'],
+            willNot: ['Delete your photo files.', 'Delete existing backups by default.'],
+            reversible: 'Reinstalling the app can restore the app service. Your data protection depends on the backups you keep.',
+            availability: 'PhotoPrism will be unavailable after removal until it is installed again.',
+          }} />
           <div className="lite-catalog-remove-confirm-actions">
             <LiteButton tone="danger" onClick={(event) => confirmRemoveApp(removeConfirmApp, event)}>Confirm remove</LiteButton>
             <LiteButton tone="secondary" onClick={() => setRemoveConfirmApp(null)}>Cancel</LiteButton>

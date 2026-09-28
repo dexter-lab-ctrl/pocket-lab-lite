@@ -2530,12 +2530,12 @@
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_app_runtime_reconciliation.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/e2e/lite-content-stress.spec.ts",
-        "test:tests/e2e/lite-mocked.spec.ts",
-        "test:tests/e2e/lite-test-helpers.ts"
+        "test:tests/e2e/lite-mocked.spec.ts"
       ],
       "type": "component",
       "verification_status": "test-linked"
@@ -3059,6 +3059,7 @@
         "test:tests/backend/test_lite_security_f9_etag_contract.py",
         "test:tests/backend/test_lite_security_s8_recovery.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py",
         "test:tests/backend/test_lite_workload_admission.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
@@ -3286,6 +3287,7 @@
         "test:tests/backend/test_lite_premium_tab_polish.py",
         "test:tests/backend/test_lite_security_f3_summary_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
@@ -3510,6 +3512,7 @@
         "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
         "test:tests/backend/test_lite_identity_rules_ui_projection.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py",
         "test:tests/docs/mkdocs.spec.ts",
         "test:tests/docs/test_documentation_ia.py",
         "test:tests/docs/test_documentation_intelligence.py",
@@ -3520,8 +3523,7 @@
         "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-performance.spec.ts",
-        "test:tests/e2e/lite-phase9-qualification.spec.ts",
-        "test:tests/e2e/lite-test-helpers.ts",
+        "test:tests/e2e/lite-ux-maturity.spec.ts",
         "test:tests/parity/test_intelligent_runtime_parity.py"
       ],
       "type": "domain",
@@ -3626,6 +3628,7 @@
         "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
+        "test:tests/e2e/lite-ux-maturity.spec.ts",
         "test:tests/parity/test_intelligent_runtime_parity.py"
       ],
       "type": "domain",
@@ -3728,6 +3731,7 @@
         "test:tests/backend/test_lite_security_worker_sqlite_commit.py",
         "test:tests/backend/test_lite_sqlite_performance.py",
         "test:tests/backend/test_lite_startup_workload_isolation.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py",
         "test:tests/backend/test_lite_windows_adb_qualification_tools.py",
         "test:tests/backend/test_lite_worker_recovery.py",
         "test:tests/backend/test_lite_workload_admission.py",
@@ -3754,8 +3758,6 @@
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-performance-live.spec.ts",
         "test:tests/e2e/lite-performance.spec.ts",
-        "test:tests/e2e/lite-phase9-qualification.spec.ts",
-        "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/e2e/lite-visual-overlays.spec.ts",
         "test:tests/parity/test_intelligent_runtime_parity.py"
       ],
@@ -3863,6 +3865,7 @@
         "test:tests/backend/test_lite_device_system_profile.py",
         "test:tests/backend/test_lite_devices_d2_d3.py",
         "test:tests/backend/test_lite_devices_durable_enrollment.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py",
         "test:tests/docs/test_documentation_ia.py",
         "test:tests/e2e/lite-mocked.spec.ts"
       ],
@@ -3887,7 +3890,8 @@
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_database_restore_reconciliation.py",
         "test:tests/backend/test_lite_premium_tab_polish.py",
-        "test:tests/backend/test_lite_security_s8_recovery.py"
+        "test:tests/backend/test_lite_security_s8_recovery.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py"
       ],
       "type": "journey",
       "verification_status": "test-linked"
@@ -3912,7 +3916,8 @@
         "test:tests/backend/test_lite_security_f9_etag_contract.py",
         "test:tests/backend/test_lite_security_p2b_reboot_generation.py",
         "test:tests/backend/test_lite_security_s6_retention.py",
-        "test:tests/backend/test_lite_security_s8_recovery.py"
+        "test:tests/backend/test_lite_security_s8_recovery.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py"
       ],
       "type": "journey",
       "verification_status": "test-linked"
@@ -3969,7 +3974,8 @@
         "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
         "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
-        "test:tests/backend/test_lite_identity_rules_ui_projection.py"
+        "test:tests/backend/test_lite_identity_rules_ui_projection.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py"
       ],
       "type": "journey",
       "verification_status": "test-linked"
@@ -4028,7 +4034,8 @@
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_device_system_profile.py",
         "test:tests/backend/test_lite_devices_d2_d3.py",
-        "test:tests/backend/test_lite_devices_durable_enrollment.py"
+        "test:tests/backend/test_lite_devices_durable_enrollment.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py"
       ],
       "type": "journey",
       "verification_status": "test-linked"
@@ -4043,6 +4050,7 @@
         "test:tests/backend/test_lite_device_system_profile.py",
         "test:tests/backend/test_lite_devices_d2_d3.py",
         "test:tests/backend/test_lite_devices_durable_enrollment.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_living_knowledgebase.py"
       ],
@@ -4057,7 +4065,8 @@
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_database_restore_reconciliation.py",
         "test:tests/backend/test_lite_premium_tab_polish.py",
-        "test:tests/backend/test_lite_security_s8_recovery.py"
+        "test:tests/backend/test_lite_security_s8_recovery.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py"
       ],
       "type": "journey",
       "verification_status": "test-linked"
@@ -4071,6 +4080,7 @@
         "test:tests/backend/test_lite_database_restore_reconciliation.py",
         "test:tests/backend/test_lite_premium_tab_polish.py",
         "test:tests/backend/test_lite_security_s8_recovery.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py",
         "test:tests/parity/test_backup_recovery_parity.py"
       ],
       "type": "journey",
@@ -4093,7 +4103,8 @@
         "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
         "test:tests/backend/test_lite_identity_rules_authorization.py",
         "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
-        "test:tests/backend/test_lite_identity_rules_ui_projection.py"
+        "test:tests/backend/test_lite_identity_rules_ui_projection.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py"
       ],
       "type": "journey",
       "verification_status": "test-linked"
@@ -4130,7 +4141,8 @@
         "test:tests/backend/test_lite_security_f7_split_read_contract.py",
         "test:tests/backend/test_lite_security_f9_etag_contract.py",
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
-        "test:tests/backend/test_lite_security_s7_saved_state_history.py"
+        "test:tests/backend/test_lite_security_s7_saved_state_history.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py"
       ],
       "type": "journey",
       "verification_status": "test-linked"
@@ -4153,6 +4165,7 @@
         "test:tests/backend/test_lite_security_s7_saved_state_history.py",
         "test:tests/backend/test_lite_security_s8_gate_submission_recovery.py",
         "test:tests/backend/test_lite_security_s8_idle_reconciliation.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py",
         "test:tests/backend/test_lite_workload_admission.py",
         "test:tests/docs/test_enterprise_completion.py"
       ],
@@ -4315,6 +4328,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "1554198ca2fd15a8852e0adc2dc3baac956284cd2bd798d77c18c876921b7c54"
+    "source_fingerprint": "a39962f49ff07ee71da63014b42ef962c15320c8d8378d15945c7f0325985a4f"
   }
 }

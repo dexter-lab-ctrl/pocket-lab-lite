@@ -568,6 +568,32 @@
       "affects_release": true,
       "affects_runtime": true,
       "default": "source-defined/unvalidated",
+      "name": "LITE_DEFAULT_UI_FORBIDDEN_TERMS",
+      "owner": "frontend",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "src/lib/liteUxPresentation.js",
+        "src/lib/liteUxPresentation.test.js",
+        "tests/backend/test_lite_ux_maturity_contract.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "frontend",
+        "repository tooling"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
       "name": "LITE_DEVICES_VIEW_MODEL_VERSION",
       "owner": "frontend",
       "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -4218,6 +4244,29 @@
       "secret": false,
       "source": [
         "src/stores/liteUiStore.js"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "frontend"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "LITE_UX_MATURITY_PRIMITIVES_READY",
+      "owner": "frontend",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "src/lite/LiteUx.jsx"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

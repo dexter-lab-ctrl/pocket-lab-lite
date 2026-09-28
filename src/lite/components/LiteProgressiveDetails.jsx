@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import LiteTechnicalDetails from './LiteTechnicalDetails.jsx';
 import LiteHistorySection from './LiteHistorySection.jsx';
+import { friendlyLiteText } from '../../lib/liteUxPresentation.js';
 
 const PROGRESSIVE_DETAILS_SUMMARY_FIRST = true;
 const PROGRESSIVE_DETAILS_DEFAULT_RENDER_MODE = 'progressive';
@@ -17,17 +18,17 @@ function toList(value, fallback = []) {
   const source = Array.isArray(value) ? value : value ? [value] : fallback;
   return source
     .filter(Boolean)
-    .map((item) => String(item).trim())
+    .map((item) => friendlyLiteText(item, ''))
     .filter(Boolean)
     .slice(0, 8);
 }
 
 function safeSavedSummary(saved) {
-  if (typeof saved === 'string') return saved;
+  if (typeof saved === 'string') return friendlyLiteText(saved, 'Troubleshooting information is protected.');
   if (saved && typeof saved === 'object') {
-    return saved.summary || (saved.saved ? 'A backend record was saved for troubleshooting.' : 'No backend troubleshooting record was saved.');
+    return friendlyLiteText(saved.summary, saved.saved ? 'A protected troubleshooting record was saved.' : 'No troubleshooting record was saved.');
   }
-  return 'Backend troubleshooting records stay protected.';
+  return 'Troubleshooting records stay protected.';
 }
 
 function DetailListSection({ title, items, tone = '' }) {
@@ -60,6 +61,7 @@ export default function LiteProgressiveDetails({
   children,
 }) {
   const savedSummary = safeSavedSummary(saved_for_troubleshooting);
+  const safeNextStep = friendlyLiteText(next_step, '');
   const historyProps = history && typeof history === 'object' ? history : {};
   const detailSections = useMemo(() => {
     const sections = [];
@@ -81,11 +83,11 @@ export default function LiteProgressiveDetails({
         <p>{savedSummary}</p>
       </section>,
     );
-    if (next_step) {
+    if (safeNextStep) {
       sections.push(
         <section key="next-step" className="lite-progressive-detail-section lite-app-action-detail-section is-next-step">
           <strong>Next step</strong>
-          <p>{next_step}</p>
+          <p>{safeNextStep}</p>
         </section>,
       );
     }
@@ -93,7 +95,7 @@ export default function LiteProgressiveDetails({
     return sections;
   }, [
     children,
-    next_step,
+    safeNextStep,
     savedSummary,
     what_changed,
     what_did_not_happen,
@@ -136,9 +138,9 @@ export default function LiteProgressiveDetails({
     <article className={`lite-progressive-details is-${status || 'neutral'}`} data-lite-progressive-render={cssContained ? 'css-contained' : 'raf-batched'}>
       <div className="lite-progressive-details-summary">
         <span>Details</span>
-        <h3>{title}</h3>
-        <p>{summary}</p>
-        {statusLabel ? <strong className="lite-progressive-details-status">{statusLabel}</strong> : null}
+        <h3>{friendlyLiteText(title, 'Details')}</h3>
+        <p>{friendlyLiteText(summary, 'Details are available.')}</p>
+        {statusLabel ? <strong className="lite-progressive-details-status">{friendlyLiteText(statusLabel)}</strong> : null}
       </div>
 
       <div className="lite-progressive-details-grid">

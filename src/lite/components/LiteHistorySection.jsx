@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import LiteVirtualList from './LiteVirtualList.jsx';
+import { friendlyLiteText } from '../../lib/liteUxPresentation.js';
 
 const HISTORY_SECTION_COLLAPSED_BY_DEFAULT = true;
 const HISTORY_CONTENT_MOUNTS_ONLY_WHEN_OPENED = true;
@@ -14,11 +15,11 @@ function safeHistoryItems(items) {
       if (item && typeof item === 'object') {
         return {
           id: String(item.id || item.run_id || item.operation_id || item.backup_id || item.restore_id || ''),
-          title: String(item.title || item.summary || item.status || 'Run').slice(0, 120),
-          meta: String(item.meta || item.completed_at || item.updated_at || item.started_at || '').slice(0, 120),
+          title: friendlyLiteText(item.title || item.summary || item.status, 'Pocket Lab activity').slice(0, 120),
+          meta: friendlyLiteText(item.meta || item.completed_at || item.updated_at || item.started_at, '').slice(0, 120),
         };
       }
-      return { id: '', title: String(item).slice(0, 120), meta: '' };
+      return { id: '', title: friendlyLiteText(item, 'Pocket Lab activity').slice(0, 120), meta: '' };
     })
     .slice(0, LITE_HISTORY_SECTION_ROW_LIMIT);
 }
@@ -59,7 +60,7 @@ export default function LiteHistorySection({
   };
 
   return (
-    <section className="lite-history-section" data-lazy-history="true" data-history-open={isOpen}>
+    <section className="lite-history-section lite-ux-history-language" data-lazy-history="true" data-history-open={isOpen}>
       <button
         type="button"
         className="lite-progressive-disclosure-toggle"
@@ -73,8 +74,8 @@ export default function LiteHistorySection({
       {shouldMountHistory ? (
         <div className="lite-history-section-body">
           {loading ? <p>Loading history…</p> : null}
-          {error ? <p role="alert">History needs a moment. {String(error).slice(0, 140)}</p> : null}
-          {savedState ? <p>Showing saved state.</p> : null}
+          {error ? <p role="alert">History is temporarily unavailable. Try again when Pocket Lab is reachable.</p> : null}
+          {savedState ? <p>Showing saved information.</p> : null}
           {children}
           {!children && !loading && !error ? (
             <LiteVirtualList
@@ -92,7 +93,7 @@ export default function LiteHistorySection({
               onLoadMore={onLoadMore}
               totalCount={totalCount}
               emptyState={<p>{emptyMessage}</p>}
-              endState={(wasTruncated || (hasMore && count >= LITE_HISTORY_SECTION_ROW_LIMIT)) ? <p className="lite-virtual-list__end">Loaded history limit reached.</p> : null}
+              endState={(wasTruncated || (hasMore && count >= LITE_HISTORY_SECTION_ROW_LIMIT)) ? <p className="lite-virtual-list__end">Loaded history limit reached. Open a narrower time range for older activity.</p> : null}
               renderItem={(item, _index, context) => context.virtual ? (
                 <div className="lite-history-section-row">
                   <span>{item.title}</span>

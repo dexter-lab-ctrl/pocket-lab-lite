@@ -45,8 +45,8 @@ function actionDetailList(actionId, items, fallback = []) {
     .filter((item) => !(item.toLowerCase().includes('troubleshooting records') && item.toLowerCase().includes('backend-only')));
   if (actionId !== 'backup_app') return filtered;
   return filtered.map((item) => {
-    if (item === 'Pocket Lab queued or ran an app backup through the backend worker path.') {
-      return 'Pocket Lab asked the backend worker to save PhotoPrism app records.';
+    if (item === 'Pocket Lab saved the approved PhotoPrism app records.') {
+      return 'Pocket Lab saved the approved PhotoPrism app records.';
     }
     if (item === 'PhotoPrism settings, mappings, route records, and safe app records may be saved.') {
       return 'PhotoPrism settings, mappings, route records, and safe app records were prepared for backup.';
@@ -67,10 +67,10 @@ function actionDetailList(actionId, items, fallback = []) {
 function actionDetailSavedSummary(actionId, saved) {
   if (actionId === 'backup_app') {
     return saved?.saved
-      ? 'A safe backend troubleshooting record was saved.'
-      : 'No backend troubleshooting record was saved because this action did not run.';
+      ? 'A protected troubleshooting record was saved.'
+      : 'No troubleshooting record was saved because this action did not run.';
   }
-  return saved?.summary || (saved?.saved ? 'A backend record was saved for troubleshooting.' : 'No backend record was saved because this action did not run.');
+  return saved?.summary || (saved?.saved ? 'A protected troubleshooting record was saved.' : 'No troubleshooting record was saved because this action did not run.');
 }
 
 function actionDetailRunHistoryLabels(actionId) {
@@ -112,16 +112,16 @@ function technicalLabel(value) {
 }
 
 function compactTechnicalRows(actionId, details = {}, saved = {}, technical = []) {
-  const owner = String(details.execution_owner || saved.execution_owner || 'FastAPI and backend worker').replace(/_/g, ' ');
+  const owner = 'Pocket Lab';
   const rows = [
     { label: 'Action', value: technicalLabel(actionId) },
     { label: 'Current state', value: technicalLabel(details.status || 'ready') },
-    { label: 'Execution path', value: owner },
+    { label: 'Run by', value: owner },
     details.operation_id ? { label: 'Operation reference', value: details.operation_id } : null,
-    details.sanitized_reference_id ? { label: 'Evidence reference', value: details.sanitized_reference_id } : null,
+    details.sanitized_reference_id ? { label: 'Troubleshooting reference', value: details.sanitized_reference_id } : null,
     details.first_ran_at ? { label: 'First recorded', value: formatLiteTime(details.first_ran_at) } : null,
     details.last_ran_at ? { label: 'Last recorded', value: formatLiteTime(details.last_ran_at) } : null,
-    saved?.receipt_id ? { label: 'Backend record', value: saved.receipt_id } : null,
+    saved?.receipt_id ? { label: 'Troubleshooting record', value: saved.receipt_id } : null,
   ].filter(Boolean);
   const seen = new Set(rows.map((row) => `${row.label}:${row.value}`.toLowerCase()));
 
@@ -149,7 +149,7 @@ function compactHistoryItems(details = {}, runLabels, saved = {}) {
   return [{
     id: details.operation_id || details.sanitized_reference_id || `${details.status || 'recorded'}:${details.last_ran_at || 'saved'}`,
     title: details.last_result || details.summary || 'Completed action',
-    meta: details.last_ran_at ? `Recorded ${formatLiteTime(details.last_ran_at)}` : 'Saved backend record',
+    meta: details.last_ran_at ? `Recorded ${formatLiteTime(details.last_ran_at)}` : 'Protected record saved',
   }];
 }
 
@@ -174,7 +174,7 @@ export default function AppActionDetailsLazy({ details, actionId = '', onClose }
   const technical = actionDetailList(actionId, details.technical_details);
   const saved = details.saved_for_troubleshooting && typeof details.saved_for_troubleshooting === 'object'
     ? details.saved_for_troubleshooting
-    : { saved: false, backend_only: true, summary: 'No backend record was saved because this action did not run.' };
+    : { saved: false, backend_only: true, summary: 'No troubleshooting record was saved because this action did not run.' };
   const detailsTone = actionDetailsTone(details, saved);
   const runLabels = actionDetailRunHistoryLabels(actionId);
   const display = getActionDisplayState(details.status || 'ready');
@@ -214,7 +214,7 @@ export default function AppActionDetailsLazy({ details, actionId = '', onClose }
           summary: historySummary(details, runLabels, saved),
           items: compactHistoryItems(details, runLabels, saved),
           enabled: true,
-          emptyMessage: details.has_run_evidence || saved.saved ? 'The latest backend record is shown above.' : 'No completed runs have been recorded yet.',
+          emptyMessage: details.has_run_evidence || saved.saved ? 'The latest protected result is shown above.' : 'No completed runs have been recorded yet.',
         }}
       />
     </section>

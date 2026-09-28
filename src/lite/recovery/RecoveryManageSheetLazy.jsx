@@ -9,6 +9,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { formatLiteTime } from '../../lib/liteApi.js';
+import { friendlyLiteText } from '../../lib/liteUxPresentation.js';
 import { LiteButton, LoadingCard, StateSurface, StatusBadge } from '../LiteUi.jsx';
 import RecoveryBackupLocation from './RecoveryBackupLocation.jsx';
 
@@ -203,7 +204,7 @@ export default function RecoveryManageSheetLazy({
             <RecoveryActionRow
               icon={Database}
               title="Back Up Pocket Lab"
-              description={latestDatabaseBackup?.created_at ? `${formatSize(latestDatabaseBackup.size_bytes)} · ${formatLiteTime(latestDatabaseBackup.created_at)}` : 'Create a consistent SQLite online backup.'}
+              description={latestDatabaseBackup?.created_at ? `${formatSize(latestDatabaseBackup.size_bytes)} · ${formatLiteTime(latestDatabaseBackup.created_at)}` : 'Create a consistent Pocket Lab data backup.'}
               status={databaseMaintenance?.active ? 'Working' : databaseBackupVerified ? 'Verified' : 'Backup needed'}
               statusTone={databaseMaintenance?.active ? 'checking' : databaseBackupVerified ? 'healthy' : 'review'}
               actionLabel="Back Up"
@@ -333,7 +334,7 @@ export default function RecoveryManageSheetLazy({
             </article>
             <article>
               <Database className="h-5 w-5" />
-              <div><strong>Database protection</strong><p>{databaseProtection?.summary || 'SQLite backup, restore guard, and WAL protection are ready.'}</p></div>
+              <div><strong>Database protection</strong><p>{friendlyLiteText(databaseProtection?.summary, 'Pocket Lab data backup, restore guard, and write protection are ready.')}</p></div>
               <StatusBadge status={databaseMaintenance?.active ? 'checking' : databaseBackupVerified ? 'healthy' : 'review'}>
                 {databaseMaintenance?.active ? 'Working' : databaseBackupVerified ? 'Healthy' : 'Review'}
               </StatusBadge>

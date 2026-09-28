@@ -6524,7 +6524,7 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
-        "PYTHONPATH=tests:pocket-lab-final-structure/runtime PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONFAULTHANDLER=1 {{.PYTHON}} -m pytest -q -p pytest_timeout --timeout=60 --timeout-method=thread tests/backend/test_lite_api.py tests/backend/test_lite_recovery.py tests/backend/test_lite_security.py"
+        "PYTHONPATH=tests:pocket-lab-final-structure/runtime PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONFAULTHANDLER=1 {{.PYTHON}} -m pytest -q -p pytest_timeout --timeout=60 --timeout-method=thread tests/backend/test_lite_api.py tests/backend/test_lite_recovery.py tests/backend/test_lite_security.py tests/backend/test_lite_ux_maturity_contract.py"
       ],
       "dependencies": [
         "lite:dev:scratch:prepare"
@@ -6542,7 +6542,8 @@
       "inputs": [
         "tests/backend/test_lite_api.py",
         "tests/backend/test_lite_recovery.py",
-        "tests/backend/test_lite_security.py"
+        "tests/backend/test_lite_security.py",
+        "tests/backend/test_lite_ux_maturity_contract.py"
       ],
       "name": "lite:test:backend",
       "outputs": [],
@@ -6731,6 +6732,47 @@
       "source": "tasks/Taskfile.lite.yml",
       "validation_outcome": "gate-defined",
       "workflow_group": "Recovery-diagnostics loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:ux:maturity",
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_ux_maturity_contract.py"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:test:ux:maturity",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "tests/backend/test_lite_ux_maturity_contract.py"
+      ],
+      "name": "lite:test:ux:maturity",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run the repository-owned Pocket Lab Lite UX maturity contract and mocked cross-tab qualification",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
     },
     {
       "aliases": [],

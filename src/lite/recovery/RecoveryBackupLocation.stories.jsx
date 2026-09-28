@@ -51,7 +51,7 @@ const custom = (overrides = {}) => location({
 async function openChoices(canvasElement) {
   const canvas = within(canvasElement);
   await userEvent.click(await canvas.findByRole('button', { name: 'Change backup location' }));
-  await expect(await canvas.findByRole('group', { name: 'Backend-discovered backup locations' })).toBeInTheDocument();
+  await expect(await canvas.findByRole('group', { name: 'Available backup locations' })).toBeInTheDocument();
 }
 
 export const DefaultPrivate = {

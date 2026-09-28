@@ -5,22 +5,9 @@ import { GlassCard, StatusBadge, StateSurface } from '../components/ui.jsx';
 import { actionReference } from '../lib/liteApi.js';
 import { useLiteUiStore, useLiteRefreshFeedback } from '../stores/liteUiStore.js';
 import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
+import { friendlyLiteText } from '../lib/liteUxPresentation.js';
 
 export { GlassCard, StatusBadge, StateSurface };
-
-function refreshStatusCopy(cacheStatus, error, refreshing = false, refreshFeedback = null) {
-  const stale = Boolean(cacheStatus?.stale || error || ['saved', 'stale', 'expired', 'unreachable', 'failed'].includes(refreshFeedback?.result));
-  return {
-    stale,
-    title: refreshFeedback?.title || cacheStatus?.title || (refreshing ? 'Refreshing…' : stale ? 'Showing saved state' : 'Fresh state'),
-    summary: refreshFeedback?.summary || cacheStatus?.summary || error || (refreshing
-      ? 'Pocket Lab is checking for fresh state.'
-      : stale
-        ? 'Pocket Lab is not reachable. Saved state only.'
-        : 'Pocket Lab is showing the latest saved status.'),
-    detail: refreshFeedback?.detail || cacheStatus?.detail || '',
-  };
-}
 
 function refreshResultFromMeta(cacheStatus, error) {
   if (error) return 'unreachable';
@@ -38,32 +25,21 @@ export function LiteRefreshButton({
   cacheStatus,
   error,
   refreshing = false,
+  disabled = false,
   label = 'Refresh',
   tone = 'secondary',
   className = '',
   scope = 'global',
 }) {
-  const [open, setOpen] = React.useState(false);
-  const closeTimerRef = React.useRef(null);
   const beginRefresh = useLiteUiStore((state) => state.beginRefresh);
   const finishRefresh = useLiteUiStore((state) => state.finishRefresh);
   const refreshFeedback = useLiteRefreshFeedback(scope);
-  const copy = refreshStatusCopy(cacheStatus, error, refreshing, refreshFeedback);
-
-  React.useEffect(() => () => {
-    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
-  }, []);
-
-  function showStatus() {
-    setOpen(true);
-    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
-    closeTimerRef.current = window.setTimeout(() => setOpen(false), 4200);
-  }
+  const stale = Boolean(cacheStatus?.stale || error || ['saved', 'stale', 'expired', 'unreachable', 'failed'].includes(refreshFeedback?.result));
+  const isRefreshing = Boolean(refreshing || refreshFeedback?.result === 'refreshing');
 
   async function handleClick(event) {
     event?.stopPropagation?.();
     beginRefresh(scope);
-    showStatus();
     try {
       const maybeResult = refresh?.({ force: true });
       if (maybeResult && typeof maybeResult.then === 'function') {
@@ -73,27 +49,24 @@ export function LiteRefreshButton({
     } catch (_error) {
       finishRefresh(scope, 'failed');
       // The owning screen already renders the safe error state.
-    } finally {
-      showStatus();
     }
   }
 
   return (
-    <div className={`lite-refresh-control ${copy.stale ? 'is-stale' : 'is-live'} ${open ? 'is-open' : ''} ${className}`.trim()} data-lite-perf-primitive="refresh-control">
-      <LiteButton onClick={handleClick} tone={tone}>
-        <RefreshCw className={`h-4 w-4 lite-refresh-icon ${refreshing ? 'is-refreshing' : ''}`} />
-        {refreshing ? 'Refreshing…' : label}
+    <div className={`lite-refresh-control ${stale ? 'is-stale' : 'is-live'} ${className}`.trim()} data-lite-perf-primitive="refresh-control">
+      <LiteButton
+        onClick={handleClick}
+        tone={tone}
+        disabled={disabled || isRefreshing}
+        ariaLabel={isRefreshing ? 'Refreshing…' : label}
+        aria-busy={isRefreshing}
+        aria-live="polite"
+        className="lite-refresh-button"
+        data-lite-refresh-state={isRefreshing ? 'refreshing' : 'idle'}
+      >
+        {isRefreshing ? <span className="lite-refresh-progress-ring" aria-hidden="true" /> : <RefreshCw className="h-4 w-4 lite-refresh-icon" aria-hidden="true" />}
+        <span className="lite-refresh-label">{isRefreshing ? 'Refreshing…' : label}</span>
       </LiteButton>
-      {open ? (
-        <div className="lite-refresh-status-popover" role="status" aria-live="polite">
-          <span className="lite-refresh-status-dot" aria-hidden="true" />
-          <div>
-            <strong>{copy.title}</strong>
-            <p>{copy.summary}</p>
-            {copy.detail ? <small>{copy.detail}</small> : null}
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -261,7 +234,7 @@ export function canonicalDevicePresentation(device) {
   const connection = String(device?.connection_truth?.state || device?.connection || '').toLowerCase();
   const status = String(device?.status || '').toLowerCase();
   if (connection === 'repairing' || ['repairing', 'supervisor_repairing'].includes(status)) return { state: 'repairing', label: 'Repairing' };
-  if (connection === 'stopped' || ['agent_stopped', 'stopped'].includes(status)) return { state: 'agent_stopped', label: 'Agent stopped' };
+  if (connection === 'stopped' || ['agent_stopped', 'stopped'].includes(status)) return { state: 'agent_stopped', label: 'Device service stopped' };
   if (connection === 'offline' || ['offline', 'failed', 'unhealthy', 'degraded', 'stale'].includes(status)) return { state: 'offline', label: 'Offline' };
   if (connection === 'online') return { state: 'online', label: 'Online' };
   if (connection === 'joining' || ['joining', 'accepted', 'setup_started'].includes(status)) return { state: 'joining', label: 'Joining' };
@@ -509,8 +482,8 @@ export function liveSecurityProgress(progress, runStatus, busy, nowMs) {
 
 export function securityProgressStage(progress, runStatus) {
   if (progress?.stage) return progress.stage;
-  if (runStatus === 'queued') return 'Waiting for the backend worker';
-  if (runStatus === 'running') return 'Running Lynis and Trivy';
+  if (runStatus === 'queued') return 'Waiting for the local safety check';
+  if (runStatus === 'running') return 'Checking system, apps and settings';
   return 'Preparing safety check';
 }
 
@@ -725,19 +698,26 @@ export function securityExecutionTimeline({ executionTimeline, currentRunId, run
 
   if (backendTimeline.length) {
     const keyTitleMap = {
-      request_accepted: 'Request accepted',
-      worker_picked_up: 'Worker picked it up',
-      lynis_host_check: 'Lynis host check',
-      trivy_dependency_secret_check: 'Trivy dependency & secret check',
-      evidence_saved: 'Evidence saved',
+      request_accepted: 'Check requested',
+      worker_picked_up: 'Started on your Pocket Lab',
+      lynis_host_check: 'System safety checked',
+      trivy_dependency_secret_check: 'Apps and settings checked',
+      evidence_saved: 'Protected result saved',
+    };
+    const keyDetailMap = {
+      request_accepted: 'Pocket Lab accepted the safety check.',
+      worker_picked_up: 'The local safety check started.',
+      lynis_host_check: 'System safety settings were checked.',
+      trivy_dependency_secret_check: 'Apps, settings, dependencies, and sensitive-value patterns were checked.',
+      evidence_saved: 'A protected check result was saved with sensitive values hidden.',
     };
 
     const normalizedBackendSteps = backendTimeline.map((step, index) => {
       const key = String(step?.key || `step_${index + 1}`);
       return {
         key,
-        title: step?.title || keyTitleMap[key] || `Step ${index + 1}`,
-        detail: step?.detail || step?.summary || step?.message || 'Security step update.',
+        title: keyTitleMap[key] || friendlyLiteText(step?.title, `Step ${index + 1}`),
+        detail: keyDetailMap[key] || friendlyLiteText(step?.detail || step?.summary || step?.message, 'Safety check update.'),
         state: securityExecutionStateFromBackend(step?.status),
       };
     });
@@ -765,19 +745,19 @@ export function securityExecutionTimeline({ executionTimeline, currentRunId, run
   const fallbackSteps = [
     {
       key: 'request_accepted',
-      title: 'Request accepted',
-      detail: queued ? 'FastAPI queued the check.' : 'FastAPI accepted the safety request.',
+      title: 'Check requested',
+      detail: queued ? 'Pocket Lab is preparing the safety check.' : 'Pocket Lab accepted the safety check.',
       state: queued ? 'active' : status ? 'done' : 'waiting',
     },
     {
       key: 'worker_picked_up',
-      title: 'Worker picked it up',
-      detail: running ? 'The backend worker is running local tools.' : terminal ? 'The backend worker finished the check.' : 'Waiting for the backend worker.',
+      title: 'Started on your Pocket Lab',
+      detail: running ? 'The local safety check is running.' : terminal ? 'The local safety check finished.' : 'Waiting for the local safety check to start.',
       state: running || terminal ? 'done' : 'waiting',
     },
     {
       key: 'lynis_host_check',
-      title: 'Lynis host check',
+      title: 'System safety checked',
       detail: lynis.status ? securityToolStatusLabel(lynis) : 'Checks host readiness.',
       state:
         lynis.status === 'completed'
@@ -792,8 +772,8 @@ export function securityExecutionTimeline({ executionTimeline, currentRunId, run
     },
     {
       key: 'trivy_dependency_secret_check',
-      title: 'Trivy dependency & secret check',
-      detail: trivy.status ? `${securityToolStatusLabel(trivy)}${trivy.sbom_saved ? ' · SBOM saved' : ''}` : 'Checks dependencies, config, secret-like values, and SBOM evidence.',
+      title: 'Apps and settings checked',
+      detail: trivy.status ? `${securityToolStatusLabel(trivy)}${trivy.sbom_saved ? ' · Dependency record saved' : ''}` : 'Checks dependencies, settings, and sensitive-value patterns.',
       state:
         trivy.status === 'completed'
           ? 'done'
@@ -807,7 +787,7 @@ export function securityExecutionTimeline({ executionTimeline, currentRunId, run
     },
     {
       key: 'evidence_saved',
-      title: 'Evidence saved',
+      title: 'Protected result saved',
       detail: hasCurrentRunEvidence ? `${evidenceRefs?.length || evidenceRun?.evidence_refs?.length || (sbomSaved ? 1 : 0)} sanitized file(s) ready.` : 'Sanitized evidence appears after completion.',
       state: hasCurrentRunEvidence || terminal ? 'done' : 'waiting',
     },
@@ -864,14 +844,14 @@ export function LiteButton({ children, onClick, disabled = false, tone = 'primar
 export function ResultNotice({ result, error }) {
   if (!result && !error) return null;
   if (error) {
-    return <StateSurface tone="degraded" title="Needs attention" description={error} className="mt-4" />;
+    return <StateSurface tone="degraded" title="Needs attention" description={friendlyLiteText(error, 'Pocket Lab could not complete that action. Review the current status and try again when it is safe.')} className="mt-4" />;
   }
   const reference = actionReference(result);
   return (
     <StateSurface
       tone="empty"
       title={result?.accepted ? 'Request sent safely' : 'Action recorded'}
-      description={reference ? `Pocket Lab queued this through the control plane. Reference: ${reference}` : (result?.summary || 'Pocket Lab accepted the request.')}
+      description={reference ? `Pocket Lab accepted this request. Reference: ${reference}` : (result?.summary || 'Pocket Lab accepted the request.')}
       className="mt-4"
     />
   );
@@ -886,14 +866,14 @@ export function operationalStoryPresentation(story = {}) {
   if (state === 'unknown') tone = 'unknown';
   if (state === 'saved' && ['ready', 'live'].includes(tone)) tone = 'saved';
   if (state === 'stale' && ['ready', 'live'].includes(tone)) tone = 'stale';
-  const headline = String(story?.headline || '').trim() || 'Status not available';
-  const summary = String(story?.summary || '').trim();
-  const consequence = String(story?.consequence || '').trim();
-  const attention = String(story?.attention || '').trim();
+  const headline = friendlyLiteText(story?.headline, 'Status not available');
+  const summary = friendlyLiteText(story?.summary, '');
+  const consequence = friendlyLiteText(story?.consequence, '');
+  const attention = friendlyLiteText(story?.attention, '');
   const freshness = story?.freshness && typeof story.freshness === 'object'
     ? {
-        label: String(story.freshness.label || '').trim(),
-        detail: String(story.freshness.detail || '').trim(),
+        label: friendlyLiteText(story.freshness.label, ''),
+        detail: friendlyLiteText(story.freshness.detail, ''),
         state: String(story.freshness.state || '').trim().toLowerCase(),
       }
     : null;
@@ -907,21 +887,35 @@ export function operationalStoryPresentation(story = {}) {
 
 function StoryAction({ action, fallbackTone = 'secondary' }) {
   if (!action?.label) return null;
+  const isRefreshAction = action.isRefresh === true
+    || action.kind === 'refresh'
+    || /^refresh(?:\s|$)/i.test(String(action.label).trim());
   return (
     <div className="lite-operational-story-action">
-      <LiteButton
-        onClick={action.onClick}
-        disabled={Boolean(action.disabled)}
-        tone={action.tone || fallbackTone}
-        ariaLabel={action.ariaLabel || action.label}
-        aria-expanded={typeof action.ariaExpanded === 'boolean' ? action.ariaExpanded : undefined}
-        buttonRef={action.buttonRef}
-        onPointerEnter={action.onPointerEnter}
-        onFocus={action.onFocus}
-        onTouchStart={action.onTouchStart}
-      >
-        {action.label}
-      </LiteButton>
+      {isRefreshAction ? (
+        <LiteRefreshButton
+          refresh={action.onClick}
+          refreshing={Boolean(action.refreshing)}
+          disabled={Boolean(action.disabled)}
+          label={action.label}
+          tone={action.tone || fallbackTone}
+          scope={action.refreshScope || `operational-story:${String(action.label).trim().toLowerCase()}`}
+        />
+      ) : (
+        <LiteButton
+          onClick={action.onClick}
+          disabled={Boolean(action.disabled)}
+          tone={action.tone || fallbackTone}
+          ariaLabel={action.ariaLabel || action.label}
+          aria-expanded={typeof action.ariaExpanded === 'boolean' ? action.ariaExpanded : undefined}
+          buttonRef={action.buttonRef}
+          onPointerEnter={action.onPointerEnter}
+          onFocus={action.onFocus}
+          onTouchStart={action.onTouchStart}
+        >
+          {action.label}
+        </LiteButton>
+      )}
       {action.disabled && action.disabledReason ? <small>{action.disabledReason}</small> : null}
     </div>
   );
@@ -955,12 +949,12 @@ export function LiteActionRow({ label, value = '', summary = '', action, disable
   return (
     <div className={`lite-action-row ${attention ? 'is-attention' : ''} ${className}`.trim()}>
       <div>
-        <strong>{label}</strong>
-        {summary ? <p>{summary}</p> : null}
-        {disabledReason ? <small>{disabledReason}</small> : null}
+        <strong>{friendlyLiteText(label)}</strong>
+        {summary ? <p>{friendlyLiteText(summary)}</p> : null}
+        {disabledReason ? <small>{friendlyLiteText(disabledReason)}</small> : null}
       </div>
       <div className="lite-action-row-trailing">
-        {value ? <span>{value}</span> : null}
+        {value ? <span>{friendlyLiteText(value)}</span> : null}
         {action?.label ? <LiteButton onClick={action.onClick} disabled={Boolean(action.disabled)} tone={action.tone || 'secondary'} ariaLabel={action.ariaLabel || action.label}>{action.label}</LiteButton> : null}
       </div>
     </div>
@@ -974,10 +968,10 @@ export function LiteOutcomeNotice({ outcome, className = '' }) {
     : 'unknown';
   return (
     <section className={`lite-outcome-notice is-${tone} ${className}`.trim()} aria-live="polite">
-      <strong>{outcome.headline || 'Outcome not reported'}</strong>
-      {outcome.summary ? <p>{outcome.summary}</p> : null}
-      {outcome.consequence ? <p>{outcome.consequence}</p> : null}
-      {outcome.nextAction ? <small>{outcome.nextAction}</small> : null}
+      <strong>{friendlyLiteText(outcome.headline, 'Outcome not reported')}</strong>
+      {outcome.summary ? <p>{friendlyLiteText(outcome.summary)}</p> : null}
+      {outcome.consequence ? <p>{friendlyLiteText(outcome.consequence)}</p> : null}
+      {outcome.nextAction ? <small>{friendlyLiteText(outcome.nextAction)}</small> : null}
     </section>
   );
 }
@@ -987,9 +981,9 @@ export function LiteTechnicalDetails({ summary = 'Technical details', children, 
   return <details className={`lite-technical-details ${className}`.trim()}><summary>{summary}</summary><div>{children}</div></details>;
 }
 
-export function LoadingCard({ label = 'Loading Pocket Lab Lite...' }) {
+export function LoadingCard({ label = 'Getting the latest Pocket Lab information…' }) {
   return (
-    <GlassCard>
+    <GlassCard className="lite-loading-card" data-lite-loading-state="true">
       <div className="h-3 w-40 animate-pulse rounded-full bg-white/10" />
       <div className="mt-4 h-20 animate-pulse rounded-3xl bg-white/5" />
       <p className="mt-4 text-sm text-slate-400">{label}</p>
@@ -1044,8 +1038,8 @@ export function deviceLinkState(device) {
 export function restartProgressTitle(progress = {}) {
   const status = String(progress?.status || '').toLowerCase();
   if (status === 'completed') return 'Device is back online';
-  if (status === 'agent_stopped') return 'Device agent is stopped';
-  if (status === 'repairing') return 'Supervisor is repairing the agent';
+  if (status === 'agent_stopped') return 'Device service is stopped';
+  if (status === 'repairing') return 'Recovery service is repairing the device service';
   if (status === 'failed') return 'Restart needs attention';
   if (status === 'starting') return 'Preparing restart';
   return 'Restart in progress';

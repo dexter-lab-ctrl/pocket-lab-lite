@@ -62,4 +62,21 @@ describe('selectSecuritySafetyStoryView', () => {
     expect(story.headline).toContain('getting ready');
     expect(story.primaryAction).toBeNull();
   });
+
+  it('treats an explicitly healthy completed result as complete', () => {
+    const story = selectSecuritySafetyStoryView({
+      status: 'healthy',
+      scan_profile: 'quick',
+      last_run: {
+        run_id: 'security-healthy-001',
+        status: 'healthy',
+        scan_profile: 'quick',
+        completed_at: '2026-09-01T10:00:00Z',
+        items_to_review: 0,
+      },
+    });
+
+    expect(story.state).toBe('completed');
+    expect(story.headline).toBe('No issues requiring attention were reported');
+  });
 });

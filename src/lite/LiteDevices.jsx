@@ -86,6 +86,7 @@ import {
   restartStepStateLabel,
   safeRestartSteps
 } from './LiteUi.jsx';
+import { LiteConsequenceSummary, LiteFreshness } from './LiteUx.jsx';
 import DeviceActionPortal from './devices/DeviceActionPortal.jsx';
 import LiteVirtualList from './components/LiteVirtualList.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
@@ -141,6 +142,37 @@ void DEVICES_DETAILS_ARE_LAZY;
 void DEVICES_ACTION_ROWS_OWN_CLICKS;
 void DEVICES_LINKED_CARD_CLASS_MARKER;
 void DEVICES_CONNECTION_COPY_MARKER;
+
+function DeviceRelationshipMap({ devices = [] }) {
+  const server = devices.find((device) => deviceLinkState(device) === 'server') || null;
+  const peers = devices.filter((device) => device !== server);
+  const serverName = server?.name || server?.hostname || 'Server Phone';
+  return (
+    <section className="lite-device-relationship-map" aria-label="Pocket Lab device connections">
+      <div className="lite-device-relationship-head">
+        <span>Your device connections</span>
+        <strong>{peers.length ? `${peers.length} connected device${peers.length === 1 ? '' : 's'} in this workspace` : 'Your server is ready for devices'}</strong>
+        <p>See whether Pocket Lab can reach each device without needing to understand the connection services underneath.</p>
+      </div>
+      <div className="lite-device-relationship-flow">
+        <div className="lite-device-relationship-node is-server"><Server className="h-4 w-4" /><span>{serverName}</span></div>
+        {peers.length ? peers.map((device) => {
+          const state = deviceLinkState(device);
+          return (
+            <React.Fragment key={deviceListKey(device)}>
+              <span className={`lite-device-relationship-link is-${state}`} aria-hidden="true"><i /></span>
+              <div className={`lite-device-relationship-node is-${state}`}>
+                <Network className="h-4 w-4" />
+                <span>{device.name || device.hostname || 'Device'}</span>
+                <small>{state === 'joined' ? 'Connected' : state === 'repairing' ? 'Repairing' : 'Disconnected'}</small>
+              </div>
+            </React.Fragment>
+          );
+        }) : <span className="lite-device-relationship-empty">Add a device when you want to expand this workspace.</span>}
+      </div>
+    </section>
+  );
+}
 
 function deviceListKey(device) {
   return device?.id || device?.name;
@@ -396,7 +428,7 @@ export default function DevicesScreen() {
     || isLiteDevicesViewLive(fleetPayload)
     || hasLiveDeviceFleetOperation(fleetPayload)
   ), [busy, restartBusy, removeBusy, restartProgress, result]);
-  const { data, loading, error, refresh, cacheStatus, refreshing, backendReachable, savedStateOnly } = useLiteResource(liteApi.fleet, [], {
+  const { data, loading, error, refresh, cacheStatus, refreshing, backendReachable, savedStateOnly, lastUpdatedLabel, isExpired } = useLiteResource(liteApi.fleet, [], {
     pollingMode: 'slow',
     isLive: fleetPollingIsLive,
     staleTime: 15_000,
@@ -483,14 +515,23 @@ export default function DevicesScreen() {
       pushToast({
         id,
         kind: status === 'completed' ? 'success' : 'warning',
-        title: status === 'completed' ? 'Agent restarted' : 'Agent restart needs attention',
+        title: status === 'completed' ? 'Device service restarted' : 'Device service restart needs attention',
         message: restartProgress?.summary || (status === 'completed'
-          ? 'Pocket Lab confirmed the device agent is ready.'
-          : 'Pocket Lab could not confirm the device agent recovered.'),
+          ? 'Pocket Lab confirmed the device service is ready.'
+          : 'Pocket Lab could not confirm the device service recovered.'),
       });
     }
     pendingRestartId.current = '';
   }, [pushToast, restartProgress]);
+  useEffect(() => {
+    if (!actionError) return;
+    pushToast({
+      id: `devices-action:${actionError}`,
+      kind: 'error',
+      title: 'Device action needs attention',
+      message: actionError,
+    });
+  }, [actionError, pushToast]);
   useEffect(() => {
     if (!removeCandidate) return undefined;
     const frame = window.requestAnimationFrame(() => {
@@ -551,6 +592,7 @@ export default function DevicesScreen() {
     const didCopy = await copyTextToClipboard(copyValue);
     if (didCopy) {
       setCopied(true);
+      pushToast({ id: 'devices:invite-copied', kind: 'success', title: 'Invite copied', message: 'The safe device invite command is ready to share.' });
       window.setTimeout(() => setCopied(false), 1800);
     }
   }
@@ -731,11 +773,19 @@ export default function DevicesScreen() {
       <PageHeader
         eyebrow="Devices"
         title="Devices"
-        description="See what Pocket Lab can reach and what needs attention."
+        description="See how your devices are connected, what needs attention, and what you can safely do next."
         actions={<LiteRefreshButton scope="devices" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
       <LiteOperationalStory className="lite-devices-operational-story" story={fleetStory} />
+      <LiteFreshness
+        saved={savedStateOnly}
+        stale={isExpired}
+        refreshing={refreshing}
+        lastUpdatedLabel={lastUpdatedLabel}
+        backendReachable={backendReachable}
+      />
+      <DeviceRelationshipMap devices={devices} />
 
       <section className={`lite-remote-access-panel ${remoteAccessReady ? 'lite-remote-access-ready' : 'lite-remote-access-not-ready'}`} aria-live="polite">
         <div className="lite-remote-access-icon">
@@ -826,7 +876,7 @@ export default function DevicesScreen() {
             title="Add Device"
             label={addDeviceFlow.label}
             steps={addDeviceFlow.steps}
-            note={addDeviceFlow.writeBlocked ? addDeviceFlow.blockedReason : 'Invite creation stays backend-owned.'}
+            note={addDeviceFlow.writeBlocked ? addDeviceFlow.blockedReason : 'Pocket Lab prepares the invite safely and confirms it before anything is shown as ready.'}
             className="mt-4"
           />
 
@@ -866,7 +916,7 @@ export default function DevicesScreen() {
                 </div>
               </div>
 
-              <p>Run this in Termux on the new phone. Pocket Lab will set up the secure connection and start the device agent automatically.</p>
+              <p>Run this in Termux on the new phone. Pocket Lab will set up the secure connection and start the device service automatically.</p>
 
               {inviteCommand(latestInvite) ? (
                 <>
@@ -887,18 +937,18 @@ export default function DevicesScreen() {
                       <li>Saves this device’s connection file.</li>
                       <li>Checks the secure Pocket Lab connection.</li>
                       <li>Downloads Pocket Lab Lite if needed.</li>
-                      <li>Starts the small device agent.</li>
-                      <li>The device appears Online when heartbeats arrive.</li>
+                      <li>Starts the small Pocket Lab device service.</li>
+                      <li>The device appears Online after it connects and reports back.</li>
                     </ul>
                   </details>
 
                   <details className="lite-invite-details">
                     <summary>Troubleshooting</summary>
                     <ol>
-                      <li>Check that Tailscale is connected.</li>
-                      <li>Run: <code>source ~/.pocketlab-lite-agent.env && echo $POCKETLAB_NATS_URL</code></li>
-                      <li>The value should not be <code>nats://127.0.0.1:4222</code> on a secondary phone.</li>
-                      <li>Run: <code>tail -n 80 ~/pocketlab-agent-*.log</code></li>
+                      <li>Check that the device is connected to your private network.</li>
+                      <li>Open the device card and review Connection and Health.</li>
+                      <li>If the device service is stopped, use the guided restart or recovery action when available.</li>
+                      <li>If the device identity does not match, use the explicit repair or rejoin flow instead of reusing an old invite.</li>
                     </ol>
                   </details>
                 </>
@@ -913,22 +963,22 @@ export default function DevicesScreen() {
         <section className="lite-devices-list-area" aria-busy={loading ? 'true' : 'false'}>
           <div className="lite-devices-section-title">
             <div>
-              <p>Fleet</p>
+              <p>Workspace</p>
               <h2>Devices</h2>
               <small>Current connection, system identity, and health at a glance.</small>
             </div>
             <div className="lite-devices-section-metrics" aria-label="Device totals">
               {savedStateOnly ? <span><strong>Saved</strong> information</span> : <span><strong>{onlineDevices}</strong> online</span>}
               <span><strong>{devices.length}</strong> total</span>
-              {healthAttentionCurrent ? <span><strong>{healthAttentionCount}</strong> health attention</span> : null}
+              {healthAttentionCurrent ? <span><strong>{healthAttentionCount}</strong> need attention</span> : null}
             </div>
           </div>
 
           {error ? (
             <StateSurface
               tone="degraded"
-              title="Device list needs a moment"
-              description={error}
+              title="Devices are temporarily unavailable"
+              description="Pocket Lab could not confirm the latest device information. Saved information remains visible when available."
               className="mb-4"
             />
           ) : null}
@@ -970,7 +1020,7 @@ export default function DevicesScreen() {
               </ol>
               {['waiting', 'agent_stopped', 'repairing'].includes(String(restartProgress.status || '').toLowerCase()) ? (
                 <p className="lite-device-restart-hint">
-                  If the device agent is stopped, the local supervisor should start it. If this phone does not have the supervisor yet, open Termux on that phone and start it once.
+                  If the device service is stopped, its recovery service should start it automatically. If automatic recovery is unavailable, open the device details for guided recovery.
                 </p>
               ) : null}
             </GlassCard>
@@ -1000,7 +1050,7 @@ export default function DevicesScreen() {
                 </div>
 
                 <p className="lite-device-remove-copy">
-                  Pocket Lab checks hosted apps, backups, command delivery, recovery, and protected server responsibilities before removal.
+                  Pocket Lab checks hosted apps, backups, action delivery, recovery, and protected server responsibilities before removal.
                 </p>
 
                 <div className="lite-device-remove-facts">
@@ -1010,12 +1060,14 @@ export default function DevicesScreen() {
                   <div><span>Last seen</span><strong>{formatLiteTime(removeCandidate.last_seen)}</strong></div>
                 </div>
 
-                <ul className="lite-device-remove-safety">
-                  <li>This removes the saved record from this Pocket Lab server.</li>
-                  <li>It does not wipe the phone.</li>
-                  <li>It does not uninstall Pocket Lab.</li>
-                  <li>It does not stop a running agent on that device.</li>
-                </ul>
+                <LiteConsequenceSummary value={{
+                  title: 'Before this device is removed',
+                  summary: 'Pocket Lab removes only this device relationship after the safety check passes.',
+                  will: ['Remove the saved device relationship from this Pocket Lab.', 'Stop Pocket Lab from sending new actions to this device.'],
+                  willNot: ['Wipe the phone.', 'Delete the device files.', 'Uninstall Pocket Lab from the device.', 'Stop an already-running device service by itself.'],
+                  reversible: 'The device can join again later through a new explicit Add Device flow.',
+                  availability: 'Apps or backups that depend on this device may become unavailable, so Pocket Lab checks those responsibilities first.',
+                }} />
 
                 {removeAssessmentLoading ? <p className="lite-device-remove-assessment-state">Checking device responsibilities…</p> : null}
 

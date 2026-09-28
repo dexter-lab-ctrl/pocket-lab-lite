@@ -75,15 +75,15 @@ function statusTone(value) {
 
 function sourceLabel(finding = {}) {
   const raw = `${finding?.source || ''} ${finding?.tool || ''} ${finding?.scanner || ''} ${finding?.category || ''}`.toLowerCase();
-  if (raw.includes('lynis') || raw.includes('host_hardening')) return 'Lynis';
-  if (raw.includes('trivy') || raw.includes('dependency') || raw.includes('misconfiguration') || raw.includes('secret')) return 'Trivy';
+  if (raw.includes('lynis') || raw.includes('host_hardening')) return 'System safety check';
+  if (raw.includes('trivy') || raw.includes('dependency') || raw.includes('misconfiguration') || raw.includes('secret')) return 'Apps and settings check';
   if (raw.includes('pocket')) return 'Pocket Lab';
   return 'Security check';
 }
 
 function componentLabel(finding = {}) {
   const category = String(finding?.category || '').toLowerCase();
-  if (category === 'protected_runtime_secret') return 'Backend runtime file';
+  if (category === 'protected_runtime_secret') return 'Protected Pocket Lab setting';
   if (category === 'host_hardening') return 'Host readiness';
   if (category === 'missing_tool') return safeText(finding?.tool || finding?.source, 'Security tool');
   if (category === 'dependency_vulnerability') return safeText(finding?.component || finding?.package || finding?.target, 'Local dependency');
@@ -123,9 +123,9 @@ function technicalRows(finding = {}, context = {}) {
     { label: 'Severity', value: severityLabel(finding?.severity) },
     { label: 'Source', value: sourceLabel(finding) },
     { label: 'Affected component', value: componentLabel(finding) },
-    { label: 'Run id', value: shortId(context?.lastRun?.run_id || context?.evidence?.run?.run_id) },
-    { label: 'Evidence reference', value: evidenceRefLabel(finding, context) },
-    { label: 'Backend owner', value: 'FastAPI and worker' },
+    { label: 'Check reference', value: shortId(context?.lastRun?.run_id || context?.evidence?.run?.run_id) },
+    { label: 'Troubleshooting reference', value: evidenceRefLabel(finding, context) },
+    { label: 'Run by', value: 'Pocket Lab' },
     { label: 'Sanitization', value: 'Technical details are sanitized before display.' },
   ].filter((row) => row.value);
 }
@@ -191,12 +191,12 @@ export default function SecurityFindingDetailsLazy({ finding, context = {}, onCl
           'The browser did not run security tools.',
           'No repair or system change was started.',
           'Raw scanner output was not loaded into this view.',
-          'Secrets, private paths, and backend command payloads stay hidden.',
+          'Secrets, private device paths, and private action details stay hidden.',
         ]}
         saved_for_troubleshooting={{
           saved: Boolean(finding?.id || context?.lastRun?.run_id),
           backend_only: true,
-          summary: 'A backend troubleshooting record stays protected. This view shows only safe finding details.',
+          summary: 'A protected troubleshooting record is kept. This view shows only safe finding details.',
         }}
         next_step={recommendation}
         technicalDetails={technicalRows(finding, context)}

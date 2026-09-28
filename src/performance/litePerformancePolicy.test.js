@@ -113,7 +113,8 @@ describe('Pocket Lab Lite UI performance policy guards', () => {
     expect(css).toContain('.lite-progressive-details-grid > .lite-progressive-detail-section');
     expect(css).toContain('content-visibility: auto;');
     expect(css).toContain('contain-intrinsic-size: auto 7.5rem;');
-    expect(css).toContain('.lite-refresh-status-popover');
+    expect(css).toContain('.lite-refresh-progress-ring');
+    expect(css).not.toContain('.lite-refresh-status-popover');
     expect(css).toContain('backdrop-filter: none !important;');
   });
 

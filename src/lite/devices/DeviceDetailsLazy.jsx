@@ -14,6 +14,7 @@ import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
 import { isLitePerformanceMode } from '../liteNavigationRuntime.js';
 import { useLiteUiStore } from '../../stores/liteUiStore.js';
 import { triggerLiteTactileFeedback } from '../LiteMotion.jsx';
+import { LiteHistoryTimeline } from '../LiteUx.jsx';
 import {
   LiteButton,
   backendBadgeStatus,
@@ -72,7 +73,7 @@ function supervisorStatusLabel(device) {
     return 'Needs attention';
   }
 
-  return 'No supervisor status reported';
+  return 'No recovery service status reported';
 }
 
 export function capabilityStatusLabel(value, reasonCode = '') {
@@ -120,7 +121,7 @@ function deviceSummary(device) {
   const connection = deviceConnectionLabel(device);
   if (effectiveDeviceStatus(device) === 'online') return `${name} is online and reporting normally.`;
   if (normalizeStatus(device?.status) === 'repairing' || deviceLinkState(device) === 'repairing') return `${name} is being checked or repaired.`;
-  if (normalizeStatus(device?.status) === 'agent_stopped') return `${name} has an agent that needs attention.`;
+  if (normalizeStatus(device?.status) === 'agent_stopped') return `${name} has a device service that needs attention.`;
   if (connection === 'Online') return `${name} is currently online.`;
   if (connection) return `${name} is currently ${connection.toLowerCase()}.`;
   return `${name} details are available.`;
@@ -128,7 +129,7 @@ function deviceSummary(device) {
 
 function deviceWhatHappened(device) {
   const happened = [
-    'Pocket Lab read the latest safe device summary from the Lite API.',
+    'Pocket Lab read the latest safe device summary.',
     deviceConnectionLabel(device) === 'Online'
       ? 'The device is currently online and reporting through Pocket Lab.'
       : `The device connection is currently ${deviceConnectionLabel(device).toLowerCase()}.`,
@@ -143,8 +144,8 @@ function deviceWhatHappened(device) {
   }
 
   const supervisorStatus = supervisorStatusLabel(device);
-  if (supervisorStatus !== 'No supervisor status reported') {
-    happened.push(`Supervisor: ${supervisorStatus}.`);
+  if (supervisorStatus !== 'No recovery service status reported') {
+    happened.push(`Recovery service: ${supervisorStatus}.`);
   }
   return happened;
 }
@@ -157,8 +158,8 @@ function deviceWhatChanged(device) {
 
 function deviceWhatDidNotHappen() {
   return [
-    'No command was sent to this device.',
-    'No agent restart was started.',
+    'No action was sent to this device.',
+    'No device-service restart was started.',
     'No device record was removed.',
     'No secrets, raw logs, or private paths were loaded into this view.',
   ];
@@ -315,7 +316,7 @@ function technicalRows(device) {
           || device?.last_seen,
       ),
     },
-    { label: 'Supervisor', value: supervisorStatusLabel(device) },
+    { label: 'Recovery service', value: supervisorStatusLabel(device) },
     { label: 'Capabilities', value: deviceCapabilityLabels(device).join(', ') },
     { label: 'OS family', value: device?.system_profile?.os_family },
     { label: 'Operating system', value: [device?.system_profile?.os_name, device?.system_profile?.os_version].filter(Boolean).join(' ') },
@@ -331,10 +332,10 @@ function technicalRows(device) {
     { label: 'Runtime', value: device?.system_profile?.runtime_type },
     { label: 'Termux', value: device?.system_profile?.termux_version },
     { label: 'Python', value: device?.system_profile?.python_version },
-    { label: 'Agent version', value: agentSoftware.version || device?.system_profile?.agent_version },
-    { label: 'Agent version freshness', value: agentSoftware.version ? titleCase(agentSoftware.freshness, 'Unknown') : '' },
-    { label: 'Supervisor version', value: supervisorSoftware.version || device?.system_profile?.supervisor_version },
-    { label: 'Supervisor version freshness', value: supervisorSoftware.version ? titleCase(supervisorSoftware.freshness, 'Unknown') : '' },
+    { label: 'Device service version', value: agentSoftware.version || device?.system_profile?.agent_version },
+    { label: 'Device service version freshness', value: agentSoftware.version ? titleCase(agentSoftware.freshness, 'Unknown') : '' },
+    { label: 'Recovery service version', value: supervisorSoftware.version || device?.system_profile?.supervisor_version },
+    { label: 'Recovery service version freshness', value: supervisorSoftware.version ? titleCase(supervisorSoftware.freshness, 'Unknown') : '' },
     { label: 'Uptime', value: device?.system_health?.uptime_label },
     { label: 'System load', value: device?.system_health?.load_status ? device.system_health.load_status.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()) : '' },
     { label: 'Load average', value: Array.isArray(device?.system_health?.load_average) ? device.system_health.load_average.filter((value) => value !== null).join(' / ') : '' },
@@ -409,7 +410,7 @@ function DeviceAwarenessDetails({ device }) {
     const dependencies = device?.dependencies || {};
     const removal = device?.removal_assessment || {};
     return [
-      <section key="connection" className="lite-device-awareness-section" aria-label="Connection lifecycle">
+      <section key="connection" className="lite-device-awareness-section" aria-label="Connection status">
         <span>Connection</span>
         <strong>{deviceConnectionLabel(device)}</strong>
         <p>
@@ -424,18 +425,18 @@ function DeviceAwarenessDetails({ device }) {
         </p>
         <dl>
           <div>
-            <dt>Heartbeat</dt>
+            <dt>Device check-in</dt>
             <dd>{formatDeviceTime(
               device?.last_seen_state?.last_heartbeat_at,
               'No heartbeat reported',
             )}</dd>
           </div>
           <div>
-            <dt>Supervisor</dt>
+            <dt>Recovery service</dt>
             <dd>{formatDeviceTime(
               device?.last_seen_state?.last_supervisor_heartbeat_at
                 || device?.last_supervisor_at,
-              'No supervisor heartbeat reported',
+              'No recovery-service check-in reported',
             )}</dd>
           </div>
           <div>
@@ -472,7 +473,7 @@ function DeviceAwarenessDetails({ device }) {
         </ul>
       </section>,
 
-      <section key="services" className="lite-device-awareness-section" aria-label="Runtime services">
+      <section key="services" className="lite-device-awareness-section" aria-label="Device services">
         <span>Services</span>
         <strong>{runtimeServices.length ? `${runtimeServices.length} reported` : 'Not reported'}</strong>
         {runtimeServices.length ? (
@@ -486,7 +487,7 @@ function DeviceAwarenessDetails({ device }) {
               </li>
             ))}
           </ul>
-        ) : <p>Service status will appear after the next supervisor report.</p>}
+        ) : <p>Service status will appear after the device reports again.</p>}
         {!restartAssessment.allowed ? <p>{restartAssessment.summary || 'Restart actions are unavailable until the device reports a safe recovery state.'}</p> : null}
       </section>,
 
@@ -497,7 +498,7 @@ function DeviceAwarenessDetails({ device }) {
           <ul>{dependencies.hosted_apps.map((app) => <li key={app.app_id}><strong>{app.label}</strong> · {titleCase(app.status)}</li>)}</ul>
         ) : <p>No hosted apps reported.</p>}
         {Number(dependencies.backup_set_count || 0) > 0 ? <p>Stores {dependencies.backup_set_count} verified backup set{Number(dependencies.backup_set_count) === 1 ? '' : 's'}.</p> : null}
-        <p>Command delivery: {deviceCommandDeliveryLabel(device)}</p>
+        <p>Action delivery: {deviceCommandDeliveryLabel(device)}</p>
       </section>,
 
       <section key="removal" className="lite-device-awareness-section lite-device-awareness-removal" aria-label="Removal impact">
@@ -564,15 +565,14 @@ function DeviceHealthHistory({ deviceId }) {
       </LiteButton>
       {healthHistoryOpen ? (
         <div className="lite-device-health-history" role="region" aria-label="Device health history">
-          {healthHistoryQuery.loading ? <p>Loading safe health history…</p> : null}
-          {!healthHistoryQuery.loading && healthTransitions.length === 0 ? <p>No health transitions have been recorded yet.</p> : null}
-          {healthTransitions.map((item) => (
-            <article key={item.id}>
-              <strong>{item.title}</strong>
-              <span>{formatLiteTime(item.created_at)}</span>
-              <p>{item.summary}</p>
-            </article>
-          ))}
+          {healthHistoryQuery.loading ? <p>Loading health history…</p> : null}
+          {!healthHistoryQuery.loading ? (
+            <LiteHistoryTimeline
+              items={healthTransitions.map((item) => ({ id: item.id, title: item.title, summary: item.summary, time: item.created_at ? formatLiteTime(item.created_at) : '', state: item.status }))}
+              emptyTitle="No health changes yet"
+              emptyDescription="Health changes will appear here when Pocket Lab observes a meaningful transition."
+            />
+          ) : null}
         </div>
       ) : null}
     </div>
@@ -664,7 +664,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
         </div>
         {isProtectedServer ? (
           <p className="lite-device-model-boundary" role="note">
-            Choosing a friendly model changes display metadata only. Server identity, technical model, and internal codename remain agent-owned.
+            Choosing a friendly model changes display metadata only. Server identity, technical model, and internal codename remain reported by the device.
           </p>
         ) : null}
         {onChooseModel ? (
@@ -721,7 +721,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
               <article>
                 <span>Software</span>
                 <strong>{titleCase(proactiveHealth.versions?.status)}</strong>
-                <p>Agent, supervisor, and schema posture are evaluated by the backend.</p>
+                <p>Device service, recovery service, and compatibility are checked by Pocket Lab.</p>
               </article>
               <article>
                 <span>Dependencies</span>
@@ -776,7 +776,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
 
             <DeviceHealthHistory deviceId={initialDeviceId} />
           </>
-        ) : <p>Health will appear after the next prepared fleet refresh.</p>}
+        ) : <p>Health will appear after the device reports again.</p>}
       </section>);
       }} />
 
@@ -784,8 +784,8 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
 
       <details className="lite-device-advanced-details">
         <summary>
-          <span>Diagnostics and history</span>
-          <small>Technical details, safe activity summary, and troubleshooting records</small>
+          <span>Connection, health and history</span>
+          <small>Safe operational facts, recent health changes, and troubleshooting context</small>
         </summary>
         <LiteDeferredDetails delayFrames={DEVICE_DETAILS_NONCRITICAL_DELAY_FRAMES} render={() => {
           const historyItems = Array.isArray(historyQuery.data?.items) && historyQuery.data.items.length
@@ -806,9 +806,9 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
               saved_for_troubleshooting={{
                 saved: Boolean(device?.last_seen || device?.id),
                 backend_only: true,
-                summary: 'Device events and troubleshooting records stay backend-owned and protected.',
+                summary: 'Device events and troubleshooting records stay protected by Pocket Lab.',
               }}
-              next_step={attention.length ? (restartAssessment.allowed ? 'Restart the device agent through Pocket Lab.' : restartAssessment.summary || 'Check power, network, Tailscale, and the local supervisor on the device.') : 'No action is needed right now.'}
+              next_step={attention.length ? (restartAssessment.allowed ? 'Restart the device service through Pocket Lab.' : restartAssessment.summary || 'Check power, private network access, and the device recovery service.') : 'No action is needed right now.'}
               technicalDetails={technicalRows(device)}
               history={{
                 title: 'Device history',

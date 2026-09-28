@@ -1255,7 +1255,7 @@ export function selectDeviceOperationalStory(device = {}, { savedStateOnly = fal
           ? 'The protected server runtime needs review. Remote access is shown separately.'
           : generation > 0 && recoveredAt
             ? 'The protected server runtime recovered and is stable again.'
-            : 'This protected host runs your Pocket Lab control plane.',
+            : 'This protected host runs your Pocket Lab workspace.',
       consequence: 'Remote access readiness remains a separate connection check.',
       connection_state: 'server',
       remote_access: remoteNotReady ? 'not_ready' : remoteReady ? 'ready' : 'unknown',
@@ -2014,7 +2014,7 @@ export function selectSecurityProfileSnapshotView(payload = {}, profile = 'quick
   return {
     view_model: LITE_SECURITY_PROFILE_SNAPSHOT_VERSION,
     profile: view.profile, app_id: safeString(view.app_id), app_label: safeString(view.app_label),
-    label: safeString(view.label || (view.profile === 'full' ? 'Full Local Check' : view.profile === 'app' ? `${view.app_label || 'App'} App Check` : 'Quick Scan')),
+    label: safeString(view.label || (view.profile === 'full' ? 'Full Local Check' : view.profile === 'app' ? securityAppCheckLabel(view.app_label) : 'Quick Scan')),
     latest_run_id: latestRunId,
     status: hasRun ? normalizeSecurityStatus(view.status) : 'not_checked',
     score: hasRun ? rawScore : null,
@@ -2137,8 +2137,14 @@ export function selectSecurityScreenSnapshotView(payload = {}) {
   };
 }
 
-const SECURITY_SUCCESS_STATUSES = new Set(['ready', 'succeeded', 'success', 'completed', 'complete', 'done', 'verified']);
+const SECURITY_SUCCESS_STATUSES = new Set(['ready', 'healthy', 'succeeded', 'success', 'completed', 'complete', 'done', 'verified']);
 const SECURITY_ATTENTION_STATUSES = new Set(['review', 'needs_attention', 'degraded']);
+
+function securityAppCheckLabel(appLabel = '') {
+  const label = safeString(appLabel).trim();
+  if (!label || /^app$/i.test(label)) return 'App Check';
+  return /\bapp check$/i.test(label) ? label : `${label} App Check`;
+}
 
 // This is intentionally a presentation boundary. It chooses safe, user-facing
 // wording from prepared Security data; it neither scores the device nor settles

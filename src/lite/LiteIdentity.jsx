@@ -26,6 +26,7 @@ import {
   LoadingCard,
   copyTextToClipboard,
 } from './LiteUi.jsx';
+import { LiteConsequenceSummary, LiteFreshness, LiteHistoryTimeline } from './LiteUx.jsx';
 
 function IdentityField({ label, hint = '', ...props }) {
   return (
@@ -44,7 +45,7 @@ function ActionNotice({ notice, actionStage }) {
       <StateSurface
         tone={notice?.error ? 'degraded' : actionStage === 'completed' ? 'healthy' : 'neutral'}
         title={notice?.title || identityActionStageLabel(actionStage) || 'Working'}
-        description={notice?.message || 'Pocket Lab is verifying this change with the server.'}
+        description={notice?.message || 'Pocket Lab is verifying this access change.'}
       />
     </div>
   );
@@ -150,14 +151,14 @@ export default function IdentityScreen() {
   async function run(name, callback, successMessage, { refreshAfter = true, signedOutAfter = false } = {}) {
     setBusy(name);
     setActionStage('preparing');
-    setNotice({ title: 'Preparing', message: 'Pocket Lab is preparing this protected identity change.' });
+    setNotice({ title: 'Preparing', message: 'Pocket Lab is preparing this protected access change.' });
     try {
       setActionStage('pending');
-      setNotice({ title: 'Waiting for Pocket Lab', message: 'Nothing is shown as completed until the server accepts the request.' });
+      setNotice({ title: 'Waiting for Pocket Lab', message: 'Nothing is shown as completed until Pocket Lab accepts the request.' });
       const result = await callback();
       if (signedOutAfter) clearLiteIdentityCsrf();
       setActionStage('verifying');
-      setNotice({ title: 'Server accepted', message: 'Pocket Lab accepted the request. Reading current Identity state now.' });
+      setNotice({ title: 'Pocket Lab accepted', message: 'Pocket Lab accepted the request. Reading current access information now.' });
       if (refreshAfter) await refresh();
       setActionStage('completed');
       setNotice({ title: 'Completed', message: result?.summary || successMessage });
@@ -174,9 +175,9 @@ export default function IdentityScreen() {
     } finally { setBusy(''); }
   }
 
-  function requestConfirmation({ title, description, confirmLabel, onConfirm }) {
+  function requestConfirmation({ title, description, confirmLabel, onConfirm, will = [], willNot = [], reversible = '', availability = '' }) {
     setManageOpen(false);
-    setConfirmation({ title, description, confirmLabel, onConfirm });
+    setConfirmation({ title, description, confirmLabel, onConfirm, will, willNot, reversible, availability });
   }
 
   async function confirmRequestedAction() {
@@ -293,6 +294,11 @@ export default function IdentityScreen() {
     if (result?.codes) setRecoveryCodes(result.codes);
   }
 
+  async function copyRecoveryCodes() {
+    if (!(await copyTextToClipboard(recoveryCodes.join('\n')))) return;
+    pushToast({ id: 'identity:recovery-codes-copied', kind: 'success', title: 'Recovery codes copied', message: 'Keep them in a safe place outside Pocket Lab.' });
+  }
+
   async function signOut() {
     await run('logout', () => liteApi.logoutIdentity(), 'Signed out.', { signedOutAfter: true });
     setRecoveryCodes([]);
@@ -311,7 +317,7 @@ export default function IdentityScreen() {
       <PageHeader
         eyebrow="Identity"
         title="Identity & Access"
-        description="Who you are, how you sign in, and what Pocket Lab currently lets you do."
+        description="See who can access your Pocket Lab, how you sign in, and how to recover access."
         actions={<div className="lite-governance-inline-actions"><LiteHelp helpKey="identity.overview" /><LiteRefreshButton scope="identity" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} /></div>}
       />
 
@@ -321,10 +327,17 @@ export default function IdentityScreen() {
         primaryAction={workspaceStory.nextAction?.id === 'create_owner' ? { label: 'Create Owner', onClick: () => document.getElementById('identity-owner-setup')?.scrollIntoView({ block: 'start' }) } : workspaceStory.nextAction?.id === 'sign_in_passkey' ? { label: 'Sign in with Passkey', onClick: signInWithPasskey, disabled: Boolean(busy) || !passkeyEligible } : workspaceStory.nextAction?.id === 'add_passkey' ? { label: 'Add Passkey', onClick: addPasskey, disabled: Boolean(busy) || !passkeyEligible } : workspaceStory.nextAction?.id === 'review_recovery' ? { label: 'Review Recovery', onClick: () => setManageOpen(true) } : workspaceStory.nextAction?.id === 'refresh' ? { label: 'Refresh access', onClick: refresh } : null}
         manageAction={data?.authenticated && !identityReadOnly ? { label: 'Manage Access', onClick: () => setManageOpen(true) } : null}
       />
+      <LiteFreshness
+        saved={savedStateOnly}
+        stale={isExpired}
+        refreshing={refreshing}
+        lastUpdatedLabel={lastUpdatedLabel}
+        backendReachable={backendReachable}
+      />
 
-      {loading ? <LoadingCard label="Checking Identity & Access..." /> : null}
-      {error && !data ? <StateSurface tone="degraded" title="Identity is unavailable" description={String(error)} className="mb-5" /> : null}
-      {backendDegraded && backendReachable ? <StateSurface tone="degraded" title="Identity needs attention" description="Pocket Lab is reachable, but current access truth could not be fully proved. Protected changes remain server-authorized." className="mb-5" /> : null}
+      {loading ? <LoadingCard label="Checking access and sign-in protection…" /> : null}
+      {error && !data ? <StateSurface tone="degraded" title="Access information is temporarily unavailable" description="Pocket Lab could not confirm the latest access information. Saved access information remains visible when available." className="mb-5" /> : null}
+      {backendDegraded && backendReachable ? <StateSurface tone="degraded" title="Identity needs attention" description="Pocket Lab is reachable, but it could not confirm all current access information. Protected changes stay unavailable until current access is confirmed." className="mb-5" /> : null}
 
       {!loading && personClaim.active && !data?.authenticated ? (
         <GlassCard className="lite-identity-card lite-identity-auth-card">
@@ -386,14 +399,14 @@ export default function IdentityScreen() {
             </GlassCard>
           )}
 
-          <LiteSheet open={manageOpen} onClose={() => setManageOpen(false)} title="Manage access" eyebrow="Identity & Access" description="Manage your own passkeys, sessions, recovery and optional password. People and role governance stay in the main Enterprise Identity story." className="lite-identity-manage-sheet">
+          <LiteSheet open={manageOpen} onClose={() => setManageOpen(false)} title="Manage access" eyebrow="Identity & Access" description="Manage how you sign in, where you are signed in, and how you recover access." className="lite-identity-manage-sheet">
             <ActionNotice notice={notice} actionStage={actionStage} />
             <div className="lite-identity-manage-stack">
               <section aria-labelledby="identity-manage-passkeys"><div className="lite-identity-card-head"><LiteHelpHeading title="Passkeys" helpKey="identity.passkeys" as="h2" /><StatusBadge status={activePasskeys.length ? 'healthy' : 'review'}>{activePasskeys.length ? `${activePasskeys.length} active` : 'Needs attention'}</StatusBadge></div><p>Each passkey belongs only to your identity. Removing one may require recent passkey confirmation.</p><LiteButton onClick={addPasskey} disabled={Boolean(busy) || !passkeyEligible}>{busy === 'add-passkey' ? 'Adding…' : 'Add Passkey'}</LiteButton><div className="lite-identity-session-list">{(data?.passkeys || []).length ? data.passkeys.map((passkey) => <div key={passkey.credential_id} className="lite-identity-session-row"><div><strong>{passkey.friendly_name || 'Passkey'}</strong><span>{passkey.active ? `Created ${passkey.created_at ? formatLiteTime(passkey.created_at) : 'earlier'} · Last used ${passkey.last_used_at ? formatLiteTime(passkey.last_used_at) : 'not yet'}` : 'Revoked'}</span></div>{passkey.active ? <div className="lite-identity-inline-actions"><LiteButton variant="secondary" onClick={() => renamePasskey(passkey)} disabled={Boolean(busy)}>Rename</LiteButton><LiteButton variant="secondary" onClick={() => requestConfirmation({ title: 'Remove this passkey?', description: 'Pocket Lab may ask for another recent passkey confirmation before the credential is revoked.', confirmLabel: 'Remove Passkey', onConfirm: () => revokePasskey(passkey) })} disabled={Boolean(busy)}>Remove</LiteButton></div> : <StatusBadge status="neutral">Revoked</StatusBadge>}</div>) : <StateSurface tone="neutral" title="No passkeys yet" description="Add a passkey for passkey-first sign-in and protected confirmations." />}</div></section>
-              <section aria-labelledby="identity-manage-sessions"><div className="lite-identity-card-head"><LiteHelpHeading title="Sessions" helpKey="identity.sessions" as="h2" /><StatusBadge status="healthy">{activeSessions.length} active</StatusBadge></div><p>Sessions belong to your identity only. Raw cookies and session tokens are never shown.</p><div className="lite-identity-session-list">{activeSessions.map((session) => <div key={session.session_id} className="lite-identity-session-row"><div><strong>{session.current ? 'This device' : 'Other signed-in session'}</strong><span>{session.auth_method || 'server session'} · expires {formatLiteTime(session.absolute_expires_at)}</span></div>{!session.current ? <LiteButton variant="secondary" onClick={() => requestConfirmation({ title: 'Sign out this session?', description: 'Only the selected session for your identity is revoked.', confirmLabel: 'Sign Out Session', onConfirm: () => run(`revoke-${session.session_id}`, () => liteApi.revokeIdentitySession(session.session_id), 'The selected session was signed out.') })} disabled={Boolean(busy)}>Sign Out</LiteButton> : <StatusBadge status="healthy">Current</StatusBadge>}</div>)}</div>{activeSessions.length > 1 ? <LiteButton variant="secondary" onClick={() => requestConfirmation({ title: 'Sign out other sessions?', description: 'Your current session stays active. Other sessions for your identity are revoked.', confirmLabel: 'Sign Out Others', onConfirm: () => run('revoke-others', () => liteApi.revokeOtherIdentitySessions(), 'Other sessions were signed out.') })} disabled={Boolean(busy)}>Sign Out Other Sessions</LiteButton> : null}</section>
-              <section aria-labelledby="identity-manage-recovery"><div className="lite-identity-card-head"><LiteHelpHeading title="Recovery" helpKey="identity.recovery" as="h2" /><StatusBadge status={data?.recovery?.configured ? 'healthy' : 'review'}>{data?.recovery?.configured ? `${data.recovery.remaining} unused` : 'Not created'}</StatusBadge></div><p>Generating a new one-time recovery set invalidates the older set for your identity.</p><LiteButton variant="secondary" onClick={() => requestConfirmation({ title: 'Generate new recovery codes?', description: 'The current recovery codes stop working. New codes are shown once and are not saved by the frontend.', confirmLabel: 'Generate New Codes', onConfirm: generateRecoveryCodes })} disabled={Boolean(busy)}>{busy === 'recovery' ? 'Generating…' : 'Generate New Codes'}</LiteButton>{recoveryCodes.length ? <div className="lite-identity-recovery-codes"><div className="lite-identity-safe-note"><strong>Save these now</strong><span>They are shown only in this result.</span></div><code>{recoveryCodes.join('\n')}</code><LiteButton variant="secondary" onClick={() => copyTextToClipboard(recoveryCodes.join('\n'))}><Copy className="h-4 w-4" /> Copy Codes</LiteButton></div> : null}</section>
+              <section aria-labelledby="identity-manage-sessions"><div className="lite-identity-card-head"><LiteHelpHeading title="Sessions" helpKey="identity.sessions" as="h2" /><StatusBadge status="healthy">{activeSessions.length} active</StatusBadge></div><p>Review where you are signed in and sign out sessions you no longer use.</p><div className="lite-identity-session-list">{activeSessions.map((session) => <div key={session.session_id} className="lite-identity-session-row"><div><strong>{session.current ? 'This device' : 'Other signed-in session'}</strong><span>{session.auth_method === 'passkey' ? 'Passkey' : session.auth_method === 'password' ? 'Password' : 'Secure sign-in'} · expires {formatLiteTime(session.absolute_expires_at)}</span></div>{!session.current ? <LiteButton variant="secondary" onClick={() => requestConfirmation({ title: 'Sign out this session?', description: 'Only the selected session for your identity is revoked.', confirmLabel: 'Sign Out Session', onConfirm: () => run(`revoke-${session.session_id}`, () => liteApi.revokeIdentitySession(session.session_id), 'The selected session was signed out.') })} disabled={Boolean(busy)}>Sign Out</LiteButton> : <StatusBadge status="healthy">Current</StatusBadge>}</div>)}</div>{activeSessions.length > 1 ? <LiteButton variant="secondary" onClick={() => requestConfirmation({ title: 'Sign out other sessions?', description: 'Your current session stays active. Other sessions for your identity are revoked.', confirmLabel: 'Sign Out Others', onConfirm: () => run('revoke-others', () => liteApi.revokeOtherIdentitySessions(), 'Other sessions were signed out.') })} disabled={Boolean(busy)}>Sign Out Other Sessions</LiteButton> : null}</section>
+              <section aria-labelledby="identity-manage-recovery"><div className="lite-identity-card-head"><LiteHelpHeading title="Recovery" helpKey="identity.recovery" as="h2" /><StatusBadge status={data?.recovery?.configured ? 'healthy' : 'review'}>{data?.recovery?.configured ? `${data.recovery.remaining} unused` : 'Not created'}</StatusBadge></div><p>Generating a new one-time recovery set invalidates the older set for your identity.</p><LiteButton variant="secondary" onClick={() => requestConfirmation({ title: 'Generate new recovery codes?', description: 'The current recovery codes stop working. New codes are shown once and are not saved by the frontend.', confirmLabel: 'Generate New Codes', onConfirm: generateRecoveryCodes })} disabled={Boolean(busy)}>{busy === 'recovery' ? 'Generating…' : 'Generate New Codes'}</LiteButton>{recoveryCodes.length ? <div className="lite-identity-recovery-codes"><div className="lite-identity-safe-note"><strong>Save these now</strong><span>They are shown only in this result.</span></div><code>{recoveryCodes.join('\n')}</code><LiteButton variant="secondary" onClick={copyRecoveryCodes}><Copy className="h-4 w-4" /> Copy Codes</LiteButton></div> : null}</section>
               {(currentPerson?.password_configured || data?.owner?.password_configured) ? <section aria-labelledby="identity-manage-password"><h2 id="identity-manage-password">Password</h2><p>Password access remains available for this identity. Changing it signs out your other sessions.</p><form className="lite-identity-form" onSubmit={changePassword}><IdentityField label="Current password" type="password" value={passwords.current_password} onChange={(event) => setPasswords({ ...passwords, current_password: event.target.value })} autoComplete="current-password" /><IdentityField label="New password" type="password" value={passwords.new_password} onChange={(event) => setPasswords({ ...passwords, new_password: event.target.value })} autoComplete="new-password" /><LiteButton type="submit" disabled={Boolean(busy)}>{busy === 'password' ? 'Changing…' : 'Change Password'}</LiteButton></form></section> : null}
-              <section aria-labelledby="identity-manage-activity"><h2 id="identity-manage-activity">Your recent activity</h2><p>Bounded, sanitized Identity evidence for this person. Claims, passkeys, sessions and recovery secrets are never exposed.</p><div className="lite-identity-activity-list">{(data?.recent_activity || []).length ? data.recent_activity.map((item, index) => { const reason = getLiteReasonPresentation(item.reason_code, item.summary || 'Identity activity'); return <div key={`${item.correlation_id || item.occurred_at}-${index}`} className="lite-identity-session-row"><div><strong>{item.summary}</strong><span>{reason.title} · {formatLiteTime(item.occurred_at)}</span></div><details className="lite-identity-event-details"><summary>Details</summary><code>{item.reason_code || 'none'}</code></details></div>; }) : <StateSurface tone="neutral" title="No identity activity yet" description="Sanitized sign-in, passkey, session, recovery and role events will appear here." />}</div></section>
+              <section aria-labelledby="identity-manage-activity"><h2 id="identity-manage-activity">Your recent activity</h2><p>Recent sign-in and access changes for this identity.</p><LiteHistoryTimeline items={(data?.recent_activity || []).map((item, index) => { const reason = getLiteReasonPresentation(item.reason_code, item.summary || 'Access activity'); return { id: item.correlation_id || `${item.occurred_at || 'activity'}-${index}`, title: item.summary || reason.title, summary: reason.message || 'Pocket Lab recorded this access event.', time: item.occurred_at ? formatLiteTime(item.occurred_at) : '', state: reason.tone || 'neutral' }; })} emptyTitle="No access activity yet" emptyDescription="Recent sign-in, passkey, recovery and role changes will appear here." /></section>
               <section className="lite-identity-manage-signout" aria-label="Sign out"><LiteButton variant="secondary" onClick={signOut} disabled={Boolean(busy)}>{busy === 'logout' ? 'Signing out…' : 'Sign Out'}</LiteButton></section>
             </div>
           </LiteSheet>
@@ -404,7 +417,7 @@ export default function IdentityScreen() {
 
       <LiteSheet open={Boolean(renameTarget)} onClose={() => setRenameTarget(null)} title="Rename passkey" eyebrow="Passkey" description="Choose a friendly name. The credential identifier stays hidden from normal UI." className="lite-identity-sheet"><form className="lite-identity-form" onSubmit={confirmRenamePasskey}><IdentityField label="Passkey name" value={renameName} onChange={(event) => setRenameName(event.target.value)} autoFocus maxLength="80" /><div className="lite-identity-sheet-actions"><LiteButton type="button" variant="secondary" onClick={() => setRenameTarget(null)}>Cancel</LiteButton><LiteButton type="submit" disabled={!renameName.trim()}>Save Name</LiteButton></div></form></LiteSheet>
 
-      <LiteSheet open={Boolean(confirmation)} onClose={() => setConfirmation(null)} title={confirmation?.title || 'Confirm change'} eyebrow="Confirm" description={confirmation?.description || ''} className="lite-identity-sheet"><div className="lite-identity-confirmation"><StateSurface tone="neutral" title="Pocket Lab verifies this on the server" description="The interface will not claim success until server-owned Identity state confirms the result." /><div className="lite-identity-sheet-actions"><LiteButton variant="secondary" onClick={() => setConfirmation(null)}>Cancel</LiteButton><LiteButton onClick={confirmRequestedAction}>{confirmation?.confirmLabel || 'Confirm'}</LiteButton></div></div></LiteSheet>
+      <LiteSheet open={Boolean(confirmation)} onClose={() => setConfirmation(null)} title={confirmation?.title || 'Confirm change'} eyebrow="Confirm" description={confirmation?.description || ''} className="lite-identity-sheet"><div className="lite-identity-confirmation"><LiteConsequenceSummary value={{ title: confirmation?.title, summary: confirmation?.description, will: confirmation?.will?.length ? confirmation.will : ['Apply only the access change shown here.'], willNot: confirmation?.willNot?.length ? confirmation.willNot : ['Show the change as completed until Pocket Lab confirms it.'], reversible: confirmation?.reversible || 'You can review the resulting access state after the change.', availability: confirmation?.availability || 'Your current access stays available unless this confirmation explicitly says otherwise.' }} /><div className="lite-identity-sheet-actions"><LiteButton variant="secondary" onClick={() => setConfirmation(null)}>Cancel</LiteButton><LiteButton onClick={confirmRequestedAction}>{confirmation?.confirmLabel || 'Confirm'}</LiteButton></div></div></LiteSheet>
     </>
   );
 }

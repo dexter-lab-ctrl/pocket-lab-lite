@@ -378,11 +378,18 @@ tasks:
         tests/backend/test_lite_api.py
         tests/backend/test_lite_recovery.py
         tests/backend/test_lite_security.py
+        tests/backend/test_lite_ux_maturity_contract.py
 
   lite:test:frontend:
     desc: Run all frontend unit tests
     cmds:
       - npm run test:unit
+
+  lite:test:ux:maturity:
+    desc: Run the repository-owned Pocket Lab Lite UX maturity contract and mocked cross-tab qualification
+    cmds:
+      - npm run test:ux:maturity
+      - PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_ux_maturity_contract.py
 
   lite:test:contracts:
     desc: Export and validate Lite OpenAPI, fixtures, frontend routes, reason codes, and compatibility

@@ -123,6 +123,7 @@ Execution ownership: FastAPI → NATS/JetStream → node agent/supervisor.
 - `test:tests/backend/test_lite_devices_durable_enrollment.py`
 - `test:tests/backend/test_lite_devices_production_readiness.py`
 - `test:tests/backend/test_lite_termux_runtime_documentation.py`
+- `test:tests/backend/test_lite_ux_maturity_contract.py`
 - `test:tests/docs/test_documentation_ia.py`
 - `test:tests/docs/test_documentation_presentation_polish.py`
 - `test:tests/docs/test_enterprise_completion.py`
@@ -132,8 +133,7 @@ Execution ownership: FastAPI → NATS/JetStream → node agent/supervisor.
 
 ## Failure modes and recovery
 
-- `troubleshooting:agent-stopped`
-- `troubleshooting:supervisor-stopped`
+- No feature-specific troubleshooting entity was emitted; use the general Operate → Troubleshooting entry point.
 
 ## Source and bounded expansion
 

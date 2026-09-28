@@ -112,6 +112,8 @@ import {
   restartStepStateLabel,
   safeRestartSteps
 } from './LiteUi.jsx';
+import { LiteConsequenceSummary, LiteFreshness, LiteTechnicalFacts } from './LiteUx.jsx';
+import { friendlyLiteText } from '../lib/liteUxPresentation.js';
 
 const SECURITY_RENDER_REDUCTION_MILESTONE_1 = true;
 const SECURITY_PROGRESSIVE_DETAILS_MILESTONE_2 = true;
@@ -514,13 +516,13 @@ const SECURITY_DETAIL_SHELL_META = {
   },
   checkPath: {
     eyebrow: 'Check Path',
-    title: 'Backend check path',
-    description: 'See the FastAPI, worker, Lynis, Trivy, and evidence handoff summary.',
+    title: 'How this check ran',
+    description: 'See the protected check stages, tools used, and saved result.',
   },
   evidence: {
     eyebrow: 'Evidence',
     title: 'Safe evidence summary',
-    description: 'Open sanitized evidence metadata while raw evidence remains backend-owned.',
+    description: 'Open the protected check record while sensitive values stay hidden.',
   },
   history: {
     eyebrow: 'Safety History',
@@ -530,7 +532,7 @@ const SECURITY_DETAIL_SHELL_META = {
   technical_details: {
     eyebrow: 'Technical Details',
     title: 'Safe technical details',
-    description: 'Collapsed support metadata with raw evidence, logs, paths, and secrets hidden.',
+    description: 'Safe operational facts about the selected safety check.',
   },
 };
 
@@ -588,29 +590,29 @@ const DEFAULT_APP_COVERAGE_SUMMARY = {
 
 
 const SECURITY_COVERAGE_ROWS = [
-  { component: 'Lite API', dependencies: true, secrets: true, config: true, runtime: true, evidence: true },
-  { component: 'PWA bundle', dependencies: true, secrets: true, config: false, runtime: false, evidence: true },
-  { component: 'Caddy', dependencies: false, secrets: true, config: true, runtime: true, evidence: true },
-  { component: 'NATS', dependencies: false, secrets: true, config: true, runtime: true, evidence: true },
-  { component: 'Worker', dependencies: true, secrets: true, config: true, runtime: true, evidence: true },
-  { component: 'Bootstrap scripts', dependencies: false, secrets: true, config: true, runtime: false, evidence: true },
+  { component: 'Pocket Lab service', dependencies: true, secrets: true, config: true, runtime: true, evidence: true },
+  { component: 'Pocket Lab app', dependencies: true, secrets: true, config: false, runtime: false, evidence: true },
+  { component: 'Secure web access', dependencies: false, secrets: true, config: true, runtime: true, evidence: true },
+  { component: 'Private device connection', dependencies: false, secrets: true, config: true, runtime: true, evidence: true },
+  { component: 'Local check service', dependencies: true, secrets: true, config: true, runtime: true, evidence: true },
+  { component: 'Setup safeguards', dependencies: false, secrets: true, config: true, runtime: false, evidence: true },
   { component: 'Recovery state', dependencies: false, secrets: true, config: true, runtime: true, evidence: true },
 ];
 
 const SECURITY_PROTECTION_REASONS = [
-  'Scans run locally through Pocket Lab',
-  'Browser never runs shell commands',
-  'Secrets are redacted before display',
-  'Evidence is saved with sensitive values hidden',
-  'SBOM is generated for dependency visibility',
+  'Safety checks run on your Pocket Lab',
+  'This screen only requests checks; it never runs system commands',
+  'Sensitive values are hidden before results appear',
+  'A protected check record is saved after each completed run',
+  'Dependency information is recorded for deeper review',
 ];
 
 const SECURITY_TRUST_BOUNDARY_STEPS = [
-  { label: 'Browser', note: 'requests only' },
-  { label: 'FastAPI', note: 'control API' },
-  { label: 'Worker', note: 'runs tools' },
-  { label: 'Lynis/Trivy', note: 'local checks' },
-  { label: 'Evidence', note: 'sanitized before display' },
+  { label: 'This screen', note: 'requests a check' },
+  { label: 'Pocket Lab', note: 'accepts the request' },
+  { label: 'Local check service', note: 'runs the check safely' },
+  { label: 'Safety tools', note: 'inspect approved areas' },
+  { label: 'Protected record', note: 'sensitive values hidden' },
 ];
 
 
@@ -620,7 +622,7 @@ const DEFAULT_QUICK_COVERAGE_SUMMARY = {
     'Termux host posture',
     'Pocket Lab Lite files',
     'Caddy route config',
-    'NATS config posture',
+    'Private device connection',
     'Services summary',
     'Security evidence state',
   ],
@@ -679,7 +681,7 @@ const DEFAULT_FULL_COVERAGE_SUMMARY = {
 
 function quickCoverageList(values, fallback = []) {
   const items = Array.isArray(values) && values.length ? values : fallback;
-  return items.map((value) => String(value || '').trim()).filter(Boolean).slice(0, 12);
+  return items.map((value) => friendlyLiteText(value, '').trim()).filter(Boolean).slice(0, 12);
 }
 
 function quickCoverageStatus(value, coverageSummary = {}) {
@@ -721,7 +723,7 @@ function SecurityTargetStatusRows({ targetStatuses = [] }) {
           const label = status === 'timed_out' ? 'Timed out' : status === 'missing' ? 'Missing' : status === 'partial' ? 'Partial' : status === 'checked' || status === 'completed' ? 'Checked' : status || 'Unknown';
           return (
             <div key={`${item?.target_id || item?.target_label}-${item?.tool || 'target'}`} className="lite-security-quick-coverage-row" role="listitem">
-              <span>{item?.target_label || item?.target_id || 'Security target'}</span>
+              <span>{friendlyLiteText(item?.target_label || item?.target_id || 'Security target')}</span>
               <span className={`lite-security-quick-coverage-pill lite-security-quick-coverage-${tone}`}>{label}</span>
             </div>
           );
@@ -789,12 +791,12 @@ function deriveSecurityConfidence({ lastRun, runStatus, executionSteps, evidence
   }
 
   if (failedCoreStep || missingTool || (!evidenceSaved && ['succeeded', 'completed', 'degraded', 'failed'].includes(status))) {
-    const missingReason = missingTool ? 'A required security tool is missing.' : 'The worker did not finish with usable evidence.';
+    const missingReason = missingTool ? 'A required security tool is missing.' : 'The safety check did not finish with a usable protected result.';
     return {
       level: 'Low',
       tone: 'danger',
       title: 'Confidence: Low',
-      summary: `${missingReason} Recheck after fixing the tool or worker issue.`,
+      summary: `${missingReason} Recheck after fixing the safety-tool or check issue.`,
       chips: [
         { label: lynisCompleted ? 'Lynis completed' : missingTool ? 'Tool missing' : 'Lynis not complete', tone: lynisCompleted ? 'ready' : 'danger' },
         { label: trivyCompleted ? 'Trivy completed' : missingTool ? 'Tool missing' : 'Trivy not complete', tone: trivyCompleted ? 'ready' : 'danger' },
@@ -891,7 +893,7 @@ function SecurityTrustBoundaryCard() {
         <span className="lite-security-soft-badge">Trust boundary</span>
       </div>
       <h2>Browser to evidence path</h2>
-      <div className="lite-security-boundary-flow" aria-label="Browser to FastAPI to Worker to Lynis and Trivy to sanitized evidence">
+      <div className="lite-security-boundary-flow" aria-label="This screen → Pocket Lab → local safety tools → protected result">
         {SECURITY_TRUST_BOUNDARY_STEPS.map((step, index) => (
           <React.Fragment key={step.label}>
             <div className="lite-security-boundary-node">
@@ -929,7 +931,7 @@ function SecurityCoverageMatrixCard({ expanded, onToggle }) {
         <span className="lite-security-soft-badge">Coverage</span>
       </div>
       <h2>Coverage: 7 protected areas</h2>
-      <p>Dependencies, secrets, config, runtime, and evidence are checked across Pocket Lab Lite components where the backend can safely inspect them.</p>
+      <p>Dependencies, secrets, settings, runtime, and evidence are checked across Pocket Lab Lite areas that can be safely inspected.</p>
       <button type="button" className="lite-security-coverage-toggle" onClick={onToggle} aria-expanded={expanded}>
         {expanded ? 'Hide details' : 'Details'}
       </button>
@@ -1104,7 +1106,7 @@ export function buildSecurityRemediation(finding, context = {}) {
     return {
       title: 'Protected runtime secret',
       action,
-      happened: 'Pocket Lab found a backend runtime secret in a protected server-side file.',
+      happened: 'Pocket Lab found a protected runtime value that needs review.',
       means: 'This can be expected when the file is locked down and never displayed in the browser.',
       recommended: 'Keep file permissions restricted. Do not copy this file into public repos or frontend assets.',
       risk: 'Expected if locked down server-side.',
@@ -1128,7 +1130,7 @@ export function buildSecurityRemediation(finding, context = {}) {
       action,
       happened: 'A required safety tool was not available on this device.',
       means: 'Pocket Lab could not complete that part of the safety check.',
-      recommended: 'Re-run the Lite bootstrap or install the missing tool through the backend-supported setup path.',
+      recommended: 'Use Pocket Lab setup or repair guidance to restore the missing safety tool, then run the check again.',
       risk: 'Action needed before confidence can be high.',
     };
   }
@@ -1150,7 +1152,7 @@ export function buildSecurityRemediation(finding, context = {}) {
       action,
       happened: 'Trivy found a secret-like value in a scanned path.',
       means: 'A sensitive value may be stored somewhere it should not be.',
-      recommended: 'Keep the value hidden, rotate it through the backend/Identity flow if needed, and verify it is not in frontend assets or public repos.',
+      recommended: 'Keep the value hidden, rotate it through the Access flow if needed, and verify it is not in public app files or repositories.',
       risk: 'Action needed.',
     };
   }
@@ -1161,7 +1163,7 @@ export function buildSecurityRemediation(finding, context = {}) {
       action,
       happened: 'Trivy or Lynis found a configuration concern.',
       means: 'A local setting may be weaker than recommended.',
-      recommended: 'Review the specific item, apply a backend-supported fix if available, then re-run the check.',
+      recommended: 'Review the specific item, apply the Pocket Lab-supported fix if available, then run the check again.',
       risk: ['critical', 'high', 'medium'].includes(findingSeverity(finding)) ? 'Action needed.' : 'Review recommended.',
     };
   }
@@ -1294,7 +1296,7 @@ function findingTitle(finding = {}) {
   const rawTitle = finding?.title || finding?.summary || finding?.name;
   if (rawTitle) return safeSecurityText(rawTitle, 'Security review item');
   const category = String(finding?.category || '').toLowerCase();
-  if (category === 'protected_runtime_secret') return 'Protected backend runtime secret';
+  if (category === 'protected_runtime_secret') return 'Protected runtime value';
   if (category === 'missing_tool') return 'Security tool missing';
   if (category === 'dependency_vulnerability') return 'Dependency vulnerability';
   if (category === 'secret_exposure') return 'Secret-like value found';
@@ -1324,7 +1326,7 @@ function deriveFindingSource(finding = {}) {
 
 function safeFindingComponentLabel(finding = {}) {
   const category = String(finding?.category || '').toLowerCase();
-  if (category === 'protected_runtime_secret') return 'Backend runtime file';
+  if (category === 'protected_runtime_secret') return 'Protected Pocket Lab setting';
   if (category === 'dependency_vulnerability') return safeSecurityText(finding?.component || finding?.package || finding?.target || 'Local dependency', 'Local dependency');
   if (category === 'host_hardening') return 'Host readiness';
   if (category === 'misconfiguration') return safeSecurityText(finding?.resource || finding?.target || finding?.component || 'Configuration', 'Configuration');
@@ -1465,7 +1467,7 @@ function SecurityRemediationDrawer({ finding, context, onClose }) {
               <p>{remediation.risk}</p>
             </section>
           </div>
-          <p className="lite-security-remediation-note">This guidance does not run commands or change your device. Any future fix action must stay backend-owned and evidence-backed.</p>
+          <p className="lite-security-remediation-note">This guidance does not run commands or change your device. Any future fix action must stay protected and evidence-backed.</p>
         </div>
       ) : null}
     </LiteSheet>
@@ -1642,7 +1644,7 @@ function friendlyDeltaItemLabel(items = [], fallback = 'review item') {
   const count = list.length;
   if (actionCount) return `${count} action-needed item${count === 1 ? '' : 's'}`;
   if (recheckCount) return `${count} recheck item${count === 1 ? '' : 's'}`;
-  if (expectedCount) return `${count} expected backend item${count === 1 ? '' : 's'}`;
+  if (expectedCount) return `${count} expected item${count === 1 ? '' : 's'}`;
   return `${count} ${fallback}${count === 1 ? '' : 's'}`;
 }
 
@@ -1734,7 +1736,7 @@ export function deriveScanQuality(securityData, evidenceReceipt, executionSteps 
     return {
       status: 'failed',
       title: 'Incomplete scan',
-      detail: evidenceSaved ? 'A required tool or worker step did not complete.' : 'Evidence is missing for the last terminal run.',
+      detail: evidenceSaved ? 'A required safety step did not complete.' : 'Evidence is missing for the last terminal run.',
       chips: [
         { label: evidenceSaved ? 'Evidence saved' : 'Evidence missing', tone: evidenceSaved ? 'safe' : 'danger' },
         { label: stepText.includes('missing') ? 'Tool missing' : 'Recheck recommended', tone: 'danger' },
@@ -1950,6 +1952,7 @@ export default function SecurityScreen() {
   const setActiveSecurityEvidenceRunId = useLiteUiStore((state) => state.setActiveSecurityEvidenceRunId);
   const setSecurityObservation = useLiteUiStore((state) => state.setSecurityObservation);
   const securityObservation = useLiteUiStore((state) => state.securityObservation);
+  const pushToast = useLiteUiStore((state) => state.pushToast);
   const activeSecurityProgressRunId = result?.run_id || result?.job_id || result?.command_id || result?.scan_progress?.run_id || securityObservation?.runId || '';
   const scanProfile = normalizeSecurityProfileId(selectedScanProfile || result?.scan_profile || 'quick');
   const queryClient = useQueryClient();
@@ -1964,6 +1967,15 @@ export default function SecurityScreen() {
     const policy = securityPollingPolicy(payload);
     return Boolean(busy) || policy.live || isLiteSecurityViewLive(payload) || hasLiveSecurityOperation(result);
   }, [busy, result, securityPollingPolicy]);
+  React.useEffect(() => {
+    if (!actionError) return;
+    pushToast({
+      id: `security-action:${actionError}`,
+      kind: 'error',
+      title: 'Safety check needs attention',
+      message: actionError,
+    });
+  }, [actionError, pushToast]);
   const shouldLoadSecurityDetails = Boolean(activeSecurityDetails) || (
     securityManageOpen
     && SECURITY_MANAGE_SECTIONS.some((section) => section.id === securityManageSection && section.id !== 'overview')
@@ -1998,6 +2010,8 @@ export default function SecurityScreen() {
     backendReachable,
     savedStateOnly,
     cacheStatus,
+    lastUpdatedLabel,
+    isExpired,
   } = useLiteResource(liteApi.securitySummary || liteApi.security, [], {
     queryKey: liteQueryKeys.security(),
     path: liteQueryPaths.security,
@@ -2144,7 +2158,7 @@ export default function SecurityScreen() {
       hasRun,
       isActive,
       statusLabel: isActive ? profile.running : hasRun ? (snapshot.summary || (snapshot.score >= 95 ? 'Protected' : 'Something changed')) : 'Not checked',
-      ageLabel: isActive ? 'Live backend progress' : profileSavedAgeLabel(snapshot),
+      ageLabel: isActive ? 'Live check progress' : profileSavedAgeLabel(snapshot),
       changeLabel: isActive ? 'Saved result stays visible after completion' : profileChangeSummary(snapshot),
       offline: Boolean(snapshot?.freshness?.is_saved || snapshot?.freshness?.is_stale),
     };
@@ -2400,7 +2414,7 @@ export default function SecurityScreen() {
   const trustSignals = [
     {
       icon: Server,
-      title: 'Backend-run checks',
+      title: 'Runs on your Pocket Lab',
       summary: 'Security tools run on this device, not in your browser.',
     },
     {
@@ -2978,6 +2992,13 @@ export default function SecurityScreen() {
             } : null}
             manageAction={{ label: 'Manage Safety', onClick: openSecurityManage }}
           />
+          <LiteFreshness
+            saved={savedStateOnly}
+            stale={isExpired}
+            refreshing={summaryRefreshing}
+            lastUpdatedLabel={lastUpdatedLabel || lastCheckedLabel}
+            backendReachable={backendReachable}
+          />
           <LiteActionRow
             className="lite-security-latest-check-row"
             label="Latest check"
@@ -3021,7 +3042,7 @@ export default function SecurityScreen() {
             </div>
             <h2>Safety overview</h2>
             <button type="button" className="lite-security-quick-profile-chip lite-security-profile-rollup-trigger" onClick={cycleSecurityProfile} aria-label="Switch Security profile summary" data-security-profile-view="profile-linked">{activeProfileMeta.label}</button>
-            <p>{scanInProgress ? 'Pocket Lab is checking safety and saving evidence.' : `${activeProfileMeta.summary} ${safetyScoreSummary}`}</p>
+            <p>{scanInProgress ? 'Pocket Lab is checking safety and saving a protected result.' : `${activeProfileMeta.summary} ${safetyScoreSummary}`}</p>
             <div className="lite-security-safety-center-meta" aria-label="Safety state">
               <span>{lastCheckedLabel}</span>
               <span>{evidenceStatusLabel}</span>
@@ -3371,17 +3392,19 @@ export default function SecurityScreen() {
               <div className="lite-security-manage-row">
                 <div>
                   <strong>Technical details</strong>
-                  <p>Collapsed by default. Shows only safe metadata such as backend-owned check path, tool names, snapshot state, and polling policy.</p>
+                  <p>Safe operational facts about this check, including when it ran, which tools were used, and whether the information is current.</p>
                 </div>
                 <button type="button" className="lite-security-coverage-toggle" aria-label="Open safe Security technical details" onClick={(event) => openSecurityDetailFromManage('technical_details', event)}>Open technical details</button>
               </div>
-              <div className="lite-security-phase1-meta-grid">
-                <span>Backend-owned check path</span>
-                <span>Tools: {toolNames.join(' + ')}</span>
-                <span>{savedStateOnly ? 'Saved state' : 'Fresh state'}</span>
-                <span>Polling: slow</span>
-                <span>Snapshots: profile freshness + retention</span>
-              </div>
+              <LiteTechnicalFacts
+                facts={[
+                  { id: 'check-type', label: 'Check type', value: activeProfileMeta.label },
+                  { id: 'last-checked', label: 'Last checked', value: lastCheckedLabel || 'Not checked yet' },
+                  { id: 'tools', label: 'Safety tools', value: toolNames.length ? toolNames.join(' + ') : 'Not reported' },
+                  { id: 'record', label: 'Check record', value: evidenceStatusLabel },
+                  { id: 'information', label: 'Information', value: savedStateOnly ? 'Saved information' : 'Current information' },
+                ]}
+              />
             </div>
           ) : null}
         </ManageMotionSection>
@@ -3400,7 +3423,8 @@ export default function SecurityScreen() {
         headerClassName="lite-security-phase3-head"
       >
         <div className="lite-security-full-local-confirm-body">
-          <p>This checks Pocket Lab, Termux, selected PROot Ubuntu areas, PhotoPrism app files, route config, service status, and backup metadata. It can take 10–30 minutes and is best while the phone is charging.</p>
+          <p>This checks your Pocket Lab more deeply, including system settings, Pocket Lab files, PhotoPrism app files, service health, and backup records. It can take 10–30 minutes and is best while the phone is charging.</p>
+          <LiteConsequenceSummary value={{ title: 'Before the deeper check starts', summary: 'This is a read-only safety check.', will: ['Inspect approved local system and app areas.', 'Save a protected safety result when the check completes.'], willNot: ['Scan your photo library.', 'Restore backups.', 'Change app settings.'], availability: 'The phone may use more CPU and battery while the check is running.' }} />
           <div className="lite-security-phase1-meta-grid">
             <span>Does not scan your photo library</span>
             <span>Does not restore backups</span>
@@ -3427,7 +3451,8 @@ export default function SecurityScreen() {
         headerClassName="lite-security-phase3-head"
       >
         <div className="lite-security-full-local-confirm-body">
-          <p>This checks PhotoPrism route, app files, settings, backup metadata, and action state. It can take a few minutes. It skips your photo library, media folders, backup payloads, logs, and large caches.</p>
+          <p>This checks PhotoPrism access, app files, settings, backup records, and current app state. It can take a few minutes. It skips your photo library, media folders, backup contents, logs, and large caches.</p>
+          <LiteConsequenceSummary value={{ title: 'Before the app check starts', summary: 'This check reviews PhotoPrism without changing it.', will: ['Check PhotoPrism access, app files, settings and backup readiness.', 'Save a protected safety result.'], willNot: ['Scan your photos or media.', 'Change PhotoPrism settings.', 'Restore a backup.'] }} />
           <div className="lite-security-phase1-meta-grid">
             <span>Does not scan your photo library</span>
             <span>Does not read app secrets into the browser</span>
