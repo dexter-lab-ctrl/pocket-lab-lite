@@ -113,3 +113,15 @@ test('Safety profile summary controls keep an Android-sized touch target', async
     expect((await control.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   }
 });
+
+test('contextual Help controls keep an Android-sized touch target', async ({ page }) => {
+  await installScenario(page, 'healthy');
+  await page.goto('/?screen=identity');
+  await waitForLiteScreenToSettle(page, 'identity');
+
+  const controls = page.locator('[data-lite-screen-id="identity"] .lite-help-trigger:visible');
+  expect(await controls.count()).toBeGreaterThan(0);
+  for (let index = 0; index < await controls.count(); index += 1) {
+    expect((await controls.nth(index).boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  }
+});
