@@ -1030,15 +1030,6 @@
       "confidence": "contract-derived",
       "description": "Get Frontend Lifecycle Diagnostics Challenge",
       "domain": "diagnostics",
-      "frontend_clients": [
-        {
-          "mocked": true,
-          "owner": "MSW handler",
-          "resolved": true,
-          "source_module": "src/mocks/handlers.js",
-          "usage": "mock"
-        }
-      ],
       "id": "api:get:/api/lite/diagnostics/frontend-lifecycle/challenge",
       "method": "GET",
       "name": "GET /api/lite/diagnostics/frontend-lifecycle/challenge",
@@ -6503,6 +6494,13 @@
           "resolved": true,
           "source_module": "src/lite/LiteReleaseUpdateCard.jsx",
           "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
         }
       ],
       "id": "api:post:/api/lite/release/apply",
@@ -99228,7 +99226,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "78740017050f717b6b8b34dc8002afd103f0b19f604b5ee81f6d8796a6bec026",
+  "source_fingerprint": "e2b933efbfb86a74a146e8e38749df3d2169e5fa2e1d42afed35d9a85c7d4442",
   "statistics": {
     "entity_count": 1296,
     "entity_type_counts": {

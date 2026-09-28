@@ -73,7 +73,10 @@ CRITICAL_PREFIXES = (
 MAX_PARSE_BYTES = 1_000_000
 MAX_PURPOSE = 280
 MAX_SYMBOLS_PER_FILE = 200
-MAX_BROWSER_SEARCH_CHARS = 640
+# Keep the static browser projection under its existing 10 MB contract as the
+# tracked repository grows. The path and high-value labels are emitted first;
+# the bounded tail is only a compact search aid, not canonical source evidence.
+MAX_BROWSER_SEARCH_CHARS = 620
 
 
 def stable_json(value: Any) -> str:
