@@ -101,3 +101,15 @@ test('Refresh acknowledges immediately inside the control without moving the pag
   });
   await expect(refresh).toHaveAttribute('aria-busy', 'false');
 });
+
+test('Safety profile summary controls keep an Android-sized touch target', async ({ page }) => {
+  await installScenario(page, 'healthy');
+  await page.goto('/?screen=security');
+  await waitForLiteScreenToSettle(page, 'security');
+
+  for (const selector of ['.lite-security-quick-profile-chip', '.lite-security-profile-rollup-link']) {
+    const control = page.locator(`[data-lite-screen-id="security"] ${selector}`).first();
+    await expect(control).toBeVisible();
+    expect((await control.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  }
+});
