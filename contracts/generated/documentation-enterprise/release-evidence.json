@@ -39,7 +39,7 @@
         "status": "observed",
         "value": {
           "bytes": 75,
-          "sha256": "31bfddc019544734b3d22452ac364be95714baae2ffcc0107f57c539491546bb"
+          "sha256": "0196cb60a8a93c13941700fcbdb70803a1f3c207b82662b0f10a1fd4338c0287"
         }
       },
       "release_presence": {
@@ -91,8 +91,8 @@
         "source": "dist.zip",
         "status": "observed",
         "value": {
-          "bytes": 542848,
-          "sha256": "ff30fb07d2ad1f0545f4999d041d7d64fe4824307918e180ecb0de0968506bc0"
+          "bytes": 542999,
+          "sha256": "ed53e497b42de1a1bc90e5d65427f307121c86a65226b28cbc271077a1f0a5a8"
         }
       },
       "release_presence": {
@@ -403,7 +403,7 @@
   "fingerprints": {
     "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
     "asyncapi": "c7efb2a97b0314a431a6494cd426a4053d2ce3fdd430312fbd9073b0e2167652",
-    "documentation": "c39f00fab12ee769f1ff999e12890e180863989853de16b78c25851035f196fd",
+    "documentation": "9202627e7f9cdf5d153f935aec51a06dfaa4bd158ec64aac40182160894cedc6",
     "openapi": "8d70d2565517e6782d0afafcaf1e9d6090b6fe9c73cf9eb2feeaa0892ea3737b",
     "operational_health": "e3ed9da163e04c1f14353da1c829b18e24aec607e40308a68585165ef56de7fc"
   },
