@@ -24996,3 +24996,82 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
 @media (prefers-reduced-motion: reduce) {
   .lite-device-relationship-link.is-repairing::before { animation:none !important; }
 }
+
+/* Apps UI qualification follow-up.
+   Keep the PhotoPrism flow and Manage controls inside their owning viewport at
+   desktop widths, while retaining the intentional horizontal tab strip on
+   narrow touch screens. */
+[data-lite-manage-portal="true"] .lite-catalog-media-flow-card,
+[data-lite-manage-portal="true"] .lite-catalog-media-flow-card > *,
+[data-lite-manage-portal="true"] .lite-catalog-media-flow-visual,
+[data-lite-manage-portal="true"] .lite-catalog-media-flow-stage,
+[data-lite-manage-portal="true"] .lite-catalog-manage-quick-actions {
+  min-width: 0;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-media-flow-badge {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: center;
+  white-space: normal;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-manage-quick-actions .pocket-button {
+  min-width: 0;
+  line-height: 1.2;
+  white-space: normal;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button:focus-visible,
+[data-lite-manage-portal="true"] .lite-catalog-manage-close:focus-visible,
+[data-lite-manage-portal="true"] .lite-catalog-manage-grip:focus-visible,
+[data-lite-manage-portal="true"] .lite-app-action-row button:focus-visible,
+.theme-pocket-lite-daylight .lite-catalog-screen .pocket-button:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.42);
+  outline-offset: 3px;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-screen .pocket-button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+@media (min-width: 560px) {
+  [data-lite-manage-portal="true"] .lite-catalog-media-flow-card {
+    grid-template-columns: minmax(8rem, 0.85fr) minmax(10rem, 1.3fr) minmax(5rem, 7rem);
+  }
+}
+
+@media (min-width: 721px) {
+  [data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    overflow: visible;
+  }
+
+  [data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button {
+    min-width: 0;
+    padding-inline: 0.45rem;
+    font-size: 0.74rem;
+  }
+}
+
+@media (max-width: 720px) {
+  [data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs {
+    display: flex;
+    overflow-x: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-lite-manage-portal="true"] .lite-catalog-media-flow-card,
+  [data-lite-manage-portal="true"] .lite-catalog-media-flow-node,
+  [data-lite-manage-portal="true"] .lite-catalog-media-flow-line i,
+  [data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button,
+  [data-lite-manage-portal="true"] .lite-catalog-manage-tab-indicator,
+  .theme-pocket-lite-daylight .lite-catalog-screen .pocket-button {
+    animation: none !important;
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}

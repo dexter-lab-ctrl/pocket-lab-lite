@@ -271,6 +271,7 @@ def test_frontend_canonical_selector_is_executable_and_truthful():
       import { selectCanonicalAppState } from './src/lib/liteViewModels.js';
       const states = {
         running: selectCanonicalAppState({ installed: true, runtime: { installation_state: 'installed_running', running: true, reachable: true }, access: { route_ready: true, open_url: '/apps/photoprism/' }, actions: { open: true } }),
+        staleSnapshot: selectCanonicalAppState({ installed: true, runtime: { installation_state: 'installed_running', running: true, reachable: true }, access: { route_ready: true, open_url: '/apps/photoprism/' }, actions: { open: true } }, { actions: { open: false, open_full_screen: false } }),
         degraded: selectCanonicalAppState({ installed: true, runtime: { installation_state: 'installed_degraded', reachable: false } }),
         stopped: selectCanonicalAppState({ installed: true, runtime: { installation_state: 'installed_stopped' } }),
         unknown: selectCanonicalAppState({}),
@@ -285,6 +286,7 @@ def test_frontend_canonical_selector_is_executable_and_truthful():
 
     assert states["running"]["statusLabel"] == "Running"
     assert states["running"]["openReady"] is True
+    assert states["staleSnapshot"]["openReady"] is True
     assert states["degraded"]["statusLabel"] == "Needs attention"
     assert states["stopped"]["statusLabel"] == "App stopped"
     assert states["unknown"]["statusLabel"] == "Checking"
@@ -375,6 +377,26 @@ def test_terminal_disabled_actions_remain_successful_and_truthful():
     assert installed["status"] == "installed"
     assert installed["summary"] == "This app is installed and running."
     assert installed["disabled_reason"] == "This app is already installed and running."
+
+
+def test_route_ready_access_actions_override_stale_saved_open_flag():
+    from api_fastapi.services import lite_app_actions
+
+    actions = {}
+    lite_app_actions._ensure_action_contract(
+        actions,
+        catalog={
+            "installed": True,
+            "access": {"route_ready": True, "open_url": "/apps/photoprism/"},
+            "actions": {"open": False},
+        },
+        media={},
+        installed=True,
+    )
+
+    assert actions["open"]["enabled"] is True
+    assert actions["open_full_screen"]["enabled"] is True
+    assert actions["install_to_phone"]["enabled"] is True
 
 
 def test_app_catalog_ui_fences_installed_and_imported_terminal_states():

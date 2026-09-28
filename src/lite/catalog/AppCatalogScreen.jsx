@@ -2773,7 +2773,20 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const lifecycle = lifecycleProfile(app);
     const lifecycleAttention = lifecycleAttentionItems(lifecycle);
     const buildManageViewModel = () => {
-      const actionState = (actionId) => actionFromSnapshot(actionSnapshot, actionId, lifecycleAction(lifecycle, actionId));
+      const actionState = (actionId) => {
+        const action = actionFromSnapshot(actionSnapshot, actionId, lifecycleAction(lifecycle, actionId));
+        if (canOpen && ['open', 'open_full_screen', 'install_to_phone'].includes(actionId)) {
+          return {
+            ...action,
+            enabled: true,
+            status: 'ready',
+            url: resolveAppOpenUrl(app),
+            disabled_reason: null,
+            reason: null,
+          };
+        }
+        return action;
+      };
       const openAction = actionState('open');
       const connectPhotosAction = actionState('connect_photos');
       const isPhoneStorageConnected = phoneStorageConnected(app, lifecycle, actionSnapshot);

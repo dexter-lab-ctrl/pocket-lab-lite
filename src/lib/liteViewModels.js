@@ -523,9 +523,16 @@ export function selectCanonicalAppState(app = {}, actionSnapshot = {}) {
   const access = isObject(app?.access) ? app.access : {};
   const catalogActions = isObject(app?.actions) ? app.actions : {};
   const snapshotActions = isObject(actionSnapshot?.actions) ? actionSnapshot.actions : {};
-  // Action snapshots are intentionally partial. Merge by action id so a saved
-  // result cannot erase canonical catalog capabilities such as Open.
+  // Action snapshots are intentionally partial. Merge history by action id,
+  // but keep catalog-owned access capabilities authoritative. A prepared
+  // action read can be older than the catalog route probe and must not erase a
+  // current Open capability.
   const actions = { ...catalogActions, ...snapshotActions };
+  for (const actionId of ['open', 'open_full_screen', 'install_to_phone']) {
+    if (Object.prototype.hasOwnProperty.call(catalogActions, actionId)) {
+      actions[actionId] = catalogActions[actionId];
+    }
+  }
   const runtimeState = safeString(runtime.installation_state || '').toLowerCase();
   const appState = safeString(app.install_state || '').toLowerCase();
   const legacyStatus = safeString(app.status || '').toLowerCase();

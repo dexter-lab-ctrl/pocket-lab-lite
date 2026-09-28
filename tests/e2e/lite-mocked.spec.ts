@@ -71,6 +71,35 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     expect(failed, `unexpected Lite API failures: ${failed.join(', ')}`).toEqual([]);
   });
 
+  test('keeps PhotoPrism Open available when the action projection is stale', async ({ page }) => {
+    await installScenario(page, 'catalog-ready');
+    await page.route('**/api/lite/apps/photoprism/actions', async (route) => {
+      const response = await route.fetch();
+      const payload = await response.json();
+      for (const actionId of ['open', 'open_full_screen', 'install_to_phone']) {
+        if (!payload.actions?.[actionId]) continue;
+        payload.actions[actionId] = {
+          ...payload.actions[actionId],
+          enabled: false,
+          status: 'checking',
+          disabled_reason: 'Open is not ready yet.',
+          reason: 'Open is not ready yet.',
+        };
+      }
+      await route.fulfill({ response, json: payload });
+    });
+
+    await page.goto('/?screen=catalog');
+    const screen = page.locator('[data-lite-screen-id="catalog"]');
+    const card = screen.locator('.lite-catalog-app-card').first();
+    await expect(card.getByRole('button', { name: 'Open', exact: true })).toBeEnabled();
+
+    await card.getByRole('button', { name: 'Manage', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: /Manage PhotoPrism/i });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Open full screen', exact: true })).toBeEnabled();
+  });
+
   test('Home keeps secondary workspace detail in the explicit accessible sheet', async ({ page }) => {
     await page.goto('/?screen=home');
     const home = page.locator('[data-lite-screen-id="home"]');

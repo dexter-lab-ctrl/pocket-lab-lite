@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 
 from fastapi import HTTPException
 
-from . import lite_app_backup, lite_app_backup_targets, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_app_update, lite_photoprism_lifecycle, lite_photoprism_media, lite_security
+from . import lite_app_backup, lite_app_backup_targets, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_app_update, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media, lite_security
 
 SUPPORTED_APP_IDS = {"photoprism"}
 SUPPORTED_ACTIONS = {
@@ -578,7 +578,6 @@ def _ensure_action_contract(
     """
     catalog_map = catalog if isinstance(catalog, dict) else {}
     access = catalog_map.get("access") if isinstance(catalog_map.get("access"), dict) else {}
-    catalog_actions = catalog_map.get("actions") if isinstance(catalog_map.get("actions"), dict) else {}
     route_ready = bool(access.get("route_ready") and access.get("open_url"))
 
     for action_id in ACTION_ORDER:
@@ -587,8 +586,10 @@ def _ensure_action_contract(
 
     for action_id in ("open", "open_full_screen", "install_to_phone"):
         action = actions[action_id]
-        explicit = catalog_actions.get("open")
-        allowed = bool(route_ready and explicit is not False and installed)
+        # Browser navigation follows the prepared route/access contract. The
+        # saved action projection can lag the live catalog by one refresh and
+        # must not turn a healthy same-origin route into a disabled button.
+        allowed = bool(route_ready and installed)
         action.update({
             "enabled": allowed,
             "status": "ready" if allowed else "checking",
@@ -786,6 +787,27 @@ def _compact_current_operation(value: Any) -> dict[str, Any] | None:
     return result or None
 
 
+def _live_catalog_app(app_id: str) -> dict[str, Any]:
+    """Read the current catalog capability for browser-owned app actions.
+
+    Action history is intentionally served from prepared state, but the Open
+    controls must use the same live route probe as ``/api/lite/catalog``. This
+    small read keeps a stale lifecycle/action projection from disabling a
+    route that Caddy and PhotoPrism already serve.
+    """
+    try:
+        payload = lite_catalog_live.hydrate_catalog(lite_catalog.catalog_payload(None))
+    except Exception:
+        return {}
+    apps = payload.get("apps") if isinstance(payload, dict) else None
+    if not isinstance(apps, list):
+        apps = payload.get("items") if isinstance(payload, dict) else None
+    for app in apps or []:
+        if isinstance(app, dict) and str(app.get("id") or "").strip().lower() == app_id:
+            return app
+    return {}
+
+
 def app_actions(app_id: str) -> dict[str, Any]:
     _validate_app_id(app_id)
     profile = lite_app_lifecycle.app_lifecycle_profile("photoprism")
@@ -813,6 +835,14 @@ def app_actions(app_id: str) -> dict[str, Any]:
     catalog = dict(profile)
     if isinstance(profile.get("catalog"), dict):
         catalog.update(profile["catalog"])
+    live_catalog = _live_catalog_app(app_id)
+    if live_catalog:
+        # Keep lifecycle/media history from the prepared profile, while the
+        # route, access and installation fields come from the canonical catalog
+        # read that also backs the main Apps screen.
+        for key in ("access", "actions", "installed", "install_state", "runtime", "status"):
+            if key in live_catalog:
+                catalog[key] = live_catalog[key]
     installed = bool(
         catalog.get("installed")
         or profile.get("installed")
