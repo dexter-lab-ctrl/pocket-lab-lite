@@ -46406,7 +46406,7 @@
             "status": "observed",
             "value": {
               "bytes": 75,
-              "sha256": "95bf80e343afdf88e443319554d9300cbfaf44d4032fc334171ea0ecb1d791b6"
+              "sha256": "8444e8187d42001c1c50a2fb06e8d5325211fb0958deb1095c76dca0521b9d62"
             }
           },
           "release_presence": {
@@ -46458,8 +46458,8 @@
             "source": "dist.zip",
             "status": "observed",
             "value": {
-              "bytes": 542999,
-              "sha256": "f18b83fbf4dad6ae16accca46e794b1fa22d66174d28dbaec6fccad9f6f925ba"
+              "bytes": 543888,
+              "sha256": "db31342c753766174ed443b393db3c43d18e7924afa29c6bc55f8ac7b32a2060"
             }
           },
           "release_presence": {
