@@ -83,6 +83,10 @@ test('Refresh acknowledges immediately inside the control without moving the pag
   const screen = page.locator('[data-lite-screen-id="home"]');
   const refresh = screen.locator('button.lite-refresh-button');
   const before = await screen.boundingBox();
+  const beforeRefreshLayout = await refresh.evaluate((element) => ({
+    width: (element as HTMLElement).offsetWidth,
+    height: (element as HTMLElement).offsetHeight,
+  }));
   await page.evaluate(() => {
     (window as typeof window & { __liteHoldRefresh?: boolean }).__liteHoldRefresh = true;
   });
@@ -94,6 +98,10 @@ test('Refresh acknowledges immediately inside the control without moving the pag
   await expect(screen.locator('.lite-refresh-status-popover')).toHaveCount(0);
   await expect(screen.locator('.lite-ux-freshness')).toBeHidden();
   expect(await screen.boundingBox()).toEqual(before);
+  expect(await refresh.evaluate((element) => ({
+    width: (element as HTMLElement).offsetWidth,
+    height: (element as HTMLElement).offsetHeight,
+  }))).toEqual(beforeRefreshLayout);
   await expect(screen.getByRole('heading', { name: 'Home', exact: true })).toBeVisible();
 
   await page.evaluate(() => {
