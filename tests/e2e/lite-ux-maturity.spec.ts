@@ -133,3 +133,17 @@ test('contextual Help controls keep an Android-sized touch target', async ({ pag
     expect((await controls.nth(index).boundingBox())?.height).toBeGreaterThanOrEqual(44);
   }
 });
+
+test('global shell share and install controls keep an Android-sized touch target', async ({ page }) => {
+  await installScenario(page, 'healthy');
+  await page.goto('/?screen=home');
+  await waitForLiteScreenToSettle(page, 'home');
+
+  for (const label of ['Share Pocket Lab Lite', 'Install Pocket Lab Lite']) {
+    const control = page.getByRole('button', { name: label, exact: true });
+    if (await control.count() === 0) continue;
+    const box = await control.first().boundingBox();
+    expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);
+    expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+  }
+});
