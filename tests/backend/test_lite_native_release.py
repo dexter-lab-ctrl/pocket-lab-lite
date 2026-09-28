@@ -436,6 +436,57 @@ def test_worker_restart_recovery_rolls_back_and_cleans_abandoned_generation(
     assert status["last_rollback_status"] == "rolled_back"
 
 
+def test_successful_release_check_clears_historical_failure_projection(tmp_path, monkeypatch):
+    release_runtime = _runtime(tmp_path, monkeypatch)
+
+    failed_lease = release_runtime.claim_release_operation(
+        "check", "release-check-before-success", lease_seconds=30
+    )
+    failed = release_runtime.fail_release_operation(
+        failed_lease,
+        failure_code="release_check_failed",
+        phase="checking",
+        failure_stage="checking",
+    )
+    assert failed["status"] == "degraded"
+    assert failed["last_failure_code"] == "release_check_failed"
+
+    successful_lease = release_runtime.claim_release_operation(
+        "check", "release-check-after-success", lease_seconds=30
+    )
+    result = release_runtime.commit_release_result(
+        successful_lease,
+        {
+            "phase": "current",
+            "status": "healthy",
+            "configured_repository": "dexter-lab-ctrl/pocket-lab-lite",
+            "verified_repository": "dexter-lab-ctrl/pocket-lab-lite",
+            "repository_match": True,
+            "install_mode": "release",
+            "installed_release_tag": "lite-2026.07.28.1",
+            "installed_source_commit": "b" * 40,
+            "current_tag": "lite-2026.07.28.1",
+            "latest_tag": "lite-2026.07.28.1",
+            "comparison": "equal",
+            "update_available": False,
+            "manifest_verified": True,
+            "artifact_verified": True,
+            "staging_status": "idle",
+            "promotion_status": "idle",
+            "rollback_available": False,
+            "latest_release": {
+                "tag_name": "lite-2026.07.28.1",
+                "manifest": {"source_commit": "b" * 40},
+            },
+        },
+    )
+
+    assert result["status"] == "healthy"
+    assert result["last_failure_code"] == ""
+    assert result["last_terminal_status"] == "succeeded"
+    assert result["current_tag"] == result["latest_tag"] == "lite-2026.07.28.1"
+
+
 def test_post_switch_validation_rejects_unexpected_pm2_restart(tmp_path, monkeypatch):
     ensure_runtime_path()
     from api_fastapi.services import release_update_process
@@ -574,7 +625,8 @@ def test_lite_release_frontend_uses_existing_safe_state_and_lifecycle_layers():
         "Preparing update",
         "Installing update",
         "Checking the update",
-        "Update failed",
+        "Check failed",
+        "Install failed",
         "Rolled back safely",
         "Update source not verified",
         "Installed from source",

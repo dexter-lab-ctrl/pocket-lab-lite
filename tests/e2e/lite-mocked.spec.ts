@@ -120,6 +120,66 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(page.locator('[data-lite-screen-id="catalog"]')).toBeVisible();
   });
 
+  test('Home keeps primary controls inside the viewport across the responsive matrix', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mocked-desktop', 'The exact Home matrix runs once in Chromium.');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+
+    for (const viewport of PREMIUM_VIEWPORTS) {
+      await page.setViewportSize(viewport);
+      await page.goto('/?screen=home');
+      const home = page.locator('[data-lite-screen-id="home"]');
+      await expect(home).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+      expect(await home.locator('button:visible').evaluateAll((buttons) => buttons.every((button) => {
+        const rect = button.getBoundingClientRect();
+        return rect.left >= -1 && rect.right <= window.innerWidth + 1 && rect.width > 0;
+      }))).toBe(true);
+    }
+  });
+
+  test('Home presents verified release success after a previous failed operation', async ({ page }) => {
+    await installScenario(page, 'release-success-after-failure');
+    await page.goto('/?screen=home');
+    const home = page.locator('[data-lite-screen-id="home"]');
+    await home.getByRole('button', { name: 'Workspace details' }).click();
+    const sheet = page.getByRole('dialog', { name: 'Workspace details' });
+    const card = sheet.locator('[data-lite-release-native="true"]');
+    await expect(card).toBeVisible();
+    await expect(card).toContainText('Updated successfully');
+    await expect(card).not.toContainText(/Check failed|Install failed|Needs attention/i);
+    await expect(card).toContainText(/Installed files:|Manifest and files verified/i);
+  });
+
+  test('Home release card presents an available release distinctly', async ({ page }) => {
+    await installScenario(page, 'release-available');
+    await page.goto('/?screen=home');
+    const home = page.locator('[data-lite-screen-id="home"]');
+    await home.getByRole('button', { name: 'Workspace details' }).click();
+    const card = page.getByRole('dialog', { name: 'Workspace details' }).locator('[data-lite-release-native="true"]');
+    await expect(card).toContainText(/Update available/i);
+    await expect(card).not.toContainText(/Check failed|Install failed/i);
+  });
+
+  test('Home release card presents active download progress distinctly', async ({ page }) => {
+    await installScenario(page, 'release-active');
+    await page.goto('/?screen=home');
+    const home = page.locator('[data-lite-screen-id="home"]');
+    await home.getByRole('button', { name: 'Workspace details' }).click();
+    const card = page.getByRole('dialog', { name: 'Workspace details' }).locator('[data-lite-release-native="true"]');
+    await expect(card).toContainText(/Downloading update/i);
+    await expect(card.locator('.lite-release-update-progress')).toBeVisible();
+  });
+
+  test('Home release card presents an active check failure distinctly', async ({ page }) => {
+    await installScenario(page, 'release-failed');
+    await page.goto('/?screen=home');
+    const home = page.locator('[data-lite-screen-id="home"]');
+    await home.getByRole('button', { name: 'Workspace details' }).click();
+    const card = page.getByRole('dialog', { name: 'Workspace details' }).locator('[data-lite-release-native="true"]');
+    await expect(card).toContainText(/Check failed/i);
+    await expect(card).not.toContainText('Update failed');
+  });
+
   test('Home keeps a ready workspace calm while respecting reduced-motion preference', async ({ page }) => {
     await page.goto('/?screen=home');
     const home = page.locator('[data-lite-screen-id="home"]');

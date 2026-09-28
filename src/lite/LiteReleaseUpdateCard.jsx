@@ -1,21 +1,56 @@
 import React, { useEffect, useMemo } from 'react';
 import { useMachine } from '@xstate/react';
-import { Download, RefreshCw, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, Download, RefreshCw, ShieldCheck } from 'lucide-react';
 import { useLiteMutation } from '../hooks/useLiteMutation.js';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { liteApi } from '../lib/liteApi.js';
 import { liteQueryKeys } from '../lib/liteQueryClient.js';
 import { liteReleaseUpdateMachine } from '../machines/liteReleaseUpdateMachine.js';
 import { GlassCard, LiteButton, StatusBadge } from './LiteUi.jsx';
+import { LiteTechnicalFacts } from './LiteUx.jsx';
 
 const ACTIVE_PHASES = new Set([
   'checking', 'applying', 'downloading', 'staging', 'preparing', 'installing',
   'promoting', 'validating', 'rolling_back',
 ]);
 
-function isReleaseActive(data = {}) {
+const RELEASE_PHASES = [
+  ['checking', 'Check'],
+  ['downloading', 'Download'],
+  ['staging', 'Prepare'],
+  ['installing', 'Install'],
+  ['validating', 'Verify'],
+];
+
+const lower = (value) => String(value || '').trim().toLowerCase();
+
+function timestampValue(value) {
+  const parsed = Date.parse(String(value || ''));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+export function isReleaseActive(data = {}) {
   return String(data.status || '').toLowerCase() === 'running'
     || ACTIVE_PHASES.has(String(data.phase || '').toLowerCase());
+}
+
+export function isVerifiedCurrentRelease(data = {}) {
+  return data.repository_match === true
+    && data.manifest_verified === true
+    && Boolean(data.current_tag)
+    && data.current_tag === data.latest_tag
+    && data.update_available !== true
+    && data.installed_artifact_verified !== false;
+}
+
+export function isReleaseFailureActive(data = {}) {
+  if (isReleaseActive(data)) return false;
+  if (!(data.status === 'degraded' || data.last_failure_code)) return false;
+  if (!isVerifiedCurrentRelease(data)) return true;
+
+  const lastFailure = timestampValue(data.last_failure_at);
+  const lastSuccess = timestampValue(data.last_success_at);
+  return data.last_terminal_status !== 'succeeded' || lastSuccess < lastFailure;
 }
 
 function phaseCopy(data = {}) {
@@ -29,14 +64,30 @@ function phaseCopy(data = {}) {
   return '';
 }
 
+function failureLabel(data = {}) {
+  const phase = lower(data.last_failure_stage || data.phase);
+  return ['checking', 'check'].includes(phase) ? 'Check failed' : 'Install failed';
+}
+
+function wasRecentlyInstalled(data = {}) {
+  return ['installed', 'completed', 'promoted'].includes(lower(data.phase))
+    || ['installed', 'complete', 'completed'].includes(lower(data.promotion_status));
+}
+
+function releaseProgressIndex(data = {}) {
+  const phase = lower(data.phase);
+  const index = RELEASE_PHASES.findIndex(([key]) => key === phase);
+  return index >= 0 ? index : -1;
+}
+
 export function releasePresentation(data = {}, savedStateOnly = false) {
   const active = phaseCopy(data);
   if (active) return { label: active, status: 'checking', summary: 'Pocket Lab is handling this update through the local worker.' };
-  if (data.last_rollback_status && data.last_rollback_status !== 'rollback_failed') {
+  if (data.last_rollback_status && data.last_rollback_status !== 'rollback_failed' && !isReleaseFailureActive(data)) {
     return { label: 'Rolled back safely', status: 'healthy', summary: 'The previous working interface was restored.' };
   }
-  if (data.status === 'degraded' || data.last_failure_code) {
-    return { label: 'Update failed', status: 'failed', summary: 'The current working interface remains available.' };
+  if (isReleaseFailureActive(data)) {
+    return { label: failureLabel(data), status: 'failed', summary: 'The current working interface remains available. No unsafe partial update is presented.' };
   }
   if (data.repository_match === false) {
     return { label: 'Update source not verified', status: 'failed', summary: 'Install is blocked until the Pocket Lab Lite source is verified.' };
@@ -46,6 +97,12 @@ export function releasePresentation(data = {}, savedStateOnly = false) {
   }
   if (data.update_available) {
     return { label: 'Update available', status: 'degraded', summary: `Pocket Lab Lite ${data.latest_release_tag || data.latest_tag || ''} is ready to review.`.trim() };
+  }
+  if (wasRecentlyInstalled(data) && isVerifiedCurrentRelease(data)) {
+    return { label: 'Updated successfully', status: 'healthy', summary: 'The installed release was verified and is now current.' };
+  }
+  if (!data.current_tag && !data.latest_tag && !savedStateOnly) {
+    return { label: 'Not checked yet', status: 'unknown', summary: 'Check for a verified Pocket Lab Lite release when you are ready.' };
   }
   return {
     label: savedStateOnly ? 'Showing saved update status' : 'Up to date',
@@ -75,14 +132,7 @@ export default function LiteReleaseUpdateCard() {
   });
   const data = release.data || {};
   const active = isReleaseActive(data);
-  const releaseCurrent = Boolean(
-    data.status === 'healthy'
-    && data.repository_match === true
-    && data.manifest_verified === true
-    && data.current_tag
-    && data.current_tag === data.latest_tag
-    && !data.last_failure_code,
-  );
+  const releaseCurrent = isVerifiedCurrentRelease(data) && !isReleaseFailureActive(data);
   const releaseSavedStateOnly = Boolean(
     release.backendReachable === false
     || (release.savedStateOnly && !releaseCurrent),
@@ -91,19 +141,19 @@ export default function LiteReleaseUpdateCard() {
     () => releasePresentation(data, releaseSavedStateOnly),
     [data, releaseSavedStateOnly],
   );
-  const backendFailed = data.status === 'degraded' || Boolean(data.last_failure_code);
+  const backendFailed = isReleaseFailureActive(data);
 
   useEffect(() => {
     if (active) send({ type: 'BACKEND_ACTIVE' });
     else if (backendFailed) send({ type: 'BACKEND_FAILED', reason: 'Update needs attention.' });
-    else if (String(flow.value) === 'accepted' || String(flow.value) === 'observing') send({ type: 'BACKEND_DONE' });
+    else if (['accepted', 'observing', 'failed'].includes(String(flow.value))) send({ type: 'BACKEND_DONE' });
   }, [active, backendFailed, flow.value, send]);
 
   const writeBlocked = releaseSavedStateOnly || release.backendReachable === false || active;
   const applyAllowed = Boolean(
     data.update_available
-    && data.repository_match
-    && data.manifest_verified
+    && data.repository_match === true
+    && data.manifest_verified === true
     && !writeBlocked,
   );
 
@@ -129,15 +179,22 @@ export default function LiteReleaseUpdateCard() {
     }
   }
 
-  const busy = checkMutation.isPending || applyMutation.isPending || active;
   const failure = checkMutation.error?.message || applyMutation.error?.message || flow.context.failureReason || '';
   const checked = data.last_success_at || data.updated_at || '';
+  const progressIndex = releaseProgressIndex(data);
+  const progressVisible = active && progressIndex >= 0;
+  const Icon = presentation.status === 'healthy' ? CheckCircle2 : ShieldCheck;
+  const installedTag = data.installed_release_tag || data.current_tag || 'Not verified';
+  const availableTag = data.latest_release_tag || data.latest_tag || 'Not checked';
+  const verificationLabel = data.manifest_verified && data.installed_artifact_verified !== false
+    ? 'Manifest and files verified'
+    : data.install_mode === 'source' ? 'Source install' : 'Verification pending';
 
   return (
-    <GlassCard className="lite-release-update-card" data-lite-release-native="true">
+    <GlassCard className={`lite-release-update-card is-${presentation.status}`} data-lite-release-native="true" data-release-state={presentation.status}>
       <div className="lite-release-update-head">
-        <span className="lite-release-update-icon"><ShieldCheck className="h-5 w-5" /></span>
-        <div>
+        <span className={`lite-release-update-icon is-${presentation.status}`} aria-hidden="true"><Icon className="h-5 w-5" /></span>
+        <div className="lite-release-update-copy">
           <small>System update</small>
           <h2>{presentation.label}</h2>
           <p>{failure || presentation.summary}</p>
@@ -145,26 +202,46 @@ export default function LiteReleaseUpdateCard() {
         <StatusBadge status={failure ? 'failed' : presentation.status}>{failure ? 'Needs attention' : presentation.label}</StatusBadge>
       </div>
       <div className="lite-release-update-meta">
-        <span>Source: {data.repository_match ? 'Pocket Lab Lite verified' : 'Not verified'}</span>
-        <span>
-          Installed files: {data.installed_artifact_verified
-            ? 'Verified'
-            : data.install_mode === 'source' ? 'Source install' : 'Not verified yet'}
-        </span>
-        <span>{checked ? `Last checked ${new Date(checked).toLocaleString()}` : 'Not checked yet'}</span>
+        <div><small>Installed files:</small><strong>{installedTag}</strong></div>
+        <div><small>Available</small><strong>{availableTag}</strong></div>
+        <div><small>Verification</small><strong>{verificationLabel}</strong></div>
+        <div><small>Last checked</small><strong>{checked ? new Date(checked).toLocaleString() : 'Not checked yet'}</strong></div>
       </div>
+      {progressVisible ? (
+        <div className="lite-release-update-progress" role="status" aria-live="polite">
+          <div className="lite-release-update-progress-topline"><strong>{presentation.label}</strong><span>Step {progressIndex + 1} of {RELEASE_PHASES.length}</span></div>
+          <ol>
+            {RELEASE_PHASES.map(([key, label], index) => (
+              <li key={key} className={index < progressIndex ? 'is-done' : index === progressIndex ? 'is-active' : ''}>
+                <span aria-hidden="true">{index < progressIndex ? '✓' : index + 1}</span>
+                <small>{label}</small>
+              </li>
+            ))}
+          </ol>
+        </div>
+      ) : null}
       <div className="lite-release-update-actions">
         <LiteButton tone="secondary" onClick={runCheck} disabled={writeBlocked || checkMutation.isPending}>
-          <RefreshCw className={`h-4 w-4 ${busy ? 'animate-spin' : ''}`} />
-          <span>{busy && !applyMutation.isPending ? presentation.label : 'Check now'}</span>
+          <RefreshCw className={`h-4 w-4 ${checkMutation.isPending ? 'animate-spin' : ''}`} />
+          <span>{checkMutation.isPending ? 'Checking…' : 'Check now'}</span>
         </LiteButton>
         {data.update_available ? (
           <LiteButton onClick={runApply} disabled={!applyAllowed || applyMutation.isPending}>
             <Download className="h-4 w-4" />
-            <span>{applyMutation.isPending || active ? presentation.label : 'Install Update'}</span>
+            <span>{applyMutation.isPending ? 'Installing…' : active ? presentation.label : 'Install update'}</span>
           </LiteButton>
         ) : null}
       </div>
+      <LiteTechnicalFacts
+        title="Technical details"
+        description="These release facts are read from the prepared backend status and never trigger an update by themselves."
+        facts={[
+          { id: 'source', label: 'Source', value: data.repository_match ? 'Pocket Lab Lite verified' : 'Not verified', tone: data.repository_match ? 'healthy' : 'failed' },
+          { id: 'manifest', label: 'Manifest', value: data.manifest_verified ? 'Verified' : 'Not verified', tone: data.manifest_verified ? 'healthy' : 'review' },
+          { id: 'operation', label: 'Operation', value: data.last_terminal_status || data.phase || 'Not started' },
+          { id: 'failure', label: 'Failure record', value: data.last_failure_code || 'None' },
+        ]}
+      />
       {releaseSavedStateOnly ? <p className="lite-release-update-note">Saved status only. Reconnect before installing an update.</p> : null}
     </GlassCard>
   );
