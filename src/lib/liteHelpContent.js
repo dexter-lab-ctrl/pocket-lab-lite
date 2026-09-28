@@ -4,7 +4,7 @@ const HELP = {
     simple: 'This area tells you who Pocket Lab believes you are, how you signed in, and what level of access the server currently gives you.',
     why: 'Identity is checked before protected changes. The browser cannot grant itself a role or stronger access.',
     next: 'Review anything marked Needs attention, then use Manage access for passkeys, sessions and recovery.',
-    technical: 'The values come from the signed-in server session plus the server-resolved Enterprise membership when Enterprise Mode is enabled.',
+    technical: 'The values come from your signed-in Pocket Lab session and its confirmed Enterprise membership when Enterprise Mode is enabled.',
   },
   'identity.passkeys': {
     title: 'Passkeys',
@@ -34,7 +34,7 @@ const HELP = {
   'identity.roles': {
     title: 'Roles & access',
     simple: 'Roles describe the kind of work a person may perform. Safety Rules can add confirmation, step-up or independent review to protected actions.',
-    why: 'Both Identity and Rules use the same server-owned capability projection, so their explanations stay synchronized.',
+    why: 'Identity and Rules use the same confirmed Pocket Lab authority model, so their explanations stay synchronized.',
     next: 'Use the role matrix to understand effective authority before changing a person’s role.',
   },
   'identity.mode': {
@@ -58,9 +58,9 @@ const HELP = {
   'rules.policies': {
     title: 'Rules policies',
     simple: 'A Rules revision is an immutable, validated version of the typed governance settings.',
-    why: 'Editing creates a candidate only. It does not change the running policy until an Owner confirms activation and the supervisor proves the new runtime revision.',
+    why: 'Editing creates a candidate only. It does not change the running policy until an Owner confirms activation and Pocket Lab proves the new revision is healthy.',
     next: 'Draft, validate, compare, then activate. Restore known-good Rules if the active revision must be recovered.',
-    technical: 'The browser never edits free-form Rego and never changes OPA pointers. FastAPI records lifecycle intent; the supervisor owns activation and proof.',
+    technical: 'The browser only submits typed settings. Pocket Lab validates the candidate, activates it after confirmation, and records proof of the resulting protection state.',
   },
   'rules.simulation': {
     title: 'Test a change',
@@ -72,7 +72,7 @@ const HELP = {
     title: 'Decisions',
     simple: 'Each protected action produces a bounded Rules decision explaining whether it was allowed, blocked or required another step.',
     why: 'Decision history helps explain what happened without exposing raw credentials, tokens or complete policy input.',
-    next: 'Open Details when you need the exact reason code, revision and constraints.',
+    next: 'Open Details when you need the support reference, revision and constraints.',
   },
   'rules.requests': {
     title: 'Review requests',

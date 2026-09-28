@@ -13,7 +13,7 @@ const BACKEND_LANGUAGE_REPLACEMENTS = Object.freeze([
   [/\bsupervisor(?:s)?\b/gi, 'recovery service'],
   [/\bprojection(?:s)?\b/gi, 'status information'],
   [/\bsnapshot(?:s)?\b/gi, 'saved information'],
-  [/\bpolling\b/gi, 'refreshing'],
+  [/\bpolling\b/gi, 'Refreshing'],
   [/\bpayload(?:s)?\b/gi, 'request details'],
   [/\bconsumer(?:s)?\b/gi, 'connection service'],
   [/\bdurable\b/gi, 'reliable'],
@@ -56,6 +56,9 @@ export function liteFreshnessPresentation({
   backendReachable = true,
 } = {}) {
   const when = String(lastUpdatedLabel || '').trim();
+  const withTimeLabel = (prefix) => /^(last checked|last updated|updated|fresh|showing)\b/i.test(when)
+    ? when
+    : `${prefix} ${when}`;
   if (refreshing) {
     return { state: 'refreshing', label: 'Refreshing…', detail: 'Keeping the current view visible while Pocket Lab checks for updates.' };
   }
@@ -69,13 +72,13 @@ export function liteFreshnessPresentation({
   if (stale) {
     return {
       state: 'stale',
-      label: when ? `Last updated ${when}` : 'Information may be out of date',
+      label: when ? withTimeLabel('Last updated') : 'Information may be out of date',
       detail: 'Pocket Lab will refresh this when a current reading is available.',
     };
   }
   return {
     state: 'fresh',
-    label: when ? `Updated ${when}` : 'Up to date',
+    label: when ? withTimeLabel('Updated') : 'Up to date',
     detail: 'Current Pocket Lab information.',
   };
 }

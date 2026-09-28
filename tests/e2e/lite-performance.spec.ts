@@ -666,7 +666,8 @@ test('[interaction] Home refresh feedback stays inside the render budget', async
     interactionId('refresh-feedback', 'home'),
     async () => {
       await refresh.click();
-      await expect(page.locator('.lite-refresh-status-popover')).toBeVisible();
+      await expect(refresh.locator('.lite-refresh-progress-ring')).toBeVisible();
+      await expect(page.locator('.lite-refresh-status-popover')).toHaveCount(0);
     },
     { settleMs: 420, mode: 'mocked' },
   );

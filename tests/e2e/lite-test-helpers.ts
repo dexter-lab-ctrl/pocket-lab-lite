@@ -2,11 +2,11 @@ import type { Page } from '@playwright/test';
 
 export const LITE_TABS = [
   ['Home', 'home'],
-  ['App Catalog', 'catalog'],
+  ['Apps', 'catalog'],
   ['Devices', 'devices'],
-  ['Security', 'security'],
+  ['Safety', 'security'],
   ['Recovery', 'recovery'],
-  ['Identity & Access', 'identity'],
+  ['Access', 'identity'],
   ['Rules', 'rules'],
 ] as const;
 

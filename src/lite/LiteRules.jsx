@@ -23,6 +23,7 @@ import LiteRulesEnterprise from './LiteRulesEnterprise.jsx';
 import LiteHelp, { LiteHelpHeading } from './LiteHelp.jsx';
 import { LiteSheet } from './LiteOverlay.jsx';
 import { LiteFreshness, LiteHistoryTimeline, LiteTechnicalFacts } from './LiteUx.jsx';
+import { useLiteUiStore } from '../stores/liteUiStore.js';
 
 const RULE_ACTIVATION_STEPS = [
   { id: 'pending', label: 'Accepted', detail: 'Owner confirmation was accepted. Pocket Lab is preparing the Safety Rules update.' },
@@ -62,7 +63,7 @@ function RulesActivationProgress({ activation, backendReachable }) {
     <GlassCard className="lite-rules-activation-card mb-5" data-rules-activation-state={state}>
       <div className="lite-rules-activation-head">
         <div>
-          <span>Supervisor proof</span>
+          <span>Protection proof</span>
           <h2>Updating Safety Rules</h2>
         </div>
         <StatusBadge status={succeeded ? 'healthy' : failed ? 'degraded' : 'review'}>{activationStateLabel(state)}</StatusBadge>
@@ -124,6 +125,7 @@ export default function RulesScreen() {
   const [sourceSyncNotice, setSourceSyncNotice] = React.useState(null);
   const [activationStatus, setActivationStatus] = React.useState(null);
   const [activationTracked, setActivationTracked] = React.useState(false);
+  const pushToast = useLiteUiStore((state) => state.pushToast);
   const enterpriseEnabled = Boolean(identity.data?.enterprise?.enabled);
   const role = identity.data?.enterprise?.current_membership?.role || identity.data?.person?.role || (identity.data?.person?.is_local_owner ? 'Owner' : '');
   const rulesReadOnly = savedStateOnly || !backendReachable;
@@ -207,10 +209,17 @@ export default function RulesScreen() {
         title: result?.accepted ? 'Safety Rules update accepted' : 'Safety Rules already current',
         message: result?.summary || 'Pocket Lab accepted the Rules reconciliation request.',
       });
+      pushToast({
+        id: `rules-source:${result?.operation?.operation_id || result?.updated_at || 'current'}`,
+        kind: result?.accepted ? 'success' : 'info',
+        title: result?.accepted ? 'Safety Rules update accepted' : 'Safety Rules already current',
+        message: result?.summary || 'Pocket Lab accepted the Rules reconciliation request.',
+      });
       await refresh({ force: true });
     } catch (syncError) {
       const reason = getLiteReasonPresentation(errorCode(syncError), syncError?.message || 'Pocket Lab could not start the Safety Rules update.');
       setSourceSyncNotice({ error: true, title: reason.title, message: reason.message });
+      pushToast({ id: 'rules-source:problem', kind: 'error', title: reason.title, message: reason.message });
     } finally {
       setSourceSyncBusy(false);
     }

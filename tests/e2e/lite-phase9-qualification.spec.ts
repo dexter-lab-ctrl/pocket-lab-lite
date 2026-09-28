@@ -226,9 +226,9 @@ test.describe('Pocket Lab Lite Phase 9 native/PWA qualification', () => {
     const sequence = [
       ['Home', 'home'],
       ['Devices', 'devices'],
-      ['Security', 'security'],
+      ['Safety', 'security'],
       ['Recovery', 'recovery'],
-      ['Identity & Access', 'identity'],
+      ['Access', 'identity'],
       ['Rules', 'rules'],
       ['Home', 'home'],
     ] as const;
@@ -278,7 +278,7 @@ test.describe('Pocket Lab Lite Phase 9 native/PWA qualification', () => {
     await expect(dialog).toBeHidden();
 
     await openTab(page, 'Rules', 'rules');
-    await openTab(page, 'Identity & Access', 'identity');
+    await openTab(page, 'Access', 'identity');
 
     await expect(
       page.locator('[role="dialog"]:visible'),

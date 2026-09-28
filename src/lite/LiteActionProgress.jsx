@@ -280,7 +280,7 @@ function runMetaLabel({ state, actionId, lastRanAt, executionOwner, hasEvidence 
   if (state === 'running' || state === 'waiting') return 'Working now';
   const lastRun = formatActionRunTime(lastRanAt);
   if (lastRun) return `Last run: ${lastRun}`;
-  if (state === 'idle' && executionOwner === 'browser_navigation') return 'No backend run needed';
+  if (state === 'idle' && executionOwner === 'browser_navigation') return 'No Pocket Lab action needed';
   if (state === 'idle') return 'Not run yet';
   if (state === 'saved_state') return 'Reconnect to continue';
   if (hasEvidence) {

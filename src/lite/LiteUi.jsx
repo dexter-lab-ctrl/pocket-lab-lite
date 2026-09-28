@@ -9,20 +9,6 @@ import { friendlyLiteText } from '../lib/liteUxPresentation.js';
 
 export { GlassCard, StatusBadge, StateSurface };
 
-function refreshStatusCopy(cacheStatus, error, refreshing = false, refreshFeedback = null) {
-  const stale = Boolean(cacheStatus?.stale || error || ['saved', 'stale', 'expired', 'unreachable', 'failed'].includes(refreshFeedback?.result));
-  return {
-    stale,
-    title: refreshFeedback?.title || cacheStatus?.title || (refreshing ? 'Refreshing…' : stale ? 'Showing saved information' : 'Up to date'),
-    summary: refreshFeedback?.summary || cacheStatus?.summary || error || (refreshing
-      ? 'Pocket Lab is checking for updates.'
-      : stale
-        ? 'Pocket Lab is not reachable. Saved information remains available.'
-        : 'Pocket Lab is showing the latest confirmed information.'),
-    detail: refreshFeedback?.detail || cacheStatus?.detail || '',
-  };
-}
-
 function refreshResultFromMeta(cacheStatus, error) {
   if (error) return 'unreachable';
   if (cacheStatus?.expired) return 'expired';
@@ -44,27 +30,15 @@ export function LiteRefreshButton({
   className = '',
   scope = 'global',
 }) {
-  const [open, setOpen] = React.useState(false);
-  const closeTimerRef = React.useRef(null);
   const beginRefresh = useLiteUiStore((state) => state.beginRefresh);
   const finishRefresh = useLiteUiStore((state) => state.finishRefresh);
   const refreshFeedback = useLiteRefreshFeedback(scope);
-  const copy = refreshStatusCopy(cacheStatus, error, refreshing, refreshFeedback);
-
-  React.useEffect(() => () => {
-    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
-  }, []);
-
-  function showStatus() {
-    setOpen(true);
-    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
-    closeTimerRef.current = window.setTimeout(() => setOpen(false), 4200);
-  }
+  const stale = Boolean(cacheStatus?.stale || error || ['saved', 'stale', 'expired', 'unreachable', 'failed'].includes(refreshFeedback?.result));
+  const isRefreshing = Boolean(refreshing || refreshFeedback?.result === 'refreshing');
 
   async function handleClick(event) {
     event?.stopPropagation?.();
     beginRefresh(scope);
-    showStatus();
     try {
       const maybeResult = refresh?.({ force: true });
       if (maybeResult && typeof maybeResult.then === 'function') {
@@ -74,27 +48,24 @@ export function LiteRefreshButton({
     } catch (_error) {
       finishRefresh(scope, 'failed');
       // The owning screen already renders the safe error state.
-    } finally {
-      showStatus();
     }
   }
 
   return (
-    <div className={`lite-refresh-control ${copy.stale ? 'is-stale' : 'is-live'} ${open ? 'is-open' : ''} ${className}`.trim()} data-lite-perf-primitive="refresh-control">
-      <LiteButton onClick={handleClick} tone={tone}>
-        <RefreshCw className={`h-4 w-4 lite-refresh-icon ${refreshing ? 'is-refreshing' : ''}`} />
-        {refreshing ? 'Refreshing…' : label}
+    <div className={`lite-refresh-control ${stale ? 'is-stale' : 'is-live'} ${className}`.trim()} data-lite-perf-primitive="refresh-control">
+      <LiteButton
+        onClick={handleClick}
+        tone={tone}
+        disabled={isRefreshing}
+        ariaLabel={isRefreshing ? 'Refreshing…' : label}
+        aria-busy={isRefreshing}
+        aria-live="polite"
+        className="lite-refresh-button"
+        data-lite-refresh-state={isRefreshing ? 'refreshing' : 'idle'}
+      >
+        {isRefreshing ? <span className="lite-refresh-progress-ring" aria-hidden="true" /> : <RefreshCw className="h-4 w-4 lite-refresh-icon" aria-hidden="true" />}
+        <span className="lite-refresh-label">{isRefreshing ? 'Refreshing…' : label}</span>
       </LiteButton>
-      {open ? (
-        <div className="lite-refresh-status-popover" role="status" aria-live="polite">
-          <span className="lite-refresh-status-dot" aria-hidden="true" />
-          <div>
-            <strong>{copy.title}</strong>
-            <p>{copy.summary}</p>
-            {copy.detail ? <small>{copy.detail}</small> : null}
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -900,8 +871,8 @@ export function operationalStoryPresentation(story = {}) {
   const attention = friendlyLiteText(story?.attention, '');
   const freshness = story?.freshness && typeof story.freshness === 'object'
     ? {
-        label: String(story.freshness.label || '').trim(),
-        detail: String(story.freshness.detail || '').trim(),
+        label: friendlyLiteText(story.freshness.label, ''),
+        detail: friendlyLiteText(story.freshness.detail, ''),
         state: String(story.freshness.state || '').trim().toLowerCase(),
       }
     : null;
@@ -982,10 +953,10 @@ export function LiteOutcomeNotice({ outcome, className = '' }) {
     : 'unknown';
   return (
     <section className={`lite-outcome-notice is-${tone} ${className}`.trim()} aria-live="polite">
-      <strong>{outcome.headline || 'Outcome not reported'}</strong>
-      {outcome.summary ? <p>{outcome.summary}</p> : null}
-      {outcome.consequence ? <p>{outcome.consequence}</p> : null}
-      {outcome.nextAction ? <small>{outcome.nextAction}</small> : null}
+      <strong>{friendlyLiteText(outcome.headline, 'Outcome not reported')}</strong>
+      {outcome.summary ? <p>{friendlyLiteText(outcome.summary)}</p> : null}
+      {outcome.consequence ? <p>{friendlyLiteText(outcome.consequence)}</p> : null}
+      {outcome.nextAction ? <small>{friendlyLiteText(outcome.nextAction)}</small> : null}
     </section>
   );
 }

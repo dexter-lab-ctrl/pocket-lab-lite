@@ -63,8 +63,8 @@ export default function RecoveryBackupLocation({
       </div>
 
       {expanded ? (
-        <div className="lite-recovery-location-picker" role="group" aria-label="Backend-discovered backup locations">
-          <p className="lite-recovery-location-picker-note">Choose a backend-discovered writable folder. Raw browser paths and Android media folders are not accepted.</p>
+        <div className="lite-recovery-location-picker" role="group" aria-label="Available backup locations">
+          <p className="lite-recovery-location-picker-note">Choose a protected writable folder. Raw browser paths and Android media folders are not accepted.</p>
           <div className="lite-recovery-location-choice-list">
             {choices.map((location) => {
               const selectedChoice = location.location_id === selected?.location_id;
@@ -78,7 +78,7 @@ export default function RecoveryBackupLocation({
                     aria-pressed={selectedChoice}
                   >
                     {selectedChoice ? <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> : <HardDrive className="h-4 w-4" aria-hidden="true" />}
-                    <span><strong>{location.display_name}</strong><small>{location.repository_present ? 'Encrypted repository ready' : location.reason_code === 'will_create' ? 'Will be created when selected' : 'Backend-managed location'}</small></span>
+                    <span><strong>{location.display_name}</strong><small>{location.repository_present ? 'Encrypted repository ready' : location.reason_code === 'will_create' ? 'Will be created when selected' : 'Protected Pocket Lab location'}</small></span>
                   </button>
                   <StatusBadge status={statusTone(location)}>{statusLabel(location)}</StatusBadge>
                   {!location.is_default && onForget ? <LiteButton tone="secondary" onClick={() => onForget(location.location_id)} disabled={!canChange || selectedChoice}>Forget</LiteButton> : null}
@@ -101,7 +101,7 @@ export default function RecoveryBackupLocation({
             </div>
           ) : null}
 
-          <p className="lite-recovery-location-picker-footnote">The Android system folder picker is not available in this PWA. Location selection remains backend-owned and auditable.</p>
+          <p className="lite-recovery-location-picker-footnote">The Android system folder picker is not available in this PWA. Location selection remains protected and auditable.</p>
         </div>
       ) : null}
     </section>

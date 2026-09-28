@@ -35,9 +35,10 @@ test('primary navigation uses the compact product vocabulary', async ({ page }) 
   await page.goto('/?screen=home');
   await waitForLiteScreenToSettle(page, 'home');
 
-  const nav = page.getByRole('navigation', { name: 'Pocket Lab sections' });
+  const dock = page.getByRole('navigation', { name: 'Pocket Lab sections' });
+  const sideRail = page.getByRole('navigation', { name: 'Pocket Lab Lite primary sections' });
   for (const label of ['Home', 'Apps', 'Devices', 'Safety', 'Access', 'Rules', 'Recovery']) {
-    await expect(nav.getByText(label, { exact: true })).toBeVisible();
+    await expect(sideRail.getByRole('button', { name: label, exact: true }).or(dock.getByRole('button', { name: label, exact: true }))).toBeVisible();
   }
 });
 
@@ -57,4 +58,46 @@ test('saved/offline presentation stays usable and read-only', async ({ page }) =
   await page.goto('/?screen=home');
   await waitForLiteScreenToSettle(page, 'home');
   await expect(page.getByText('Showing saved information', { exact: false }).first()).toBeVisible();
+});
+
+test('Refresh acknowledges immediately inside the control without moving the page', async ({ page }) => {
+  await installScenario(page, 'healthy');
+  await page.addInitScript(() => {
+    const originalFetch = window.fetch.bind(window);
+    (window as typeof window & { __liteHoldRefresh?: boolean; __releaseLiteRefresh?: () => void }).__liteHoldRefresh = false;
+    (window as typeof window & { __liteHoldRefresh?: boolean; __releaseLiteRefresh?: () => void }).__releaseLiteRefresh = undefined;
+    window.fetch = async (input, init) => {
+      const url = typeof input === 'string' ? input : input instanceof Request ? input.url : input.url;
+      const state = window as typeof window & { __liteHoldRefresh?: boolean; __releaseLiteRefresh?: () => void };
+      if (state.__liteHoldRefresh && url.includes('/api/lite/status')) {
+        await new Promise<void>((resolve) => {
+          state.__releaseLiteRefresh = resolve;
+        });
+      }
+      return originalFetch(input, init);
+    };
+  });
+  await page.goto('/?screen=home');
+  await waitForLiteScreenToSettle(page, 'home');
+
+  const screen = page.locator('[data-lite-screen-id="home"]');
+  const refresh = screen.locator('button.lite-refresh-button');
+  const before = await screen.boundingBox();
+  await page.evaluate(() => {
+    (window as typeof window & { __liteHoldRefresh?: boolean }).__liteHoldRefresh = true;
+  });
+  await refresh.click();
+
+  await expect(refresh).toHaveAttribute('aria-busy', 'true');
+  await expect(refresh).toHaveAccessibleName('Refreshing…');
+  await expect(refresh.locator('.lite-refresh-progress-ring')).toBeVisible();
+  await expect(screen.locator('.lite-refresh-status-popover')).toHaveCount(0);
+  await expect(screen.locator('.lite-ux-freshness')).toBeHidden();
+  expect(await screen.boundingBox()).toEqual(before);
+  await expect(screen.getByRole('heading', { name: 'Home', exact: true })).toBeVisible();
+
+  await page.evaluate(() => {
+    (window as typeof window & { __releaseLiteRefresh?: () => void }).__releaseLiteRefresh?.();
+  });
+  await expect(refresh).toHaveAttribute('aria-busy', 'false');
 });

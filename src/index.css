@@ -10468,6 +10468,15 @@ textarea {
   animation: liteCatalogNoticeIn 180ms ease-out;
 }
 
+.theme-pocket-lite-daylight .lite-catalog-action-notice--global {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right, 0px));
+  bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+  z-index: 12001;
+  width: min(30rem, calc(100vw - 2rem));
+  margin: 0;
+}
+
 .theme-pocket-lite-daylight .lite-catalog-action-notice-main {
   display: flex;
   align-items: flex-start;
@@ -10584,6 +10593,13 @@ textarea {
     width: auto;
     margin: 0;
     border-radius: 1.2rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-catalog-action-notice--global {
+    right: 0.75rem;
+    bottom: calc(5.4rem + env(safe-area-inset-bottom, 0px));
+    left: 0.75rem;
+    width: auto;
   }
 
   .theme-pocket-lite-daylight .lite-catalog-action-notice-actions {
@@ -14485,61 +14501,32 @@ textarea {
   justify-content: center;
 }
 
+.theme-pocket-lite-daylight .lite-refresh-button {
+  min-width: 7.75rem;
+  min-height: 2.75rem;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.theme-pocket-lite-daylight .lite-refresh-label {
+  display: inline-block;
+  min-width: 4.15rem;
+  text-align: center;
+}
+
 .theme-pocket-lite-daylight .lite-refresh-icon {
   flex: 0 0 auto;
   transition: transform 160ms ease, opacity 160ms ease;
 }
 
-.theme-pocket-lite-daylight .lite-refresh-icon.is-refreshing {
-  animation: liteRefreshSpin 760ms linear infinite;
-}
-
-.theme-pocket-lite-daylight .lite-refresh-status-popover {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 0.55rem);
-  z-index: 40;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 0.65rem;
-  width: min(20rem, calc(100vw - 2rem));
-  padding: 0.85rem 0.95rem;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  border-radius: 1.1rem;
-  background: rgba(248, 250, 252, 0.97);
-  color: #0f172a;
-  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.18);
-  backdrop-filter: blur(18px);
-  animation: liteRefreshStatusIn 150ms ease-out both;
-}
-
-.theme-pocket-lite-daylight .lite-refresh-status-popover strong {
-  display: block;
-  font-size: 0.88rem;
-  font-weight: 900;
-}
-
-.theme-pocket-lite-daylight .lite-refresh-status-popover p,
-.theme-pocket-lite-daylight .lite-refresh-status-popover small {
-  display: block;
-  margin: 0.18rem 0 0;
-  color: #64748b;
-  font-size: 0.8rem;
-  line-height: 1.45;
-}
-
-.theme-pocket-lite-daylight .lite-refresh-status-dot {
-  width: 0.62rem;
-  height: 0.62rem;
-  margin-top: 0.26rem;
+.theme-pocket-lite-daylight .lite-refresh-progress-ring {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  border: 0.16rem solid currentColor;
+  border-right-color: transparent;
   border-radius: 999px;
-  background: #10b981;
-  box-shadow: 0 0 0 0.28rem rgba(16, 185, 129, 0.13);
-}
-
-.theme-pocket-lite-daylight .lite-refresh-control.is-stale .lite-refresh-status-dot {
-  background: #f59e0b;
-  box-shadow: 0 0 0 0.28rem rgba(245, 158, 11, 0.16);
+  animation: liteRefreshSpin 760ms linear infinite;
 }
 
 .theme-pocket-lite-daylight .lite-catalog-action-tile-icon .lite-catalog-action-lucide {
@@ -14564,27 +14551,14 @@ textarea {
   to { transform: rotate(360deg); }
 }
 
-@keyframes liteRefreshStatusIn {
-  from { opacity: 0; transform: translateY(-3px) scale(0.985); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
 @keyframes liteCatalogActionIconPop {
   0%, 100% { transform: translateY(0) scale(1); }
   45% { transform: translateY(-1px) scale(1.055); }
 }
 
-@media (max-width: 640px) {
-  .theme-pocket-lite-daylight .lite-refresh-status-popover {
-    right: 0;
-    width: min(20rem, calc(100vw - 1.25rem));
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .theme-pocket-lite-daylight .lite-refresh-icon,
-  .theme-pocket-lite-daylight .lite-refresh-icon.is-refreshing,
-  .theme-pocket-lite-daylight .lite-refresh-status-popover,
+  .theme-pocket-lite-daylight .lite-refresh-progress-ring,
   .theme-pocket-lite-daylight .lite-catalog-action-tile-icon .lite-catalog-action-lucide,
   .theme-pocket-lite-daylight .lite-app-action-row.is-running .lite-catalog-action-tile-icon .lite-catalog-action-lucide,
   .theme-pocket-lite-daylight .lite-app-action-row.has-progress .lite-catalog-action-tile-icon .lite-catalog-action-lucide {
@@ -18111,8 +18085,7 @@ textarea {
 .theme-pocket-lite-daylight main .lite-page-header[class*="rounded-[2rem]"][class*="border"],
 .theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-toolbar--simple,
 .theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card,
-.theme-pocket-lite-daylight .lite-security-native-polish .lite-security-safety-center-card,
-.theme-pocket-lite-daylight .lite-refresh-status-popover {
+.theme-pocket-lite-daylight .lite-security-native-polish .lite-security-safety-center-card {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
@@ -24786,6 +24759,23 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
 .lite-ux-freshness.is-saved,
 .lite-ux-freshness.is-stale { border-color:rgba(245,158,11,.28); background:rgba(120,53,15,.12); }
 .lite-ux-freshness.is-refreshing { border-color:rgba(34,211,238,.24); }
+/* The in-control refresh ring owns live progress. Preserve this slot's
+   dimensions to prevent page movement, but expose no duplicate status row. */
+.lite-ux-freshness.is-refreshing-placeholder { visibility:hidden; }
+.theme-pocket-lite-daylight .lite-ux-freshness {
+  border-color: #cbd5e1;
+  background: linear-gradient(135deg, rgba(248,250,252,.98), rgba(255,255,255,.94));
+  color: #475569;
+  box-shadow: 0 8px 22px rgba(15,23,42,.05);
+}
+.theme-pocket-lite-daylight .lite-ux-freshness strong { color: #334155; }
+.theme-pocket-lite-daylight .lite-ux-freshness small { color: #64748b; }
+.theme-pocket-lite-daylight .lite-ux-freshness.is-saved,
+.theme-pocket-lite-daylight .lite-ux-freshness.is-stale {
+  border-color: #f2c66d;
+  background: rgba(255,251,235,.98);
+}
+.theme-pocket-lite-daylight .lite-ux-freshness.is-refreshing { border-color: #7dd3fc; }
 
 .lite-ux-section-header {
   display:flex;
@@ -24838,6 +24828,22 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
 .lite-ux-technical-facts dt { color:rgb(148 163 184); font-size:.75rem; }
 .lite-ux-technical-facts dd { margin:0; color:rgb(226 232 240); font-size:.78rem; overflow-wrap:anywhere; }
 .lite-ux-technical-facts dd small { display:block; margin-top:.16rem; color:rgb(148 163 184); }
+
+.theme-pocket-lite-daylight .lite-ux-technical-facts {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  color: #0f172a;
+}
+.theme-pocket-lite-daylight .lite-ux-technical-facts > summary {
+  color: #334155;
+}
+.theme-pocket-lite-daylight .lite-ux-technical-facts > summary::after { color: #0369a1; }
+.theme-pocket-lite-daylight .lite-ux-technical-facts-body { border-top-color: #e2e8f0; }
+.theme-pocket-lite-daylight .lite-ux-technical-facts-body > p,
+.theme-pocket-lite-daylight .lite-ux-technical-facts dt,
+.theme-pocket-lite-daylight .lite-ux-technical-facts dd small { color: #475569; }
+.theme-pocket-lite-daylight .lite-ux-technical-facts dl > div { background: #ffffff; }
+.theme-pocket-lite-daylight .lite-ux-technical-facts dd { color: #0f172a; }
 
 .lite-ux-history-timeline { list-style:none; margin:.75rem 0 0; padding:0; display:grid; gap:.2rem; }
 .lite-ux-history-timeline li { position:relative; display:grid; grid-template-columns:1rem 1fr; gap:.7rem; padding:.72rem 0; }
@@ -24958,6 +24964,22 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
   background:repeating-linear-gradient(90deg, rgb(248 113 113) 0 5px, transparent 5px 9px);
 }
 .lite-device-relationship-empty { color:rgb(148 163 184); font-size:.78rem; }
+.theme-pocket-lite-daylight .lite-device-relationship-map {
+  border-color: #cbd5e1;
+  background: linear-gradient(135deg, #f8fafc, #ffffff);
+  box-shadow: 0 10px 26px rgba(15,23,42,.05);
+}
+.theme-pocket-lite-daylight .lite-device-relationship-head strong { color: #0f172a; }
+.theme-pocket-lite-daylight .lite-device-relationship-head p,
+.theme-pocket-lite-daylight .lite-device-relationship-empty { color: #475569; }
+.theme-pocket-lite-daylight .lite-device-relationship-node {
+  border-color: #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 6px 16px rgba(15,23,42,.05);
+}
+.theme-pocket-lite-daylight .lite-device-relationship-node small { color: #64748b; }
+.theme-pocket-lite-daylight .lite-device-relationship-link::before { background: #64748b; }
 @keyframes lite-device-relationship-repair { to { background-position:-200% 0; } }
 @media (max-width: 640px) {
   .lite-device-relationship-flow { flex-direction:column; align-items:stretch; overflow:visible; }

@@ -10,9 +10,16 @@ import {
 } from '../lib/liteUxPresentation.js';
 
 export function LiteFreshness({ saved = false, stale = false, refreshing = false, lastUpdatedLabel = '', backendReachable = true, className = '' }) {
-  const presentation = liteFreshnessPresentation({ saved, stale, refreshing, lastUpdatedLabel, backendReachable });
+  // The live refresh message belongs to the control. Use the settled copy for
+  // the hidden placeholder so its reserved height cannot change mid-refresh.
+  const presentation = liteFreshnessPresentation({ saved, stale, refreshing: false, lastUpdatedLabel, backendReachable });
   return (
-    <div className={`lite-ux-freshness is-${presentation.state} ${className}`.trim()} role="status" aria-live="polite">
+    <div
+      className={`lite-ux-freshness is-${presentation.state} ${refreshing ? 'is-refreshing-placeholder' : ''} ${className}`.trim()}
+      role={refreshing ? undefined : 'status'}
+      aria-live={refreshing ? undefined : 'polite'}
+      aria-hidden={refreshing ? 'true' : undefined}
+    >
       <Clock3 className="h-4 w-4" aria-hidden="true" />
       <span><strong>{presentation.label}</strong>{presentation.detail ? <small>{presentation.detail}</small> : null}</span>
     </div>

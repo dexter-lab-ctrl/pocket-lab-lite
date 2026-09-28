@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import {
   LiteActionRow,
   LiteOperationalStory,
   LiteOutcomeNotice,
+  LiteRefreshButton,
   LiteTechnicalDetails,
   operationalStoryPresentation,
 } from './LiteUi.jsx';
@@ -44,5 +45,33 @@ describe('Lite shared operational storytelling primitives', () => {
     expect(screen.getByText('Backup')).toBeTruthy();
     expect(screen.getByText('Restore blocked')).toBeTruthy();
     expect(screen.getByText('Technical details').closest('details')?.open).toBe(false);
+  });
+
+  it('keeps refresh acknowledgement inside the control without a layout-shifting status block', async () => {
+    let resolveRefresh;
+    const pendingRefresh = new Promise((resolve) => {
+      resolveRefresh = resolve;
+    });
+    const refresh = vi.fn(() => pendingRefresh);
+    render(<LiteRefreshButton scope="unit-refresh" refresh={refresh} />);
+
+    const button = screen.getByRole('button', { name: 'Refresh' });
+    const initialWidth = button.getBoundingClientRect().width;
+    fireEvent.click(button);
+
+    expect(refresh).toHaveBeenCalledWith({ force: true });
+    expect(button.getAttribute('aria-busy')).toBe('true');
+    expect(button.getAttribute('aria-label')).toBe('Refreshing…');
+    expect(button.querySelector('.lite-refresh-progress-ring')).toBeTruthy();
+    expect(button.querySelector('.lite-refresh-status-popover')).toBeNull();
+    expect(button.getBoundingClientRect().width).toBe(initialWidth);
+
+    await act(async () => {
+      resolveRefresh();
+      await pendingRefresh;
+    });
+
+    expect(button.getAttribute('aria-busy')).toBe('false');
+    expect(button.querySelector('.lite-refresh-progress-ring')).toBeNull();
   });
 });

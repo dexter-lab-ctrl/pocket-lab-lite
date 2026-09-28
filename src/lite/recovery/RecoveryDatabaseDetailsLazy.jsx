@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatLiteTime } from '../../lib/liteApi.js';
+import { friendlyLiteText } from '../../lib/liteUxPresentation.js';
 import { LiteButton, StatusBadge } from '../LiteUi.jsx';
 
 const RESTORE_PHASE_LABELS = {
@@ -64,7 +65,7 @@ export default function RecoveryDatabaseDetailsLazy({
         <div className="lite-recovery-database-manage-heading">
           <div>
             <span>Overview</span>
-            <h3>{recoveryBlocked ? 'Recovery needs attention' : maintenance?.active || activeRestore ? maintenanceStatusLabel : databaseProtection.summary || 'Database protection is ready.'}</h3>
+            <h3>{recoveryBlocked ? 'Recovery needs attention' : maintenance?.active || activeRestore ? maintenanceStatusLabel : friendlyLiteText(databaseProtection.summary, 'Database protection is ready.')}</h3>
           </div>
           <StatusBadge status={recoveryBlocked ? 'danger' : maintenance?.active || activeRestore ? 'checking' : verified ? 'healthy' : 'review'}>
             {recoveryBlocked ? 'Blocked for safety' : maintenance?.active || activeRestore ? maintenanceStatusLabel : verified ? 'Backup verified' : 'Backup needed'}
@@ -105,26 +106,26 @@ export default function RecoveryDatabaseDetailsLazy({
       <section>
         <span>Verification</span>
         <h3>{verified ? 'Backup verified' : 'Verification required'}</h3>
-        <p>{latestBackup?.summary || 'A backup is marked ready only after integrity, schema, migration, and hash checks pass.'}</p>
+        <p>{friendlyLiteText(latestBackup?.summary, 'A backup is marked ready only after integrity and migration checks pass.')}</p>
       </section>
 
       <section>
         <span>Restore preview</span>
         <h3>{previewReady ? 'Preview ready' : 'Preview needed'}</h3>
-        <p>{latestPreview?.summary || 'Preview restore checks the selected backup without replacing the live database.'}</p>
+        <p>{friendlyLiteText(latestPreview?.summary, 'Preview restore checks the selected backup without replacing the live data.')}</p>
       </section>
 
       <section>
         <span>Restore</span>
         <h3>{restorePhase ? restorePhaseLabel(restorePhase) : lastRestore?.status === 'completed' ? 'Recovery completed' : 'Confirmation required'}</h3>
-        <p>{restoreState?.summary || 'Restore checkpoints current state, validates staging, promotes atomically, and rolls back automatically on failure.'}</p>
+        <p>{friendlyLiteText(restoreState?.summary, 'Restore checkpoints current state, validates the backup, and rolls back automatically on failure.')}</p>
         <strong>{rollbackAvailable ? 'Rollback available' : 'Rollback is created during restore'}</strong>
       </section>
 
       <section>
         <span>Maintenance</span>
         <h3>{recoveryBlocked ? 'Writers blocked for safety' : maintenance?.active || activeRestore ? maintenanceStatusLabel : 'Ready'}</h3>
-        <p>{restoreGuard?.summary || maintenance?.summary || 'Recovery actions remain paused while database maintenance is safely completed.'}</p>
+        <p>{friendlyLiteText(restoreGuard?.summary || maintenance?.summary, 'Recovery actions remain paused while protected data maintenance is safely completed.')}</p>
       </section>
 
       <section>

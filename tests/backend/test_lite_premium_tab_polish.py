@@ -65,8 +65,9 @@ def test_home_presentation_keeps_lite_language_and_a_real_next_action_contract()
     assert "Backups and recovery" in presentation
     assert "Actions stay protected" in presentation
     assert "overview.nextAction" in home
-    assert "Your workspace status and the next useful action." in home
-    assert "Where to look next" in home
+    assert "What is ready, what needs you, and the next useful action for your workspace." in home
+    assert "Review these areas next" in home
+    assert "Everything in one place" in home
 
 
 def test_home_and_primary_tabs_keep_bounded_native_motion_and_reduced_motion() -> None:

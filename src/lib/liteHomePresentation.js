@@ -296,7 +296,7 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
       screen: 'devices',
       label: 'Review device',
       title: `${deviceHealthAttention} device health ${deviceHealthAttention === 1 ? 'item needs' : 'items need'} attention`,
-      detail: 'Open Devices to review the backend-prepared health summary and safest next step.',
+      detail: 'Open Devices to review the latest health summary and safest next step.',
       tone: 'review',
     };
   } else if (devices === 0) {

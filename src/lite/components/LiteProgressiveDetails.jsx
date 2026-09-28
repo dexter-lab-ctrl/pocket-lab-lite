@@ -61,6 +61,7 @@ export default function LiteProgressiveDetails({
   children,
 }) {
   const savedSummary = safeSavedSummary(saved_for_troubleshooting);
+  const safeNextStep = friendlyLiteText(next_step, '');
   const historyProps = history && typeof history === 'object' ? history : {};
   const detailSections = useMemo(() => {
     const sections = [];
@@ -82,11 +83,11 @@ export default function LiteProgressiveDetails({
         <p>{savedSummary}</p>
       </section>,
     );
-    if (next_step) {
+    if (safeNextStep) {
       sections.push(
         <section key="next-step" className="lite-progressive-detail-section lite-app-action-detail-section is-next-step">
           <strong>Next step</strong>
-          <p>{next_step}</p>
+          <p>{safeNextStep}</p>
         </section>,
       );
     }
@@ -94,7 +95,7 @@ export default function LiteProgressiveDetails({
     return sections;
   }, [
     children,
-    next_step,
+    safeNextStep,
     savedSummary,
     what_changed,
     what_did_not_happen,

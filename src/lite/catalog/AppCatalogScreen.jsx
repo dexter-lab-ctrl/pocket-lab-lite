@@ -1118,8 +1118,8 @@ function AppCatalogResultNotice({ result, error, onDismiss }) {
       ? 'is-review'
       : 'is-success';
 
-  return (
-    <div className={`lite-catalog-action-notice ${toneClass}`} role={notice.tone === 'danger' ? 'alert' : 'status'} aria-live={notice.tone === 'danger' ? 'assertive' : 'polite'}>
+  const host = (
+    <div className={`lite-catalog-action-notice lite-catalog-action-notice--global ${toneClass}`} role={notice.tone === 'danger' ? 'alert' : 'status'} aria-live={notice.tone === 'danger' ? 'assertive' : 'polite'}>
       <div className="lite-catalog-action-notice-main">
         <span className="lite-catalog-action-notice-dot" aria-hidden="true" />
         <div>
@@ -1145,6 +1145,9 @@ function AppCatalogResultNotice({ result, error, onDismiss }) {
       ) : null}
     </div>
   );
+
+  if (typeof document === 'undefined') return null;
+  return createPortal(host, document.querySelector('.pocket-app-shell') || document.body);
 }
 
 const PhotoPrismActionTile = React.memo(function PhotoPrismActionTile({

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('./LiteReleaseUpdateCard.jsx', () => ({ default: () => null }));
@@ -35,7 +35,7 @@ describe('HomeScreen operational story', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Workspace details' }));
     expect(screen.getByRole('dialog', { name: 'Workspace details' })).toBeTruthy();
-    expect(screen.getByText('Device health')).toBeTruthy();
+    expect(within(screen.getByRole('dialog', { name: 'Workspace details' })).getAllByText('Device health')[0]).toBeTruthy();
 
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(screen.queryByRole('dialog', { name: 'Workspace details' })).toBeNull();

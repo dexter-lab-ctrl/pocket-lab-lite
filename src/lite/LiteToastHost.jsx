@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { CheckCircle2, Info, TriangleAlert, X, XCircle } from 'lucide-react';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 import { friendlyLiteText } from '../lib/liteUxPresentation.js';
@@ -32,12 +33,12 @@ export default function LiteToastHost() {
 
   if (!toasts.length) return null;
 
-  return (
+  const host = (
     <div className="lite-toast-host" role="status" aria-live="polite" aria-relevant="additions text" data-lite-perf-primitive="toast">
       {toasts.map((toast) => {
         const Icon = TOAST_ICONS[toast.kind] || Info;
         return (
-          <div key={toast.id} className={`lite-toast is-${toast.kind || 'info'}`}>
+          <div key={toast.id} className={`lite-toast is-${toast.kind || 'info'}`} role={toast.kind === 'error' ? 'alert' : 'status'} aria-atomic="true">
             <Icon className="h-4 w-4" aria-hidden="true" />
             <div className="lite-toast-copy">
               <strong>{friendlyLiteText(toast.title, 'Pocket Lab update')}</strong>
@@ -51,6 +52,8 @@ export default function LiteToastHost() {
       })}
     </div>
   );
+
+  return typeof document === 'undefined' ? null : createPortal(host, document.body);
 }
 
 export const LITE_TOAST_HOST_USES_ZUSTAND = true;

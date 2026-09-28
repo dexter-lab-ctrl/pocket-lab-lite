@@ -37,6 +37,7 @@ describe('Pocket Lab Lite UX maturity presentation contract', () => {
       label: 'Showing saved information · 12 minutes ago',
     });
     expect(liteFreshnessPresentation({ refreshing: true }).label).toBe('Refreshing…');
+    expect(liteFreshnessPresentation({ lastUpdatedLabel: 'Last checked just now' }).label).toBe('Last checked just now');
   });
 
   it('normalizes meaningful technical facts without implementation vocabulary', () => {

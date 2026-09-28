@@ -524,6 +524,15 @@ export default function DevicesScreen() {
     pendingRestartId.current = '';
   }, [pushToast, restartProgress]);
   useEffect(() => {
+    if (!actionError) return;
+    pushToast({
+      id: `devices-action:${actionError}`,
+      kind: 'error',
+      title: 'Device action needs attention',
+      message: actionError,
+    });
+  }, [actionError, pushToast]);
+  useEffect(() => {
     if (!removeCandidate) return undefined;
     const frame = window.requestAnimationFrame(() => {
       document.querySelector('.lite-device-remove-panel')?.focus?.({ preventScroll: true });
@@ -583,6 +592,7 @@ export default function DevicesScreen() {
     const didCopy = await copyTextToClipboard(copyValue);
     if (didCopy) {
       setCopied(true);
+      pushToast({ id: 'devices:invite-copied', kind: 'success', title: 'Invite copied', message: 'The safe device invite command is ready to share.' });
       window.setTimeout(() => setCopied(false), 1800);
     }
   }

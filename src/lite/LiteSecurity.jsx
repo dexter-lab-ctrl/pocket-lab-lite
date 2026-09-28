@@ -113,6 +113,7 @@ import {
   safeRestartSteps
 } from './LiteUi.jsx';
 import { LiteConsequenceSummary, LiteFreshness, LiteTechnicalFacts } from './LiteUx.jsx';
+import { friendlyLiteText } from '../lib/liteUxPresentation.js';
 
 const SECURITY_RENDER_REDUCTION_MILESTONE_1 = true;
 const SECURITY_PROGRESSIVE_DETAILS_MILESTONE_2 = true;
@@ -680,7 +681,7 @@ const DEFAULT_FULL_COVERAGE_SUMMARY = {
 
 function quickCoverageList(values, fallback = []) {
   const items = Array.isArray(values) && values.length ? values : fallback;
-  return items.map((value) => String(value || '').trim()).filter(Boolean).slice(0, 12);
+  return items.map((value) => friendlyLiteText(value, '').trim()).filter(Boolean).slice(0, 12);
 }
 
 function quickCoverageStatus(value, coverageSummary = {}) {
@@ -722,7 +723,7 @@ function SecurityTargetStatusRows({ targetStatuses = [] }) {
           const label = status === 'timed_out' ? 'Timed out' : status === 'missing' ? 'Missing' : status === 'partial' ? 'Partial' : status === 'checked' || status === 'completed' ? 'Checked' : status || 'Unknown';
           return (
             <div key={`${item?.target_id || item?.target_label}-${item?.tool || 'target'}`} className="lite-security-quick-coverage-row" role="listitem">
-              <span>{item?.target_label || item?.target_id || 'Security target'}</span>
+              <span>{friendlyLiteText(item?.target_label || item?.target_id || 'Security target')}</span>
               <span className={`lite-security-quick-coverage-pill lite-security-quick-coverage-${tone}`}>{label}</span>
             </div>
           );
@@ -930,7 +931,7 @@ function SecurityCoverageMatrixCard({ expanded, onToggle }) {
         <span className="lite-security-soft-badge">Coverage</span>
       </div>
       <h2>Coverage: 7 protected areas</h2>
-      <p>Dependencies, secrets, config, runtime, and evidence are checked across Pocket Lab Lite components where the backend can safely inspect them.</p>
+      <p>Dependencies, secrets, settings, runtime, and evidence are checked across Pocket Lab Lite areas that can be safely inspected.</p>
       <button type="button" className="lite-security-coverage-toggle" onClick={onToggle} aria-expanded={expanded}>
         {expanded ? 'Hide details' : 'Details'}
       </button>
@@ -1466,7 +1467,7 @@ function SecurityRemediationDrawer({ finding, context, onClose }) {
               <p>{remediation.risk}</p>
             </section>
           </div>
-          <p className="lite-security-remediation-note">This guidance does not run commands or change your device. Any future fix action must stay backend-owned and evidence-backed.</p>
+          <p className="lite-security-remediation-note">This guidance does not run commands or change your device. Any future fix action must stay protected and evidence-backed.</p>
         </div>
       ) : null}
     </LiteSheet>
@@ -1951,6 +1952,7 @@ export default function SecurityScreen() {
   const setActiveSecurityEvidenceRunId = useLiteUiStore((state) => state.setActiveSecurityEvidenceRunId);
   const setSecurityObservation = useLiteUiStore((state) => state.setSecurityObservation);
   const securityObservation = useLiteUiStore((state) => state.securityObservation);
+  const pushToast = useLiteUiStore((state) => state.pushToast);
   const activeSecurityProgressRunId = result?.run_id || result?.job_id || result?.command_id || result?.scan_progress?.run_id || securityObservation?.runId || '';
   const scanProfile = normalizeSecurityProfileId(selectedScanProfile || result?.scan_profile || 'quick');
   const queryClient = useQueryClient();
@@ -1965,6 +1967,15 @@ export default function SecurityScreen() {
     const policy = securityPollingPolicy(payload);
     return Boolean(busy) || policy.live || isLiteSecurityViewLive(payload) || hasLiveSecurityOperation(result);
   }, [busy, result, securityPollingPolicy]);
+  React.useEffect(() => {
+    if (!actionError) return;
+    pushToast({
+      id: `security-action:${actionError}`,
+      kind: 'error',
+      title: 'Safety check needs attention',
+      message: actionError,
+    });
+  }, [actionError, pushToast]);
   const shouldLoadSecurityDetails = Boolean(activeSecurityDetails) || (
     securityManageOpen
     && SECURITY_MANAGE_SECTIONS.some((section) => section.id === securityManageSection && section.id !== 'overview')

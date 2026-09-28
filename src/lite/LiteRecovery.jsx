@@ -392,6 +392,7 @@ export default function RecoveryScreen() {
     const copied = await copyTextToClipboard(value);
     if (copied) {
       setCopiedEvidence(label);
+      pushToast({ id: `recovery:evidence-copied:${label}`, kind: 'success', title: 'Evidence copied', message: `${label} is ready to paste.` });
       window.setTimeout(() => setCopiedEvidence(''), 1600);
     }
   }

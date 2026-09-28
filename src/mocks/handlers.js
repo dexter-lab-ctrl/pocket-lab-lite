@@ -594,25 +594,30 @@ export const handlers = [
     challenge_id: '',
     expires_at: '',
   })),
-  http.get('/api/lite/status', ({ request }) => HttpResponse.json({
-    overall: 'healthy',
-    checked_at: mockIso(),
-    device: { name: 'pocket-lab-lite', mode: 'lite', resource_profile: 'low-power' },
-    summary: { apps_available: 1, devices_known: 1, security_findings: 0, nats_connected: true, jetstream_enabled: true, live_sampler_running: true },
-    telemetry: { status: 'healthy', cpu_temp_c: 42, cpu_usage_percent: 12, free_space_mb: 256000, memory_usage_mb: 512 },
-    services: [
-      { name: 'Control API', status: 'healthy', summary: 'Pocket Lab Lite API is serving local control-plane requests' },
-      { name: 'Command Bus', status: 'healthy', summary: 'NATS / JetStream is ready for worker-owned operations' },
-      { name: 'Worker Execution', status: 'healthy', summary: 'Worker heartbeat sampler is active' },
-      { name: 'App Catalog', status: 'healthy', summary: 'PhotoPrism is available for the Server Host' },
-      { name: 'Identity & Access', status: 'healthy', summary: 'Vault is ready' },
-      { name: 'Device Fleet', status: 'healthy', summary: '1 device record known to Pocket Lab Lite' }
-    ],
-  }, {
-    headers: {
-      'X-PocketLab-Read-Nonce': request.headers.get('X-PocketLab-Read-Nonce') || '',
-    },
-  })),
+  http.get('/api/lite/status', ({ request }) => {
+    const savedScenario = scenario() === 'nats-down';
+    return HttpResponse.json({
+      overall: savedScenario ? 'degraded' : 'healthy',
+      checked_at: mockIso(),
+      device: { name: 'pocket-lab-lite', mode: 'lite', resource_profile: 'low-power' },
+      summary: { apps_available: 1, devices_known: 1, security_findings: 0, nats_connected: !savedScenario, jetstream_enabled: !savedScenario, live_sampler_running: !savedScenario },
+      telemetry: { status: 'healthy', cpu_temp_c: 42, cpu_usage_percent: 12, free_space_mb: 256000, memory_usage_mb: 512 },
+      read_degraded: savedScenario,
+      degraded_reason: savedScenario ? 'projection_too_old' : '',
+      services: [
+        { name: 'Control API', status: 'healthy', summary: 'Pocket Lab Lite API is serving local workspace requests' },
+        { name: 'Command Bus', status: 'healthy', summary: 'Pocket Lab connection is ready for protected operations' },
+        { name: 'Worker Execution', status: 'healthy', summary: 'Workspace service heartbeat is active' },
+        { name: 'App Catalog', status: 'healthy', summary: 'PhotoPrism is available for the Server Host' },
+        { name: 'Identity & Access', status: 'healthy', summary: 'Access protection is ready' },
+        { name: 'Device Fleet', status: 'healthy', summary: '1 device record known to Pocket Lab Lite' },
+      ],
+    }, {
+      headers: {
+        'X-PocketLab-Read-Nonce': request.headers.get('X-PocketLab-Read-Nonce') || '',
+      },
+    });
+  }),
   http.get('/api/lite/catalog', ({ request }) => {
     const ready = scenario() === 'catalog-ready';
     const installing = scenario() === 'catalog-installing';

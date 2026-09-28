@@ -8,6 +8,7 @@ import {
   LiteSectionHeader,
   LiteTechnicalFacts,
 } from './LiteUx.jsx';
+import { LiteRefreshButton } from './LiteUi.jsx';
 
 export default {
   title: 'Pocket Lab Lite/UX Maturity Contract',
@@ -105,6 +106,31 @@ export const EmptyStateWithNextStep = {
       action={{ label: 'Run Safety Check', onClick: () => {} }}
     />,
   ),
+};
+
+function RefreshInControlStory() {
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const refresh = () => {
+    setRefreshing(true);
+    return new Promise((resolve) => {
+      window.setTimeout(() => {
+        setRefreshing(false);
+        resolve();
+      }, 900);
+    });
+  };
+
+  return shell(
+    <>
+      <LiteSectionHeader eyebrow="Freshness" title="Refresh acknowledgement" description="The current view stays visible while the control provides immediate, accessible progress feedback." />
+      <LiteRefreshButton scope="storybook-refresh" refresh={refresh} refreshing={refreshing} />
+    </>,
+  );
+}
+
+export const RefreshInControl = {
+  render: () => <RefreshInControlStory />,
 };
 
 export const MobileContract = {
