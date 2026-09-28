@@ -287,6 +287,12 @@
           "depth": 2,
           "relation_type": "verified_by",
           "source": "component:app-catalog",
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py"
+        },
+        {
+          "depth": 2,
+          "relation_type": "verified_by",
+          "source": "component:app-catalog",
           "target": "test:tests/docs/test_documentation_presentation_polish.py"
         },
         {
@@ -312,12 +318,6 @@
           "relation_type": "verified_by",
           "source": "component:app-catalog",
           "target": "test:tests/e2e/lite-mocked.spec.ts"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:app-catalog",
-          "target": "test:tests/e2e/lite-test-helpers.ts"
         },
         {
           "depth": 2,
@@ -602,12 +602,12 @@
         "test:tests/backend/test_lite_projection_semantic_hardening.py",
         "test:tests/backend/test_lite_security_s8_recovery.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
-        "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/parity/test_api_contract_fences.py"
       ],
       "title": "Apps Feature Journey",
@@ -750,6 +750,12 @@
           "relation_type": "verified_by",
           "source": "journey:add-device",
           "target": "test:tests/backend/test_lite_devices_durable_enrollment.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:add-device",
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py"
         },
         {
           "depth": 1,
@@ -933,6 +939,12 @@
         },
         {
           "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:remove-old-device",
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py"
+        },
+        {
+          "depth": 1,
           "relation_type": "calls",
           "source": "journey:restart-agent",
           "target": "api:get:/api/lite/fleet"
@@ -996,6 +1008,12 @@
           "relation_type": "verified_by",
           "source": "journey:restart-agent",
           "target": "test:tests/backend/test_lite_devices_durable_enrollment.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:restart-agent",
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py"
         },
         {
           "depth": 1,
@@ -1140,24 +1158,6 @@
           "relation_type": "protected_by",
           "source": "component:agent-supervisor",
           "target": "threat-model:managed-device"
-        },
-        {
-          "depth": 2,
-          "relation_type": "publishes",
-          "source": "component:agent-supervisor",
-          "target": "subject:pocketlab.events.fleet.node_supervisor"
-        },
-        {
-          "depth": 2,
-          "relation_type": "recovers_with",
-          "source": "component:agent-supervisor",
-          "target": "troubleshooting:agent-stopped"
-        },
-        {
-          "depth": 2,
-          "relation_type": "recovers_with",
-          "source": "component:agent-supervisor",
-          "target": "troubleshooting:supervisor-stopped"
         }
       ],
       "expansion": {
@@ -1196,6 +1196,7 @@
         "test:tests/backend/test_lite_devices_durable_enrollment.py",
         "test:tests/backend/test_lite_devices_production_readiness.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py",
         "test:tests/docs/test_documentation_ia.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
@@ -1204,10 +1205,7 @@
         "test:tests/parity/test_api_contract_fences.py"
       ],
       "title": "Devices Feature Journey",
-      "troubleshooting": [
-        "troubleshooting:agent-stopped",
-        "troubleshooting:supervisor-stopped"
-      ],
+      "troubleshooting": [],
       "user_journeys": [
         "Add Device",
         "Device bootstrap and enrollment",
@@ -1467,6 +1465,12 @@
         },
         {
           "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:change-password",
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py"
+        },
+        {
+          "depth": 1,
           "relation_type": "calls",
           "source": "journey:enterprise-identity",
           "target": "api:get:/api/lite/enterprise/identity"
@@ -1544,6 +1548,12 @@
           "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py"
         },
         {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:enterprise-identity",
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py"
+        },
+        {
           "depth": 2,
           "relation_type": "verified_by",
           "source": "api:delete:/api/lite/identity/passkeys/{credential_id}",
@@ -1721,18 +1731,6 @@
           "depth": 2,
           "relation_type": "verified_by",
           "source": "api:post:/api/lite/identity/step-up/verify",
-          "target": "test:tests/parity/test_api_contract_fences.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "api:put:/api/lite/identity/passkeys/{credential_id}",
-          "target": "test:tests/backend/test_lite_development_documentation_platform.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "api:put:/api/lite/identity/passkeys/{credential_id}",
           "target": "test:tests/parity/test_api_contract_fences.py"
         }
       ],
@@ -1777,6 +1775,7 @@
         "test:tests/backend/test_lite_security_p2b_reboot_generation.py",
         "test:tests/backend/test_lite_security_s6_retention.py",
         "test:tests/backend/test_lite_security_s8_recovery.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py",
         "test:tests/parity/test_api_contract_fences.py"
       ],
       "title": "Identity Feature Journey",
@@ -1892,6 +1891,12 @@
         },
         {
           "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:backup-create",
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py"
+        },
+        {
+          "depth": 1,
           "relation_type": "calls",
           "source": "journey:recovery-reconciliation",
           "target": "api:get:/api/lite/recovery/summary"
@@ -1982,6 +1987,12 @@
         },
         {
           "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:restore-execution",
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py"
+        },
+        {
+          "depth": 1,
           "relation_type": "calls",
           "source": "journey:restore-preview",
           "target": "api:get:/api/lite/recovery/summary"
@@ -2027,6 +2038,12 @@
           "relation_type": "verified_by",
           "source": "journey:restore-preview",
           "target": "test:tests/backend/test_lite_security_s8_recovery.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:restore-preview",
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py"
         },
         {
           "depth": 1,
@@ -2297,24 +2314,6 @@
           "relation_type": "protected_by",
           "source": "component:worker",
           "target": "boundary:messaging-execution"
-        },
-        {
-          "depth": 2,
-          "relation_type": "protected_by",
-          "source": "component:worker",
-          "target": "threat-model:messaging-execution"
-        },
-        {
-          "depth": 2,
-          "relation_type": "publishes",
-          "source": "component:worker",
-          "target": "subject:pocketlab.commands"
-        },
-        {
-          "depth": 2,
-          "relation_type": "publishes",
-          "source": "component:worker",
-          "target": "subject:pocketlab.commands.lite.security.scan"
         }
       ],
       "expansion": {
@@ -2358,6 +2357,7 @@
         "test:tests/backend/test_lite_premium_tab_polish.py",
         "test:tests/backend/test_lite_security_s8_recovery.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
@@ -3683,6 +3683,12 @@
           "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py"
         },
         {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:rules-authorization",
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py"
+        },
+        {
           "depth": 2,
           "relation_type": "verified_by",
           "source": "api:get:/api/lite/enterprise/rules/analysis",
@@ -4011,12 +4017,6 @@
           "relation_type": "depends_on",
           "source": "component:api-guards",
           "target": "table:recovery_codes"
-        },
-        {
-          "depth": 2,
-          "relation_type": "protected_by",
-          "source": "component:api-guards",
-          "target": "boundary:control-api"
         }
       ],
       "expansion": {
@@ -4057,6 +4057,7 @@
         "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
         "test:tests/backend/test_lite_identity_rules_ui_projection.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
@@ -4197,6 +4198,12 @@
         },
         {
           "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:security-review",
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py"
+        },
+        {
+          "depth": 1,
           "relation_type": "calls",
           "source": "journey:security-scan",
           "target": "api:get:/api/lite/security/progress"
@@ -4325,6 +4332,12 @@
           "depth": 1,
           "relation_type": "verified_by",
           "source": "journey:security-scan",
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:security-scan",
           "target": "test:tests/backend/test_lite_workload_admission.py"
         },
         {
@@ -4344,12 +4357,6 @@
           "relation_type": "verified_by",
           "source": "api:get:/api/lite/security/details/{run_id}",
           "target": "test:tests/parity/test_api_contract_fences.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "api:get:/api/lite/security/progress",
-          "target": "test:tests/backend/test_lite_development_documentation_platform.py"
         },
         {
           "depth": 2,
@@ -4584,12 +4591,6 @@
           "relation_type": "verified_by",
           "source": "component:security-state",
           "target": "test:tests/docs/test_enterprise_completion.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:security-state",
-          "target": "test:tests/docs/test_living_knowledgebase.py"
         }
       ],
       "expansion": {
@@ -4637,6 +4638,7 @@
         "test:tests/backend/test_lite_security_s8_gate_submission_recovery.py",
         "test:tests/backend/test_lite_security_s8_idle_reconciliation.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_lite_ux_maturity_contract.py",
         "test:tests/backend/test_lite_workload_admission.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
@@ -4664,7 +4666,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 487,
+  "page_count": 488,
   "page_types": [
     "overview",
     "guide",
@@ -16622,6 +16624,30 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "validation/lite-ux-maturity-contract.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "testing",
+      "generated": false,
+      "id": "page:validation/lite-ux-maturity-contract",
+      "intents": [
+        "build",
+        "test"
+      ],
+      "page_type": "reference",
+      "path": "validation/lite-ux-maturity-contract.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "build-test",
+      "related_pages": [],
+      "source_or_generator": "validation/lite-ux-maturity-contract.md",
+      "title": "Pocket Lab Lite UX Maturity Contract",
+      "url": "/validation/lite-ux-maturity-contract/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "validation/lite-validation.md"
       ],
       "confidence": "source-derived",
@@ -17529,7 +17555,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "ef784ae30751d907cefe9f612136be3835ca0df262169326b9310e6547cdfb67",
+  "source_fingerprint": "76f53e86d1db38fb20310fa933c74e83e8f5d80c6a8e6b3c0db302d27819fc61",
   "top_level": [
     "start-here",
     "use",

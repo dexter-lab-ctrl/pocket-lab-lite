@@ -117,6 +117,7 @@ Execution ownership: use the component/API ownership links above; no additional 
 - `test:tests/backend/test_lite_security_p2b_reboot_generation.py`
 - `test:tests/backend/test_lite_security_s6_retention.py`
 - `test:tests/backend/test_lite_security_s8_recovery.py`
+- `test:tests/backend/test_lite_ux_maturity_contract.py`
 - `test:tests/parity/test_api_contract_fences.py`
 
 ## Failure modes and recovery

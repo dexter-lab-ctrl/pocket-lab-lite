@@ -15,7 +15,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 | Workflow | Task count |
 | --- | --- |
-| Development loop | 59 |
+| Development loop | 60 |
 | Documentation loop | 55 |
 | API-validation loop | 12 |
 | Runtime-evidence loop | 33 |
@@ -5490,11 +5490,11 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Commands:**
 
-- `PYTHONPATH=tests:pocket-lab-final-structure/runtime PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONFAULTHANDLER=1 {{.PYTHON}} -m pytest -q -p pytest_timeout --timeout=60 --timeout-method=thread tests/backend/test_lite_api.py tests/backend/test_lite_recovery.py tests/backend/test_lite_security.py`
+- `PYTHONPATH=tests:pocket-lab-final-structure/runtime PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONFAULTHANDLER=1 {{.PYTHON}} -m pytest -q -p pytest_timeout --timeout=60 --timeout-method=thread tests/backend/test_lite_api.py tests/backend/test_lite_recovery.py tests/backend/test_lite_security.py tests/backend/test_lite_ux_maturity_contract.py`
 
 **Environment:** None source-discovered
 
-**Inputs:** tests/backend/test_lite_api.py, tests/backend/test_lite_recovery.py, tests/backend/test_lite_security.py
+**Inputs:** tests/backend/test_lite_api.py, tests/backend/test_lite_recovery.py, tests/backend/test_lite_security.py, tests/backend/test_lite_ux_maturity_contract.py
 
 **Outputs:** No explicit file outputs discovered
 
@@ -5647,6 +5647,41 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** gate-defined
 
 **Example:** `task lite:test:runtime`
+
+## `lite:test:ux:maturity`
+
+**Purpose:** Run the repository-owned Pocket Lab Lite UX maturity contract and mocked cross-tab qualification
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:ux:maturity`
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_ux_maturity_contract.py`
+
+**Environment:** None source-discovered
+
+**Inputs:** tests/backend/test_lite_ux_maturity_contract.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:ux:maturity`
 
 ## `lite:ui:perf:android:baseline`
 

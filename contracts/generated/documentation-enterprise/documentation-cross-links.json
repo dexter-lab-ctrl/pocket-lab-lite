@@ -1221,6 +1221,17 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:apps:369dc7c0e890b2ab",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/apps",
+      "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:apps:3910eefd37be07ca",
       "relation_type": "publishes",
       "source": "page:generated/enterprise/journeys/apps",
@@ -1700,17 +1711,6 @@
       "source": "page:generated/enterprise/journeys/apps",
       "target": "subject:pocketlab.commands.runbook.approve",
       "target_type": "subject"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:apps:c33ddf07ecdeec4f",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/apps",
-      "target": "test:tests/e2e/lite-test-helpers.ts",
-      "target_type": "test"
     },
     {
       "depth": 2,
@@ -2438,6 +2438,17 @@
       "target_type": "component"
     },
     {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:devices:661de78800a8a1d2",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/devices",
+      "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
+      "target_type": "test"
+    },
+    {
       "depth": 2,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
@@ -2530,6 +2541,17 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:devices:781795a216ed3daf",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/devices",
+      "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:devices:7c16ecafebd02a40",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/devices",
@@ -2612,17 +2634,6 @@
       "source": "page:generated/enterprise/journeys/devices",
       "target": "test:tests/e2e/lite-mocked.spec.ts",
       "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:devices:913af7672edc39d2",
-      "relation_type": "recovers_with",
-      "source": "page:generated/enterprise/journeys/devices",
-      "target": "troubleshooting:agent-stopped",
-      "target_type": "troubleshooting"
     },
     {
       "depth": 1,
@@ -2806,6 +2817,17 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:devices:c352c892432b405b",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/devices",
+      "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:devices:c364f1f30440d296",
       "relation_type": "uses",
       "source": "page:generated/enterprise/journeys/devices",
@@ -2855,17 +2877,6 @@
       "source": "page:generated/enterprise/journeys/devices",
       "target": "test:tests/backend/test_lite_device_system_profile.py",
       "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:devices:ce7b13b171301e09",
-      "relation_type": "recovers_with",
-      "source": "page:generated/enterprise/journeys/devices",
-      "target": "troubleshooting:supervisor-stopped",
-      "target_type": "troubleshooting"
     },
     {
       "evidence": [
@@ -3050,17 +3061,6 @@
       "source": "page:generated/enterprise/journeys/devices",
       "target": "test:tests/backend/test_lite_api.py",
       "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:devices:e4c2faa132846362",
-      "relation_type": "publishes",
-      "source": "page:generated/enterprise/journeys/devices",
-      "target": "subject:pocketlab.events.fleet.node_supervisor",
-      "target_type": "subject"
     },
     {
       "depth": 1,
@@ -3391,6 +3391,17 @@
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:identity:18865810c6a68f88",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
       "target_type": "test"
     },
     {
@@ -4055,17 +4066,6 @@
       "target_type": "test"
     },
     {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:d6a0dc4a94650938",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/parity/test_api_contract_fences.py",
-      "target_type": "test"
-    },
-    {
       "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
@@ -4187,14 +4187,14 @@
       "target_type": "test"
     },
     {
-      "depth": 2,
+      "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:fa0d338b0a644cad",
+      "id": "link:journey:identity:f45b1e35d193d311",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
       "target_type": "test"
     },
     {
@@ -4441,6 +4441,17 @@
       "target_type": "component"
     },
     {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:recovery:40c11d69ba1e4cc9",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/recovery",
+      "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
+      "target_type": "test"
+    },
+    {
       "depth": 2,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
@@ -4467,17 +4478,6 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:recovery:48745b29d1542b48",
-      "relation_type": "publishes",
-      "source": "page:generated/enterprise/journeys/recovery",
-      "target": "subject:pocketlab.commands",
-      "target_type": "subject"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
       "id": "link:journey:recovery:48ac7848bb16a32d",
       "relation_type": "recovers_with",
       "source": "page:generated/enterprise/journeys/recovery",
@@ -4494,17 +4494,6 @@
       "source": "page:generated/enterprise/journeys/recovery",
       "target": "test:tests/parity/test_api_contract_fences.py",
       "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:recovery:4b763dc74b376542",
-      "relation_type": "protected_by",
-      "source": "page:generated/enterprise/journeys/recovery",
-      "target": "threat-model:messaging-execution",
-      "target_type": "threat-model"
     },
     {
       "depth": 2,
@@ -4648,6 +4637,17 @@
       "source": "page:generated/enterprise/journeys/recovery",
       "target": "api:post:/api/lite/recovery/restore",
       "target_type": "api"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:recovery:6e771790bab04a8c",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/recovery",
+      "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
+      "target_type": "test"
     },
     {
       "depth": 2,
@@ -4824,17 +4824,6 @@
       "source": "page:generated/enterprise/journeys/recovery",
       "target": "table:backup_manifest_index",
       "target_type": "table"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:recovery:ade8556645af8098",
-      "relation_type": "publishes",
-      "source": "page:generated/enterprise/journeys/recovery",
-      "target": "subject:pocketlab.commands.lite.security.scan",
-      "target_type": "subject"
     },
     {
       "evidence": [
@@ -5144,6 +5133,17 @@
       "source": "page:generated/enterprise/journeys/recovery",
       "target": "troubleshooting:backup-failure",
       "target_type": "troubleshooting"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:recovery:d342aa16fa0f45ce",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/recovery",
+      "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
+      "target_type": "test"
     },
     {
       "depth": 2,
@@ -7625,17 +7625,6 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:rules:11ad46b4a9913302",
-      "relation_type": "protected_by",
-      "source": "page:generated/enterprise/journeys/rules",
-      "target": "boundary:control-api",
-      "target_type": "boundary"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
       "id": "link:journey:rules:1580a7c5ea57b990",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/rules",
@@ -8673,6 +8662,17 @@
       "target_type": "table"
     },
     {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:rules:e4bafef99139fa18",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/rules",
+      "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
+      "target_type": "test"
+    },
+    {
       "depth": 2,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
@@ -9257,6 +9257,17 @@
       "target_type": "component"
     },
     {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:security:8ff6c1eb46035728",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/security",
+      "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
+      "target_type": "test"
+    },
+    {
       "depth": 2,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
@@ -9309,6 +9320,17 @@
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/security",
       "target": "test:tests/backend/test_lite_security_f3_summary_contract.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:security:a52c01291f4f01fc",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/security",
+      "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
       "target_type": "test"
     },
     {
@@ -9647,17 +9669,6 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:security:d2dc1bc1df7db57e",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/security",
-      "target": "test:tests/docs/test_living_knowledgebase.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
       "id": "link:journey:security:d852a7140394442d",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/security",
@@ -9851,17 +9862,6 @@
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/security",
       "target": "test:tests/backend/test_lite_api.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:security:f6b817179eba796d",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/security",
-      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "target_type": "test"
     },
     {

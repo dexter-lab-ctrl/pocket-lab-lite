@@ -120,6 +120,7 @@ Execution ownership: FastAPI → NATS/JetStream → worker.
 - `test:tests/backend/test_lite_premium_tab_polish.py`
 - `test:tests/backend/test_lite_security_s8_recovery.py`
 - `test:tests/backend/test_lite_termux_runtime_documentation.py`
+- `test:tests/backend/test_lite_ux_maturity_contract.py`
 - `test:tests/docs/test_documentation_presentation_polish.py`
 - `test:tests/docs/test_enterprise_completion.py`
 - `test:tests/docs/test_living_knowledgebase.py`
