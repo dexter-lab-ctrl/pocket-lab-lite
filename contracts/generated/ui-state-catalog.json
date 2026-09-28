@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "3a469d568d4662baddcbbd56e79eed3a53d6f406f6941bc8a8fb197240db8041",
+    "aggregate_fingerprint": "fa5c17a67a0a47ed1a82b54a1151a23c320f578ac1fcf4dc24896b75ff7e9190",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -16,12 +16,13 @@
       "src/lite/LiteDevices.stories.jsx": "09ef4d871905c5e099a9d4086a829c381bf070b38e281fd9f5cdc9165de8786b",
       "src/lite/LiteHome.stories.jsx": "8a8cd6bcf833ad98d7140a1e7b6a82bb93419a848fb139d16037418ac61f8966",
       "src/lite/LiteIdentity.stories.jsx": "e50a10161b3e12eca92c19100bfb076531a0e772595b23c30f5ea8d3d9880fc0",
-      "src/lite/LitePrimitives.stories.jsx": "7c5e2879ea4785426ba23b45f820bde10ad64955d2ad5a4ad2e85ef3ff6c22e9",
+      "src/lite/LitePrimitives.stories.jsx": "33809a7f2d1038c9e757b160834913d358afa055a7e6d9bd5dd5114f789f3cf5",
       "src/lite/LiteRecovery.stories.jsx": "c52888ba8f51947de64807d83c320488b64e23375fbe3abf9bc909fe3b0a71c6",
       "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
       "src/lite/LiteRules.stories.jsx": "44b78ac3977a1f1a7837310d7aa7b760235673ee1ddfb7fd1005606a11602666",
       "src/lite/LiteSecurity.stories.jsx": "79f05679742bc975fca3e92795870e4d425415c83c83096a380c58467e74f2d5",
-      "src/mocks/handlers.js": "10e90698d92a2a0d6f2d6a5558964d5fcbecbcdc8857bfa71f18fd9fc1837eb7"
+      "src/lite/LiteUx.stories.jsx": "3b9ee5409f48cade936feaebc84159f2dd809fbdcc0c5433aa50c2d24a51d260",
+      "src/mocks/handlers.js": "0956abf1de79a5b112545446132d283e056a9697e47228615d108cbda5613b92"
     },
     "validation_state": "generated"
   },
