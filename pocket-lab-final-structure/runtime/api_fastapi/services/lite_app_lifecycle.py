@@ -555,9 +555,11 @@ def _operation_action(action_id: str, installed: bool, operations: dict[str, Any
 
 def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recovery: dict[str, Any], media: dict[str, Any], operations: dict[str, Any] | None = None, update: dict[str, Any] | None = None) -> dict[str, Any]:
     access = app.get("access") if isinstance(app.get("access"), dict) else {}
-    actions = app.get("actions") if isinstance(app.get("actions"), dict) else {}
     open_url = access.get("open_url") or (app.get("runtime") or {}).get("url")
-    route_enabled = bool(actions.get("open") and open_url == _SAFE_ROUTE)
+    # Access is the canonical browser-navigation capability. A saved action
+    # boolean may lag the route probe by one projection refresh, so it must not
+    # disable Open while the same-origin route is ready.
+    route_enabled = bool(access.get("route_ready") and open_url == _SAFE_ROUTE)
     backup_enabled = bool(installed)
     media_ready, media_reason, media_status = _media_action_ready(installed, route_enabled, media)
     action_payload = {

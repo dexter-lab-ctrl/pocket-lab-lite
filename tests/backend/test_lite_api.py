@@ -2445,7 +2445,7 @@ def test_lite_unified_lifecycle_ui_source_is_present():
 
 def _force_photoprism_installed_for_action_tests(monkeypatch):
     ensure_runtime_path()
-    from api_fastapi.services import lite_app_lifecycle, lite_app_update, lite_photoprism_lifecycle, lite_photoprism_media
+    from api_fastapi.services import lite_app_actions, lite_app_lifecycle, lite_app_update, lite_photoprism_lifecycle, lite_photoprism_media
 
     installed_app = {
         "id": "photoprism",
@@ -2460,6 +2460,7 @@ def _force_photoprism_installed_for_action_tests(monkeypatch):
     }
 
     monkeypatch.setattr(lite_app_lifecycle, "_catalog_app", lambda app_id: dict(installed_app))
+    monkeypatch.setattr(lite_app_actions, "_live_catalog_app", lambda app_id: dict(installed_app))
     monkeypatch.setattr(lite_app_update, "_catalog_app", lambda app_id: dict(installed_app))
     lite_app_update._write_state({"pending_update_check": None, "latest_update_check": None})
     monkeypatch.setattr(lite_photoprism_lifecycle, "_catalog_app", lambda: dict(installed_app))
