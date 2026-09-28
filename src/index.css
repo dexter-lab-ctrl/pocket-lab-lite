@@ -25063,6 +25063,23 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
   }
 }
 
+@media (max-width: 640px) {
+  .theme-pocket-lite-daylight .lite-catalog-hero-actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .theme-pocket-lite-daylight .lite-catalog-hero-actions .lite-refresh-control {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .theme-pocket-lite-daylight .lite-catalog-hero-actions .lite-refresh-button {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-lite-manage-portal="true"] .lite-catalog-media-flow-card,
   [data-lite-manage-portal="true"] .lite-catalog-media-flow-node,
