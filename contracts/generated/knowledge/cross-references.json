@@ -11715,6 +11715,72 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_ux_maturity_contract.py": [
+        {
+          "source": "component:app-catalog",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:pwa",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:user",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:add-device",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:backup-create",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:enterprise-identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:remove-old-device",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:restart-agent",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:restore-execution",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:restore-preview",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:rules-authorization",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:security-review",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:security-scan",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_windows_adb_qualification_tools.py": [
         {
           "source": "domain:security",
@@ -15087,16 +15153,6 @@
           "type": "verified_by"
         }
       ],
-      "test:tests/e2e/lite-phase9-qualification.spec.ts": [
-        {
-          "source": "domain:identity",
-          "type": "verified_by"
-        },
-        {
-          "source": "domain:security",
-          "type": "verified_by"
-        }
-      ],
       "test:tests/e2e/lite-rules-activation-progress.spec.ts": [
         {
           "source": "reason:policy_activation_pending",
@@ -15107,17 +15163,13 @@
           "type": "verified_by"
         }
       ],
-      "test:tests/e2e/lite-test-helpers.ts": [
-        {
-          "source": "component:app-catalog",
-          "type": "verified_by"
-        },
+      "test:tests/e2e/lite-ux-maturity.spec.ts": [
         {
           "source": "domain:identity",
           "type": "verified_by"
         },
         {
-          "source": "domain:security",
+          "source": "domain:recovery",
           "type": "verified_by"
         }
       ],
@@ -19837,6 +19889,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
@@ -19854,10 +19910,6 @@
         },
         {
           "target": "test:tests/e2e/lite-mocked.spec.ts",
-          "type": "verified_by"
-        },
-        {
-          "target": "test:tests/e2e/lite-test-helpers.ts",
           "type": "verified_by"
         }
       ],
@@ -22013,6 +22065,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_workload_admission.py",
           "type": "verified_by"
         },
@@ -22822,6 +22878,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
           "type": "verified_by"
         },
         {
@@ -24679,6 +24739,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/mkdocs.spec.ts",
           "type": "verified_by"
         },
@@ -24719,11 +24783,7 @@
           "type": "verified_by"
         },
         {
-          "target": "test:tests/e2e/lite-phase9-qualification.spec.ts",
-          "type": "verified_by"
-        },
-        {
-          "target": "test:tests/e2e/lite-test-helpers.ts",
+          "target": "test:tests/e2e/lite-ux-maturity.spec.ts",
           "type": "verified_by"
         },
         {
@@ -25498,6 +25558,10 @@
         },
         {
           "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-ux-maturity.spec.ts",
           "type": "verified_by"
         },
         {
@@ -26377,6 +26441,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_windows_adb_qualification_tools.py",
           "type": "verified_by"
         },
@@ -26478,14 +26546,6 @@
         },
         {
           "target": "test:tests/e2e/lite-performance.spec.ts",
-          "type": "verified_by"
-        },
-        {
-          "target": "test:tests/e2e/lite-phase9-qualification.spec.ts",
-          "type": "verified_by"
-        },
-        {
-          "target": "test:tests/e2e/lite-test-helpers.ts",
           "type": "verified_by"
         },
         {
@@ -27003,6 +27063,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_documentation_ia.py",
           "type": "verified_by"
         },
@@ -27080,6 +27144,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_security_s8_recovery.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
           "type": "verified_by"
         }
       ],
@@ -27222,6 +27290,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_security_s8_recovery.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
           "type": "verified_by"
         }
       ],
@@ -27399,6 +27471,10 @@
         {
           "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
+          "type": "verified_by"
         }
       ],
       "journey:parity-capture": [
@@ -27555,6 +27631,10 @@
         {
           "target": "test:tests/backend/test_lite_devices_durable_enrollment.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
+          "type": "verified_by"
         }
       ],
       "journey:restart-agent": [
@@ -27600,6 +27680,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_devices_durable_enrollment.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
           "type": "verified_by"
         },
         {
@@ -27651,6 +27735,10 @@
         {
           "target": "test:tests/backend/test_lite_security_s8_recovery.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
+          "type": "verified_by"
         }
       ],
       "journey:restore-preview": [
@@ -27684,6 +27772,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_security_s8_recovery.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
           "type": "verified_by"
         },
         {
@@ -27805,6 +27897,10 @@
         {
           "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
+          "type": "verified_by"
         }
       ],
       "journey:runtime-capture": [
@@ -27886,6 +27982,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_security_s7_saved_state_history.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
           "type": "verified_by"
         }
       ],
@@ -27972,6 +28072,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_security_s8_idle_reconciliation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_ux_maturity_contract.py",
           "type": "verified_by"
         },
         {
@@ -32575,6 +32679,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "1554198ca2fd15a8852e0adc2dc3baac956284cd2bd798d77c18c876921b7c54"
+    "source_fingerprint": "79e253e45e31fdb43741b5f9609e62db08876598a827168fa15560374ff190a0"
   }
 }
