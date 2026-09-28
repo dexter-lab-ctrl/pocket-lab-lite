@@ -272,6 +272,45 @@ test.describe('Pocket Lab Lite live read-only smoke', () => {
   );
 
   test(
+    'the exact candidate Home keeps controls contained and release status truthful',
+    async ({ page }) => {
+      const source = sourceCommit();
+      const candidate = await page.request.get('/__pocketlab_qualification__/candidate.json');
+      expect(candidate.ok()).toBeTruthy();
+      const candidatePayload = await candidate.json();
+      expect(candidatePayload.source_commit).toBe(source);
+      expect(candidatePayload.sanitized).toBe(true);
+
+      for (const width of [360, 390, 412, 768, 1280, 1440]) {
+        await page.setViewportSize({ width, height: width < 600 ? 844 : 900 });
+        await page.goto('/?screen=home');
+        const home = page.locator('[data-lite-screen-id="home"]');
+        await expect(home).toBeVisible();
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+        expect(await home.locator('button:visible').evaluateAll((buttons) => buttons.every((button) => {
+          const rect = button.getBoundingClientRect();
+          return rect.left >= -1 && rect.right <= window.innerWidth + 1 && rect.width > 0;
+        }))).toBe(true);
+
+        const releaseResponse = page.waitForResponse((response) => (
+          response.url().includes('/api/lite/release')
+          && response.request().method() === 'GET'
+          && response.ok()
+        ));
+        await home.getByRole('button', { name: 'Workspace details' }).click();
+        const releasePayload = await (await releaseResponse).json();
+        const sheet = page.getByRole('dialog', { name: 'Workspace details' });
+        const card = sheet.locator('[data-lite-release-native="true"]');
+        await expect(card).toBeVisible();
+        await expect(card).not.toContainText('Update failed');
+        expect(releasePayload).toHaveProperty('repository_match');
+        expect(releasePayload).toHaveProperty('installed_artifact_verified');
+        await page.keyboard.press('Escape');
+      }
+    }
+  );
+
+  test(
     'capture sanitized semantic observations for every Lite tab',
     async ({ page }, testInfo) => {
       await page.goto('/?screen=home');
