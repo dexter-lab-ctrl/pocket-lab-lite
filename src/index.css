@@ -8602,6 +8602,10 @@ textarea {
   box-shadow: 0 12px 26px rgba(15, 23, 42, 0.1);
 }
 
+.theme-pocket-lite-daylight .lite-catalog-hero-actions .lite-refresh-button {
+  min-height: 2.75rem;
+}
+
 .theme-pocket-lite-daylight .lite-catalog-hero-actions .lite-catalog-hero-pill {
   min-height: 2.65rem;
   white-space: nowrap;

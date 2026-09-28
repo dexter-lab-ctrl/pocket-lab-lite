@@ -110,6 +110,20 @@ test('Refresh acknowledges immediately inside the control without moving the pag
   await expect(refresh).toHaveAttribute('aria-busy', 'false');
 });
 
+test('Refresh controls keep an Android-sized touch target across tabs', async ({ page }) => {
+  await installScenario(page, 'healthy');
+
+  for (const [screenId] of SCREENS) {
+    await page.goto(`/?screen=${screenId}`);
+    await waitForLiteScreenToSettle(page, screenId);
+
+    const refresh = page.locator(`[data-lite-screen-id="${screenId}"] button.lite-refresh-button`).first();
+    if (await refresh.count() === 0) continue;
+
+    expect((await refresh.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+  }
+});
+
 test('Safety profile summary controls keep an Android-sized touch target', async ({ page }) => {
   await installScenario(page, 'healthy');
   await page.goto('/?screen=security');
