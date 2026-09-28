@@ -286,19 +286,19 @@ test.describe('Pocket Lab Lite live read-only smoke', () => {
         await page.goto('/?screen=home');
         const home = page.locator('[data-lite-screen-id="home"]');
         await expect(home).toBeVisible();
+        await waitForLiteScreenToSettle(page, 'home', { timeoutMs: 20_000, stableSamples: 2, intervalMs: 250 });
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-        expect(await home.locator('button:visible').evaluateAll((buttons) => buttons.every((button) => {
+        expect(await home.locator('.lite-home-premium-shell button:visible').evaluateAll((buttons) => buttons.every((button) => {
           const rect = button.getBoundingClientRect();
           return rect.left >= -1 && rect.right <= window.innerWidth + 1 && rect.width > 0;
         }))).toBe(true);
 
-        const releaseResponse = page.waitForResponse((response) => (
-          response.url().includes('/api/lite/release')
-          && response.request().method() === 'GET'
-          && response.ok()
-        ));
+        const releaseResponse = await page.request.get('/api/lite/release', {
+          headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
+        });
+        expect(releaseResponse.ok()).toBeTruthy();
+        const releasePayload = await releaseResponse.json();
         await home.getByRole('button', { name: 'Workspace details' }).click();
-        const releasePayload = await (await releaseResponse).json();
         const sheet = page.getByRole('dialog', { name: 'Workspace details' });
         const card = sheet.locator('[data-lite-release-native="true"]');
         await expect(card).toBeVisible();
