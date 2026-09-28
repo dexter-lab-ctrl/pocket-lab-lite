@@ -107,6 +107,8 @@ jobs:
           VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-mocked.spec.ts tests/e2e/lite-parity.spec.ts tests/e2e/lite-accessibility.spec.ts --project=mocked-desktop --project=mocked-mobile
           task lite:test:docs
       - name: Qualify UI performance contract
+        # PR #590 explicitly excludes the PR #588/#589 60 FPS qualification.
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.number != 590 }}
         env:
           LITE_PERF_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
         run: npm run test:perf:qualification
