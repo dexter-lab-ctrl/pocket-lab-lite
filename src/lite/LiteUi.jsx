@@ -25,6 +25,7 @@ export function LiteRefreshButton({
   cacheStatus,
   error,
   refreshing = false,
+  disabled = false,
   label = 'Refresh',
   tone = 'secondary',
   className = '',
@@ -56,7 +57,7 @@ export function LiteRefreshButton({
       <LiteButton
         onClick={handleClick}
         tone={tone}
-        disabled={isRefreshing}
+        disabled={disabled || isRefreshing}
         ariaLabel={isRefreshing ? 'Refreshing…' : label}
         aria-busy={isRefreshing}
         aria-live="polite"
@@ -886,21 +887,35 @@ export function operationalStoryPresentation(story = {}) {
 
 function StoryAction({ action, fallbackTone = 'secondary' }) {
   if (!action?.label) return null;
+  const isRefreshAction = action.isRefresh === true
+    || action.kind === 'refresh'
+    || /^refresh(?:\s|$)/i.test(String(action.label).trim());
   return (
     <div className="lite-operational-story-action">
-      <LiteButton
-        onClick={action.onClick}
-        disabled={Boolean(action.disabled)}
-        tone={action.tone || fallbackTone}
-        ariaLabel={action.ariaLabel || action.label}
-        aria-expanded={typeof action.ariaExpanded === 'boolean' ? action.ariaExpanded : undefined}
-        buttonRef={action.buttonRef}
-        onPointerEnter={action.onPointerEnter}
-        onFocus={action.onFocus}
-        onTouchStart={action.onTouchStart}
-      >
-        {action.label}
-      </LiteButton>
+      {isRefreshAction ? (
+        <LiteRefreshButton
+          refresh={action.onClick}
+          refreshing={Boolean(action.refreshing)}
+          disabled={Boolean(action.disabled)}
+          label={action.label}
+          tone={action.tone || fallbackTone}
+          scope={action.refreshScope || `operational-story:${String(action.label).trim().toLowerCase()}`}
+        />
+      ) : (
+        <LiteButton
+          onClick={action.onClick}
+          disabled={Boolean(action.disabled)}
+          tone={action.tone || fallbackTone}
+          ariaLabel={action.ariaLabel || action.label}
+          aria-expanded={typeof action.ariaExpanded === 'boolean' ? action.ariaExpanded : undefined}
+          buttonRef={action.buttonRef}
+          onPointerEnter={action.onPointerEnter}
+          onFocus={action.onFocus}
+          onTouchStart={action.onTouchStart}
+        >
+          {action.label}
+        </LiteButton>
+      )}
       {action.disabled && action.disabledReason ? <small>{action.disabledReason}</small> : null}
     </div>
   );

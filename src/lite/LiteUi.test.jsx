@@ -74,4 +74,33 @@ describe('Lite shared operational storytelling primitives', () => {
     expect(button.getAttribute('aria-busy')).toBe('false');
     expect(button.querySelector('.lite-refresh-progress-ring')).toBeNull();
   });
+
+  it('uses the same in-control refresh feedback for operational story actions', async () => {
+    let resolveRefresh;
+    const pendingRefresh = new Promise((resolve) => {
+      resolveRefresh = resolve;
+    });
+    const refresh = vi.fn(() => pendingRefresh);
+    render(<LiteOperationalStory
+      story={{ state: 'ready', tone: 'ready', headline: 'Safety is current' }}
+      primaryAction={{ label: 'Refresh Safety Center', onClick: refresh }}
+    />);
+
+    const button = screen.getByRole('button', { name: 'Refresh Safety Center' });
+    fireEvent.click(button);
+
+    expect(refresh).toHaveBeenCalledWith({ force: true });
+    expect(button.getAttribute('aria-busy')).toBe('true');
+    expect(button.getAttribute('aria-label')).toBe('Refreshing…');
+    expect(button.querySelector('.lite-refresh-progress-ring')).toBeTruthy();
+    expect(button.querySelector('.lite-refresh-status-popover')).toBeNull();
+
+    await act(async () => {
+      resolveRefresh();
+      await pendingRefresh;
+    });
+
+    expect(button.getAttribute('aria-busy')).toBe('false');
+    expect(button.querySelector('.lite-refresh-progress-ring')).toBeNull();
+  });
 });

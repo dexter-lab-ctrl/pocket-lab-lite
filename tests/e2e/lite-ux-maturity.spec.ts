@@ -120,6 +120,8 @@ test('Refresh controls keep an Android-sized touch target across tabs', async ({
     const refresh = page.locator(`[data-lite-screen-id="${screenId}"] button.lite-refresh-button`).first();
     if (await refresh.count() === 0) continue;
 
+    await expect(refresh).toHaveAttribute('aria-busy', 'false');
+    await expect(refresh).toHaveAttribute('data-lite-refresh-state', 'idle');
     expect((await refresh.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
   }
 });

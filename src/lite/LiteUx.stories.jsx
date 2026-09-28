@@ -8,7 +8,7 @@ import {
   LiteSectionHeader,
   LiteTechnicalFacts,
 } from './LiteUx.jsx';
-import { LiteRefreshButton } from './LiteUi.jsx';
+import { LiteOperationalStory as LiteOperationalStoryPrimitive, LiteRefreshButton } from './LiteUi.jsx';
 
 export default {
   title: 'Pocket Lab Lite/UX Maturity Contract',
@@ -131,6 +131,36 @@ function RefreshInControlStory() {
 
 export const RefreshInControl = {
   render: () => <RefreshInControlStory />,
+};
+
+function OperationalStoryRefreshStory() {
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const refresh = () => {
+    setRefreshing(true);
+    return new Promise((resolve) => {
+      window.setTimeout(() => {
+        setRefreshing(false);
+        resolve();
+      }, 900);
+    });
+  };
+
+  return shell(
+    <LiteOperationalStoryPrimitive
+      story={{
+        state: 'ready',
+        tone: 'ready',
+        headline: 'Safety information is current',
+        summary: 'Refresh keeps the current story visible while the latest result is checked.',
+      }}
+      primaryAction={{ label: 'Refresh Safety Center', onClick: refresh, refreshing }}
+    />,
+  );
+}
+
+export const OperationalStoryRefresh = {
+  render: () => <OperationalStoryRefreshStory />,
 };
 
 export const MobileContract = {
