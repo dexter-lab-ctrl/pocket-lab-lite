@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 983fc22a824fe7a9507eb71182e8d15db5f894a895480e49a00cc18646d4ae20
+source_fingerprint: 08cfcfc0118206663923b902e2c8c6d05e329487267fb6f27a2962f858252e93
 schema_revision: 1
 validation_status: generated
 ---
@@ -245,4 +245,5 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 - `ActionResultStory`
 - `EmptyStateWithNextStep`
 - `RefreshInControl`
+- `OperationalStoryRefresh`
 - `MobileContract`
