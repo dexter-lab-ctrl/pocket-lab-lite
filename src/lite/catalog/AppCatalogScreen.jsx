@@ -39,7 +39,7 @@ import { LiteConsequenceSummary, LiteEmptyState, LiteFreshness } from '../LiteUx
 import { useLiteUiStore } from '../../stores/liteUiStore.js';
 import AppActionRow from './AppActionRow.jsx';
 import AppActionProgressSlot from './AppActionProgressSlot.jsx';
-import { LiteContextualActionCue, LiteFlipGroup, LiteMotionReveal, LitePressableButton, LiteSharedElementCue, triggerLiteTactileFeedback, useLiteReducedMotion, useLiteRipple } from '../LiteMotion.jsx';
+import { LiteContextualActionCue, LiteFlipGroup, LiteMotionReveal, LitePressableButton, LiteSharedElementCue, triggerLiteTactileFeedback, useLiteReducedMotion } from '../LiteMotion.jsx';
 import { isLitePerformanceMode } from '../liteNavigationRuntime.js';
 const loadAppActionDetails = () => import('./AppActionDetailsLazy.jsx');
 const AppActionDetailsLazy = React.lazy(loadAppActionDetails);
@@ -303,7 +303,6 @@ function LiteManageSectionTabMotion({ sectionId, active, label, onSelect }) {
 
 function LiteManageSectionTabAnimated({ sectionId, active, label, onSelect }) {
   const [pressed, setPressed] = React.useState(false);
-  const { rippleHandlers, rippleNode } = useLiteRipple();
   const spring = useSpring({
     transform: active ? 'translateY(-1px)' : pressed ? 'translateY(1px)' : 'translateY(0px)',
     opacity: active ? 1 : 0.92,
@@ -321,9 +320,9 @@ function LiteManageSectionTabAnimated({ sectionId, active, label, onSelect }) {
       type="button"
       role="tab"
       aria-selected={active}
-      className={active ? 'is-active' : ''}
+      className={[active ? 'is-active' : '', pressed ? 'is-pressed' : ''].filter(Boolean).join(' ')}
       style={spring}
-      onPointerDown={(event) => { rippleHandlers.onPointerDown(event); setPressed(true); }}
+      onPointerDown={() => setPressed(true)}
       onPointerUp={() => setPressed(false)}
       onPointerCancel={() => setPressed(false)}
       onPointerLeave={() => setPressed(false)}
@@ -335,7 +334,6 @@ function LiteManageSectionTabAnimated({ sectionId, active, label, onSelect }) {
         aria-hidden="true"
         style={indicatorSpring}
       />
-      {rippleNode}
     </animated.button>
   );
 }

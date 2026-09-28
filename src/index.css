@@ -25092,3 +25092,96 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
     transition: none !important;
   }
 }
+
+/* Apps UI follow-up: center the Manage surface and make tab selection a full
+   control-state change instead of a partial underline/ripple. */
+[data-lite-manage-portal="true"] .lite-catalog-manage-sheet {
+  left: auto !important;
+  margin: 0 auto !important;
+  right: auto !important;
+}
+
+@media (min-width: 900px) {
+  [data-lite-manage-portal="true"].lite-catalog-manage-layer {
+    justify-content: center !important;
+  }
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button {
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease,
+    box-shadow 160ms ease, transform 160ms ease;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button.is-active {
+  background: linear-gradient(135deg, rgba(219, 234, 254, 0.98), rgba(224, 242, 254, 0.96)) !important;
+  border-color: rgba(37, 99, 235, 0.42) !important;
+  color: #1d4ed8 !important;
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.16), 0 0 0 1px rgba(37, 99, 235, 0.06) !important;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button::before {
+  inset: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  border-radius: inherit !important;
+  background: rgba(37, 99, 235, 0.18) !important;
+  opacity: 0 !important;
+  transform: none !important;
+  transition: opacity 140ms ease !important;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button.is-pressed::before,
+[data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button:active::before {
+  opacity: 1 !important;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-manage-tab-indicator {
+  opacity: 0 !important;
+}
+
+/* Keep the visual card-to-sheet cue alive in the normal product path. The
+   qualification render carries data-lite-perf-mode="true" and remains static;
+   reduced-motion users also keep a static presentation. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-lite-manage-portal="true"]:not([data-lite-perf-mode="true"]) .lite-catalog-manage-section-tabs button {
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease,
+      box-shadow 160ms ease, transform 160ms ease !important;
+  }
+
+  [data-lite-manage-portal="true"]:not([data-lite-perf-mode="true"]) .lite-shared-element-cue.is-card-to-sheet {
+    animation: lite-card-to-sheet-cue-shell 620ms cubic-bezier(0.2, 0.84, 0.24, 1) both !important;
+    transform-origin: right center;
+    will-change: transform, opacity;
+  }
+
+  [data-lite-manage-portal="true"]:not([data-lite-perf-mode="true"]) .lite-shared-element-cue.is-card-to-sheet .lite-shared-element-cue__glow {
+    animation: lite-card-to-sheet-glow 760ms cubic-bezier(0.16, 1, 0.3, 1) 40ms both !important;
+    will-change: transform, opacity;
+  }
+
+  [data-lite-manage-portal="true"]:not([data-lite-perf-mode="true"]) .lite-shared-element-cue.is-card-to-sheet .lite-shared-element-cue__line {
+    animation: lite-card-to-sheet-line 820ms cubic-bezier(0.16, 1, 0.3, 1) 70ms both !important;
+    will-change: transform, opacity;
+  }
+
+  [data-lite-manage-portal="true"]:not([data-lite-perf-mode="true"]) .lite-shared-element-cue.is-card-to-sheet .lite-shared-element-cue__dot {
+    animation: lite-card-to-sheet-dot 820ms cubic-bezier(0.16, 1, 0.3, 1) 90ms both !important;
+    will-change: transform, opacity;
+  }
+
+  [data-lite-manage-portal="true"]:not([data-lite-perf-mode="true"]) .lite-shared-element-cue.is-card-to-sheet .lite-shared-element-cue__wake {
+    animation: lite-card-to-sheet-wake 760ms cubic-bezier(0.16, 1, 0.3, 1) 130ms both !important;
+    will-change: transform, opacity;
+  }
+
+  [data-lite-manage-portal="true"]:not([data-lite-perf-mode="true"]) .lite-shared-element-cue.is-card-to-sheet .lite-shared-element-cue__arrival {
+    animation: lite-card-to-sheet-arrival 820ms cubic-bezier(0.16, 1, 0.3, 1) 220ms both !important;
+    will-change: transform, opacity;
+  }
+}
+
+@keyframes lite-card-to-sheet-cue-shell {
+  from { opacity: 0; transform: translate3d(-0.55rem, 0.12rem, 0) scale(0.88); }
+  58% { opacity: 1; transform: translate3d(0.08rem, 0, 0) scale(1.02); }
+  to { opacity: 0.92; transform: translate3d(0, 0, 0) scale(1); }
+}

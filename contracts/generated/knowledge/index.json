@@ -48333,6 +48333,10 @@
           "type": "verified_by"
         },
         {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
           "source": "domain:identity",
           "type": "verified_by"
         },
@@ -48342,6 +48346,10 @@
         },
         {
           "source": "journey:add-device",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
           "type": "verified_by"
         }
       ],
@@ -54890,6 +54898,10 @@
         },
         {
           "target": "test:tests/e2e/lite-content-stress.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-mocked.spec.ts",
           "type": "verified_by"
         },
         {
@@ -62014,6 +62026,10 @@
         },
         {
           "target": "test:tests/e2e/lite-live.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-mocked.spec.ts",
           "type": "verified_by"
         },
         {
@@ -74041,6 +74057,15 @@
       "source": "domain:control_plane",
       "target": "table:human_credentials",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-mocked.spec.ts"
+      ],
+      "id": "rel:3b8ebad93f9e8c9d",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-mocked.spec.ts",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -93164,6 +93189,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-mocked.spec.ts"
+      ],
+      "id": "rel:d1a70352b8c293f4",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-mocked.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:d1e3249ee084fe2a",
@@ -99194,7 +99228,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "a39962f49ff07ee71da63014b42ef962c15320c8d8378d15945c7f0325985a4f",
+  "source_fingerprint": "78740017050f717b6b8b34dc8002afd103f0b19f604b5ee81f6d8796a6bec026",
   "statistics": {
     "entity_count": 1296,
     "entity_type_counts": {
@@ -99220,7 +99254,7 @@
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3669,
+    "relation_count": 3671,
     "source_count": 286
   }
 }

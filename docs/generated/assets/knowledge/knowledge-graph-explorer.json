@@ -27818,6 +27818,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-mocked.spec.ts"
+      ],
+      "id": "rel:3b8ebad93f9e8c9d",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-mocked.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:3baf69c3b65bebfe",
@@ -57470,6 +57484,20 @@
       "source": "journey:add-device",
       "target": "component:agent-supervisor",
       "type": "uses"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-mocked.spec.ts"
+      ],
+      "id": "rel:d1a70352b8c293f4",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-mocked.spec.ts",
+      "type": "verified_by"
     },
     {
       "derivation": {
