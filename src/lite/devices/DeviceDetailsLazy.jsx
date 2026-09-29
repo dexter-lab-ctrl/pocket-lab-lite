@@ -228,6 +228,32 @@ function recommendationScreen(value) {
   })[action] || '';
 }
 
+function metricTone(percent, { watch = 75, attention = 90 } = {}) {
+  if (percent === null || percent === undefined || !Number.isFinite(Number(percent))) return 'unknown';
+  const value = Number(percent);
+  if (value >= attention) return 'attention';
+  if (value >= watch) return 'watch';
+  return 'healthy';
+}
+
+function temperatureMeter(celsius) {
+  const value = Number(celsius);
+  if (!Number.isFinite(value)) return { percent: null, tone: 'unknown' };
+  const percent = Math.max(0, Math.min(100, (value / 80) * 100));
+  const tone = value >= 60 ? 'attention' : value >= 45 ? 'watch' : 'healthy';
+  return { percent, tone };
+}
+
+function resourceHealthLabel(status, hasMeasurement) {
+  const normalized = normalizeStatus(status || '');
+  if (['healthy', 'normal', 'ok', 'ready'].includes(normalized)) return 'Healthy';
+  if (['watch', 'warning', 'degraded'].includes(normalized)) return 'Watch';
+  if (['needs_attention', 'critical', 'failed', 'unhealthy'].includes(normalized)) return 'Needs attention';
+  if (['unsupported', 'not_applicable'].includes(normalized)) return titleCase(normalized);
+  if (['stale'].includes(normalized)) return 'Stale';
+  return hasMeasurement ? 'Measured' : 'Not reported';
+}
+
 function healthResourceRows(health = {}, device = {}) {
   const facts = normalizeDeviceFacts(
     device?.device_facts || health?.device_facts || device,
@@ -245,58 +271,95 @@ function healthResourceRows(health = {}, device = {}) {
     const parsed = Number(value);
     return Number.isFinite(parsed) && parsed >= 0 && parsed <= 100 ? parsed : null;
   };
+
+  const storageFree = factValue('storage', 'free_mb');
+  const storageTotal = factValue('storage', 'total_mb');
+  const storageUsedPercent = storageFree !== null && storageTotal > 0 && storageFree <= storageTotal
+    ? ((storageTotal - storageFree) / storageTotal) * 100
+    : null;
+
+  const memoryFree = factValue('memory', 'free_mb');
+  const memoryTotal = factValue('memory', 'total_mb');
+  const memoryUsedPercent = memoryFree !== null && memoryTotal > 0 && memoryFree <= memoryTotal
+    ? ((memoryTotal - memoryFree) / memoryTotal) * 100
+    : null;
+
+  const cpuPercent = boundedPercent(
+    factValue(
+      'pocketlab_workload_cpu',
+      'usage_percent',
+      factValue('cpu_usage', 'usage_percent', resources.load?.usage_percent),
+    ),
+  );
+  const processCount = factValue('pocketlab_workload_cpu', 'process_count', resources.load?.process_count);
+  const temperature = factValue('temperature', 'celsius', resources.temperature?.celsius);
+  const temperatureVisual = temperatureMeter(temperature);
+
   const definitions = [
-    ['Storage', 'storage', resources.storage, () => {
-      const free = factValue('storage', 'free_mb');
-      const total = factValue('storage', 'total_mb');
-      return free !== null && total !== null ? `${formatDeviceCapacityGb(free)} free / ${formatDeviceCapacityGb(total)}` : null;
-    }, () => {
-      const free = factValue('storage', 'free_mb');
-      const total = factValue('storage', 'total_mb');
-      return free !== null && total > 0 && free <= total ? ((total - free) / total) * 100 : null;
-    }, 'Storage used'],
-    ['Memory', 'memory', resources.memory, () => {
-      const free = factValue('memory', 'free_mb');
-      const total = factValue('memory', 'total_mb');
-      return free !== null && total !== null ? `${formatDeviceCapacityGb(free)} free / ${formatDeviceCapacityGb(total)}` : null;
-    }, () => {
-      const free = factValue('memory', 'free_mb');
-      const total = factValue('memory', 'total_mb');
-      return free !== null && total > 0 && free <= total ? ((total - free) / total) * 100 : null;
-    }, 'Memory used'],
-    ['Pocket Lab CPU', 'pocketlab_workload_cpu', resources.load, () => {
-      const value = factValue('pocketlab_workload_cpu', 'usage_percent', factValue('cpu_usage', 'usage_percent', resources.load?.usage_percent));
-      const processCount = factValue('pocketlab_workload_cpu', 'process_count', resources.load?.process_count);
-      if (value === null) return null;
-      return processCount !== null
-        ? `${Math.round(value)}% · ${Math.round(processCount)} service process${Math.round(processCount) === 1 ? '' : 'es'}`
-        : `${Math.round(value)}%`;
-    }, () => factValue('pocketlab_workload_cpu', 'usage_percent', factValue('cpu_usage', 'usage_percent', resources.load?.usage_percent)), 'Pocket Lab CPU usage'],
-    ['Temperature', 'temperature', resources.temperature, () => {
-      const value = resourceFactValue(facts, 'temperature', 'celsius');
-      return value !== null ? `${Math.round(value)} °C` : null;
-    }, () => null, 'Temperature'],
+    {
+      label: 'Storage',
+      metric: 'storage',
+      healthValue: resources.storage,
+      primaryValue: storageFree !== null ? `${formatDeviceCapacityGb(storageFree)} free` : null,
+      secondaryValue: storageTotal !== null ? `${formatDeviceCapacityGb(storageTotal)} total` : '',
+      meterPercent: storageUsedPercent,
+      meterTone: metricTone(storageUsedPercent, { watch: 75, attention: 90 }),
+      meterLabel: 'Storage used',
+    },
+    {
+      label: 'Memory',
+      metric: 'memory',
+      healthValue: resources.memory,
+      primaryValue: memoryFree !== null ? `${formatDeviceCapacityGb(memoryFree)} free` : null,
+      secondaryValue: memoryTotal !== null ? `${formatDeviceCapacityGb(memoryTotal)} total` : '',
+      meterPercent: memoryUsedPercent,
+      meterTone: metricTone(memoryUsedPercent, { watch: 75, attention: 90 }),
+      meterLabel: 'Memory used',
+    },
+    {
+      label: 'Pocket Lab CPU',
+      metric: 'pocketlab_workload_cpu',
+      healthValue: resources.load,
+      primaryValue: cpuPercent !== null ? `${Math.round(cpuPercent)}%` : null,
+      secondaryValue: processCount !== null
+        ? `${Math.round(processCount)} Pocket Lab service process${Math.round(processCount) === 1 ? '' : 'es'}`
+        : '',
+      meterPercent: cpuPercent,
+      meterTone: metricTone(cpuPercent, { watch: 60, attention: 80 }),
+      meterLabel: 'Pocket Lab CPU usage',
+    },
+    {
+      label: 'Temperature',
+      metric: 'temperature',
+      healthValue: resources.temperature,
+      primaryValue: temperature !== null ? `${Math.round(temperature)} °C` : null,
+      secondaryValue: temperature !== null ? 'Current thermal reading' : '',
+      meterPercent: temperatureVisual.percent,
+      meterTone: temperatureVisual.tone,
+      meterLabel: 'Temperature on a 0 to 80 °C display scale',
+    },
   ];
-  return definitions.map(([label, metric, healthValue, metricValue, meterValue, meterLabel]) => {
-    const presentation = deviceResourcePresentation(facts, metric, healthValue);
-    const rendered = metricValue();
-    const healthStatusLabel = titleCase(presentation.healthStatus, 'Unknown');
-    const meterPercent = boundedPercent(meterValue());
+
+  return definitions.map((definition) => {
+    const presentation = deviceResourcePresentation(facts, definition.metric, definition.healthValue);
+    const hasMeasurement = Boolean(definition.primaryValue);
+    const statusLabel = resourceHealthLabel(presentation.healthStatus, hasMeasurement);
     return {
-      label,
-      status: normalizeStatus(presentation.healthStatus || presentation.observationStatus || 'unknown'),
-      statusLabel: presentation.availabilityLabel,
-      metric: rendered || presentation.availabilityLabel,
-      summary: presentation.healthSummary
-        ? `Health: ${healthStatusLabel}. ${presentation.healthSummary}`
-        : `Health: ${healthStatusLabel}. Measurement: ${presentation.availabilityLabel}.`,
+      label: definition.label,
+      status: normalizeStatus(presentation.healthStatus || definition.meterTone || presentation.observationStatus || 'unknown'),
+      statusLabel,
+      primaryValue: definition.primaryValue || presentation.availabilityLabel,
+      secondaryValue: definition.secondaryValue,
+      metric: definition.primaryValue || presentation.availabilityLabel,
+      summary: presentation.healthSummary || '',
       observationStatus: presentation.observationStatus,
       freshness: presentation.freshness,
       source: presentation.source,
       reasonCode: presentation.reasonCode,
       observedAt: presentation.observedAt,
-      meterPercent,
-      meterLabel,
+      meterPercent: definition.meterPercent,
+      meterTone: definition.meterTone,
+      meterLabel: definition.meterLabel,
     };
   });
 }
@@ -307,13 +370,52 @@ function healthHistoryItems(payload = {}) {
     title: normalizeStatus(item.previous_state) === normalizeStatus(item.new_state)
       ? `${proactiveHealthLabel(item.new_state)} updated`
       : `${proactiveHealthLabel(item.previous_state)} → ${proactiveHealthLabel(item.new_state)}`,
-    summary: [item.summary || 'Device health changed.', item.reason_code ? `Reason: ${titleCase(item.reason_code)}` : '']
-      .filter(Boolean)
-      .join(' '),
+    summary: item.summary || (item.reason_code ? titleCase(item.reason_code) : 'Device health changed.'),
     status: item.new_state || 'recorded',
     created_at: item.occurred_at,
     reason_code: item.reason_code || '',
   }));
+}
+
+function deviceHistoryTimelineItems(items = []) {
+  const eventTitles = {
+    device_online: 'Device returned online',
+    online: 'Device returned online',
+    device_offline: 'Device connection was lost',
+    offline: 'Device connection was lost',
+    connection_lost: 'Device connection was lost',
+    connection_restored: 'Device returned online',
+    agent_stopped: 'Device service stopped',
+    restart_requested: 'Device service restart requested',
+    restart_completed: 'Device service restart completed',
+    repairing: 'Device recovery started',
+    repair_started: 'Device recovery started',
+    repair_completed: 'Device recovery completed',
+    supervisor_recovery: 'Recovery service restored the device service',
+    invite_accepted: 'Device invite accepted',
+    device_joined: 'Device joined Pocket Lab',
+    remote_access_ready: 'Remote access became ready',
+    remote_access_not_ready: 'Remote access needs attention',
+  };
+  return (Array.isArray(items) ? items : []).slice(0, 20).map((item, index) => {
+    const type = normalizeStatus(item?.event_type || item?.type || item?.event || item?.status || item?.reason_code || 'recorded');
+    const rawTitle = String(item?.title || item?.label || '').trim();
+    const rawSummary = String(item?.summary || item?.message || item?.detail || '').trim();
+    const title = rawTitle || eventTitles[type] || titleCase(type, 'Device activity');
+    const summary = rawSummary && rawSummary !== title
+      ? rawSummary
+      : item?.reason_code && normalizeStatus(item.reason_code) !== type
+        ? titleCase(item.reason_code)
+        : '';
+    const createdAt = item?.occurred_at || item?.created_at || item?.updated_at || item?.timestamp || item?.completed_at || item?.started_at || '';
+    return {
+      id: item?.event_id || item?.id || `${createdAt || 'event'}:${type}:${index}`,
+      title,
+      summary,
+      time: createdAt ? formatLiteTime(createdAt) : '',
+      state: type,
+    };
+  });
 }
 
 function technicalRows(device) {
@@ -580,20 +682,29 @@ function DeviceHealthHistory({ deviceId }) {
   const healthTransitions = healthHistoryItems(healthHistoryQuery.data || {});
 
   return (
-    <div className="lite-device-health-history-control">
-      <LiteButton
-        tone="secondary"
-        onClick={() => setDeviceHealthHistoryOpenId(healthHistoryOpen ? '' : deviceId)}
-        aria-expanded={healthHistoryOpen}
-      >
-        <Clock3 className="h-4 w-4" />
-        {healthHistoryOpen ? 'Hide health history' : 'Show health history'}
-      </LiteButton>
+    <section className={`lite-device-health-history-shell ${healthHistoryOpen ? 'is-open' : ''}`.trim()} aria-label="Health timeline">
+      <div className="lite-device-health-history-head">
+        <div className="lite-device-health-history-title">
+          <span className="lite-device-health-history-icon" aria-hidden="true"><Clock3 className="h-4 w-4" /></span>
+          <div>
+            <strong>Health timeline</strong>
+            <small>Review meaningful health changes in time order.</small>
+          </div>
+        </div>
+        <LiteButton
+          tone="secondary"
+          onClick={() => setDeviceHealthHistoryOpenId(healthHistoryOpen ? '' : deviceId)}
+          aria-expanded={healthHistoryOpen}
+        >
+          {healthHistoryOpen ? 'Hide health history' : 'Show health history'}
+        </LiteButton>
+      </div>
       {healthHistoryOpen ? (
         <div className="lite-device-health-history" role="region" aria-label="Device health history">
-          {healthHistoryQuery.loading ? <p>Loading health history…</p> : null}
+          {healthHistoryQuery.loading ? <p className="lite-device-timeline-loading">Loading health history…</p> : null}
           {!healthHistoryQuery.loading ? (
             <LiteHistoryTimeline
+              className="lite-device-timeline is-health"
               items={healthTransitions.map((item) => ({ id: item.id, title: item.title, summary: item.summary, time: item.created_at ? formatLiteTime(item.created_at) : '', state: item.status }))}
               emptyTitle="No health changes yet"
               emptyDescription="Health changes will appear here when Pocket Lab observes a meaningful transition."
@@ -601,7 +712,7 @@ function DeviceHealthHistory({ deviceId }) {
           ) : null}
         </div>
       ) : null}
-    </div>
+    </section>
   );
 }
 
@@ -824,8 +935,43 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
             : deviceHistoryItems({ ...device, recent_events: device?.recent_lifecycle });
           const restartAssessment = deviceRestartAssessment(device) || {};
           const attention = deviceAttention(device);
+          const timelineItems = deviceHistoryTimelineItems(historyItems);
+          const latestActivity = device?.last_seen_state?.last_seen_at || device?.last_seen_at || device?.last_seen;
           return (
-            <LiteProgressiveDetails
+            <div className="lite-device-connection-health-story">
+              <section className="lite-device-operational-now" aria-label="Current connection and health">
+                <div>
+                  <span>Connection now</span>
+                  <strong>{deviceConnectionLabel(device)}</strong>
+                  <small>{latestActivity ? `Last activity ${formatLiteTime(latestActivity)}` : 'No recent activity timestamp reported'}</small>
+                </div>
+                <div>
+                  <span>Health now</span>
+                  <strong>{proactiveHealthLabel(proactiveHealth?.status)}</strong>
+                  <small>{proactiveHealth?.summary || 'Current health summary is not available yet.'}</small>
+                </div>
+              </section>
+
+              <section className="lite-device-history-timeline-card" aria-label="Device history timeline">
+                <div className="lite-device-history-timeline-head">
+                  <div>
+                    <span>Recent changes</span>
+                    <strong>Device history</strong>
+                    <p>{historyQuery.loading ? 'Loading recent device activity…' : timelineItems.length ? `${timelineItems.length} recent event${timelineItems.length === 1 ? '' : 's'}` : 'No device history has been reported yet.'}</p>
+                  </div>
+                  {timelineItems[0]?.time ? <time>{timelineItems[0].time}</time> : null}
+                </div>
+                {historyQuery.loading ? <p className="lite-device-timeline-loading">Loading recent device activity…</p> : (
+                  <LiteHistoryTimeline
+                    className="lite-device-timeline is-device-history"
+                    items={timelineItems}
+                    emptyTitle="No device history yet"
+                    emptyDescription="Connection, recovery, and lifecycle changes will appear here when Pocket Lab reports them."
+                  />
+                )}
+              </section>
+
+              <LiteProgressiveDetails
               title={title}
               status={status}
               statusLabel={deviceStatusLabel(effectiveStatus)}
@@ -841,17 +987,8 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
               }}
               next_step={attention.length ? (restartAssessment.allowed ? 'Restart the device service through Pocket Lab.' : restartAssessment.summary || 'Check power, private network access, and the device recovery service.') : 'No action is needed right now.'}
               technicalDetails={technicalRows(device)}
-              history={{
-                title: 'Device history',
-                domain: 'default',
-                datasetKey: `device:${device?.id || device?.name || device?.hostname || 'unknown'}`,
-                summary: historyQuery.loading ? 'Loading recent device activity…' : historyItems.length ? `${historyItems.length} safe event${historyItems.length === 1 ? '' : 's'} available.` : 'No device history has been reported yet.',
-                items: historyItems,
-                totalCount: Math.max(historyItems.length, Number(historyQuery.data?.total_count || historyQuery.data?.total || 0)),
-                enabled: true,
-                emptyMessage: 'No device history has been reported yet.',
-              }}
             />
+            </div>
           );
         }} />
       </details>
