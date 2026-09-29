@@ -1,5 +1,5 @@
 import React from 'react';
-import { RefreshCw, Server, Smartphone, WifiOff } from 'lucide-react';
+import { LockKeyhole, RefreshCw, Server, Smartphone, WifiOff } from 'lucide-react';
 import {
   GlassCard,
   LiteButton,
@@ -130,7 +130,7 @@ function DeviceCard({
   return (
     <GlassCard className={`lite-device-card ${connectionClass}`}>
         <div className="lite-device-card-top">
-          <div className="lite-device-icon">
+          <div className={`lite-device-icon is-${flowState}`} data-device-icon-state={flowState}>
             <DeviceConnectionIcon state={flowState} isServer={isServerCard} className="lite-device-icon-symbol" />
             <span className={online ? 'lite-device-pulse' : 'lite-device-pulse lite-device-pulse-muted'} />
           </div>
@@ -151,14 +151,30 @@ function DeviceCard({
           </div>
           {isServerCard ? (
             <div className="lite-device-protected-host" aria-hidden="true">
-              <span className="lite-device-flow-node lite-device-flow-server"><span className="lite-device-static-glyph" /><small>Pocket Lab Server</small></span>
-              <span className="lite-device-protected-lock"><span className="lite-device-static-glyph" /> Protected</span>
+              <span className="lite-device-flow-node lite-device-flow-server">
+                <Server className="lite-device-flow-node-icon" />
+                <small>Pocket Lab Server</small>
+              </span>
+              <span className="lite-device-protected-lock">
+                <LockKeyhole className="lite-device-protected-lock-icon" />
+                Protected
+              </span>
             </div>
           ) : (
-            <div className="lite-device-flow-topology" aria-hidden="true">
-              <span className="lite-device-flow-node lite-device-flow-server"><span className="lite-device-static-glyph" /><small>Server</small></span>
-              <span className="lite-device-flow-track"><span className="lite-device-flow-signal" /><span className="lite-device-flow-break">×</span></span>
-              <span className="lite-device-flow-node lite-device-flow-device"><span className="lite-device-flow-glyph" /><small title={deviceName}>{deviceName}</small></span>
+            <div className={`lite-device-flow-topology is-${flowState}`} aria-hidden="true">
+              <span className="lite-device-flow-node lite-device-flow-server">
+                <Server className="lite-device-flow-node-icon" />
+                <small>Server</small>
+              </span>
+              <span className="lite-device-flow-track">
+                <span className="lite-device-flow-rail" />
+                <span className="lite-device-flow-signal" />
+                <span className="lite-device-flow-break">×</span>
+              </span>
+              <span className="lite-device-flow-node lite-device-flow-device">
+                <DeviceConnectionIcon state={flowState} className="lite-device-flow-node-icon" />
+                <small title={deviceName}>{deviceName}</small>
+              </span>
             </div>
           )}
         </div>

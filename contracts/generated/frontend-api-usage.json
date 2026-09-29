@@ -1457,6 +1457,19 @@
         "import_chain": [
           "src/mocks/handlers.js"
         ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/devices/:deviceId/removal-assessment",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
         "method": "POST",
         "mocked": true,
         "owner": "MSW handler",
@@ -3076,7 +3089,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "4cc95021d7c1617fce6026ac14a0a3a2469b2266c5647ed25ff41c9e737ed011",
+    "aggregate_fingerprint": "a99815bfc71d8a1692bbecceb951ff23cb589d9dd372ffff25c7bf1698efbcfd",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3095,7 +3108,7 @@
       "src/lite/LiteApp.jsx": "6ad063fee08205550b76f75d080e3838cb3ff0b8cf661d4ba0ecf35ae27c56cc",
       "src/lite/LiteCatalog.jsx": "8e58b8d66a504532ae3a8f97a63b4cb5b058e172f11c167bb11c2484e02e4902",
       "src/lite/LiteCatalog.stories.jsx": "d15cc614846f6c01c5e3d577fe5e747919ae4de80ec8189341a2ed13dac80c05",
-      "src/lite/LiteDevices.jsx": "f6d334ff17fcf5da7a4c25f7c76f46dc4c8f21700c3370f5d2e512a9befa5835",
+      "src/lite/LiteDevices.jsx": "b3f989b1874279e72ca61f9134f6bedcf65216111f2d8dd7b110cff7c6f29964",
       "src/lite/LiteDevices.stories.jsx": "09ef4d871905c5e099a9d4086a829c381bf070b38e281fd9f5cdc9165de8786b",
       "src/lite/LiteHelp.jsx": "06af915a9e7f9781ac852804a5d7ab40f5a061c12c8b80b3c888b11b94167a4c",
       "src/lite/LiteHome.jsx": "1ed94498ccc68eeaf1ee8fd3ea437b5be55eadf34a1b3a4441edd32f3ca260a4",
@@ -3126,7 +3139,7 @@
       "src/lite/LiteUi.test.jsx": "d09ad1e06cf21773a1d8ed93dc8071ef7516d872ebd3e3f44eafed0644ee8c50",
       "src/lite/LiteUx.jsx": "a915f121a438003fb3af973b7087f7e1d3f108e1ceaa30ad2ab0de02c5f6d6e3",
       "src/lite/LiteUx.stories.jsx": "a45605c9460b371143058035f733beab232d1374d4fa4eb77a9c4b3704843e5f",
-      "src/mocks/handlers.js": "cbe83276ecded79b450f234f4d158b92603c5a473a7be24507b9a8c6468df8ce"
+      "src/mocks/handlers.js": "d7bff9b9008914f3ea7e7c5e8c5a0bd20ea9cca948b8f4f79e6f38f176d66bea"
     },
     "validation_state": "generated"
   }

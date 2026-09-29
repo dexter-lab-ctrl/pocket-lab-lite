@@ -23,34 +23,46 @@ export function FreshnessIndicator({ freshness = 'missing', observedAt = null })
 }
 
 export function ResourceMetric({ item = {}, variant = 'standard', icon: Icon = null }) {
-  const tone = item.tone || item.status || item.observationStatus || 'neutral';
-  const value = item.value ?? item.metric ?? resourceFactAvailabilityLabel(item);
+  const stateTone = item.tone || item.status || item.observationStatus || 'neutral';
+  const meterTone = item.meterTone || stateTone;
+  const value = item.primaryValue ?? item.value ?? item.metric ?? resourceFactAvailabilityLabel(item);
+  const secondaryValue = item.secondaryValue || '';
   const note = item.note || item.summary || '';
   const parsedMeter = item.meterPercent === null || item.meterPercent === undefined ? NaN : Number(item.meterPercent);
   const meterPercent = Number.isFinite(parsedMeter) && parsedMeter >= 0 && parsedMeter <= 100
     ? Math.round(parsedMeter)
     : null;
   const meterLabel = item.meterLabel || `${item.label || 'Resource'} usage`;
+  const statusLabel = item.statusLabel || resourceFactAvailabilityLabel(item);
   if (variant === 'compact') {
     return (
-      <div className={`lite-home-premium-resource is-${tone}`} data-device-fact-resource={item.key || item.metricKey || item.label}>
+      <div className={`lite-home-premium-resource is-${stateTone}`} data-device-fact-resource={item.key || item.metricKey || item.label}>
         {Icon ? <span><Icon className="h-4 w-4" /></span> : null}
         <div>
           <small>{item.label}</small>
           <strong>{value}</strong>
-          {note ? <em>{note}</em> : null}
+          {secondaryValue ? <em>{secondaryValue}</em> : note ? <em>{note}</em> : null}
         </div>
       </div>
     );
   }
   return (
-    <article className={`lite-device-health-resource is-${tone}`} data-device-fact-resource={item.key || item.metricKey || item.label}>
-      <span>{item.label}</span>
-      <strong>{item.statusLabel || resourceFactAvailabilityLabel(item)}</strong>
-      <small>{value}</small>
+    <article
+      className={`lite-device-health-resource is-${stateTone} meter-${meterTone}`}
+      data-device-fact-resource={item.key || item.metricKey || item.label}
+      data-meter-tone={meterTone}
+    >
+      <div className="lite-device-resource-head">
+        <span>{item.label}</span>
+        <strong>{statusLabel}</strong>
+      </div>
+      <div className="lite-device-resource-reading">
+        <b>{value}</b>
+        {secondaryValue ? <small>{secondaryValue}</small> : null}
+      </div>
       {meterPercent !== null ? (
         <div
-          className="lite-device-resource-meter"
+          className={`lite-device-resource-meter ${meterPercent === 0 ? 'is-zero' : ''}`}
           role="progressbar"
           aria-label={meterLabel}
           aria-valuemin="0"
@@ -60,7 +72,7 @@ export function ResourceMetric({ item = {}, variant = 'standard', icon: Icon = n
           <span style={{ width: `${meterPercent}%` }} />
         </div>
       ) : null}
-      {note ? <p>{note}</p> : null}
+      {note ? <p className="lite-device-resource-note">{note}</p> : null}
       {variant === 'detailed' ? <FreshnessIndicator freshness={item.freshness} observedAt={item.observedAt || item.observed_at} /> : null}
     </article>
   );
@@ -122,20 +134,33 @@ export function SoftwarePosture({ facts = {}, posture = {} }) {
   const status = ['current', 'outdated', 'incompatible', 'stale', 'verification_pending', 'unknown'].includes(normalizedPostureStatus)
     ? normalizedPostureStatus
     : derivedStatus;
+  const hasVersionEvidence = rows.some((item) => item.version);
   const summary = postureView.summary || (status === 'verification_pending'
-    ? 'Version evidence has not been reported by this device yet.'
+    ? 'Pocket Lab is waiting for the device and recovery service to report version evidence.'
     : status === 'unknown'
-      ? 'Version evidence is present, but Pocket Lab cannot classify it yet.'
+      ? 'Versions were reported, but Pocket Lab does not yet have enough compatibility evidence to classify them.'
       : 'Pocket Lab checked the reported device and recovery service evidence.');
+  const headline = status === 'unknown' && hasVersionEvidence
+    ? 'Versions reported'
+    : status === 'verification_pending'
+      ? 'Compatibility check pending'
+      : softwarePostureLabel(status);
+  const componentStateLabel = (item) => {
+    if (!item.version) return 'Not reported';
+    const componentState = String(item.status || item.freshness || '').toLowerCase().replace(/[\s-]+/g, '_');
+    if (!componentState || componentState === 'unknown') return 'Compatibility not classified';
+    if (componentState === 'verification_pending') return 'Verification pending';
+    return titleCase(componentState);
+  };
   return (
     <div className="lite-device-software-posture" data-device-fact-software={status}>
-      <strong>{softwarePostureLabel(status)}</strong>
+      <strong>{headline}</strong>
       <p>{summary}</p>
       <dl>
         {rows.map((item) => (
           <div key={item.component}>
-            <dt>{item.component === 'node_agent' ? 'Agent' : 'Supervisor'}</dt>
-            <dd>{item.version || 'Not reported'}{item.version ? ` · ${titleCase(item.status || item.freshness, 'Unknown')}` : ''}</dd>
+            <dt>{item.component === 'node_agent' ? 'Device service' : 'Recovery service'}</dt>
+            <dd>{item.version ? <><b>{item.version}</b><span>{componentStateLabel(item)}</span></> : 'Not reported'}</dd>
           </div>
         ))}
       </dl>

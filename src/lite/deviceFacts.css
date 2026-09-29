@@ -54,3 +54,214 @@
     scroll-behavior: auto !important;
   }
 }
+
+
+/* Devices UI/UX completion — semantic resource cards */
+.lite-device-health-resource {
+  display: grid;
+  gap: 0.7rem;
+  align-content: start;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1.2rem;
+  background: linear-gradient(145deg, rgba(255,255,255,0.96), rgba(248,250,252,0.84));
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+}
+
+.lite-device-resource-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.lite-device-resource-head > span {
+  color: #475569;
+  font-size: 0.76rem;
+  font-weight: 950;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.lite-device-resource-head > strong {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.8rem;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(226, 232, 240, 0.72);
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 950;
+}
+
+.lite-device-health-resource.is-healthy .lite-device-resource-head > strong,
+.lite-device-health-resource.is-normal .lite-device-resource-head > strong,
+.lite-device-health-resource.is-ready .lite-device-resource-head > strong {
+  background: rgba(236, 253, 245, 0.92);
+  color: #047857;
+}
+
+.lite-device-health-resource.is-watch .lite-device-resource-head > strong,
+.lite-device-health-resource.is-degraded .lite-device-resource-head > strong {
+  background: rgba(255, 251, 235, 0.94);
+  color: #a16207;
+}
+
+.lite-device-health-resource.is-needs_attention .lite-device-resource-head > strong,
+.lite-device-health-resource.is-critical .lite-device-resource-head > strong,
+.lite-device-health-resource.is-failed .lite-device-resource-head > strong {
+  background: rgba(255, 241, 242, 0.94);
+  color: #be123c;
+}
+
+.lite-device-resource-reading {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.lite-device-resource-reading > b {
+  color: #0f172a;
+  font-size: clamp(1.25rem, 2vw, 1.7rem);
+  font-weight: 950;
+  letter-spacing: -0.035em;
+}
+
+.lite-device-resource-reading > small {
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+.lite-device-health-resource .lite-device-resource-meter {
+  position: relative;
+  height: 0.55rem;
+  margin: 0.05rem 0 0;
+  background: rgba(226, 232, 240, 0.9);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.lite-device-health-resource .lite-device-resource-meter > span {
+  min-width: 0;
+  opacity: 1;
+  background: #0ea5e9;
+  box-shadow: 0 0 14px rgba(14, 165, 233, 0.2);
+}
+
+.lite-device-health-resource.meter-healthy .lite-device-resource-meter > span {
+  background: linear-gradient(90deg, #10b981, #14b8a6);
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.22);
+}
+
+.lite-device-health-resource.meter-watch .lite-device-resource-meter > span {
+  background: linear-gradient(90deg, #f59e0b, #f97316);
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.2);
+}
+
+.lite-device-health-resource.meter-attention .lite-device-resource-meter > span {
+  background: linear-gradient(90deg, #f97316, #ef4444);
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.2);
+}
+
+.lite-device-health-resource.meter-unknown .lite-device-resource-meter > span {
+  background: #94a3b8;
+  box-shadow: none;
+}
+
+.lite-device-health-resource .lite-device-resource-meter.is-zero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: inherit;
+  border: 2px solid currentColor;
+  transform: translateY(-50%);
+  opacity: 0.65;
+}
+
+.lite-device-resource-note {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .lite-device-health-resource {
+    padding: 0.9rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lite-device-health-resource .lite-device-resource-meter > span {
+    transition: none !important;
+  }
+}
+
+
+/* Devices UI/UX completion — software posture rows */
+.lite-device-health-resource.meter-healthy .lite-device-resource-meter.is-zero::after {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.lite-device-health-resource.meter-watch .lite-device-resource-meter.is-zero::after {
+  background: #f59e0b;
+  border-color: #f59e0b;
+}
+
+.lite-device-health-resource.meter-attention .lite-device-resource-meter.is-zero::after {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+[data-device-fact-software] dl {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+}
+
+[data-device-fact-software] dl > div {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.8fr) minmax(0, 1.2fr);
+  gap: 0.65rem;
+  align-items: start;
+  padding: 0.58rem 0.65rem;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 0.8rem;
+  background: rgba(248, 250, 252, 0.7);
+}
+
+[data-device-fact-software] dd {
+  display: grid;
+  gap: 0.12rem;
+  margin: 0;
+  text-align: right;
+}
+
+[data-device-fact-software] dd b {
+  color: #0f172a;
+  font-size: 0.84rem;
+  font-weight: 950;
+}
+
+[data-device-fact-software] dd span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+@media (max-width: 560px) {
+  [data-device-fact-software] dl > div {
+    grid-template-columns: 1fr;
+    gap: 0.18rem;
+  }
+
+  [data-device-fact-software] dd {
+    text-align: left;
+  }
+}

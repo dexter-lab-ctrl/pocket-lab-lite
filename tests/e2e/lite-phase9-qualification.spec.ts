@@ -172,7 +172,10 @@ test.describe('Pocket Lab Lite Phase 9 native/PWA qualification', () => {
 
     await page.keyboard.press('Enter');
 
-    const detailPanel = devices.locator('.lite-device-details-panel');
+    // Device details are rendered through DeviceActionPortal so fixed desktop
+    // positioning remains viewport-relative. The panel is intentionally outside
+    // the screen stage, so this assertion must not be scoped to `devices`.
+    const detailPanel = page.locator('.lite-device-details-panel:visible').first();
     await expect(detailPanel).toBeVisible();
 
     await page.keyboard.press('Escape');

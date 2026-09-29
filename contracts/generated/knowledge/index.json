@@ -1005,6 +1005,13 @@
           "resolved": true,
           "source_module": "src/lite/LiteDevices.jsx",
           "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
         }
       ],
       "id": "api:get:/api/lite/devices/{device_id}/removal-assessment",
@@ -99226,7 +99233,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "70f4d68dbe44179780151891dbf4f786117f5b6dd07aebea4b7c93f3fe0048f0",
+  "source_fingerprint": "39035705f607cb02db7a9888ebdfa9d46125c7c55a103201a5defaf62e4da8be",
   "statistics": {
     "entity_count": 1296,
     "entity_type_counts": {

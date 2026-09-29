@@ -551,7 +551,7 @@ export function remoteAccessPresentation(remoteAccess = {}, savedStateOnly = fal
     ready,
     title: ready ? 'Ready' : 'Remote access not ready',
     summary: remoteAccess?.summary || (ready
-      ? 'Private-network access is available for eligible devices.'
+      ? 'Your devices can securely reach this Pocket Lab over the private network.'
       : 'Pocket Lab is checking whether private-network device access is available.'),
   };
 }
@@ -571,6 +571,40 @@ function remoteAccessDetailRows(remoteAccess = {}, remoteAccessView = {}, savedS
     { label: 'Tailscale IP', value: hasAddress ? `Available · ${remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip}` : remoteAccessView.tailnet_ip_ready ? 'Ready' : 'Not ready' },
     { label: 'Private command path', value: natsReachable === true ? 'Reachable' : natsReachable === false ? 'Not reachable' : 'Not reported' },
     { label: 'Checked', value: checkedAt ? formatLiteTime(checkedAt) : 'Not reported' },
+  ];
+}
+
+export function remoteAccessSummaryRows(remoteAccess = {}, remoteAccessView = {}, savedStateOnly = false) {
+  const running = typeof remoteAccess.running === 'boolean'
+    ? remoteAccess.running
+    : typeof remoteAccessView.running === 'boolean' ? remoteAccessView.running : null;
+  const natsReachable = typeof remoteAccess.nats_reachable === 'boolean'
+    ? remoteAccess.nats_reachable
+    : typeof remoteAccessView.nats_reachable === 'boolean' ? remoteAccessView.nats_reachable : null;
+  const hasAddress = Boolean(remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip);
+  const checkedAt = remoteAccess.checked_at || remoteAccess.updated_at || remoteAccessView.checked_at || remoteAccessView.updated_at;
+  const networkReady = !savedStateOnly && remoteAccessView.ready && running !== false;
+  return [
+    {
+      label: 'Private network',
+      value: savedStateOnly ? 'Saved' : networkReady ? 'Ready' : running === false ? 'Not ready' : 'Checking',
+      state: savedStateOnly ? 'saved' : networkReady ? 'ready' : running === false ? 'attention' : 'unknown',
+    },
+    {
+      label: 'Device address',
+      value: hasAddress ? 'Available' : savedStateOnly ? 'Saved state' : 'Not ready',
+      state: hasAddress ? 'ready' : savedStateOnly ? 'saved' : 'attention',
+    },
+    {
+      label: 'Control connection',
+      value: natsReachable === true ? 'Reachable' : natsReachable === false ? 'Not reachable' : savedStateOnly ? 'Saved state' : 'Checking',
+      state: natsReachable === true ? 'ready' : natsReachable === false ? 'attention' : savedStateOnly ? 'saved' : 'unknown',
+    },
+    {
+      label: 'Last checked',
+      value: checkedAt ? formatLiteTime(checkedAt) : 'Not reported',
+      state: savedStateOnly ? 'saved' : checkedAt ? 'neutral' : 'unknown',
+    },
   ];
 }
 
@@ -1030,8 +1064,18 @@ export default function DevicesScreen() {
           <strong>{remoteAccessView.title}</strong>
           <p>{remoteAccessView.summary}</p>
         </div>
+
+        <div className="lite-remote-access-facts" aria-label="Remote access readiness">
+          {remoteAccessSummaryRows(remoteAccess, remoteAccessView, savedStateOnly).map((item) => (
+            <div key={item.label} className={`is-${item.state}`}>
+              <span>{item.label}</span>
+              <strong><i aria-hidden="true" />{item.value}</strong>
+            </div>
+          ))}
+        </div>
+
         <details className="lite-remote-access-details" onToggle={(event) => setRemoteAccessDetailsOpen(event.currentTarget.open)}>
-          <summary>Connection details</summary>
+          <summary>Technical connection details</summary>
           {remoteAccessDetailsOpen ? (
             <dl>
               {remoteAccessDetailRows(remoteAccess, remoteAccessView, savedStateOnly).map((item) => (
