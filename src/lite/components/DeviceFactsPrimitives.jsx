@@ -134,20 +134,33 @@ export function SoftwarePosture({ facts = {}, posture = {} }) {
   const status = ['current', 'outdated', 'incompatible', 'stale', 'verification_pending', 'unknown'].includes(normalizedPostureStatus)
     ? normalizedPostureStatus
     : derivedStatus;
+  const hasVersionEvidence = rows.some((item) => item.version);
   const summary = postureView.summary || (status === 'verification_pending'
-    ? 'Version evidence has not been reported by this device yet.'
+    ? 'Pocket Lab is waiting for the device and recovery service to report version evidence.'
     : status === 'unknown'
-      ? 'Version evidence is present, but Pocket Lab cannot classify it yet.'
+      ? 'Versions were reported, but Pocket Lab does not yet have enough compatibility evidence to classify them.'
       : 'Pocket Lab checked the reported device and recovery service evidence.');
+  const headline = status === 'unknown' && hasVersionEvidence
+    ? 'Versions reported'
+    : status === 'verification_pending'
+      ? 'Compatibility check pending'
+      : softwarePostureLabel(status);
+  const componentStateLabel = (item) => {
+    if (!item.version) return 'Not reported';
+    const componentState = String(item.status || item.freshness || '').toLowerCase().replace(/[\s-]+/g, '_');
+    if (!componentState || componentState === 'unknown') return 'Compatibility not classified';
+    if (componentState === 'verification_pending') return 'Verification pending';
+    return titleCase(componentState);
+  };
   return (
     <div className="lite-device-software-posture" data-device-fact-software={status}>
-      <strong>{softwarePostureLabel(status)}</strong>
+      <strong>{headline}</strong>
       <p>{summary}</p>
       <dl>
         {rows.map((item) => (
           <div key={item.component}>
-            <dt>{item.component === 'node_agent' ? 'Agent' : 'Supervisor'}</dt>
-            <dd>{item.version || 'Not reported'}{item.version ? ` · ${titleCase(item.status || item.freshness, 'Unknown')}` : ''}</dd>
+            <dt>{item.component === 'node_agent' ? 'Device service' : 'Recovery service'}</dt>
+            <dd>{item.version ? <><b>{item.version}</b><span>{componentStateLabel(item)}</span></> : 'Not reported'}</dd>
           </div>
         ))}
       </dl>
