@@ -388,7 +388,7 @@ test('[interaction] Rules Technical status disclosure stays inside the render bu
   await page.getByRole('button', { name: /Manage Safety Rules/i }).click();
   const sheet = page.getByRole('dialog', { name: /Manage Safety Rules/i });
   await expect(sheet).toBeVisible();
-  const disclosure = sheet.locator('details.lite-rules-advanced-details');
+  const disclosure = sheet.locator('details.lite-ux-technical-facts');
   const report = await measureLiteInteraction(
     page,
     testInfo,
@@ -654,11 +654,27 @@ test('[interaction] truthful Security progress updates and completion toast stay
 
 test('[interaction] Home refresh feedback stays inside the render budget', async ({ page }, testInfo) => {
   await installScenario(page, 'healthy');
+  await page.addInitScript(() => {
+    const nativeFetch = window.fetch.bind(window);
+    window.fetch = async (input, init) => {
+      const rawUrl = typeof input === 'string' ? input : input?.url || '';
+      const url = new URL(rawUrl, window.location.origin);
+      const shouldDelay = url.pathname === '/api/lite/status'
+        && window.sessionStorage.getItem('POCKETLAB_PERF_DELAY_NEXT_STATUS') === '1';
+      if (shouldDelay) {
+        window.sessionStorage.removeItem('POCKETLAB_PERF_DELAY_NEXT_STATUS');
+        await new Promise((resolve) => setTimeout(resolve, 250));
+      }
+      return nativeFetch(input, init);
+    };
+  });
   await page.goto('/?screen=home');
   await waitForLiteScreenToSettle(page, 'home');
 
   const refresh = page.getByRole('button', { name: /^Refresh$/ }).first();
-  await expect(refresh).toBeVisible();
+  const refreshButton = page.locator('button.lite-refresh-button').first();
+  await expect(refreshButton).toBeVisible();
+  await page.evaluate(() => window.sessionStorage.setItem('POCKETLAB_PERF_DELAY_NEXT_STATUS', '1'));
 
   const report = await measureLiteInteraction(
     page,
@@ -666,7 +682,7 @@ test('[interaction] Home refresh feedback stays inside the render budget', async
     interactionId('refresh-feedback', 'home'),
     async () => {
       await refresh.click();
-      await expect(refresh.locator('.lite-refresh-progress-ring')).toBeVisible();
+      await expect(refreshButton.locator('.lite-refresh-progress-ring')).toBeVisible();
       await expect(page.locator('.lite-refresh-status-popover')).toHaveCount(0);
     },
     { settleMs: 420, mode: 'mocked' },
