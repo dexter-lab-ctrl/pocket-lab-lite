@@ -569,7 +569,7 @@ function remoteAccessDetailRows(remoteAccess = {}, remoteAccessView = {}, savedS
   return [
     { label: 'Evidence', value: savedStateOnly ? 'Saved backend snapshot' : 'Current backend check' },
     { label: 'Tailscale service', value: running === true ? 'Running' : running === false ? 'Not running' : 'Not reported' },
-    { label: 'Tailnet address', value: hasAddress ? `Available · ${remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip}` : remoteAccessView.tailnet_ip_ready ? 'Ready' : 'Not ready' },
+    { label: 'Tailscale IP', value: hasAddress ? `Available · ${remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip}` : remoteAccessView.tailnet_ip_ready ? 'Ready' : 'Not ready' },
     { label: 'Private command path', value: natsReachable === true ? 'Reachable' : natsReachable === false ? 'Not reachable' : 'Not reported' },
     { label: 'Checked', value: checkedAt ? formatLiteTime(checkedAt) : 'Not reported' },
   ];
