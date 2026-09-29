@@ -56,7 +56,7 @@ const OVERLAYS: OverlayCase[] = [
 ];
 
 for (const item of OVERLAYS) {
-  test(`${item.name} responsive Manage surface remains visually stable`, async ({ page }) => {
+  test(`${item.name} responsive Manage surface remains visually stable`, async ({ page }, testInfo) => {
     await installScenario(page, item.scenario || 'healthy');
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto(`/?screen=${item.screen}`);
@@ -65,6 +65,13 @@ for (const item of OVERLAYS) {
     await item.open(page);
     const surface = item.surface(page);
     await expect(surface).toBeVisible();
+    if (testInfo.project.name === 'mocked-mobile') {
+      const margins = await surface.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        return { left: rect.left, right: window.innerWidth - rect.right };
+      });
+      expect(Math.abs(margins.left - margins.right)).toBeLessThanOrEqual(1);
+    }
     if (item.name === 'recovery-manage') {
       await expect(surface.getByRole('heading', { name: 'Create and manage restore points' })).toBeVisible();
     }

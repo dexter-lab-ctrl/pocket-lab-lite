@@ -20582,6 +20582,29 @@
         "affects_release": false,
         "affects_runtime": true,
         "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_PERF_DELAY_NEXT_STATUS",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "tests/e2e/lite-performance.spec.ts"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
         "name": "POCKETLAB_PHASE3B_IDLE_SECONDS",
         "owner": "repository tooling",
         "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -22581,6 +22604,31 @@
       },
       {
         "affected_components": [
+          "FastAPI",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_RELEASE_CHECK_MAX_RSS_BYTES",
+        "owner": "FastAPI/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py",
+          "tests/backend/test_lite_native_release.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "FastAPI"
         ],
         "affects_release": true,
@@ -22673,7 +22721,8 @@
       },
       {
         "affected_components": [
-          "FastAPI"
+          "FastAPI",
+          "repository tooling"
         ],
         "affects_release": true,
         "affects_runtime": true,
@@ -22690,7 +22739,8 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          "pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py",
+          "tests/backend/test_lite_native_release.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -46770,9 +46820,9 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "c7efb2a97b0314a431a6494cd426a4053d2ce3fdd430312fbd9073b0e2167652",
-        "documentation": "d4428f67754a0a7287367dfbf703b1df5ebc3b7df5d9ce0c4fcfe22eb7ba1f4a",
+        "documentation": "81052f0c8a27c1f28b4f278203dbba5106e15d501d1032734b94e34e38bcda95",
         "openapi": "8d70d2565517e6782d0afafcaf1e9d6090b6fe9c73cf9eb2feeaa0892ea3737b",
-        "operational_health": "5b5c8a43baf10037e816b1aed1d30a61e5b514763e8a41d074f7a9c9f3f70bd2"
+        "operational_health": "09bd04b18418c62f18ce74af8602236b581d195736bb95846e2c119b53de96ab"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -117214,5 +117264,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "aa2881e5c74602e968be3817e1a22782aae5ce5f561886590f73981cc176cc74"
+  "source_fingerprint": "01dc539cac051281001fd0d469e6ddd3de8c76c09652c5b926ad4f73103faf9d"
 }

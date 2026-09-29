@@ -7,7 +7,6 @@ import { liteApi } from '../lib/liteApi.js';
 import { liteQueryKeys } from '../lib/liteQueryClient.js';
 import { liteReleaseUpdateMachine } from '../machines/liteReleaseUpdateMachine.js';
 import { GlassCard, LiteButton, StatusBadge } from './LiteUi.jsx';
-import { LiteTechnicalFacts } from './LiteUx.jsx';
 
 const ACTIVE_PHASES = new Set([
   'checking', 'applying', 'downloading', 'staging', 'preparing', 'installing',
@@ -34,19 +33,41 @@ export function isReleaseActive(data = {}) {
     || ACTIVE_PHASES.has(String(data.phase || '').toLowerCase());
 }
 
+export function installedReleaseVersion(data = {}) {
+  return String(data.installed_release_tag || data.current_tag || '').trim();
+}
+
+export function latestReleaseVersion(data = {}) {
+  const latestRelease = data.latest_release && typeof data.latest_release === 'object'
+    ? data.latest_release
+    : {};
+  return String(latestRelease.tag_name || data.latest_release_tag || data.latest_tag || '').trim();
+}
+
 export function isVerifiedCurrentRelease(data = {}) {
   return data.repository_match === true
     && data.manifest_verified === true
-    && Boolean(data.current_tag)
-    && data.current_tag === data.latest_tag
+    && Boolean(installedReleaseVersion(data))
+    && installedReleaseVersion(data) === latestReleaseVersion(data)
     && data.update_available !== true
     && data.installed_artifact_verified !== false;
+}
+
+export function isVerifiedInstalledReleaseAheadOfKnownRelease(data = {}) {
+  return data.repository_match === true
+    && data.manifest_verified === true
+    && data.install_mode === 'release'
+    && data.installed_identity_verified === true
+    && data.installed_artifact_verified !== false
+    && Boolean(installedReleaseVersion(data))
+    && Boolean(latestReleaseVersion(data))
+    && data.comparison === 'newer';
 }
 
 export function isReleaseFailureActive(data = {}) {
   if (isReleaseActive(data)) return false;
   if (!(data.status === 'degraded' || data.last_failure_code)) return false;
-  if (!isVerifiedCurrentRelease(data)) return true;
+  if (isVerifiedCurrentRelease(data) || isVerifiedInstalledReleaseAheadOfKnownRelease(data)) return false;
 
   const lastFailure = timestampValue(data.last_failure_at);
   const lastSuccess = timestampValue(data.last_success_at);
@@ -89,6 +110,9 @@ export function releasePresentation(data = {}, savedStateOnly = false) {
   if (isReleaseFailureActive(data)) {
     return { label: failureLabel(data), status: 'failed', summary: 'The current working interface remains available. No unsafe partial update is presented.' };
   }
+  if (isVerifiedInstalledReleaseAheadOfKnownRelease(data)) {
+    return { label: 'Current version', status: 'healthy', summary: 'The running installed Pocket Lab Lite release is newer than the last verified GitHub release.' };
+  }
   if (data.repository_match === false) {
     return { label: 'Update source not verified', status: 'failed', summary: 'Install is blocked until the Pocket Lab Lite source is verified.' };
   }
@@ -113,8 +137,11 @@ export function releasePresentation(data = {}, savedStateOnly = false) {
 
 export default function LiteReleaseUpdateCard() {
   const release = useLiteResource(liteApi.releaseStatus, [], {
-    staleTime: 15 * 60_000,
+    // The installed version is a live server-phone identity. Keep the visible
+    // card fresh without polling while the app is backgrounded.
+    staleTime: 5_000,
     gcTime: 24 * 60 * 60_000,
+    refetchInterval: 30_000,
     pollingMode: 'slow',
     isLive: isReleaseActive,
     refetchOnWindowFocus: false,
@@ -184,8 +211,8 @@ export default function LiteReleaseUpdateCard() {
   const progressIndex = releaseProgressIndex(data);
   const progressVisible = active && progressIndex >= 0;
   const Icon = presentation.status === 'healthy' ? CheckCircle2 : ShieldCheck;
-  const installedTag = data.installed_release_tag || data.current_tag || 'Not verified';
-  const availableTag = data.latest_release_tag || data.latest_tag || 'Not checked';
+  const installedTag = installedReleaseVersion(data) || 'Not verified';
+  const availableTag = latestReleaseVersion(data) || 'Not checked';
   const verificationLabel = data.manifest_verified && data.installed_artifact_verified !== false
     ? 'Manifest and files verified'
     : data.install_mode === 'source' ? 'Source install' : 'Verification pending';
@@ -202,8 +229,8 @@ export default function LiteReleaseUpdateCard() {
         <StatusBadge status={failure ? 'failed' : presentation.status}>{failure ? 'Needs attention' : presentation.label}</StatusBadge>
       </div>
       <div className="lite-release-update-meta">
-        <div><small>Installed files:</small><strong>{installedTag}</strong></div>
-        <div><small>Available</small><strong>{availableTag}</strong></div>
+        <div><small>Current Installed Version</small><strong>{installedTag}</strong></div>
+        <div><small>Latest Version</small><strong>{availableTag}</strong></div>
         <div><small>Verification</small><strong>{verificationLabel}</strong></div>
         <div><small>Last checked</small><strong>{checked ? new Date(checked).toLocaleString() : 'Not checked yet'}</strong></div>
       </div>
@@ -232,16 +259,6 @@ export default function LiteReleaseUpdateCard() {
           </LiteButton>
         ) : null}
       </div>
-      <LiteTechnicalFacts
-        title="Technical details"
-        description="These release facts are read from the prepared backend status and never trigger an update by themselves."
-        facts={[
-          { id: 'source', label: 'Source', value: data.repository_match ? 'Pocket Lab Lite verified' : 'Not verified', tone: data.repository_match ? 'healthy' : 'failed' },
-          { id: 'manifest', label: 'Manifest', value: data.manifest_verified ? 'Verified' : 'Not verified', tone: data.manifest_verified ? 'healthy' : 'review' },
-          { id: 'operation', label: 'Operation', value: data.last_terminal_status || data.phase || 'Not started' },
-          { id: 'failure', label: 'Failure record', value: data.last_failure_code || 'None' },
-        ]}
-      />
       {releaseSavedStateOnly ? <p className="lite-release-update-note">Saved status only. Reconnect before installing an update.</p> : null}
     </GlassCard>
   );

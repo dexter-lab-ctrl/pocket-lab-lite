@@ -147,7 +147,9 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(card).toBeVisible();
     await expect(card).toContainText('Updated successfully');
     await expect(card).not.toContainText(/Check failed|Install failed|Needs attention/i);
-    await expect(card).toContainText(/Installed files:|Manifest and files verified/i);
+    await expect(card).toContainText(/Current Installed Version|Manifest and files verified/i);
+    await expect(card).toContainText(/Latest Version/i);
+    await expect(card).not.toContainText('Technical details');
   });
 
   test('Home release card presents an available release distinctly', async ({ page }) => {

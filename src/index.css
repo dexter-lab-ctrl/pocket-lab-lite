@@ -25216,6 +25216,40 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
   opacity: 1 !important;
 }
 
+/* Keep mobile Lite sheets geometrically centered even when the device reports
+   different left/right safe-area insets. The shared gutter is intentionally
+   applied to both sides so the visible surface has equal breathing room. */
+@media (max-width: 899px) {
+  .theme-pocket-lite-daylight.lite-overlay-root,
+  .lite-overlay-root,
+  .theme-pocket-lite-daylight.lite-catalog-manage-layer,
+  .lite-catalog-manage-layer,
+  [data-lite-manage-portal="true"].lite-catalog-manage-layer {
+    --lite-mobile-overlay-gutter: max(
+      0.75rem,
+      env(safe-area-inset-left, 0px),
+      env(safe-area-inset-right, 0px)
+    );
+    box-sizing: border-box !important;
+    justify-content: center !important;
+    padding-inline: var(--lite-mobile-overlay-gutter) !important;
+  }
+
+  .theme-pocket-lite-daylight.lite-overlay-root .lite-overlay-surface,
+  .lite-overlay-root .lite-overlay-surface,
+  .theme-pocket-lite-daylight.lite-overlay-root .lite-details-panel,
+  .lite-overlay-root .lite-details-panel,
+  .theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-manage-sheet,
+  .lite-catalog-manage-layer .lite-catalog-manage-sheet {
+    box-sizing: border-box !important;
+    inset-inline: auto !important;
+    left: auto !important;
+    right: auto !important;
+    margin-inline: auto !important;
+    max-width: 100% !important;
+  }
+}
+
 [data-lite-manage-portal="true"] .lite-catalog-manage-tab-indicator {
   opacity: 0 !important;
 }

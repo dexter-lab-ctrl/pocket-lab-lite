@@ -321,6 +321,21 @@ def test_stage_fails_closed_on_disk_pressure_and_cleans_partial_state(
     assert not target.exists()
 
 
+def test_release_metadata_check_has_a_separate_bounded_memory_budget(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import release_update_process
+
+    monkeypatch.delenv("POCKETLAB_RELEASE_CHECK_MAX_RSS_BYTES", raising=False)
+    monkeypatch.delenv("POCKETLAB_RELEASE_CHILD_MAX_RSS_BYTES", raising=False)
+    assert release_update_process._memory_budget_bytes("check") == 512 * 1024**2
+    assert release_update_process._memory_budget_bytes("stage") == 256 * 1024**2
+
+    monkeypatch.setenv("POCKETLAB_RELEASE_CHECK_MAX_RSS_BYTES", str(384 * 1024**2))
+    monkeypatch.setenv("POCKETLAB_RELEASE_CHILD_MAX_RSS_BYTES", str(192 * 1024**2))
+    assert release_update_process._memory_budget_bytes("check") == 384 * 1024**2
+    assert release_update_process._memory_budget_bytes("promote") == 192 * 1024**2
+
+
 def test_atomic_promotion_validation_and_rollback(tmp_path, monkeypatch):
     release_runtime = _runtime(tmp_path, monkeypatch)
     releases = tmp_path / "pwa" / "releases"
@@ -716,13 +731,14 @@ def test_prepared_release_status_prioritizes_verified_installed_release_identity
         "phase": "source",
         "comparison": "source_install",
         "current_tag": "unknown",
-        "latest_tag": "lite-2026.07.28.1",
+        "latest_tag": "lite-2026.07.27.1",
         "configured_repository": "dexter-lab-ctrl/pocket-lab-lite",
         "verified_repository": "dexter-lab-ctrl/pocket-lab-lite",
         "repository_match": True,
         "manifest_verified": True,
         "artifact_verified": False,
         "latest_release": {
+            "tag_name": "lite-2026.07.28.1",
             "artifact": {
                 "verification_status": "manifest_and_checksum_verified",
             },
@@ -734,7 +750,7 @@ def test_prepared_release_status_prioritizes_verified_installed_release_identity
                 """
                 UPDATE release_runtime_projection
                 SET phase = 'source', status = 'healthy', current_tag = 'unknown',
-                    latest_tag = 'lite-2026.07.28.1', update_available = 0,
+                    latest_tag = 'lite-2026.07.27.1', update_available = 0,
                     manifest_verified = 1, artifact_verified = 0,
                     payload_json = ?, payload_bytes = ?
                 WHERE owner = 'release'
@@ -750,9 +766,13 @@ def test_prepared_release_status_prioritizes_verified_installed_release_identity
     assert status["phase"] == "current"
     assert status["comparison"] == "equal"
     assert status["current_tag"] == "lite-2026.07.28.1"
+    assert status["latest_tag"] == "lite-2026.07.28.1"
     assert status["installed_release_tag"] == "lite-2026.07.28.1"
     assert status["update_available"] is False
     assert status["installed_identity_verified"] is True
+    assert status["installed_version_source"] == "durable_installed_identity"
+    assert status["latest_release_tag"] == "lite-2026.07.28.1"
+    assert status["latest_version_source"] == "github_release_projection"
     assert status["installed_artifact_verified"] is True
     assert status["latest_release_manifest_verified"] is True
     assert status["latest_release_artifact_metadata_verified"] is True
@@ -766,6 +786,61 @@ def test_prepared_release_status_prioritizes_verified_installed_release_identity
         "installed_artifact_verified": True,
         "active_operation_artifact_verified": False,
     }
+
+
+def test_prepared_release_status_reads_the_running_pwa_identity_marker(
+    tmp_path, monkeypatch
+):
+    runtime = _runtime(tmp_path, monkeypatch)
+    pwa_dir = tmp_path / "pwa_dist"
+    current_dir = pwa_dir / "current"
+    current_dir.mkdir(parents=True)
+    tag = "lite-2026.09.29.1"
+    source_commit = "e" * 40
+    artifact_sha256 = "f" * 64
+    marker = {
+        "product": "pocket-lab-lite",
+        "install_mode": "release",
+        "source_repository": "dexter-lab-ctrl/pocket-lab-lite",
+        "source_commit": source_commit,
+        "release_tag": tag,
+        "artifact_name": "dist.zip",
+        "artifact_sha256": artifact_sha256,
+        "installed_at": "2026-09-29T00:00:00Z",
+        "installer_schema": 1,
+        "verified": True,
+        "identity_revision": 2,
+    }
+    (pwa_dir / "installed-release-identity.json").write_text(
+        json.dumps(marker), encoding="utf-8"
+    )
+    (current_dir / "pocketlab-lite-build.json").write_text(
+        json.dumps(
+            {
+                "product": "pocket-lab-lite",
+                "install_mode": "release",
+                "release_tag": tag,
+                "source_commit": source_commit,
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("POCKET_LAB_PWA_DIR", str(pwa_dir))
+    runtime.record_release_install(
+        release_tag="lite-2026.09.27.1",
+        source_repository="dexter-lab-ctrl/pocket-lab-lite",
+        source_commit="c" * 40,
+        artifact_sha256="d" * 64,
+    )
+
+    identity = runtime.read_installed_identity()
+    status = runtime.read_release_status()
+    assert identity["release_tag"] == tag
+    assert identity["identity_source"] == "running_pwa_identity"
+    assert status["current_tag"] == tag
+    assert status["installed_release_tag"] == tag
+    assert status["installed_version_source"] == "running_pwa_identity"
+    assert status["installed_identity_verified"] is True
 
 
 def test_release_verification_contract_is_explicit_in_ui_and_server_gate():
@@ -790,7 +865,9 @@ def test_release_verification_contract_is_explicit_in_ui_and_server_gate():
     ):
         assert field in runtime_source
         assert field in runner_source
-    assert "Installed files:" in ui_source
+    assert "Current Installed Version" in ui_source
+    assert "Latest Version" in ui_source
+    assert "LiteTechnicalFacts" not in ui_source
     assert "data.installed_artifact_verified" in ui_source
 
 

@@ -403,9 +403,9 @@
   "fingerprints": {
     "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
     "asyncapi": "c7efb2a97b0314a431a6494cd426a4053d2ce3fdd430312fbd9073b0e2167652",
-    "documentation": "d4428f67754a0a7287367dfbf703b1df5ebc3b7df5d9ce0c4fcfe22eb7ba1f4a",
+    "documentation": "81052f0c8a27c1f28b4f278203dbba5106e15d501d1032734b94e34e38bcda95",
     "openapi": "8d70d2565517e6782d0afafcaf1e9d6090b6fe9c73cf9eb2feeaa0892ea3737b",
-    "operational_health": "5b5c8a43baf10037e816b1aed1d30a61e5b514763e8a41d074f7a9c9f3f70bd2"
+    "operational_health": "09bd04b18418c62f18ce74af8602236b581d195736bb95846e2c119b53de96ab"
   },
   "frontend_version": "1.0.0",
   "implementation_status": "implemented",
