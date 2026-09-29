@@ -25931,3 +25931,158 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
     opacity: 1;
   }
 }
+
+
+/* Devices UI/UX completion — relationship map motion */
+.theme-pocket-lite-daylight .lite-device-relationship-flow {
+  align-items: center;
+}
+
+.theme-pocket-lite-daylight .lite-device-relationship-link {
+  position: relative;
+  display: block;
+  min-width: 4.5rem;
+  height: 1.1rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-relationship-link::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.3);
+  transform: translateY(-50%);
+}
+
+.theme-pocket-lite-daylight .lite-device-relationship-link > i {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  top: 50%;
+  width: 0.62rem;
+  height: 0.62rem;
+  margin-top: -0.31rem;
+  border-radius: 999px;
+  background: #10b981;
+  box-shadow: 0 0 0 4px rgba(16,185,129,0.12), 0 0 16px rgba(16,185,129,0.36);
+  opacity: 0;
+}
+
+.theme-pocket-lite-daylight .lite-device-relationship-link.is-joined::before {
+  background: linear-gradient(90deg, rgba(16,185,129,0.3), rgba(16,185,129,0.95));
+}
+
+.theme-pocket-lite-daylight .lite-device-relationship-link.is-joined > i {
+  animation: lite-device-relationship-travel 1.7s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-device-relationship-link.is-repairing::before {
+  background: repeating-linear-gradient(90deg, rgba(245,158,11,0.85) 0 8px, rgba(245,158,11,0.16) 8px 14px);
+}
+
+.theme-pocket-lite-daylight .lite-device-relationship-link.is-repairing > i {
+  left: 50%;
+  opacity: 1;
+  background: #f59e0b;
+  animation: lite-device-signal-repair 900ms linear infinite;
+}
+
+.theme-pocket-lite-daylight .lite-device-relationship-link.is-disconnected::before {
+  background: repeating-linear-gradient(90deg, rgba(239,68,68,0.72) 0 8px, transparent 8px 14px);
+}
+
+.theme-pocket-lite-daylight .lite-device-relationship-link.is-disconnected > i {
+  display: none;
+}
+
+.theme-pocket-lite-daylight .lite-device-relationship-link.is-disconnected::after {
+  content: "×";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: #fff1f2;
+  color: #dc2626;
+  font-weight: 950;
+  transform: translate(-50%, -50%);
+}
+
+.theme-pocket-lite-daylight .lite-device-relationship-node.is-server {
+  animation: lite-device-icon-connected 3s ease-in-out infinite;
+}
+
+@keyframes lite-device-relationship-travel {
+  0% { left: 0; opacity: 0; transform: scale(0.75); }
+  15% { opacity: 1; }
+  50% { transform: scale(1.08); }
+  85% { opacity: 1; }
+  100% { left: calc(100% - 0.62rem); opacity: 0; transform: scale(0.75); }
+}
+
+@media (max-width: 820px) {
+  .theme-pocket-lite-daylight .lite-device-relationship-flow {
+    align-items: stretch;
+  }
+
+  .theme-pocket-lite-daylight .lite-device-relationship-link {
+    width: 1.1rem;
+    min-width: 1.1rem;
+    height: 3.7rem;
+    margin: 0 auto;
+  }
+
+  .theme-pocket-lite-daylight .lite-device-relationship-link::before {
+    left: 50%;
+    right: auto;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    height: auto;
+    transform: translateX(-50%);
+  }
+
+  .theme-pocket-lite-daylight .lite-device-relationship-link.is-joined > i {
+    left: 50%;
+    top: 0;
+    margin: 0 0 0 -0.31rem;
+    animation: lite-device-relationship-travel-vertical 1.7s ease-in-out infinite;
+  }
+
+  .theme-pocket-lite-daylight .lite-device-relationship-link.is-repairing > i {
+    left: 50%;
+    top: 50%;
+    margin: -0.31rem 0 0 -0.31rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-device-relationship-link.is-disconnected::after {
+    left: 50%;
+    top: 50%;
+  }
+}
+
+@keyframes lite-device-relationship-travel-vertical {
+  0% { top: 0; opacity: 0; transform: scale(0.75); }
+  15% { opacity: 1; }
+  50% { transform: scale(1.08); }
+  85% { opacity: 1; }
+  100% { top: calc(100% - 0.62rem); opacity: 0; transform: scale(0.75); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-pocket-lite-daylight .lite-device-relationship-link > i,
+  .theme-pocket-lite-daylight .lite-device-relationship-node.is-server {
+    animation: none !important;
+  }
+
+  .theme-pocket-lite-daylight .lite-device-relationship-link.is-joined > i {
+    left: 50%;
+    opacity: 1;
+  }
+}
