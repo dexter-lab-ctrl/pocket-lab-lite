@@ -1036,7 +1036,7 @@ export default function DevicesScreen() {
             {remoteAccessDetailRows(remoteAccess, remoteAccessView, savedStateOnly).map((item) => (
               <div key={item.label}>
                 <dt>{item.label}</dt>
-                <dd>{item.label === 'Tailnet address' && (remoteAccess?.ip || remoteAccess?.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip)
+                <dd>{item.label === 'Tailscale IP' && (remoteAccess?.ip || remoteAccess?.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip)
                   ? <><span>Available</span> <code>{remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip}</code></>
                   : item.value}</dd>
               </div>
