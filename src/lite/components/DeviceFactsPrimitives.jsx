@@ -23,34 +23,46 @@ export function FreshnessIndicator({ freshness = 'missing', observedAt = null })
 }
 
 export function ResourceMetric({ item = {}, variant = 'standard', icon: Icon = null }) {
-  const tone = item.tone || item.status || item.observationStatus || 'neutral';
-  const value = item.value ?? item.metric ?? resourceFactAvailabilityLabel(item);
+  const stateTone = item.tone || item.status || item.observationStatus || 'neutral';
+  const meterTone = item.meterTone || stateTone;
+  const value = item.primaryValue ?? item.value ?? item.metric ?? resourceFactAvailabilityLabel(item);
+  const secondaryValue = item.secondaryValue || '';
   const note = item.note || item.summary || '';
   const parsedMeter = item.meterPercent === null || item.meterPercent === undefined ? NaN : Number(item.meterPercent);
   const meterPercent = Number.isFinite(parsedMeter) && parsedMeter >= 0 && parsedMeter <= 100
     ? Math.round(parsedMeter)
     : null;
   const meterLabel = item.meterLabel || `${item.label || 'Resource'} usage`;
+  const statusLabel = item.statusLabel || resourceFactAvailabilityLabel(item);
   if (variant === 'compact') {
     return (
-      <div className={`lite-home-premium-resource is-${tone}`} data-device-fact-resource={item.key || item.metricKey || item.label}>
+      <div className={`lite-home-premium-resource is-${stateTone}`} data-device-fact-resource={item.key || item.metricKey || item.label}>
         {Icon ? <span><Icon className="h-4 w-4" /></span> : null}
         <div>
           <small>{item.label}</small>
           <strong>{value}</strong>
-          {note ? <em>{note}</em> : null}
+          {secondaryValue ? <em>{secondaryValue}</em> : note ? <em>{note}</em> : null}
         </div>
       </div>
     );
   }
   return (
-    <article className={`lite-device-health-resource is-${tone}`} data-device-fact-resource={item.key || item.metricKey || item.label}>
-      <span>{item.label}</span>
-      <strong>{item.statusLabel || resourceFactAvailabilityLabel(item)}</strong>
-      <small>{value}</small>
+    <article
+      className={`lite-device-health-resource is-${stateTone} meter-${meterTone}`}
+      data-device-fact-resource={item.key || item.metricKey || item.label}
+      data-meter-tone={meterTone}
+    >
+      <div className="lite-device-resource-head">
+        <span>{item.label}</span>
+        <strong>{statusLabel}</strong>
+      </div>
+      <div className="lite-device-resource-reading">
+        <b>{value}</b>
+        {secondaryValue ? <small>{secondaryValue}</small> : null}
+      </div>
       {meterPercent !== null ? (
         <div
-          className="lite-device-resource-meter"
+          className={`lite-device-resource-meter ${meterPercent === 0 ? 'is-zero' : ''}`}
           role="progressbar"
           aria-label={meterLabel}
           aria-valuemin="0"
@@ -60,7 +72,7 @@ export function ResourceMetric({ item = {}, variant = 'standard', icon: Icon = n
           <span style={{ width: `${meterPercent}%` }} />
         </div>
       ) : null}
-      {note ? <p>{note}</p> : null}
+      {note ? <p className="lite-device-resource-note">{note}</p> : null}
       {variant === 'detailed' ? <FreshnessIndicator freshness={item.freshness} observedAt={item.observedAt || item.observed_at} /> : null}
     </article>
   );
