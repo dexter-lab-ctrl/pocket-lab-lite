@@ -115,7 +115,8 @@ describe('Device Facts shared UI primitives', () => {
         },
       }}
     />);
-    expect(screen.getByText('Unknown')).toBeTruthy();
+    expect(screen.getByText('Versions reported')).toBeTruthy();
+    expect(screen.getByText('Compatibility not classified')).toBeTruthy();
     expect(screen.getByText(/2.4.0/)).toBeTruthy();
     expect(screen.getByText(/2.5.0/)).toBeTruthy();
   });
