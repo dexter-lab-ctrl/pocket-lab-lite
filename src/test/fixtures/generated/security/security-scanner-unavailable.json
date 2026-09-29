@@ -16,7 +16,7 @@
     "scenario": "security-scanner-unavailable",
     "schema_revision": 1,
     "source_commit": "uncommitted",
-    "source_fingerprint": "7f0da5aa19c5ae21e838ee64409aaa4d88ceab46b449d6341919c0e36edb3e55",
+    "source_fingerprint": "79621d666a89bf24d7c142814eec517738d0782efe9589ec34376e189bdc5f55",
     "validation_status": "generated"
   }
 }
