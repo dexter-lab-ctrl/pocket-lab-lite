@@ -21,7 +21,6 @@ import {
   ShieldCheck,
   Smartphone,
   Trash2,
-  Wifi,
   WifiOff,
   X,
 } from 'lucide-react';
@@ -176,9 +175,9 @@ function DeviceRelationshipMap({ devices = [] }) {
       </div>
       {peers.length ? (
         <div className="lite-device-relationship-summary" aria-label="Connection state summary">
-          <span><Wifi className="h-3.5 w-3.5" aria-hidden="true" /> Connected {connectedCount}</span>
-          <span><RefreshCw className="h-3.5 w-3.5" aria-hidden="true" /> Repairing {repairingCount}</span>
-          <span><WifiOff className="h-3.5 w-3.5" aria-hidden="true" /> Not connected {disconnectedCount}</span>
+          <span data-connection-summary-state="joined">Connected {connectedCount}</span>
+          <span data-connection-summary-state="repairing">Repairing {repairingCount}</span>
+          <span data-connection-summary-state="disconnected">Not connected {disconnectedCount}</span>
         </div>
       ) : null}
       <div className="lite-device-relationship-flow">
@@ -631,6 +630,7 @@ export default function DevicesScreen() {
   const [hostname, setHostname] = useState('');
   const [selectedRole, setSelectedRole] = useState('compute');
   const [addDeviceOpen, setAddDeviceOpen] = useState(false);
+  const [remoteAccessDetailsOpen, setRemoteAccessDetailsOpen] = useState(false);
   const [result, setResult] = useState(null);
   const [invite, setInvite] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -1030,18 +1030,20 @@ export default function DevicesScreen() {
           <strong>{remoteAccessView.title}</strong>
           <p>{remoteAccessView.summary}</p>
         </div>
-        <details className="lite-remote-access-details">
+        <details className="lite-remote-access-details" onToggle={(event) => setRemoteAccessDetailsOpen(event.currentTarget.open)}>
           <summary>Connection details</summary>
-          <dl>
-            {remoteAccessDetailRows(remoteAccess, remoteAccessView, savedStateOnly).map((item) => (
-              <div key={item.label}>
-                <dt>{item.label}</dt>
-                <dd>{item.label === 'Tailscale IP' && (remoteAccess?.ip || remoteAccess?.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip)
-                  ? <><span>Available</span> <code>{remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip}</code></>
-                  : item.value}</dd>
-              </div>
-            ))}
-          </dl>
+          {remoteAccessDetailsOpen ? (
+            <dl>
+              {remoteAccessDetailRows(remoteAccess, remoteAccessView, savedStateOnly).map((item) => (
+                <div key={item.label}>
+                  <dt>{item.label}</dt>
+                  <dd>{item.label === 'Tailscale IP' && (remoteAccess?.ip || remoteAccess?.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip)
+                    ? <><span>Available</span> <code>{remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip}</code></>
+                    : item.value}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : null}
         </details>
       </section>
 
