@@ -906,6 +906,7 @@ function StoryAction({ action, fallbackTone = 'secondary' }) {
           onClick={action.onClick}
           disabled={Boolean(action.disabled)}
           tone={action.tone || fallbackTone}
+          haptic={Boolean(action.haptic)}
           ariaLabel={action.ariaLabel || action.label}
           aria-expanded={typeof action.ariaExpanded === 'boolean' ? action.ariaExpanded : undefined}
           buttonRef={action.buttonRef}

@@ -26,6 +26,11 @@ export function ResourceMetric({ item = {}, variant = 'standard', icon: Icon = n
   const tone = item.tone || item.status || item.observationStatus || 'neutral';
   const value = item.value ?? item.metric ?? resourceFactAvailabilityLabel(item);
   const note = item.note || item.summary || '';
+  const parsedMeter = item.meterPercent === null || item.meterPercent === undefined ? NaN : Number(item.meterPercent);
+  const meterPercent = Number.isFinite(parsedMeter) && parsedMeter >= 0 && parsedMeter <= 100
+    ? Math.round(parsedMeter)
+    : null;
+  const meterLabel = item.meterLabel || `${item.label || 'Resource'} usage`;
   if (variant === 'compact') {
     return (
       <div className={`lite-home-premium-resource is-${tone}`} data-device-fact-resource={item.key || item.metricKey || item.label}>
@@ -43,6 +48,18 @@ export function ResourceMetric({ item = {}, variant = 'standard', icon: Icon = n
       <span>{item.label}</span>
       <strong>{item.statusLabel || resourceFactAvailabilityLabel(item)}</strong>
       <small>{value}</small>
+      {meterPercent !== null ? (
+        <div
+          className="lite-device-resource-meter"
+          role="progressbar"
+          aria-label={meterLabel}
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow={meterPercent}
+        >
+          <span style={{ width: `${meterPercent}%` }} />
+        </div>
+      ) : null}
       {note ? <p>{note}</p> : null}
       {variant === 'detailed' ? <FreshnessIndicator freshness={item.freshness} observedAt={item.observedAt || item.observed_at} /> : null}
     </article>
@@ -84,17 +101,41 @@ export function RuntimeServiceList({ services = [] }) {
 }
 
 export function SoftwarePosture({ facts = {}, posture = {} }) {
+  const postureView = posture && typeof posture === 'object' ? posture : {};
   const software = facts?.software && typeof facts.software === 'object' ? facts.software : {};
-  const rows = ['node_agent', 'supervisor'].map((component) => ({ component, ...(software[component] || {}) }));
-  const status = posture.status || (rows.some((item) => item.freshness === 'stale') ? 'stale' : rows.some((item) => item.version) ? 'unknown' : 'verification_pending');
+  const postureParts = Array.isArray(postureView.parts)
+    ? postureView.parts.reduce((result, item) => {
+      if (item?.component) result[item.component] = item;
+      return result;
+    }, {})
+    : postureView.parts && typeof postureView.parts === 'object' ? postureView.parts : {};
+  const rows = ['node_agent', 'supervisor'].map((component) => ({
+    component,
+    ...(postureParts[component] || {}),
+    ...(software[component] || {}),
+  }));
+  const statusOrder = ['incompatible', 'outdated', 'stale', 'verification_pending', 'unknown', 'current'];
+  const normalizedPostureStatus = String(postureView.status || '').toLowerCase().replace(/[\s-]+/g, '_');
+  const componentStatuses = rows.map((item) => String(item.status || '').toLowerCase().replace(/[\s-]+/g, '_'));
+  const derivedStatus = statusOrder.find((candidate) => componentStatuses.includes(candidate))
+    || (rows.some((item) => item.version) ? 'unknown' : 'verification_pending');
+  const status = ['current', 'outdated', 'incompatible', 'stale', 'verification_pending', 'unknown'].includes(normalizedPostureStatus)
+    ? normalizedPostureStatus
+    : derivedStatus;
+  const summary = postureView.summary || (status === 'verification_pending'
+    ? 'Version evidence has not been reported by this device yet.'
+    : status === 'unknown'
+      ? 'Version evidence is present, but Pocket Lab cannot classify it yet.'
+      : 'Pocket Lab checked the reported device and recovery service evidence.');
   return (
     <div className="lite-device-software-posture" data-device-fact-software={status}>
       <strong>{softwarePostureLabel(status)}</strong>
+      <p>{summary}</p>
       <dl>
         {rows.map((item) => (
           <div key={item.component}>
             <dt>{item.component === 'node_agent' ? 'Agent' : 'Supervisor'}</dt>
-            <dd>{item.version || 'Not reported'}{item.version ? ` · ${titleCase(item.freshness, 'Unknown')}` : ''}</dd>
+            <dd>{item.version || 'Not reported'}{item.version ? ` · ${titleCase(item.status || item.freshness, 'Unknown')}` : ''}</dd>
           </div>
         ))}
       </dl>

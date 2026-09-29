@@ -1,4 +1,5 @@
 import React from 'react';
+import { Activity, LockKeyhole, RefreshCw, Server, ShieldCheck, Smartphone, Trash2, WifiOff } from 'lucide-react';
 import {
   GlassCard,
   LiteButton,
@@ -81,6 +82,11 @@ function deviceConnectionSummary(state) {
   return 'Connection interrupted';
 }
 
+function DeviceConnectionIcon({ state, isServer = false, className = '' }) {
+  const Icon = isServer ? Server : state === 'connected' ? Smartphone : state === 'repairing' ? RefreshCw : WifiOff;
+  return <Icon className={className} aria-hidden="true" />;
+}
+
 function DeviceCard({
   device,
   restartBusy = '',
@@ -125,6 +131,7 @@ function DeviceCard({
     <GlassCard className={`lite-device-card ${connectionClass}`}>
         <div className="lite-device-card-top">
           <div className="lite-device-icon">
+            <DeviceConnectionIcon state={flowState} isServer={isServerCard} className="lite-device-icon-symbol" />
             <span className={online ? 'lite-device-pulse' : 'lite-device-pulse lite-device-pulse-muted'} />
           </div>
         </div>
@@ -144,14 +151,14 @@ function DeviceCard({
           </div>
           {isServerCard ? (
             <div className="lite-device-protected-host" aria-hidden="true">
-              <span className="lite-device-flow-node lite-device-flow-server"><span className="lite-device-static-glyph" aria-hidden="true" /><small>Pocket Lab Server</small></span>
-              <span className="lite-device-protected-lock"><span className="lite-device-static-glyph" aria-hidden="true" /> Protected</span>
+              <span className="lite-device-flow-node lite-device-flow-server"><Server className="lite-device-flow-glyph" /><small>Pocket Lab Server</small></span>
+              <span className="lite-device-protected-lock"><LockKeyhole className="lite-device-protected-lock-icon" /> Protected</span>
             </div>
           ) : (
             <div className="lite-device-flow-topology" aria-hidden="true">
-              <span className="lite-device-flow-node lite-device-flow-server"><span className="lite-device-flow-glyph" aria-hidden="true" /><small>Server</small></span>
+              <span className="lite-device-flow-node lite-device-flow-server"><Server className="lite-device-flow-glyph" /><small>Server</small></span>
               <span className="lite-device-flow-track"><span className="lite-device-flow-signal" /><span className="lite-device-flow-break">×</span></span>
-              <span className="lite-device-flow-node lite-device-flow-device"><span className="lite-device-flow-glyph" aria-hidden="true" /><small title={deviceName}>{deviceName}</small></span>
+              <span className="lite-device-flow-node lite-device-flow-device"><DeviceConnectionIcon state={flowState} className="lite-device-flow-glyph" /><small title={deviceName}>{deviceName}</small></span>
             </div>
           )}
         </div>
@@ -162,7 +169,7 @@ function DeviceCard({
             ...story,
             freshness: lastSeen ? { label: savedStateOnly ? 'Saved status' : 'Last seen', detail: formatLiteTime(lastSeen), state: savedStateOnly ? 'stale' : 'live' } : null,
           }}
-          primaryAction={story.next_action?.kind === 'restart' ? { label: story.next_action.label, onClick: onRestartAgent, tone: 'primary' } : null}
+          primaryAction={story.next_action?.kind === 'restart' ? { label: story.next_action.label, onClick: onRestartAgent, tone: 'primary', haptic: true } : null}
           manageAction={{
             label: detailsOpen ? 'Hide details' : 'Manage',
             onClick: onOpenDetails,
@@ -172,6 +179,7 @@ function DeviceCard({
             onPointerEnter: onPreloadDetails,
             onFocus: onPreloadDetails,
             onTouchStart: onPreloadDetails,
+            haptic: true,
           }}
         />
 
@@ -188,7 +196,7 @@ function DeviceCard({
         {showHealthAttention ? (
           <div className={`lite-device-health-strip ${healthTone(proactiveHealth.status)}`} aria-label="Proactive device health">
             <span className="lite-device-health-strip-icon">
-              <span className="lite-device-health-static-glyph" aria-hidden="true" />
+              {healthAttentionCount > 0 ? <Activity className="lite-device-health-static-glyph" aria-hidden="true" /> : <ShieldCheck className="lite-device-health-static-glyph" aria-hidden="true" />}
             </span>
             <span>
               <strong>{healthLabel(proactiveHealth.status)}</strong>
@@ -217,10 +225,10 @@ function DeviceCard({
                 </div>
                 {(canRestart || canRemove) ? <div className="lite-device-secondary-actions">
                   {canRestart && story.next_action?.kind !== 'restart' ? <LiteButton tone="secondary" onClick={onRestartAgent} disabled={restartBusy === device?.id}>
-                    <span className="lite-device-card-action-glyph" aria-hidden="true" />{restartBusy === device?.id ? 'Checking progress...' : 'Restart agent'}
+                    <RefreshCw className="lite-device-card-action-glyph" aria-hidden="true" />{restartBusy === device?.id ? 'Checking progress...' : 'Restart agent'}
                   </LiteButton> : null}
                   {canRemove ? <LiteButton tone="danger" onClick={openRemovalReview} disabled={removeBusy} buttonRef={removeButtonRef}>
-                    <span className="lite-device-card-action-glyph is-danger" aria-hidden="true" />{(device?.removal_assessment?.allowed ?? device?.removal_assessment?.safe_to_remove) ? 'Remove device' : 'Review removal'}
+                    <Trash2 className="lite-device-card-action-glyph is-danger" aria-hidden="true" />{(device?.removal_assessment?.allowed ?? device?.removal_assessment?.safe_to_remove) ? 'Remove device' : 'Review removal'}
                   </LiteButton> : null}
                 </div> : null}
               </div>

@@ -13,6 +13,37 @@
   color: #cbd5e1;
 }
 
+.lite-device-resource-meter {
+  grid-column: 1 / -1;
+  height: 0.38rem;
+  margin-top: 0.25rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.lite-device-resource-meter > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: currentColor;
+  opacity: 0.72;
+  transition: width 180ms ease;
+}
+
+[data-device-fact-software] p {
+  margin: 0.35rem 0 0;
+  color: var(--lite-muted, #65737e);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lite-device-resource-meter > span {
+    transition: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-device-fact-resource],
   [data-device-fact-capabilities],

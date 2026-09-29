@@ -1,6 +1,8 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Activity,
+  CheckCircle2,
+  CircleAlert,
   Copy,
   Database,
   Download,
@@ -8,13 +10,18 @@ import {
   FileCheck,
   Fingerprint,
   LayoutGrid,
+  LockKeyhole,
+  Maximize2,
   Lock,
   Menu,
+  Move,
   Network,
   RefreshCw,
   Server,
   ShieldCheck,
+  Smartphone,
   Trash2,
+  Wifi,
   WifiOff,
   X,
 } from 'lucide-react';
@@ -147,24 +154,49 @@ function DeviceRelationshipMap({ devices = [] }) {
   const server = devices.find((device) => deviceLinkState(device) === 'server') || null;
   const peers = devices.filter((device) => device !== server);
   const serverName = server?.name || server?.hostname || 'Server Phone';
+  const stateCounts = peers.reduce((counts, device) => {
+    const state = deviceLinkState(device);
+    counts[state] = (counts[state] || 0) + 1;
+    return counts;
+  }, {});
+  const connectedCount = Number(stateCounts.joined || 0);
+  const repairingCount = Number(stateCounts.repairing || 0);
+  const disconnectedCount = Number(stateCounts.disconnected || 0);
+  const connectionSummary = connectedCount
+    ? `${connectedCount} connected device${connectedCount === 1 ? '' : 's'}${repairingCount ? ` · ${repairingCount} repairing` : ''}${disconnectedCount ? ` · ${disconnectedCount} not connected` : ''}`
+    : peers.length
+      ? `${repairingCount + disconnectedCount} device${repairingCount + disconnectedCount === 1 ? '' : 's'} need${repairingCount + disconnectedCount === 1 ? 's' : ''} connection attention`
+      : 'Your server is ready for devices';
   return (
     <section className="lite-device-relationship-map" aria-label="Pocket Lab device connections">
       <div className="lite-device-relationship-head">
         <span>Your device connections</span>
-        <strong>{peers.length ? `${peers.length} connected device${peers.length === 1 ? '' : 's'} in this workspace` : 'Your server is ready for devices'}</strong>
-        <p>See whether Pocket Lab can reach each device without needing to understand the connection services underneath.</p>
+        <strong>{connectionSummary}</strong>
+        <p>Each line shows the backend-reported connection to the protected Pocket Lab Server. Status text remains available without relying on color or motion.</p>
       </div>
+      {peers.length ? (
+        <div className="lite-device-relationship-summary" aria-label="Connection state summary">
+          <span><Wifi className="h-3.5 w-3.5" aria-hidden="true" /> Connected {connectedCount}</span>
+          <span><RefreshCw className="h-3.5 w-3.5" aria-hidden="true" /> Repairing {repairingCount}</span>
+          <span><WifiOff className="h-3.5 w-3.5" aria-hidden="true" /> Not connected {disconnectedCount}</span>
+        </div>
+      ) : null}
       <div className="lite-device-relationship-flow">
-        <div className="lite-device-relationship-node is-server"><Server className="h-4 w-4" /><span>{serverName}</span></div>
+        <div className="lite-device-relationship-node is-server" data-relationship-state="server">
+          <LockKeyhole className="h-4 w-4" aria-hidden="true" />
+          <span>{serverName}</span>
+          <small>Protected server</small>
+        </div>
         {peers.length ? peers.map((device) => {
           const state = deviceLinkState(device);
+          const stateLabel = state === 'joined' ? 'Connected' : state === 'repairing' ? 'Repairing' : 'Disconnected';
           return (
             <React.Fragment key={deviceListKey(device)}>
               <span className={`lite-device-relationship-link is-${state}`} aria-hidden="true"><i /></span>
-              <div className={`lite-device-relationship-node is-${state}`}>
-                <Network className="h-4 w-4" />
+              <div className={`lite-device-relationship-node is-${state}`} data-relationship-state={state} aria-label={`${device.name || device.hostname || 'Device'}: ${stateLabel}`}>
+                {state === 'joined' ? <Smartphone className="h-4 w-4" aria-hidden="true" /> : state === 'repairing' ? <RefreshCw className="h-4 w-4" aria-hidden="true" /> : <WifiOff className="h-4 w-4" aria-hidden="true" />}
                 <span>{device.name || device.hostname || 'Device'}</span>
-                <small>{state === 'joined' ? 'Connected' : state === 'repairing' ? 'Repairing' : 'Disconnected'}</small>
+                <small>{stateLabel}</small>
               </div>
             </React.Fragment>
           );
@@ -212,11 +244,49 @@ function toggleDeviceDetails(deviceKey) {
   store.setActiveDeviceDetailsId(store.activeDeviceDetailsId === deviceKey ? '' : deviceKey);
 }
 
+const DEVICE_DETAILS_PANEL_MEDIA_QUERY = '(min-width: 701px)';
+const DEVICE_DETAILS_PANEL_MARGIN = 16;
+const DEVICE_DETAILS_PANEL_MIN_WIDTH = 360;
+const DEVICE_DETAILS_PANEL_MIN_HEIGHT = 360;
+
+function clampDeviceDetailsGeometry(geometry = {}) {
+  if (typeof window === 'undefined') return geometry;
+  const viewportWidth = Math.max(1, window.innerWidth);
+  const viewportHeight = Math.max(1, window.innerHeight);
+  const maxWidth = Math.max(DEVICE_DETAILS_PANEL_MIN_WIDTH, viewportWidth - DEVICE_DETAILS_PANEL_MARGIN * 2);
+  const maxHeight = Math.max(DEVICE_DETAILS_PANEL_MIN_HEIGHT, viewportHeight - DEVICE_DETAILS_PANEL_MARGIN * 2);
+  const width = Math.min(maxWidth, Math.max(DEVICE_DETAILS_PANEL_MIN_WIDTH, Number(geometry.width) || maxWidth));
+  const height = Math.min(maxHeight, Math.max(DEVICE_DETAILS_PANEL_MIN_HEIGHT, Number(geometry.height) || maxHeight));
+  return {
+    left: Math.min(Math.max(DEVICE_DETAILS_PANEL_MARGIN, Number(geometry.left) || DEVICE_DETAILS_PANEL_MARGIN), viewportWidth - width - DEVICE_DETAILS_PANEL_MARGIN),
+    top: Math.min(Math.max(DEVICE_DETAILS_PANEL_MARGIN, Number(geometry.top) || DEVICE_DETAILS_PANEL_MARGIN), viewportHeight - height - DEVICE_DETAILS_PANEL_MARGIN),
+    width,
+    height,
+  };
+}
+
+function defaultDeviceDetailsGeometry() {
+  if (typeof window === 'undefined') return null;
+  const width = Math.min(560, window.innerWidth - DEVICE_DETAILS_PANEL_MARGIN * 2);
+  const height = Math.min(Math.max(480, window.innerHeight * 0.82), window.innerHeight - DEVICE_DETAILS_PANEL_MARGIN * 2);
+  return clampDeviceDetailsGeometry({
+    left: window.innerWidth - width - DEVICE_DETAILS_PANEL_MARGIN,
+    top: Math.max(DEVICE_DETAILS_PANEL_MARGIN, (window.innerHeight - height) / 2),
+    width,
+    height,
+  });
+}
+
 function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
   const detailsDeviceId = useLiteUiStore((state) => state.activeDeviceDetailsId);
   const setDeviceModelPickerId = useLiteUiStore((state) => state.setDeviceModelPickerId);
   const detailsPanelRef = useRef(null);
+  const panelInteractionRef = useRef(null);
+  const panelMoveFrameRef = useRef(null);
+  const panelMovePendingRef = useRef(null);
   const [detailsBodyReady, setDetailsBodyReady] = useState(false);
+  const [desktopPanel, setDesktopPanel] = useState(false);
+  const [panelGeometry, setPanelGeometry] = useState(null);
   const activeDetailsDevice = useMemo(
     () => devices.find((device) => String(device?.id || device?.name || '') === detailsDeviceId) || null,
     [devices, detailsDeviceId],
@@ -234,6 +304,111 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
     const frame = window.requestAnimationFrame(() => setDetailsBodyReady(true));
     return () => window.cancelAnimationFrame(frame);
   }, [activeDetailsDevice]);
+
+  useEffect(() => {
+    if (!activeDetailsDevice || typeof window === 'undefined') {
+      setDesktopPanel(false);
+      setPanelGeometry(null);
+      return undefined;
+    }
+    const media = window.matchMedia(DEVICE_DETAILS_PANEL_MEDIA_QUERY);
+    const applyMedia = (matches) => {
+      setDesktopPanel(matches);
+      setPanelGeometry(matches ? (previous) => previous || defaultDeviceDetailsGeometry() : null);
+    };
+    applyMedia(media.matches);
+    const onMediaChange = (event) => applyMedia(event.matches);
+    media.addEventListener?.('change', onMediaChange);
+    return () => media.removeEventListener?.('change', onMediaChange);
+  }, [activeDetailsDevice?.id]);
+
+  useEffect(() => {
+    if (!activeDetailsDevice || typeof window === 'undefined') return undefined;
+    const onResize = () => setPanelGeometry((previous) => previous ? clampDeviceDetailsGeometry(previous) : previous);
+    window.addEventListener('resize', onResize, { passive: true });
+    return () => window.removeEventListener('resize', onResize);
+  }, [activeDetailsDevice?.id]);
+
+  const schedulePanelGeometry = useCallback((nextGeometry) => {
+    panelMovePendingRef.current = clampDeviceDetailsGeometry(nextGeometry);
+    if (panelMoveFrameRef.current !== null) return;
+    panelMoveFrameRef.current = window.requestAnimationFrame(() => {
+      panelMoveFrameRef.current = null;
+      if (panelMovePendingRef.current) setPanelGeometry(panelMovePendingRef.current);
+      panelMovePendingRef.current = null;
+    });
+  }, []);
+
+  const stopPanelInteraction = useCallback(() => {
+    const interaction = panelInteractionRef.current;
+    interaction?.cleanup?.();
+    panelInteractionRef.current = null;
+    if (panelMoveFrameRef.current !== null) {
+      window.cancelAnimationFrame(panelMoveFrameRef.current);
+      panelMoveFrameRef.current = null;
+    }
+    panelMovePendingRef.current = null;
+    detailsPanelRef.current?.classList.remove('is-interacting');
+  }, []);
+
+  const startPanelInteraction = useCallback((kind, event) => {
+    if (!desktopPanel || event.button !== 0 || !detailsPanelRef.current) return;
+    event.preventDefault();
+    const rect = detailsPanelRef.current.getBoundingClientRect();
+    const base = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
+    const pointerId = event.pointerId;
+    const onMove = (moveEvent) => {
+      if (moveEvent.pointerId !== pointerId) return;
+      const deltaX = moveEvent.clientX - event.clientX;
+      const deltaY = moveEvent.clientY - event.clientY;
+      schedulePanelGeometry(kind === 'move'
+        ? { ...base, left: base.left + deltaX, top: base.top + deltaY }
+        : { ...base, width: base.width + deltaX, height: base.height + deltaY });
+    };
+    const cleanup = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+    };
+    const onUp = (upEvent) => {
+      if (upEvent.pointerId !== pointerId) return;
+      cleanup();
+      panelInteractionRef.current = null;
+      detailsPanelRef.current?.classList.remove('is-interacting');
+    };
+    panelInteractionRef.current = { cleanup };
+    detailsPanelRef.current.classList.add('is-interacting');
+    window.addEventListener('pointermove', onMove, { passive: true });
+    window.addEventListener('pointerup', onUp, { passive: true });
+    window.addEventListener('pointercancel', onUp, { passive: true });
+  }, [desktopPanel, schedulePanelGeometry]);
+
+  const adjustPanelWithKeyboard = useCallback((kind, event) => {
+    if (!desktopPanel || !panelGeometry) return;
+    const step = event.shiftKey ? 64 : 16;
+    let next = panelGeometry;
+    if (event.key === 'Home') {
+      next = kind === 'move' ? defaultDeviceDetailsGeometry() : { ...panelGeometry, ...defaultDeviceDetailsGeometry() };
+    } else if (kind === 'move') {
+      const delta = {
+        ArrowLeft: { left: -step }, ArrowRight: { left: step },
+        ArrowUp: { top: -step }, ArrowDown: { top: step },
+      }[event.key];
+      if (!delta) return;
+      next = { ...panelGeometry, ...delta };
+    } else {
+      const delta = {
+        ArrowLeft: { width: panelGeometry.width - step }, ArrowRight: { width: panelGeometry.width + step },
+        ArrowUp: { height: panelGeometry.height - step }, ArrowDown: { height: panelGeometry.height + step },
+      }[event.key];
+      if (!delta) return;
+      next = { ...panelGeometry, ...delta };
+    }
+    event.preventDefault();
+    setPanelGeometry(clampDeviceDetailsGeometry(next));
+  }, [desktopPanel, panelGeometry]);
+
+  useEffect(() => () => stopPanelInteraction(), [stopPanelInteraction]);
 
   const closeDeviceDetails = useCallback(() => {
     const trigger = detailsButtonRefs.current.get(detailsDeviceId);
@@ -261,9 +436,50 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
   }, [activeDetailsDevice, closeDeviceDetails]);
 
   if (!activeDetailsDevice) return null;
+  const panelStyle = desktopPanel && panelGeometry ? {
+    left: `${panelGeometry.left}px`,
+    top: `${panelGeometry.top}px`,
+    width: `${panelGeometry.width}px`,
+    height: `${panelGeometry.height}px`,
+    right: 'auto',
+    bottom: 'auto',
+  } : undefined;
   return (
     <DeviceActionPortal>
-      <div ref={detailsPanelRef} tabIndex={-1} className="lite-device-details-focus-anchor lite-device-action-surface">
+      <div
+        ref={detailsPanelRef}
+        tabIndex={-1}
+        className={`lite-device-details-focus-anchor lite-device-action-surface ${desktopPanel ? 'is-movable' : ''}`.trim()}
+        data-lite-details-panel-layout={desktopPanel ? 'desktop-movable' : 'mobile-sheet'}
+        style={panelStyle}
+      >
+        {desktopPanel ? (
+          <div className="lite-device-details-panel-tools" aria-label="Desktop device details panel controls">
+            <button
+              type="button"
+              className="lite-device-details-panel-tool"
+              aria-label="Move device details panel"
+              title="Move panel with the pointer or arrow keys"
+              aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
+              onPointerDown={(event) => startPanelInteraction('move', event)}
+              onKeyDown={(event) => adjustPanelWithKeyboard('move', event)}
+            >
+              <Move className="h-4 w-4" aria-hidden="true" />
+            </button>
+            <span>Desktop panel</span>
+            <button
+              type="button"
+              className="lite-device-details-panel-tool is-resize"
+              aria-label="Resize device details panel"
+              title="Resize panel with the pointer or arrow keys"
+              aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
+              onPointerDown={(event) => startPanelInteraction('resize', event)}
+              onKeyDown={(event) => adjustPanelWithKeyboard('resize', event)}
+            >
+              <Maximize2 className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
+        ) : null}
         {detailsBodyReady ? (
           <Suspense fallback={<GlassCard className="lite-device-details-panel"><p>Loading device details…</p></GlassCard>}>
             <DeviceDetailsLazy
@@ -339,6 +555,24 @@ export function remoteAccessPresentation(remoteAccess = {}, savedStateOnly = fal
       ? 'Private-network access is available for eligible devices.'
       : 'Pocket Lab is checking whether private-network device access is available.'),
   };
+}
+
+function remoteAccessDetailRows(remoteAccess = {}, remoteAccessView = {}, savedStateOnly = false) {
+  const running = typeof remoteAccess.running === 'boolean'
+    ? remoteAccess.running
+    : typeof remoteAccessView.running === 'boolean' ? remoteAccessView.running : null;
+  const natsReachable = typeof remoteAccess.nats_reachable === 'boolean'
+    ? remoteAccess.nats_reachable
+    : typeof remoteAccessView.nats_reachable === 'boolean' ? remoteAccessView.nats_reachable : null;
+  const hasAddress = Boolean(remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip);
+  const checkedAt = remoteAccess.checked_at || remoteAccess.updated_at || remoteAccessView.checked_at || remoteAccessView.updated_at;
+  return [
+    { label: 'Evidence', value: savedStateOnly ? 'Saved backend snapshot' : 'Current backend check' },
+    { label: 'Tailscale service', value: running === true ? 'Running' : running === false ? 'Not running' : 'Not reported' },
+    { label: 'Tailnet address', value: hasAddress ? `Available · ${remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip}` : remoteAccessView.tailnet_ip_ready ? 'Ready' : 'Not ready' },
+    { label: 'Private command path', value: natsReachable === true ? 'Reachable' : natsReachable === false ? 'Not reachable' : 'Not reported' },
+    { label: 'Checked', value: checkedAt ? formatLiteTime(checkedAt) : 'Not reported' },
+  ];
 }
 
 export function fleetOperationalStory({ data, devices = [], onlineDevices = 0, healthAttentionCount = 0, savedStateOnly = false } = {}) {
@@ -789,18 +1023,26 @@ export default function DevicesScreen() {
 
       <section className={`lite-remote-access-panel ${remoteAccessReady ? 'lite-remote-access-ready' : 'lite-remote-access-not-ready'}`} aria-live="polite">
         <div className="lite-remote-access-icon">
-          <Network className="h-5 w-5" />
+          {remoteAccessReady ? <CheckCircle2 className="h-5 w-5" aria-hidden="true" /> : <CircleAlert className="h-5 w-5" aria-hidden="true" />}
         </div>
         <div className="lite-remote-access-copy">
           <span>Remote access</span>
           <strong>{remoteAccessView.title}</strong>
-          {!remoteAccessReady ? <p>{remoteAccessView.summary}</p> : null}
-        </div>
-        {remoteAccessReady ? <details className="lite-remote-access-details">
-          <summary>Connection details</summary>
           <p>{remoteAccessView.summary}</p>
-          {remoteAccess?.ip ? <div className="lite-remote-access-ip"><span>Tailscale IP</span><code>{remoteAccess.ip}</code></div> : null}
-        </details> : null}
+        </div>
+        <details className="lite-remote-access-details">
+          <summary>Connection details</summary>
+          <dl>
+            {remoteAccessDetailRows(remoteAccess, remoteAccessView, savedStateOnly).map((item) => (
+              <div key={item.label}>
+                <dt>{item.label}</dt>
+                <dd>{item.label === 'Tailnet address' && (remoteAccess?.ip || remoteAccess?.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip)
+                  ? <><span>Available</span> <code>{remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip}</code></>
+                  : item.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </details>
       </section>
 
       <div className="lite-devices-layout">

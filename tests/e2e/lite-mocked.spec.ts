@@ -712,6 +712,13 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     const devices = page.locator('[data-lite-screen-id="devices"]');
     await expect(devices.locator('.lite-remote-access-ready')).toContainText('Ready');
     await expect(devices.locator('.lite-remote-access-details')).not.toHaveAttribute('open', '');
+    await devices.locator('.lite-remote-access-details > summary').click();
+    const remoteDetails = devices.locator('.lite-remote-access-details');
+    await expect(remoteDetails).toContainText('Current backend check');
+    await expect(remoteDetails).toContainText('Tailscale service');
+    await expect(remoteDetails).toContainText('Running');
+    await expect(remoteDetails).toContainText('100.64.0.10');
+    await expect(remoteDetails).toContainText('Reachable');
     const addDisclosure = devices.locator('.lite-devices-add-disclosure');
 
     await addDisclosure.locator('summary').click();
@@ -722,5 +729,40 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(invite).toContainText('Invite ready');
     await expect(invite.getByLabel('Connect this device command')).toBeVisible();
     await expect(invite.getByRole('button', { name: 'Copy command' })).toBeVisible();
+  });
+
+  test('Devices desktop details panel supports bounded keyboard move and resize while mobile stays a sheet', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mocked-desktop', 'Desktop panel geometry is covered once in Chromium.');
+    await page.goto('/?screen=devices');
+    const devices = await waitForLiveDevices(page);
+    const manage = devices.getByRole('button', { name: 'Manage Test-Phone-4' });
+    await manage.click();
+
+    const surface = page.locator('.lite-device-details-focus-anchor');
+    await expect(surface).toHaveAttribute('data-lite-details-panel-layout', 'desktop-movable');
+    const move = surface.getByRole('button', { name: 'Move device details panel' });
+    const resize = surface.getByRole('button', { name: 'Resize device details panel' });
+    await expect(move).toBeVisible();
+    await expect(resize).toBeVisible();
+
+    const beforeMove = await surface.boundingBox();
+    expect(beforeMove).not.toBeNull();
+    await move.press('ArrowLeft');
+    const afterMove = await surface.boundingBox();
+    expect(afterMove).not.toBeNull();
+    expect(afterMove!.x).toBeLessThan(beforeMove!.x);
+
+    const beforeResize = await surface.boundingBox();
+    expect(beforeResize).not.toBeNull();
+    await resize.press('ArrowRight');
+    const afterResize = await surface.boundingBox();
+    expect(afterResize).not.toBeNull();
+    expect(afterResize!.width).toBeGreaterThan(beforeResize!.width);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(surface).toHaveAttribute('data-lite-details-panel-layout', 'mobile-sheet');
+    await expect(surface.getByRole('button', { name: 'Move device details panel' })).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(manage).toBeFocused();
   });
 });

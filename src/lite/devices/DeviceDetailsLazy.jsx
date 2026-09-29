@@ -11,6 +11,7 @@ import { liteQueryKeys, liteQueryPaths } from '../../lib/liteQueryClient.js';
 import { useLiteQuery } from '../../hooks/useLiteQuery.js';
 import { useLiteDeviceHealthReviewFlow } from '../../hooks/useLiteDeviceHealthReviewFlow.js';
 import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
+import { ResourceMetric, SoftwarePosture } from '../components/DeviceFactsPrimitives.jsx';
 import { isLitePerformanceMode } from '../liteNavigationRuntime.js';
 import { useLiteUiStore } from '../../stores/liteUiStore.js';
 import { triggerLiteTactileFeedback } from '../LiteMotion.jsx';
@@ -233,34 +234,54 @@ function healthResourceRows(health = {}, device = {}) {
     { health },
   );
   const resources = health?.resources || {};
+  const factValue = (metric, key, fallback = null) => {
+    const value = resourceFactValue(facts, metric, key);
+    if (value !== null) return value;
+    if (fallback === null || fallback === undefined || fallback === '') return null;
+    const parsedFallback = Number(fallback);
+    return Number.isFinite(parsedFallback) ? parsedFallback : null;
+  };
+  const boundedPercent = (value) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed >= 0 && parsed <= 100 ? parsed : null;
+  };
   const definitions = [
     ['Storage', 'storage', resources.storage, () => {
-      const free = resourceFactValue(facts, 'storage', 'free_mb');
-      const total = resourceFactValue(facts, 'storage', 'total_mb');
+      const free = factValue('storage', 'free_mb');
+      const total = factValue('storage', 'total_mb');
       return free !== null && total !== null ? `${formatDeviceCapacityGb(free)} free / ${formatDeviceCapacityGb(total)}` : null;
-    }],
+    }, () => {
+      const free = factValue('storage', 'free_mb');
+      const total = factValue('storage', 'total_mb');
+      return free !== null && total > 0 && free <= total ? ((total - free) / total) * 100 : null;
+    }, 'Storage used'],
     ['Memory', 'memory', resources.memory, () => {
-      const free = resourceFactValue(facts, 'memory', 'free_mb');
-      const total = resourceFactValue(facts, 'memory', 'total_mb');
+      const free = factValue('memory', 'free_mb');
+      const total = factValue('memory', 'total_mb');
       return free !== null && total !== null ? `${formatDeviceCapacityGb(free)} free / ${formatDeviceCapacityGb(total)}` : null;
-    }],
+    }, () => {
+      const free = factValue('memory', 'free_mb');
+      const total = factValue('memory', 'total_mb');
+      return free !== null && total > 0 && free <= total ? ((total - free) / total) * 100 : null;
+    }, 'Memory used'],
     ['Pocket Lab CPU', 'pocketlab_workload_cpu', resources.load, () => {
-      const value = resourceFactValue(facts, 'pocketlab_workload_cpu', 'usage_percent');
-      const processCount = resourceFactValue(facts, 'pocketlab_workload_cpu', 'process_count');
+      const value = factValue('pocketlab_workload_cpu', 'usage_percent', factValue('cpu_usage', 'usage_percent', resources.load?.usage_percent));
+      const processCount = factValue('pocketlab_workload_cpu', 'process_count', resources.load?.process_count);
       if (value === null) return null;
       return processCount !== null
         ? `${Math.round(value)}% · ${Math.round(processCount)} service process${Math.round(processCount) === 1 ? '' : 'es'}`
         : `${Math.round(value)}%`;
-    }],
+    }, () => factValue('pocketlab_workload_cpu', 'usage_percent', factValue('cpu_usage', 'usage_percent', resources.load?.usage_percent)), 'Pocket Lab CPU usage'],
     ['Temperature', 'temperature', resources.temperature, () => {
       const value = resourceFactValue(facts, 'temperature', 'celsius');
       return value !== null ? `${Math.round(value)} °C` : null;
-    }],
+    }, () => null, 'Temperature'],
   ];
-  return definitions.map(([label, metric, healthValue, metricValue]) => {
+  return definitions.map(([label, metric, healthValue, metricValue, meterValue, meterLabel]) => {
     const presentation = deviceResourcePresentation(facts, metric, healthValue);
     const rendered = metricValue();
     const healthStatusLabel = titleCase(presentation.healthStatus, 'Unknown');
+    const meterPercent = boundedPercent(meterValue());
     return {
       label,
       status: normalizeStatus(presentation.healthStatus || presentation.observationStatus || 'unknown'),
@@ -274,6 +295,8 @@ function healthResourceRows(health = {}, device = {}) {
       source: presentation.source,
       reasonCode: presentation.reasonCode,
       observedAt: presentation.observedAt,
+      meterPercent,
+      meterLabel,
     };
   });
 }
@@ -284,9 +307,12 @@ function healthHistoryItems(payload = {}) {
     title: normalizeStatus(item.previous_state) === normalizeStatus(item.new_state)
       ? `${proactiveHealthLabel(item.new_state)} updated`
       : `${proactiveHealthLabel(item.previous_state)} → ${proactiveHealthLabel(item.new_state)}`,
-    summary: item.summary || 'Device health changed.',
+    summary: [item.summary || 'Device health changed.', item.reason_code ? `Reason: ${titleCase(item.reason_code)}` : '']
+      .filter(Boolean)
+      .join(' '),
     status: item.new_state || 'recorded',
     created_at: item.occurred_at,
+    reason_code: item.reason_code || '',
   }));
 }
 
@@ -491,8 +517,8 @@ function DeviceAwarenessDetails({ device }) {
         {!restartAssessment.allowed ? <p>{restartAssessment.summary || 'Restart actions are unavailable until the device reports a safe recovery state.'}</p> : null}
       </section>,
 
-      <section key="dependencies" className="lite-device-awareness-section" aria-label="Device dependencies">
-        <span>Dependencies</span>
+      <section key="responsibilities" className="lite-device-awareness-section" aria-label="Device responsibilities">
+        <span>Responsibilities</span>
         <strong>{Number(dependencies.hosted_app_count || 0) + Number(dependencies.backup_set_count || 0)} responsibilities</strong>
         {Array.isArray(dependencies.hosted_apps) && dependencies.hosted_apps.length ? (
           <ul>{dependencies.hosted_apps.map((app) => <li key={app.app_id}><strong>{app.label}</strong> · {titleCase(app.status)}</li>)}</ul>
@@ -677,6 +703,10 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
 
       <LiteDeferredDetails delayFrames={DEVICE_DETAILS_NONCRITICAL_DELAY_FRAMES} render={() => {
         const healthResources = proactiveHealth ? healthResourceRows(proactiveHealth, device) : [];
+        const deviceFacts = normalizeDeviceFacts(
+          device?.device_facts || proactiveHealth?.device_facts || device,
+          { health: proactiveHealth },
+        );
         const healthAttention = healthAttentionCurrent && Array.isArray(proactiveHealth?.attention_items)
           ? proactiveHealth.attention_items.slice(0, 12)
           : [];
@@ -698,12 +728,11 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
           <>
             <div className="lite-device-health-resource-grid" aria-label="Resource health">
               {healthResources.map((item) => (
-                <article key={item.label} className={`is-${item.status}`}>
-                  <span>{item.label}</span>
-                  <strong>{item.statusLabel}</strong>
-                  <small>{item.metric}</small>
-                  <p>{item.summary}</p>
-                </article>
+                <ResourceMetric
+                  key={item.label}
+                  item={{ ...item, key: item.label, value: item.metric, note: item.summary }}
+                  variant="detailed"
+                />
               ))}
             </div>
 
@@ -720,13 +749,15 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
               </article>
               <article>
                 <span>Software</span>
-                <strong>{titleCase(proactiveHealth.versions?.status)}</strong>
-                <p>Device service, recovery service, and compatibility are checked by Pocket Lab.</p>
+                <SoftwarePosture
+                  facts={deviceFacts}
+                  posture={proactiveHealth.software_posture || proactiveHealth.versions || {}}
+                />
               </article>
               <article>
-                <span>Dependencies</span>
+                <span>Responsibility impact</span>
                 <strong>{titleCase(proactiveHealth.dependency_impact?.status)}</strong>
-                <p>{proactiveHealth.dependency_impact?.impact_summary || 'Dependency impact is not available yet.'}</p>
+                <p>{proactiveHealth.dependency_impact?.impact_summary || 'Responsibility impact is not available yet.'}</p>
               </article>
             </div>
 
