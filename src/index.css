@@ -4114,6 +4114,13 @@ textarea {
   border-radius: 1.1rem;
 }
 
+.theme-pocket-lite-daylight .lite-device-icon-symbol {
+  width: 1.35rem;
+  height: 1.35rem;
+  color: #0369a1;
+  stroke-width: 2.2;
+}
+
 .theme-pocket-lite-daylight .lite-device-pulse {
   position: absolute;
   right: 0.4rem;
@@ -5674,6 +5681,90 @@ textarea {
   padding: 0.42rem 0.7rem;
 }
 
+.theme-pocket-lite-daylight .lite-remote-access-details {
+  position: relative;
+  z-index: 1;
+  align-self: stretch;
+  min-width: min(16rem, 100%);
+  color: #334155;
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-details > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.4rem;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid rgba(14, 116, 144, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #1e3a8a;
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 900;
+  list-style: none;
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-details > summary::after {
+  content: '+';
+  margin-left: 0.45rem;
+  color: #0369a1;
+  font-size: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-details[open] > summary::after {
+  content: '−';
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-details > dl {
+  display: grid;
+  gap: 0.45rem;
+  min-width: min(22rem, calc(100vw - 2rem));
+  margin: 0.65rem 0 0;
+  padding: 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-details > dl > div {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.8fr) minmax(0, 1.2fr);
+  gap: 0.65rem;
+  align-items: start;
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-details dt {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-details dd {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.78rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-details code {
+  margin-left: 0.2rem;
+  color: #065f46;
+  font-variant-numeric: tabular-nums;
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-safe-note {
+  position: relative;
+  z-index: 1;
+  margin: 0.55rem 0 0;
+  color: #64748b;
+  font-size: 0.74rem;
+}
+
 @media (max-width: 740px) {
   .theme-pocket-lite-daylight .lite-remote-access-panel {
     grid-template-columns: auto minmax(0, 1fr);
@@ -5681,6 +5772,16 @@ textarea {
   .theme-pocket-lite-daylight .lite-remote-access-ip {
     grid-column: 1 / -1;
     justify-items: start;
+  }
+  .theme-pocket-lite-daylight .lite-remote-access-details {
+    min-width: 0;
+  }
+  .theme-pocket-lite-daylight .lite-remote-access-details > dl {
+    min-width: 0;
+  }
+  .theme-pocket-lite-daylight .lite-remote-access-details > dl > div {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
   }
 }
 
@@ -24503,6 +24604,12 @@ html.lite-install-light-shell body {
   font-weight: 850;
   white-space: nowrap;
 }
+.theme-pocket-lite-daylight .lite-device-protected-lock-icon {
+  width: 1rem;
+  height: 1rem;
+  color: currentColor;
+  stroke-width: 2.2;
+}
 .theme-pocket-lite-daylight .lite-device-card-disclosure {
   position: relative;
   min-width: 0;
@@ -25001,6 +25108,34 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
 }
 .lite-device-relationship-head strong { display:block; margin-top:.22rem; color:white; font-size:1rem; }
 .lite-device-relationship-head p { margin:.28rem 0 0; color:rgb(148 163 184); font-size:.8rem; line-height:1.5; }
+.lite-device-relationship-summary {
+  display:flex;
+  flex-wrap:wrap;
+  gap:.4rem;
+  margin-top:.75rem;
+}
+.lite-device-relationship-summary span {
+  display:inline-flex;
+  align-items:center;
+  gap:.32rem;
+  padding:.3rem .52rem;
+  border:1px solid rgba(148,163,184,.18);
+  border-radius:999px;
+  color:rgb(203 213 225);
+  font-size:.68rem;
+  font-weight:800;
+}
+.lite-device-relationship-summary span::before {
+  content:"";
+  width:.42rem;
+  height:.42rem;
+  flex:0 0 auto;
+  border-radius:999px;
+  background:rgb(148 163 184);
+}
+.lite-device-relationship-summary span[data-connection-summary-state="joined"]::before { background:rgb(34 197 94); }
+.lite-device-relationship-summary span[data-connection-summary-state="repairing"]::before { background:rgb(245 158 11); }
+.lite-device-relationship-summary span[data-connection-summary-state="disconnected"]::before { background:rgb(248 113 113); }
 .lite-device-relationship-flow {
   display:flex;
   align-items:center;
@@ -25059,6 +25194,11 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
 .theme-pocket-lite-daylight .lite-device-relationship-head strong { color: #0f172a; }
 .theme-pocket-lite-daylight .lite-device-relationship-head p,
 .theme-pocket-lite-daylight .lite-device-relationship-empty { color: #475569; }
+.theme-pocket-lite-daylight .lite-device-relationship-summary span {
+  border-color: #dbe4ea;
+  background: #f8fafc;
+  color: #475569;
+}
 .theme-pocket-lite-daylight .lite-device-relationship-node {
   border-color: #cbd5e1;
   background: #ffffff;

@@ -1,4 +1,5 @@
 import React from 'react';
+import { RefreshCw, Server, Smartphone, WifiOff } from 'lucide-react';
 import {
   GlassCard,
   LiteButton,
@@ -81,6 +82,11 @@ function deviceConnectionSummary(state) {
   return 'Connection interrupted';
 }
 
+function DeviceConnectionIcon({ state, isServer = false, className = '' }) {
+  const Icon = isServer ? Server : state === 'connected' ? Smartphone : state === 'repairing' ? RefreshCw : WifiOff;
+  return <Icon className={className} aria-hidden="true" />;
+}
+
 function DeviceCard({
   device,
   restartBusy = '',
@@ -125,6 +131,7 @@ function DeviceCard({
     <GlassCard className={`lite-device-card ${connectionClass}`}>
         <div className="lite-device-card-top">
           <div className="lite-device-icon">
+            <DeviceConnectionIcon state={flowState} isServer={isServerCard} className="lite-device-icon-symbol" />
             <span className={online ? 'lite-device-pulse' : 'lite-device-pulse lite-device-pulse-muted'} />
           </div>
         </div>
@@ -144,14 +151,14 @@ function DeviceCard({
           </div>
           {isServerCard ? (
             <div className="lite-device-protected-host" aria-hidden="true">
-              <span className="lite-device-flow-node lite-device-flow-server"><span className="lite-device-static-glyph" aria-hidden="true" /><small>Pocket Lab Server</small></span>
-              <span className="lite-device-protected-lock"><span className="lite-device-static-glyph" aria-hidden="true" /> Protected</span>
+              <span className="lite-device-flow-node lite-device-flow-server"><span className="lite-device-static-glyph" /><small>Pocket Lab Server</small></span>
+              <span className="lite-device-protected-lock"><span className="lite-device-static-glyph" /> Protected</span>
             </div>
           ) : (
             <div className="lite-device-flow-topology" aria-hidden="true">
-              <span className="lite-device-flow-node lite-device-flow-server"><span className="lite-device-flow-glyph" aria-hidden="true" /><small>Server</small></span>
+              <span className="lite-device-flow-node lite-device-flow-server"><span className="lite-device-static-glyph" /><small>Server</small></span>
               <span className="lite-device-flow-track"><span className="lite-device-flow-signal" /><span className="lite-device-flow-break">×</span></span>
-              <span className="lite-device-flow-node lite-device-flow-device"><span className="lite-device-flow-glyph" aria-hidden="true" /><small title={deviceName}>{deviceName}</small></span>
+              <span className="lite-device-flow-node lite-device-flow-device"><span className="lite-device-flow-glyph" /><small title={deviceName}>{deviceName}</small></span>
             </div>
           )}
         </div>
@@ -162,7 +169,7 @@ function DeviceCard({
             ...story,
             freshness: lastSeen ? { label: savedStateOnly ? 'Saved status' : 'Last seen', detail: formatLiteTime(lastSeen), state: savedStateOnly ? 'stale' : 'live' } : null,
           }}
-          primaryAction={story.next_action?.kind === 'restart' ? { label: story.next_action.label, onClick: onRestartAgent, tone: 'primary' } : null}
+          primaryAction={story.next_action?.kind === 'restart' ? { label: story.next_action.label, onClick: onRestartAgent, tone: 'primary', haptic: true } : null}
           manageAction={{
             label: detailsOpen ? 'Hide details' : 'Manage',
             onClick: onOpenDetails,
@@ -172,6 +179,7 @@ function DeviceCard({
             onPointerEnter: onPreloadDetails,
             onFocus: onPreloadDetails,
             onTouchStart: onPreloadDetails,
+            haptic: true,
           }}
         />
 

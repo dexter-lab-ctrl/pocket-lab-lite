@@ -856,8 +856,12 @@ function normalizeDeviceRemoteAccess(remote = null, device = {}) {
   if (!Object.keys(source).length && !device.tailnet_ip) return null;
   return copySafeKeys({
     ...source,
-    tailnet_ip: source.tailnet_ip || source.ip || device.tailnet_ip || null,
-  }, ['ready', 'status', 'state', 'summary', 'message', 'tailnet_ip', 'updated_at', 'checked_at']);
+    tailnet_ip: source.tailnet_ip || source.ip || source.tailscale_ip || device.tailnet_ip || null,
+  }, [
+    'ready', 'status', 'state', 'summary', 'message', 'running', 'configured',
+    'nats_reachable', 'tailnet_ip', 'ip', 'tailscale_ip', 'tailscaled_status',
+    'tailnet_ip_ready', 'updated_at', 'checked_at',
+  ]);
 }
 
 function normalizeDeviceStorage(storage = null) {
@@ -1013,7 +1017,8 @@ export function selectDeviceProactiveHealthView(value = {}) {
   if (!isObject(value)) return null;
   const resource = (item = {}) => isObject(item) ? copySafeKeys(item, [
     'status', 'summary', 'available_mb', 'available_percent', 'usage_percent',
-    'celsius', 'candidate_status', 'candidate_since',
+    'total_mb', 'free_mb', 'process_count', 'celsius', 'candidate_status', 'candidate_since',
+    'observation_status', 'collection_status', 'freshness', 'source', 'reason_code', 'observed_at',
   ]) : {};
   const attentionItems = Array.isArray(value.attention_items)
     ? value.attention_items.slice(0, 16).map((item) => isObject(item) ? copySafeKeys(item, [
@@ -1036,7 +1041,19 @@ export function selectDeviceProactiveHealthView(value = {}) {
     'status', 'summary', 'recent_recovery_count', 'last_recovery_at',
     'last_recovery_result', 'automatic_recovery_available',
   ]) : {};
-  const versionPart = (item = {}) => isObject(item) ? copySafeKeys(item, ['status', 'reported', 'expected']) : {};
+  const versionPart = (item = {}) => isObject(item) ? copySafeKeys(item, [
+    'status', 'reported', 'expected', 'version', 'source', 'freshness', 'observed_at', 'reason_code',
+  ]) : {};
+  const softwareParts = isObject(value.software_posture?.parts)
+    ? ['node_agent', 'supervisor', 'system_profile_schema', 'capability_schema'].reduce((parts, component) => {
+      if (isObject(value.software_posture.parts[component])) parts[component] = versionPart(value.software_posture.parts[component]);
+      return parts;
+    }, {})
+    : Array.isArray(value.software_posture?.parts)
+      ? value.software_posture.parts.slice(0, 8).map((item) => isObject(item) ? copySafeKeys(item, [
+        'component', 'status', 'version', 'source', 'freshness', 'observed_at', 'reason_code',
+      ]) : null).filter(Boolean)
+      : [];
   const versions = isObject(value.versions) ? {
     status: normalizeDeviceStatus(value.versions.status || 'unknown'),
     node_agent: versionPart(value.versions.node_agent),
@@ -1091,9 +1108,10 @@ export function selectDeviceProactiveHealthView(value = {}) {
     operational_health: isObject(value.operational_health) ? copySafeKeys(value.operational_health, [
       'status', 'severity', 'summary', 'connection_status', 'freshness',
     ]) : {},
-    software_posture: isObject(value.software_posture) ? copySafeKeys(value.software_posture, [
-      'status', 'verification_pending', 'summary',
-    ]) : {},
+    software_posture: isObject(value.software_posture) ? {
+      ...copySafeKeys(value.software_posture, ['status', 'verification_pending', 'summary']),
+      parts: softwareParts,
+    } : {},
     recovery_posture: isObject(value.recovery_posture) ? copySafeKeys(value.recovery_posture, [
       'status', 'summary', 'automatic_recovery_available', 'supervisor_freshness',
     ]) : {},
@@ -1394,17 +1412,24 @@ export function selectServerHostView(payload = {}) {
 export function selectRemoteAccessHealthView(payload = {}) {
   const remote = isObject(payload?.remote_access) ? payload.remote_access : {};
   const ready = Boolean(remote.ready || remote.status === 'healthy');
+  const ip = safeString(remote.ip || remote.tailnet_ip || remote.tailscale_ip || '');
+  const running = typeof remote.running === 'boolean' ? remote.running : null;
+  const natsReachable = typeof remote.nats_reachable === 'boolean'
+    ? remote.nats_reachable
+    : typeof remote.nats_tailnet_reachable === 'boolean' ? remote.nats_tailnet_reachable : null;
   return {
     ready,
     status: normalizeDeviceStatus(remote.status || (ready ? 'healthy' : 'remote_access_not_ready')),
     summary: safeString(remote.summary || remote.message || (ready ? 'Remote access ready' : 'Remote access not ready')),
     message: safeString(remote.message || remote.summary || ''),
-    tailscaled_status: normalizeDeviceStatus(remote.tailscaled_status || remote.tailscaled || remote.tailscale_status || ''),
-    tailnet_ip_ready: Boolean(remote.tailnet_ip_ready || remote.ip_ready || (ready && remote.ip)),
-    nats_reachable: Boolean(remote.nats_reachable || remote.nats_tailnet_reachable),
-    ip: ready ? safeString(remote.ip || remote.tailnet_ip || '') : '',
-    updated_at: safeIso(remote.updated_at || remote.checked_at || payload?.updated_at || payload?.checked_at),
+    running,
+    tailscaled_status: normalizeDeviceStatus(remote.tailscaled_status || remote.tailscaled || remote.tailscale_status || (running === true ? 'running' : running === false ? 'stopped' : '')),
+    tailnet_ip_ready: typeof remote.tailnet_ip_ready === 'boolean' ? remote.tailnet_ip_ready : Boolean(ip),
+    nats_reachable: natsReachable,
+    ip,
+    tailnet_ip: ip,
     checked_at: safeIso(remote.checked_at || remote.updated_at || payload?.checked_at || payload?.updated_at),
+    updated_at: safeIso(remote.updated_at || remote.checked_at || payload?.updated_at || payload?.checked_at),
   };
 }
 

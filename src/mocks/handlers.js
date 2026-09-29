@@ -872,8 +872,11 @@ export const handlers = [
       remote_access: {
         status: 'healthy',
         ready: true,
+        running: true,
+        nats_reachable: true,
         ip: '100.64.0.10',
         summary: 'Private-network access is available for eligible devices.',
+        checked_at: mockIso(),
       },
     } : {}),
     roles: [

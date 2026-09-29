@@ -21,6 +21,13 @@ describe('Device Facts shared UI primitives', () => {
     expect(screen.queryByText(/0 °C|0%|0 MB/)).toBeNull();
   });
 
+  it('renders a meter only when the caller provides a bounded percentage', () => {
+    const { rerender } = render(<ResourceMetric item={{ label: 'Memory', status: 'available', value: '2 GB free / 4 GB', meterPercent: 50 }} variant="detailed" />);
+    expect(screen.getByRole('progressbar', { name: 'Memory usage' }).getAttribute('aria-valuenow')).toBe('50');
+    rerender(<ResourceMetric item={{ label: 'Temperature', status: 'available', value: '42 °C', meterPercent: null }} variant="detailed" />);
+    expect(screen.queryByRole('progressbar')).toBeNull();
+  });
+
   it('renders freshness as text instead of color-only state', () => {
     render(<FreshnessIndicator freshness="stale" observedAt="2026-09-05T12:00:00Z" />);
     expect(screen.getByText(/Stale/)).toBeTruthy();
@@ -58,6 +65,22 @@ describe('Device Facts shared UI primitives', () => {
       } }}
     />);
     expect(screen.getByText('Update available')).toBeTruthy();
+    expect(screen.getByText(/2.4.0/)).toBeTruthy();
+    expect(screen.getByText(/2.5.0/)).toBeTruthy();
+  });
+
+  it('uses backend software parts when device facts do not include versions', () => {
+    render(<SoftwarePosture
+      posture={{
+        status: 'unknown',
+        summary: 'Software version evidence is available but compatibility is unknown.',
+        parts: {
+          node_agent: { version: '2.4.0', status: 'unknown', source: 'runtime_heartbeat' },
+          supervisor: { version: '2.5.0', status: 'current', source: 'sqlite_supervisor_evidence' },
+        },
+      }}
+    />);
+    expect(screen.getByText('Unknown')).toBeTruthy();
     expect(screen.getByText(/2.4.0/)).toBeTruthy();
     expect(screen.getByText(/2.5.0/)).toBeTruthy();
   });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { selectLiteDeviceCard } from './liteViewModels.js';
+import { selectDeviceProactiveHealthView, selectLiteDeviceCard, selectRemoteAccessHealthView } from './liteViewModels.js';
 
 describe('fleet device presentation parity', () => {
   it('uses canonical nested profile values and top-level compatibility fallbacks', () => {
@@ -49,4 +49,50 @@ it('preserves canonical capability and guarded-recovery fields in the device vie
   expect(card.capability_states[0].status).toBe('verified');
   expect(card.restart_agent_assessment.command_deliverable).toBe(true);
   expect(card.runtime_services.map((item) => item.service_id)).toEqual(['node_agent', 'agent_supervisor']);
+});
+
+it('preserves sanitized remote-access readiness evidence for the Devices details surface', () => {
+  const remote = selectRemoteAccessHealthView({
+    remote_access: {
+      status: 'degraded',
+      ready: false,
+      running: true,
+      nats_reachable: false,
+      ip: '100.64.0.10',
+      checked_at: '2026-09-29T12:00:00Z',
+    },
+  });
+
+  expect(remote).toMatchObject({
+    ready: false,
+    running: true,
+    tailscaled_status: 'running',
+    tailnet_ip_ready: true,
+    nats_reachable: false,
+    ip: '100.64.0.10',
+    checked_at: '2026-09-29T12:00:00.000Z',
+  });
+});
+
+it('preserves backend software parts without exposing unrelated health payload fields', () => {
+  const health = selectDeviceProactiveHealthView({
+    status: 'healthy',
+    software_posture: {
+      status: 'unknown',
+      summary: 'Software version evidence is available but compatibility is unknown.',
+      parts: {
+        node_agent: { version: '2.4.0', status: 'unknown', source: 'runtime_heartbeat' },
+        supervisor: { version: '2.5.0', status: 'current', source: 'sqlite_supervisor_evidence' },
+        ignored_component: { version: 'not rendered' },
+      },
+      token: 'must not reach the view model',
+    },
+  });
+
+  expect(health.software_posture.parts).toMatchObject({
+    node_agent: { version: '2.4.0', status: 'unknown' },
+    supervisor: { version: '2.5.0', status: 'current' },
+  });
+  expect(health.software_posture.parts.ignored_component).toBeUndefined();
+  expect(health.software_posture.token).toBeUndefined();
 });

@@ -46456,7 +46456,7 @@
             "status": "observed",
             "value": {
               "bytes": 75,
-              "sha256": "1a23ba2aea49f4abc53b59b96668758a4b2a1271b08c9bebe0f6c972ab5060f9"
+              "sha256": "77ec1dae5e33fa1487aed3eb89e904e3ae2e09f365d86e0f797fda2eb7db61b6"
             }
           },
           "release_presence": {
@@ -46508,8 +46508,8 @@
             "source": "dist.zip",
             "status": "observed",
             "value": {
-              "bytes": 545296,
-              "sha256": "90155c3fc13f0b1c355d1954c4070b05246aa74a54b6e2b4fcc5bb8a215a554d"
+              "bytes": 551760,
+              "sha256": "4486f2e500f2468dd4f68d8a0b358292200a2c425d4a99f77f21dcdd3ecc0fe3"
             }
           },
           "release_presence": {
@@ -46820,7 +46820,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "c7efb2a97b0314a431a6494cd426a4053d2ce3fdd430312fbd9073b0e2167652",
-        "documentation": "204cdf2ceacb79a2fb215d5c761a0dd86907a6799532a924ad5e042d258eb7a5",
+        "documentation": "9944bfff27ddbcfe2975445e2809bb499b72acc36ee4be6858fb1763cadf4854",
         "openapi": "8d70d2565517e6782d0afafcaf1e9d6090b6fe9c73cf9eb2feeaa0892ea3737b",
         "operational_health": "09bd04b18418c62f18ce74af8602236b581d195736bb95846e2c119b53de96ab"
       },
@@ -117264,5 +117264,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "a04475da6bb715f4bcad55bec92d17356972245fe1daebd79643c8bd6f3c8edd"
+  "source_fingerprint": "f6135c0c4bfd94dddf810a3402bd4147fee0aa5260fbb95e352861f76d879c6b"
 }
