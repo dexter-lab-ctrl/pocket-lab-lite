@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: e2f3db7dc5ebdf930a6254441e4e513e75c682582a053f52550a6ee614b3f767
+source_fingerprint: c63c4f0e0693ddd7d6f4fa22ff7e82ba52712feb68690dc7942ec4b35df8864c
 schema_revision: 1
 validation_status: generated
 ---
@@ -127,7 +127,7 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/apps/photoprism/update/receipts/:operationId` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/catalog` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/catalog/install` | mock | yes | static |
-| src/mocks/handlers.js | MSW handler | GET | `/api/lite/diagnostics/frontend-lifecycle/challenge` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/diagnostics/frontend-lifecycle/challenge` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/events` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/fleet` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/fleet/add-device` | mock | yes | static |
@@ -169,6 +169,8 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery/restore/previews/:previewId` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery/summary` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/release` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/release/apply` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/release/check` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/revisions` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/security` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/security/apps` | mock | yes | static |

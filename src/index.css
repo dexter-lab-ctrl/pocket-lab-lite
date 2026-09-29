@@ -15641,6 +15641,35 @@ textarea {
   .theme-pocket-lite-daylight .lite-action-row-trailing { width: 100%; justify-content: space-between; }
 }
 
+.theme-pocket-lite-daylight .lite-home-premium-shell .pocket-button,
+.lite-details-overlay-layer .pocket-button {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.theme-pocket-lite-daylight .lite-home-premium-shell .pocket-button:focus-visible,
+.lite-details-overlay-layer .pocket-button:focus-visible,
+.lite-details-overlay-layer .lite-ux-technical-facts > summary:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, .42);
+  outline-offset: 3px;
+}
+.theme-pocket-lite-daylight .lite-home-premium-shell .pocket-button:active,
+.lite-details-overlay-layer .pocket-button:active { transform: translateY(1px) scale(.985); }
+.lite-details-overlay-layer .lite-ux-technical-facts > summary { min-height: 2.75rem; cursor: pointer; }
+
+@media (max-width: 760px) {
+  .theme-pocket-lite-daylight .lite-home-premium-shell .lite-operational-story { grid-template-columns: 1fr; }
+  .theme-pocket-lite-daylight .lite-home-premium-shell .lite-operational-story-actions { justify-content: stretch; }
+  .theme-pocket-lite-daylight .lite-home-premium-shell .lite-operational-story-action { justify-items: stretch; }
+  .theme-pocket-lite-daylight .lite-home-premium-shell .lite-operational-story-action,
+  .theme-pocket-lite-daylight .lite-home-premium-shell .lite-operational-story-action .pocket-button { width: 100%; }
+  .theme-pocket-lite-daylight .lite-home-premium-shell .lite-operational-story-action small { max-width: none; text-align: left; }
+  .theme-pocket-lite-daylight .lite-home-premium-shell .lite-action-row { align-items: flex-start; flex-direction: column; }
+  .theme-pocket-lite-daylight .lite-home-premium-shell .lite-action-row-trailing { justify-content: space-between; width: 100%; }
+  .theme-pocket-lite-daylight .lite-home-premium-shell .lite-action-row-trailing > span { max-width: 55%; overflow-wrap: anywhere; text-align: left; }
+}
+
 /* Lite App Catalog: synthetic action progress should not pretend to be a real percentage timeline. */
 .lite-action-progress[data-indeterminate="true"] .lite-action-progress__rail,
 .lite-action-progress[data-indeterminate="true"] .lite-action-progress__stages {
@@ -24206,18 +24235,23 @@ html.lite-install-light-shell body {
 .lite-release-update-card {
   display: grid;
   gap: 0.9rem;
+  min-width: 0;
   margin: 0 0 1rem;
   content-visibility: auto;
-  contain-intrinsic-size: 180px;
+  contain-intrinsic-size: 260px;
 }
 .lite-release-update-head {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 0.8rem;
   align-items: center;
+  min-width: 0;
 }
+.lite-release-update-copy { min-width: 0; }
+.lite-release-update-head h2,
+.lite-release-update-head p { overflow-wrap: anywhere; }
 .lite-release-update-head h2 { margin: 0.1rem 0 0.25rem; font-size: 1.05rem; }
-.lite-release-update-head p { margin: 0; color: var(--lite-text-muted, #94a3b8); }
+.lite-release-update-head p { margin: 0; color: var(--lite-text-muted, #94a3b8); line-height: 1.45; }
 .lite-release-update-head small { color: var(--lite-text-muted, #94a3b8); }
 .lite-release-update-icon {
   display: grid;
@@ -24225,25 +24259,72 @@ html.lite-install-light-shell body {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 0.9rem;
-  background: color-mix(in srgb, currentColor 10%, transparent);
+  color: #2563eb;
+  background: rgba(219, 234, 254, .86);
 }
-.lite-release-update-meta,
-.lite-release-update-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-  align-items: center;
-}
+.lite-release-update-icon.is-healthy { color: #15803d; background: rgba(220, 252, 231, .9); }
+.lite-release-update-icon.is-failed { color: #be123c; background: rgba(255, 228, 230, .9); }
+.lite-release-update-icon.is-degraded { color: #a16207; background: rgba(254, 243, 199, .92); }
 .lite-release-update-meta {
-  color: var(--lite-text-muted, #94a3b8);
-  font-size: 0.78rem;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
+  min-width: 0;
 }
-.lite-release-update-actions .pocket-button { display: inline-flex; gap: 0.45rem; align-items: center; }
-.lite-release-update-note { margin: 0; font-size: 0.8rem; color: var(--lite-text-muted, #94a3b8); }
-@media (max-width: 640px) {
-  .lite-release-update-head { grid-template-columns: auto minmax(0, 1fr); }
+.lite-release-update-meta > div {
+  display: grid;
+  gap: 0.18rem;
+  min-width: 0;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid rgba(148, 163, 184, .18);
+  border-radius: 0.75rem;
+  background: rgba(248, 250, 252, .72);
+}
+.lite-release-update-meta small {
+  color: var(--lite-text-muted, #64748b);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.lite-release-update-meta strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--lite-text, #334155);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+.lite-release-update-progress {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(37, 99, 235, .2);
+  border-radius: 0.85rem;
+  background: rgba(239, 246, 255, .76);
+}
+.lite-release-update-progress-topline { display: flex; justify-content: space-between; gap: .75rem; color: #1e3a8a; font-size: .78rem; }
+.lite-release-update-progress-topline span { color: #64748b; font-weight: 750; }
+.lite-release-update-progress ol { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .45rem; margin: 0; padding: 0; list-style: none; }
+.lite-release-update-progress li { display: grid; justify-items: center; gap: .25rem; min-width: 0; color: #64748b; text-align: center; }
+.lite-release-update-progress li > span { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border: 1px solid rgba(100, 116, 139, .3); border-radius: 999px; background: #fff; font-size: .7rem; font-weight: 900; }
+.lite-release-update-progress li small { overflow-wrap: anywhere; font-size: .68rem; font-weight: 800; }
+.lite-release-update-progress li.is-active { color: #1d4ed8; }
+.lite-release-update-progress li.is-active > span { border-color: #2563eb; color: #1d4ed8; box-shadow: 0 0 0 .22rem rgba(37, 99, 235, .12); }
+.lite-release-update-progress li.is-done { color: #15803d; }
+.lite-release-update-progress li.is-done > span { border-color: #16a34a; color: #15803d; background: #dcfce7; }
+.lite-release-update-actions { display: flex; flex-wrap: wrap; gap: 0.65rem; align-items: center; }
+.lite-release-update-actions .pocket-button { display: inline-flex; gap: 0.45rem; align-items: center; min-height: 2.75rem; }
+.lite-release-update-note { margin: 0; font-size: 0.8rem; color: var(--lite-text-muted, #94a3b8); line-height: 1.45; }
+@media (max-width: 760px) {
+  .lite-release-update-head { grid-template-columns: auto minmax(0, 1fr); align-items: start; }
   .lite-release-update-head > .status-badge { grid-column: 1 / -1; justify-self: start; }
+  .lite-release-update-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .lite-release-update-actions .pocket-button { flex: 1 1 10rem; justify-content: center; }
+}
+@media (max-width: 420px) {
+  .lite-release-update-meta { grid-template-columns: 1fr; }
+  .lite-release-update-progress ol { grid-template-columns: 1fr; justify-items: start; }
+  .lite-release-update-progress li { grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; text-align: left; }
 }
 @media (prefers-reduced-motion: reduce) {
   .lite-release-update-card .animate-spin { animation: none !important; }

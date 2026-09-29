@@ -29,7 +29,7 @@ export const liteReleaseUpdateMachine = createMachine({
     accepted: {
       on: {
         BACKEND_ACTIVE: 'observing',
-        BACKEND_DONE: 'complete',
+        BACKEND_DONE: { target: 'complete', actions: 'clearFailure' },
         BACKEND_FAILED: { target: 'failed', actions: 'rememberFailure' },
         CHECK: 'checking',
         APPLY: 'applying',
@@ -37,7 +37,7 @@ export const liteReleaseUpdateMachine = createMachine({
     },
     observing: {
       on: {
-        BACKEND_DONE: 'complete',
+        BACKEND_DONE: { target: 'complete', actions: 'clearFailure' },
         BACKEND_FAILED: { target: 'failed', actions: 'rememberFailure' },
       },
     },
@@ -52,6 +52,7 @@ export const liteReleaseUpdateMachine = createMachine({
       on: {
         CHECK: 'checking',
         APPLY: 'applying',
+        BACKEND_DONE: { target: 'complete', actions: 'clearFailure' },
         RESET: 'idle',
       },
     },
@@ -64,6 +65,9 @@ export const liteReleaseUpdateMachine = createMachine({
     })),
     rememberFailure: assign(({ event }) => ({
       failureReason: String(event.reason || event.error?.message || 'Update needs attention.'),
+    })),
+    clearFailure: assign(() => ({
+      failureReason: '',
     })),
   },
 });

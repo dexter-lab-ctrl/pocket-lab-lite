@@ -3,7 +3,10 @@ import { controlPlaneHealthy, controlPlaneNatsDown, workerDown } from './fixture
 import { telemetryNormal, healthAllGreen, healthVaultSealed, fleetAgents, driftDetected, releaseWorkflowRunning, recentEvents, observabilityRuntimeHealthy, observabilityRuntimeDegraded } from './fixtures/pocketlab.js';
 import { resolveGeneratedLiteScenario } from '../test/fixtures/generated/lite-fixtures.js';
 
-const scenario = () => resolveGeneratedLiteScenario(typeof window !== 'undefined' ? (window.localStorage.getItem('POCKETLAB_MOCK_SCENARIO') || 'healthy') : 'healthy');
+const rawScenario = () => typeof window !== 'undefined'
+  ? (window.localStorage.getItem('POCKETLAB_MOCK_SCENARIO') || 'healthy')
+  : 'healthy';
+const scenario = () => resolveGeneratedLiteScenario(rawScenario());
 // Mocked UI evidence must not drift with the operator's wall clock. Keep the
 // relative ages used by the fixtures while making screenshots reproducible.
 const MOCK_NOW_MS = Date.parse('2026-09-24T08:54:00.000Z');
@@ -18,6 +21,89 @@ const controlPlane = () => {
 };
 const healthPayload = () => scenario() === 'vault-sealed' ? healthVaultSealed : healthAllGreen;
 const observabilityPayload = () => scenario() === 'nats-down' || scenario() === 'worker-down' || scenario() === 'vault-sealed' ? observabilityRuntimeDegraded : observabilityRuntimeHealthy;
+
+function liteReleasePayload() {
+  const currentTag = 'lite-2026.09.27.1';
+  const latestTag = 'lite-2026.09.27.1';
+  const base = {
+    status: 'healthy',
+    summary: 'Pocket Lab Lite is up to date.',
+    install_mode: 'release',
+    repository_match: true,
+    manifest_verified: true,
+    installed_artifact_verified: true,
+    current_tag: currentTag,
+    installed_release_tag: currentTag,
+    latest_tag: latestTag,
+    latest_release_tag: latestTag,
+    comparison: 'equal',
+    update_available: false,
+    auto_apply: false,
+    phase: 'current',
+    last_success_at: mockIso(-2 * 60 * 1000),
+    last_failure_code: '',
+    last_terminal_status: 'succeeded',
+    checked_at: mockIso(),
+    updated_at: mockIso(),
+  };
+  const selected = rawScenario();
+  if (selected === 'release-available') {
+    return {
+      ...base,
+      current_tag: 'lite-2026.09.26.1',
+      installed_release_tag: 'lite-2026.09.26.1',
+      latest_tag: latestTag,
+      latest_release_tag: latestTag,
+      comparison: 'older',
+      update_available: true,
+      summary: `Pocket Lab Lite ${latestTag} is ready to review.`,
+    };
+  }
+  if (selected === 'release-failed') {
+    return {
+      ...base,
+      status: 'degraded',
+      phase: 'error',
+      last_failure_code: 'release_check_failed',
+      last_failure_stage: 'checking',
+      last_failure_at: mockIso(-60 * 1000),
+      last_success_at: mockIso(-5 * 60 * 1000),
+      last_terminal_status: 'failed',
+      summary: 'The release check needs attention. The current interface remains available.',
+    };
+  }
+  if (selected === 'release-active') {
+    return {
+      ...base,
+      status: 'running',
+      phase: 'downloading',
+      summary: 'Pocket Lab Lite is downloading a verified update.',
+    };
+  }
+  if (selected === 'release-success-after-failure') {
+    return {
+      ...base,
+      phase: 'installed',
+      promotion_status: 'installed',
+      last_failure_code: 'previous_install_failed',
+      last_failure_at: mockIso(-5 * 60 * 1000),
+      last_success_at: mockIso(-2 * 60 * 1000),
+      summary: 'The installed release was verified and is now current.',
+    };
+  }
+  if (selected === 'release-source') {
+    return {
+      ...base,
+      install_mode: 'source',
+      current_tag: '',
+      installed_release_tag: '',
+      comparison: 'source_install',
+      update_available: false,
+      summary: 'This workspace is installed from source.',
+    };
+  }
+  return base;
+}
 
 
 const mockAppLifecycleProfiles = () => [{
@@ -578,17 +664,22 @@ export const handlers = [
     status: 204,
     headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
   })),
-  http.get('/api/lite/release', ({ request }) => HttpResponse.json({
-    status: 'current',
-    summary: 'Pocket Lab Lite is up to date.',
-    install_mode: 'release',
-    current_tag: 'lite-mock-current',
-    installed_release_tag: 'lite-mock-current',
-    comparison: 'equal',
-    update_available: false,
-    auto_apply: false,
-    checked_at: mockIso(),
-  }, { headers: liteSafeReadHeaders(request) })),
+  http.get('/api/lite/release', ({ request }) => HttpResponse.json(
+    liteReleasePayload(),
+    { headers: liteSafeReadHeaders(request) },
+  )),
+  http.post('/api/lite/release/check', () => HttpResponse.json({
+    accepted: true,
+    command_id: 'release-check-mock001',
+    status: 'accepted',
+    summary: 'Release check queued through the local worker.',
+  })),
+  http.post('/api/lite/release/apply', () => HttpResponse.json({
+    accepted: true,
+    command_id: 'release-apply-mock001',
+    status: 'accepted',
+    summary: 'Release install queued through the local worker.',
+  })),
   http.get('/api/lite/diagnostics/frontend-lifecycle/challenge', () => HttpResponse.json({
     active: false,
     challenge_id: '',
