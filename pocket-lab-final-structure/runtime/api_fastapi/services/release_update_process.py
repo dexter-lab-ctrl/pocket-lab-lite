@@ -815,6 +815,29 @@ def _emit(payload: Mapping[str, Any]) -> None:
     sys.stdout.buffer.flush()
 
 
+def _memory_budget_bytes(operation: str) -> int:
+    """Return the bounded RSS budget for one isolated release operation.
+
+    A check only fetches and validates bounded release metadata. Keep its
+    budget separate from archive/staging/promote operations so a phone's
+    lightweight release-status refresh cannot be discarded by the write-path
+    child budget, while retaining the stricter default for write operations.
+    """
+    if operation == "check":
+        return _bounded_int(
+            "POCKETLAB_RELEASE_CHECK_MAX_RSS_BYTES",
+            512 * 1024**2,
+            64 * 1024**2,
+            2 * 1024**3,
+        )
+    return _bounded_int(
+        "POCKETLAB_RELEASE_CHILD_MAX_RSS_BYTES",
+        256 * 1024**2,
+        64 * 1024**2,
+        2 * 1024**3,
+    )
+
+
 def main() -> int:
     _apply_resource_limits()
     started_wall = time.monotonic()
@@ -847,7 +870,7 @@ def main() -> int:
             "cpu_ms": round((time.process_time() - started_cpu) * 1000.0, 3),
             "peak_rss_bytes": _rss_bytes(),
         })
-        if int(metrics["peak_rss_bytes"] or 0) > _bounded_int("POCKETLAB_RELEASE_CHILD_MAX_RSS_BYTES", 256 * 1024**2, 64 * 1024**2, 2 * 1024**3):
+        if int(metrics["peak_rss_bytes"] or 0) > _memory_budget_bytes(operation):
             raise ReleaseProcessFailure("release_child_memory_budget_exceeded")
         _emit({"ok": True, "result": result, "metrics": metrics})
         return 0

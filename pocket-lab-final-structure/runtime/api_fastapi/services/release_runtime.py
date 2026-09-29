@@ -219,6 +219,7 @@ def _identity_payload(row: Mapping[str, Any] | None) -> dict[str, Any]:
             "verified": False,
             "identity_revision": 0,
             "migration_status": "",
+            "identity_source": "durable_installed_identity",
         }
     return {
         "product": str(row.get("product") or PRODUCT),
@@ -233,6 +234,7 @@ def _identity_payload(row: Mapping[str, Any] | None) -> dict[str, Any]:
         "verified": bool(row.get("verified")),
         "identity_revision": int(row.get("identity_revision") or 0),
         "migration_status": str(row.get("migration_status") or ""),
+        "identity_source": "durable_installed_identity",
     }
 
 
@@ -288,6 +290,7 @@ def _filesystem_installed_identity() -> dict[str, Any] | None:
         "verified": True,
         "identity_revision": max(1, int(marker_payload.get("identity_revision") or 1)),
         "migration_status": "filesystem_identity_reconciled",
+        "identity_source": "running_pwa_identity",
     }
 
 
@@ -305,6 +308,10 @@ def read_installed_identity() -> dict[str, Any]:
         return durable
     if not durable.get("verified") or durable.get("release_tag") != filesystem.get("release_tag"):
         return filesystem
+    # The durable row is returned for its complete audit metadata, but the
+    # matching installer marker is the authoritative identity of what the
+    # running PWA is serving on the phone.
+    durable["identity_source"] = "running_pwa_identity"
     return durable
 
 
@@ -464,6 +471,13 @@ def _canonical_release(payload: Mapping[str, Any]) -> dict[str, Any]:
         "phase": _safe_text(payload.get("phase") or "unknown", 32),
         "current_tag": _safe_text(payload.get("current_tag") or "", 120),
         "latest_tag": _safe_text(payload.get("latest_tag") or "", 120),
+        "latest_release_tag": _safe_text(
+            payload.get("latest_release_tag")
+            or latest.get("tag_name")
+            or payload.get("latest_tag")
+            or "",
+            120,
+        ),
         "comparison": _safe_text(payload.get("comparison") or "unknown_installed_identity", 40),
         "update_available": bool(payload.get("update_available")),
         "auto_apply": bool(payload.get("auto_apply")),
@@ -557,6 +571,8 @@ def _row_payload(row: Mapping[str, Any] | None) -> dict[str, Any]:
             "status": "degraded",
             "current_tag": "",
             "latest_tag": "",
+            "latest_release_tag": "",
+            "latest_version_source": "unavailable",
             "comparison": "unknown_installed_identity",
             "update_available": False,
             "configured_repository": normalize_repository(os.environ.get("POCKETLAB_LITE_RELEASE_REPO", DEFAULT_REPOSITORY)),
@@ -565,6 +581,7 @@ def _row_payload(row: Mapping[str, Any] | None) -> dict[str, Any]:
             "install_mode": "unknown",
             "installed_release_tag": "",
             "installed_source_commit": "",
+            "installed_version_source": "unavailable",
             "manifest_verified": False,
             "artifact_verified": False,
             "latest_release_manifest_verified": False,
@@ -598,12 +615,38 @@ def _row_payload(row: Mapping[str, Any] | None) -> dict[str, Any]:
         payload = {}
     if not isinstance(payload, dict):
         payload = {}
+    latest_release = payload.get("latest_release") if isinstance(payload.get("latest_release"), Mapping) else {}
+
+    def valid_release_tag(value: Any) -> str:
+        candidate = str(value or "").strip()
+        if not candidate:
+            return ""
+        try:
+            return parse_lite_tag(candidate).value
+        except LiteReleaseContractError:
+            return ""
+
+    # A successful check stores the GitHub release in the nested prepared
+    # projection. Prefer that value over a stale compatibility column so the
+    # read API exposes the actual latest verified GitHub release.
+    latest_release_tag = (
+        valid_release_tag(latest_release.get("tag_name"))
+        or valid_release_tag(row.get("latest_release_tag"))
+        or valid_release_tag(payload.get("latest_release_tag"))
+        or valid_release_tag(row.get("latest_tag"))
+        or valid_release_tag(payload.get("latest_tag"))
+    )
+    prepared_latest_tag = latest_release_tag or str(
+        row.get("latest_tag") or payload.get("latest_tag") or "unknown"
+    ).strip()
     payload.update(
         {
             "phase": str(row.get("phase") or payload.get("phase") or "unknown"),
             "status": str(row.get("status") or "degraded"),
             "current_tag": str(row.get("current_tag") or payload.get("current_tag") or "unknown"),
-            "latest_tag": str(row.get("latest_tag") or payload.get("latest_tag") or "unknown"),
+            "latest_tag": prepared_latest_tag,
+            "latest_release_tag": latest_release_tag,
+            "latest_version_source": "github_release_projection" if latest_release_tag else "unavailable",
             "update_available": bool(row.get("update_available")),
             "projection_revision": int(row.get("projection_revision") or 0),
             "operation_generation": int(row.get("operation_generation") or 0),
@@ -660,6 +703,9 @@ def _row_payload(row: Mapping[str, Any] | None) -> dict[str, Any]:
             "next_check_epoch_ms": int(row.get("next_check_epoch_ms") or 0),
             "stable_interval_seconds": int(row.get("stable_interval_seconds") or 43200),
             "installed_identity_verified": bool(identity.get("verified")),
+            "installed_version_source": str(
+                identity.get("identity_source") or "durable_installed_identity"
+            ),
         }
     )
 

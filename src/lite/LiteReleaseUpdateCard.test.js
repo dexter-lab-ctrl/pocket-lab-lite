@@ -2,17 +2,25 @@ import { describe, expect, it } from 'vitest';
 import {
   isReleaseActive,
   isReleaseFailureActive,
+  isVerifiedInstalledReleaseAheadOfKnownRelease,
   isVerifiedCurrentRelease,
+  installedReleaseVersion,
+  latestReleaseVersion,
   releasePresentation,
 } from './LiteReleaseUpdateCard.jsx';
 
 const currentRelease = {
   status: 'healthy',
+  install_mode: 'release',
   repository_match: true,
   manifest_verified: true,
   installed_artifact_verified: true,
+  installed_identity_verified: true,
   current_tag: 'lite-2026.07.29.1',
+  installed_release_tag: 'lite-2026.07.29.1',
   latest_tag: 'lite-2026.07.29.1',
+  latest_release_tag: 'lite-2026.07.29.1',
+  latest_release: { tag_name: 'lite-2026.07.29.1' },
   update_available: false,
 };
 
@@ -37,6 +45,22 @@ describe('Lite release update presentation', () => {
       latest_release_tag: 'lite-2026.07.29.1',
       update_available: true,
     })).toMatchObject({ label: 'Update available', status: 'degraded' });
+  });
+
+  it('uses the running installed identity and prepared GitHub release projection', () => {
+    const data = {
+      ...currentRelease,
+      installed_release_tag: 'lite-2026.07.28.1',
+      current_tag: 'lite-2026.07.28.1',
+      latest_tag: 'lite-2026.07.27.1',
+      latest_release_tag: 'lite-2026.07.27.1',
+      latest_release: { tag_name: 'lite-2026.07.29.1' },
+      comparison: 'older',
+      update_available: true,
+    };
+    expect(installedReleaseVersion(data)).toBe('lite-2026.07.28.1');
+    expect(latestReleaseVersion(data)).toBe('lite-2026.07.29.1');
+    expect(isVerifiedCurrentRelease(data)).toBe(false);
   });
 
   it.each([
@@ -68,6 +92,13 @@ describe('Lite release update presentation', () => {
   it('shows a current failure only while the failure is newer than success', () => {
     const data = {
       ...currentRelease,
+      installed_release_tag: 'lite-2026.07.28.1',
+      current_tag: 'lite-2026.07.28.1',
+      latest_tag: 'lite-2026.07.29.1',
+      latest_release_tag: 'lite-2026.07.29.1',
+      latest_release: { tag_name: 'lite-2026.07.29.1' },
+      comparison: 'older',
+      update_available: true,
       phase: 'error',
       last_failure_code: 'release_check_failed',
       last_failure_stage: 'checking',
@@ -77,6 +108,26 @@ describe('Lite release update presentation', () => {
     };
     expect(isReleaseFailureActive(data)).toBe(true);
     expect(releasePresentation(data)).toMatchObject({ label: 'Check failed', status: 'failed' });
+  });
+
+  it('does not report a stale failure when the verified running release is newer', () => {
+    const data = {
+      ...currentRelease,
+      installed_release_tag: 'lite-2026.07.30.1',
+      current_tag: 'lite-2026.07.30.1',
+      latest_tag: 'lite-2026.07.29.1',
+      latest_release_tag: 'lite-2026.07.29.1',
+      latest_release: { tag_name: 'lite-2026.07.29.1' },
+      comparison: 'newer',
+      update_available: false,
+      status: 'degraded',
+      phase: 'error',
+      last_failure_code: 'release_child_memory_budget_exceeded',
+      last_terminal_status: 'failed',
+    };
+    expect(isVerifiedInstalledReleaseAheadOfKnownRelease(data)).toBe(true);
+    expect(isReleaseFailureActive(data)).toBe(false);
+    expect(releasePresentation(data)).toMatchObject({ label: 'Current version', status: 'healthy' });
   });
 
   it('keeps rollback and source-install explanations explicit', () => {
