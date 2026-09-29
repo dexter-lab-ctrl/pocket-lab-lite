@@ -54,6 +54,10 @@ test('Devices progressive connection flow remains visually intentional', async (
   await waitForLiteScreenToSettle(page, 'devices');
 
   const devices = page.locator('[data-lite-screen-id="devices"]');
+  // The screen-stage settling check can complete while the lazy card module
+  // is still warming on desktop. Wait for the loaded fleet surface so this
+  // visual contract never snapshots the transient "Opening Devices" state.
+  await expect(devices.locator('.lite-device-card').first()).toBeVisible();
   await expect(devices).toHaveScreenshot('devices-progressive-flow.png', {
     animations: 'disabled',
     caret: 'hide',

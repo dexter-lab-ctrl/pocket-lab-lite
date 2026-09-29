@@ -987,6 +987,16 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
               }}
               next_step={attention.length ? (restartAssessment.allowed ? 'Restart the device service through Pocket Lab.' : restartAssessment.summary || 'Check power, private network access, and the device recovery service.') : 'No action is needed right now.'}
               technicalDetails={technicalRows(device)}
+              history={{
+                title: 'Device history',
+                domain: 'default',
+                datasetKey: `device:${device?.id || device?.name || device?.hostname || 'unknown'}`,
+                summary: historyQuery.loading ? 'Loading recent device activity…' : historyItems.length ? `${historyItems.length} safe event${historyItems.length === 1 ? '' : 's'} available.` : 'No device history has been reported yet.',
+                items: historyItems,
+                totalCount: Math.max(historyItems.length, Number(historyQuery.data?.total_count || historyQuery.data?.total || 0)),
+                enabled: true,
+                emptyMessage: 'No device history has been reported yet.',
+              }}
             />
             </div>
           );

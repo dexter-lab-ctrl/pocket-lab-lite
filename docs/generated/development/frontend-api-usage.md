@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 72d806e639a8dadfd87964244c30439d74a6630d05c09db49f1fad56650143a5
+source_fingerprint: bedd758438c05b0c6e30ca0d0f1fb987a70bcd4f11923ce0743685b24f3a648d
 schema_revision: 1
 validation_status: generated
 ---
@@ -127,6 +127,7 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/apps/photoprism/update/receipts/:operationId` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/catalog` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/catalog/install` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/devices/:deviceId/removal-assessment` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/diagnostics/frontend-lifecycle/challenge` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/events` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/fleet` | mock | yes | static |

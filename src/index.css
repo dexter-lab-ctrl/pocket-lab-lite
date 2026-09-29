@@ -25775,7 +25775,7 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
 .theme-pocket-lite-daylight .lite-device-flow-topology.is-repairing .lite-device-flow-signal {
   opacity: 1;
   left: 50%;
-  background: #f59e0b;
+  background: #d97706;
   animation: lite-device-signal-repair 900ms linear infinite;
 }
 

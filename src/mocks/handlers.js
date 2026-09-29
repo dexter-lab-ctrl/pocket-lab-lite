@@ -902,6 +902,30 @@ export const handlers = [
       'X-PocketLab-Read-Nonce': request.headers.get('X-PocketLab-Read-Nonce') || '',
     },
   })),
+  http.get('/api/lite/devices/:deviceId/removal-assessment', ({ request, params }) => {
+    const deviceId = String(params.deviceId || '');
+    const device = mockLiteDevices().find((item) => item.id === deviceId);
+    const protectedHost = Boolean(device?.is_current || device?.role === 'server_host');
+    const connected = device?.connection === 'online';
+    const safeToRemove = Boolean(device && !protectedHost && !connected);
+    return HttpResponse.json({
+      node_id: deviceId,
+      safe_to_remove: safeToRemove,
+      allowed: safeToRemove,
+      protected: protectedHost,
+      policy: safeToRemove ? 'allowed' : 'blocked',
+      confirmation_required: safeToRemove,
+      assessment_revision: 'mock-removal-assessment-v1',
+      awareness_revision: 1,
+      blockers: protectedHost
+        ? [{ code: 'protected_server_host', summary: 'This control device cannot be removed.' }]
+        : connected
+          ? [{ code: 'device_online', summary: 'Online devices are protected.' }]
+          : [],
+      warnings: [],
+      summary: safeToRemove ? 'This saved device record can be removed after confirmation.' : 'This device cannot be removed in its current state.',
+    }, { headers: liteSafeReadHeaders(request) });
+  }),
   http.get('/api/lite/policy', () => HttpResponse.json({
     status: 'ready', summary: 'Safety Rules are active and ready for protected changes.',
     engine: { name: 'Open Policy Agent', version: '1.19.0', healthy: true, loopback_only: true, endpoint_exposed_to_browser: false, reason_code: '' },
