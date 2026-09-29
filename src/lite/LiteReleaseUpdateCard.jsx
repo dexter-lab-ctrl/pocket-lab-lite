@@ -37,11 +37,21 @@ export function installedReleaseVersion(data = {}) {
   return String(data.installed_release_tag || data.current_tag || '').trim();
 }
 
-export function latestReleaseVersion(data = {}) {
+function preparedLatestReleaseVersion(data = {}) {
   const latestRelease = data.latest_release && typeof data.latest_release === 'object'
     ? data.latest_release
     : {};
   return String(latestRelease.tag_name || data.latest_release_tag || data.latest_tag || '').trim();
+}
+
+export function latestReleaseVersion(data = {}) {
+  // A verified installed release can be newer than the last prepared GitHub
+  // projection when the phone has installed a release before its read model
+  // refreshes. Do not display that stale projection as the latest version.
+  if (isVerifiedInstalledReleaseAheadOfKnownRelease(data)) {
+    return installedReleaseVersion(data);
+  }
+  return preparedLatestReleaseVersion(data);
 }
 
 export function isVerifiedCurrentRelease(data = {}) {
@@ -60,7 +70,7 @@ export function isVerifiedInstalledReleaseAheadOfKnownRelease(data = {}) {
     && data.installed_identity_verified === true
     && data.installed_artifact_verified !== false
     && Boolean(installedReleaseVersion(data))
-    && Boolean(latestReleaseVersion(data))
+    && Boolean(preparedLatestReleaseVersion(data))
     && data.comparison === 'newer';
 }
 

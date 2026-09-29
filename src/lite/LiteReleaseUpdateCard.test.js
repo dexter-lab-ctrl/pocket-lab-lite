@@ -63,6 +63,27 @@ describe('Lite release update presentation', () => {
     expect(isVerifiedCurrentRelease(data)).toBe(false);
   });
 
+  it('does not show a stale prepared projection as latest after a verified newer install', () => {
+    const data = {
+      ...currentRelease,
+      installed_release_tag: 'lite-2026.09.29.2',
+      current_tag: 'lite-2026.09.29.2',
+      latest_tag: 'lite-2026.09.27.1',
+      latest_release_tag: 'lite-2026.09.27.1',
+      latest_release: { tag_name: 'lite-2026.09.27.1' },
+      comparison: 'newer',
+      update_available: false,
+      status: 'degraded',
+      phase: 'error',
+      last_failure_code: 'release_child_memory_budget_exceeded',
+      last_terminal_status: 'failed',
+    };
+
+    expect(isVerifiedInstalledReleaseAheadOfKnownRelease(data)).toBe(true);
+    expect(latestReleaseVersion(data)).toBe('lite-2026.09.29.2');
+    expect(releasePresentation(data)).toMatchObject({ label: 'Current version', status: 'healthy' });
+  });
+
   it.each([
     ['checking', 'Checking for updates'],
     ['downloading', 'Downloading update'],
