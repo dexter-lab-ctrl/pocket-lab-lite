@@ -28,6 +28,41 @@ describe('Device Facts shared UI primitives', () => {
     expect(screen.queryByRole('progressbar')).toBeNull();
   });
 
+  it('renders a semantic resource reading, supporting value, and truthful zero meter', () => {
+    render(<ResourceMetric item={{
+      label: 'Pocket Lab CPU',
+      status: 'healthy',
+      statusLabel: 'Healthy',
+      primaryValue: '0%',
+      secondaryValue: '4 Pocket Lab service processes',
+      meterPercent: 0,
+      meterTone: 'healthy',
+      meterLabel: 'Pocket Lab CPU usage',
+    }} variant="detailed" />);
+    expect(screen.getByText('Healthy')).toBeTruthy();
+    expect(screen.getByText('0%')).toBeTruthy();
+    expect(screen.getByText('4 Pocket Lab service processes')).toBeTruthy();
+    const meter = screen.getByRole('progressbar', { name: 'Pocket Lab CPU usage' });
+    expect(meter.getAttribute('aria-valuenow')).toBe('0');
+    expect(meter.className).toContain('is-zero');
+  });
+
+  it('renders a temperature meter when a caller provides the bounded display-scale percentage', () => {
+    render(<ResourceMetric item={{
+      label: 'Temperature',
+      status: 'healthy',
+      statusLabel: 'Healthy',
+      primaryValue: '40 °C',
+      secondaryValue: 'Current thermal reading',
+      meterPercent: 50,
+      meterTone: 'healthy',
+      meterLabel: 'Temperature on a 0 to 80 °C display scale',
+    }} variant="detailed" />);
+    expect(screen.getByText('40 °C')).toBeTruthy();
+    expect(screen.getByText('Current thermal reading')).toBeTruthy();
+    expect(screen.getByRole('progressbar', { name: 'Temperature on a 0 to 80 °C display scale' }).getAttribute('aria-valuenow')).toBe('50');
+  });
+
   it('renders freshness as text instead of color-only state', () => {
     render(<FreshnessIndicator freshness="stale" observedAt="2026-09-05T12:00:00Z" />);
     expect(screen.getByText(/Stale/)).toBeTruthy();
