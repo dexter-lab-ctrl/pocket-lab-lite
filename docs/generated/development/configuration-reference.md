@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: fe4ecf6816f05d29f46488efabec4cec4198672dc343ecd67781877cc7b47d50
+source_fingerprint: 929d6a9d55426a3aa21a185114d990086ffa195950de69ac185b05b58df27d20
 schema_revision: 1
 validation_status: generated
 ---
@@ -726,6 +726,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_RELEASE_ARCHIVE_MAX_EXPANDED_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py |
 | `POCKETLAB_RELEASE_ARCHIVE_MAX_RATIO` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py |
 | `POCKETLAB_RELEASE_AVAILABLE_INTERVAL_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/workers/pocketlab_worker.py |
+| `POCKETLAB_RELEASE_CHECK_MAX_RSS_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py |
 | `POCKETLAB_RELEASE_CHILD_CPU_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py |
 | `POCKETLAB_RELEASE_CHILD_MAX_ADDRESS_SPACE_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py |
 | `POCKETLAB_RELEASE_CHILD_MAX_FILES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py |

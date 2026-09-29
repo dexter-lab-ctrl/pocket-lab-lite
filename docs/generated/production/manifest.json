@@ -32,7 +32,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "9fdc1ce0a5e36befa519e6a4a5fdf51d8236ded20750eaba12866088fce4cce5",
+  "source_fingerprint": "46c31b2c61d09353c43db1a843087260cae778d8832a2c1875e1c92ce9cefb35",
   "source_fingerprints": {
     ".github/workflows/docs-security-supply-chain.yml": "b5ce9661a2c0673d9e9c2a3be9b19e958b4046543816728556a581a2f338fa27",
     ".github/workflows/lite-quality.yml": "ebfc1a4d541f3dead50ff24e47aae63f5afc672137d5d1fb9a72c4dfeb0732ba",
@@ -128,7 +128,7 @@
     "src/lite/LiteRecovery.jsx": "d5baf56c22641756d221158c0b3bb1d8433deb0af4a5eefbc2c19e58759fb620",
     "src/lite/LiteRecovery.stories.jsx": "c52888ba8f51947de64807d83c320488b64e23375fbe3abf9bc909fe3b0a71c6",
     "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
-    "src/lite/LiteReleaseUpdateCard.jsx": "46c0b1c34e0600ea7849d9ced0df8dbcc61e2836f2487bf25379694e17a17032",
+    "src/lite/LiteReleaseUpdateCard.jsx": "4ed7a255f55159679f6be7da22670dfc66d7a5c5840ad73dba10c32bb1d5d865",
     "src/lite/LiteRevisionSyncBridge.jsx": "f4eb52b13ea61c36fbe428836ec43f7c2df6e09eccd62e85230723dd2389309f",
     "src/lite/LiteRules.jsx": "6be3fa9150e886729b55c987f4851a60b20702ca96d8bbb964679762a83098ab",
     "src/lite/LiteRules.stories.jsx": "44b78ac3977a1f1a7837310d7aa7b760235673ee1ddfb7fd1005606a11602666",
