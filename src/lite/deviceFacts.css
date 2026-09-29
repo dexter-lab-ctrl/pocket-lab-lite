@@ -201,3 +201,67 @@
     transition: none !important;
   }
 }
+
+
+/* Devices UI/UX completion — software posture rows */
+.lite-device-health-resource.meter-healthy .lite-device-resource-meter.is-zero::after {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.lite-device-health-resource.meter-watch .lite-device-resource-meter.is-zero::after {
+  background: #f59e0b;
+  border-color: #f59e0b;
+}
+
+.lite-device-health-resource.meter-attention .lite-device-resource-meter.is-zero::after {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+[data-device-fact-software] dl {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+}
+
+[data-device-fact-software] dl > div {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.8fr) minmax(0, 1.2fr);
+  gap: 0.65rem;
+  align-items: start;
+  padding: 0.58rem 0.65rem;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 0.8rem;
+  background: rgba(248, 250, 252, 0.7);
+}
+
+[data-device-fact-software] dd {
+  display: grid;
+  gap: 0.12rem;
+  margin: 0;
+  text-align: right;
+}
+
+[data-device-fact-software] dd b {
+  color: #0f172a;
+  font-size: 0.84rem;
+  font-weight: 950;
+}
+
+[data-device-fact-software] dd span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+@media (max-width: 560px) {
+  [data-device-fact-software] dl > div {
+    grid-template-columns: 1fr;
+    gap: 0.18rem;
+  }
+
+  [data-device-fact-software] dd {
+    text-align: left;
+  }
+}
