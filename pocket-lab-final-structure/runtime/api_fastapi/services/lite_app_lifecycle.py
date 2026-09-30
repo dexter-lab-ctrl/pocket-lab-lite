@@ -611,7 +611,14 @@ def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recov
             media_ready,
             "Import photos",
             reason=media_reason,
-            summary="Import connected photos into PhotoPrism. PhotoPrism handles library indexing.",
+            summary=(
+                "Import connected photos into PhotoPrism. PhotoPrism handles library indexing."
+                if media_ready
+                else (
+                    media_reason
+                    or "Import photos is not ready yet."
+                )
+            ),
             status=media_status,
         ),
     }
