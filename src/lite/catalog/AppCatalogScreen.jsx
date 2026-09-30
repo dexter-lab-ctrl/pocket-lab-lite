@@ -2336,6 +2336,37 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     select: selectPhotoPrismActionsView,
     snapshotSelect: selectPhotoPrismActionsView,
   });
+  const { data: mediaBackupData } = useLiteQuery({
+    queryKey: ['lite', 'media-backup'],
+    path: '/api/lite/media-backup',
+    queryFn: liteApi.mediaBackup,
+    enabled: apps.length === 0 || apps.some((app) => isPhotoPrismApp(app)),
+    pollingMode: 'relaxed',
+    staleTime: 60_000,
+    isLive: (payload) => (payload?.devices || []).some((device) => (
+      ['queued', 'planning', 'waiting_for_credentials', 'starting', 'transferring', 'cancelling']
+        .includes(String(device?.latest_backup?.status || '').toLowerCase())
+    )),
+    refetchOnWindowFocus: false,
+  });
+  const photoBackupDevices = Array.isArray(mediaBackupData?.devices) ? mediaBackupData.devices : [];
+  const photoBackupLatest = photoBackupDevices
+    .map((device) => device?.latest_backup)
+    .filter(Boolean)
+    .sort((left, right) => String(right?.updated_at || '').localeCompare(String(left?.updated_at || '')))[0] || null;
+  const photoBackupLive = photoBackupDevices.some((device) => (
+    ['queued', 'planning', 'waiting_for_credentials', 'starting', 'transferring', 'cancelling']
+      .includes(String(device?.latest_backup?.status || '').toLowerCase())
+  ));
+  const photoBackupReadyCount = photoBackupDevices.filter((device) => device?.ready).length;
+  const photoBackupSummary = photoBackupLive
+    ? 'Photo backup is running'
+    : ['completed', 'partial_storage_limit'].includes(String(photoBackupLatest?.status || '').toLowerCase())
+      ? `Photos protected by Pocket Lab · Last backup ${formatLiteTime(photoBackupLatest?.completed_at || photoBackupLatest?.updated_at)}`
+      : photoBackupReadyCount
+        ? `Photo backup ready on ${photoBackupReadyCount} device${photoBackupReadyCount === 1 ? '' : 's'}`
+        : 'Photo backup not ready yet';
+
   const appActionMutation = useLiteMutation({
     mutationFn: ({ appId = 'photoprism', actionId, payload = {} }) => liteApi.runAppAction(appId, actionId, payload),
     invalidateForAction: ({ appId = 'photoprism', actionId }, response) => getLiteAppActionInvalidations(appId, actionId, response),
@@ -2991,6 +3022,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <span><ShieldCheck className="h-4 w-4" />{app?.security_profile?.label || 'Protected app'}</span>
             <span><FileCheck className="h-4 w-4" />{app?.backup_profile?.config || 'Config protected'}</span>
             <span><FileCheck className="h-4 w-4" />{app?.backup_profile?.media || 'Media excluded'}</span>
+            {isPhotoPrismApp(app) ? <span><Camera className="h-4 w-4" />{photoBackupSummary}</span> : null}
           </div>
         ) : null}
         {installed && lifecycle ? (
