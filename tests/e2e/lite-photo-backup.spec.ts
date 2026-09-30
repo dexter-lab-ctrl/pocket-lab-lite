@@ -130,14 +130,7 @@ test.describe('Phase 1 Photo Backup mocked UX', () => {
   });
 
   test('malformed photo-backup status never blanks Devices or invents a permission failure', async ({ page }) => {
-    await installScenario(page, 'photo-backup-ready');
-    await page.route('**/api/lite/devices/test-phone-4/photo-backup', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ status: 'unknown', sanitized: true }),
-      });
-    });
+    await installScenario(page, 'photo-backup-malformed');
     const backup = await openPhotoBackup(page);
     await expect(backup).toContainText(/Needs attention|checking photo backup readiness/i);
     await expect(backup).not.toContainText(/Allow photo access/i);

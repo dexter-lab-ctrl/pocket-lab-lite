@@ -54,6 +54,12 @@ function mockPhotoBackupDevice(deviceId = 'test-phone-4') {
     updated_at: mockIso(),
     sanitized: true,
   };
+  if (selected === 'photo-backup-malformed') {
+    return {
+      status: 'unknown',
+      sanitized: true,
+    };
+  }
   if (selected === 'photo-backup-permission-missing') {
     return {
       ...base,
