@@ -5486,8 +5486,15 @@ def test_lite_devices_details_keep_history_lazy_and_technical_collapsed():
     history = Path("src/lite/components/LiteHistorySection.jsx").read_text()
     technical = Path("src/lite/components/LiteTechnicalDetails.jsx").read_text()
 
-    assert "history={{" in details
+    assert "history={{" not in details
     assert "Device history" in details
+    assert "const [deviceHistoryOpen, setDeviceHistoryOpen] = React.useState(false)" in details
+    assert "lite-device-history-timeline-card" in details
+    assert "aria-expanded={deviceHistoryOpen}" in details
+    assert "aria-controls={`device-history-timeline-${initialDeviceId}`}" in details
+    assert "{deviceHistoryOpen ? (" in details
+    assert "Show history" in details
+    assert "Collapse history" in details
     assert "technicalDetails={technicalRows(device)}" in details
     assert "const [isOpen, setIsOpen] = useState(false)" in history
     assert "const shouldMountHistory = Boolean(isOpen && enabled)" in history
