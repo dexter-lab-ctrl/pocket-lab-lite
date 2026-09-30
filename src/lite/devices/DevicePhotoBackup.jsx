@@ -127,8 +127,27 @@ export default function DevicePhotoBackup({ deviceId }) {
 
       {latest.status === 'partial_storage_limit' ? (
         <p className="lite-device-photo-backup-note" role="status">
-          Backup stopped at the protected Server Phone storage limit. Completed files were kept; Retry will continue with remaining items.
+          Backup stopped before Pocket Lab's protected Server Phone reserve. Completed files were kept; Retry will continue with the remaining {Number(latest.items_remaining || 0)} item{Number(latest.items_remaining || 0) === 1 ? '' : 's'}
+          {Number(latest.bytes_remaining || 0) > 0 ? ` (${formatBytes(latest.bytes_remaining)})` : ''}. Pocket Lab keeps at least 10% of Server Phone storage free.
         </p>
+      ) : null}
+
+      {!live && latest.photo_processing_state === 'processing' ? (
+        <p className="lite-device-photo-backup-note" role="status">
+          Transfer complete. PhotoPrism is processing the new media in the background.
+        </p>
+      ) : null}
+
+      {!live && latest.status === 'completed' && Number(latest.items_total || 0) === 0 ? (
+        <p className="lite-device-photo-backup-note" role="status">
+          Nothing new to back up from the selected photo folders.
+        </p>
+      ) : null}
+
+      {data.ready && Number(data?.storage?.hard_reserve_fraction || 0) >= 0.1 ? (
+        <small className="lite-device-photo-backup-transfer">
+          Storage protection: at least 10% of Server Phone space stays free.
+        </small>
       ) : null}
 
       {latest.bytes_transferred ? (

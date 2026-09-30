@@ -22,6 +22,150 @@ const controlPlane = () => {
 const healthPayload = () => scenario() === 'vault-sealed' ? healthVaultSealed : healthAllGreen;
 const observabilityPayload = () => scenario() === 'nats-down' || scenario() === 'worker-down' || scenario() === 'vault-sealed' ? observabilityRuntimeDegraded : observabilityRuntimeHealthy;
 
+function mockPhotoBackupDevice(deviceId = 'test-phone-4') {
+  const selected = rawScenario();
+  const base = {
+    status: 'ready',
+    ready: true,
+    node_id: String(deviceId || 'test-phone-4'),
+    node_label: 'Test-Phone-4',
+    provider: 'photoprism_webdav',
+    summary: 'Ready to back up photos.',
+    blockers: [],
+    rclone_available: true,
+    rclone_version: 'rclone v1.71.2',
+    photo_storage_access: true,
+    collections: ['camera', 'pictures', 'videos'],
+    destination_ready: true,
+    storage: {
+      status: 'ready',
+      total_bytes: 128000000000,
+      free_bytes: 64000000000,
+      hard_reserve_bytes: 12800000000,
+      planning_reserve_bytes: 19200000000,
+      safe_upload_budget_bytes: 44800000000,
+      hard_upload_budget_bytes: 51200000000,
+      hard_reserve_fraction: 0.10,
+      planning_reserve_fraction: 0.15,
+      planning_reserve_min_bytes: 2147483648,
+      sanitized: true,
+    },
+    latest_backup: null,
+    updated_at: mockIso(),
+    sanitized: true,
+  };
+  if (selected === 'photo-backup-permission-missing') {
+    return {
+      ...base,
+      status: 'not_ready',
+      ready: false,
+      summary: 'Allow photo access on this device.',
+      blockers: ['photo_storage_access_missing'],
+      photo_storage_access: false,
+      collections: [],
+    };
+  }
+  if (selected === 'photo-backup-running') {
+    return {
+      ...base,
+      latest_backup: {
+        backup_id: 'photo-mock-running',
+        node_id: base.node_id,
+        status: 'transferring',
+        summary: 'Backing up photos.',
+        items_total: 40,
+        items_transferred: 17,
+        items_skipped: 8,
+        items_remaining: 15,
+        bytes_total: 5000000000,
+        bytes_total_required: 5000000000,
+        bytes_total_planned: 5000000000,
+        bytes_transferred: 2100000000,
+        bytes_remaining: 2900000000,
+        partial: false,
+        progress: { phase: 'transferring', percent: 42, step: 'Backing up photos.' },
+        started_at: mockIso(-8 * 60 * 1000),
+        updated_at: mockIso(),
+        sanitized: true,
+      },
+    };
+  }
+  if (selected === 'photo-backup-partial') {
+    return {
+      ...base,
+      latest_backup: {
+        backup_id: 'photo-mock-partial',
+        node_id: base.node_id,
+        status: 'partial_storage_limit',
+        summary: 'Photos backed up. Some items are waiting for more space.',
+        items_total: 80,
+        items_transferred: 51,
+        items_skipped: 12,
+        items_remaining: 17,
+        bytes_total: 12000000000,
+        bytes_total_required: 12000000000,
+        bytes_total_planned: 7800000000,
+        bytes_transferred: 7600000000,
+        bytes_remaining: 4400000000,
+        partial: true,
+        retryable: true,
+        photo_processing_state: 'processing',
+        progress: { phase: 'partial_storage_limit', percent: 63, step: 'Backup paused at the protected storage limit.' },
+        completed_at: mockIso(-2 * 60 * 1000),
+        updated_at: mockIso(-2 * 60 * 1000),
+        sanitized: true,
+      },
+    };
+  }
+  if (selected === 'photo-backup-empty') {
+    return {
+      ...base,
+      latest_backup: {
+        backup_id: 'photo-mock-empty',
+        node_id: base.node_id,
+        status: 'completed',
+        summary: 'No photos or videos need backing up.',
+        items_total: 0,
+        items_transferred: 0,
+        items_skipped: 0,
+        items_remaining: 0,
+        bytes_total: 0,
+        bytes_total_required: 0,
+        bytes_transferred: 0,
+        bytes_remaining: 0,
+        photo_processing_state: 'not_needed',
+        progress: { phase: 'completed', percent: 100, step: 'Nothing new to back up.' },
+        completed_at: mockIso(-60 * 1000),
+        updated_at: mockIso(-60 * 1000),
+        sanitized: true,
+      },
+    };
+  }
+  if (selected === 'photo-backup-interrupted') {
+    return {
+      ...base,
+      latest_backup: {
+        backup_id: 'photo-mock-interrupted',
+        node_id: base.node_id,
+        status: 'interrupted',
+        summary: 'Photo backup was interrupted. You can retry safely.',
+        items_total: 40,
+        items_transferred: 17,
+        items_skipped: 8,
+        items_remaining: 15,
+        bytes_total_required: 5000000000,
+        bytes_transferred: 2100000000,
+        bytes_remaining: 2900000000,
+        retryable: true,
+        progress: { phase: 'interrupted', percent: 42, step: 'Backup interrupted.' },
+        updated_at: mockIso(-60 * 1000),
+        sanitized: true,
+      },
+    };
+  }
+  return base;
+}
+
 function liteReleasePayload() {
   const currentTag = 'lite-2026.09.27.1';
   const latestTag = 'lite-2026.09.27.1';
@@ -905,44 +1049,14 @@ export const handlers = [
   http.get('/api/lite/media-backup', ({ request }) => HttpResponse.json({
     status: 'ok',
     provider: 'photoprism_webdav',
-    devices: [{
-      status: 'ready',
-      ready: true,
-      node_id: 'test-phone-4',
-      node_label: 'Storage Phone',
-      provider: 'photoprism_webdav',
-      summary: 'Ready to back up photos.',
-      blockers: [],
-      rclone_available: true,
-      rclone_version: 'rclone v1.71.2',
-      photo_storage_access: true,
-      collections: ['camera', 'pictures', 'videos'],
-      destination_ready: true,
-      storage: { status: 'ready', total_bytes: 128000000000, free_bytes: 64000000000, hard_reserve_bytes: 12800000000, planning_reserve_bytes: 19200000000, safe_upload_budget_bytes: 44800000000, hard_upload_budget_bytes: 51200000000, sanitized: true },
-      latest_backup: null,
-      sanitized: true,
-    }],
+    devices: [mockPhotoBackupDevice('test-phone-4')],
     updated_at: mockIso(),
     sanitized: true,
   }, { headers: liteSafeReadHeaders(request) })),
-  http.get('/api/lite/devices/:deviceId/photo-backup', ({ request, params }) => HttpResponse.json({
-    status: 'ready',
-    ready: true,
-    node_id: String(params.deviceId || ''),
-    node_label: 'Storage Phone',
-    provider: 'photoprism_webdav',
-    summary: 'Ready to back up photos.',
-    blockers: [],
-    rclone_available: true,
-    rclone_version: 'rclone v1.71.2',
-    photo_storage_access: true,
-    collections: ['camera', 'pictures', 'videos'],
-    destination_ready: true,
-    storage: { status: 'ready', total_bytes: 128000000000, free_bytes: 64000000000, hard_reserve_bytes: 12800000000, planning_reserve_bytes: 19200000000, safe_upload_budget_bytes: 44800000000, hard_upload_budget_bytes: 51200000000, sanitized: true },
-    latest_backup: null,
-    updated_at: mockIso(),
-    sanitized: true,
-  }, { headers: liteSafeReadHeaders(request) })),
+  http.get('/api/lite/devices/:deviceId/photo-backup', ({ request, params }) => HttpResponse.json(
+    mockPhotoBackupDevice(String(params.deviceId || '')),
+    { headers: liteSafeReadHeaders(request) },
+  )),
   http.post('/api/lite/devices/:deviceId/photo-backup', async ({ request, params }) => {
     const body = await request.json().catch(() => ({}));
     return HttpResponse.json({

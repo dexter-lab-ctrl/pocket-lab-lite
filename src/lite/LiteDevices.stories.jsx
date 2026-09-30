@@ -138,3 +138,51 @@ export const DeviceFactsDaylight = createLiteStory('devices', 'devices-resource-
 export const DeviceFactsDark = createLiteStory('devices', 'devices-resource-complete', { viewport: 'desktop', theme: 'dark' });
 export const DeviceFactsReducedMotion = createLiteStory('devices', 'devices-resource-complete', { viewport: 'desktop', notes: 'Reduced-motion qualification state.' });
 export const DeviceFactsText200Percent = createLiteStory('devices', 'devices-resource-complete', { viewport: 'desktop', textScale: 2, notes: '200% text qualification state.' });
+
+
+export const PhotoBackupReady = {
+  ...createLiteStory('devices', 'photo-backup-ready', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await openHealthyDeviceManage(canvasElement);
+    await expect(await canvas.findByText('Photo backup')).toBeInTheDocument();
+    await expect(await canvas.findByRole('button', { name: /Back up photos/i })).toBeEnabled();
+  },
+};
+export const PhotoBackupRunning = {
+  ...createLiteStory('devices', 'photo-backup-running', { viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await openHealthyDeviceManage(canvasElement);
+    await expect(await canvas.findByText(/Backing up photos/i)).toBeInTheDocument();
+    await expect(await canvas.findByRole('button', { name: /Stop backup/i })).toBeEnabled();
+  },
+};
+export const PhotoBackupPartialStorage = {
+  ...createLiteStory('devices', 'photo-backup-partial', { viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await openHealthyDeviceManage(canvasElement);
+    await expect(await canvas.findByText(/protected Server Phone reserve/i)).toBeInTheDocument();
+    await expect(await canvas.findByRole('button', { name: /^Retry$/i })).toBeEnabled();
+  },
+};
+export const PhotoBackupPermissionMissing = {
+  ...createLiteStory('devices', 'photo-backup-permission-missing', { viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await openHealthyDeviceManage(canvasElement);
+    await expect(await canvas.findByText(/Allow photo access/i)).toBeInTheDocument();
+  },
+};
+export const PhotoBackupInterrupted = {
+  ...createLiteStory('devices', 'photo-backup-interrupted', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await openHealthyDeviceManage(canvasElement);
+    await expect(await canvas.findByText(/interrupted/i)).toBeInTheDocument();
+    await expect(await canvas.findByRole('button', { name: /^Retry$/i })).toBeEnabled();
+  },
+};
+export const PhotoBackupEmptyLibrary = {
+  ...createLiteStory('devices', 'photo-backup-empty', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await openHealthyDeviceManage(canvasElement);
+    await expect(await canvas.findByText(/Nothing new to back up/i)).toBeInTheDocument();
+  },
+};
