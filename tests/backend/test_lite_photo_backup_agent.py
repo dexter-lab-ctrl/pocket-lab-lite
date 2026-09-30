@@ -555,7 +555,12 @@ def test_temp_rclone_state_is_removed_when_transfer_setup_fails(monkeypatch, tmp
     temp_root = tmp_path / "ephemeral-rclone"
     monkeypatch.setattr(module, "_collection_path", lambda _name: camera)
     monkeypatch.setattr(module.shutil, "which", lambda name: "/usr/bin/rclone" if name == "rclone" else None)
-    monkeypatch.setattr(module.tempfile, "mkdtemp", lambda **_kwargs: str(temp_root))
+
+    def fake_mkdtemp(**_kwargs):
+        temp_root.mkdir(parents=True, exist_ok=False)
+        return str(temp_root)
+
+    monkeypatch.setattr(module.tempfile, "mkdtemp", fake_mkdtemp)
 
     provider = module.PhotoPrismWebDAVProvider(
         node_id="storage-phone",
