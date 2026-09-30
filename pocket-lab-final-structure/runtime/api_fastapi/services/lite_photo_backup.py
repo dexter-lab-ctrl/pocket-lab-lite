@@ -1168,6 +1168,28 @@ def _revoke_job_credential(
         _revoke_auth_id(auth_id)
 
 
+async def _publish_audit(
+    subject: str,
+    event_type: str,
+    data: dict[str, Any],
+    *,
+    trace_id: str,
+) -> None:
+    """Best-effort sanitized audit; local evidence remains authoritative."""
+    try:
+        await BUS.publish_json(
+            subject,
+            event_type,
+            {**data, "sanitized": True},
+            trace_id=trace_id,
+        )
+    except Exception:
+        # A transient audit transport outage must not expose a credential or
+        # leave a prepared transfer half-admitted. The same lifecycle event is
+        # retained in the bounded local evidence log.
+        return
+
+
 def _append_evidence(
     job: dict[str, Any],
     event_type: str,
@@ -1744,7 +1766,7 @@ async def execute_start(
             job,
             "lite.photo_backup.credential_created",
         )
-        await BUS.publish_json(
+        await _publish_audit(
             "pocketlab.audit.lite.photo_backup.credential_created",
             "lite.photo_backup.credential_created",
             {
@@ -1752,7 +1774,6 @@ async def execute_start(
                 "node_id": node_id,
                 "provider": _PROVIDER_ID,
                 "expires_in_seconds": CREDENTIAL_TTL_SECONDS,
-                "sanitized": True,
             },
             trace_id=backup_id,
         )

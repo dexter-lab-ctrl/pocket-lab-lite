@@ -199,3 +199,125 @@ def test_live_phone_import_guard_is_fail_closed(monkeypatch):
     with pytest.raises(Exception) as exc:
         lite_photoprism_media.media_command("import_photos")
     assert "unsafe_live_media_import" in str(exc.value)
+
+
+
+def test_second_device_is_blocked_while_server_phone_backup_is_active(photo_backup, monkeypatch):
+    monkeypatch.setattr(
+        photo_backup,
+        "status",
+        lambda node_id, *_args, **_kwargs: {"ready": True, "latest_backup": None, "node_id": node_id},
+    )
+    monkeypatch.setattr(
+        photo_backup,
+        "_agent",
+        lambda node_id: {"node_id": node_id, "name": node_id},
+    )
+    state = photo_backup._state()
+    state["jobs"]["photo-active-other"] = {
+        "backup_id": "photo-active-other",
+        "node_id": "phone-a",
+        "status": "transferring",
+        "started_at": photo_backup._now(),
+    }
+    state["latest_by_node"]["phone-a"] = "photo-active-other"
+    photo_backup._save_state(state)
+
+    with pytest.raises(Exception) as exc:
+        photo_backup.make_start_command("phone-b", ["camera"])
+
+    detail = getattr(exc.value, "detail", {})
+    assert detail.get("status") == "photo_backup_busy"
+    assert detail.get("retryable") is True
+
+
+def test_credential_response_uses_stable_per_device_namespace(photo_backup, monkeypatch):
+    deleted = []
+    monkeypatch.setattr(
+        photo_backup,
+        "_load_credential",
+        lambda _ref: {
+            "node_id": "storage-phone",
+            "backup_id": "photo-1",
+            "username": "admin",
+            "password": "short-lived-password",
+            "webdav_url": "https://pocket.test.ts.net/apps/photoprism/originals/",
+            "expires_at_epoch": photo_backup._epoch() + 60,
+        },
+    )
+    monkeypatch.setattr(photo_backup, "_delete_credential", lambda ref: deleted.append(ref))
+    monkeypatch.setattr(
+        photo_backup,
+        "server_capacity",
+        lambda: {"status": "ready", "safe_upload_budget_bytes": 123, "hard_upload_budget_bytes": 456},
+    )
+
+    result = photo_backup.consume_credential(
+        credential_ref="cred-" + ("a" * 32),
+        node_id="storage-phone",
+        backup_id="photo-1",
+    )
+
+    assert result["destination_prefix"] == "PocketLab/Devices/storage-phone"
+    assert deleted == ["cred-" + ("a" * 32)]
+
+
+def test_terminal_progress_projects_required_and_remaining_bytes(photo_backup, monkeypatch):
+    monkeypatch.setattr(photo_backup, "_revoke_job_credential", lambda _job: None)
+    monkeypatch.setattr(photo_backup, "_append_evidence", lambda *_args, **_kwargs: None)
+    state = photo_backup._state()
+    state["jobs"]["photo-1"] = {
+        "backup_id": "photo-1",
+        "node_id": "storage-phone",
+        "status": "transferring",
+        "started_at": photo_backup._now(),
+    }
+    state["latest_by_node"]["storage-phone"] = "photo-1"
+    photo_backup._save_state(state)
+
+    result = photo_backup.record_agent_progress(
+        "photo-1",
+        "storage-phone",
+        {
+            "status": "partial_storage_limit",
+            "items_total": 10,
+            "items_transferred": 6,
+            "items_remaining": 4,
+            "bytes_total": 1000,
+            "bytes_total_planned": 700,
+            "bytes_total_required": 1000,
+            "bytes_transferred": 600,
+            "bytes_remaining": 400,
+            "partial": True,
+            "retryable": True,
+            "photo_processing_state": "processing",
+            "progress": {"phase": "partial_storage_limit", "percent": 60, "step": "Storage limit reached."},
+        },
+    )
+
+    assert result["bytes_total_required"] == 1000
+    assert result["bytes_total_planned"] == 700
+    assert result["bytes_transferred"] == 600
+    assert result["bytes_remaining"] == 400
+    assert result["photo_processing_state"] == "processing"
+    assert result["partial"] is True
+
+
+def test_capacity_contract_exposes_reserve_policy_without_paths(photo_backup, monkeypatch):
+    block = 4096
+    total_bytes = 20 * 1024 * 1024 * 1024
+    free_bytes = 10 * 1024 * 1024 * 1024
+    monkeypatch.setattr(
+        os,
+        "statvfs",
+        lambda _path: SimpleNamespace(
+            f_blocks=total_bytes // block,
+            f_bavail=free_bytes // block,
+            f_frsize=block,
+        ),
+    )
+    result = photo_backup.server_capacity()
+    assert result["hard_reserve_fraction"] == 0.10
+    assert result["planning_reserve_fraction"] == 0.15
+    assert result["planning_reserve_min_bytes"] == 2 * 1024 * 1024 * 1024
+    assert "path" not in result

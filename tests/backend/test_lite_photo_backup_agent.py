@@ -142,3 +142,86 @@ def test_provider_rejects_non_https_control_origin():
         assert str(exc) == "secure_control_origin_required"
     else:
         raise AssertionError("HTTP control origin must fail closed")
+
+
+
+def test_remote_listing_failure_is_fail_closed(monkeypatch, tmp_path):
+    module = _module()
+    provider = module.PhotoPrismWebDAVProvider(
+        node_id="storage-phone",
+        agent_token="token",
+        control_origin="https://pocket.test.ts.net",
+    )
+    monkeypatch.setattr(
+        provider,
+        "_run",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess(
+            args=["rclone"], returncode=1, stdout="", stderr=""
+        ),
+    )
+    try:
+        provider._remote_listing(
+            "/usr/bin/rclone",
+            tmp_path / "rclone.conf",
+            "PocketLab/Devices/storage-phone",
+        )
+    except RuntimeError as exc:
+        assert str(exc) == "remote_listing_failed"
+    else:
+        raise AssertionError("Remote inventory errors must fail closed")
+
+
+def test_empty_readable_gallery_completes_as_safe_noop(monkeypatch, tmp_path):
+    module = _module()
+    camera = tmp_path / "DCIM"
+    camera.mkdir()
+    monkeypatch.setattr(module, "_collection_path", lambda _name: camera)
+    monkeypatch.setattr(module.shutil, "which", lambda name: "/usr/bin/rclone" if name == "rclone" else None)
+
+    provider = module.PhotoPrismWebDAVProvider(
+        node_id="storage-phone",
+        agent_token="token",
+        control_origin="https://pocket.test.ts.net",
+    )
+    monkeypatch.setattr(
+        provider,
+        "_credential",
+        lambda *_args: {
+            "capacity": {"safe_upload_budget_bytes": 10_000},
+            "password": "one-time",
+            "username": "admin",
+            "webdav_url": "https://pocket.test.ts.net/apps/photoprism/originals/",
+            "destination_prefix": "PocketLab/Devices/storage-phone",
+        },
+    )
+    monkeypatch.setattr(provider, "_inventory", lambda _collections: [])
+    reports = []
+    monkeypatch.setattr(provider, "_post_progress", lambda _backup_id, payload: reports.append(payload))
+
+    result = provider.backup(
+        backup_id="photo-empty",
+        credential_ref="cred-ref",
+        collections=["camera"],
+    )
+
+    assert result["status"] == "completed"
+    assert result["items_total"] == 0
+    assert result["bytes_total_required"] == 0
+    assert result["photo_processing_state"] == "not_needed"
+    assert "nothing new" in result["progress"]["step"].lower()
+    assert reports[-1]["status"] == "completed"
+
+
+def test_destination_namespace_fallback_is_device_scoped():
+    module = _module()
+    source = Path(module.__file__).read_text(encoding="utf-8")
+    assert "PocketLab/Devices/{self.node_id}" in source
+    assert "PocketLab/{self.node_id}" not in source
+
+
+def test_partial_progress_percent_uses_required_bytes_not_only_selected_bytes():
+    module = _module()
+    source = Path(module.__file__).read_text(encoding="utf-8")
+    assert "bytes_transferred\n                                / required_bytes" in source
+    assert "bytes_total_required" in source
+    assert "bytes_remaining" in source
