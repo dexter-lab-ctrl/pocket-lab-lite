@@ -27,13 +27,18 @@ if str(CORE_DIR) not in sys.path:
 
 from resource_telemetry import collect_resource_telemetry
 from lite_system_profile import collect_system_health, collect_system_profile, unavailable_system_profile
+from lite_photo_backup_agent import (
+    PhotoPrismWebDAVProvider,
+    collect_photo_backup_capabilities,
+    repair_rclone,
+)
 
 try:
     import nats  # type: ignore
 except Exception:  # pragma: no cover
     nats = None  # type: ignore
 
-AGENT_VERSION = "2.5.0-lite-trust-capability-awareness"
+AGENT_VERSION = "2.6.0-lite-photo-backup"
 SYSTEM_PROFILE_REFRESH_SECONDS = 12 * 60 * 60
 SYSTEM_HEALTH_REFRESH_SECONDS = 5 * 60
 PROFILE_REPUBLISH_SECONDS = 6 * 60 * 60
@@ -75,7 +80,14 @@ def telemetry_snapshot() -> Dict[str, Any]:
 
 
 
-def advertised_capabilities(role: str, *, is_control_plane: bool, supervisor_available: bool) -> list[str]:
+def advertised_capabilities(
+    role: str,
+    *,
+    is_control_plane: bool,
+    supervisor_available: bool,
+    rclone_available: bool = False,
+    photo_storage_access: bool = False,
+) -> list[str]:
     normalized = str(role or "compute").strip().lower().replace("-", "_").replace(" ", "_")
     capabilities = {
         "heartbeat",
@@ -92,6 +104,13 @@ def advertised_capabilities(role: str, *, is_control_plane: bool, supervisor_ava
         capabilities.update({"provide_storage", "store_backups", "backup_target", "restore_target"})
     else:
         capabilities.update({"host_apps", "compute"})
+    if photo_storage_access:
+        capabilities.add("media_backup_source")
+        capabilities.add("photo_storage_access")
+    if rclone_available:
+        capabilities.add("rclone_available")
+    if rclone_available and photo_storage_access:
+        capabilities.add("photoprism_webdav_upload")
     if is_control_plane:
         capabilities.update(
             {
@@ -154,10 +173,20 @@ class PocketLabNodeAgent:
         self.last_disconnect_epoch = 0.0
         self.reconnect_count = 0
         self.self_heal_seconds = int(env("POCKETLAB_AGENT_SELF_HEAL_SECONDS", "180"))
+        self.control_origin = env("POCKETLAB_CONTROL_ORIGIN", "").strip().rstrip("/")
+        self.photo_backup = collect_photo_backup_capabilities()
+        self.photo_backup_provider = PhotoPrismWebDAVProvider(
+            node_id=self.node_id,
+            agent_token=self.token,
+            control_origin=self.control_origin,
+        )
+        self.photo_backup_task: asyncio.Task[Any] | None = None
         self.capabilities = advertised_capabilities(
             self.role,
             is_control_plane=self.is_control_plane,
             supervisor_available=bool(shutil.which("pm2")),
+            rclone_available=bool(self.photo_backup.get("rclone_available")),
+            photo_storage_access=bool(self.photo_backup.get("photo_storage_access")),
         )
         self.connected_at = now_iso()
         self.system_profile_refresh_seconds = max(
@@ -293,6 +322,7 @@ class PocketLabNodeAgent:
             "capabilities": self.capabilities,
             "advertised_capabilities": self.capabilities,
             "capability_schema_version": 1,
+            "photo_backup": dict(self.photo_backup),
             "nats_connected_at": self.connected_at,
             "reconnect_count": self.reconnect_count,
         }
@@ -561,6 +591,67 @@ class PocketLabNodeAgent:
             except asyncio.TimeoutError:
                 continue
 
+    def _refresh_photo_backup_capabilities(self) -> None:
+        self.photo_backup = collect_photo_backup_capabilities()
+        self.capabilities = advertised_capabilities(
+            self.role,
+            is_control_plane=self.is_control_plane,
+            supervisor_available=bool(shutil.which("pm2")),
+            rclone_available=bool(self.photo_backup.get("rclone_available")),
+            photo_storage_access=bool(self.photo_backup.get("photo_storage_access")),
+        )
+
+    async def _run_photo_backup(
+        self,
+        command_id: str,
+        payload: Dict[str, Any],
+    ) -> None:
+        result = await asyncio.to_thread(
+            self.photo_backup_provider.backup,
+            backup_id=str(payload.get("backup_id") or command_id),
+            credential_ref=str(payload.get("credential_ref") or ""),
+            collections=[
+                str(item)
+                for item in (
+                    payload.get("collections")
+                    if isinstance(payload.get("collections"), list)
+                    else []
+                )
+                if str(item) in {"camera", "pictures", "videos"}
+            ],
+        )
+        backup_status = str(result.get("status") or "interrupted").lower()
+        command_status = (
+            "completed"
+            if backup_status in {"completed", "partial_storage_limit", "cancelled"}
+            else "failed"
+        )
+        await self.safe_publish(
+            "pocketlab.events.fleet.node_command_result",
+            "fleet.node_command_result",
+            {
+                **self.base_payload(),
+                "command_id": command_id,
+                "command": "media.backup.photoprism.start",
+                "status": command_status,
+                "result": {
+                    "backup_id": str(payload.get("backup_id") or command_id),
+                    "status": backup_status,
+                    "summary": str(result.get("summary") or "Photo backup finished.")[:180],
+                    "items_total": max(0, int(result.get("items_total") or 0)),
+                    "items_transferred": max(0, int(result.get("items_transferred") or 0)),
+                    "items_skipped": max(0, int(result.get("items_skipped") or 0)),
+                    "items_remaining": max(0, int(result.get("items_remaining") or 0)),
+                    "bytes_transferred": max(0, int(result.get("bytes_transferred") or 0)),
+                    "partial": bool(result.get("partial")),
+                    "retryable": bool(result.get("retryable")),
+                },
+                "finished_at": now_iso(),
+            },
+            critical=True,
+        )
+        self._refresh_photo_backup_capabilities()
+
     async def handle_command(self, msg: Any) -> None:
         command_id = ""
         command_name = "unknown"
@@ -574,6 +665,11 @@ class PocketLabNodeAgent:
             )
             command_name = str(
                 data.get("command") or data.get("action") or msg.subject.split(".")[-1]
+            )
+            command_payload = (
+                data.get("payload")
+                if isinstance(data.get("payload"), dict)
+                else {}
             )
             result: Dict[str, Any]
             status = "completed"
@@ -590,6 +686,49 @@ class PocketLabNodeAgent:
                 }
                 status = "acknowledged"
                 asyncio.create_task(self.restart_after_ack())
+            elif command_name == "media.backup.photoprism.start":
+                backup_id = str(command_payload.get("backup_id") or command_id)
+                credential_ref = str(command_payload.get("credential_ref") or "")
+                requested_collections = command_payload.get("collections")
+                collections = (
+                    [str(item) for item in requested_collections if str(item) in {"camera", "pictures", "videos"}]
+                    if isinstance(requested_collections, list)
+                    else []
+                )
+                if not backup_id or not credential_ref:
+                    result = {"message": "Photo backup request was incomplete.", "accepted": False}
+                    status = "failed"
+                elif self.photo_backup_task and not self.photo_backup_task.done():
+                    result = {"message": "Photo backup is already running.", "accepted": True, "backup_id": backup_id}
+                    status = "acknowledged"
+                else:
+                    self.photo_backup_task = asyncio.create_task(
+                        self._run_photo_backup(
+                            command_id,
+                            {
+                                "backup_id": backup_id,
+                                "credential_ref": credential_ref,
+                                "collections": collections,
+                            },
+                        )
+                    )
+                    result = {"message": "Photo backup started on this device.", "accepted": True, "backup_id": backup_id}
+                    status = "acknowledged"
+            elif command_name == "media.backup.photoprism.cancel":
+                backup_id = str(command_payload.get("backup_id") or "")
+                self.photo_backup_provider.cancel(backup_id)
+                result = {"message": "Photo backup stop requested.", "accepted": True, "backup_id": backup_id}
+                status = "acknowledged"
+            elif command_name == "media.backup.tools.repair":
+                repair = await asyncio.to_thread(repair_rclone)
+                self._refresh_photo_backup_capabilities()
+                result = {
+                    "message": str(repair.get("summary") or "Photo backup tools repair finished.")[:180],
+                    "accepted": True,
+                    "rclone_available": bool(self.photo_backup.get("rclone_available")),
+                    "photo_storage_access": bool(self.photo_backup.get("photo_storage_access")),
+                }
+                status = "completed" if bool(self.photo_backup.get("rclone_available")) else "failed"
             elif command_name in {"apply_blueprint", "node.apply_blueprint"}:
                 result = {
                     "message": "Blueprint execution is acknowledged; install a node executor to enable remote apply.",
