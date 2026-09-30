@@ -1021,6 +1021,7 @@ def _photoprism_command(
     args: list[str],
     *,
     timeout: int = 20,
+    input_text: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
     if (
         not _env_file().is_file()
@@ -1052,6 +1053,7 @@ def _photoprism_command(
         check=False,
         capture_output=True,
         text=True,
+        input=input_text,
         timeout=timeout,
     )
 
@@ -1276,8 +1278,9 @@ def _revoke_auth_id(auth_id: str) -> bool:
         return False
     try:
         result = _photoprism_command(
-            ["auth", "rm", "--yes", safe],
+            ["auth", "rm", safe],
             timeout=15,
+            input_text="y\n",
         )
         return result.returncode in {0, 3}
     except Exception:

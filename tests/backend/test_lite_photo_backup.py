@@ -630,13 +630,13 @@ def test_photoprism_session_id_parser_never_uses_client_name_as_identifier(photo
 def test_photoprism_revoke_is_noninteractive_and_uses_only_session_id(photo_backup, monkeypatch):
     calls = []
 
-    def fake_command(args, timeout):
-        calls.append((args, timeout))
+    def fake_command(args, timeout, input_text=None):
+        calls.append((args, timeout, input_text))
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
     monkeypatch.setattr(photo_backup, "_photoprism_command", fake_command)
     assert photo_backup._revoke_auth_id("refsession123456") is True
-    assert calls == [(["auth", "rm", "--yes", "refsession123456"], 15)]
+    assert calls == [(["auth", "rm", "refsession123456"], 15, "y\n")]
 
 
 def test_app_password_creation_requires_revocable_session_id(photo_backup, monkeypatch):
