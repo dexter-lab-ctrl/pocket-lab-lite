@@ -334,6 +334,11 @@ export const liteApi = {
   securityApp: (appId = 'photoprism') => readJson(`/api/lite/security/apps/${encodeURIComponent(appId)}`),
   checkSecurityApp: (appId = 'photoprism', payload = {}) => postJson(`/api/lite/security/apps/${encodeURIComponent(appId)}/check`, payload),
   fleet: conditionalGet('/api/lite/fleet'),
+  mediaBackup: conditionalGet('/api/lite/media-backup'),
+  photoBackup: (deviceId) => conditionalRead(`/api/lite/devices/${encodeURIComponent(deviceId || '')}/photo-backup`),
+  startPhotoBackup: (deviceId, payload = {}) => postJson(`/api/lite/devices/${encodeURIComponent(deviceId || '')}/photo-backup`, payload),
+  cancelPhotoBackup: (deviceId, payload = {}) => postJson(`/api/lite/devices/${encodeURIComponent(deviceId || '')}/photo-backup/cancel`, payload),
+  repairPhotoBackup: (deviceId) => postJson(`/api/lite/devices/${encodeURIComponent(deviceId || '')}/photo-backup/repair`, {}),
   device: (deviceId) => conditionalRead(`/api/lite/devices/${encodeURIComponent(deviceId || '')}`),
   deviceHealth: (deviceId) => conditionalRead(`/api/lite/devices/${encodeURIComponent(deviceId || '')}/health`),
   deviceHealthHistory: (deviceId, limit = 20, cursor = '') => {
