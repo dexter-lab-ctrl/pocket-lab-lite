@@ -394,3 +394,200 @@ def test_webdav_probe_rejects_insecure_origin_without_network_call(photo_backup,
         "password",
     ) is False
     assert called == []
+
+
+
+def test_photo_backup_api_status_and_internal_endpoints_are_semantic_only(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.routers import fleet
+    from pocket_lab_test_utils import client as make_client
+
+    monkeypatch.setattr(
+        fleet.lite_photo_backup,
+        "fleet_status",
+        lambda _request=None: {
+            "status": "ok",
+            "provider": "photoprism_webdav",
+            "devices": [],
+            "sanitized": True,
+        },
+    )
+    monkeypatch.setattr(
+        fleet.lite_photo_backup,
+        "status",
+        lambda node_id, _request=None: {
+            "status": "ready",
+            "ready": True,
+            "node_id": node_id,
+            "provider": "photoprism_webdav",
+            "sanitized": True,
+        },
+    )
+
+    api = make_client()
+    fleet_response = api.get("/api/lite/media-backup")
+    device_response = api.get("/api/lite/devices/storage-phone/photo-backup")
+
+    assert fleet_response.status_code == 200
+    assert fleet_response.json()["provider"] == "photoprism_webdav"
+    assert device_response.status_code == 200
+    assert device_response.json()["node_id"] == "storage-phone"
+
+    openapi = api.get("/openapi.json").json()
+    paths = openapi.get("paths", {})
+    assert "/api/lite/media-backup" in paths
+    assert "/api/lite/devices/{node_id}/photo-backup" in paths
+    assert not any("/internal/photo-backup/" in path for path in paths)
+
+
+def test_photo_backup_api_repeated_start_is_idempotent(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.routers import fleet
+    from pocket_lab_test_utils import client as make_client
+
+    monkeypatch.setattr(
+        fleet.lite_photo_backup,
+        "make_start_command",
+        lambda *_args, **_kwargs: {
+            "idempotent": True,
+            "backup_id": "photo-existing",
+            "node_id": "storage-phone",
+            "collections": ["camera"],
+        },
+    )
+
+    response = make_client().post(
+        "/api/lite/devices/storage-phone/photo-backup",
+        json={"collections": ["camera"]},
+    )
+
+    assert response.status_code == 202
+    payload = response.json()
+    assert payload["status"] == "already_running"
+    assert payload["backup_id"] == "photo-existing"
+    assert payload["sanitized"] is True
+
+
+def test_photo_backup_api_start_queues_only_domain_command(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.routers import fleet
+    from pocket_lab_test_utils import client as make_client
+
+    command = {
+        "command_id": "photo-queued",
+        "backup_id": "photo-queued",
+        "node_id": "storage-phone",
+        "collections": ["camera", "pictures"],
+        "provider": "photoprism_webdav",
+    }
+    monkeypatch.setattr(
+        fleet.lite_photo_backup,
+        "make_start_command",
+        lambda *_args, **_kwargs: command,
+    )
+    captured = {}
+
+    async def fake_submit(subject, event_type, payload, **kwargs):
+        captured.update(
+            subject=subject,
+            event_type=event_type,
+            payload=payload,
+            trace_id=kwargs.get("trace_id"),
+        )
+        return {"status": "queued"}
+
+    monkeypatch.setattr(fleet, "submit_domain_command", fake_submit)
+
+    response = make_client().post(
+        "/api/lite/devices/storage-phone/photo-backup",
+        json={"collections": ["camera", "pictures"]},
+    )
+
+    assert response.status_code == 202
+    assert response.json()["backup_id"] == "photo-queued"
+    assert captured["subject"] == fleet.lite_photo_backup.PHOTO_BACKUP_START_SUBJECT
+    assert captured["event_type"] == "lite.photo_backup.requested"
+    encoded = json.dumps(captured)
+    assert "password" not in encoded.lower()
+    assert "webdav_url" not in encoded.lower()
+    assert "rclone" not in encoded.lower()
+
+
+def test_photo_backup_api_cancel_idle_and_active_are_truthful(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.routers import fleet
+    from pocket_lab_test_utils import client as make_client
+
+    api = make_client()
+    monkeypatch.setattr(
+        fleet.lite_photo_backup,
+        "make_cancel_command",
+        lambda *_args, **_kwargs: {
+            "command_id": "cancel-idle",
+            "backup_id": "",
+            "node_id": "storage-phone",
+            "idle": True,
+        },
+    )
+    idle = api.post("/api/lite/devices/storage-phone/photo-backup/cancel", json={})
+    assert idle.status_code == 202
+    assert idle.json()["status"] == "idle"
+
+    monkeypatch.setattr(
+        fleet.lite_photo_backup,
+        "make_cancel_command",
+        lambda *_args, **_kwargs: {
+            "command_id": "cancel-active",
+            "backup_id": "photo-active",
+            "node_id": "storage-phone",
+            "idle": False,
+        },
+    )
+
+    async def fake_submit(*_args, **_kwargs):
+        return {"status": "queued"}
+
+    monkeypatch.setattr(fleet, "submit_domain_command", fake_submit)
+    active = api.post("/api/lite/devices/storage-phone/photo-backup/cancel", json={})
+    assert active.status_code == 202
+    assert active.json()["backup_id"] == "photo-active"
+    assert active.json()["summary"] == "Stopping photo backup safely."
+
+
+def test_internal_credential_endpoint_is_no_store_and_node_authenticated(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.routers import fleet
+    from pocket_lab_test_utils import client as make_client
+
+    monkeypatch.setattr(
+        fleet.lite_photo_backup,
+        "authenticate_agent",
+        lambda node_id, token: {"node_id": node_id, "token_seen": bool(token)},
+    )
+    monkeypatch.setattr(
+        fleet.lite_photo_backup,
+        "consume_credential",
+        lambda **kwargs: {
+            "backup_id": kwargs["backup_id"],
+            "node_id": kwargs["node_id"],
+            "username": "admin",
+            "password": "one-time-secret",
+            "webdav_url": "https://pocket.test.ts.net/apps/photoprism/originals/",
+            "destination_prefix": "PocketLab/Devices/storage-phone",
+        },
+    )
+
+    response = make_client().get(
+        "/api/lite/internal/photo-backup/credentials/" + "cred-" + ("d" * 32),
+        params={"backup_id": "photo-internal"},
+        headers={
+            "X-PocketLab-Node-Id": "storage-phone",
+            "X-PocketLab-Agent-Token": "agent-token",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers.get("cache-control") == "no-store"
+    payload = response.json()
+    assert payload["destination_prefix"] == "PocketLab/Devices/storage-phone"
+    assert payload["password"] == "one-time-secret"
