@@ -1035,6 +1035,45 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Lite Photo Backup Device Status",
+      "domain": "devices",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.photoBackup",
+          "resolved": true,
+          "source_module": "src/lite/devices/DevicePhotoBackup.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/devices/{node_id}/photo-backup",
+      "method": "GET",
+      "name": "GET /api/lite/devices/{node_id}/photo-backup",
+      "operation_id": "lite_photo_backup_device_status_api_lite_devices__node_id__photo_backup_get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/devices/{node_id}/photo-backup",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "fleet"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Get Frontend Lifecycle Diagnostics Challenge",
       "domain": "diagnostics",
       "id": "api:get:/api/lite/diagnostics/frontend-lifecycle/challenge",
@@ -2275,6 +2314,43 @@
       ],
       "tags": [
         "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Lite Photo Backup Fleet Status",
+      "domain": "media-backup",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.mediaBackup",
+          "resolved": true,
+          "source_module": "src/lite/catalog/AppCatalogScreen.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/media-backup",
+      "method": "GET",
+      "name": "GET /api/lite/media-backup",
+      "operation_id": "lite_photo_backup_fleet_status_api_lite_media_backup_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/media-backup",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "fleet"
       ],
       "type": "api"
     },
@@ -4036,6 +4112,116 @@
       ],
       "tags": [
         "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Start Lite Photo Backup",
+      "domain": "devices",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.startPhotoBackup",
+          "resolved": true,
+          "source_module": "src/lite/devices/DevicePhotoBackup.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/devices/{node_id}/photo-backup",
+      "method": "POST",
+      "name": "POST /api/lite/devices/{node_id}/photo-backup",
+      "operation_id": "start_lite_photo_backup_api_lite_devices__node_id__photo_backup_post",
+      "response_statuses": [
+        "202",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/devices/{node_id}/photo-backup",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "fleet"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Cancel Lite Photo Backup",
+      "domain": "devices",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.cancelPhotoBackup",
+          "resolved": true,
+          "source_module": "src/lite/devices/DevicePhotoBackup.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
+      "method": "POST",
+      "name": "POST /api/lite/devices/{node_id}/photo-backup/cancel",
+      "operation_id": "cancel_lite_photo_backup_api_lite_devices__node_id__photo_backup_cancel_post",
+      "response_statuses": [
+        "202",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/devices/{node_id}/photo-backup/cancel",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "fleet"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Repair Lite Photo Backup Tools",
+      "domain": "devices",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.repairPhotoBackup",
+          "resolved": true,
+          "source_module": "src/lite/devices/DevicePhotoBackup.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/devices/{node_id}/photo-backup/repair",
+      "method": "POST",
+      "name": "POST /api/lite/devices/{node_id}/photo-backup/repair",
+      "operation_id": "repair_lite_photo_backup_tools_api_lite_devices__node_id__photo_backup_repair_post",
+      "response_statuses": [
+        "202",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/devices/{node_id}/photo-backup/repair",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "fleet"
       ],
       "type": "api"
     },
@@ -11648,6 +11834,31 @@
     {
       "confidence": "source-derived",
       "description": "Source-derived supporting domain discovered from generated contracts.",
+      "domain": "media-backup",
+      "id": "domain:media-backup",
+      "name": "Media Backup",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "contracts/generated/lite-openapi.json",
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "unvalidated",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "unvalidated",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "type": "domain"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Source-derived supporting domain discovered from generated contracts.",
       "domain": "node",
       "id": "domain:node",
       "name": "Node",
@@ -17562,6 +17773,28 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Live phone media import is intentionally blocked; use the managed Photo Backup workflow instead.",
+      "domain": "apps",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:unsafe_live_media_import",
+      "name": "unsafe_live_media_import",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Use Back up photos"
+      ],
+      "user_interpretation": "Import photos is paused for live phone folders. Use Back up photos instead."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The device has not reported a trustworthy software version for this component, so Pocket Lab keeps the version unknown rather than inventing one.",
       "domain": "devices",
       "event_mapping": [],
@@ -19414,9 +19647,9 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:284",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:830",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py:302",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1408",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1427",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:43",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:664"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:675"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -19436,7 +19669,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/catalog.py:29",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1581"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1640"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -19455,7 +19688,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1588"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1647"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -19474,7 +19707,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1585"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1644"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -19493,7 +19726,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1591"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1650"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -19513,7 +19746,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/drift.py:92",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1584"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1643"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -19532,7 +19765,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1583"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1642"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -19552,7 +19785,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:81",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1582"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1641"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -19593,9 +19826,9 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:661",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:845",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:72",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1594",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1653",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:902"
       ],
       "stream": "incomplete",
@@ -19615,7 +19848,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1595"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1654"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -19635,7 +19868,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py:74",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1598"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1657"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -19654,7 +19887,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1609",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1668",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:18"
       ],
       "stream": "incomplete",
@@ -19693,7 +19926,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1612",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1671",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_media.py:22"
       ],
       "stream": "incomplete",
@@ -19713,7 +19946,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1614",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1676",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py:24"
       ],
       "stream": "incomplete",
@@ -19733,7 +19966,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1610",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1669",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:19"
       ],
       "stream": "incomplete",
@@ -19753,7 +19986,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1613",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1675",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py:23"
       ],
       "stream": "incomplete",
@@ -19773,7 +20006,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1611",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1670",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_update.py:19"
       ],
       "stream": "incomplete",
@@ -19793,8 +20026,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4143",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1605"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4145",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1664"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -19813,8 +20046,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3760",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1606"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3762",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1665"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -19833,8 +20066,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3790",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1608"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3792",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1667"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -19853,8 +20086,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3773",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1607"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3775",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1666"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -19873,8 +20106,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4230",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1615"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4232",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1677"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -19893,7 +20126,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1580",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1639",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py:16"
       ],
       "stream": "incomplete",
@@ -19913,8 +20146,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3830",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1618"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3832",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1680"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -19933,8 +20166,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3873",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1619"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3875",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1681"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -19953,8 +20186,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3931",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1621"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3933",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1683"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -19973,8 +20206,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3891",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1620"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3893",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1682"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20015,8 +20248,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3999",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1623"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4001",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1685"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20035,8 +20268,68 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3973",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1622"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3975",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1684"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.media_backup.cancel",
+      "name": "pocketlab.commands.lite.media_backup.cancel",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1673",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:29"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.media_backup.repair",
+      "name": "pocketlab.commands.lite.media_backup.repair",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1674",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:30"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite command subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.lite.media_backup.start",
+      "name": "pocketlab.commands.lite.media_backup.start",
+      "publishers": [],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1672",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:28"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20055,8 +20348,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4392",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1617"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4394",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1679"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20075,8 +20368,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4265",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1616"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4267",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1678"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20114,11 +20407,11 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1601",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1660",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:55",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:370",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:568",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:646"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:381",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:579",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:657"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20139,9 +20432,9 @@
       "retry": "bounded max-deliver and stale-run recovery",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1600",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1659",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py:11",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:534"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:545"
       ],
       "stream": "POCKETLAB_COMMANDS",
       "subscribers": [
@@ -20159,14 +20452,16 @@
       "id": "subject:pocketlab.commands.node",
       "name": "pocketlab.commands.node",
       "publishers": [
+        "lite_photo_backup.py",
         "pocketlab_worker.py"
       ],
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1385",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:594"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2194",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1404",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605"
       ],
       "stream": "incomplete",
       "subscribers": [
@@ -20187,7 +20482,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:474",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:137"
       ],
       "stream": "incomplete",
@@ -20211,7 +20506,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:473"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:657"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20270,7 +20565,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:364"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:548"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20289,7 +20584,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:474"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
       ],
       "stream": "incomplete",
       "subscribers": [
@@ -20320,10 +20615,10 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/reliability.py:231",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:1193",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:1201",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1384",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1406",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:622",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:662"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1403",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1425",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:633",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:673"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20343,7 +20638,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/release.py:53",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1597"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1656"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20363,7 +20658,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/release.py:42",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1596"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1655"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20387,9 +20682,9 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:548",
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:559",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1398",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:620",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:654"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1417",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:631",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:665"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20412,9 +20707,9 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:489",
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:500",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1394",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:619",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:650"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1413",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:630",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:661"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20438,9 +20733,9 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:578",
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:589",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1402",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:621",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:658"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1421",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:632",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:669"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20459,7 +20754,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1602"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1661"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20479,7 +20774,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/security.py:68",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1599"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1658"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20519,7 +20814,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:101",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1604"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1663"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20539,7 +20834,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:91",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1603"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1662"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20687,7 +20982,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:437"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:448"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20708,9 +21003,9 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:406",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:465",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:705"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:417",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:476",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:716"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20751,7 +21046,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:613"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:624"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20772,7 +21067,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:751"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:762"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20793,8 +21088,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:384",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:632"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:395",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:643"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20815,8 +21110,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:453",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:675"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:464",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:686"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20837,8 +21132,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:378",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:626"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:389",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:637"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20965,6 +21260,27 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:235"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet",
+      "name": "pocketlab.events.fleet",
+      "publishers": [
+        "lite_photo_backup.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2207"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21217,7 +21533,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:407"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:442"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21239,8 +21555,8 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:296",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:381",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:481"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:565",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:665"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21261,8 +21577,9 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:603",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:617"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:784",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:900",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:914"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21283,7 +21600,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:548"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:584"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21304,8 +21621,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:429",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:513"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:465",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:549"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21326,7 +21643,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:646"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:943"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21347,7 +21664,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:399"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:434"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21368,7 +21685,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:384"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:419"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21410,7 +21727,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:539"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:575"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22246,6 +22563,69 @@
       "description": "lite event subject",
       "domain": "lite",
       "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.photo_backup.cancel",
+      "name": "pocketlab.events.lite.photo_backup.cancel",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1605"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.photo_backup.tools_repair",
+      "name": "pocketlab.events.lite.photo_backup.tools_repair",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1625"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.lite.photo_backup.updated",
+      "name": "pocketlab.events.lite.photo_backup.updated",
+      "publishers": [
+        "domain_commands.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1585"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "lite event subject",
+      "domain": "lite",
+      "durability": "incomplete",
       "id": "subject:pocketlab.events.lite.restore.checkpoint_created",
       "name": "pocketlab.events.lite.restore.checkpoint_created",
       "publishers": [
@@ -22705,8 +23085,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:332",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:352"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:343",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:363"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22844,7 +23224,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:330"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:341"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22865,7 +23245,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:318"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:329"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22908,7 +23288,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:294",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:876"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:887"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22929,7 +23309,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:857"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:868"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22952,7 +23332,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:296",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:878"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:889"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -23628,7 +24008,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:110",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:737"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:748"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -23650,7 +24030,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:107",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:957"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:968"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -23671,10 +24051,10 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1387",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:549",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:574",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:599"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1406",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:560",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:585",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:610"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -23695,7 +24075,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:516"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:527"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -23738,7 +24118,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1467"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1486"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -26914,6 +27294,26 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_photo_backup.py",
+      "name": "tests/backend/test_lite_photo_backup.py",
+      "source_refs": [
+        "tests/backend/test_lite_photo_backup.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_photo_backup_agent.py",
+      "name": "tests/backend/test_lite_photo_backup_agent.py",
+      "source_refs": [
+        "tests/backend/test_lite_photo_backup_agent.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_photoprism_backup.py",
       "name": "tests/backend/test_lite_photoprism_backup.py",
       "source_refs": [
@@ -28368,6 +28768,16 @@
       "name": "tests/e2e/lite-phase9-qualification.spec.ts",
       "source_refs": [
         "tests/e2e/lite-phase9-qualification.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-photo-backup.spec.ts",
+      "name": "tests/e2e/lite-photo-backup.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-photo-backup.spec.ts"
       ],
       "type": "test"
     },
@@ -30584,6 +30994,7 @@
         "journey:photoprism-operation",
         "limitation:apps:accepted-1",
         "limitation:apps:gap-1",
+        "reason:unsafe_live_media_import",
         "subject:pocketlab.commands.catalog.refresh",
         "subject:pocketlab.events.catalog.refresh_started",
         "subject:pocketlab.events.catalog.refreshed",
@@ -30675,12 +31086,16 @@
         "api:get:/api/lite/devices/{device_id}/health/history",
         "api:get:/api/lite/devices/{device_id}/history",
         "api:get:/api/lite/devices/{device_id}/removal-assessment",
+        "api:get:/api/lite/devices/{node_id}/photo-backup",
         "api:get:/api/lite/fleet",
         "api:get:/api/lite/fleet/agent/bootstrap.sh",
         "api:get:/api/lite/fleet/devices/{device_id}/recovery-history",
         "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status",
         "api:get:/api/lite/fleet/health-summary",
         "api:get:/api/lite/fleet/invites/latest",
+        "api:post:/api/lite/devices/{node_id}/photo-backup",
+        "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
+        "api:post:/api/lite/devices/{node_id}/photo-backup/repair",
         "api:post:/api/lite/fleet/add-device",
         "api:post:/api/lite/fleet/agent/bootstrap-blocked",
         "api:post:/api/lite/fleet/agent/bootstrap.env",
@@ -30711,6 +31126,7 @@
         "subject:pocketlab.commands.fleet.join",
         "subject:pocketlab.commands.fleet.save_tailscale_key",
         "subject:pocketlab.commands.lite.device.restart",
+        "subject:pocketlab.events.fleet",
         "subject:pocketlab.events.fleet.bootstrap_blocked",
         "subject:pocketlab.events.fleet.config_updated",
         "subject:pocketlab.events.fleet.device_health_sampled",
@@ -31012,6 +31428,9 @@
         "subject:pocketlab.commands.lite.database.restore.preview",
         "subject:pocketlab.commands.lite.maintenance.checkpoint",
         "subject:pocketlab.commands.lite.maintenance.retention",
+        "subject:pocketlab.commands.lite.media_backup.cancel",
+        "subject:pocketlab.commands.lite.media_backup.repair",
+        "subject:pocketlab.commands.lite.media_backup.start",
         "subject:pocketlab.commands.lite.restore.apply",
         "subject:pocketlab.commands.lite.restore.preview",
         "subject:pocketlab.commands.lite.security.app_scan",
@@ -31051,6 +31470,9 @@
         "subject:pocketlab.events.lite.database.restore.started",
         "subject:pocketlab.events.lite.database.restore.{event_suffix}",
         "subject:pocketlab.events.lite.database.restore.{rollback_status}",
+        "subject:pocketlab.events.lite.photo_backup.cancel",
+        "subject:pocketlab.events.lite.photo_backup.tools_repair",
+        "subject:pocketlab.events.lite.photo_backup.updated",
         "subject:pocketlab.events.lite.restore.checkpoint_created",
         "subject:pocketlab.events.lite.restore.completed",
         "subject:pocketlab.events.lite.restore.failed",
@@ -31077,6 +31499,10 @@
       "manual": [
         "domain:manual",
         "subject:pocketlab.events.manual"
+      ],
+      "media-backup": [
+        "api:get:/api/lite/media-backup",
+        "domain:media-backup"
       ],
       "node": [
         "domain:node",
@@ -31572,6 +31998,8 @@
         "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
         "test:tests/backend/test_lite_phase3c_system_aggregates.py",
         "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
+        "test:tests/backend/test_lite_photo_backup.py",
+        "test:tests/backend/test_lite_photo_backup_agent.py",
         "test:tests/backend/test_lite_photoprism_backup.py",
         "test:tests/backend/test_lite_photoprism_runtime_resilience.py",
         "test:tests/backend/test_lite_platform_release_inventory_isolation.py",
@@ -31718,6 +32146,7 @@
         "test:tests/e2e/lite-performance-live.spec.ts",
         "test:tests/e2e/lite-performance.spec.ts",
         "test:tests/e2e/lite-phase9-qualification.spec.ts",
+        "test:tests/e2e/lite-photo-backup.spec.ts",
         "test:tests/e2e/lite-rules-activation-progress.spec.ts",
         "test:tests/e2e/lite-security-runtime.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
@@ -31921,6 +32350,7 @@
         "api:get:/api/lite/devices/{device_id}/health/history",
         "api:get:/api/lite/devices/{device_id}/history",
         "api:get:/api/lite/devices/{device_id}/removal-assessment",
+        "api:get:/api/lite/devices/{node_id}/photo-backup",
         "api:get:/api/lite/diagnostics/frontend-lifecycle/challenge",
         "api:get:/api/lite/diagnostics/runtime",
         "api:get:/api/lite/diagnostics/runtime/full",
@@ -31967,6 +32397,7 @@
         "api:get:/api/lite/harness/status",
         "api:get:/api/lite/identity",
         "api:get:/api/lite/identity/owner-claim/status",
+        "api:get:/api/lite/media-backup",
         "api:get:/api/lite/policy",
         "api:get:/api/lite/policy/decisions/{decision_id}",
         "api:get:/api/lite/policy/templates",
@@ -32028,6 +32459,9 @@
         "api:post:/api/lite/apps/{app_id}/update/apply",
         "api:post:/api/lite/catalog/install",
         "api:post:/api/lite/catalog/remove",
+        "api:post:/api/lite/devices/{node_id}/photo-backup",
+        "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
+        "api:post:/api/lite/devices/{node_id}/photo-backup/repair",
         "api:post:/api/lite/diagnostics/frontend-lifecycle",
         "api:post:/api/lite/enterprise/identity/enrollment/consume",
         "api:post:/api/lite/enterprise/identity/enrollment/passkey/options",
@@ -32207,6 +32641,7 @@
         "domain:lite",
         "domain:live_status",
         "domain:manual",
+        "domain:media-backup",
         "domain:node",
         "domain:operation",
         "domain:operations",
@@ -32513,6 +32948,7 @@
         "reason:thermal_policy_threshold",
         "reason:trusted_local_admin",
         "reason:unregistered_domain",
+        "reason:unsafe_live_media_import",
         "reason:version_not_reported",
         "reason:webauthn_algorithm_unsupported",
         "reason:webauthn_assertion_invalid",
@@ -32610,6 +33046,9 @@
         "subject:pocketlab.commands.lite.device.restart",
         "subject:pocketlab.commands.lite.maintenance.checkpoint",
         "subject:pocketlab.commands.lite.maintenance.retention",
+        "subject:pocketlab.commands.lite.media_backup.cancel",
+        "subject:pocketlab.commands.lite.media_backup.repair",
+        "subject:pocketlab.commands.lite.media_backup.start",
         "subject:pocketlab.commands.lite.restore.apply",
         "subject:pocketlab.commands.lite.restore.preview",
         "subject:pocketlab.commands.lite.security.app_scan",
@@ -32653,6 +33092,7 @@
         "subject:pocketlab.events.drift.scan_started",
         "subject:pocketlab.events.drift.{action}",
         "subject:pocketlab.events.drift.{action}_started",
+        "subject:pocketlab.events.fleet",
         "subject:pocketlab.events.fleet.bootstrap_blocked",
         "subject:pocketlab.events.fleet.config_updated",
         "subject:pocketlab.events.fleet.device_health_sampled",
@@ -32713,6 +33153,9 @@
         "subject:pocketlab.events.lite.database.restore.started",
         "subject:pocketlab.events.lite.database.restore.{event_suffix}",
         "subject:pocketlab.events.lite.database.restore.{rollback_status}",
+        "subject:pocketlab.events.lite.photo_backup.cancel",
+        "subject:pocketlab.events.lite.photo_backup.tools_repair",
+        "subject:pocketlab.events.lite.photo_backup.updated",
         "subject:pocketlab.events.lite.restore.checkpoint_created",
         "subject:pocketlab.events.lite.restore.completed",
         "subject:pocketlab.events.lite.restore.failed",
@@ -32949,6 +33392,8 @@
         "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
         "test:tests/backend/test_lite_phase3c_system_aggregates.py",
         "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
+        "test:tests/backend/test_lite_photo_backup.py",
+        "test:tests/backend/test_lite_photo_backup_agent.py",
         "test:tests/backend/test_lite_photoprism_backup.py",
         "test:tests/backend/test_lite_photoprism_runtime_resilience.py",
         "test:tests/backend/test_lite_platform_release_inventory_isolation.py",
@@ -33095,6 +33540,7 @@
         "test:tests/e2e/lite-performance-live.spec.ts",
         "test:tests/e2e/lite-performance.spec.ts",
         "test:tests/e2e/lite-phase9-qualification.spec.ts",
+        "test:tests/e2e/lite-photo-backup.spec.ts",
         "test:tests/e2e/lite-rules-activation-progress.spec.ts",
         "test:tests/e2e/lite-security-runtime.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
@@ -33506,6 +33952,12 @@
           "type": "uses"
         }
       ],
+      "api:get:/api/lite/devices/{node_id}/photo-backup": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/diagnostics/frontend-lifecycle/challenge": [
         {
           "source": "domain:diagnostics",
@@ -33855,6 +34307,12 @@
         },
         {
           "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/media-backup": [
+        {
+          "source": "domain:media-backup",
           "type": "owns"
         }
       ],
@@ -34389,6 +34847,24 @@
       "api:post:/api/lite/catalog/remove": [
         {
           "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/devices/{node_id}/photo-backup": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/devices/{node_id}/photo-backup/cancel": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/devices/{node_id}/photo-backup/repair": [
+        {
+          "source": "domain:devices",
           "type": "owns"
         }
       ],
@@ -37890,6 +38366,12 @@
           "type": "owns"
         }
       ],
+      "reason:unsafe_live_media_import": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
       "reason:version_not_reported": [
         {
           "source": "domain:devices",
@@ -38356,6 +38838,24 @@
           "type": "related_to"
         }
       ],
+      "subject:pocketlab.commands.lite.media_backup.cancel": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
+        }
+      ],
+      "subject:pocketlab.commands.lite.media_backup.repair": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
+        }
+      ],
+      "subject:pocketlab.commands.lite.media_backup.start": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
+        }
+      ],
       "subject:pocketlab.commands.lite.restore.apply": [
         {
           "source": "domain:lite",
@@ -38811,6 +39311,12 @@
       "subject:pocketlab.events.drift.{action}_started": [
         {
           "source": "domain:drift",
+          "type": "owns"
+        }
+      ],
+      "subject:pocketlab.events.fleet": [
+        {
+          "source": "domain:devices",
           "type": "owns"
         }
       ],
@@ -39329,6 +39835,24 @@
         }
       ],
       "subject:pocketlab.events.lite.database.restore.{rollback_status}": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
+        }
+      ],
+      "subject:pocketlab.events.lite.photo_backup.cancel": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
+        }
+      ],
+      "subject:pocketlab.events.lite.photo_backup.tools_repair": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
+        }
+      ],
+      "subject:pocketlab.events.lite.photo_backup.updated": [
         {
           "source": "domain:lite",
           "type": "owns"
@@ -42084,6 +42608,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:unsafe_live_media_import",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:version_not_reported",
           "type": "verified_by"
         },
@@ -42374,6 +42902,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/devices/{node_id}/photo-backup",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/diagnostics/frontend-lifecycle/challenge",
           "type": "verified_by"
         },
@@ -42555,6 +43087,10 @@
         },
         {
           "source": "api:get:/api/lite/identity/owner-claim/status",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/media-backup",
           "type": "verified_by"
         },
         {
@@ -42799,6 +43335,18 @@
         },
         {
           "source": "api:post:/api/lite/catalog/remove",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/devices/{node_id}/photo-backup",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/devices/{node_id}/photo-backup/repair",
           "type": "verified_by"
         },
         {
@@ -43867,6 +44415,34 @@
         },
         {
           "source": "reason:unregistered_domain",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_photo_backup.py": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:interrupted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:protected_server_host",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:unsafe_live_media_import",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_photo_backup_agent.py": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:interrupted",
           "type": "verified_by"
         }
       ],
@@ -47036,6 +47612,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:unsafe_live_media_import",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:version_not_reported",
           "type": "verified_by"
         },
@@ -48090,6 +48670,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:unsafe_live_media_import",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:version_not_reported",
           "type": "verified_by"
         },
@@ -48386,6 +48970,16 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-photo-backup.spec.ts": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:interrupted",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-rules-activation-progress.spec.ts": [
         {
           "source": "reason:policy_activation_pending",
@@ -48541,6 +49135,10 @@
         },
         {
           "source": "api:get:/api/lite/devices/{device_id}/removal-assessment",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/devices/{node_id}/photo-backup",
           "type": "verified_by"
         },
         {
@@ -48725,6 +49323,10 @@
         },
         {
           "source": "api:get:/api/lite/identity/owner-claim/status",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/media-backup",
           "type": "verified_by"
         },
         {
@@ -48969,6 +49571,18 @@
         },
         {
           "source": "api:post:/api/lite/catalog/remove",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/devices/{node_id}/photo-backup",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/devices/{node_id}/photo-backup/repair",
           "type": "verified_by"
         },
         {
@@ -50350,6 +50964,16 @@
           "type": "verified_by"
         }
       ],
+      "api:get:/api/lite/devices/{node_id}/photo-backup": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:get:/api/lite/diagnostics/frontend-lifecycle/challenge": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -50865,6 +51489,16 @@
         }
       ],
       "api:get:/api/lite/identity/owner-claim/status": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/media-backup": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -51635,6 +52269,36 @@
         }
       ],
       "api:post:/api/lite/catalog/remove": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/devices/{node_id}/photo-backup": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/devices/{node_id}/photo-backup/cancel": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/devices/{node_id}/photo-backup/repair": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -54858,6 +55522,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_agent.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_photoprism_backup.py",
           "type": "verified_by"
         },
@@ -54915,6 +55587,10 @@
         },
         {
           "target": "test:tests/e2e/lite-performance.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-photo-backup.spec.ts",
           "type": "verified_by"
         },
         {
@@ -56514,6 +57190,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:unsafe_live_media_import",
+          "type": "owns"
+        },
+        {
           "target": "subject:pocketlab.commands.catalog.refresh",
           "type": "owns"
         },
@@ -56766,6 +57446,10 @@
           "type": "owns"
         },
         {
+          "target": "api:get:/api/lite/devices/{node_id}/photo-backup",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/fleet",
           "type": "owns"
         },
@@ -56787,6 +57471,18 @@
         },
         {
           "target": "api:get:/api/lite/fleet/invites/latest",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/devices/{node_id}/photo-backup",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/devices/{node_id}/photo-backup/repair",
           "type": "owns"
         },
         {
@@ -56887,6 +57583,10 @@
         },
         {
           "target": "subject:pocketlab.commands.lite.device.restart",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.events.fleet",
           "type": "owns"
         },
         {
@@ -58106,6 +58806,18 @@
           "type": "owns"
         },
         {
+          "target": "subject:pocketlab.commands.lite.media_backup.cancel",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.commands.lite.media_backup.repair",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.commands.lite.media_backup.start",
+          "type": "owns"
+        },
+        {
           "target": "subject:pocketlab.commands.lite.restore.apply",
           "type": "owns"
         },
@@ -58262,6 +58974,18 @@
           "type": "owns"
         },
         {
+          "target": "subject:pocketlab.events.lite.photo_backup.cancel",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.events.lite.photo_backup.tools_repair",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.events.lite.photo_backup.updated",
+          "type": "owns"
+        },
+        {
           "target": "subject:pocketlab.events.lite.restore.checkpoint_created",
           "type": "owns"
         },
@@ -58343,6 +59067,12 @@
       "domain:manual": [
         {
           "target": "subject:pocketlab.events.manual",
+          "type": "owns"
+        }
+      ],
+      "domain:media-backup": [
+        {
+          "target": "api:get:/api/lite/media-backup",
           "type": "owns"
         }
       ],
@@ -63006,6 +63736,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_agent.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_recovery.py",
           "type": "verified_by"
         },
@@ -63043,6 +63781,10 @@
         },
         {
           "target": "test:tests/docs/test_supply_chain_runner_hardening.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-photo-backup.spec.ts",
           "type": "verified_by"
         }
       ],
@@ -64432,6 +65174,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_policy_analysis_p2_3.py",
           "type": "verified_by"
         },
@@ -65053,6 +65799,24 @@
         },
         {
           "target": "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:unsafe_live_media_import": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
           "type": "verified_by"
         },
         {
@@ -66228,7 +66992,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3873"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3875"
       ],
       "id": "rel:01d5bcfc59eaef09",
       "source": "component:lite-api",
@@ -66364,7 +67128,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:513"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:549"
       ],
       "id": "rel:03591d373c92f6a4",
       "source": "component:agent-command-executor",
@@ -66646,7 +67410,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:548"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:584"
       ],
       "id": "rel:059be88dea06a65e",
       "source": "component:agent-signals",
@@ -66853,6 +67617,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-asyncapi.json"
+      ],
+      "id": "rel:06b9ceafedfe4413",
+      "source": "domain:lite",
+      "target": "subject:pocketlab.events.lite.photo_backup.cancel",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:06d661568ec13b80",
@@ -66989,7 +67762,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:407"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:442"
       ],
       "id": "rel:08078fc22e7ea260",
       "source": "component:agent-signals",
@@ -67097,7 +67870,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:646"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:657"
       ],
       "id": "rel:090c64d8d660b60e",
       "source": "component:worker",
@@ -67345,6 +68118,15 @@
       "id": "rel:0b494c14fd7f4518",
       "source": "reason:passkey_wrong_owner",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_photo_backup.py"
+      ],
+      "id": "rel:0b595539db754517",
+      "source": "reason:unsafe_live_media_import",
+      "target": "test:tests/backend/test_lite_photo_backup.py",
       "type": "verified_by"
     },
     {
@@ -67745,7 +68527,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:878"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:889"
       ],
       "id": "rel:0e23b8d8e8a8c375",
       "source": "component:app-lifecycle-worker",
@@ -68079,6 +68861,15 @@
       "source": "requirement:architecture-09",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:10c01a7d9c76cd61",
+      "source": "domain:media-backup",
+      "target": "api:get:/api/lite/media-backup",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -68577,7 +69368,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:617"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:914"
       ],
       "id": "rel:13cef9faca6544c1",
       "source": "component:agent-signals",
@@ -68838,7 +69629,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:548"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:584"
       ],
       "id": "rel:1539b66321cd6c08",
       "source": "component:agent-recovery",
@@ -68946,7 +69737,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:876"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:887"
       ],
       "id": "rel:161a9fa8964674d1",
       "source": "component:worker",
@@ -69360,7 +70151,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:384"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:419"
       ],
       "id": "rel:198f4260cbe0723b",
       "source": "component:agent-command-executor",
@@ -69501,6 +70292,15 @@
       "id": "rel:1a52ee1f5924c0ee",
       "source": "api:post:/api/lite/recovery/backups/{backup_id}/verify",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_photo_backup.py"
+      ],
+      "id": "rel:1a62cddfa39712e3",
+      "source": "component:photoprism",
+      "target": "test:tests/backend/test_lite_photo_backup.py",
       "type": "verified_by"
     },
     {
@@ -69821,7 +70621,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:751"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:762"
       ],
       "id": "rel:1c8ea430c89756f8",
       "source": "component:app-lifecycle-worker",
@@ -69979,6 +70779,15 @@
       "id": "rel:1da44206b34f219f",
       "source": "component:device-state",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:1db255266941b43a",
+      "source": "api:post:/api/lite/devices/{node_id}/photo-backup",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -70312,7 +71121,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:318"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:329"
       ],
       "id": "rel:203dfd8e25f872f4",
       "source": "component:app-lifecycle-worker",
@@ -70582,7 +71391,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1467"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1486"
       ],
       "id": "rel:22e94d48586ddb01",
       "source": "component:worker",
@@ -70996,7 +71805,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:957"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:968"
       ],
       "id": "rel:2568922b46abb859",
       "source": "component:worker",
@@ -71253,7 +72062,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:399"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:434"
       ],
       "id": "rel:27996b9b2cc5026b",
       "source": "component:agent-command-executor",
@@ -71357,6 +72166,15 @@
       "id": "rel:28217153e80ae609",
       "source": "domain:rules",
       "target": "reason:exception_identity_unknown",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-asyncapi.json"
+      ],
+      "id": "rel:283427bd3ea97044",
+      "source": "domain:lite",
+      "target": "subject:pocketlab.events.lite.photo_backup.tools_repair",
       "type": "owns"
     },
     {
@@ -71532,7 +72350,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:437"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:448"
       ],
       "id": "rel:298a7e0786bc2c78",
       "source": "component:app-lifecycle-worker",
@@ -71740,7 +72558,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:650"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:661"
       ],
       "id": "rel:2ad1e2ad5c11cc90",
       "source": "component:worker",
@@ -72038,7 +72856,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:751"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:762"
       ],
       "id": "rel:2dc52098dedaa50a",
       "source": "component:worker",
@@ -72363,7 +73181,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:474"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
       ],
       "id": "rel:305f290db88db25e",
       "source": "component:agent-signals",
@@ -73193,7 +74011,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:399"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:434"
       ],
       "id": "rel:36b34a5f16aaf15f",
       "source": "component:agent-signals",
@@ -73319,7 +74137,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:516"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:527"
       ],
       "id": "rel:372eac9db8b1b668",
       "source": "component:app-lifecycle-worker",
@@ -73680,7 +74498,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:675"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:686"
       ],
       "id": "rel:393100ac60374ebd",
       "source": "component:worker",
@@ -74155,7 +74973,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:662"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:673"
       ],
       "id": "rel:3c6d5418366a863a",
       "source": "component:worker",
@@ -74511,7 +75329,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:534"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:545"
       ],
       "id": "rel:3f400031ef01f3d6",
       "source": "component:app-lifecycle-worker",
@@ -74589,6 +75407,15 @@
       "source": "reason:actor_not_authenticated",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:3fb6eddaf680ff8c",
+      "source": "domain:devices",
+      "target": "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -75352,7 +76179,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:664"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:675"
       ],
       "id": "rel:447a749e1d832fa8",
       "source": "component:app-lifecycle-worker",
@@ -75397,7 +76224,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:857"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:868"
       ],
       "id": "rel:44ca6e0fe03db33c",
       "source": "component:worker",
@@ -75921,7 +76748,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4230"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4232"
       ],
       "id": "rel:4961dd30cdec3c93",
       "source": "component:lite-api",
@@ -76155,7 +76982,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4143"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4145"
       ],
       "id": "rel:4ae2f2e7982d1c97",
       "source": "component:lite-api",
@@ -76404,6 +77231,15 @@
       "source": "domain:harness",
       "target": "api:get:/api/lite/harness/security-assurance/runs/{run_id}/report",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-photo-backup.spec.ts"
+      ],
+      "id": "rel:4d1dfb9b35f407e0",
+      "source": "reason:interrupted",
+      "target": "test:tests/e2e/lite-photo-backup.spec.ts",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -76827,6 +77663,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:4fc63c7869318b8e",
+      "source": "api:post:/api/lite/devices/{node_id}/photo-backup/repair",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:4fc64986d12e685f",
@@ -77035,6 +77880,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:51b5cefdd775e20d",
+      "source": "api:get:/api/lite/media-backup",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:51c149be4e798825",
@@ -77220,6 +78074,15 @@
       "id": "rel:53761902f524a8ec",
       "source": "reason:assurance_orphaned_child_reconciled",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:53840ce6fda08c6a",
+      "source": "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -77553,7 +78416,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:675"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:686"
       ],
       "id": "rel:565b4c38fc896073",
       "source": "component:app-lifecycle-worker",
@@ -77562,12 +78425,21 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:876"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:887"
       ],
       "id": "rel:565f7fa04c0d25d4",
       "source": "component:app-lifecycle-worker",
       "target": "subject:pocketlab.events.release.available",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:5662bcd472cfbead",
+      "source": "domain:devices",
+      "target": "api:post:/api/lite/devices/{node_id}/photo-backup/repair",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -77589,7 +78461,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:705"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:716"
       ],
       "id": "rel:568246899aaa258a",
       "source": "component:app-lifecycle-worker",
@@ -77625,7 +78497,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:658"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:669"
       ],
       "id": "rel:56c122e4614e4a34",
       "source": "component:app-lifecycle-worker",
@@ -78021,6 +78893,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:5967892c1666290c",
+      "source": "api:get:/api/lite/devices/{node_id}/photo-backup",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:596a3051c5818dcf",
@@ -78048,7 +78929,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:548"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:584"
       ],
       "id": "rel:599d46b0f79c390c",
       "source": "component:node-agent",
@@ -78458,7 +79339,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:384"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:419"
       ],
       "id": "rel:5cece4018cf60146",
       "source": "component:agent-recovery",
@@ -78586,6 +79467,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:5d944f263f238f08",
+      "source": "domain:apps",
+      "target": "reason:unsafe_live_media_import",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_device_health_d4.py"
       ],
       "id": "rel:5d9db187bd82bea9",
@@ -78640,7 +79530,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:539"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:575"
       ],
       "id": "rel:5ebc69feb2041b30",
       "source": "component:agent-signals",
@@ -79319,7 +80209,16 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:474"
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:647e4c6c25edf6d8",
+      "source": "reason:unsafe_live_media_import",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
       ],
       "id": "rel:64d1a0ec1f6ecb56",
       "source": "component:agent-command-executor",
@@ -80044,7 +80943,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1467"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1486"
       ],
       "id": "rel:6a1cd8eae8a43453",
       "source": "component:app-lifecycle-worker",
@@ -80265,7 +81164,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:957"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:968"
       ],
       "id": "rel:6bd444330c135bb4",
       "source": "component:app-lifecycle-worker",
@@ -80508,6 +81407,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-asyncapi.json"
+      ],
+      "id": "rel:6cdc244de920184c",
+      "source": "domain:lite",
+      "target": "subject:pocketlab.commands.lite.media_backup.cancel",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:6cfecd1949e66ac1",
@@ -80609,6 +81517,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_photo_backup_agent.py"
+      ],
+      "id": "rel:6dcc11de45257b01",
+      "source": "reason:interrupted",
+      "target": "test:tests/backend/test_lite_photo_backup_agent.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:449"
       ],
       "id": "rel:6dd1943235e7c111",
@@ -80663,7 +81580,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:474"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
       ],
       "id": "rel:6e83e47f9fe25a2a",
       "source": "component:agent-command-executor",
@@ -80956,7 +81873,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:646"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:943"
       ],
       "id": "rel:7029047d31809239",
       "source": "component:agent-command-executor",
@@ -81163,7 +82080,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:646"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:943"
       ],
       "id": "rel:71ce16a6ad088fd2",
       "source": "component:agent-recovery",
@@ -81172,7 +82089,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:613"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:624"
       ],
       "id": "rel:71d454511786a918",
       "source": "component:app-lifecycle-worker",
@@ -81181,7 +82098,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:474"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
       ],
       "id": "rel:71d5971c7ce7cb1e",
       "source": "component:node-agent",
@@ -81433,7 +82350,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:617"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:914"
       ],
       "id": "rel:739ef9e473409282",
       "source": "component:agent-command-executor",
@@ -81487,7 +82404,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:646"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:657"
       ],
       "id": "rel:74192aa4c4d6d046",
       "source": "component:app-lifecycle-worker",
@@ -82090,6 +83007,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_photo_backup_agent.py"
+      ],
+      "id": "rel:7894c9ff07502a8a",
+      "source": "component:photoprism",
+      "target": "test:tests/backend/test_lite_photo_backup_agent.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:78b5b88f20777b16",
@@ -82126,7 +83052,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:878"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:889"
       ],
       "id": "rel:78f31924ee59c8c1",
       "source": "component:worker",
@@ -82730,7 +83656,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:330"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:341"
       ],
       "id": "rel:7e72f6e0ae0ded32",
       "source": "component:worker",
@@ -83219,7 +84145,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:664"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:675"
       ],
       "id": "rel:81db0dc1b7af98d4",
       "source": "component:worker",
@@ -83422,7 +84348,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:737"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:748"
       ],
       "id": "rel:84153a22ccfdd618",
       "source": "component:app-lifecycle-worker",
@@ -84050,7 +84976,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:662"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:673"
       ],
       "id": "rel:894e3f760e77af7e",
       "source": "component:app-lifecycle-worker",
@@ -84222,7 +85148,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:617"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:914"
       ],
       "id": "rel:8a4dc38eda8aacf2",
       "source": "component:node-agent",
@@ -84688,6 +85614,15 @@
       "source": "domain:devices",
       "target": "journey:restart-agent",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-photo-backup.spec.ts"
+      ],
+      "id": "rel:8e0d1ce4c9f0beba",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-photo-backup.spec.ts",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -85195,6 +86130,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:91e01441a77fb6eb",
+      "source": "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:91e99ae057529f3e",
@@ -85210,6 +86154,15 @@
       "source": "domain:devices",
       "target": "reason:version_not_reported",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:921548a208c73d00",
+      "source": "api:get:/api/lite/media-backup",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -85686,7 +86639,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3790"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3792"
       ],
       "id": "rel:9622c3144190ef74",
       "source": "component:lite-api",
@@ -85744,7 +86697,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:407"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:442"
       ],
       "id": "rel:968ba7d4ca7d1baa",
       "source": "component:agent-command-executor",
@@ -85789,7 +86742,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:617"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:914"
       ],
       "id": "rel:970a0be8f8f4dc36",
       "source": "component:agent-recovery",
@@ -85897,7 +86850,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:654"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:665"
       ],
       "id": "rel:984767d499bcbfd6",
       "source": "component:app-lifecycle-worker",
@@ -85915,7 +86868,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:626"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:637"
       ],
       "id": "rel:9864c0f85ca2118c",
       "source": "component:app-lifecycle-worker",
@@ -86078,7 +87031,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3931"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3933"
       ],
       "id": "rel:99ba9e8682cf6f1f",
       "source": "component:lite-api",
@@ -86114,7 +87067,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:599"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:610"
       ],
       "id": "rel:99eedb2e740a7cf4",
       "source": "component:worker",
@@ -86195,7 +87148,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:650"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:661"
       ],
       "id": "rel:9ae303b8540e22b3",
       "source": "component:app-lifecycle-worker",
@@ -86213,7 +87166,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:474"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
       ],
       "id": "rel:9b12159052e9fd99",
       "source": "component:agent-signals",
@@ -86294,7 +87247,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:646"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:943"
       ],
       "id": "rel:9ba8d503eb9c63d0",
       "source": "component:agent-signals",
@@ -86375,7 +87328,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:474"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
       ],
       "id": "rel:9c0708a2ede22c21",
       "source": "component:agent-recovery",
@@ -86501,7 +87454,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:474"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
       ],
       "id": "rel:9d7830008fa15189",
       "source": "component:agent-recovery",
@@ -87307,7 +88260,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:705"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:716"
       ],
       "id": "rel:a32d30d12a8f3763",
       "source": "component:worker",
@@ -87852,7 +88805,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4392"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4394"
       ],
       "id": "rel:a718626a5b5f2425",
       "source": "component:lite-api",
@@ -87942,7 +88895,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:632"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:643"
       ],
       "id": "rel:a7f97b72bdae88c8",
       "source": "component:app-lifecycle-worker",
@@ -88023,6 +88976,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:a890fcfb3573a698",
+      "source": "api:get:/api/lite/devices/{node_id}/photo-backup",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:a896cf9e3487b20d",
@@ -88088,6 +89050,15 @@
       "source": "journey:rules-authorization",
       "target": "component:api-domain-surfaces",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-asyncapi.json"
+      ],
+      "id": "rel:a915a58b9a8f05b0",
+      "source": "domain:devices",
+      "target": "subject:pocketlab.events.fleet",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -88536,7 +89507,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:384"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:419"
       ],
       "id": "rel:acde3049040639a9",
       "source": "component:node-agent",
@@ -88618,7 +89589,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:513"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:549"
       ],
       "id": "rel:ad4b5fa43a0bd863",
       "source": "component:agent-signals",
@@ -88627,7 +89598,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:539"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:575"
       ],
       "id": "rel:ad5af6eb6102442b",
       "source": "component:agent-recovery",
@@ -88924,7 +89895,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:352"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:363"
       ],
       "id": "rel:af2164558bfdc757",
       "source": "component:app-lifecycle-worker",
@@ -89086,7 +90057,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3830"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3832"
       ],
       "id": "rel:b0e17c2e06af2e29",
       "source": "component:lite-api",
@@ -89426,7 +90397,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:646"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:943"
       ],
       "id": "rel:b363fa96daf3d3cf",
       "source": "component:node-agent",
@@ -90611,7 +91582,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3973"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3975"
       ],
       "id": "rel:bd798d574b62754a",
       "source": "component:lite-api",
@@ -90746,7 +91717,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:352"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:363"
       ],
       "id": "rel:be8b75bf20724657",
       "source": "component:worker",
@@ -90998,7 +91969,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:594"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605"
       ],
       "id": "rel:c04f43b17e6b918e",
       "source": "component:app-lifecycle-worker",
@@ -91144,7 +92115,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3891"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3893"
       ],
       "id": "rel:c146c302df54058b",
       "source": "component:lite-api",
@@ -91338,7 +92309,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:539"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:575"
       ],
       "id": "rel:c3621276065011e7",
       "source": "component:agent-command-executor",
@@ -91676,6 +92647,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-asyncapi.json"
+      ],
+      "id": "rel:c6e2084112f88e09",
+      "source": "domain:lite",
+      "target": "subject:pocketlab.commands.lite.media_backup.repair",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:c6efd38e47648cae",
@@ -91802,7 +92782,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:474"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
       ],
       "id": "rel:c8049c346eca6fcb",
       "source": "component:node-agent",
@@ -91884,7 +92864,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:548"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:584"
       ],
       "id": "rel:c8e69e4d0d5a086d",
       "source": "component:agent-command-executor",
@@ -92136,6 +93116,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:ca5bdba006124c5f",
+      "source": "domain:devices",
+      "target": "api:get:/api/lite/devices/{node_id}/photo-backup",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:ca71dd2cf988fc4b",
@@ -92280,6 +93269,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_photo_backup.py"
+      ],
+      "id": "rel:cb6e120032ee52c4",
+      "source": "reason:interrupted",
+      "target": "test:tests/backend/test_lite_photo_backup.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py",
         "src/lite/LiteSecurity.jsx"
       ],
@@ -92287,6 +93285,15 @@
       "source": "journey:security-scan",
       "target": "component:security-coordinator",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:cb89ffea17955c9d",
+      "source": "api:post:/api/lite/devices/{node_id}/photo-backup/repair",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -92633,6 +93640,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:cdaf9e56840aeb59",
+      "source": "domain:devices",
+      "target": "api:post:/api/lite/devices/{node_id}/photo-backup",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:cdb2172bf41a15da",
@@ -92656,6 +93672,15 @@
       "id": "rel:cdea27cd05d0f4c1",
       "source": "api:get:/api/lite/apps/{app_id}/update",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_photo_backup.py"
+      ],
+      "id": "rel:cded168615558501",
+      "source": "reason:protected_server_host",
+      "target": "test:tests/backend/test_lite_photo_backup.py",
       "type": "verified_by"
     },
     {
@@ -92840,7 +93865,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:513"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:549"
       ],
       "id": "rel:cf5787ab83722e94",
       "source": "component:agent-recovery",
@@ -92849,7 +93874,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:516"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:527"
       ],
       "id": "rel:cf61242370b4156c",
       "source": "component:worker",
@@ -92984,7 +94009,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:737"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:748"
       ],
       "id": "rel:cfff270ca5d08b67",
       "source": "component:worker",
@@ -92993,7 +94018,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:407"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:442"
       ],
       "id": "rel:d00f009747054e91",
       "source": "component:node-agent",
@@ -93011,7 +94036,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:594"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605"
       ],
       "id": "rel:d08a9a871e8b7a8f",
       "source": "component:worker",
@@ -93047,7 +94072,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3760"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3762"
       ],
       "id": "rel:d0ac21c0cffa28c9",
       "source": "component:lite-api",
@@ -93148,7 +94173,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:654"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:665"
       ],
       "id": "rel:d15f77c9767e68e4",
       "source": "component:worker",
@@ -93456,7 +94481,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:599"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:610"
       ],
       "id": "rel:d3f14cfcbea22120",
       "source": "component:app-lifecycle-worker",
@@ -93962,7 +94987,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4265"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4267"
       ],
       "id": "rel:d7a4bd398a93f098",
       "source": "component:lite-api",
@@ -94007,7 +95032,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:626"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:637"
       ],
       "id": "rel:d7e433a4565ed799",
       "source": "component:worker",
@@ -94189,7 +95214,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:513"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:549"
       ],
       "id": "rel:d8f5394938dc5dad",
       "source": "component:node-agent",
@@ -94262,7 +95287,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:330"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:341"
       ],
       "id": "rel:d97387ca9a2330df",
       "source": "component:app-lifecycle-worker",
@@ -94695,6 +95720,15 @@
       ],
       "id": "rel:dc485bf7f8cd5eb0",
       "source": "api:post:/api/lite/enterprise/identity/passkeys/login/verify",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:dc59b8bcfc780f1e",
+      "source": "api:post:/api/lite/devices/{node_id}/photo-backup",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
@@ -95363,7 +96397,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:399"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:434"
       ],
       "id": "rel:e23a91973cdf44bd",
       "source": "component:agent-recovery",
@@ -95381,12 +96415,30 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-asyncapi.json"
+      ],
+      "id": "rel:e2516cb7f3e03953",
+      "source": "domain:lite",
+      "target": "subject:pocketlab.commands.lite.media_backup.start",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:e2544bc3192123a1",
       "source": "component:recovery-state",
       "target": "threat-model:durable-state",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:e25563c5eff27f14",
+      "source": "reason:unsafe_live_media_import",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -95593,7 +96645,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:613"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:624"
       ],
       "id": "rel:e42316759c423c47",
       "source": "component:worker",
@@ -95864,7 +96916,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:318"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:329"
       ],
       "id": "rel:e5b4d57da3a17fd1",
       "source": "component:worker",
@@ -95963,7 +97015,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:658"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:669"
       ],
       "id": "rel:e6636b7fefd38912",
       "source": "component:worker",
@@ -96543,7 +97595,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:399"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:434"
       ],
       "id": "rel:ea86e0baf76e7c4e",
       "source": "component:node-agent",
@@ -96841,6 +97893,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:ecd30653c1a2aa67",
+      "source": "reason:unsafe_live_media_import",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:ecd93518ac0bfd8f",
@@ -97080,7 +98141,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:384"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:419"
       ],
       "id": "rel:ee910fb7af30f39d",
       "source": "component:agent-signals",
@@ -97296,7 +98357,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:539"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:575"
       ],
       "id": "rel:f0a62a57d0c140d8",
       "source": "component:node-agent",
@@ -97476,7 +98537,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:857"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:868"
       ],
       "id": "rel:f188a08229a81a6c",
       "source": "component:app-lifecycle-worker",
@@ -97750,7 +98811,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3773"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3775"
       ],
       "id": "rel:f38477f0420ebc7b",
       "source": "component:lite-api",
@@ -98333,7 +99394,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:437"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:448"
       ],
       "id": "rel:f7f328dbd00204cf",
       "source": "component:worker",
@@ -98393,6 +99454,15 @@
       "source": "component:opa-policy-engine",
       "target": "component:api-domain-surfaces",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-asyncapi.json"
+      ],
+      "id": "rel:f88ef03592da67ea",
+      "source": "domain:lite",
+      "target": "subject:pocketlab.events.lite.photo_backup.updated",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -98585,7 +99655,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:407"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:442"
       ],
       "id": "rel:f996167172b2181c",
       "source": "component:agent-recovery",
@@ -98738,7 +99808,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:632"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:643"
       ],
       "id": "rel:fb080ded303746a5",
       "source": "component:worker",
@@ -98837,7 +99907,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:534"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:545"
       ],
       "id": "rel:fbee382be8fe234d",
       "source": "component:worker",
@@ -99071,7 +100141,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3999"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4001"
       ],
       "id": "rel:fe30f428c2df7938",
       "source": "component:lite-api",
@@ -99233,33 +100303,33 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "05687def94543b367c4060bf5016a6faaffd9b742a2f9aa0f81eb1e702bff6af",
+  "source_fingerprint": "e6e1d300a23bbe8c758552f5d8cbe3e5b156bc70fbe58d103ec60271e1300f5d",
   "statistics": {
-    "entity_count": 1296,
+    "entity_count": 1313,
     "entity_type_counts": {
       "adr": 6,
-      "api": 220,
+      "api": 225,
       "capability": 5,
       "component": 58,
-      "domain": 48,
+      "domain": 49,
       "glossary": 16,
       "journey": 24,
       "limitation": 18,
-      "reason-code": 243,
+      "reason-code": 244,
       "release": 3,
       "requirement": 10,
       "runbook": 5,
       "runtime-topology": 9,
-      "subject": 210,
+      "subject": 217,
       "table": 78,
-      "test": 249,
+      "test": 252,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3671,
-    "source_count": 286
+    "relation_count": 3705,
+    "source_count": 289
   }
 }

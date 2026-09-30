@@ -287,6 +287,17 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:get:/api/lite/devices/{node_id}/photo-backup",
+      "name": "GET /api/lite/devices/{node_id}/photo-backup",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:get:/api/lite/diagnostics/frontend-lifecycle/challenge",
       "name": "GET /api/lite/diagnostics/frontend-lifecycle/challenge",
       "note": "A test link does not by itself prove runtime verification.",
@@ -784,6 +795,17 @@
     {
       "entity": "api:get:/api/lite/identity/owner-claim/status",
       "name": "GET /api/lite/identity/owner-claim/status",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/media-backup",
+      "name": "GET /api/lite/media-backup",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -1457,6 +1479,39 @@
     {
       "entity": "api:post:/api/lite/catalog/remove",
       "name": "POST /api/lite/catalog/remove",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/devices/{node_id}/photo-backup",
+      "name": "POST /api/lite/devices/{node_id}/photo-backup",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
+      "name": "POST /api/lite/devices/{node_id}/photo-backup/cancel",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/devices/{node_id}/photo-backup/repair",
+      "name": "POST /api/lite/devices/{node_id}/photo-backup/repair",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -2942,6 +2997,8 @@
         "test:tests/backend/test_lite_device_health_d4.py",
         "test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py",
         "test:tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py",
+        "test:tests/backend/test_lite_photo_backup.py",
+        "test:tests/backend/test_lite_photo_backup_agent.py",
         "test:tests/backend/test_lite_photoprism_backup.py",
         "test:tests/backend/test_lite_runtime_phone_qualification.py",
         "test:tests/backend/test_lite_security.py",
@@ -2957,6 +3014,7 @@
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-performance-live.spec.ts",
         "test:tests/e2e/lite-performance.spec.ts",
+        "test:tests/e2e/lite-photo-backup.spec.ts",
         "test:tests/e2e/lite-visual-overlays.spec.ts",
         "test:tests/parity/test_planned_runtime_parity_policy.py",
         "test:tests/parity/test_runtime_drift_reporting.py"
@@ -3549,6 +3607,14 @@
     {
       "entity": "domain:manual",
       "name": "Manual",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:media-backup",
+      "name": "Media Backup",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [],
       "type": "domain",
@@ -4329,6 +4395,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "05687def94543b367c4060bf5016a6faaffd9b742a2f9aa0f81eb1e702bff6af"
+    "source_fingerprint": "e6e1d300a23bbe8c758552f5d8cbe3e5b156bc70fbe58d103ec60271e1300f5d"
   }
 }

@@ -1669,6 +1669,21 @@
       "user_message": "This target cannot safely reuse a source-checkout Security result."
     },
     {
+      "audit_severity": "warning",
+      "code": "unsafe_live_media_import",
+      "deprecated_aliases": [],
+      "domain": "apps",
+      "event_mapping": [],
+      "http_status": 409,
+      "meaning": "Live phone media import is intentionally blocked; use the managed Photo Backup workflow instead.",
+      "projection_mapping": [],
+      "retryable": false,
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_media.py",
+      "terminal": true,
+      "ui_mapping": ["Use Back up photos"],
+      "user_message": "Import photos is paused for live phone folders. Use Back up photos instead."
+    },
+    {
       "audit_severity": "info",
       "code": "test_bypass_explicit",
       "deprecated_aliases": [],

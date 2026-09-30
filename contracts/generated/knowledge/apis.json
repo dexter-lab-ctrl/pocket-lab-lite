@@ -837,6 +837,45 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Lite Photo Backup Device Status",
+      "domain": "devices",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.photoBackup",
+          "resolved": true,
+          "source_module": "src/lite/devices/DevicePhotoBackup.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/devices/{node_id}/photo-backup",
+      "method": "GET",
+      "name": "GET /api/lite/devices/{node_id}/photo-backup",
+      "operation_id": "lite_photo_backup_device_status_api_lite_devices__node_id__photo_backup_get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/devices/{node_id}/photo-backup",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "fleet"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Get Frontend Lifecycle Diagnostics Challenge",
       "domain": "diagnostics",
       "id": "api:get:/api/lite/diagnostics/frontend-lifecycle/challenge",
@@ -2077,6 +2116,43 @@
       ],
       "tags": [
         "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Lite Photo Backup Fleet Status",
+      "domain": "media-backup",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.mediaBackup",
+          "resolved": true,
+          "source_module": "src/lite/catalog/AppCatalogScreen.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/media-backup",
+      "method": "GET",
+      "name": "GET /api/lite/media-backup",
+      "operation_id": "lite_photo_backup_fleet_status_api_lite_media_backup_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/media-backup",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "fleet"
       ],
       "type": "api"
     },
@@ -3838,6 +3914,116 @@
       ],
       "tags": [
         "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Start Lite Photo Backup",
+      "domain": "devices",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.startPhotoBackup",
+          "resolved": true,
+          "source_module": "src/lite/devices/DevicePhotoBackup.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/devices/{node_id}/photo-backup",
+      "method": "POST",
+      "name": "POST /api/lite/devices/{node_id}/photo-backup",
+      "operation_id": "start_lite_photo_backup_api_lite_devices__node_id__photo_backup_post",
+      "response_statuses": [
+        "202",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/devices/{node_id}/photo-backup",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "fleet"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Cancel Lite Photo Backup",
+      "domain": "devices",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.cancelPhotoBackup",
+          "resolved": true,
+          "source_module": "src/lite/devices/DevicePhotoBackup.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
+      "method": "POST",
+      "name": "POST /api/lite/devices/{node_id}/photo-backup/cancel",
+      "operation_id": "cancel_lite_photo_backup_api_lite_devices__node_id__photo_backup_cancel_post",
+      "response_statuses": [
+        "202",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/devices/{node_id}/photo-backup/cancel",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "fleet"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Repair Lite Photo Backup Tools",
+      "domain": "devices",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.repairPhotoBackup",
+          "resolved": true,
+          "source_module": "src/lite/devices/DevicePhotoBackup.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/devices/{node_id}/photo-backup/repair",
+      "method": "POST",
+      "name": "POST /api/lite/devices/{node_id}/photo-backup/repair",
+      "operation_id": "repair_lite_photo_backup_tools_api_lite_devices__node_id__photo_backup_repair_post",
+      "response_statuses": [
+        "202",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/devices/{node_id}/photo-backup/repair",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "fleet"
       ],
       "type": "api"
     },
@@ -6606,6 +6792,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "05687def94543b367c4060bf5016a6faaffd9b742a2f9aa0f81eb1e702bff6af"
+    "source_fingerprint": "e6e1d300a23bbe8c758552f5d8cbe3e5b156bc70fbe58d103ec60271e1300f5d"
   }
 }

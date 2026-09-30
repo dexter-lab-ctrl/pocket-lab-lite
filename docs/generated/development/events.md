@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 7fbc5b3d92e26b875c893ec2bc79ddf1c149e4689a023a1b21c71ad46b55c12a
+source_fingerprint: 78749ab71bc4aea430650fc8b3be24811e8a9f48feb26a77d03a88c93baa7c4e
 schema_revision: 1
 validation_status: generated
 ---
@@ -21,7 +21,7 @@ validation_status: generated
 
 Subjects are scanned from current runtime source. This does not reintroduce the retired full-product typed-operation catalog.
 
-## Detected subjects (209)
+## Detected subjects (216)
 
 - `pocketlab.commands.`
 - `pocketlab.commands.catalog.refresh`
@@ -54,6 +54,9 @@ Subjects are scanned from current runtime source. This does not reintroduce the 
 - `pocketlab.commands.lite.database.restore.preview`
 - `pocketlab.commands.lite.maintenance.checkpoint`
 - `pocketlab.commands.lite.maintenance.retention`
+- `pocketlab.commands.lite.media_backup.cancel`
+- `pocketlab.commands.lite.media_backup.repair`
+- `pocketlab.commands.lite.media_backup.start`
 - `pocketlab.commands.lite.restore.apply`
 - `pocketlab.commands.lite.restore.preview`
 - `pocketlab.commands.lite.security.app_scan`
@@ -97,6 +100,7 @@ Subjects are scanned from current runtime source. This does not reintroduce the 
 - `pocketlab.events.drift.scan_started`
 - `pocketlab.events.drift.{action}`
 - `pocketlab.events.drift.{action}_started`
+- `pocketlab.events.fleet.`
 - `pocketlab.events.fleet.bootstrap_blocked`
 - `pocketlab.events.fleet.config_updated`
 - `pocketlab.events.fleet.device_health_sampled`
@@ -157,6 +161,9 @@ Subjects are scanned from current runtime source. This does not reintroduce the 
 - `pocketlab.events.lite.database.restore.started`
 - `pocketlab.events.lite.database.restore.{event_suffix}`
 - `pocketlab.events.lite.database.restore.{rollback_status}`
+- `pocketlab.events.lite.photo_backup.cancel`
+- `pocketlab.events.lite.photo_backup.tools_repair`
+- `pocketlab.events.lite.photo_backup.updated`
 - `pocketlab.events.lite.restore.checkpoint_created`
 - `pocketlab.events.lite.restore.completed`
 - `pocketlab.events.lite.restore.failed`

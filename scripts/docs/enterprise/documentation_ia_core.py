@@ -848,6 +848,7 @@ def _owner(path: str) -> str:
         "operations/bootstrap-lite.md": "reference",
         "operations/devices-durable-enrollment.md": "reference",
         "operations/devices-production-readiness.md": "reference",
+        "operations/photo-backup-photoprism-webdav.md": "reference",
         "security/lite-security-model.md": "reference",
         "recovery/backup-restore.md": "reference",
         "validation/lite-validation.md": "reference",

@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 7fbc5b3d92e26b875c893ec2bc79ddf1c149e4689a023a1b21c71ad46b55c12a
+source_fingerprint: 78749ab71bc4aea430650fc8b3be24811e8a9f48feb26a77d03a88c93baa7c4e
 schema_revision: 1
 validation_status: generated
 ---
@@ -85,6 +85,20 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 - `DeviceFactsDark`
 - `DeviceFactsReducedMotion`
 - `DeviceFactsText200Percent`
+- `PhotoBackupReady`
+- `PhotoBackupRunning`
+- `PhotoBackupPartialStorage`
+- `PhotoBackupPermissionMissing`
+- `PhotoBackupInterrupted`
+- `PhotoBackupEmptyLibrary`
+- `PhotoBackupCompleted`
+- `PhotoBackupCancelled`
+- `PhotoBackupRemoteAccessNotReady`
+- `PhotoBackupPhotoPrismNotReady`
+- `PhotoBackupToolNotReady`
+- `PhotoBackupSourceOffline`
+- `PhotoBackupRetryableFailure`
+- `PhotoBackupFirstBackup`
 
 ## LiteHome
 

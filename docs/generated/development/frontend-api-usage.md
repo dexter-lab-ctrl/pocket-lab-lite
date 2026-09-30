@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: bedd758438c05b0c6e30ca0d0f1fb987a70bcd4f11923ce0743685b24f3a648d
+source_fingerprint: 30e4700ac47f810754e99ac3591ddff7662f052f1e7ff69a2f215f09921efc15
 schema_revision: 1
 validation_status: generated
 ---
@@ -99,11 +99,16 @@ validation_status: generated
 | src/lite/catalog/AppCatalogScreen.jsx | liteApi.runAppAction | POST | `/api/lite/apps/{param}/actions/{param}` | mutation | no | dynamic |
 | src/lite/catalog/AppCatalogScreen.jsx | liteApi.catalog | GET | `/api/lite/catalog` | query | no | static |
 | src/lite/catalog/AppCatalogScreen.jsx | liteApi.installApp | POST | `/api/lite/catalog/install` | mutation | no | static |
+| src/lite/catalog/AppCatalogScreen.jsx | liteApi.mediaBackup | GET | `/api/lite/media-backup` | query | no | static |
 | src/lite/devices/DeviceDetailsLazy.jsx | liteApi.device | GET | `/api/lite/devices/{param}` | query | no | dynamic |
 | src/lite/devices/DeviceDetailsLazy.jsx | liteApi.deviceHealth | GET | `/api/lite/devices/{param}/health` | query | no | dynamic |
 | src/lite/devices/DeviceDetailsLazy.jsx | liteApi.deviceHealthHistory | GET | `/api/lite/devices/{param}/health/history` | query | no | dynamic |
 | src/lite/devices/DeviceDetailsLazy.jsx | liteApi.deviceHistory | GET | `/api/lite/devices/{param}/history` | query | no | dynamic |
 | src/lite/devices/DeviceModelPickerLazy.jsx | liteApi.updateDeviceDisplayModel | PUT | `/api/lite/fleet/devices/{param}/display-model` | mutation | no | dynamic |
+| src/lite/devices/DevicePhotoBackup.jsx | liteApi.photoBackup | GET | `/api/lite/devices/{param}/photo-backup` | query | no | dynamic |
+| src/lite/devices/DevicePhotoBackup.jsx | liteApi.startPhotoBackup | POST | `/api/lite/devices/{param}/photo-backup` | mutation | no | dynamic |
+| src/lite/devices/DevicePhotoBackup.jsx | liteApi.cancelPhotoBackup | POST | `/api/lite/devices/{param}/photo-backup/cancel` | mutation | no | dynamic |
+| src/lite/devices/DevicePhotoBackup.jsx | liteApi.repairPhotoBackup | POST | `/api/lite/devices/{param}/photo-backup/repair` | mutation | no | dynamic |
 | src/lite/recovery/RecoveryBackupHistory.jsx | liteApi.recoveryHistory | GET | `/api/lite/recovery/backups` | query | no | static |
 | src/lite/security/SecurityHistoryLazy.jsx | liteApi.securityHistory | GET | `/api/lite/security/history` | query | no | static |
 | src/lite/security/securityPreload.js | liteApi.securityDetails | GET | `/api/lite/security` | query | no | static |
@@ -127,6 +132,9 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/apps/photoprism/update/receipts/:operationId` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/catalog` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/catalog/install` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/devices/:deviceId/photo-backup` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/devices/:deviceId/photo-backup/cancel` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/devices/:deviceId/photo-backup/repair` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/devices/:deviceId/removal-assessment` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/diagnostics/frontend-lifecycle/challenge` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/events` | mock | yes | static |
@@ -144,6 +152,7 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/identity/sessions/:sessionId` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/identity/sessions/revoke-others` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/identity/setup` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/media-backup` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/policy` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/policy/apply` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/recovery` | mock | yes | static |

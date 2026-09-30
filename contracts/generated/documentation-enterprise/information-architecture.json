@@ -4666,7 +4666,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 488,
+  "page_count": 489,
   "page_types": [
     "overview",
     "guide",
@@ -16351,6 +16351,29 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "operations/photo-backup-photoprism-webdav.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "recovery",
+      "generated": false,
+      "id": "page:operations/photo-backup-photoprism-webdav",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "operations/photo-backup-photoprism-webdav.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "operations/photo-backup-photoprism-webdav.md",
+      "title": "Photo Backup to PhotoPrism WebDAV",
+      "url": "/operations/photo-backup-photoprism-webdav/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "recovery/backup-restore.md"
       ],
       "confidence": "source-derived",
@@ -17555,7 +17578,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "76f53e86d1db38fb20310fa933c74e83e8f5d80c6a8e6b3c0db302d27819fc61",
+  "source_fingerprint": "10700a1d43b456d14296705ef431c0cbff61de83f01e4ac78ab93a8585328775",
   "top_level": [
     "start-here",
     "use",
