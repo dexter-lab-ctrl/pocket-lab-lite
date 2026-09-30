@@ -606,7 +606,9 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
             capture=True,
         )
         if result.returncode != 0:
-            return {}
+            raise RuntimeError(
+                "remote_listing_failed"
+            )
         raw = result.stdout or ""
         if (
             len(
@@ -893,10 +895,18 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 )
                 return result
 
-            items = self._inventory(
-                selected_collections
-            )
-            if not items:
+            readable_collections = [
+                name
+                for name in selected_collections
+                if (
+                    _collection_path(name).is_dir()
+                    and os.access(
+                        _collection_path(name),
+                        os.R_OK | os.X_OK,
+                    )
+                )
+            ]
+            if not readable_collections:
                 result = {
                     "status": "source_offline",
                     "summary": (
@@ -908,6 +918,41 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                     "reason_code": (
                         "photo_storage_access_missing"
                     ),
+                }
+                self._post_progress(
+                    backup_id,
+                    result,
+                )
+                return result
+
+            items = self._inventory(
+                readable_collections
+            )
+            if not items:
+                result = {
+                    "status": "completed",
+                    "summary": (
+                        "No photos or videos need "
+                        "backing up."
+                    ),
+                    "items_total": 0,
+                    "items_transferred": 0,
+                    "items_skipped": 0,
+                    "items_remaining": 0,
+                    "bytes_total": 0,
+                    "bytes_total_planned": 0,
+                    "bytes_total_required": 0,
+                    "bytes_transferred": 0,
+                    "bytes_remaining": 0,
+                    "partial": False,
+                    "retryable": False,
+                    "reason_code": "",
+                    "photo_processing_state": "not_needed",
+                    "progress": {
+                        "phase": "completed",
+                        "percent": 100,
+                        "step": "Nothing new to back up.",
+                    },
                 }
                 self._post_progress(
                     backup_id,
@@ -933,7 +978,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 credential.get(
                     "destination_prefix"
                 )
-                or f"PocketLab/{self.node_id}"
+                or f"PocketLab/Devices/{self.node_id}"
             ).strip("/")
             remote = self._remote_listing(
                 rclone,
@@ -946,6 +991,8 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
             ] = []
             skipped = 0
             remaining = 0
+            remaining_bytes = 0
+            required_bytes = 0
             planned_bytes = 0
             for item in items:
                 regular_key = self._remote_key(
@@ -959,6 +1006,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                     skipped += 1
                     continue
 
+                required_bytes += int(item["size"])
                 final_key = regular_key
                 if regular_key in remote:
                     conflict_rel = (
@@ -984,6 +1032,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                     > planning_budget
                 ):
                     remaining += 1
+                    remaining_bytes += int(item["size"])
                     continue
                 plan.append((item, final_key))
                 planned_bytes += int(
@@ -1003,7 +1052,10 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                     "items_total": total_candidates,
                     "items_skipped": skipped,
                     "items_remaining": remaining,
-                    "bytes_total": planned_bytes,
+                    "bytes_total": required_bytes,
+                    "bytes_total_planned": planned_bytes,
+                    "bytes_total_required": required_bytes,
+                    "bytes_remaining": remaining_bytes,
                     "progress": {
                         "phase": "transferring",
                         "percent": 0,
@@ -1043,6 +1095,10 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                     remaining += (
                         len(plan) - index
                     )
+                    remaining_bytes += sum(
+                        int(pending_item["size"])
+                        for pending_item, _ in plan[index:]
+                    )
                     break
 
                 self._transfer_one(
@@ -1070,11 +1126,11 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                         int(
                             (
                                 bytes_transferred
-                                / planned_bytes
+                                / required_bytes
                             )
                             * 100
                         )
-                        if planned_bytes
+                        if required_bytes
                         else 100
                     )
                     self._post_progress(
@@ -1095,10 +1151,19 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                                 remaining
                             ),
                             "bytes_total": (
+                                required_bytes
+                            ),
+                            "bytes_total_planned": (
                                 planned_bytes
+                            ),
+                            "bytes_total_required": (
+                                required_bytes
                             ),
                             "bytes_transferred": (
                                 bytes_transferred
+                            ),
+                            "bytes_remaining": (
+                                remaining_bytes
                             ),
                             "progress": {
                                 "phase": (
@@ -1134,9 +1199,17 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 "items_transferred": transferred,
                 "items_skipped": skipped,
                 "items_remaining": remaining,
-                "bytes_total": planned_bytes,
+                "bytes_total": required_bytes,
+                "bytes_total_planned": planned_bytes,
+                "bytes_total_required": required_bytes,
                 "bytes_transferred": (
                     bytes_transferred
+                ),
+                "bytes_remaining": remaining_bytes,
+                "photo_processing_state": (
+                    "processing"
+                    if transferred > 0
+                    else "not_needed"
                 ),
                 "partial": partial,
                 "retryable": partial,
@@ -1154,11 +1227,11 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                             int(
                                 (
                                     bytes_transferred
-                                    / planned_bytes
+                                    / required_bytes
                                 )
                                 * 100
                             )
-                            if planned_bytes
+                            if required_bytes
                             else 0
                         )
                     ),

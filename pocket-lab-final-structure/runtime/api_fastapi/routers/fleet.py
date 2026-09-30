@@ -1091,14 +1091,12 @@ SUPERVISOR_FILE="$HOME/pocket-lab-lite/pocket-lab-final-structure/runtime/agents
 COMMON_FILE="$HOME/pocket-lab-lite/pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh"
 MEDIA_TOOLS_FILE="$HOME/pocket-lab-lite/pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/ensure-fleet-media-tools.sh"
 
-if [ -x "$MEDIA_TOOLS_FILE" ]; then
-  if ! "$MEDIA_TOOLS_FILE"; then
+if [ -f "$MEDIA_TOOLS_FILE" ]; then
+  if ! bash "$MEDIA_TOOLS_FILE"; then
     echo "Photo backup tools are not ready yet. Device enrollment will continue."
   fi
-elif command -v pkg >/dev/null 2>&1 && ! command -v rclone >/dev/null 2>&1; then
-  if ! pkg install -y rclone >/dev/null 2>&1; then
-    echo "Photo backup tools are not ready yet. Device enrollment will continue."
-  fi
+elif ! command -v rclone >/dev/null 2>&1; then
+  echo "Photo backup tools helper is unavailable. Device enrollment will continue."
 fi
 
 if [ -f "$AGENT_FILE" ]; then

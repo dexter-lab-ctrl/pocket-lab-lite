@@ -220,7 +220,11 @@ def _public_job(job: dict[str, Any] | None) -> dict[str, Any] | None:
         "items_skipped",
         "items_remaining",
         "bytes_total",
+        "bytes_total_planned",
+        "bytes_total_required",
         "bytes_transferred",
+        "bytes_remaining",
+        "photo_processing_state",
         "partial",
         "started_at",
         "updated_at",
@@ -398,6 +402,9 @@ def server_capacity() -> dict[str, Any]:
         "planning_reserve_bytes": planning,
         "safe_upload_budget_bytes": max(0, free - planning),
         "hard_upload_budget_bytes": max(0, free - hard),
+        "hard_reserve_fraction": HARD_RESERVE_FRACTION,
+        "planning_reserve_fraction": PLANNING_RESERVE_FRACTION,
+        "planning_reserve_min_bytes": PLANNING_RESERVE_MIN_BYTES,
         "sanitized": True,
     }
 
@@ -623,6 +630,33 @@ def make_start_command(
                 "Existing photo backup is still active."
             ),
         }
+
+    # Server Phone PhotoPrism originals are a shared low-power destination.
+    # Admit only one photo-backup transfer at a time across the fleet.
+    state_snapshot = _state()
+    other_active = next(
+        (
+            job
+            for job in state_snapshot["jobs"].values()
+            if isinstance(job, dict)
+            and str(job.get("status") or "") in ACTIVE_STATES
+            and str(job.get("node_id") or "") != node_id
+        ),
+        None,
+    )
+    if other_active:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "photo_backup_busy",
+                "summary": (
+                    "Another device is backing up photos. "
+                    "Try again when it finishes."
+                ),
+                "retryable": True,
+                "sanitized": True,
+            },
+        )
     if not current.get("ready"):
         raise HTTPException(
             status_code=409,
@@ -1261,7 +1295,7 @@ def consume_credential(
             data.get("webdav_url") or ""
         ),
         "destination_prefix": (
-            f"PocketLab/{node_id}"
+            f"PocketLab/Devices/{node_id}"
         ),
         "expires_at_epoch": float(
             data.get("expires_at_epoch") or 0
@@ -1380,6 +1414,24 @@ def record_agent_progress(
                 or 0
             ),
         ),
+        "bytes_total_planned": max(
+            0,
+            int(
+                progress.get("bytes_total_planned")
+                or job.get("bytes_total_planned")
+                or 0
+            ),
+        ),
+        "bytes_total_required": max(
+            0,
+            int(
+                progress.get("bytes_total_required")
+                or job.get("bytes_total_required")
+                or progress.get("bytes_total")
+                or job.get("bytes_total")
+                or 0
+            ),
+        ),
         "bytes_transferred": max(
             0,
             int(
@@ -1391,6 +1443,23 @@ def record_agent_progress(
                 )
                 or 0
             ),
+        ),
+        "bytes_remaining": max(
+            0,
+            int(
+                progress.get("bytes_remaining")
+                or job.get("bytes_remaining")
+                or 0
+            ),
+        ),
+        "photo_processing_state": (
+            _safe_text(
+                progress.get("photo_processing_state"),
+                "",
+                64,
+            )
+            if progress.get("photo_processing_state")
+            else str(job.get("photo_processing_state") or "")
         ),
         "partial": bool(
             progress.get("partial")
@@ -1467,6 +1536,10 @@ def record_agent_progress(
         _append_evidence(
             updated,
             f"lite.photo_backup.{status_value}",
+        )
+        _append_evidence(
+            updated,
+            "lite.photo_backup.credential_revoked",
         )
     return _public_job(updated) or {}
 
@@ -1667,6 +1740,23 @@ async def execute_start(
             ] = stored
             _save_state(state)
 
+        _append_evidence(
+            job,
+            "lite.photo_backup.credential_created",
+        )
+        await BUS.publish_json(
+            "pocketlab.audit.lite.photo_backup.credential_created",
+            "lite.photo_backup.credential_created",
+            {
+                "backup_id": backup_id,
+                "node_id": node_id,
+                "provider": _PROVIDER_ID,
+                "expires_in_seconds": CREDENTIAL_TTL_SECONDS,
+                "sanitized": True,
+            },
+            trace_id=backup_id,
+        )
+
         node_command = (
             await _publish_node_command(
                 node_id,
@@ -1770,6 +1860,10 @@ async def execute_cancel(
         }
     _, job = _find_job(backup_id)
     _revoke_job_credential(job)
+    _append_evidence(
+        job,
+        "lite.photo_backup.credential_revoked",
+    )
     _update_job(
         backup_id,
         status="cancelling",
