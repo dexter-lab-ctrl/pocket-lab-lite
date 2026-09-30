@@ -1363,11 +1363,16 @@ async def main_async() -> int:
             pass
 
     from api_fastapi.services import lite_database_recovery  # type: ignore
+    from api_fastapi.services import lite_photo_backup  # type: ignore
     from api_fastapi.services import lite_security_assurance  # type: ignore
 
     # Recover or block on any durable restore journal before this process can
     # execute a normal or one-shot writer command.
     await asyncio.to_thread(lite_database_recovery.startup_recovery_guard, "worker")
+    # Reconcile bounded photo-backup orchestration metadata and remove expired
+    # encrypted credential handoffs before accepting new work.
+    await asyncio.to_thread(lite_photo_backup.reconcile_stale_jobs)
+    await asyncio.to_thread(lite_photo_backup.cleanup_expired_credentials)
     # A worker restart must not strand a previously running assurance row as
     # an apparent success or an eternal active lock.
     await asyncio.to_thread(lite_security_assurance.reconcile_stale_runs)

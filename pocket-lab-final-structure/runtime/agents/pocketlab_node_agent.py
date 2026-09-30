@@ -642,6 +642,7 @@ class PocketLabNodeAgent:
                     "items_transferred": max(0, int(result.get("items_transferred") or 0)),
                     "items_skipped": max(0, int(result.get("items_skipped") or 0)),
                     "items_remaining": max(0, int(result.get("items_remaining") or 0)),
+                    "conflicts": max(0, int(result.get("conflicts") or 0)),
                     "bytes_transferred": max(0, int(result.get("bytes_transferred") or 0)),
                     "partial": bool(result.get("partial")),
                     "retryable": bool(result.get("retryable")),

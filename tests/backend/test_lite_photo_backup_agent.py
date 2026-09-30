@@ -264,3 +264,72 @@ def test_remote_collection_names_are_human_friendly():
     assert module.PhotoPrismWebDAVProvider._remote_key("camera", "2026/photo.jpg") == "DCIM/2026/photo.jpg"
     assert module.PhotoPrismWebDAVProvider._remote_key("pictures", "album/photo.jpg") == "Pictures/album/photo.jpg"
     assert module.PhotoPrismWebDAVProvider._remote_key("videos", "clip.mp4") == "Movies/clip.mp4"
+
+
+
+def test_conflict_count_is_aggregate_only_and_versioning_is_non_destructive(monkeypatch, tmp_path):
+    module = _module()
+    camera = tmp_path / "DCIM"
+    camera.mkdir()
+    source = camera / "photo.jpg"
+    source.write_bytes(b"new-content")
+    monkeypatch.setattr(module, "_collection_path", lambda _name: camera)
+    monkeypatch.setattr(module.shutil, "which", lambda name: "/usr/bin/rclone" if name == "rclone" else None)
+
+    provider = module.PhotoPrismWebDAVProvider(
+        node_id="storage-phone",
+        agent_token="token",
+        control_origin="https://pocket.test.ts.net",
+    )
+    monkeypatch.setattr(
+        provider,
+        "_credential",
+        lambda *_args: {
+            "capacity": {
+                "safe_upload_budget_bytes": 10_000_000,
+                "hard_upload_budget_bytes": 10_000_000,
+            },
+            "password": "one-time",
+            "username": "admin",
+            "webdav_url": "https://pocket.test.ts.net/apps/photoprism/originals/",
+            "destination_prefix": "PocketLab/Devices/storage-phone",
+        },
+    )
+    monkeypatch.setattr(
+        provider,
+        "_remote_listing",
+        lambda *_args: {
+            "DCIM/photo.jpg": {"size": 1, "mtime": 1.0},
+        },
+    )
+    monkeypatch.setattr(
+        provider,
+        "_capacity",
+        lambda *_args: {"hard_upload_budget_bytes": 10_000_000},
+    )
+    transfers = []
+    monkeypatch.setattr(
+        provider,
+        "_make_config",
+        lambda *_args: tmp_path / "rclone.conf",
+    )
+    monkeypatch.setattr(
+        provider,
+        "_transfer_one",
+        lambda _rclone, _config, _item, remote_relative, _prefix: transfers.append(remote_relative),
+    )
+    reports = []
+    monkeypatch.setattr(provider, "_post_progress", lambda _backup_id, payload: reports.append(payload))
+
+    result = provider.backup(
+        backup_id="photo-conflict",
+        credential_ref="cred-ref",
+        collections=["camera"],
+    )
+
+    assert result["status"] == "completed"
+    assert result["conflicts"] == 1
+    assert len(transfers) == 1
+    assert transfers[0] != "DCIM/photo.jpg"
+    assert ".pocketlab-v" in transfers[0]
+    assert "photo.jpg" not in str({k: v for k, v in result.items() if k != "summary"})

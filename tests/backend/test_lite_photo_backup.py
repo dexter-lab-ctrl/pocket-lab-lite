@@ -19,7 +19,9 @@ def photo_backup(tmp_path, monkeypatch):
 
     state = isolated_state_dir(tmp_path)
     deps.core.SETTINGS = deps.core.Settings(state_dir=state)
-    monkeypatch.setattr(lite_photo_backup, "_originals_path", lambda: tmp_path / "originals")
+    originals = tmp_path / "originals"
+    originals.mkdir()
+    monkeypatch.setattr(lite_photo_backup, "_originals_path", lambda: originals)
     return lite_photo_backup
 
 
@@ -665,3 +667,105 @@ def test_photo_backup_workload_is_explicitly_worker_owned():
     assert definition.execution_owner.value == "worker_owned"
     assert definition.cost_class.value == "heavy"
     assert definition.audit_evidence_required is True
+
+
+
+def test_capacity_read_does_not_create_missing_photoprism_state(photo_backup, tmp_path, monkeypatch):
+    missing = tmp_path / "missing-originals"
+    monkeypatch.setattr(photo_backup, "_originals_path", lambda: missing)
+    result = photo_backup.server_capacity()
+    assert result["status"] == "unavailable"
+    assert not missing.exists()
+
+
+def test_worker_redelivery_does_not_rotate_credential_or_republish_node_start(photo_backup, monkeypatch):
+    state = photo_backup._state()
+    state["jobs"]["photo-redelivery"] = {
+        "backup_id": "photo-redelivery",
+        "node_id": "storage-phone",
+        "status": "starting",
+        "summary": "Starting protected photo backup on the device.",
+        "credential_ref_internal": "cred-" + ("e" * 32),
+        "auth_id_internal": "session-redelivery",
+        "started_at": photo_backup._now(),
+        "sanitized": True,
+    }
+    state["latest_by_node"]["storage-phone"] = "photo-redelivery"
+    photo_backup._save_state(state)
+
+    monkeypatch.setattr(
+        photo_backup,
+        "_create_app_password",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("redelivery must not create another credential")
+        ),
+    )
+
+    async def should_not_publish(*_args, **_kwargs):
+        raise AssertionError("redelivery must not republish node start")
+
+    monkeypatch.setattr(photo_backup, "_publish_node_command", should_not_publish)
+    result = asyncio.run(photo_backup.execute_start({
+        "command_id": "photo-redelivery",
+        "backup_id": "photo-redelivery",
+        "node_id": "storage-phone",
+        "collections": ["camera"],
+    }))
+    assert result["status"] == "starting"
+    assert result["backup_id"] == "photo-redelivery"
+
+
+def test_terminal_agent_progress_cannot_regress_completed_job(photo_backup):
+    state = photo_backup._state()
+    state["jobs"]["photo-done"] = {
+        "backup_id": "photo-done",
+        "node_id": "storage-phone",
+        "status": "completed",
+        "summary": "Photos are backed up.",
+        "completed_at": photo_backup._now(),
+        "started_at": photo_backup._now(),
+        "sanitized": True,
+    }
+    state["latest_by_node"]["storage-phone"] = "photo-done"
+    photo_backup._save_state(state)
+    result = photo_backup.record_agent_progress(
+        "photo-done",
+        "storage-phone",
+        {"status": "interrupted", "summary": "late stale report"},
+    )
+    assert result["status"] == "completed"
+    assert result["summary"] == "Photos are backed up."
+
+
+def test_auth_lookup_falls_back_when_json_listing_is_not_supported(photo_backup, monkeypatch):
+    calls = []
+    responses = iter([
+        SimpleNamespace(returncode=2, stdout="", stderr="unknown flag"),
+        SimpleNamespace(
+            returncode=0,
+            stdout="| refsession123456 | admin | app password | PocketLab-test | webdav |",
+            stderr="",
+        ),
+    ])
+    def fake_command(args, timeout):
+        calls.append(args)
+        return next(responses)
+    monkeypatch.setattr(photo_backup, "_photoprism_command", fake_command)
+    assert photo_backup._find_auth_id("PocketLab-test") == "refsession123456"
+    assert calls == [
+        ["auth", "ls", "--json", "PocketLab-test"],
+        ["auth", "ls", "PocketLab-test"],
+    ]
+
+
+def test_public_job_projects_aggregate_conflicts_without_file_names(photo_backup):
+    result = photo_backup._public_job({
+        "backup_id": "photo-conflict",
+        "node_id": "storage-phone",
+        "status": "completed",
+        "conflicts": 3,
+        "conflict_name_internal": "private.jpg",
+    })
+    assert result["conflicts"] == 3
+    assert "conflict_name_internal" not in result
+    assert "private.jpg" not in json.dumps(result)

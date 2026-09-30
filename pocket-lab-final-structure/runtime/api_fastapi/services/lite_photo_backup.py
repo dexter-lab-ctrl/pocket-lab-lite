@@ -291,6 +291,7 @@ def _public_job(job: dict[str, Any] | None) -> dict[str, Any] | None:
         "items_transferred",
         "items_skipped",
         "items_remaining",
+        "conflicts",
         "bytes_total",
         "bytes_total_planned",
         "bytes_total_required",
@@ -446,8 +447,19 @@ def _secure_origin(request: Request | None = None) -> str | None:
 
 def server_capacity() -> dict[str, Any]:
     root = _originals_path()
+    if not root.is_dir():
+        return {
+            "status": "unavailable",
+            "hard_reserve_bytes": 0,
+            "planning_reserve_bytes": 0,
+            "safe_upload_budget_bytes": 0,
+            "hard_upload_budget_bytes": 0,
+            "hard_reserve_fraction": HARD_RESERVE_FRACTION,
+            "planning_reserve_fraction": PLANNING_RESERVE_FRACTION,
+            "planning_reserve_min_bytes": PLANNING_RESERVE_MIN_BYTES,
+            "sanitized": True,
+        }
     try:
-        root.mkdir(parents=True, exist_ok=True)
         stat = os.statvfs(root)
         total = int(stat.f_blocks * stat.f_frsize)
         free = int(stat.f_bavail * stat.f_frsize)
@@ -815,6 +827,7 @@ def make_start_command(
             "items_transferred": 0,
             "items_skipped": 0,
             "items_remaining": 0,
+            "conflicts": 0,
             "bytes_total": 0,
             "bytes_total_planned": 0,
             "bytes_total_required": 0,
@@ -1060,6 +1073,41 @@ def _parse_auth_id(
     return ""
 
 
+def _auth_name(
+    node_id: str,
+    backup_id: str,
+) -> str:
+    return (
+        f"PocketLab-{node_id[:24]}-"
+        f"{backup_id[-8:]}"
+    )
+
+
+def _find_auth_id(auth_name: str) -> str:
+    listed = _photoprism_command(
+        ["auth", "ls", "--json", auth_name],
+        timeout=15,
+    )
+    if listed.returncode == 0:
+        auth_id = _parse_auth_id(
+            listed.stdout or "",
+            auth_name,
+        )
+        if auth_id:
+            return auth_id
+    # Older PhotoPrism builds may not support JSON output for auth ls.
+    listed = _photoprism_command(
+        ["auth", "ls", auth_name],
+        timeout=15,
+    )
+    if listed.returncode == 0:
+        return _parse_auth_id(
+            listed.stdout or "",
+            auth_name,
+        )
+    return ""
+
+
 def _create_app_password(
     node_id: str,
     backup_id: str,
@@ -1076,10 +1124,15 @@ def _create_app_password(
         raise RuntimeError(
             "webdav_scope_unavailable"
         )
-    auth_name = (
-        f"PocketLab-{node_id[:24]}-"
-        f"{backup_id[-8:]}"
+    auth_name = _auth_name(
+        node_id,
+        backup_id,
     )
+    existing_auth_id = _find_auth_id(
+        auth_name
+    )
+    if existing_auth_id:
+        _revoke_auth_id(existing_auth_id)
     created = _photoprism_command(
         [
             "auth",
@@ -1101,17 +1154,8 @@ def _create_app_password(
     password = _parse_app_password(
         created.stdout or ""
     )
-    listed = _photoprism_command(
-        ["auth", "ls", "--json", auth_name],
-        timeout=15,
-    )
-    auth_id = (
-        _parse_auth_id(
-            listed.stdout or "",
-            auth_name,
-        )
-        if listed.returncode == 0
-        else ""
+    auth_id = _find_auth_id(
+        auth_name
     )
     if not password or not auth_id:
         if auth_id:
@@ -1254,6 +1298,34 @@ def _delete_credential(
         ).unlink()
     except (OSError, HTTPException):
         pass
+
+
+def _revoke_credentials_for_backup(
+    backup_id: str,
+    node_id: str,
+) -> int:
+    root = _credential_dir()
+    if not root.exists():
+        return 0
+    revoked = 0
+    for path in root.glob("cred-*.bin"):
+        try:
+            data = _load_credential(path.stem)
+        except HTTPException:
+            data = None
+        if not isinstance(data, dict):
+            continue
+        if (
+            str(data.get("backup_id") or "") != backup_id
+            or str(data.get("node_id") or "") != node_id
+        ):
+            continue
+        _revoke_auth_id(
+            str(data.get("auth_id") or "")
+        )
+        _delete_credential(path.stem)
+        revoked += 1
+    return revoked
 
 
 def _probe_webdav(
@@ -1571,6 +1643,11 @@ def record_agent_progress(
                 ),
             },
         )
+    current_status = str(
+        job.get("status") or ""
+    ).strip().lower()
+    if current_status in TERMINAL_STATES:
+        return _public_job(job) or {}
     status_value = str(
         progress.get("status")
         or job.get("status")
@@ -1632,6 +1709,14 @@ def record_agent_progress(
             int(
                 progress.get("items_remaining")
                 or job.get("items_remaining")
+                or 0
+            ),
+        ),
+        "conflicts": max(
+            0,
+            int(
+                progress.get("conflicts")
+                or job.get("conflicts")
                 or 0
             ),
         ),
@@ -1835,6 +1920,38 @@ async def execute_start(
     )
     node_id = _safe_node_id(
         command.get("node_id")
+    )
+    _, existing_job = _find_job(
+        backup_id
+    )
+    existing_status = str(
+        existing_job.get("status") or ""
+    ).lower()
+    if existing_status in TERMINAL_STATES:
+        return _public_job(existing_job) or {}
+    if (
+        existing_status
+        in {
+            "starting",
+            "transferring",
+            "cancelling",
+        }
+        or _credential_ref_for_job(existing_job)
+        or _credential_auth_id_for_job(existing_job)
+    ):
+        # JetStream may redeliver after a worker restart or an ACK race.
+        # Never rotate credentials or republish the node start command for an
+        # already-admitted transfer.
+        return _public_job(existing_job) or {}
+    if existing_status not in {
+        "queued",
+        "planning",
+        "waiting_for_credentials",
+    }:
+        return _public_job(existing_job) or {}
+    _revoke_credentials_for_backup(
+        backup_id,
+        node_id,
     )
     _update_job(
         backup_id,

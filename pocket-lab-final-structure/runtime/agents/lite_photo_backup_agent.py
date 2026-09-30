@@ -993,6 +993,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
             ] = []
             skipped = 0
             remaining = 0
+            conflicts = 0
             remaining_bytes = 0
             required_bytes = 0
             planned_bytes = 0
@@ -1010,6 +1011,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
 
                 final_key = regular_key
                 if regular_key in remote:
+                    conflicts += 1
                     conflict_rel = (
                         self._conflict_relative(
                             str(item["relative"]),
@@ -1054,6 +1056,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                     "items_total": total_candidates,
                     "items_skipped": skipped,
                     "items_remaining": len(plan) + remaining,
+                    "conflicts": conflicts,
                     "bytes_total": required_bytes,
                     "bytes_total_planned": planned_bytes,
                     "bytes_total_required": required_bytes,
@@ -1153,6 +1156,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                                 max(0, len(plan) - transferred)
                                 + remaining
                             ),
+                            "conflicts": conflicts,
                             "bytes_total": (
                                 required_bytes
                             ),
@@ -1206,6 +1210,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 "items_transferred": transferred,
                 "items_skipped": skipped,
                 "items_remaining": remaining,
+                "conflicts": conflicts,
                 "bytes_total": required_bytes,
                 "bytes_total_planned": planned_bytes,
                 "bytes_total_required": required_bytes,
