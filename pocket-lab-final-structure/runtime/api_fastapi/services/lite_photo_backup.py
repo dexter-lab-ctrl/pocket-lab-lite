@@ -10,6 +10,7 @@ import shlex
 import subprocess
 import threading
 import time
+import unicodedata
 import urllib.error
 import urllib.request
 import uuid
@@ -55,6 +56,17 @@ STATE_SCHEMA_VERSION = 1
 _PROVIDER_ID = "photoprism_webdav"
 _LOCK = threading.RLock()
 _SECRET_KEYS = {"password", "token", "secret", "credential", "authorization", "api_key"}
+_ANSI_ESCAPE_RE = re.compile(
+    r"\x1b(?:\[[0-?]*[ -/]*[@-~]|[@-_])"
+)
+_PHOTOPRISM_TABLE_TRANSLATION = str.maketrans(
+    {
+        "│": "|",
+        "┃": "|",
+        "╎": "|",
+        "╏": "|",
+    }
+)
 
 
 def _now() -> str:
@@ -1059,7 +1071,16 @@ def _photoprism_command(
 
 
 def _parse_app_password(output: str) -> str:
-    for line in str(output or "").splitlines():
+    for raw_line in str(output or "").splitlines():
+        line = _ANSI_ESCAPE_RE.sub("", raw_line).translate(
+            _PHOTOPRISM_TABLE_TRANSLATION
+        )
+        line = "".join(
+            character
+            for character in line
+            if unicodedata.category(character)
+            not in {"Cc", "Cf"}
+        )
         if (
             "webdav" not in line.lower()
             or "|" not in line

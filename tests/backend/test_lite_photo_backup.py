@@ -612,6 +612,16 @@ def test_photoprism_session_id_parser_prefers_json_contract(photo_backup):
     ) == "refsession123456"
 
 
+def test_photoprism_app_password_parser_handles_terminal_formatted_table(photo_backup):
+    output = (
+        "\x1b[32m│ App Password                │ Authorization Scope │\x1b[0m\n"
+        "│ HY8fxO-8hvNqB-43UV4q-1AZ0vu │ webdav              │\n"
+    )
+    assert photo_backup._parse_app_password(output) == (
+        "HY8fxO-8hvNqB-43UV4q-1AZ0vu"
+    )
+
+
 def test_photoprism_session_id_parser_never_uses_client_name_as_identifier(photo_backup):
     output = (
         "| Session ID | User | Authentication Method | Client | Scope |\n"
