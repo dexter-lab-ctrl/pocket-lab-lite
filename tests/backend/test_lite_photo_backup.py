@@ -645,15 +645,22 @@ def test_app_password_creation_requires_revocable_session_id(photo_backup, monke
         SimpleNamespace(
             returncode=0,
             stdout=(
-                "PLEASE COPY\n"
-                "| App Password | abcdefghijklmnop-qrstuvwx |\n"
-                "| Authorization Scope | webdav |\n"
+                "| App Password | Authorization Scope |\n"
+                "| abcdefghijklmnop-qrstuvwx | webdav |\n"
             ),
             stderr="",
         ),
-        SimpleNamespace(returncode=0, stdout="[]", stderr=""),
     ])
-    monkeypatch.setattr(photo_backup, "_photoprism_command", lambda *_args, **_kwargs: next(responses))
+    monkeypatch.setattr(
+        photo_backup,
+        "_photoprism_command",
+        lambda *_args, **_kwargs: next(responses),
+    )
+    monkeypatch.setattr(
+        photo_backup,
+        "_find_auth_id",
+        lambda _name: "",
+    )
     with pytest.raises(RuntimeError) as exc:
         photo_backup._create_app_password("storage-phone", "photo-abcdef12")
     assert str(exc.value) == "webdav_credential_parse_failed"
@@ -1063,43 +1070,47 @@ def test_photo_backup_status_read_does_not_run_reconciliation(photo_backup, monk
     assert result["ready"] is True
 
 
-def test_app_password_parse_failure_revokes_with_generated_access_token(photo_backup, monkeypatch):
+def test_auth_lookup_can_recover_session_id_from_unfiltered_json(photo_backup, monkeypatch):
+    auth_name = "PocketLab-storage-phone-abcd1234"
     calls = []
     responses = iter([
-        SimpleNamespace(returncode=0, stdout="webdav", stderr=""),
+        SimpleNamespace(returncode=0, stdout="[]", stderr=""),
         SimpleNamespace(
             returncode=0,
-            stdout=(
-                "| App Password | Authorization Scope |\n"
-                "| generated-pass-1234-abcd | webdav |\n"
-            ),
+            stdout=json.dumps([
+                {
+                    "session_id": "refsession123456",
+                    "client": auth_name,
+                    "scope": "webdav",
+                }
+            ]),
             stderr="",
         ),
-        SimpleNamespace(returncode=0, stdout="[]", stderr=""),
-        SimpleNamespace(returncode=0, stdout="", stderr=""),
     ])
+
+    def fake_command(args, timeout):
+        calls.append(args)
+        return next(responses)
+
     monkeypatch.setattr(
         photo_backup,
         "_photoprism_command",
-        lambda args, timeout: next(responses),
+        fake_command,
     )
-    monkeypatch.setattr(
-        photo_backup,
-        "_find_auth_id",
-        lambda _name: "",
-    )
-    monkeypatch.setattr(
-        photo_backup,
-        "_revoke_auth_id",
-        lambda identifier: calls.append(identifier) or True,
-    )
-    with pytest.raises(RuntimeError) as exc:
-        photo_backup._create_app_password(
-            "storage-phone",
-            "photo-abcdef12",
-        )
-    assert str(exc.value) == "webdav_credential_parse_failed"
-    assert calls == ["generated-pass-1234-abcd"]
+    assert photo_backup._find_auth_id(auth_name) == "refsession123456"
+    assert calls == [
+        ["auth", "ls", "--json", auth_name],
+        ["auth", "ls", "--json"],
+    ]
+
+
+def test_app_password_is_never_used_as_revocation_argv_identifier(photo_backup):
+    source = Path(photo_backup.__file__).read_text(encoding="utf-8")
+    create_body = source.split("def _create_app_password", 1)[1].split(
+        "def _revoke_auth_id", 1
+    )[0]
+    assert "_revoke_auth_id(\n                password" not in create_body
+    assert "auth_id or password" not in create_body
 
 
 

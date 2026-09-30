@@ -1168,27 +1168,28 @@ def _auth_name(
 
 
 def _find_auth_id(auth_name: str) -> str:
-    listed = _photoprism_command(
+    # Search with the client name first, then fall back to unfiltered output.
+    # All identifiers used here are non-secret session metadata; the generated
+    # app password is never placed in a subprocess argument.
+    attempts = (
         ["auth", "ls", "--json", auth_name],
-        timeout=15,
+        ["auth", "ls", "--json"],
+        ["auth", "ls", auth_name],
+        ["auth", "ls"],
     )
-    if listed.returncode == 0:
+    for args in attempts:
+        listed = _photoprism_command(
+            args,
+            timeout=15,
+        )
+        if listed.returncode != 0:
+            continue
         auth_id = _parse_auth_id(
             listed.stdout or "",
             auth_name,
         )
         if auth_id:
             return auth_id
-    # Older PhotoPrism builds may not support JSON output for auth ls.
-    listed = _photoprism_command(
-        ["auth", "ls", auth_name],
-        timeout=15,
-    )
-    if listed.returncode == 0:
-        return _parse_auth_id(
-            listed.stdout or "",
-            auth_name,
-        )
     return ""
 
 
@@ -1249,17 +1250,13 @@ def _create_app_password(
         auth_name
     )
     if not password or not auth_id:
-        # PhotoPrism auth rm accepts a session id or access token. If the
-        # generated app password was parsed but auth ls could not yield a
-        # session id, use the one-time app password itself only for immediate
-        # backend-side cleanup; it never enters logs, evidence, argv outside
-        # this bounded PhotoPrism command, NATS, or browser state.
-        revoke_identifier = (
-            auth_id or password
-        )
-        if revoke_identifier:
+        # Never pass the generated app password to a process argument. If a
+        # revocable session id cannot be recovered from PhotoPrism metadata,
+        # fail closed; the short-lived app password remains bounded by its
+        # configured expiration instead of being exposed via argv.
+        if auth_id:
             _revoke_auth_id(
-                revoke_identifier
+                auth_id
             )
         raise RuntimeError(
             "webdav_credential_parse_failed"
