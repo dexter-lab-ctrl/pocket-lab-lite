@@ -9,6 +9,10 @@ CAPABILITY_LABELS: dict[str, str] = {
     "backup_target": "Backup Target",
     "security_scanner": "Security Scanner",
     "compute": "Compute",
+    "media_backup_source": "Photo Backup Source",
+    "photoprism_webdav_upload": "Photo Backup",
+    "rclone_available": "Photo Backup Tools",
+    "photo_storage_access": "Photo Access",
 }
 
 _CAPABILITIES_BY_ROLE: dict[str, list[str]] = {
