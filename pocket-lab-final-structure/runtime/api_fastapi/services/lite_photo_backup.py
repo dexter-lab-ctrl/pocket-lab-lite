@@ -52,6 +52,13 @@ CREDENTIAL_TTL_SECONDS = max(
         int(os.environ.get("POCKETLAB_PHOTO_BACKUP_CREDENTIAL_TTL_SECONDS", "5400")),
     ),
 )
+PHOTOPRISM_COMMAND_TIMEOUT_SECONDS = max(
+    30,
+    min(
+        120,
+        int(os.environ.get("POCKETLAB_PHOTOPRISM_COMMAND_TIMEOUT_SECONDS", "60")),
+    ),
+)
 STATE_SCHEMA_VERSION = 1
 _PROVIDER_ID = "photoprism_webdav"
 _LOCK = threading.RLock()
@@ -1203,7 +1210,7 @@ def _find_auth_id(auth_name: str) -> str:
     for args in attempts:
         listed = _photoprism_command(
             args,
-            timeout=15,
+            timeout=PHOTOPRISM_COMMAND_TIMEOUT_SECONDS,
         )
         if listed.returncode != 0:
             continue
@@ -1222,7 +1229,7 @@ def _create_app_password(
 ) -> tuple[str, str, str]:
     scopes = _photoprism_command(
         ["show", "scopes"],
-        timeout=15,
+        timeout=PHOTOPRISM_COMMAND_TIMEOUT_SECONDS,
     )
     if (
         scopes.returncode != 0
@@ -1260,7 +1267,7 @@ def _create_app_password(
             str(CREDENTIAL_TTL_SECONDS),
             "admin",
         ],
-        timeout=20,
+        timeout=PHOTOPRISM_COMMAND_TIMEOUT_SECONDS,
     )
     if created.returncode != 0:
         raise RuntimeError(
@@ -1300,7 +1307,7 @@ def _revoke_auth_id(auth_id: str) -> bool:
     try:
         result = _photoprism_command(
             ["auth", "rm", safe],
-            timeout=15,
+            timeout=PHOTOPRISM_COMMAND_TIMEOUT_SECONDS,
             input_text="y\n",
         )
         return result.returncode in {0, 3}

@@ -646,7 +646,13 @@ def test_photoprism_revoke_is_noninteractive_and_uses_only_session_id(photo_back
 
     monkeypatch.setattr(photo_backup, "_photoprism_command", fake_command)
     assert photo_backup._revoke_auth_id("refsession123456") is True
-    assert calls == [(["auth", "rm", "refsession123456"], 15, "y\n")]
+    assert calls == [
+        (
+            ["auth", "rm", "refsession123456"],
+            photo_backup.PHOTOPRISM_COMMAND_TIMEOUT_SECONDS,
+            "y\n",
+        )
+    ]
 
 
 def test_app_password_creation_requires_revocable_session_id(photo_backup, monkeypatch):
