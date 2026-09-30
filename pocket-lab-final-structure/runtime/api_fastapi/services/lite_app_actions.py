@@ -492,6 +492,15 @@ def _apply_connect_photos_truth(actions: dict[str, Any], media: Any) -> None:
 def _media_import_completed(media: Any) -> bool:
     if not isinstance(media, dict):
         return False
+    if lite_photoprism_media.live_phone_import_blocked():
+        action.update({
+            "enabled": False,
+            "status": "not_ready",
+            "summary": "Import photos is paused for live phone folders. Use Back up photos instead.",
+            "disabled_reason": "Use Back up photos for live phone folders.",
+            "reason": "Use Back up photos for live phone folders.",
+        })
+        return
     last_import = media.get("last_import") if isinstance(media.get("last_import"), dict) else {}
     status = str(last_import.get("status") or media.get("last_import_status") or "").lower()
     evidence_status = str(last_import.get("evidence_status") or (media.get("evidence") or {}).get("status") or "").lower() if isinstance(media.get("evidence"), dict) else str(last_import.get("evidence_status") or "").lower()
