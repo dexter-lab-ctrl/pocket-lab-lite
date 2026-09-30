@@ -984,7 +984,7 @@ def test_progress_audit_is_coalesced_and_terminal_event_is_single_shot(photo_bac
 
 
 def test_stale_reconciliation_records_interruption_and_revocation_evidence(photo_backup, monkeypatch):
-    monkeypatch.setattr(photo_backup, "_revoke_job_credential", lambda _job: None)
+    monkeypatch.setattr(photo_backup, "_revoke_job_credential", lambda _job: True)
     monkeypatch.setattr(photo_backup, "_epoch", lambda: 10_000.0)
     state = photo_backup._state()
     state["jobs"]["photo-stale"] = {

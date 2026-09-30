@@ -597,16 +597,6 @@ def quick_index_fast_forward(*, reason: str | None = None) -> dict[str, Any] | N
         return None
     reconcile_stale_operations(PHOTOPRISM_APP_ID)
     reconcile_orphaned_running_operations(PHOTOPRISM_APP_ID)
-    if action == "import_photos" and live_phone_import_blocked():
-        raise HTTPException(
-            status_code=409,
-            detail={
-                "status": "unsafe_live_media_import",
-                "app_id": PHOTOPRISM_APP_ID,
-                "action_id": action,
-                "summary": "Import photos is paused for live phone folders. Use Back up photos instead.",
-            },
-        )
     active = _active_media_operation()
     if active:
         raise HTTPException(
@@ -665,6 +655,16 @@ def media_command(action_id: str, *, reason: str | None = None, command_id: str 
                 "app_id": PHOTOPRISM_APP_ID,
                 "action_id": str(active.get("action_id") or action),
                 "summary": "PhotoPrism media action is already running.",
+            },
+        )
+    if action == "import_photos" and live_phone_import_blocked():
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "unsafe_live_media_import",
+                "app_id": PHOTOPRISM_APP_ID,
+                "action_id": action,
+                "summary": "Import photos is paused for live phone folders. Use Back up photos instead.",
             },
         )
     count = mapping_count()
