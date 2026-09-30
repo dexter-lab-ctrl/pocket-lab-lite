@@ -321,3 +321,76 @@ def test_capacity_contract_exposes_reserve_policy_without_paths(photo_backup, mo
     assert result["planning_reserve_fraction"] == 0.15
     assert result["planning_reserve_min_bytes"] == 2 * 1024 * 1024 * 1024
     assert "path" not in result
+
+
+
+def test_ephemeral_credential_file_is_encrypted_at_rest(photo_backup, monkeypatch):
+    monkeypatch.setattr(photo_backup, "_epoch", lambda: 1000.0)
+    ref = "cred-" + ("b" * 32)
+    photo_backup._store_credential(
+        credential_ref=ref,
+        backup_id="photo-encrypted",
+        node_id="storage-phone",
+        password="raw-short-lived-password",
+        auth_name="PocketLab-test",
+        auth_id="authidentifier",
+        webdav_url="https://pocket.test.ts.net/apps/photoprism/originals/",
+    )
+
+    path = photo_backup._credential_path(ref)
+    raw = path.read_bytes()
+    assert path.suffix == ".bin"
+    assert b"raw-short-lived-password" not in raw
+    assert b"pocket.test.ts.net" not in raw
+    assert oct(path.stat().st_mode & 0o777) == "0o600"
+    assert oct(photo_backup._credential_key_path().stat().st_mode & 0o777) == "0o600"
+
+    loaded = photo_backup._load_credential(ref)
+    assert loaded["password"] == "raw-short-lived-password"
+    assert loaded["backup_id"] == "photo-encrypted"
+
+
+def test_corrupt_encrypted_credential_fails_closed_and_is_removed(photo_backup):
+    ref = "cred-" + ("c" * 32)
+    path = photo_backup._credential_path(ref)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(b"not-a-fernet-token")
+    path.chmod(0o600)
+
+    assert photo_backup._load_credential(ref) is None
+    assert not path.exists()
+
+
+def test_webdav_probe_requires_options_and_propfind(photo_backup, monkeypatch):
+    calls = []
+
+    class Response:
+        def __init__(self, status):
+            self.status = status
+        def __enter__(self):
+            return self
+        def __exit__(self, *_args):
+            return False
+
+    def fake_urlopen(request, timeout):
+        calls.append((request.get_method(), timeout))
+        return Response(200 if request.get_method() == "OPTIONS" else 207)
+
+    monkeypatch.setattr(photo_backup.urllib.request, "urlopen", fake_urlopen)
+    assert photo_backup._probe_webdav(
+        "https://pocket.test.ts.net/apps/photoprism/originals/",
+        "admin",
+        "short-lived-password",
+    ) is True
+    assert [method for method, _ in calls] == ["OPTIONS", "PROPFIND"]
+
+
+def test_webdav_probe_rejects_insecure_origin_without_network_call(photo_backup, monkeypatch):
+    called = []
+    monkeypatch.setattr(photo_backup.urllib.request, "urlopen", lambda *_args, **_kwargs: called.append(True))
+    assert photo_backup._probe_webdav(
+        "http://192.0.2.1/apps/photoprism/originals/",
+        "admin",
+        "password",
+    ) is False
+    assert called == []

@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import HTTPException, Request
+from cryptography.fernet import Fernet, InvalidToken
 
 from .. import deps
 from . import fleet_registry, lite_app_runtime, lite_catalog
@@ -79,6 +80,77 @@ def _credential_dir() -> Path:
         / "ephemeral"
         / "photo-backup-credentials"
     )
+
+
+def _credential_key_path() -> Path:
+    return (
+        deps.settings().state_dir
+        / "runtime-secrets"
+        / "photo-backup-credential.key"
+    )
+
+
+def _credential_cipher() -> Fernet:
+    path = _credential_key_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        path.parent.chmod(0o700)
+    except OSError:
+        pass
+
+    try:
+        key = path.read_bytes().strip()
+    except FileNotFoundError:
+        candidate = Fernet.generate_key()
+        try:
+            fd = os.open(
+                path,
+                os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+                0o600,
+            )
+            try:
+                os.write(fd, candidate + b"\n")
+                os.fsync(fd)
+            finally:
+                os.close(fd)
+            key = candidate
+        except FileExistsError:
+            key = path.read_bytes().strip()
+
+    try:
+        path.chmod(0o600)
+    except OSError:
+        pass
+    try:
+        return Fernet(key)
+    except (ValueError, TypeError) as exc:
+        raise RuntimeError(
+            "photo_backup_credential_store_unavailable"
+        ) from exc
+
+
+def _write_private_bytes(
+    path: Path,
+    payload: bytes,
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        path.parent.chmod(0o700)
+    except OSError:
+        pass
+    temp = path.with_name(
+        f".{path.name}.{os.getpid()}.{uuid.uuid4().hex[:8]}.tmp"
+    )
+    with open(temp, "wb") as handle:
+        os.chmod(temp, 0o600)
+        handle.write(payload)
+        handle.flush()
+        os.fsync(handle.fileno())
+    temp.replace(path)
+    try:
+        path.chmod(0o600)
+    except OSError:
+        pass
 
 
 def _evidence_path() -> Path:
@@ -685,6 +757,45 @@ def make_start_command(
     }
     with _LOCK:
         payload = _state()
+        locked_active = next(
+            (
+                job
+                for job in payload["jobs"].values()
+                if isinstance(job, dict)
+                and str(job.get("status") or "") in ACTIVE_STATES
+            ),
+            None,
+        )
+        if locked_active:
+            if str(locked_active.get("node_id") or "") == node_id:
+                existing_id = str(
+                    locked_active.get("backup_id") or ""
+                )
+                return {
+                    "idempotent": True,
+                    "command_id": existing_id,
+                    "backup_id": existing_id,
+                    "node_id": node_id,
+                    "collections": (
+                        locked_active.get("collections")
+                        or command["collections"]
+                    ),
+                    "reason": (
+                        "Existing photo backup is still active."
+                    ),
+                }
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "status": "photo_backup_busy",
+                    "summary": (
+                        "Another device is backing up photos. "
+                        "Try again when it finishes."
+                    ),
+                    "retryable": True,
+                    "sanitized": True,
+                },
+            )
         agent = _agent(node_id)
         payload["jobs"][backup_id] = {
             "backup_id": backup_id,
@@ -705,7 +816,11 @@ def make_start_command(
             "items_skipped": 0,
             "items_remaining": 0,
             "bytes_total": 0,
+            "bytes_total_planned": 0,
+            "bytes_total_required": 0,
             "bytes_transferred": 0,
+            "bytes_remaining": 0,
+            "photo_processing_state": "",
             "partial": False,
             "retryable": True,
             "destination_ready": True,
@@ -999,7 +1114,7 @@ def _credential_path(
         )
     return (
         _credential_dir()
-        / f"{credential_ref}.json"
+        / f"{credential_ref}.bin"
     )
 
 
@@ -1026,10 +1141,17 @@ def _store_credential(
         "expires_at_epoch": expires_at,
         "created_at": _now(),
     }
-    _write_json(
-        _credential_path(credential_ref),
+    plaintext = json.dumps(
         payload,
-        mode=0o600,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    encrypted = _credential_cipher().encrypt(
+        plaintext
+    )
+    _write_private_bytes(
+        _credential_path(credential_ref),
+        encrypted,
     )
 
 
@@ -1037,7 +1159,29 @@ def _load_credential(
     credential_ref: str,
 ) -> dict[str, Any] | None:
     path = _credential_path(credential_ref)
-    data = _read_json(path, None)
+    try:
+        encrypted = path.read_bytes()
+    except (FileNotFoundError, OSError):
+        return None
+    try:
+        plaintext = _credential_cipher().decrypt(
+            encrypted
+        )
+        data = json.loads(
+            plaintext.decode("utf-8")
+        )
+    except (
+        InvalidToken,
+        UnicodeDecodeError,
+        json.JSONDecodeError,
+        OSError,
+        ValueError,
+    ):
+        try:
+            path.unlink()
+        except OSError:
+            pass
+        return None
     if not isinstance(data, dict):
         return None
     if float(
@@ -1072,37 +1216,53 @@ def _probe_webdav(
 ) -> bool:
     if not str(url).startswith("https://"):
         return False
-    request = urllib.request.Request(
-        url,
-        method="PROPFIND",
-    )
-    request.add_header("Depth", "0")
-    request.add_header(
-        "Authorization",
+    authorization = (
         "Basic "
         + base64.b64encode(
             f"{username}:{password}".encode(
                 "utf-8"
             )
-        ).decode("ascii"),
+        ).decode("ascii")
     )
-    try:
-        with urllib.request.urlopen(
-            request,
-            timeout=8,
-        ) as response:
-            return int(
-                getattr(
-                    response,
-                    "status",
-                    0,
-                )
-                or 0
-            ) in {200, 207}
-    except urllib.error.HTTPError as exc:
-        return int(exc.code or 0) == 207
-    except Exception:
-        return False
+
+    def probe(
+        method: str,
+        allowed: set[int],
+    ) -> bool:
+        request = urllib.request.Request(
+            url,
+            method=method,
+        )
+        request.add_header(
+            "Authorization",
+            authorization,
+        )
+        if method == "PROPFIND":
+            request.add_header("Depth", "0")
+        try:
+            with urllib.request.urlopen(
+                request,
+                timeout=8,
+            ) as response:
+                return int(
+                    getattr(
+                        response,
+                        "status",
+                        0,
+                    )
+                    or 0
+                ) in allowed
+        except urllib.error.HTTPError as exc:
+            return int(exc.code or 0) in allowed
+        except Exception:
+            return False
+
+    # Validate both route reachability/method handling and authenticated
+    # WebDAV collection access before any node transfer is admitted.
+    return (
+        probe("OPTIONS", {200, 204})
+        and probe("PROPFIND", {200, 207})
+    )
 
 
 def _update_job(
@@ -1990,28 +2150,25 @@ def cleanup_expired_credentials() -> int:
         return 0
     removed = 0
     for path in root.glob(
-        "cred-*.json"
+        "cred-*.bin"
     ):
-        data = _read_json(path, {})
-        if (
-            not isinstance(data, dict)
-            or float(
-                data.get(
-                    "expires_at_epoch"
-                )
-                or 0
+        before = path.exists()
+        try:
+            data = _load_credential(
+                path.stem
             )
-            <= _epoch()
-        ):
-            if isinstance(data, dict):
-                _revoke_auth_id(
-                    str(
-                        data.get(
-                            "auth_id"
-                        )
-                        or ""
-                    )
-                )
+        except HTTPException:
+            data = None
+        if data is None:
+            if before and not path.exists():
+                removed += 1
+            continue
+        if float(
+            data.get("expires_at_epoch") or 0
+        ) <= _epoch():
+            _revoke_auth_id(
+                str(data.get("auth_id") or "")
+            )
             try:
                 path.unlink()
                 removed += 1
