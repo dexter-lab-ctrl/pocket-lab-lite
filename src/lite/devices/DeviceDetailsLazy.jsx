@@ -719,6 +719,7 @@ function DeviceHealthHistory({ deviceId }) {
 export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
   if (!device) return null;
   const initialDeviceId = device?.id || '';
+  const [deviceHistoryOpen, setDeviceHistoryOpen] = React.useState(false);
   const setActiveTab = useLiteUiStore((state) => state.setActiveTab);
   const detailsQuery = useLiteQuery({
     queryKey: liteQueryKeys.device(initialDeviceId),
@@ -952,23 +953,37 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
                 </div>
               </section>
 
-              <section className="lite-device-history-timeline-card" aria-label="Device history timeline">
+              <section className={`lite-device-history-timeline-card ${deviceHistoryOpen ? 'is-open' : 'is-collapsed'}`} aria-label="Device history timeline">
                 <div className="lite-device-history-timeline-head">
                   <div>
                     <span>Recent changes</span>
                     <strong>Device history</strong>
                     <p>{historyQuery.loading ? 'Loading recent device activity…' : timelineItems.length ? `${timelineItems.length} recent event${timelineItems.length === 1 ? '' : 's'}` : 'No device history has been reported yet.'}</p>
                   </div>
-                  {timelineItems[0]?.time ? <time>{timelineItems[0].time}</time> : null}
+                  <div className="lite-device-history-timeline-actions">
+                    {timelineItems[0]?.time ? <time>{timelineItems[0].time}</time> : null}
+                    <LiteButton
+                      tone="secondary"
+                      onClick={() => setDeviceHistoryOpen((open) => !open)}
+                      aria-expanded={deviceHistoryOpen}
+                      aria-controls={`device-history-timeline-${initialDeviceId}`}
+                    >
+                      {deviceHistoryOpen ? 'Collapse history' : 'Show history'}
+                    </LiteButton>
+                  </div>
                 </div>
-                {historyQuery.loading ? <p className="lite-device-timeline-loading">Loading recent device activity…</p> : (
-                  <LiteHistoryTimeline
-                    className="lite-device-timeline is-device-history"
-                    items={timelineItems}
-                    emptyTitle="No device history yet"
-                    emptyDescription="Connection, recovery, and lifecycle changes will appear here when Pocket Lab reports them."
-                  />
-                )}
+                {deviceHistoryOpen ? (
+                  <div id={`device-history-timeline-${initialDeviceId}`} className="lite-device-history-timeline-body">
+                    {historyQuery.loading ? <p className="lite-device-timeline-loading">Loading recent device activity…</p> : (
+                      <LiteHistoryTimeline
+                        className="lite-device-timeline is-device-history"
+                        items={timelineItems}
+                        emptyTitle="No device history yet"
+                        emptyDescription="Connection, recovery, and lifecycle changes will appear here when Pocket Lab reports them."
+                      />
+                    )}
+                  </div>
+                ) : null}
               </section>
 
               <LiteProgressiveDetails
@@ -987,16 +1002,6 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
               }}
               next_step={attention.length ? (restartAssessment.allowed ? 'Restart the device service through Pocket Lab.' : restartAssessment.summary || 'Check power, private network access, and the device recovery service.') : 'No action is needed right now.'}
               technicalDetails={technicalRows(device)}
-              history={{
-                title: 'Device history',
-                domain: 'default',
-                datasetKey: `device:${device?.id || device?.name || device?.hostname || 'unknown'}`,
-                summary: historyQuery.loading ? 'Loading recent device activity…' : historyItems.length ? `${historyItems.length} safe event${historyItems.length === 1 ? '' : 's'} available.` : 'No device history has been reported yet.',
-                items: historyItems,
-                totalCount: Math.max(historyItems.length, Number(historyQuery.data?.total_count || historyQuery.data?.total || 0)),
-                enabled: true,
-                emptyMessage: 'No device history has been reported yet.',
-              }}
             />
             </div>
           );
