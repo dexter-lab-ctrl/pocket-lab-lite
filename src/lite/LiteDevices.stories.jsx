@@ -240,3 +240,13 @@ export const PhotoBackupRetryableFailure = {
     await expect(await canvas.findByRole('button', { name: /^Retry$/i })).toBeEnabled();
   },
 };
+
+
+export const PhotoBackupFirstBackup = {
+  ...createLiteStory('devices', 'photo-backup-ready', { viewport: 'mobile390', notes: 'First backup: no prior run exists yet.' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await openHealthyDeviceManage(canvasElement);
+    await expect(await canvas.findByText(/Ready to back up photos/i)).toBeInTheDocument();
+    await expect(await canvas.findByRole('button', { name: /Back up photos/i })).toBeEnabled();
+  },
+};

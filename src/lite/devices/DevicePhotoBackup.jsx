@@ -81,15 +81,21 @@ export default function DevicePhotoBackup({ deviceId }) {
         </div>
       </div>
 
-      {!data.photo_storage_access ? (
+      {data.photo_storage_access === false || blockers.includes('photo_storage_access_missing') ? (
         <p className="lite-device-photo-backup-note" role="note">
           Allow photo access on this device, then return here. Pocket Lab will not repeatedly open Android permission prompts.
         </p>
       ) : null}
 
+      {query.error ? (
+        <p className="lite-device-photo-backup-error" role="alert">
+          Photo backup status is temporarily unavailable. Device details remain available; try again when the connection is ready.
+        </p>
+      ) : null}
+
       <div className="lite-device-photo-backup-collections" aria-label="Photo collections">
         {COLLECTIONS.map((collection) => {
-          const available = !Array.isArray(data.collections) || !data.collections.length || data.collections.includes(collection.id);
+          const available = !Array.isArray(data.collections) || data.collections.includes(collection.id);
           const checked = selected.includes(collection.id);
           return (
             <label key={collection.id} className={!available ? 'is-disabled' : ''}>

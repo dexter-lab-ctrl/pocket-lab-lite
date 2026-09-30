@@ -129,6 +129,21 @@ test.describe('Phase 1 Photo Backup mocked UX', () => {
     await expectNoBlockingAxeViolations(page, '.lite-device-photo-backup');
   });
 
+  test('malformed photo-backup status never blanks Devices or invents a permission failure', async ({ page }) => {
+    await installScenario(page, 'photo-backup-ready');
+    await page.route('**/api/lite/devices/test-phone-4/photo-backup', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ status: 'unknown', sanitized: true }),
+      });
+    });
+    const backup = await openPhotoBackup(page);
+    await expect(backup).toContainText(/Needs attention|checking photo backup readiness/i);
+    await expect(backup).not.toContainText(/Allow photo access/i);
+    await expect(page.locator('[data-lite-screen-id="devices"]')).toBeVisible();
+  });
+
   test('PhotoPrism Manage shows lightweight backup truth and sends control to Devices', async ({ page }) => {
     await installScenario(page, 'catalog-ready');
     await page.goto('/?screen=catalog');
