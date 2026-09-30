@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import importlib.util
 import subprocess
 import sys
@@ -333,3 +334,57 @@ def test_conflict_count_is_aggregate_only_and_versioning_is_non_destructive(monk
     assert transfers[0] != "DCIM/photo.jpg"
     assert ".pocketlab-v" in transfers[0]
     assert "photo.jpg" not in str({k: v for k, v in result.items() if k != "summary"})
+
+
+
+def test_progress_post_preserves_safe_aggregate_fields(monkeypatch):
+    module = _module()
+    provider = module.PhotoPrismWebDAVProvider(
+        node_id="storage-phone",
+        agent_token="token",
+        control_origin="https://pocket.test.ts.net",
+    )
+    captured = {}
+    monkeypatch.setattr(
+        provider,
+        "_request_json",
+        lambda path, **kwargs: captured.update(path=path, **kwargs) or {"ok": True},
+    )
+    delivered = provider._post_progress(
+        "photo-aggregate",
+        {
+            "status": "completed",
+            "conflicts": 2,
+            "bytes_total": 5000,
+            "bytes_total_planned": 5000,
+            "bytes_total_required": 5000,
+            "bytes_transferred": 5000,
+            "bytes_remaining": 0,
+            "photo_processing_state": "processing",
+        },
+    )
+    assert delivered is True
+    body = captured["body"]
+    assert body["conflicts"] == 2
+    assert body["bytes_total_required"] == 5000
+    assert body["bytes_total_planned"] == 5000
+    assert body["bytes_remaining"] == 0
+    assert body["photo_processing_state"] == "processing"
+    assert "password" not in str(body).lower()
+    assert "path" not in str(body).lower()
+
+
+def test_node_agent_source_persists_only_aggregate_restart_marker():
+    ensure_runtime_path()
+    path = (
+        Path(__file__).resolve().parents[2]
+        / "pocket-lab-final-structure"
+        / "runtime"
+        / "agents"
+        / "pocketlab_node_agent.py"
+    )
+    source = path.read_text(encoding="utf-8")
+    assert "photo-backup-active.json" in source
+    assert "_reconcile_photo_backup_marker" in source
+    assert '"credential_ref": credential_ref' not in source
+    assert "webdav_url" not in source

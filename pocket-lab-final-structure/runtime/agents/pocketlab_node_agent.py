@@ -181,6 +181,11 @@ class PocketLabNodeAgent:
             control_origin=self.control_origin,
         )
         self.photo_backup_task: asyncio.Task[Any] | None = None
+        self.photo_backup_marker_path = (
+            Path.home()
+            / ".pocketlab-lite"
+            / "photo-backup-active.json"
+        )
         self.capabilities = advertised_capabilities(
             self.role,
             is_control_plane=self.is_control_plane,
@@ -455,6 +460,7 @@ class PocketLabNodeAgent:
             await self.register()
             await self.publish_profile(force=True)
             await self.publish_capabilities(critical=True)
+            await self._reconcile_photo_backup_marker()
             await self.safe_publish(
                 "pocketlab.events.fleet.node_heartbeat",
                 "fleet.node_heartbeat",
@@ -601,14 +607,151 @@ class PocketLabNodeAgent:
             photo_storage_access=bool(self.photo_backup.get("photo_storage_access")),
         )
 
+    def _read_photo_backup_marker(self) -> Dict[str, Any]:
+        try:
+            data = json.loads(
+                self.photo_backup_marker_path.read_text(
+                    encoding="utf-8"
+                )
+            )
+        except (
+            FileNotFoundError,
+            OSError,
+            json.JSONDecodeError,
+        ):
+            return {}
+        if not isinstance(data, dict):
+            return {}
+        backup_id = str(data.get("backup_id") or "")
+        node_id = str(data.get("node_id") or "")
+        if (
+            not re.fullmatch(
+                r"photo-[A-Za-z0-9_-]{4,96}",
+                backup_id,
+            )
+            or normalize_node_id(node_id)
+            != self.node_id
+        ):
+            return {}
+        return {
+            "backup_id": backup_id,
+            "node_id": self.node_id,
+        }
+
+    def _write_photo_backup_marker(
+        self,
+        backup_id: str,
+    ) -> None:
+        path = self.photo_backup_marker_path
+        path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+        try:
+            path.parent.chmod(0o700)
+        except OSError:
+            pass
+        temp = path.with_name(
+            f".{path.name}.{os.getpid()}.tmp"
+        )
+        temp.write_text(
+            json.dumps(
+                {
+                    "backup_id": backup_id,
+                    "node_id": self.node_id,
+                    "started_at": now_iso(),
+                },
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        try:
+            temp.chmod(0o600)
+        except OSError:
+            pass
+        temp.replace(path)
+        try:
+            path.chmod(0o600)
+        except OSError:
+            pass
+
+    def _clear_photo_backup_marker(
+        self,
+        backup_id: str,
+    ) -> None:
+        current = self._read_photo_backup_marker()
+        if (
+            current
+            and str(
+                current.get("backup_id") or ""
+            )
+            != backup_id
+        ):
+            return
+        try:
+            self.photo_backup_marker_path.unlink()
+        except FileNotFoundError:
+            pass
+        except OSError:
+            pass
+
+    async def _reconcile_photo_backup_marker(
+        self,
+    ) -> None:
+        if (
+            self.photo_backup_task
+            and not self.photo_backup_task.done()
+        ):
+            return
+        marker = self._read_photo_backup_marker()
+        backup_id = str(
+            marker.get("backup_id") or ""
+        )
+        if not backup_id:
+            return
+        delivered = await asyncio.to_thread(
+            self.photo_backup_provider._post_progress,
+            backup_id,
+            {
+                "status": "interrupted",
+                "summary": (
+                    "Photo backup was interrupted "
+                    "by a device service restart. "
+                    "You can retry safely."
+                ),
+                "retryable": True,
+                "reason_code": "agent_restarted",
+                "progress": {
+                    "phase": "interrupted",
+                    "percent": 0,
+                    "step": (
+                        "Backup interrupted by "
+                        "device restart."
+                    ),
+                },
+            },
+        )
+        if delivered:
+            self._clear_photo_backup_marker(
+                backup_id
+            )
+
     async def _run_photo_backup(
         self,
         command_id: str,
         payload: Dict[str, Any],
     ) -> None:
+        backup_id = str(
+            payload.get("backup_id")
+            or command_id
+        )
+        self._write_photo_backup_marker(
+            backup_id
+        )
         result = await asyncio.to_thread(
             self.photo_backup_provider.backup,
-            backup_id=str(payload.get("backup_id") or command_id),
+            backup_id=backup_id,
             credential_ref=str(payload.get("credential_ref") or ""),
             collections=[
                 str(item)
@@ -620,6 +763,17 @@ class PocketLabNodeAgent:
                 if str(item) in {"camera", "pictures", "videos"}
             ],
         )
+        # Re-post the terminal aggregate once so marker cleanup depends on
+        # backend acknowledgement, not merely local subprocess completion.
+        terminal_delivered = await asyncio.to_thread(
+            self.photo_backup_provider._post_progress,
+            backup_id,
+            result,
+        )
+        if terminal_delivered:
+            self._clear_photo_backup_marker(
+                backup_id
+            )
         backup_status = str(result.get("status") or "interrupted").lower()
         command_status = (
             "completed"
@@ -635,7 +789,7 @@ class PocketLabNodeAgent:
                 "command": "media.backup.photoprism.start",
                 "status": command_status,
                 "result": {
-                    "backup_id": str(payload.get("backup_id") or command_id),
+                    "backup_id": backup_id,
                     "status": backup_status,
                     "summary": str(result.get("summary") or "Photo backup finished.")[:180],
                     "items_total": max(0, int(result.get("items_total") or 0)),
@@ -643,7 +797,10 @@ class PocketLabNodeAgent:
                     "items_skipped": max(0, int(result.get("items_skipped") or 0)),
                     "items_remaining": max(0, int(result.get("items_remaining") or 0)),
                     "conflicts": max(0, int(result.get("conflicts") or 0)),
+                    "bytes_total_required": max(0, int(result.get("bytes_total_required") or result.get("bytes_total") or 0)),
                     "bytes_transferred": max(0, int(result.get("bytes_transferred") or 0)),
+                    "bytes_remaining": max(0, int(result.get("bytes_remaining") or 0)),
+                    "photo_processing_state": str(result.get("photo_processing_state") or "")[:64],
                     "partial": bool(result.get("partial")),
                     "retryable": bool(result.get("retryable")),
                 },

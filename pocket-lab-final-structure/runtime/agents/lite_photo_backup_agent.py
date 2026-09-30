@@ -312,7 +312,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
         self,
         backup_id: str,
         payload: dict[str, Any],
-    ) -> None:
+    ) -> bool:
         safe = {
             "status": str(
                 payload.get("status")
@@ -351,10 +351,33 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                     or 0
                 ),
             ),
+            "conflicts": max(
+                0,
+                int(payload.get("conflicts") or 0),
+            ),
             "bytes_total": max(
                 0,
                 int(
                     payload.get("bytes_total")
+                    or 0
+                ),
+            ),
+            "bytes_total_planned": max(
+                0,
+                int(
+                    payload.get(
+                        "bytes_total_planned"
+                    )
+                    or 0
+                ),
+            ),
+            "bytes_total_required": max(
+                0,
+                int(
+                    payload.get(
+                        "bytes_total_required"
+                    )
+                    or payload.get("bytes_total")
                     or 0
                 ),
             ),
@@ -367,6 +390,21 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                     or 0
                 ),
             ),
+            "bytes_remaining": max(
+                0,
+                int(
+                    payload.get(
+                        "bytes_remaining"
+                    )
+                    or 0
+                ),
+            ),
+            "photo_processing_state": str(
+                payload.get(
+                    "photo_processing_state"
+                )
+                or ""
+            )[:64],
             "partial": bool(
                 payload.get("partial")
             ),
@@ -386,6 +424,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 else {}
             ),
         }
+        delivered = False
         try:
             self._request_json(
                 "/api/lite/internal/photo-backup/"
@@ -395,15 +434,17 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 body=safe,
                 timeout=8,
             )
+            delivered = True
         except RuntimeError:
-            # Best effort. Final node command result
-            # still reports the terminal outcome.
-            pass
+            # The node keeps its aggregate recovery marker so a later
+            # reconnect can reconcile a terminal result safely.
+            delivered = False
         if self.progress_callback:
             try:
                 self.progress_callback(safe)
             except Exception:
                 pass
+        return delivered
 
     def _run(
         self,

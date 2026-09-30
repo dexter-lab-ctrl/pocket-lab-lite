@@ -350,12 +350,18 @@ async def start_lite_photo_backup(
             "summary": "Photo backup is already running.",
             "sanitized": True,
         }
-    submitted = await submit_domain_command(
-        lite_photo_backup.PHOTO_BACKUP_START_SUBJECT,
-        "lite.photo_backup.requested",
-        command,
-        trace_id=str(command.get("backup_id") or command.get("command_id") or ""),
-    )
+    try:
+        submitted = await submit_domain_command(
+            lite_photo_backup.PHOTO_BACKUP_START_SUBJECT,
+            "lite.photo_backup.requested",
+            command,
+            trace_id=str(command.get("backup_id") or command.get("command_id") or ""),
+        )
+    except Exception:
+        lite_photo_backup.mark_submission_failed(
+            str(command.get("backup_id") or "")
+        )
+        raise
     return {
         "accepted": True,
         "status": submitted.get("status") or "queued",

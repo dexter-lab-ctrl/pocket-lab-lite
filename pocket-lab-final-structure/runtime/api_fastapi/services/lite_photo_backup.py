@@ -854,6 +854,30 @@ def make_start_command(
     return command
 
 
+def mark_submission_failed(
+    backup_id: str,
+) -> dict[str, Any]:
+    _, job = _find_job(backup_id)
+    if str(job.get("status") or "") in TERMINAL_STATES:
+        return _public_job(job) or {}
+    updated = _update_job(
+        backup_id,
+        status="failed",
+        summary=(
+            "Photo backup could not be queued. "
+            "You can try again."
+        ),
+        retryable=True,
+        reason_code="command_submission_failed",
+        completed_at=_now(),
+    )
+    _append_evidence(
+        updated,
+        "lite.photo_backup.failed",
+    )
+    return _public_job(updated) or {}
+
+
 def make_cancel_command(
     node_id: str,
     *,

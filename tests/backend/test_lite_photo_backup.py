@@ -769,3 +769,56 @@ def test_public_job_projects_aggregate_conflicts_without_file_names(photo_backup
     assert result["conflicts"] == 3
     assert "conflict_name_internal" not in result
     assert "private.jpg" not in json.dumps(result)
+
+
+
+def test_start_submission_failure_releases_job_for_retry(photo_backup):
+    state = photo_backup._state()
+    state["jobs"]["photo-submit-failed"] = {
+        "backup_id": "photo-submit-failed",
+        "node_id": "storage-phone",
+        "status": "queued",
+        "summary": "Photo backup request queued.",
+        "started_at": photo_backup._now(),
+        "sanitized": True,
+    }
+    state["latest_by_node"]["storage-phone"] = "photo-submit-failed"
+    photo_backup._save_state(state)
+    result = photo_backup.mark_submission_failed(
+        "photo-submit-failed"
+    )
+    assert result["status"] == "failed"
+    assert result["retryable"] is True
+    assert result["reason_code"] == "command_submission_failed"
+
+
+def test_progress_contract_preserves_conflicts_required_and_remaining_bytes(photo_backup, monkeypatch):
+    monkeypatch.setattr(photo_backup, "_revoke_job_credential", lambda _job: None)
+    state = photo_backup._state()
+    state["jobs"]["photo-progress-aggregate"] = {
+        "backup_id": "photo-progress-aggregate",
+        "node_id": "storage-phone",
+        "status": "transferring",
+        "started_at": photo_backup._now(),
+        "sanitized": True,
+    }
+    state["latest_by_node"]["storage-phone"] = "photo-progress-aggregate"
+    photo_backup._save_state(state)
+    result = photo_backup.record_agent_progress(
+        "photo-progress-aggregate",
+        "storage-phone",
+        {
+            "status": "completed",
+            "conflicts": 2,
+            "bytes_total_required": 5000,
+            "bytes_total_planned": 5000,
+            "bytes_transferred": 5000,
+            "bytes_remaining": 0,
+            "photo_processing_state": "processing",
+        },
+    )
+    assert result["conflicts"] == 2
+    assert result["bytes_total_required"] == 5000
+    assert result["bytes_transferred"] == 5000
+    assert result["bytes_remaining"] == 0
+    assert result["photo_processing_state"] == "processing"
