@@ -591,3 +591,77 @@ def test_internal_credential_endpoint_is_no_store_and_node_authenticated(monkeyp
     payload = response.json()
     assert payload["destination_prefix"] == "PocketLab/Devices/storage-phone"
     assert payload["password"] == "one-time-secret"
+
+
+
+def test_photoprism_session_id_parser_prefers_json_contract(photo_backup):
+    output = json.dumps([
+        {
+            "session_id": "refsession123456",
+            "user": "admin",
+            "authentication_method": "app password",
+            "client": "PocketLab-storage-phone-abcd1234",
+            "scope": "webdav",
+        }
+    ])
+    assert photo_backup._parse_auth_id(
+        output,
+        "PocketLab-storage-phone-abcd1234",
+    ) == "refsession123456"
+
+
+def test_photoprism_session_id_parser_never_uses_client_name_as_identifier(photo_backup):
+    output = (
+        "| Session ID | User | Authentication Method | Client | Scope |\n"
+        "| refsession123456 | admin | app password | PocketLab-storage-phone-abcd1234 | webdav |"
+    )
+    assert photo_backup._parse_auth_id(
+        output,
+        "PocketLab-storage-phone-abcd1234",
+    ) == "refsession123456"
+    assert photo_backup._parse_auth_id(
+        "| PocketLab-storage-phone-abcd1234 | admin | webdav |",
+        "PocketLab-storage-phone-abcd1234",
+    ) == ""
+
+
+def test_photoprism_revoke_is_noninteractive_and_uses_only_session_id(photo_backup, monkeypatch):
+    calls = []
+
+    def fake_command(args, timeout):
+        calls.append((args, timeout))
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(photo_backup, "_photoprism_command", fake_command)
+    assert photo_backup._revoke_auth_id("refsession123456") is True
+    assert calls == [(["auth", "rm", "--yes", "refsession123456"], 15)]
+
+
+def test_app_password_creation_requires_revocable_session_id(photo_backup, monkeypatch):
+    responses = iter([
+        SimpleNamespace(returncode=0, stdout="webdav", stderr=""),
+        SimpleNamespace(
+            returncode=0,
+            stdout=(
+                "PLEASE COPY\n"
+                "| App Password | abcdefghijklmnop-qrstuvwx |\n"
+                "| Authorization Scope | webdav |\n"
+            ),
+            stderr="",
+        ),
+        SimpleNamespace(returncode=0, stdout="[]", stderr=""),
+    ])
+    monkeypatch.setattr(photo_backup, "_photoprism_command", lambda *_args, **_kwargs: next(responses))
+    with pytest.raises(RuntimeError) as exc:
+        photo_backup._create_app_password("storage-phone", "photo-abcdef12")
+    assert str(exc.value) == "webdav_credential_parse_failed"
+
+
+def test_photo_backup_workload_is_explicitly_worker_owned():
+    ensure_runtime_path()
+    from api_fastapi.services import workload_admission
+
+    definition = workload_admission.WORKLOADS["photo_backup.execute"]
+    assert definition.execution_owner.value == "worker_owned"
+    assert definition.cost_class.value == "heavy"
+    assert definition.audit_evidence_required is True

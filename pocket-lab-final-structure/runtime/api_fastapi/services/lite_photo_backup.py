@@ -989,9 +989,52 @@ def _parse_auth_id(
     output: str,
     auth_name: str,
 ) -> str:
-    for line in str(output or "").splitlines():
+    text = str(output or "").strip()
+    # Current PhotoPrism auth ls --json exports canonical field names,
+    # including session_id and client. Prefer that machine-readable contract.
+    try:
+        rows = json.loads(text)
+    except json.JSONDecodeError:
+        rows = None
+    if isinstance(rows, list):
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            session_id = str(
+                row.get("session_id") or ""
+            ).strip()
+            client = str(
+                row.get("client") or ""
+            ).strip()
+            scope = str(
+                row.get("scope") or ""
+            ).strip()
+            if (
+                session_id
+                and re.fullmatch(
+                    r"[A-Za-z0-9_-]{8,80}",
+                    session_id,
+                )
+                and (
+                    not client
+                    or client.casefold()
+                    == auth_name.casefold()
+                )
+                and (
+                    not scope
+                    or "webdav"
+                    in scope.casefold()
+                )
+            ):
+                return session_id
+
+    # Narrow compatibility fallback for older PhotoPrism table output:
+    # the first data column is Session ID and the matching client name must
+    # appear in the same row. Never accept the client name itself as an ID.
+    for line in text.splitlines():
         if (
-            auth_name.lower() not in line.lower()
+            auth_name.casefold()
+            not in line.casefold()
             or "|" not in line
         ):
             continue
@@ -1000,16 +1043,20 @@ def _parse_auth_id(
             for cell in line.split("|")
             if cell.strip()
         ]
-        for cell in cells:
-            if (
-                re.fullmatch(
-                    r"[A-Za-z0-9_-]{8,80}",
-                    cell,
-                )
-                and cell.lower()
-                not in {"webdav", "admin"}
-            ):
-                return cell
+        if not cells:
+            continue
+        candidate = cells[0]
+        if (
+            candidate.casefold()
+            != auth_name.casefold()
+            and candidate.casefold()
+            not in {"session id", "session_id"}
+            and re.fullmatch(
+                r"[A-Za-z0-9_-]{8,80}",
+                candidate,
+            )
+        ):
+            return candidate
     return ""
 
 
@@ -1055,7 +1102,7 @@ def _create_app_password(
         created.stdout or ""
     )
     listed = _photoprism_command(
-        ["auth", "ls", auth_name],
+        ["auth", "ls", "--json", auth_name],
         timeout=15,
     )
     auth_id = (
@@ -1066,7 +1113,7 @@ def _create_app_password(
         if listed.returncode == 0
         else ""
     )
-    if not password:
+    if not password or not auth_id:
         if auth_id:
             _revoke_auth_id(auth_id)
         raise RuntimeError(
@@ -1087,7 +1134,7 @@ def _revoke_auth_id(auth_id: str) -> bool:
         return False
     try:
         result = _photoprism_command(
-            ["auth", "rm", safe],
+            ["auth", "rm", "--yes", safe],
             timeout=15,
         )
         return result.returncode in {0, 3}
