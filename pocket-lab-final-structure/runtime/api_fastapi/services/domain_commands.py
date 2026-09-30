@@ -1576,6 +1576,65 @@ async def handle_lite_maintenance_checkpoint(command: Dict[str, Any]) -> Dict[st
     return result
 
 
+async def handle_lite_photo_backup_start(command: Dict[str, Any]) -> Dict[str, Any]:
+    from . import lite_photo_backup
+
+    result = await lite_photo_backup.execute_start(command)
+    command_id = _command_id(command)
+    await _publish(
+        "pocketlab.events.lite.photo_backup.updated",
+        "lite.photo_backup.updated",
+        {
+            "command_id": command_id,
+            "backup_id": result.get("backup_id") or command.get("backup_id") or command_id,
+            "node_id": result.get("node_id") or command.get("node_id"),
+            "status": result.get("status"),
+            "sanitized": True,
+        },
+        trace_id=command_id,
+    )
+    return result
+
+
+async def handle_lite_photo_backup_cancel(command: Dict[str, Any]) -> Dict[str, Any]:
+    from . import lite_photo_backup
+
+    result = await lite_photo_backup.execute_cancel(command)
+    command_id = _command_id(command)
+    await _publish(
+        "pocketlab.events.lite.photo_backup.cancel",
+        "lite.photo_backup.cancel",
+        {
+            "command_id": command_id,
+            "backup_id": result.get("backup_id") or command.get("backup_id"),
+            "node_id": result.get("node_id") or command.get("node_id"),
+            "status": result.get("status"),
+            "sanitized": True,
+        },
+        trace_id=command_id,
+    )
+    return result
+
+
+async def handle_lite_photo_backup_repair(command: Dict[str, Any]) -> Dict[str, Any]:
+    from . import lite_photo_backup
+
+    result = await lite_photo_backup.execute_repair(command)
+    command_id = _command_id(command)
+    await _publish(
+        "pocketlab.events.lite.photo_backup.tools_repair",
+        "lite.photo_backup.tools_repair",
+        {
+            "command_id": command_id,
+            "node_id": result.get("node_id") or command.get("node_id"),
+            "status": result.get("status"),
+            "sanitized": True,
+        },
+        trace_id=command_id,
+    )
+    return result
+
+
 HANDLERS = {
     "pocketlab.commands.lite.catalog.install": handle_lite_catalog_install,
     "pocketlab.commands.catalog.refresh": handle_catalog_refresh,
@@ -1610,6 +1669,9 @@ HANDLERS = {
     "pocketlab.commands.lite.app.restore.preview": handle_lite_app_restore_preview,
     "pocketlab.commands.lite.app.update.check": handle_lite_app_update_check,
     "pocketlab.commands.lite.app.media": handle_lite_app_media,
+    "pocketlab.commands.lite.media_backup.start": handle_lite_photo_backup_start,
+    "pocketlab.commands.lite.media_backup.cancel": handle_lite_photo_backup_cancel,
+    "pocketlab.commands.lite.media_backup.repair": handle_lite_photo_backup_repair,
     "pocketlab.commands.lite.app.safety": handle_lite_app_operation,
     "pocketlab.commands.lite.app.repair": handle_lite_app_operation,
     "pocketlab.commands.lite.backup.verify": handle_lite_backup_verify,
