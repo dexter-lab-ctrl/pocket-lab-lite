@@ -298,6 +298,10 @@ def _public_job(job: dict[str, Any] | None) -> dict[str, Any] | None:
         "bytes_transferred",
         "bytes_remaining",
         "photo_processing_state",
+        "retry_count",
+        "reserve_policy",
+        "server_storage_before",
+        "server_storage_after",
         "partial",
         "started_at",
         "updated_at",
@@ -785,6 +789,23 @@ def make_start_command(
         )
 
     backup_id = f"photo-{uuid.uuid4().hex[:20]}"
+    retry_count = (
+        max(
+            0,
+            int(latest.get("retry_count") or 0),
+        )
+        + 1
+        if (
+            isinstance(latest, dict)
+            and bool(latest.get("retryable"))
+        )
+        else 0
+    )
+    server_storage_before = (
+        current.get("storage")
+        if isinstance(current.get("storage"), dict)
+        else server_capacity()
+    )
     command = {
         "command_id": backup_id,
         "backup_id": backup_id,
@@ -866,6 +887,13 @@ def make_start_command(
             "bytes_transferred": 0,
             "bytes_remaining": 0,
             "photo_processing_state": "",
+            "retry_count": retry_count,
+            "reserve_policy": {
+                "hard_reserve_fraction": HARD_RESERVE_FRACTION,
+                "planning_reserve_fraction": PLANNING_RESERVE_FRACTION,
+                "planning_reserve_min_bytes": PLANNING_RESERVE_MIN_BYTES,
+            },
+            "server_storage_before": server_storage_before,
             "partial": False,
             "retryable": True,
             "destination_ready": True,
@@ -1756,6 +1784,7 @@ def record_agent_progress(
         )
         else {}
     )
+    capacity_snapshot = server_capacity()
     bounded = {
         "status": status_value,
         "summary": _safe_text(
@@ -1921,11 +1950,14 @@ def record_agent_progress(
                 "Photo backup is running.",
             ),
         },
-        "storage": server_capacity(),
+        "storage": capacity_snapshot,
     }
     credential_revoked = True
     if status_value in TERMINAL_STATES:
         bounded["completed_at"] = _now()
+        bounded["server_storage_after"] = (
+            capacity_snapshot
+        )
         if status_value in {
             "completed",
             "partial_storage_limit",

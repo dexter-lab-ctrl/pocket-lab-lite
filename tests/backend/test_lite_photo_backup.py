@@ -1100,3 +1100,49 @@ def test_app_password_parse_failure_revokes_with_generated_access_token(photo_ba
         )
     assert str(exc.value) == "webdav_credential_parse_failed"
     assert calls == ["generated-pass-1234-abcd"]
+
+
+
+def test_retry_metadata_and_storage_snapshots_are_sanitized(photo_backup, monkeypatch):
+    monkeypatch.setattr(
+        photo_backup,
+        "status",
+        lambda *_args, **_kwargs: {
+            "ready": True,
+            "storage": {
+                "status": "ready",
+                "total_bytes": 1000,
+                "free_bytes": 800,
+                "hard_upload_budget_bytes": 700,
+                "safe_upload_budget_bytes": 650,
+                "sanitized": True,
+            },
+            "latest_backup": {
+                "backup_id": "photo-prior",
+                "status": "interrupted",
+                "retryable": True,
+                "retry_count": 2,
+            },
+        },
+    )
+    monkeypatch.setattr(
+        photo_backup,
+        "_agent",
+        lambda node_id: {
+            "node_id": node_id,
+            "name": "Storage Phone",
+            "role": "storage",
+        },
+    )
+    command = photo_backup.make_start_command(
+        "storage-phone",
+        ["camera"],
+    )
+    saved = photo_backup._state()["jobs"][command["backup_id"]]
+    public = photo_backup._public_job(saved)
+    assert public["retry_count"] == 3
+    assert public["reserve_policy"]["hard_reserve_fraction"] == 0.10
+    assert public["server_storage_before"]["free_bytes"] == 800
+    encoded = json.dumps(public).lower()
+    assert "password" not in encoded
+    assert "webdav_url" not in encoded
