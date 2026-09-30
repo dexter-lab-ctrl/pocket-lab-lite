@@ -489,10 +489,44 @@ def readiness(
     }
 
 
+def reconcile_stale_jobs() -> int:
+    stale_after = CREDENTIAL_TTL_SECONDS + 15 * 60
+    changed = 0
+    with _LOCK:
+        payload = _state()
+        now_epoch = _epoch()
+        for job in payload["jobs"].values():
+            if not isinstance(job, dict):
+                continue
+            if str(job.get("status") or "") not in ACTIVE_STATES:
+                continue
+            started = str(job.get("started_at") or "")
+            try:
+                started_epoch = datetime.fromisoformat(
+                    started.replace("Z", "+00:00")
+                ).timestamp()
+            except (ValueError, TypeError):
+                started_epoch = now_epoch
+            if now_epoch - started_epoch <= stale_after:
+                continue
+            _revoke_job_credential(job)
+            job["status"] = "interrupted"
+            job["summary"] = "Photo backup was interrupted. You can retry safely."
+            job["retryable"] = True
+            job["reason_code"] = "timeout"
+            job["completed_at"] = _now()
+            job["updated_at"] = _now()
+            changed += 1
+        if changed:
+            _save_state(payload)
+    return changed
+
+
 def status(
     node_id: str,
     request: Request | None = None,
 ) -> dict[str, Any]:
+    reconcile_stale_jobs()
     node_id = _safe_node_id(node_id)
     ready = readiness(node_id, request)
     payload = _state()
@@ -1236,6 +1270,22 @@ def consume_credential(
     }
     _delete_credential(credential_ref)
     return response
+
+
+def capacity_for_agent(
+    backup_id: str,
+    node_id: str,
+) -> dict[str, Any]:
+    _, job = _find_job(backup_id)
+    if str(job.get("node_id") or "") != node_id:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "status": "forbidden",
+                "summary": "Backup does not belong to this device.",
+            },
+        )
+    return server_capacity()
 
 
 def record_agent_progress(
