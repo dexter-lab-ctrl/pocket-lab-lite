@@ -1035,3 +1035,68 @@ def test_failed_remote_revocation_is_not_reported_as_revoked(photo_backup, monke
     }
     monkeypatch.setattr(photo_backup, "_revoke_auth_id", lambda _auth_id: False)
     assert photo_backup._revoke_job_credential(job) is False
+
+
+
+def test_photo_backup_status_read_does_not_run_reconciliation(photo_backup, monkeypatch):
+    monkeypatch.setattr(
+        photo_backup,
+        "reconcile_stale_jobs",
+        lambda: (_ for _ in ()).throw(
+            AssertionError("GET status must remain side-effect free")
+        ),
+    )
+    monkeypatch.setattr(
+        photo_backup,
+        "readiness",
+        lambda node_id, _request=None: {
+            "status": "ready",
+            "ready": True,
+            "node_id": node_id,
+            "sanitized": True,
+        },
+    )
+    state = photo_backup._state()
+    state["latest_by_node"]["storage-phone"] = ""
+    photo_backup._save_state(state)
+    result = photo_backup.status("storage-phone")
+    assert result["ready"] is True
+
+
+def test_app_password_parse_failure_revokes_with_generated_access_token(photo_backup, monkeypatch):
+    calls = []
+    responses = iter([
+        SimpleNamespace(returncode=0, stdout="webdav", stderr=""),
+        SimpleNamespace(
+            returncode=0,
+            stdout=(
+                "| App Password | Authorization Scope |\n"
+                "| generated-pass-1234-abcd | webdav |\n"
+            ),
+            stderr="",
+        ),
+        SimpleNamespace(returncode=0, stdout="[]", stderr=""),
+        SimpleNamespace(returncode=0, stdout="", stderr=""),
+    ])
+    monkeypatch.setattr(
+        photo_backup,
+        "_photoprism_command",
+        lambda args, timeout: next(responses),
+    )
+    monkeypatch.setattr(
+        photo_backup,
+        "_find_auth_id",
+        lambda _name: "",
+    )
+    monkeypatch.setattr(
+        photo_backup,
+        "_revoke_auth_id",
+        lambda identifier: calls.append(identifier) or True,
+    )
+    with pytest.raises(RuntimeError) as exc:
+        photo_backup._create_app_password(
+            "storage-phone",
+            "photo-abcdef12",
+        )
+    assert str(exc.value) == "webdav_credential_parse_failed"
+    assert calls == ["generated-pass-1234-abcd"]

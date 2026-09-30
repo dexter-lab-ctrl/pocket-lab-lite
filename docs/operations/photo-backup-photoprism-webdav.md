@@ -38,9 +38,9 @@ PhotoPrism originals/
   PocketLab/
     Devices/
       <stable-node-id>/
-        camera/
-        pictures/
-        videos/
+        DCIM/
+        Pictures/
+        Movies/
 ```
 
 The node cannot provide an arbitrary URL, path, rclone flag, remote, or command.
@@ -49,9 +49,9 @@ The node cannot provide an arbitrary URL, path, rclone flag, remote, or command.
 
 Pocket Lab creates a short-lived PhotoPrism app password scoped to WebDAV for one admitted backup. The raw value is kept server-side only long enough to provision the job.
 
-NATS receives only an opaque `credential_ref`. The target agent resolves that reference once through an authenticated internal FastAPI endpoint over HTTPS. The agent writes a private temporary rclone config with mode `0600`, runs the bounded copy, and removes the temporary directory afterward.
+NATS receives only an opaque `credential_ref`. Before one-time delivery, the backend encrypts the short-lived handoff at rest with a Pocket Lab runtime key stored separately with mode `0600`. The target agent resolves that reference once through an authenticated internal FastAPI endpoint over HTTPS. The agent writes a private temporary rclone config with mode `0600`, runs the bounded copy, and removes the temporary directory afterward.
 
-The raw app password must never be written to normal Lite state, audit/evidence output, browser state, NATS command payloads, logs, process arguments, or long-lived configuration. Credential cleanup is required on success, cancellation, failure, stale-job recovery, device removal, and expiry.
+The raw app password must never be written to normal Lite state, audit/evidence output, browser state, NATS command payloads, logs, process arguments, or long-lived configuration. Credential cleanup is required on success, cancellation, failure, stale-job recovery, device removal, and expiry. Revocation evidence is truthful: if PhotoPrism revocation cannot be confirmed, Pocket Lab records a bounded **revocation pending** state and the worker recovery loop retries it instead of claiming the credential was revoked.
 
 ## Copy and conflict semantics
 
@@ -82,11 +82,13 @@ Only one fleet photo-backup transfer is admitted against the Server Phone destin
 
 ## Retry and interruption model
 
-Repeated start requests for the same active device backup are idempotent. A second device receives a retryable busy result while another fleet photo backup is active.
+Repeated start requests for the same active device backup are idempotent. A second device receives a retryable busy result while another fleet photo backup is active. Worker redelivery reconciles the existing operation and does not rotate credentials or republish a duplicate node start command.
 
 Completed files remain complete. Retries re-inventory the destination and skip matching completed objects. An interrupted or cancelled run therefore resumes by copying only work that is still incomplete.
 
-Cancellation terminates the active rclone child, keeps completed destination files, revokes job credentials, removes local temporary configuration, and releases backend job state.
+The node persists only a small non-secret active-job marker. If the node-agent process restarts, it reports the prior run as interrupted after reconnect and clears the marker only after the backend acknowledges that terminal state. The worker separately reconciles stale jobs and pending credential revocations.
+
+Cancellation terminates the active rclone child, keeps completed destination files, removes local temporary configuration, requests immediate credential revocation, and keeps retrying revocation if the first attempt cannot be confirmed.
 
 ## PhotoPrism processing truth
 
@@ -97,6 +99,14 @@ Pocket Lab relies on PhotoPrism's native WebDAV-triggered delayed indexing behav
 ## Import safety
 
 PhotoPrism's existing **Import photos** action is a separate workflow. Phase 1 fails closed when a live phone-media mapping could make PhotoPrism Import move/delete the same source media that Pocket Lab is treating as a backup source. Backup via WebDAV originals must not be routed through PhotoPrism Import.
+
+## Backup ownership and app removal
+
+Pocket Lab-managed device backups live in the stable `PocketLab/Devices/<node-id>/` namespace under PhotoPrism originals and are treated as user backup media, not disposable app cache. This branch introduces no media-delete operation. Device removal stops future transfers and revokes outstanding credentials but preserves previously copied media. PhotoPrism removal continues to follow the repository's existing media-preservation contract; this feature does not make uninstall a backup-media deletion path.
+
+## Safe-read boundary
+
+Photo-backup GET endpoints are projection/read paths only. They do not create PhotoPrism directories, revoke credentials, or reconcile stale operations. Worker startup and the worker recovery watchdog own stale-job reconciliation, expired handoff cleanup, and pending credential-revocation retries.
 
 ## API surface
 
@@ -146,4 +156,6 @@ task lite:check
 git diff --check
 ```
 
-Physical qualification must additionally verify real Android permission handling, secondary-device rclone installation, Tailscale HTTPS reachability, PhotoPrism WebDAV PROPFIND/MOVE behavior through the deployed Caddy subpath, short-lived app-password creation/revocation, partial-storage behavior, network interruption/resume, cancellation cleanup, and PhotoPrism indexing after WebDAV writes.
+Physical qualification must additionally verify real Android permission handling, secondary-device rclone installation, Tailscale HTTPS reachability, PhotoPrism WebDAV OPTIONS/PROPFIND/PUT/MOVE behavior through the deployed Caddy subpath, short-lived app-password creation/revocation (including pending-revocation retry), partial-storage behavior, network interruption/resume, agent and worker restart reconciliation, cancellation cleanup, source-deletion preservation, and PhotoPrism indexing after WebDAV writes.
+
+Phase 1 intentionally does **not** claim a terminal “Available in PhotoPrism” state until runtime evidence can prove the native delayed index completed. The implemented UI truthfully stops at transfer completion plus PhotoPrism processing.

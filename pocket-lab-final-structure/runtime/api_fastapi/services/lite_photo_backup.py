@@ -650,7 +650,6 @@ def status(
     node_id: str,
     request: Request | None = None,
 ) -> dict[str, Any]:
-    reconcile_stale_jobs()
     node_id = _safe_node_id(node_id)
     ready = readiness(node_id, request)
     payload = _state()
@@ -1222,8 +1221,18 @@ def _create_app_password(
         auth_name
     )
     if not password or not auth_id:
-        if auth_id:
-            _revoke_auth_id(auth_id)
+        # PhotoPrism auth rm accepts a session id or access token. If the
+        # generated app password was parsed but auth ls could not yield a
+        # session id, use the one-time app password itself only for immediate
+        # backend-side cleanup; it never enters logs, evidence, argv outside
+        # this bounded PhotoPrism command, NATS, or browser state.
+        revoke_identifier = (
+            auth_id or password
+        )
+        if revoke_identifier:
+            _revoke_auth_id(
+                revoke_identifier
+            )
         raise RuntimeError(
             "webdav_credential_parse_failed"
         )
