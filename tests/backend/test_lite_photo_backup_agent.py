@@ -374,7 +374,7 @@ def test_progress_post_preserves_safe_aggregate_fields(monkeypatch):
     assert "path" not in str(body).lower()
 
 
-def test_node_agent_source_persists_only_aggregate_restart_marker():
+def test_node_agent_restart_marker_contains_only_non_secret_job_identity():
     ensure_runtime_path()
     path = (
         Path(__file__).resolve().parents[2]
@@ -384,7 +384,14 @@ def test_node_agent_source_persists_only_aggregate_restart_marker():
         / "pocketlab_node_agent.py"
     )
     source = path.read_text(encoding="utf-8")
-    assert "photo-backup-active.json" in source
-    assert "_reconcile_photo_backup_marker" in source
-    assert '"credential_ref": credential_ref' not in source
-    assert "webdav_url" not in source
+    marker_writer = source.split(
+        "def _write_photo_backup_marker", 1
+    )[1].split(
+        "def _clear_photo_backup_marker", 1
+    )[0]
+    assert "backup_id" in marker_writer
+    assert "node_id" in marker_writer
+    assert "started_at" in marker_writer
+    assert "credential_ref" not in marker_writer
+    assert "webdav_url" not in marker_writer
+    assert "password" not in marker_writer
