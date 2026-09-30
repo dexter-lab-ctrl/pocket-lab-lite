@@ -1173,8 +1173,8 @@ def _find_auth_id(auth_name: str) -> str:
     # app password is never placed in a subprocess argument.
     attempts = (
         ["auth", "ls", "--json", auth_name],
-        ["auth", "ls", "--json"],
         ["auth", "ls", auth_name],
+        ["auth", "ls", "--json"],
         ["auth", "ls"],
     )
     for args in attempts:

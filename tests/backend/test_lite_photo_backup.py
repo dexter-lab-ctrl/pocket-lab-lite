@@ -1075,6 +1075,7 @@ def test_auth_lookup_can_recover_session_id_from_unfiltered_json(photo_backup, m
     calls = []
     responses = iter([
         SimpleNamespace(returncode=0, stdout="[]", stderr=""),
+        SimpleNamespace(returncode=0, stdout="", stderr=""),
         SimpleNamespace(
             returncode=0,
             stdout=json.dumps([
@@ -1100,6 +1101,7 @@ def test_auth_lookup_can_recover_session_id_from_unfiltered_json(photo_backup, m
     assert photo_backup._find_auth_id(auth_name) == "refsession123456"
     assert calls == [
         ["auth", "ls", "--json", auth_name],
+        ["auth", "ls", auth_name],
         ["auth", "ls", "--json"],
     ]
 
