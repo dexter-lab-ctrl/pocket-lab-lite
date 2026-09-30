@@ -225,3 +225,42 @@ def test_partial_progress_percent_uses_required_bytes_not_only_selected_bytes():
     assert "bytes_transferred\n                                / required_bytes" in source
     assert "bytes_total_required" in source
     assert "bytes_remaining" in source
+
+
+
+def test_missing_device_namespace_is_treated_as_empty_but_auth_failure_is_not(monkeypatch, tmp_path):
+    module = _module()
+    provider = module.PhotoPrismWebDAVProvider(
+        node_id="storage-phone",
+        agent_token="token",
+        control_origin="https://pocket.test.ts.net",
+    )
+    responses = iter([
+        subprocess.CompletedProcess(args=["rclone"], returncode=3, stdout="", stderr="directory not found"),
+        subprocess.CompletedProcess(args=["rclone"], returncode=1, stdout="", stderr="401 unauthorized"),
+    ])
+    monkeypatch.setattr(provider, "_run", lambda *_args, **_kwargs: next(responses))
+
+    assert provider._remote_listing(
+        "/usr/bin/rclone",
+        tmp_path / "rclone.conf",
+        "PocketLab/Devices/storage-phone",
+    ) == {}
+
+    try:
+        provider._remote_listing(
+            "/usr/bin/rclone",
+            tmp_path / "rclone.conf",
+            "PocketLab/Devices/storage-phone",
+        )
+    except RuntimeError as exc:
+        assert str(exc) == "remote_listing_failed"
+    else:
+        raise AssertionError("Authentication failures must not look like an empty backup destination")
+
+
+def test_remote_collection_names_are_human_friendly():
+    module = _module()
+    assert module.PhotoPrismWebDAVProvider._remote_key("camera", "2026/photo.jpg") == "DCIM/2026/photo.jpg"
+    assert module.PhotoPrismWebDAVProvider._remote_key("pictures", "album/photo.jpg") == "Pictures/album/photo.jpg"
+    assert module.PhotoPrismWebDAVProvider._remote_key("videos", "clip.mp4") == "Movies/clip.mp4"

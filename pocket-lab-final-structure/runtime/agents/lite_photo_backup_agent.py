@@ -26,6 +26,11 @@ COLLECTION_ROOTS = {
     "pictures": ("shared", "Pictures"),
     "videos": ("shared", "Movies"),
 }
+COLLECTION_DESTINATIONS = {
+    "camera": "DCIM",
+    "pictures": "Pictures",
+    "videos": "Movies",
+}
 EXCLUDED_DIR_NAMES = frozenset({
     ".thumbnails", "thumbnails", ".cache", "cache",
     "tmp", "temp", "trash", ".trash", ".trashed",
@@ -566,8 +571,12 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
         collection: str,
         relative: str,
     ) -> str:
+        label = COLLECTION_DESTINATIONS.get(
+            collection,
+            collection,
+        )
         return (
-            f"{collection}/{relative}"
+            f"{label}/{relative}"
             .replace("\\", "/")
             .lstrip("/")
         )
@@ -606,6 +615,18 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
             capture=True,
         )
         if result.returncode != 0:
+            error_text = str(
+                result.stderr or ""
+            ).casefold()
+            if (
+                "directory not found" in error_text
+                or "path not found" in error_text
+                or "does not exist" in error_text
+            ):
+                # A per-device namespace is intentionally created lazily by
+                # the first copy. Only a confirmed missing directory is an
+                # empty destination; auth/network failures still fail closed.
+                return {}
             raise RuntimeError(
                 "remote_listing_failed"
             )
@@ -876,25 +897,6 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                     or 0
                 ),
             )
-            if planning_budget <= 0:
-                result = {
-                    "status": (
-                        "partial_storage_limit"
-                    ),
-                    "summary": (
-                        "No protected upload space "
-                        "is available right now."
-                    ),
-                    "partial": True,
-                    "retryable": True,
-                    "reason_code": "storage_limit",
-                }
-                self._post_progress(
-                    backup_id,
-                    result,
-                )
-                return result
-
             readable_collections = [
                 name
                 for name in selected_collections
@@ -1006,7 +1008,6 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                     skipped += 1
                     continue
 
-                required_bytes += int(item["size"])
                 final_key = regular_key
                 if regular_key in remote:
                     conflict_rel = (
@@ -1026,6 +1027,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                         skipped += 1
                         continue
 
+                required_bytes += int(item["size"])
                 if (
                     planned_bytes
                     + int(item["size"])
