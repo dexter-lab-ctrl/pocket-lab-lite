@@ -461,8 +461,9 @@ PY
 
 pocketlab_source_version() {
   local source_path="${1:-}"
-  local package_json version digest
+  local package_json repo_root version source_digest revision digest
   package_json="$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../../.." && pwd)/package.json"
+  repo_root="$(dirname -- "$package_json")"
   [[ -f "$source_path" ]] || die "Cannot version missing Pocket Lab source: $source_path"
   version="$(python3 - "$package_json" <<'PY'
 import json, sys
@@ -472,8 +473,19 @@ except Exception:
     data={}
 print(str(data.get("version") or "0.0.0"))
 PY
-)"
-  digest="$(sha256sum "$source_path" | awk '{print substr($1,1,12)}')"
+  )"
+  source_digest="$(sha256sum "$source_path" | awk '{print $1}')"
+  # A service entrypoint can import many source modules. Include the current
+  # repository revision so a branch/commit that changes an imported module
+  # cannot leave an already-loaded PM2 process falsely marked as converged.
+  # Keep the file digest as well so direct source edits remain distinguishable
+  # when the repository metadata is unavailable or unchanged.
+  revision="$(git -C "$repo_root" rev-parse --verify HEAD 2>/dev/null || true)"
+  if [[ -n "$revision" ]]; then
+    digest="$(printf 'git=%s\nsource=%s\n' "$revision" "$source_digest" | sha256sum | awk '{print substr($1,1,12)}')"
+  else
+    digest="${source_digest:0:12}"
+  fi
   pm2_normalize_service_version "${version}+sha.${digest}"
 }
 
