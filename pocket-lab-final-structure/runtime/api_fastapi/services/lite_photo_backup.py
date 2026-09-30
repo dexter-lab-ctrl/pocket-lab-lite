@@ -601,7 +601,16 @@ def reconcile_stale_jobs() -> int:
                 started_epoch = now_epoch
             if now_epoch - started_epoch <= stale_after:
                 continue
-            _revoke_job_credential(job)
+            credential_revoked = (
+                _revoke_job_credential(job)
+            )
+            job[
+                "credential_revoke_status_internal"
+            ] = (
+                "revoked"
+                if credential_revoked
+                else "pending"
+            )
             job["status"] = "interrupted"
             job["summary"] = "Photo backup was interrupted. You can retry safely."
             job["retryable"] = True
@@ -619,7 +628,20 @@ def reconcile_stale_jobs() -> int:
         )
         _append_evidence(
             job,
-            "lite.photo_backup.credential_revoked",
+            (
+                "lite.photo_backup.credential_revoked"
+                if str(
+                    job.get(
+                        "credential_revoke_status_internal"
+                    )
+                    or ""
+                )
+                == "revoked"
+                else (
+                    "lite.photo_backup."
+                    "credential_revoke_pending"
+                )
+            ),
         )
     return changed
 
@@ -1166,8 +1188,15 @@ def _create_app_password(
     existing_auth_id = _find_auth_id(
         auth_name
     )
-    if existing_auth_id:
-        _revoke_auth_id(existing_auth_id)
+    if (
+        existing_auth_id
+        and not _revoke_auth_id(
+            existing_auth_id
+        )
+    ):
+        raise RuntimeError(
+            "webdav_credential_revoke_failed"
+        )
     created = _photoprism_command(
         [
             "auth",
@@ -1462,7 +1491,8 @@ def _credential_auth_id_for_job(
 
 def _revoke_job_credential(
     job: dict[str, Any],
-) -> None:
+) -> bool:
+    auth_ids: set[str] = set()
     ref = _credential_ref_for_job(job)
     if ref:
         data = None
@@ -1471,15 +1501,30 @@ def _revoke_job_credential(
         except HTTPException:
             data = None
         if isinstance(data, dict):
-            _revoke_auth_id(
-                str(data.get("auth_id") or "")
+            candidate = str(
+                data.get("auth_id") or ""
             )
+            if candidate:
+                auth_ids.add(candidate)
         _delete_credential(ref)
     auth_id = _credential_auth_id_for_job(
         job
     )
     if auth_id:
-        _revoke_auth_id(auth_id)
+        auth_ids.add(auth_id)
+
+    if not auth_ids:
+        return not bool(
+            job.get("credential_expires_at")
+        )
+
+    revoked = True
+    for candidate in auth_ids:
+        revoked = (
+            _revoke_auth_id(candidate)
+            and revoked
+        )
+    return revoked
 
 
 async def _publish_audit(
@@ -1869,6 +1914,7 @@ def record_agent_progress(
         },
         "storage": server_capacity(),
     }
+    credential_revoked = True
     if status_value in TERMINAL_STATES:
         bounded["completed_at"] = _now()
         if status_value in {
@@ -1876,7 +1922,16 @@ def record_agent_progress(
             "partial_storage_limit",
         }:
             bounded["last_success_at"] = _now()
-        _revoke_job_credential(job)
+        credential_revoked = (
+            _revoke_job_credential(job)
+        )
+        bounded[
+            "credential_revoke_status_internal"
+        ] = (
+            "revoked"
+            if credential_revoked
+            else "pending"
+        )
     updated = _update_job(
         backup_id,
         **bounded,
@@ -1888,7 +1943,14 @@ def record_agent_progress(
         )
         _append_evidence(
             updated,
-            "lite.photo_backup.credential_revoked",
+            (
+                "lite.photo_backup.credential_revoked"
+                if credential_revoked
+                else (
+                    "lite.photo_backup."
+                    "credential_revoke_pending"
+                )
+            ),
         )
     return _public_job(updated) or {}
 
@@ -2001,19 +2063,31 @@ def claim_progress_audit_events(
         "trace_id": backup_id,
     }]
     if status_value in TERMINAL_STATES:
+        revoke_status = str(
+            job.get(
+                "credential_revoke_status_internal"
+            )
+            or ""
+        )
+        credential_event = (
+            "lite.photo_backup.credential_revoked"
+            if revoke_status == "revoked"
+            else (
+                "lite.photo_backup."
+                "credential_revoke_pending"
+            )
+        )
         events.append({
             "subject": (
-                "pocketlab.audit.lite."
-                "photo_backup.credential_revoked"
+                "pocketlab.audit."
+                + credential_event
             ),
-            "event_type": (
-                "lite.photo_backup."
-                "credential_revoked"
-            ),
+            "event_type": credential_event,
             "data": {
                 "backup_id": backup_id,
                 "node_id": node_id,
                 "provider": _PROVIDER_ID,
+                "status": revoke_status or "pending",
             },
             "trace_id": backup_id,
         })
@@ -2386,19 +2460,34 @@ async def execute_cancel(
             "sanitized": True,
         }
     _, job = _find_job(backup_id)
-    _revoke_job_credential(job)
+    credential_revoked = (
+        _revoke_job_credential(job)
+    )
+    credential_event = (
+        "lite.photo_backup.credential_revoked"
+        if credential_revoked
+        else (
+            "lite.photo_backup."
+            "credential_revoke_pending"
+        )
+    )
     _append_evidence(
         job,
-        "lite.photo_backup.credential_revoked",
+        credential_event,
     )
     await _publish_audit(
-        "pocketlab.audit.lite."
-        "photo_backup.credential_revoked",
-        "lite.photo_backup.credential_revoked",
+        "pocketlab.audit."
+        + credential_event,
+        credential_event,
         {
             "backup_id": backup_id,
             "node_id": node_id,
             "provider": _PROVIDER_ID,
+            "status": (
+                "revoked"
+                if credential_revoked
+                else "pending"
+            ),
         },
         trace_id=backup_id,
     )
@@ -2407,6 +2496,11 @@ async def execute_cancel(
         status="cancelling",
         summary=(
             "Stopping photo backup safely."
+        ),
+        credential_revoke_status_internal=(
+            "revoked"
+            if credential_revoked
+            else "pending"
         ),
         progress={
             "phase": "cancelling",
@@ -2483,7 +2577,16 @@ def revoke_for_node(node_id: str) -> int:
             if str(
                 job.get("status") or ""
             ) in ACTIVE_STATES:
-                _revoke_job_credential(job)
+                credential_revoked = (
+                    _revoke_job_credential(job)
+                )
+                job[
+                    "credential_revoke_status_internal"
+                ] = (
+                    "revoked"
+                    if credential_revoked
+                    else "pending"
+                )
                 job["status"] = "cancelled"
                 job["summary"] = (
                     "Photo backup stopped "
@@ -2507,9 +2610,65 @@ def revoke_for_node(node_id: str) -> int:
         )
         _append_evidence(
             job,
-            "lite.photo_backup.credential_revoked",
+            (
+                "lite.photo_backup.credential_revoked"
+                if str(
+                    job.get(
+                        "credential_revoke_status_internal"
+                    )
+                    or ""
+                )
+                == "revoked"
+                else (
+                    "lite.photo_backup."
+                    "credential_revoke_pending"
+                )
+            ),
         )
     return count
+
+
+def reconcile_pending_credential_revocations() -> int:
+    reconciled = 0
+    evidence_jobs: list[dict[str, Any]] = []
+    with _LOCK:
+        payload = _state()
+        for job in payload["jobs"].values():
+            if not isinstance(job, dict):
+                continue
+            if str(job.get("status") or "") not in TERMINAL_STATES:
+                continue
+            if (
+                str(
+                    job.get(
+                        "credential_revoke_status_internal"
+                    )
+                    or ""
+                )
+                == "revoked"
+            ):
+                continue
+            if not (
+                _credential_ref_for_job(job)
+                or _credential_auth_id_for_job(job)
+            ):
+                continue
+            if not _revoke_job_credential(job):
+                continue
+            job[
+                "credential_revoke_status_internal"
+            ] = "revoked"
+            job["updated_at"] = _now()
+            evidence_jobs.append(dict(job))
+            reconciled += 1
+        if reconciled:
+            _save_state(payload)
+    for job in evidence_jobs:
+        _append_evidence(
+            job,
+            "lite.photo_backup.credential_revoked",
+        )
+    return reconciled
 
 
 def cleanup_expired_credentials() -> int:

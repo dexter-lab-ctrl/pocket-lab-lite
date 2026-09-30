@@ -162,7 +162,7 @@ def test_worker_start_sends_only_opaque_credential_reference_to_node(photo_backu
 
 
 def test_device_removal_revoke_preserves_backup_contract(photo_backup, monkeypatch):
-    monkeypatch.setattr(photo_backup, "_revoke_job_credential", lambda _job: None)
+    monkeypatch.setattr(photo_backup, "_revoke_job_credential", lambda _job: True)
     payload = photo_backup._state()
     payload["jobs"]["photo-active"] = {
         "backup_id": "photo-active",
@@ -967,9 +967,11 @@ def test_progress_audit_is_coalesced_and_terminal_event_is_single_shot(photo_bac
     )
     terminal = photo_backup.claim_progress_audit_events("photo-audit", "storage-phone")
     duplicate = photo_backup.claim_progress_audit_events("photo-audit", "storage-phone")
+    # No credential was created in this fixture, so terminal audit truthfully
+    # reports pending rather than falsely claiming remote revocation.
     assert [item["event_type"] for item in terminal] == [
         "lite.photo_backup.completed",
-        "lite.photo_backup.credential_revoked",
+        "lite.photo_backup.credential_revoke_pending",
     ]
     assert duplicate == []
 
@@ -992,3 +994,44 @@ def test_stale_reconciliation_records_interruption_and_revocation_evidence(photo
     event_types = [item.get("event_type") for item in evidence.get("events", [])]
     assert "lite.photo_backup.interrupted" in event_types
     assert "lite.photo_backup.credential_revoked" in event_types
+
+
+
+def test_pending_terminal_credential_revocation_is_retried(photo_backup, monkeypatch):
+    state = photo_backup._state()
+    state["jobs"]["photo-revoke-pending"] = {
+        "backup_id": "photo-revoke-pending",
+        "node_id": "storage-phone",
+        "status": "completed",
+        "auth_id_internal": "session-pending-1234",
+        "credential_revoke_status_internal": "pending",
+        "started_at": photo_backup._now(),
+        "completed_at": photo_backup._now(),
+        "sanitized": True,
+    }
+    state["latest_by_node"]["storage-phone"] = "photo-revoke-pending"
+    photo_backup._save_state(state)
+    calls = []
+    monkeypatch.setattr(
+        photo_backup,
+        "_revoke_auth_id",
+        lambda auth_id: calls.append(auth_id) or True,
+    )
+    assert photo_backup.reconcile_pending_credential_revocations() == 1
+    assert calls == ["session-pending-1234"]
+    saved = photo_backup._state()["jobs"]["photo-revoke-pending"]
+    assert saved["credential_revoke_status_internal"] == "revoked"
+    evidence = photo_backup._read_json(photo_backup._evidence_path(), {})
+    assert evidence["events"][0]["event_type"] == "lite.photo_backup.credential_revoked"
+
+
+def test_failed_remote_revocation_is_not_reported_as_revoked(photo_backup, monkeypatch):
+    job = {
+        "backup_id": "photo-revoke-failed",
+        "node_id": "storage-phone",
+        "status": "transferring",
+        "auth_id_internal": "session-failed-1234",
+        "credential_expires_at": "2099-01-01T00:00:00Z",
+    }
+    monkeypatch.setattr(photo_backup, "_revoke_auth_id", lambda _auth_id: False)
+    assert photo_backup._revoke_job_credential(job) is False
