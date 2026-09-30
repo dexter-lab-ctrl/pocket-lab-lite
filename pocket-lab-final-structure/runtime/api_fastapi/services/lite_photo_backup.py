@@ -583,6 +583,7 @@ def readiness(
 def reconcile_stale_jobs() -> int:
     stale_after = CREDENTIAL_TTL_SECONDS + 15 * 60
     changed = 0
+    evidence_jobs: list[dict[str, Any]] = []
     with _LOCK:
         payload = _state()
         now_epoch = _epoch()
@@ -607,9 +608,19 @@ def reconcile_stale_jobs() -> int:
             job["reason_code"] = "timeout"
             job["completed_at"] = _now()
             job["updated_at"] = _now()
+            evidence_jobs.append(dict(job))
             changed += 1
         if changed:
             _save_state(payload)
+    for job in evidence_jobs:
+        _append_evidence(
+            job,
+            "lite.photo_backup.interrupted",
+        )
+        _append_evidence(
+            job,
+            "lite.photo_backup.credential_revoked",
+        )
     return changed
 
 
@@ -1882,6 +1893,154 @@ def record_agent_progress(
     return _public_job(updated) or {}
 
 
+def claim_progress_audit_events(
+    backup_id: str,
+    node_id: str,
+) -> list[dict[str, Any]]:
+    with _LOCK:
+        state, job = _find_job(backup_id)
+        if str(job.get("node_id") or "") != node_id:
+            return []
+        status_value = str(
+            job.get("status") or ""
+        ).strip().lower()
+        now_epoch = _epoch()
+        event_type = ""
+        if status_value == "transferring":
+            last_epoch = float(
+                job.get(
+                    "progress_audit_epoch_internal"
+                )
+                or 0
+            )
+            if now_epoch - last_epoch < 60:
+                return []
+            job[
+                "progress_audit_epoch_internal"
+            ] = now_epoch
+            event_type = "lite.photo_backup.progress"
+        elif status_value in TERMINAL_STATES:
+            if (
+                str(
+                    job.get(
+                        "terminal_audit_status_internal"
+                    )
+                    or ""
+                )
+                == status_value
+            ):
+                return []
+            job[
+                "terminal_audit_status_internal"
+            ] = status_value
+            event_type = {
+                "completed": "lite.photo_backup.completed",
+                "partial_storage_limit": "lite.photo_backup.partial",
+                "cancelled": "lite.photo_backup.cancelled",
+            }.get(
+                status_value,
+                "lite.photo_backup.failed",
+            )
+        else:
+            return []
+        state["jobs"][backup_id] = job
+        _save_state(state)
+
+    data = {
+        "backup_id": backup_id,
+        "node_id": node_id,
+        "provider": _PROVIDER_ID,
+        "status": status_value,
+        "items_total": max(
+            0,
+            int(job.get("items_total") or 0),
+        ),
+        "items_transferred": max(
+            0,
+            int(job.get("items_transferred") or 0),
+        ),
+        "items_remaining": max(
+            0,
+            int(job.get("items_remaining") or 0),
+        ),
+        "conflicts": max(
+            0,
+            int(job.get("conflicts") or 0),
+        ),
+        "bytes_total_required": max(
+            0,
+            int(job.get("bytes_total_required") or 0),
+        ),
+        "bytes_transferred": max(
+            0,
+            int(job.get("bytes_transferred") or 0),
+        ),
+        "bytes_remaining": max(
+            0,
+            int(job.get("bytes_remaining") or 0),
+        ),
+        "partial": bool(job.get("partial")),
+        "reason_code": _safe_text(
+            job.get("reason_code"),
+            "",
+            64,
+        ) if job.get("reason_code") else "",
+        "photo_processing_state": _safe_text(
+            job.get("photo_processing_state"),
+            "",
+            64,
+        ) if job.get("photo_processing_state") else "",
+    }
+    events = [{
+        "subject": (
+            "pocketlab.audit."
+            + event_type
+        ),
+        "event_type": event_type,
+        "data": data,
+        "trace_id": backup_id,
+    }]
+    if status_value in TERMINAL_STATES:
+        events.append({
+            "subject": (
+                "pocketlab.audit.lite."
+                "photo_backup.credential_revoked"
+            ),
+            "event_type": (
+                "lite.photo_backup."
+                "credential_revoked"
+            ),
+            "data": {
+                "backup_id": backup_id,
+                "node_id": node_id,
+                "provider": _PROVIDER_ID,
+            },
+            "trace_id": backup_id,
+        })
+    return events
+
+
+async def publish_audit_events(
+    events: list[dict[str, Any]],
+) -> None:
+    for event in events:
+        await _publish_audit(
+            str(event.get("subject") or ""),
+            str(event.get("event_type") or ""),
+            (
+                event.get("data")
+                if isinstance(
+                    event.get("data"),
+                    dict,
+                )
+                else {}
+            ),
+            trace_id=str(
+                event.get("trace_id") or ""
+            ),
+        )
+
+
 async def _publish_node_command(
     node_id: str,
     command: str,
@@ -2160,7 +2319,7 @@ async def execute_start(
             ] = stored
             _save_state(state)
 
-        await BUS.publish_json(
+        await _publish_audit(
             "pocketlab.audit.lite."
             "photo_backup.started",
             "lite.photo_backup.started",
@@ -2174,7 +2333,6 @@ async def execute_start(
                     )
                     or []
                 ),
-                "sanitized": True,
             },
             trace_id=backup_id,
         )
@@ -2232,6 +2390,17 @@ async def execute_cancel(
     _append_evidence(
         job,
         "lite.photo_backup.credential_revoked",
+    )
+    await _publish_audit(
+        "pocketlab.audit.lite."
+        "photo_backup.credential_revoked",
+        "lite.photo_backup.credential_revoked",
+        {
+            "backup_id": backup_id,
+            "node_id": node_id,
+            "provider": _PROVIDER_ID,
+        },
+        trace_id=backup_id,
     )
     _update_job(
         backup_id,
@@ -2299,6 +2468,7 @@ def revoke_for_node(node_id: str) -> int:
         node_id
     )
     count = 0
+    evidence_jobs: list[dict[str, Any]] = []
     with _LOCK:
         payload = _state()
         for job in payload["jobs"].values():
@@ -2327,8 +2497,18 @@ def revoke_for_node(node_id: str) -> int:
                 job[
                     "updated_at"
                 ] = _now()
+                evidence_jobs.append(dict(job))
                 count += 1
         _save_state(payload)
+    for job in evidence_jobs:
+        _append_evidence(
+            job,
+            "lite.photo_backup.cancelled",
+        )
+        _append_evidence(
+            job,
+            "lite.photo_backup.credential_revoked",
+        )
     return count
 
 

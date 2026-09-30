@@ -476,7 +476,7 @@ def lite_photo_backup_agent_capacity(
     "/api/lite/internal/photo-backup/{backup_id}/progress",
     include_in_schema=False,
 )
-def lite_photo_backup_agent_progress(
+async def lite_photo_backup_agent_progress(
     backup_id: str,
     payload: dict | None = None,
     request: Request = None,
@@ -485,11 +485,18 @@ def lite_photo_backup_agent_progress(
     node_id, _ = _photo_backup_agent_identity(request)
     if response is not None:
         response.headers["Cache-Control"] = "no-store"
-    return lite_photo_backup.record_agent_progress(
+    result = lite_photo_backup.record_agent_progress(
         backup_id,
         node_id,
         payload or {},
     )
+    await lite_photo_backup.publish_audit_events(
+        lite_photo_backup.claim_progress_audit_events(
+            backup_id,
+            node_id,
+        )
+    )
+    return result
 
 
 @router.post("/api/lite/fleet/devices/{node_id}/restart-agent", status_code=202)

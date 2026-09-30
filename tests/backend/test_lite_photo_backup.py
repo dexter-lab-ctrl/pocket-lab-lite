@@ -822,3 +822,173 @@ def test_progress_contract_preserves_conflicts_required_and_remaining_bytes(phot
     assert result["bytes_transferred"] == 5000
     assert result["bytes_remaining"] == 0
     assert result["photo_processing_state"] == "processing"
+
+
+
+@pytest.mark.parametrize(
+    ("case", "expected_blocker", "expected_summary"),
+    [
+        ("offline", "source_offline", "offline"),
+        ("tool", "rclone_unavailable", "tools"),
+        ("permission", "photo_storage_access_missing", "Allow photo access"),
+        ("photoprism", "photoprism_unavailable", "PhotoPrism"),
+        ("remote", "secure_route_unavailable", "Remote access not ready"),
+        ("storage", "destination_storage_full", "protected space"),
+    ],
+)
+def test_readiness_failure_modes_are_distinct_and_sanitized(
+    photo_backup, monkeypatch, case, expected_blocker, expected_summary
+):
+    agent = {
+        "node_id": "storage-phone",
+        "name": "Storage Phone",
+        "role": "storage",
+        "connection": "online",
+        "status": "healthy",
+        "photo_backup": {
+            "rclone_available": True,
+            "rclone_version": "rclone v1.71.2",
+            "photo_storage_access": True,
+            "collections": ["camera", "pictures", "videos"],
+        },
+    }
+    if case == "offline":
+        agent["connection"] = "offline"
+        agent["status"] = "offline"
+    if case == "tool":
+        agent["photo_backup"]["rclone_available"] = False
+    if case == "permission":
+        agent["photo_backup"]["photo_storage_access"] = False
+
+    monkeypatch.setattr(photo_backup, "_agent", lambda _node_id: agent)
+    monkeypatch.setattr(
+        photo_backup.lite_app_runtime,
+        "probe_app_runtime",
+        lambda *_args, **_kwargs: {
+            "running": case != "photoprism",
+            "reachable": case != "photoprism",
+        },
+    )
+    monkeypatch.setattr(
+        photo_backup,
+        "_secure_origin",
+        lambda _request=None: None if case == "remote" else "https://pocket.test.ts.net",
+    )
+    monkeypatch.setattr(
+        photo_backup,
+        "server_capacity",
+        lambda: {
+            "status": "storage_full" if case == "storage" else "ready",
+            "hard_upload_budget_bytes": 0 if case == "storage" else 10_000,
+            "safe_upload_budget_bytes": 0 if case == "storage" else 8_000,
+            "sanitized": True,
+        },
+    )
+
+    result = photo_backup.readiness("storage-phone")
+    assert result["ready"] is False
+    assert expected_blocker in result["blockers"]
+    assert expected_summary.lower() in result["summary"].lower()
+    encoded = json.dumps(result).lower()
+    assert "password" not in encoded
+    assert "webdav_url" not in encoded
+
+
+def test_protected_server_host_is_not_eligible_for_photo_backup(photo_backup, monkeypatch):
+    monkeypatch.setattr(
+        photo_backup,
+        "_agent",
+        lambda _node_id: {
+            "node_id": "server-phone",
+            "name": "Server Phone",
+            "role": "server_host",
+            "is_current": True,
+        },
+    )
+    result = photo_backup.readiness("server-phone")
+    assert result["status"] == "not_eligible"
+    assert result["ready"] is False
+
+
+def test_fleet_bootstrap_keeps_rclone_failure_non_fatal():
+    fleet_source = Path(
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py"
+    ).read_text(encoding="utf-8")
+    helper = Path(
+        "pocket-lab-final-structure/"
+        "pocket-lab-bootstrap-production-scripts-patched/"
+        "scripts/lite/ensure-fleet-media-tools.sh"
+    ).read_text(encoding="utf-8")
+    base_installer = Path(
+        "pocket-lab-final-structure/"
+        "pocket-lab-bootstrap-production-scripts-patched/"
+        "scripts/install-termux-packages.sh"
+    ).read_text(encoding="utf-8")
+
+    assert 'if ! bash "$MEDIA_TOOLS_FILE"; then' in fleet_source
+    assert "Device enrollment will continue" in fleet_source
+    assert "ensure_pkg_installed rclone" in helper
+    assert "rclone" not in base_installer.split("local packages=(", 1)[1].split(")", 1)[0]
+
+
+def test_progress_audit_is_coalesced_and_terminal_event_is_single_shot(photo_backup, monkeypatch):
+    now = [1000.0]
+    monkeypatch.setattr(photo_backup, "_epoch", lambda: now[0])
+    state = photo_backup._state()
+    state["jobs"]["photo-audit"] = {
+        "backup_id": "photo-audit",
+        "node_id": "storage-phone",
+        "status": "transferring",
+        "items_total": 10,
+        "items_transferred": 2,
+        "items_remaining": 8,
+        "bytes_total_required": 1000,
+        "bytes_transferred": 200,
+        "bytes_remaining": 800,
+        "started_at": photo_backup._now(),
+        "sanitized": True,
+    }
+    state["latest_by_node"]["storage-phone"] = "photo-audit"
+    photo_backup._save_state(state)
+
+    first = photo_backup.claim_progress_audit_events("photo-audit", "storage-phone")
+    second = photo_backup.claim_progress_audit_events("photo-audit", "storage-phone")
+    assert [item["event_type"] for item in first] == ["lite.photo_backup.progress"]
+    assert second == []
+
+    now[0] += 61
+    third = photo_backup.claim_progress_audit_events("photo-audit", "storage-phone")
+    assert [item["event_type"] for item in third] == ["lite.photo_backup.progress"]
+
+    photo_backup._update_job(
+        "photo-audit",
+        status="completed",
+        completed_at=photo_backup._now(),
+    )
+    terminal = photo_backup.claim_progress_audit_events("photo-audit", "storage-phone")
+    duplicate = photo_backup.claim_progress_audit_events("photo-audit", "storage-phone")
+    assert [item["event_type"] for item in terminal] == [
+        "lite.photo_backup.completed",
+        "lite.photo_backup.credential_revoked",
+    ]
+    assert duplicate == []
+
+
+def test_stale_reconciliation_records_interruption_and_revocation_evidence(photo_backup, monkeypatch):
+    monkeypatch.setattr(photo_backup, "_revoke_job_credential", lambda _job: None)
+    monkeypatch.setattr(photo_backup, "_epoch", lambda: 10_000.0)
+    state = photo_backup._state()
+    state["jobs"]["photo-stale"] = {
+        "backup_id": "photo-stale",
+        "node_id": "storage-phone",
+        "status": "transferring",
+        "started_at": "1970-01-01T00:00:01Z",
+        "sanitized": True,
+    }
+    state["latest_by_node"]["storage-phone"] = "photo-stale"
+    photo_backup._save_state(state)
+    assert photo_backup.reconcile_stale_jobs() == 1
+    evidence = photo_backup._read_json(photo_backup._evidence_path(), {})
+    event_types = [item.get("event_type") for item in evidence.get("events", [])]
+    assert "lite.photo_backup.interrupted" in event_types
+    assert "lite.photo_backup.credential_revoked" in event_types

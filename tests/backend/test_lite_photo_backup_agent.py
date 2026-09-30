@@ -395,3 +395,122 @@ def test_node_agent_restart_marker_contains_only_non_secret_job_identity():
     assert "credential_ref" not in marker_writer
     assert "webdav_url" not in marker_writer
     assert "password" not in marker_writer
+
+
+
+def test_capacity_drop_mid_transfer_stops_before_next_file(monkeypatch, tmp_path):
+    module = _module()
+    camera = tmp_path / "DCIM"
+    camera.mkdir()
+    first = camera / "one.jpg"
+    second = camera / "two.jpg"
+    first.write_bytes(b"a" * 10)
+    second.write_bytes(b"b" * 10)
+    monkeypatch.setattr(module, "_collection_path", lambda _name: camera)
+    monkeypatch.setattr(module.shutil, "which", lambda name: "/usr/bin/rclone" if name == "rclone" else None)
+
+    provider = module.PhotoPrismWebDAVProvider(
+        node_id="storage-phone",
+        agent_token="token",
+        control_origin="https://pocket.test.ts.net",
+    )
+    monkeypatch.setattr(
+        provider,
+        "_credential",
+        lambda *_args: {
+            "capacity": {
+                "safe_upload_budget_bytes": 1000,
+                "hard_upload_budget_bytes": 1000,
+            },
+            "password": "one-time",
+            "username": "admin",
+            "webdav_url": "https://pocket.test.ts.net/apps/photoprism/originals/",
+            "destination_prefix": "PocketLab/Devices/storage-phone",
+        },
+    )
+    monkeypatch.setattr(provider, "_remote_listing", lambda *_args: {})
+    monkeypatch.setattr(provider, "_make_config", lambda *_args: tmp_path / "rclone.conf")
+    budgets = iter([
+        {"hard_upload_budget_bytes": 1000},
+        {"hard_upload_budget_bytes": 0},
+    ])
+    monkeypatch.setattr(provider, "_capacity", lambda *_args: next(budgets))
+    transfers = []
+    monkeypatch.setattr(
+        provider,
+        "_transfer_one",
+        lambda _rclone, _config, item, _remote, _prefix: transfers.append(item["relative"]),
+    )
+    monkeypatch.setattr(provider, "_post_progress", lambda *_args, **_kwargs: True)
+
+    result = provider.backup(
+        backup_id="photo-capacity-drop",
+        credential_ref="cred-ref",
+        collections=["camera"],
+    )
+    assert result["status"] == "partial_storage_limit"
+    assert result["items_transferred"] == 1
+    assert result["items_remaining"] == 1
+    assert len(transfers) == 1
+
+
+def test_incremental_run_skips_matching_remote_and_copies_only_new_media(monkeypatch, tmp_path):
+    module = _module()
+    camera = tmp_path / "DCIM"
+    camera.mkdir()
+    old = camera / "old.jpg"
+    new = camera / "new.jpg"
+    old.write_bytes(b"old")
+    new.write_bytes(b"new")
+    old_stat = old.stat()
+    monkeypatch.setattr(module, "_collection_path", lambda _name: camera)
+    monkeypatch.setattr(module.shutil, "which", lambda name: "/usr/bin/rclone" if name == "rclone" else None)
+
+    provider = module.PhotoPrismWebDAVProvider(
+        node_id="storage-phone",
+        agent_token="token",
+        control_origin="https://pocket.test.ts.net",
+    )
+    monkeypatch.setattr(
+        provider,
+        "_credential",
+        lambda *_args: {
+            "capacity": {
+                "safe_upload_budget_bytes": 1000,
+                "hard_upload_budget_bytes": 1000,
+            },
+            "password": "one-time",
+            "username": "admin",
+            "webdav_url": "https://pocket.test.ts.net/apps/photoprism/originals/",
+            "destination_prefix": "PocketLab/Devices/storage-phone",
+        },
+    )
+    monkeypatch.setattr(
+        provider,
+        "_remote_listing",
+        lambda *_args: {
+            "DCIM/old.jpg": {
+                "size": old_stat.st_size,
+                "mtime": old_stat.st_mtime,
+            },
+        },
+    )
+    monkeypatch.setattr(provider, "_make_config", lambda *_args: tmp_path / "rclone.conf")
+    monkeypatch.setattr(provider, "_capacity", lambda *_args: {"hard_upload_budget_bytes": 1000})
+    transfers = []
+    monkeypatch.setattr(
+        provider,
+        "_transfer_one",
+        lambda _rclone, _config, item, _remote, _prefix: transfers.append(item["relative"]),
+    )
+    monkeypatch.setattr(provider, "_post_progress", lambda *_args, **_kwargs: True)
+
+    result = provider.backup(
+        backup_id="photo-incremental",
+        credential_ref="cred-ref",
+        collections=["camera"],
+    )
+    assert result["status"] == "completed"
+    assert result["items_skipped"] == 1
+    assert result["items_transferred"] == 1
+    assert transfers == ["new.jpg"]
