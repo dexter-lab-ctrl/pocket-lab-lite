@@ -514,3 +514,99 @@ def test_incremental_run_skips_matching_remote_and_copies_only_new_media(monkeyp
     assert result["items_skipped"] == 1
     assert result["items_transferred"] == 1
     assert transfers == ["new.jpg"]
+
+
+
+def test_cancel_targets_only_matching_active_backup_child():
+    module = _module()
+    provider = module.PhotoPrismWebDAVProvider(
+        node_id="storage-phone",
+        agent_token="token",
+        control_origin="https://pocket.test.ts.net",
+    )
+
+    class FakeProcess:
+        def __init__(self):
+            self.terminated = 0
+        def poll(self):
+            return None
+        def terminate(self):
+            self.terminated += 1
+
+    process = FakeProcess()
+    provider._active_backup_id = "photo-active"
+    provider._process = process
+
+    provider.cancel("photo-other")
+    assert process.terminated == 0
+    assert provider.cancel_event.is_set() is False
+
+    provider.cancel("photo-active")
+    assert provider.cancel_event.is_set() is True
+    assert process.terminated == 1
+
+
+def test_temp_rclone_state_is_removed_when_transfer_setup_fails(monkeypatch, tmp_path):
+    module = _module()
+    camera = tmp_path / "DCIM"
+    camera.mkdir()
+    (camera / "photo.jpg").write_bytes(b"photo")
+
+    temp_root = tmp_path / "ephemeral-rclone"
+    monkeypatch.setattr(module, "_collection_path", lambda _name: camera)
+    monkeypatch.setattr(module.shutil, "which", lambda name: "/usr/bin/rclone" if name == "rclone" else None)
+    monkeypatch.setattr(module.tempfile, "mkdtemp", lambda **_kwargs: str(temp_root))
+
+    provider = module.PhotoPrismWebDAVProvider(
+        node_id="storage-phone",
+        agent_token="token",
+        control_origin="https://pocket.test.ts.net",
+    )
+    monkeypatch.setattr(
+        provider,
+        "_credential",
+        lambda *_args: {
+            "capacity": {
+                "safe_upload_budget_bytes": 1000,
+                "hard_upload_budget_bytes": 1000,
+            },
+            "password": "one-time-secret",
+            "username": "admin",
+            "webdav_url": "https://pocket.test.ts.net/apps/photoprism/originals/",
+            "destination_prefix": "PocketLab/Devices/storage-phone",
+        },
+    )
+
+    def fake_make_config(_rclone, _credential, root):
+        root.mkdir(parents=True, exist_ok=True)
+        config = root / "rclone.conf"
+        config.write_text("temporary-config", encoding="utf-8")
+        config.chmod(0o600)
+        return config
+
+    monkeypatch.setattr(provider, "_make_config", fake_make_config)
+    monkeypatch.setattr(
+        provider,
+        "_remote_listing",
+        lambda *_args: (_ for _ in ()).throw(RuntimeError("remote_listing_failed")),
+    )
+    monkeypatch.setattr(provider, "_post_progress", lambda *_args, **_kwargs: True)
+
+    result = provider.backup(
+        backup_id="photo-cleanup",
+        credential_ref="cred-ref",
+        collections=["camera"],
+    )
+
+    assert result["status"] == "interrupted"
+    assert not temp_root.exists()
+
+
+def test_rclone_subprocess_policy_never_enables_shell_execution():
+    module = _module()
+    source = Path(module.__file__).read_text(encoding="utf-8")
+    assert "subprocess.Popen(" in source
+    assert "shell=True" not in source
+    assert '"sync"' not in source
+    assert '"delete"' not in source
+    assert '"purge"' not in source
