@@ -1,5 +1,17 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
+
+async function expectNoBlockingAxeViolations(page, selector) {
+  const result = await new AxeBuilder({ page })
+    .include(selector)
+    .disableRules(['color-contrast'])
+    .analyze();
+  const blocking = result.violations.filter((item) => (
+    ['serious', 'critical'].includes(item.impact || '')
+  ));
+  expect(blocking, JSON.stringify(blocking, null, 2)).toEqual([]);
+}
 
 async function openPhotoBackup(page) {
   await page.goto('/?screen=devices');
@@ -68,6 +80,53 @@ test.describe('Phase 1 Photo Backup mocked UX', () => {
     const backup = await openPhotoBackup(page);
     await expect(backup).toContainText(/Nothing new to back up/i);
     await expect(backup).not.toContainText(/Allow photo access/i);
+  });
+
+  test('completed and cancelled states remain truthful', async ({ page }) => {
+    await installScenario(page, 'photo-backup-completed');
+    let backup = await openPhotoBackup(page);
+    await expect(backup).toContainText(/Photos are backed up/i);
+    await expect(backup).toContainText(/PhotoPrism is processing/i);
+
+    await installScenario(page, 'photo-backup-cancelled');
+    await page.reload();
+    await waitForLiteScreenToSettle(page, 'devices');
+    const manage = page.getByRole('button', { name: /Manage Test-Phone-4/i });
+    await manage.click();
+    backup = page.locator('.lite-device-details-panel').getByRole('region', { name: 'Photo backup' });
+    await expect(backup).toContainText(/backup stopped/i);
+    await expect(backup.getByRole('button', { name: 'Retry' })).toBeEnabled();
+  });
+
+  test('not-ready reasons stay distinct and actionable', async ({ page }) => {
+    const cases = [
+      ['photo-backup-remote-unavailable', /Remote access not ready/i],
+      ['photo-backup-photoprism-unavailable', /PhotoPrism is not ready/i],
+      ['photo-backup-source-offline', /device is offline/i],
+    ];
+    for (const [scenario, expected] of cases) {
+      await installScenario(page, scenario);
+      await page.goto('/?screen=devices');
+      await waitForLiteScreenToSettle(page, 'devices');
+      const manage = page.getByRole('button', { name: /Manage Test-Phone-4/i });
+      await manage.click();
+      const backup = page.locator('.lite-device-details-panel').getByRole('region', { name: 'Photo backup' });
+      await expect(backup).toContainText(expected);
+      await expect(backup.getByRole('button', { name: 'Back up photos' })).toBeDisabled();
+    }
+  });
+
+  test('tool-not-ready exposes only the backend-owned repair action', async ({ page }) => {
+    await installScenario(page, 'photo-backup-tool-not-ready');
+    const backup = await openPhotoBackup(page);
+    await expect(backup.getByRole('button', { name: 'Repair photo backup' })).toBeEnabled();
+    await expect(backup.getByRole('button', { name: 'Back up photos' })).toBeDisabled();
+  });
+
+  test('partial state has no serious or critical accessibility violations', async ({ page }) => {
+    await installScenario(page, 'photo-backup-partial');
+    await openPhotoBackup(page);
+    await expectNoBlockingAxeViolations(page, '.lite-device-photo-backup');
   });
 
   test('PhotoPrism Manage shows lightweight backup truth and sends control to Devices', async ({ page }) => {

@@ -65,6 +65,122 @@ function mockPhotoBackupDevice(deviceId = 'test-phone-4') {
       collections: [],
     };
   }
+  if (selected === 'photo-backup-remote-unavailable') {
+    return {
+      ...base,
+      status: 'not_ready',
+      ready: false,
+      summary: 'Remote access not ready.',
+      blockers: ['secure_route_unavailable'],
+      destination_ready: false,
+    };
+  }
+  if (selected === 'photo-backup-photoprism-unavailable') {
+    return {
+      ...base,
+      status: 'not_ready',
+      ready: false,
+      summary: 'PhotoPrism is not ready for photo backup.',
+      blockers: ['photoprism_unavailable'],
+      destination_ready: false,
+    };
+  }
+  if (selected === 'photo-backup-tool-not-ready') {
+    return {
+      ...base,
+      status: 'not_ready',
+      ready: false,
+      summary: 'Photo backup tools are not ready on this device.',
+      blockers: ['rclone_unavailable'],
+      rclone_available: false,
+      rclone_version: 'Unavailable',
+    };
+  }
+  if (selected === 'photo-backup-source-offline') {
+    return {
+      ...base,
+      status: 'not_ready',
+      ready: false,
+      summary: 'This device is offline.',
+      blockers: ['source_offline'],
+    };
+  }
+  if (selected === 'photo-backup-completed') {
+    return {
+      ...base,
+      latest_backup: {
+        backup_id: 'photo-mock-completed',
+        node_id: base.node_id,
+        status: 'completed',
+        summary: 'Photos are backed up.',
+        items_total: 40,
+        items_transferred: 24,
+        items_skipped: 16,
+        items_remaining: 0,
+        conflicts: 1,
+        bytes_total: 3200000000,
+        bytes_total_required: 3200000000,
+        bytes_total_planned: 3200000000,
+        bytes_transferred: 3200000000,
+        bytes_remaining: 0,
+        photo_processing_state: 'processing',
+        partial: false,
+        retryable: false,
+        progress: { phase: 'completed', percent: 100, step: 'Backup complete.' },
+        completed_at: mockIso(-2 * 60 * 1000),
+        updated_at: mockIso(-2 * 60 * 1000),
+        sanitized: true,
+      },
+    };
+  }
+  if (selected === 'photo-backup-cancelled') {
+    return {
+      ...base,
+      latest_backup: {
+        backup_id: 'photo-mock-cancelled',
+        node_id: base.node_id,
+        status: 'cancelled',
+        summary: 'Photo backup stopped. Files already backed up were kept.',
+        items_total: 40,
+        items_transferred: 12,
+        items_skipped: 8,
+        items_remaining: 20,
+        bytes_total_required: 5000000000,
+        bytes_transferred: 1500000000,
+        bytes_remaining: 3500000000,
+        retryable: true,
+        reason_code: 'cancelled',
+        progress: { phase: 'cancelled', percent: 30, step: 'Backup stopped.' },
+        completed_at: mockIso(-60 * 1000),
+        updated_at: mockIso(-60 * 1000),
+        sanitized: true,
+      },
+    };
+  }
+  if (selected === 'photo-backup-failed') {
+    return {
+      ...base,
+      latest_backup: {
+        backup_id: 'photo-mock-failed',
+        node_id: base.node_id,
+        status: 'failed',
+        summary: 'Photo backup could not finish. You can retry safely.',
+        items_total: 40,
+        items_transferred: 12,
+        items_skipped: 8,
+        items_remaining: 20,
+        bytes_total_required: 5000000000,
+        bytes_transferred: 1500000000,
+        bytes_remaining: 3500000000,
+        retryable: true,
+        reason_code: 'transfer_interrupted',
+        progress: { phase: 'failed', percent: 30, step: 'Backup needs attention.' },
+        completed_at: mockIso(-60 * 1000),
+        updated_at: mockIso(-60 * 1000),
+        sanitized: true,
+      },
+    };
+  }
   if (selected === 'photo-backup-running') {
     return {
       ...base,
