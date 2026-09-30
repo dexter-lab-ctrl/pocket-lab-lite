@@ -1051,11 +1051,11 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                     "summary": "Backing up photos.",
                     "items_total": total_candidates,
                     "items_skipped": skipped,
-                    "items_remaining": remaining,
+                    "items_remaining": len(plan) + remaining,
                     "bytes_total": required_bytes,
                     "bytes_total_planned": planned_bytes,
                     "bytes_total_required": required_bytes,
-                    "bytes_remaining": remaining_bytes,
+                    "bytes_remaining": required_bytes,
                     "progress": {
                         "phase": "transferring",
                         "percent": 0,
@@ -1148,7 +1148,8 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                             ),
                             "items_skipped": skipped,
                             "items_remaining": (
-                                remaining
+                                max(0, len(plan) - transferred)
+                                + remaining
                             ),
                             "bytes_total": (
                                 required_bytes
@@ -1163,7 +1164,11 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                                 bytes_transferred
                             ),
                             "bytes_remaining": (
-                                remaining_bytes
+                                max(
+                                    0,
+                                    required_bytes
+                                    - bytes_transferred,
+                                )
                             ),
                             "progress": {
                                 "phase": (
@@ -1205,7 +1210,10 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 "bytes_transferred": (
                     bytes_transferred
                 ),
-                "bytes_remaining": remaining_bytes,
+                "bytes_remaining": max(
+                    0,
+                    required_bytes - bytes_transferred,
+                ),
                 "photo_processing_state": (
                     "processing"
                     if transferred > 0
