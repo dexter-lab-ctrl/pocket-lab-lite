@@ -3695,6 +3695,10 @@ async def remove_lite_device(payload: LiteRemoveDeviceRequest, request: Request)
             awareness_revision=int(current_assessment.get("awareness_revision") or 0),
             requested_by=(payload.requested_by or "authenticated_operator").strip() or "authenticated_operator",
         )
+        role_retirement = lite_device_roles.retire_device_roles(
+            device_id,
+            reason_code=payload.reason or "confirmed_device_retirement",
+        )
         registry_device = retirement.get("device") if isinstance(retirement.get("device"), dict) else {}
         removal = {
             "status": "removed",
@@ -3708,6 +3712,7 @@ async def remove_lite_device(payload: LiteRemoveDeviceRequest, request: Request)
             "removal_receipt": retirement.get("receipt") or {},
             "updated_at": deps.now_utc_iso(),
             "photo_backup_credentials_revoked": int(revoked_photo_backup_credentials),
+            "device_role_authority": role_retirement,
         }
         try:
             compatibility_cleanup = fleet_registry.remove_device_records(device_id)
