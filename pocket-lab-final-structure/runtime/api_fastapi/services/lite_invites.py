@@ -655,8 +655,18 @@ def revoke_invite(invite_id: str, *, reason: str = "") -> dict[str, Any] | None:
         event_type="pocketlab.events.fleet.invite_revoked",
         audit_type="pocketlab.audit.fleet.invite_revoked",
     )
+    node_id = str(updated.get("node_id") or updated.get("hostname") or "")
+    generation = int(updated.get("device_role_generation") or 0)
+    if generation:
+        lite_device_roles.mark_change_status(
+            node_id,
+            generation,
+            "cancelled",
+            "invite_revoked",
+            "Pending invite was revoked before device enrollment.",
+        )
     append_device_lifecycle_event(
-        str(updated.get("node_id") or updated.get("hostname") or ""),
+        node_id,
         "invite_revoked",
         reason_code="invite_revoked",
         summary="Pending device invite revoked.",
@@ -718,6 +728,7 @@ def find_invite_identity_conflict(device_name: str | None) -> dict[str, Any] | N
             "device_id": item.get("node_id"),
             "device_name": item.get("hostname") or item.get("node_id"),
             "role": item.get("role") or "compute",
+            "device_roles": item.get("device_roles") or ([item.get("role")] if item.get("role") else []),
             "status": status,
             "connection": "joining" if status in {"accepted", "joining"} else "waiting",
             "expires_at": item.get("expires_at"),
@@ -755,12 +766,18 @@ def append_bootstrap_blocked_evidence(
         "invite_id": safe_invite.get("invite_id"),
         "role": safe_invite.get("role"),
         "role_label": safe_invite.get("role_label"),
+        "device_roles": safe_invite.get("device_roles") or [],
+        "device_role_labels": safe_invite.get("device_role_labels") or [],
         "existing_node_id": normalize_node_id(existing_node_id or ""),
         "existing_node_name": existing_node_name or existing_node_id or "Unknown device",
         "intended_node_id": normalize_node_id(intended_node_id or safe_invite.get("hostname") or ""),
         "intended_node_name": intended_node_name or safe_invite.get("hostname") or "Invited device",
-        "reason_code": "invite_identity_mismatch",
-        "summary": "A mismatched device join was blocked without changing the enrolled identity.",
+        "reason_code": str(reason_code or "invite_identity_mismatch")[:80],
+        "summary": (
+            "Invite role set did not match the server-bound role assignment; no local device state changed."
+            if reason_code == "invite_role_set_mismatch"
+            else "A mismatched device join was blocked without changing the enrolled identity."
+        ),
         "requested_by": requested_by,
         "status": "blocked",
         "sanitized": True,
@@ -815,6 +832,8 @@ def enrolled_invite_nodes() -> list[dict[str, Any]]:
             "node_id": node_id,
             "name": str(item.get("hostname") or item.get("node_id") or "Pocket Lab device")[:120],
             "role": str(item.get("role") or "compute")[:40],
+            "device_roles": list(item.get("device_roles") or ([item.get("role")] if item.get("role") else []))[:2],
+            "device_role_generation": int(item.get("device_role_generation") or 0),
             "status": "offline",
             "agent_status": "offline",
             "source": "accepted-invite",
@@ -823,8 +842,8 @@ def enrolled_invite_nodes() -> list[dict[str, Any]]:
             "enrolled_at": accepted_at,
             "enrollment_status": "ready",
             "identity_status": "verified",
-            "capabilities": list(item.get("capabilities") or [])[:16],
-            "advertised_capabilities": list(item.get("capabilities") or [])[:16],
+            "capabilities": [],
+            "advertised_capabilities": [],
             "last_seen_at": accepted_at,
             "sanitized": True,
         })
