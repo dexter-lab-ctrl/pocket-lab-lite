@@ -435,10 +435,15 @@ def record_runtime_attestation(
                 ) if required else True
                 verified = bool(identity_ok and online and attested and (observed or compatibility_observation))
                 if not wanted:
-                    active = 0 if exact_match else int(attested)
-                    assignment_status = "removed" if exact_match else "verifying"
-                    verification_status = "verified" if exact_match else "pending"
-                    verification_reason = "" if exact_match else "device_role_change_pending_verification"
+                    active = 0
+                    if attested:
+                        assignment_status = "blocked"
+                        verification_status = "failed"
+                        verification_reason = "device_role_assignment_unauthorized"
+                    else:
+                        assignment_status = "removed"
+                        verification_status = "verified"
+                        verification_reason = ""
                 elif not identity_ok:
                     active = 0
                     assignment_status = "blocked"
@@ -474,6 +479,7 @@ def record_runtime_attestation(
                         now if verification_status == "verified" else None, now, safe_id, role,
                     ),
                 )
+            unauthorized_report = bool(set(reported) - set(desired))
             final_status = (
                 "active" if identity_ok and online and exact_match
                 and all(
@@ -483,11 +489,12 @@ def record_runtime_attestation(
                         (safe_id,),
                     ).fetchall()
                 )
-                else "blocked" if not identity_ok
+                else "blocked" if (not identity_ok or unauthorized_report)
                 else "verifying"
             )
             reason = "" if final_status == "active" else (
                 "device_role_change_identity_mismatch" if not identity_ok
+                else "device_role_assignment_unauthorized" if unauthorized_report
                 else "device_role_change_pending_verification"
             )
             tx.execute(
