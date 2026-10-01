@@ -92,7 +92,8 @@ export function capabilityStatusLabel(value, reasonCode = '') {
   if (['unavailable', 'not_ready'].includes(status)) return 'Unavailable';
   if (status === 'unsupported') return 'Unsupported';
   if (status === 'stale') return 'Stale';
-  if (status === 'blocked' || status === 'blocked_by_role') return 'Blocked by role';
+  if (status === 'blocked') return 'Blocked';
+  if (status === 'blocked_by_role') return 'Blocked by role';
   if (status === 'not_applicable') return 'Not applicable';
   if (status === 'advertised') return 'Advertised';
   if (

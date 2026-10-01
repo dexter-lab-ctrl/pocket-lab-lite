@@ -182,7 +182,7 @@ export const identityRulesP1Handlers = [
   http.post('/api/lite/identity/sessions/revoke-others', () => HttpResponse.json({ status: 'completed', revoked_sessions: 1, summary: 'Other sessions were signed out.' })),
   http.delete('/api/lite/identity/sessions/:sessionId', ({ params }) => HttpResponse.json({ status: 'revoked', session_id: params.sessionId, summary: 'Session signed out.' })),
 
-  http.get('/api/lite/enterprise/access', () => enterpriseEnabled() ? HttpResponse.json(accessPayload()) : HttpResponse.json({ detail: { reason_code: 'enterprise_mode_required', message: 'Enterprise Mode is not enabled.' } }, { status: 404 })),
+  http.get('/api/lite/enterprise/access', () => HttpResponse.json(accessPayload())),
   http.get('/api/lite/enterprise/identity', () => enterpriseEnabled() ? HttpResponse.json(identityPayload().enterprise) : HttpResponse.json({ detail: { reason_code: 'enterprise_mode_disabled', message: 'Enterprise Mode is not enabled.' } }, { status: 404 })),
   http.get('/api/lite/enterprise/identity/mode/preview', () => HttpResponse.json({ current_mode: enterpriseEnabled() ? 'enterprise' : 'personal', target_mode: enterpriseEnabled() ? 'personal' : 'enterprise', changes: ['All active sessions will be signed out so the new authorization model takes effect.', 'Enterprise memberships are retained.', 'Pending approvals and temporary access are closed when returning to Personal Mode.'], topology: accessPayload().topology, pending_approvals: 1, active_exceptions: 1 })),
   http.put('/api/lite/enterprise/identity/mode', ({ request }) => request.json().then((payload) => HttpResponse.json({ enabled: Boolean(payload.enabled), summary: payload.enabled ? 'Enterprise Mode enabled.' : 'Personal Mode enabled.' }))),
