@@ -249,7 +249,7 @@ else
   tmp_keyscan="$(mktemp "${LOCAL_STATE_DIR}/keyscan.XXXXXX")"
 fi
 trap 'rm -f "$tmp_keyscan" "${tmp_keyscan}.hash"' EXIT
-if ! ssh-keyscan -T 5 -p "$PORT_VALUE" "$HOST_VALUE" >"$tmp_keyscan" 2>/dev/null; then
+if ! ssh-keyscan -T 5 -t ed25519 -p "$PORT_VALUE" "$HOST_VALUE" >"$tmp_keyscan" 2>/dev/null; then
   fail "host key could not be retrieved within the bounded timeout"
 fi
 [[ -s "$tmp_keyscan" ]] || fail "host key response was empty"
