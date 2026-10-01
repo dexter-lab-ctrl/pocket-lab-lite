@@ -272,6 +272,7 @@ def build_authorization_input(
             "purpose": str(harness.get("purpose") or "")[:80],
             "capabilities": [str(item)[:120] for item in (harness.get("capabilities") or [])[:64]],
             "target_scope": str(harness.get("target_scope") or "")[:64],
+            "target_device_id": str(harness.get("target_device_id") or "")[:128],
             "runtime_id": str(harness.get("runtime_id") or "")[:64],
             "qualification_environment": bool(harness.get("qualification_environment")),
             "destructive_allowed": bool(harness.get("destructive_allowed")),

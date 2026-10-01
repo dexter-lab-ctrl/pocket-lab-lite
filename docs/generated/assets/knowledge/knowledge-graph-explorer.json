@@ -2004,6 +2004,17 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Recovery Authorize",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/recovery/authorize",
+      "name": "POST /api/lite/harness/recovery/authorize",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Execute Fault",
       "domain": "harness",
       "id": "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
@@ -11344,7 +11355,8 @@
       "name": "harness_audit_events",
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "type": "table"
     },
@@ -11356,7 +11368,20 @@
       "name": "harness_challenges",
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
+      ],
+      "type": "table"
+    },
+    {
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:harness_recovery_receipts",
+      "name": "harness_recovery_receipts",
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "type": "table"
     },
@@ -11368,7 +11393,8 @@
       "name": "harness_sessions",
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "type": "table"
     },
@@ -11864,7 +11890,8 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "type": "table"
     },
@@ -23459,6 +23486,20 @@
       "source": "component:tailscale",
       "target": "component:nats-listeners",
       "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:241aba319e4286f9",
+      "source": "domain:harness",
+      "target": "api:post:/api/lite/harness/recovery/authorize",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -49953,6 +49994,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:a2caca3641f7b490",
+      "source": "api:post:/api/lite/harness/recovery/authorize",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
       ],
@@ -59997,6 +60052,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:d3c11fc6661bd4b1",
+      "source": "api:post:/api/lite/harness/recovery/authorize",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:d3d470bb56375448",
@@ -63960,6 +64029,20 @@
       "source": "reason:shutdown",
       "target": "test:tests/backend/test_lite_workload_admission.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:e61841cc2b0410ef",
+      "source": "domain:control_plane",
+      "target": "table:harness_recovery_receipts",
+      "type": "owns"
     },
     {
       "derivation": {

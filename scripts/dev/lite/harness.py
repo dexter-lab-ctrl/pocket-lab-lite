@@ -35,6 +35,7 @@ SECRET_OUTPUT_KEYS = frozenset({
     "private_key_bytes",
     "provisioning_token",
     "qualification_bridge",
+    "receipt_token",
     "session_token",
     "signature",
     "signing_payload",
@@ -217,6 +218,7 @@ def start_session(
     profile: str,
     purpose: str,
     key_file: str,
+    target_device_id: str | None = None,
     ttl_seconds: int | None = None,
 ) -> dict:
     challenge = _request(
@@ -227,6 +229,7 @@ def start_session(
             "purpose": purpose,
             "profile": profile,
             "target_scope": "local_server_host_only",
+            **({"target_device_id": target_device_id} if target_device_id else {}),
             **({"ttl_seconds": ttl_seconds} if ttl_seconds is not None else {}),
         },
     )
@@ -254,8 +257,55 @@ def cmd_session_start(args: argparse.Namespace) -> dict:
         profile=args.profile,
         purpose=args.purpose,
         key_file=args.key_file,
+        target_device_id=args.target_device_id,
         ttl_seconds=args.ttl_seconds,
     )
+
+
+def _ensure_receipt_path(path: Path) -> Path:
+    resolved = path.expanduser().resolve()
+    try:
+        resolved.relative_to(REPO_ROOT)
+    except ValueError:
+        return resolved
+    raise ValueError("recovery receipt material must be outside the repository")
+
+
+def _write_receipt(path: Path, token: str) -> None:
+    path = _ensure_receipt_path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+    old_umask = os.umask(0o177)
+    try:
+        fd = os.open(path, flags, 0o600)
+        try:
+            raw = (str(token).strip() + "\n").encode("ascii")
+            if os.write(fd, raw) != len(raw):
+                raise OSError("recovery receipt write was incomplete")
+            os.fchmod(fd, stat.S_IRUSR | stat.S_IWUSR)
+        finally:
+            os.close(fd)
+    finally:
+        os.umask(old_umask)
+
+
+def cmd_recovery_authorize(args: argparse.Namespace) -> dict:
+    result = _request(
+        "POST",
+        "/api/lite/harness/recovery/authorize",
+        {
+            "backup_id": args.backup_id,
+            "preview_id": args.preview_id,
+            "target_schema": args.target_schema,
+            "confirm": True,
+        },
+        _session_headers(args),
+    )
+    token = str(result.get("receipt_token") or "").strip()
+    if not token:
+        raise RuntimeError("recovery_receipt_missing: backend did not return a receipt")
+    _write_receipt(Path(args.receipt_file), token)
+    return {"status": "issued", "receipt": result.get("receipt"), "receipt_file": str(_ensure_receipt_path(Path(args.receipt_file)))}
 
 
 def bootstrap_session(*, principal_id: str, key_file: str, ttl_seconds: int | None = None) -> dict:
@@ -418,8 +468,16 @@ def _parser() -> argparse.ArgumentParser:
     start.add_argument("--profile", required=True)
     start.add_argument("--purpose", required=True)
     start.add_argument("--key-file", required=True)
+    start.add_argument("--target-device-id")
     start.add_argument("--ttl-seconds", type=int, choices=range(60, 3601))
     start.set_defaults(handler=cmd_session_start)
+    recovery = commands.add_parser("recovery-authorize", help="issue a one-use offline recovery handoff receipt")
+    recovery.add_argument("--backup-id", required=True)
+    recovery.add_argument("--preview-id", required=True)
+    recovery.add_argument("--target-schema", required=True, type=int)
+    recovery.add_argument("--receipt-file", required=True)
+    recovery.add_argument("--session-token")
+    recovery.set_defaults(handler=cmd_recovery_authorize)
     bootstrap = commands.add_parser("bootstrap", help="complete the operator-approved assurance bootstrap")
     bootstrap.add_argument("--principal-id", required=True)
     bootstrap.add_argument("--key-file", required=True)

@@ -913,13 +913,158 @@ def test_capability_manifest_and_maintenance_deferral(harness_runtime):
     assert set(payload["profiles"]) == {
         "debug-observer", "test-runner", "security-qualifier", "recovery-qualifier",
         "release-qualifier", "maintenance-runner", "qualification-owner",
-        "security-assurance-runner",
+        "security-assurance-runner", "fleet-role-qualifier",
     }
     assert payload["profiles"]["recovery-qualifier"]["capabilities"] == [
-        "recovery.read", "backup.create", "backup.verify", "restore.preview",
+        "recovery.read", "backup.create", "backup.verify", "restore.preview", "recovery.authorize",
     ]
     assert payload["profiles"]["maintenance-runner"]["availability"] == "deferred"
     assert payload["production_maintenance"] == "deferred"
+
+
+def test_fleet_role_profile_is_bound_to_one_exact_non_server_target(harness_runtime, monkeypatch):
+    client = _client()
+    private, public = _key()
+    target_device_id = "secondary-phone-01"
+    monkeypatch.setenv("POCKETLAB_HARNESS_TARGET_DEVICE_ID", target_device_id)
+    _register(
+        client,
+        private,
+        public,
+        principal_id="fleet-role-qualifier",
+        profiles=("fleet-role-qualifier",),
+    )
+    challenge_response = client.post(
+        "/api/lite/harness/challenge",
+        json={
+            "principal_id": "fleet-role-qualifier",
+            "purpose": "fleet.role_change",
+            "profile": "fleet-role-qualifier",
+            "target_scope": TARGET_SCOPE,
+            "target_device_id": target_device_id,
+        },
+    )
+    assert challenge_response.status_code == 200, challenge_response.text
+    challenge = challenge_response.json()
+    session_response = _session_request(client, challenge, private)
+    assert session_response.status_code == 201, session_response.text
+    session = session_response.json()
+    assert session["session"]["target_device_id"] == target_device_id
+
+    from api_fastapi import deps
+    from api_fastapi.services import lite_harness
+
+    context = deps.resolve_auth_context(_request({HARNESS_HEADER: session["session_token"]}))
+    lite_harness.enforce_capability(
+        context,
+        action_id="device.roles.change",
+        target_type="device",
+        target_id=target_device_id,
+    )
+    with pytest.raises(lite_harness.HarnessError) as mismatch:
+        lite_harness.enforce_capability(
+            context,
+            action_id="device.roles.change",
+            target_type="device",
+            target_id="other-secondary-phone",
+        )
+    assert mismatch.value.reason_code == "harness_target_mismatch"
+    with pytest.raises(lite_harness.HarnessError) as server_target:
+        lite_harness.enforce_capability(
+            context,
+            action_id="device.roles.change",
+            target_type="device",
+            target_id="server",
+        )
+    assert server_target.value.reason_code == "harness_target_mismatch"
+
+
+def test_recovery_authorize_issues_and_consumes_one_use_receipt(harness_runtime, monkeypatch):
+    client = _client()
+    private, public = _key()
+    principal_id = "recovery-qualifier"
+    target_sha = "a" * 40
+    backup_id = "db-backup-verified"
+    preview_id = "db-preview-ready"
+    monkeypatch.setenv("POCKETLAB_RECOVERY_TARGET_MAIN_SHA", target_sha)
+    monkeypatch.setenv("POCKETLAB_RECOVERY_TARGET_SCHEMA", "36")
+    fingerprint = "sha256:" + hashlib.sha256(public).hexdigest()
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_APPROVED", "1")
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PRINCIPAL_ID", principal_id)
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT", fingerprint)
+    monkeypatch.setenv("POCKETLAB_HARNESS_BOOTSTRAP_PROFILE", "recovery-qualifier")
+    grant = client.post(
+        "/api/lite/harness/bootstrap/grants",
+        json={"principal_id": principal_id, "public_key": _b64u(public)},
+    ).json()
+    challenge = client.post(
+        "/api/lite/harness/bootstrap/challenge",
+        json={"grant_id": grant["grant_id"]},
+    ).json()
+    session_response = client.post(
+        "/api/lite/harness/bootstrap/complete",
+        json={
+            "challenge_id": challenge["challenge_id"],
+            "grant_id": grant["grant_id"],
+            "principal_id": principal_id,
+            "public_key": _b64u(public),
+            "signature": _b64u(private.sign(challenge["signing_payload"].encode("utf-8"))),
+        },
+    )
+    assert session_response.status_code == 201, session_response.text
+    token = session_response.json()["session_token"]
+
+    from api_fastapi.services import lite_database_recovery
+
+    monkeypatch.setattr(
+        lite_database_recovery,
+        "verify_database_backup",
+        lambda selected: {"backup_id": selected, "status": "verified", "schema_version": 33},
+    )
+    monkeypatch.setattr(
+        lite_database_recovery,
+        "get_database_restore_preview",
+        lambda selected: {
+            "preview_id": selected,
+            "backup_id": backup_id,
+            "status": "ready",
+            "restore_allowed": True,
+            "schema_version": 33,
+        },
+    )
+    response = client.post(
+        "/api/lite/harness/recovery/authorize",
+        headers={HARNESS_HEADER: token},
+        json={
+            "backup_id": backup_id,
+            "preview_id": preview_id,
+            "target_schema": 36,
+            "confirm": True,
+        },
+    )
+    assert response.status_code == 201, response.text
+    result = response.json()
+    assert result["receipt"]["backup_id"] == backup_id
+    assert result["receipt"]["preview_id"] == preview_id
+    assert result["receipt"]["target_runtime_sha"] == target_sha
+    assert result["receipt"]["status"] == "issued"
+    assert result["receipt_token"]
+
+    from api_fastapi.services import lite_harness
+
+    inspected = lite_harness.inspect_recovery_receipt(result["receipt_token"])
+    assert inspected["receipt_id"] == result["receipt"]["receipt_id"]
+    consumed = lite_harness.consume_recovery_receipt(
+        result["receipt_token"],
+        expected_target_sha=target_sha,
+        expected_target_schema=36,
+        expected_backup_id=backup_id,
+        expected_preview_id=preview_id,
+    )
+    assert consumed["status"] == "consumed"
+    with pytest.raises(lite_harness.HarnessError) as replay:
+        lite_harness.inspect_recovery_receipt(result["receipt_token"])
+    assert replay.value.reason_code == "recovery_receipt_replayed"
 
 
 def test_registration_uses_public_key_and_preserves_human_isolation(harness_runtime):
@@ -1128,7 +1273,7 @@ def test_authenticated_context_is_synthetic_and_caller_role_fields_are_rejected(
     assert opa_input["actor"]["type"] == "synthetic_machine"
     assert opa_input["session"]["auth_method"] == "harness_session"
     assert opa_input["harness"]["capabilities"] == [
-        "recovery.read", "backup.create", "backup.verify", "restore.preview",
+        "recovery.read", "backup.create", "backup.verify", "restore.preview", "recovery.authorize",
     ]
     assert opa_input["target"]["scope"] == TARGET_SCOPE
 

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 3e22b33c2f777476d6e428d9179bd6e287e3550b1a82c016fe22bf820b3018b0
+source_fingerprint: 9e85aaf0f173a791991f7f7fb56200551547d293cbc32e147362ce1221619112
 schema_revision: 1
 validation_status: generated
 ---
@@ -2373,6 +2373,29 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-harness-recovery-authorize"></a>
+## POST `/api/lite/harness/recovery/authorize`
+
+- Operation ID: `recovery_authorize_api_lite_harness_recovery_authorize_post`
+- Summary: Recovery Authorize
+- Deprecated: no
+- Tags: `lite-harness`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `RecoveryAuthorizeRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 201 | Successful Response | application/json: `object` |
 | 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |

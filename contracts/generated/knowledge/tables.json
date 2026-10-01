@@ -991,11 +991,13 @@
       "domain": "control_plane",
       "id": "table:harness_audit_events",
       "indexes": [
+        "idx_harness_audit_target_device",
         "idx_harness_audit_events_session",
         "idx_harness_audit_events_time"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "name": "harness_audit_events",
       "owner": "not a prepared projection",
@@ -1004,7 +1006,8 @@
       "sensitive_fields": [],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -1021,7 +1024,8 @@
         "sqlite_autoindex_harness_challenges_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "name": "harness_challenges",
       "owner": "not a prepared projection",
@@ -1033,7 +1037,37 @@
       ],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:harness_recovery_receipts",
+      "indexes": [
+        "idx_harness_recovery_receipts_binding",
+        "idx_harness_recovery_receipts_status",
+        "sqlite_autoindex_harness_recovery_receipts_2",
+        "sqlite_autoindex_harness_recovery_receipts_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
+      ],
+      "name": "harness_recovery_receipts",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "token_hash"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -1045,12 +1079,14 @@
       "domain": "control_plane",
       "id": "table:harness_sessions",
       "indexes": [
+        "idx_harness_sessions_target_device",
         "idx_harness_sessions_status",
         "sqlite_autoindex_harness_sessions_2",
         "sqlite_autoindex_harness_sessions_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "name": "harness_sessions",
       "owner": "not a prepared projection",
@@ -1061,7 +1097,8 @@
       ],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -2203,13 +2240,15 @@
       "domain": "control_plane",
       "id": "table:synthetic_principals",
       "indexes": [
+        "idx_synthetic_principals_target_device",
         "idx_synthetic_principals_status",
         "sqlite_autoindex_synthetic_principals_2",
         "sqlite_autoindex_synthetic_principals_1"
       ],
       "migration_sources": [
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "name": "synthetic_principals",
       "owner": "not a prepared projection",
@@ -2219,7 +2258,8 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -2392,6 +2432,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "9cb9692ea7eb27887dac97361bc0a4dd3fc0bbc858ec584bfab233b2b592a255"
+    "source_fingerprint": "5c014a4c5563838ac674dd41d16975a1c93ca0993b41619c15187d787d7c19e3"
   }
 }

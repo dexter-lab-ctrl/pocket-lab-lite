@@ -595,7 +595,7 @@ def test_migration_and_blocked_run_report_are_durable_and_sanitized(assurance_ru
     from api_fastapi.db.migrations import current_schema_version
     from api_fastapi.services import lite_security_assurance as assurance
 
-    assert current_schema_version() == 36
+    assert current_schema_version() == 38
     with read_connection() as conn:
         tables = {
             row[0]

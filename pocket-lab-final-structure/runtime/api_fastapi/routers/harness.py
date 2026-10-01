@@ -33,6 +33,7 @@ class ChallengeRequest(BaseModel):
     purpose: str = Field(min_length=1, max_length=80)
     profile: str = Field(min_length=1, max_length=64)
     target_scope: str = Field(default=lite_harness.HARNESS_TARGET_SCOPE, min_length=3, max_length=64)
+    target_device_id: str | None = Field(default=None, min_length=1, max_length=128)
     ttl_seconds: int | None = Field(default=None, ge=30, le=300)
 
 
@@ -45,6 +46,15 @@ class SessionRequest(BaseModel):
     principal_id: str | None = Field(default=None, min_length=3, max_length=80)
     profile: str | None = Field(default=None, min_length=1, max_length=64)
     ttl_seconds: int | None = Field(default=None, ge=60, le=3600)
+
+
+class RecoveryAuthorizeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    backup_id: str = Field(min_length=1, max_length=120)
+    preview_id: str = Field(min_length=1, max_length=120)
+    target_schema: int = Field(ge=1, le=999)
+    confirm: bool = False
 
 
 class BootstrapGrantRequest(BaseModel):
@@ -264,6 +274,36 @@ def browser_bridge(request: Request, response: Response) -> dict[str, Any]:
     return result
 
 
+@router.post("/recovery/authorize", status_code=201)
+def recovery_authorize(
+    payload: RecoveryAuthorizeRequest,
+    request: Request,
+    response: Response,
+) -> dict[str, Any]:
+    """Issue a narrow one-use receipt for the offline main-database handoff."""
+    _require_direct(request)
+    try:
+        auth = lite_harness.authenticate_request(request)
+        lite_harness.enforce_capability(
+            auth,
+            action_id="recovery.authorize",
+            target_type="recovery",
+            target_id=payload.backup_id,
+            operation_id=payload.preview_id,
+        )
+        result = lite_harness.issue_recovery_receipt(
+            auth,
+            backup_id=payload.backup_id,
+            preview_id=payload.preview_id,
+            target_schema=payload.target_schema,
+            confirm=payload.confirm,
+        )
+    except lite_harness.HarnessError as exc:
+        _raise(exc)
+    _no_store(response)
+    return result
+
+
 @router.post("/challenge")
 def challenge(payload: ChallengeRequest, request: Request, response: Response) -> dict[str, Any]:
     _require_direct(request)
@@ -273,6 +313,7 @@ def challenge(payload: ChallengeRequest, request: Request, response: Response) -
             purpose=payload.purpose,
             profile=payload.profile,
             target_scope=payload.target_scope,
+            target_device_id=payload.target_device_id,
             ttl_seconds=payload.ttl_seconds,
         )
     except lite_harness.HarnessError as exc:

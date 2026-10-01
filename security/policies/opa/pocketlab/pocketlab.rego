@@ -17,10 +17,22 @@ synthetic_actor if {
 	input.harness.enabled == true
 }
 
+harness_target_bound if {
+	input.target.type != "device"
+}
+
+harness_target_bound if {
+	input.target.type == "device"
+	input.harness.profile == "fleet-role-qualifier"
+	input.harness.target_device_id != ""
+	input.harness.target_device_id == input.target.id
+}
+
 harness_authorized if {
 	synthetic_actor
 	input.harness.qualification_environment == true
 	input.harness.target_scope == input.target.scope
+	harness_target_bound
 	input.action.id in input.harness.capabilities
 	not (input.action.id in {"device.remove", "restore.apply", "backup.location.manage", "rules.activate", "rules.rollback"})
 }
@@ -29,6 +41,7 @@ harness_authorized if {
 	synthetic_actor
 	input.harness.qualification_environment == true
 	input.harness.target_scope == input.target.scope
+	harness_target_bound
 	input.action.id in input.harness.capabilities
 	input.harness.destructive_allowed == true
 }

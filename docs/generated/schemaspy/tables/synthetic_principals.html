@@ -133,6 +133,11 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="harness_recovery_receipts.[harness_session_id, principal_id] references synthetic_principals.[harness_session_id, principal_id] via "><a href='harness_recovery_receipts.html'>harness_recovery_receipts</a><span class='relatedKey'>.principal_id</span></td>
+                                                <td class="constraint detail"></td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="harness_sessions.principal_id references synthetic_principals.principal_id via "><a href='harness_sessions.html'>harness_sessions</a><span class='relatedKey'>.principal_id</span></td>
                                                 <td class="constraint detail"></td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -427,6 +432,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="target_device_id">target_device_id</span></td>
+                                    <td>TEXT</td>
+                                    <td>2000000000</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>&#39;&#39;</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -470,6 +492,12 @@
                                     <td>enabled + revoked_at + expires_at</td>
                                 </tr>
                                 <tr>
+                                    <td title='Indexed'>idx_synthetic_principals_target_device</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>target_device_id + enabled + revoked_at</td>
+                                </tr>
+                                <tr>
                                     <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> sqlite_autoindex_synthetic_principals_1</td>
                                     <td>Must be unique</td>
                                     <td><span title='Ascending'>Asc</span></td>
@@ -507,10 +535,11 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="492,5,747,363">
-<area shape="rect" id="node2" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,537,436,1109">
-<area shape="rect" id="node3" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="480,381,758,593">
-<area shape="rect" id="node4" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="490,611,749,851">
-<area shape="rect" id="node5" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="500,869,739,1110">
+<area shape="rect" id="node2" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,666,436,1268">
+<area shape="rect" id="node3" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="480,381,758,622">
+<area shape="rect" id="node4" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="490,640,749,881">
+<area shape="rect" id="node5" href="harness_recovery_receipts.html" target="_top" title="harness_recovery_receipts" alt="" coords="802,821,1125,1209">
+<area shape="rect" id="node6" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="500,933,739,1203">
 </map>
                                         <a name='diagram'><img id="oneDegreeImg" src="../diagrams/tables/synthetic_principals.1degree.png" usemap="#oneDegreeRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
@@ -518,44 +547,47 @@
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="assurance_execution_checkpoints.html" target="_top" title="assurance_execution_checkpoints" alt="" coords="802,5,1190,99">
 <area shape="rect" id="node2" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="492,171,747,529">
-<area shape="rect" id="node4" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,702,436,1274">
+<area shape="rect" id="node4" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,832,436,1433">
 <area shape="rect" id="node3" href="assurance_findings.html" target="_top" title="assurance_findings" alt="" coords="868,117,1124,211">
 <area shape="rect" id="node5" href="assurance_scenarios.html" target="_top" title="assurance_scenarios" alt="" coords="862,229,1131,323">
 <area shape="rect" id="node6" href="assurance_tool_results.html" target="_top" title="assurance_tool_results" alt="" coords="852,341,1140,435">
-<area shape="rect" id="node7" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="480,547,758,758">
-<area shape="rect" id="node8" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="490,776,749,1017">
-<area shape="rect" id="node9" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="500,1035,739,1275">
+<area shape="rect" id="node7" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="480,547,758,787">
+<area shape="rect" id="node8" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="490,805,749,1046">
+<area shape="rect" id="node9" href="harness_recovery_receipts.html" target="_top" title="harness_recovery_receipts" alt="" coords="835,1061,1158,1155">
+<area shape="rect" id="node10" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="500,1099,739,1193">
 </map>
                                         <a name='diagram'><img id="twodegreesDegreeImg" src="../diagrams/tables/synthetic_principals.2degrees.png" usemap="#twoDegreesRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="oneimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagramImplied" name="oneDegreeRelationshipsDiagramImplied">
 <area shape="rect" id="node1" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="499,5,754,363">
-<area shape="rect" id="node2" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,766,436,1338">
-<area shape="rect" id="node3" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="487,381,765,593">
-<area shape="rect" id="node4" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="496,611,756,851">
-<area shape="rect" id="node5" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="506,869,746,1110">
-<area shape="rect" id="node6" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="816,1045,1156,1345">
-<area shape="rect" id="node7" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="480,1163,772,1462">
+<area shape="rect" id="node2" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,853,436,1454">
+<area shape="rect" id="node3" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="487,381,765,622">
+<area shape="rect" id="node4" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="496,640,756,881">
+<area shape="rect" id="node5" href="harness_recovery_receipts.html" target="_top" title="harness_recovery_receipts" alt="" coords="825,788,1147,1175">
+<area shape="rect" id="node6" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="506,933,746,1203">
+<area shape="rect" id="node7" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="816,1193,1156,1493">
+<area shape="rect" id="node8" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="480,1281,772,1581">
 </map>
                                         <a name='diagram'><img id="oneimpliedDegreeImg" src="../diagrams/tables/synthetic_principals.implied1degrees.png" usemap="#oneDegreeRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twoimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagramImplied" name="twoDegreesRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="assurance_execution_checkpoints.html" target="_top" title="assurance_execution_checkpoints" alt="" coords="802,357,1190,451">
-<area shape="rect" id="node2" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="492,523,747,881">
-<area shape="rect" id="node4" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,608,436,1180">
-<area shape="rect" id="node3" href="assurance_findings.html" target="_top" title="assurance_findings" alt="" coords="868,469,1124,563">
-<area shape="rect" id="node5" href="assurance_scenarios.html" target="_top" title="assurance_scenarios" alt="" coords="862,581,1131,675">
-<area shape="rect" id="node6" href="assurance_tool_results.html" target="_top" title="assurance_tool_results" alt="" coords="852,693,1140,787">
-<area shape="rect" id="node7" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="480,933,758,1145">
-<area shape="rect" id="node8" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="490,5,749,246">
-<area shape="rect" id="node9" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="500,264,739,505">
-<area shape="rect" id="node10" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="826,1083,1166,1177">
-<area shape="rect" id="node11" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="506,1197,732,1291">
-<area shape="rect" id="node12" href="human_identities.html" target="_top" title="human_identities" alt="" coords="102,1197,340,1291">
-<area shape="rect" id="node13" href="policy_recovery_resolutions.html" target="_top" title="policy_recovery_resolutions" alt="" coords="1234,1265,1566,1359">
-<area shape="rect" id="node14" href="policy_runtime_state.html" target="_top" title="policy_runtime_state" alt="" coords="861,1195,1132,1289">
+<area shape="rect" id="node1" href="assurance_execution_checkpoints.html" target="_top" title="assurance_execution_checkpoints" alt="" coords="802,229,1190,323">
+<area shape="rect" id="node2" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="492,171,747,529">
+<area shape="rect" id="node4" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,705,436,1306">
+<area shape="rect" id="node3" href="assurance_findings.html" target="_top" title="assurance_findings" alt="" coords="868,341,1124,435">
+<area shape="rect" id="node5" href="assurance_scenarios.html" target="_top" title="assurance_scenarios" alt="" coords="862,5,1131,99">
+<area shape="rect" id="node6" href="assurance_tool_results.html" target="_top" title="assurance_tool_results" alt="" coords="852,117,1140,211">
+<area shape="rect" id="node7" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="480,693,758,934">
+<area shape="rect" id="node8" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="490,952,749,1193">
+<area shape="rect" id="node9" href="harness_recovery_receipts.html" target="_top" title="harness_recovery_receipts" alt="" coords="835,545,1158,639">
+<area shape="rect" id="node10" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="500,581,739,675">
+<area shape="rect" id="node11" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="826,1189,1166,1283">
+<area shape="rect" id="node12" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="506,1281,732,1375">
+<area shape="rect" id="node13" href="human_identities.html" target="_top" title="human_identities" alt="" coords="102,1324,340,1418">
+<area shape="rect" id="node14" href="policy_recovery_resolutions.html" target="_top" title="policy_recovery_resolutions" alt="" coords="1234,1260,1566,1354">
+<area shape="rect" id="node15" href="policy_runtime_state.html" target="_top" title="policy_runtime_state" alt="" coords="861,1336,1132,1430">
 </map>
                                         <a name='diagram'><img id="twoimpliedDegreeImg" src="../diagrams/tables/synthetic_principals.implied2degrees.png" usemap="#twoDegreesRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>

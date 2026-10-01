@@ -753,6 +753,10 @@
         "title": "POST /api/lite/harness/principals/{principal_id}/revoke",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-principals-principal-id-revoke"
       },
+      "endpoint:POST:/api/lite/harness/recovery/authorize": {
+        "title": "POST /api/lite/harness/recovery/authorize",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-recovery-authorize"
+      },
       "endpoint:POST:/api/lite/harness/security-assurance/faults/{fault_id}": {
         "title": "POST /api/lite/harness/security-assurance/faults/{fault_id}",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-security-assurance-faults-fault-id"
@@ -3111,6 +3115,11 @@
         "schema_url": "../../docs/generated/schemaspy/tables/harness_challenges.html",
         "title": "harness_challenges"
       },
+      "table:harness_recovery_receipts": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#harness-recovery-receipts",
+        "schema_url": "../../docs/generated/schemaspy/tables/harness_recovery_receipts.html",
+        "title": "harness_recovery_receipts"
+      },
       "table:harness_sessions": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#harness-sessions",
         "schema_url": "../../docs/generated/schemaspy/tables/harness_sessions.html",
@@ -3344,7 +3353,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "43f393781655dbe61823e2bf6c42b38a3b6f955e6690e21124281afb90fccc69",
+    "aggregate_fingerprint": "ece11135d2010eaba822a8c01cc4f6fd17232aac40773745a63686a27ee53dec",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3354,7 +3363,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "628a716c66dadec32afa90e6bfcbe3690e6dccb20f6b20df336cbe8f24e85abd",
+      "contracts/generated/lite-openapi.json": "324a72a7a5b784ff42518e96913f9a96fd4f8f59e84e3095c23259652cf51769",
       "contracts/metadata/documentation-platform.json": "beb223fca558ca6150f7c35927953294652eb4ce69e4d565e3c460e314158de6",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
@@ -3394,6 +3403,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql": "d1cd045b515f41a1bed07712f32d204f2b96633536e4eb0a00a39f9ce89e18b4",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0036_assurance_execution_lifecycle.sql": "1421ef805eba817feaff7f963ceaa0a14fe8534e1c4956eae4e846ef70e6ef80",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql": "1f16d2afda6a3dc88b2d94e2cc567b046a2adf88153dfc7af4a81e2317ecc930",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql": "dcaedcf9d44d99fb07895ab314852157b4f41cbf465bad674a6c78af22bd849e",
       "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4"
     },
     "validation_state": "generated"

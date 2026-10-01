@@ -278,6 +278,7 @@
         "POCKETLAB_NATS_API_PASSWORD",
         "POCKETLAB_NATS_API_USER",
         "POCKETLAB_NATS_CONFIG",
+        "POCKETLAB_NATS_CREDENTIALS_FILE",
         "POCKETLAB_NATS_DURABLE_STALE_SECONDS",
         "POCKETLAB_NATS_EVENT_FANOUT",
         "POCKETLAB_NATS_JETSTREAM",
@@ -296,7 +297,9 @@
         "POCKETLAB_PM2_SERVICE_VERSION",
         "POCKETLAB_PROFILE",
         "POCKETLAB_PUBLIC_NATS_PORT",
+        "POCKETLAB_QUALIFICATION",
         "POCKETLAB_QUALIFICATION_OWNER",
+        "POCKETLAB_QUALIFICATION_STATE_DIR",
         "POCKETLAB_RECONCILER_CHILD",
         "POCKETLAB_RECONCILE_ONLY",
         "POCKETLAB_RELEASE_STABLE_INTERVAL_SECONDS",
@@ -424,7 +427,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "0c7f029bfff669e8c2af3a296779b30002df9d45c38dc36177a64da5d895513a",
+    "aggregate_fingerprint": "443da25fee0505104381bc37b2fcc65fc545613e6ab8276815ecd82a11295864",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -446,7 +449,7 @@
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-boot-recovery.sh": "da0899864f8cdcc53cab48822e207e99856990d381d2184db71810d0371957bb",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/seed-gitops-repo.sh": "1905104bdba9ea90b6828be3e3b518bae8aabb2b57c08d6f880b4788984834ed",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/smoke-test.sh": "7fbb8e7bb70c7105703e0336480ebdf24703eb5da91739df605455a1eeb0bc3f",
-      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh": "af159ddef06d4391c742beb49c0a6ba97f3cdf4a638caaa0280c259d9b1888fb",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh": "b582b2cea9a6c0141c8cd7b8b422b993b49f940754bf85e1c0d612e62104796c",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-gitea.sh": "129b2a066ceb0c10c67a29938cc9b06b901f6b31923415db1684782a2460d805",
       "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4"
     },

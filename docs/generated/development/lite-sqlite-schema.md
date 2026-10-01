@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 1dcce6c0c986628379bd4fc195c207eb7df4b78cdda8636975af976f7d04094a
+source_fingerprint: f980193dfbb70be0d9eff07a55e5552a087815bfe81c6fb481cfc643ac6fb299
 schema_revision: 1
 validation_status: generated
 ---
@@ -60,9 +60,10 @@ Semantic rows marked **inferred** are conservative source-derived ownership hint
 | `domain_revisions` | table | 3 | 0 | 1 | projections | prepared projection scheduler | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0015_phase3b_system_current_state.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0016_phase3c_system_aggregates.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql |
 | `enterprise_configuration` | table | 8 | 1 | 0 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql |
 | `enterprise_memberships` | table | 8 | 3 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql |
-| `harness_audit_events` | table | 15 | 1 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql |
-| `harness_challenges` | table | 13 | 1 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql |
-| `harness_sessions` | table | 16 | 1 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql |
+| `harness_audit_events` | table | 16 | 1 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql |
+| `harness_challenges` | table | 14 | 1 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql |
+| `harness_recovery_receipts` | table | 15 | 2 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql |
+| `harness_sessions` | table | 17 | 1 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql |
 | `human_credentials` | table | 10 | 1 | 2 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql |
 | `human_enrollment_claims` | table | 16 | 2 | 5 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql |
 | `human_identities` | table | 8 | 0 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql |
@@ -101,7 +102,7 @@ Semantic rows marked **inferred** are conservative source-derived ownership hint
 | `security_scan_runs` | table | 47 | 0 | 10 | security | Security API/worker store | sanitized operational metadata | verified | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0005_security_read_performance.sql |
 | `security_scan_tool_runs` | table | 11 | 1 | 2 | security | Security store and scanner completion services | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql |
 | `security_store_metadata` | table | 3 | 0 | 1 | security | Security store and scanner completion services | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql |
-| `synthetic_principals` | table | 17 | 0 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql |
+| `synthetic_principals` | table | 18 | 0 | 4 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql |
 | `webauthn_challenges` | table | 11 | 3 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql |
 | `webauthn_credentials` | table | 12 | 1 | 2 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql |
 | `webauthn_users` | table | 3 | 1 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql |
@@ -889,6 +890,7 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | `result` | TEXT | no | — | 0 |
 | `summary` | TEXT | no | — | 0 |
 | `correlation_id` | TEXT | no | — | 0 |
+| `target_device_id` | TEXT | no | '' | 0 |
 
 <a id="harness-challenges"></a>
 ## `harness_challenges`
@@ -910,6 +912,30 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | `failed_attempts` | INTEGER | no | 0 | 0 |
 | `consumed_at` | TEXT | yes | — | 0 |
 | `created_at` | TEXT | no | — | 0 |
+| `target_device_id` | TEXT | no | '' | 0 |
+
+<a id="harness-recovery-receipts"></a>
+## `harness_recovery_receipts`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `receipt_id` | TEXT | yes | — | 1 |
+| `token_hash` | TEXT | no | — | 0 |
+| `principal_id` | TEXT | no | — | 0 |
+| `harness_session_id` | TEXT | no | — | 0 |
+| `action_id` | TEXT | no | — | 0 |
+| `backup_id` | TEXT | no | — | 0 |
+| `preview_id` | TEXT | no | — | 0 |
+| `target_schema` | INTEGER | no | — | 0 |
+| `target_runtime_sha` | TEXT | no | — | 0 |
+| `issued_runtime_id` | TEXT | no | — | 0 |
+| `issued_runtime_revision` | TEXT | no | — | 0 |
+| `issued_at` | TEXT | no | — | 0 |
+| `expires_at` | TEXT | no | — | 0 |
+| `consumed_at` | TEXT | yes | — | 0 |
+| `status` | TEXT | no | 'issued' | 0 |
 
 <a id="harness-sessions"></a>
 ## `harness_sessions`
@@ -934,6 +960,7 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | `status` | TEXT | no | 'active' | 0 |
 | `revoked_at` | TEXT | yes | — | 0 |
 | `revoke_reason` | TEXT | no | '' | 0 |
+| `target_device_id` | TEXT | no | '' | 0 |
 
 <a id="human-credentials"></a>
 ## `human_credentials`
@@ -1787,6 +1814,7 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | `last_used_at` | TEXT | yes | — | 0 |
 | `revoked_at` | TEXT | yes | — | 0 |
 | `revoke_reason` | TEXT | no | '' | 0 |
+| `target_device_id` | TEXT | no | '' | 0 |
 
 <a id="webauthn-challenges"></a>
 ## `webauthn_challenges`

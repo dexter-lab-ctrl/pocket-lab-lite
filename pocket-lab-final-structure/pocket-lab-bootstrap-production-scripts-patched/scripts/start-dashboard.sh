@@ -76,7 +76,26 @@ prepare_lite_state_path(){
   export POCKETLAB_QUALIFICATION_OWNER="${POCKETLAB_QUALIFICATION_OWNER:-0}"
   export POCKETLAB_TEST_AUTH_BYPASS="${POCKETLAB_TEST_AUTH_BYPASS:-0}"
   export POCKETLAB_BASE_DIR="${POCKETLAB_BASE_DIR:-$POCKET_LAB_BASE_DIR}"
-  export POCKETLAB_STATE_DIR="${POCKETLAB_STATE_DIR:-$POCKETLAB_BASE_DIR/state}"
+  if [[ "$POCKETLAB_ENVIRONMENT" == "qualification" ]]; then
+    [[ "$POCKETLAB_HARNESS_ENABLED" == "1" ]] || die "Qualification startup requires the enabled synthetic harness"
+    export POCKETLAB_QUALIFICATION=1
+    export POCKETLAB_QUALIFICATION_STATE_DIR="${POCKETLAB_QUALIFICATION_STATE_DIR:-$POCKETLAB_BASE_DIR/qualification-state}"
+    export POCKETLAB_STATE_DIR="$POCKETLAB_QUALIFICATION_STATE_DIR"
+    python3 - "$POCKETLAB_BASE_DIR/state" "$POCKETLAB_STATE_DIR" <<'PYISOLATION' || die "Qualification state must not resolve to the production state directory"
+from pathlib import Path
+import sys
+
+main_state = Path(sys.argv[1]).expanduser().resolve(strict=False)
+qualification_state = Path(sys.argv[2]).expanduser().resolve(strict=False)
+if main_state == qualification_state:
+    raise SystemExit(1)
+PYISOLATION
+    mkdir -p "$POCKETLAB_STATE_DIR"
+    STATE_DIR="$POCKETLAB_STATE_DIR"
+  else
+    [[ "${POCKETLAB_QUALIFICATION:-0}" != "1" ]] || die "Production startup refuses qualification state authority"
+    export POCKETLAB_STATE_DIR="${POCKETLAB_STATE_DIR:-$POCKETLAB_BASE_DIR/state}"
+  fi
   export POCKETLAB_LITE_DB_PATH="${POCKETLAB_LITE_DB_PATH:-$POCKETLAB_STATE_DIR/pocketlab-lite.sqlite3}"
   export POCKETLAB_OPA_ACTIVE_POLICY_DIR="${POCKETLAB_OPA_ACTIVE_POLICY_DIR:-$POCKETLAB_STATE_DIR/opa/active}"
   export POCKETLAB_LITE_SECURITY_STORE_MODE="${POCKETLAB_LITE_SECURITY_STORE_MODE:-dual}"
@@ -272,9 +291,15 @@ PYSECRET
   fi
 }
 ensure_nats_credentials(){
-  mkdir -p "$STATE_DIR/nats"
+  local configured_credentials="${POCKETLAB_NATS_CREDENTIALS_FILE:-}"
   local cred_file="$STATE_DIR/nats/pocketlab-nats.env"
-  if [[ ! -f "$cred_file" ]]; then
+  if [[ -n "$configured_credentials" ]]; then
+    [[ -f "$configured_credentials" ]] || die "Configured NATS credentials file is unavailable"
+    cred_file="$configured_credentials"
+  else
+    mkdir -p "$STATE_DIR/nats"
+  fi
+  if [[ -z "$configured_credentials" && ! -f "$cred_file" ]]; then
     umask 077
     cat > "$cred_file" <<EOF
 POCKETLAB_NATS_API_USER=pocketlab_api

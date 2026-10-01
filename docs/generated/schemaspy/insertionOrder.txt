@@ -16,6 +16,7 @@ policy_revisions
 assurance_runs
 security_scan_runs
 auth_sessions
+harness_sessions
 policy_decision_details
 recovery_code_batches
 security_database_restores
@@ -36,7 +37,6 @@ device_role_change_operations
 device_supervisor_state
 harness_audit_events
 harness_challenges
-harness_sessions
 human_credentials
 identity_audit_events
 lite_installed_release_identity
@@ -57,6 +57,7 @@ device_health_transitions
 device_lifecycle_transactions
 device_system_profiles
 enterprise_configuration
+harness_recovery_receipts
 human_enrollment_claims
 policy_runtime_state
 policy_recovery_resolutions

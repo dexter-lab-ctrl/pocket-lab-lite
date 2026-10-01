@@ -248,6 +248,79 @@ Status: **SUPPORTED**
 - Related playbook: [harness maintenance](../qualification-maintenance-harness.md).
 - Implementation source: `scripts/dev/lite/harness.py`
 
+### SA-AUTH-009
+Status: **SUPPORTED**
+
+- Purpose: start a synthetic fleet-role qualification session bound to one exact Secondary device.
+- Environment: `[SERVER PHONE]` consumer runtime in explicit qualification mode.
+- Authority/prerequisites: public key file, disposable principal, profile
+  `fleet-role-qualifier`, and one exact non-Server-Host device ID.
+- Mutating: yes, qualification runtime state. Risk: SAFE_ACTIVE. Safe for
+  machine automation: no; operator approval is required.
+- Exact task: `task lite:qualification:start:key-bound:fleet-role PRINCIPAL_ID=<id> PUBLIC_KEY_FILE=<public-key-path> TARGET_DEVICE_ID=<secondary-device-id>`.
+- Expected output/exit: isolated qualification state starts; a role-change
+  request for any other target, including Server Host, is denied.
+- Evidence/failure/cleanup: retain only sanitized target/device IDs and audit
+  evidence; stop qualification and verify default-off afterward.
+- Related playbook: [harness maintenance](../qualification-maintenance-harness.md).
+- Implementation source: `scripts/dev/lite/start-qualification.sh`
+
+### SA-AUTH-010
+Status: **SUPPORTED**
+
+- Purpose: start recovery qualification bound to one exact target main revision and schema.
+- Environment: `[SERVER PHONE]` consumer runtime in explicit qualification mode.
+- Authority/prerequisites: public key file, disposable principal, profile
+  `recovery-qualifier`, full target main SHA, and target schema.
+- Mutating: yes, isolated qualification runtime state. Risk: SAFE_ACTIVE. Safe
+  for machine automation: no; operator approval is required.
+- Exact task: `task lite:qualification:start:key-bound:recovery PRINCIPAL_ID=<id> PUBLIC_KEY_FILE=<public-key-path> TARGET_MAIN_SHA=<main-sha> TARGET_SCHEMA=<schema>`.
+- Expected output/exit: qualification uses a state and NATS store separate from
+  normal main state; mismatched recovery targets fail closed.
+- Evidence/failure/cleanup: do not print the private key or receipt token;
+  stop qualification and verify default-off afterward.
+- Related playbook: [harness maintenance](../qualification-maintenance-harness.md).
+- Implementation source: `scripts/dev/lite/start-qualification.sh`
+
+### SA-RECOVERY-001
+Status: **SUPPORTED**
+
+- Purpose: issue one narrow receipt authorizing the offline main-database handoff.
+- CLI command: `recovery-authorize`
+- Environment: `[APPROVED CLIENT]`/`[DEV PC]` direct loopback to the isolated
+  qualification runtime.
+- Authority/prerequisites: active `recovery-qualifier` session, exact target
+  main/schema binding, verified compatible backup, ready restore preview, and
+  explicit confirmation.
+- Mutating: yes, one-use receipt state. Risk: SAFE_ACTIVE. Safe for machine
+  automation: only through the fixed workflow.
+- Exact command: `task lite:harness:recovery:authorize BACKUP_ID=<backup-id> PREVIEW_ID=<preview-id> TARGET_SCHEMA=<schema> RECEIPT_FILE=<private-path>`.
+- Expected output/exit: sanitized receipt metadata; the opaque token is written
+  only to a private file and is not printed.
+- Evidence/failure/cleanup: receipt is bound to backup/preview/target/runtime,
+  expires quickly, is consumed once, and leaves sanitized audit evidence.
+- Related playbook: [harness maintenance](../qualification-maintenance-harness.md).
+- Implementation source: `scripts/dev/lite/harness.py` and `pocket-lab-final-structure/runtime/api_fastapi/routers/harness.py`
+
+### SA-RECOVERY-002
+Status: **SUPPORTED**
+
+- Purpose: stage and atomically promote the selected compatible backup into the
+  exact target main runtime.
+- Environment: `[SERVER PHONE]` with the Pocket Lab PM2 runtime stopped by the
+  bounded helper.
+- Authority/prerequisites: one private recovery receipt, target main revision,
+  target schema, verified compatible backup catalog, and writable rollback/journal paths.
+- Mutating: yes, live main SQLite replacement and exact PM2 stop. Risk:
+  RECOVERY. Safe for machine automation: no; explicit operator workflow only.
+- Exact task: `task lite:recovery:database:offline-promote RECEIPT_FILE=<private-path> MAIN_STATE_DIR=<main-state> QUALIFICATION_STATE_DIR=<qualification-state> BACKUP_ROOT=<backup-root> TARGET_MAIN_SHA=<main-sha> TARGET_SCHEMA=<schema>`.
+- Expected output/exit: target-schema database is promoted once; rollback and
+  sanitized journal evidence remain available.
+- Evidence/failure/cleanup: any failed precondition leaves the main database
+  untouched; never edit migration rows or delete rollback/journal evidence.
+- Related playbook: [harness maintenance](../qualification-maintenance-harness.md).
+- Implementation source: `scripts/dev/lite/recover-main-database.py`
+
 ## Preflight and suites
 
 ### SA-PREFLIGHT-001

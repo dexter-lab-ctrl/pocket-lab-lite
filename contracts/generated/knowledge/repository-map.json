@@ -550,6 +550,7 @@
         "api:post:/api/lite/harness/principal/revoke",
         "api:post:/api/lite/harness/principals",
         "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+        "api:post:/api/lite/harness/recovery/authorize",
         "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
         "api:post:/api/lite/harness/security-assurance/policy-sync",
         "api:post:/api/lite/harness/security-assurance/runs",
@@ -718,6 +719,7 @@
         "table:enterprise_memberships",
         "table:harness_audit_events",
         "table:harness_challenges",
+        "table:harness_recovery_receipts",
         "table:harness_sessions",
         "table:human_credentials",
         "table:human_enrollment_claims",
@@ -1944,6 +1946,16 @@
         "table:policy_decisions"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+    },
+    {
+      "entities": [
+        "table:harness_audit_events",
+        "table:harness_challenges",
+        "table:harness_recovery_receipts",
+        "table:harness_sessions",
+        "table:synthetic_principals"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
     },
     {
       "entities": [
@@ -4306,6 +4318,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "9cb9692ea7eb27887dac97361bc0a4dd3fc0bbc858ec584bfab233b2b592a255"
+    "source_fingerprint": "5c014a4c5563838ac674dd41d16975a1c93ca0993b41619c15187d787d7c19e3"
   }
 }

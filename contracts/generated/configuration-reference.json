@@ -2071,7 +2071,8 @@
         "pocket-lab-final-structure/runtime/core/control_plane_core.py",
         "pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_reconciler.py",
         "scripts/dev/check-lite-phase3b-projections.sh",
-        "scripts/dev/check-lite-phase3c-projections.sh"
+        "scripts/dev/check-lite-phase3c-projections.sh",
+        "scripts/dev/lite/start-qualification.sh"
       ],
       "safe_default": "$POCKET_LAB_BASE_DIR",
       "secret_classification": "configuration",
@@ -3691,6 +3692,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
+        "scripts/dev/lite/recover-main-database.py",
         "scripts/dev/lite/start-qualification.sh",
         "scripts/dev/lite/task_runtime.py"
       ],
@@ -5152,6 +5154,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py",
+        "scripts/dev/lite/recover-main-database.py",
         "scripts/dev/lite/run-ui-performance-qualified.py",
         "scripts/dev/lite/start-qualification.sh"
       ],
@@ -5176,6 +5179,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
+        "scripts/dev/lite/recover-main-database.py",
         "scripts/dev/lite/run-ui-performance-qualified.py",
         "scripts/dev/lite/start-qualification.sh"
       ],
@@ -5251,6 +5255,24 @@
         "pocket-lab-final-structure"
       ],
       "deprecated_aliases": [],
+      "name": "POCKETLAB_HARNESS_RECOVERY_RECEIPT_TTL_SECONDS",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure"
+      ],
+      "deprecated_aliases": [],
       "name": "POCKETLAB_HARNESS_RUNTIME_ID",
       "production": true,
       "required": false,
@@ -5295,6 +5317,26 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure",
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_HARNESS_TARGET_DEVICE_ID",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
+        "scripts/dev/lite/start-qualification.sh"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -6578,7 +6620,8 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
-        "pocket-lab-final-structure"
+        "pocket-lab-final-structure",
+        "scripts"
       ],
       "deprecated_aliases": [],
       "name": "POCKETLAB_LITE_BACKUP_ROOT",
@@ -6588,7 +6631,8 @@
       "runtime_readers": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup_policy.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_semantic_revisions.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_semantic_revisions.py",
+        "scripts/dev/lite/recover-main-database.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -6751,6 +6795,8 @@
         "scripts/dev/lib/long_gate_json.py",
         "scripts/dev/lib/long_gate_s8.py",
         "scripts/dev/lib/long_gate_sqlite.sh",
+        "scripts/dev/lite/recover-main-database.py",
+        "scripts/dev/lite/start-qualification.sh",
         "scripts/dev/long-gates/security-s8-recovery.sh",
         "scripts/docs/runtime/termux_runtime_probe.sh"
       ],
@@ -10682,6 +10728,26 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
+        "pocket-lab-final-structure",
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_NATS_CREDENTIALS_FILE",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
+        "scripts/dev/lite/start-qualification.sh"
+      ],
+      "safe_default": "not documented for secret variables",
+      "secret_classification": "secret",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
         "pocket-lab-final-structure"
       ],
       "deprecated_aliases": [],
@@ -11420,6 +11486,24 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/observability_status.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_OFFLINE_RECOVERY_TEST_MODE",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/recover-main-database.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -12928,6 +13012,44 @@
         "scripts"
       ],
       "deprecated_aliases": [],
+      "name": "POCKETLAB_QUALIFICATION",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
+        "scripts/dev/lite/start-qualification.sh"
+      ],
+      "safe_default": "0",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_QUALIFICATION_NATS_CREDENTIALS_FILE",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/start-qualification.sh"
+      ],
+      "safe_default": "not documented for secret variables",
+      "secret_classification": "secret",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure",
+        "scripts"
+      ],
+      "deprecated_aliases": [],
       "name": "POCKETLAB_QUALIFICATION_OWNER",
       "production": true,
       "required": false,
@@ -12938,10 +13060,32 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py",
+        "scripts/dev/lite/recover-main-database.py",
         "scripts/dev/lite/run-ui-performance-qualified.py",
         "scripts/dev/lite/start-qualification.sh"
       ],
       "safe_default": "0",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure",
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_QUALIFICATION_STATE_DIR",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
+        "scripts/dev/lite/start-qualification.sh",
+        "scripts/dev/lite/task_runtime.py"
+      ],
+      "safe_default": "$POCKETLAB_BASE_DIR/qualification-state",
       "secret_classification": "configuration",
       "wsl2": true
     },
@@ -13034,6 +13178,48 @@
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
       ],
       "safe_default": "0",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure",
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_RECOVERY_TARGET_MAIN_SHA",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
+        "scripts/dev/lite/recover-main-database.py",
+        "scripts/dev/lite/start-qualification.sh"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure",
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_RECOVERY_TARGET_SCHEMA",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
+        "scripts/dev/lite/recover-main-database.py",
+        "scripts/dev/lite/start-qualification.sh"
+      ],
+      "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
       "wsl2": true
     },
@@ -15789,6 +15975,8 @@
         "scripts/dev/lib/long_gate_json.py",
         "scripts/dev/lib/long_gate_s8.py",
         "scripts/dev/lib/long_gate_sqlite.sh",
+        "scripts/dev/lite/recover-main-database.py",
+        "scripts/dev/lite/start-qualification.sh",
         "scripts/dev/lite/task_runtime.py",
         "scripts/dev/long-gates/security-s8-recovery.sh",
         "scripts/dev/run-fastapi-dev.sh",
@@ -16243,6 +16431,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_source_sync.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py",
         "pocket-lab-final-structure/runtime/tests/test_observability_status.py",
+        "scripts/dev/lite/recover-main-database.py",
         "scripts/dev/lite/run-ui-performance-qualified.py",
         "scripts/dev/lite/start-qualification.sh",
         "scripts/docs/check_security_assurance_playbooks.py"
@@ -17436,7 +17625,8 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
-        "pocket-lab-final-structure"
+        "pocket-lab-final-structure",
+        "scripts"
       ],
       "deprecated_aliases": [],
       "name": "POCKET_LAB_BASE_DIR",
@@ -17452,7 +17642,8 @@
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/reconcile-runtime.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py",
+        "scripts/dev/lite/start-qualification.sh"
       ],
       "safe_default": "path supplied by the owning component",
       "secret_classification": "configuration",
@@ -17963,7 +18154,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "fd792ece6539009a014aebee18bf045f5c3ccb71e9f84508d0ed19744185ce37",
+    "aggregate_fingerprint": "149e6cf6dc1938c8a8713a7ac31005ad3a5dfb0238bd57c386c9b54b656b3327",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -17997,7 +18188,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py": "f8ac4edfc0ea3c00f37deca914f53c1852414bfac5f934035df0b570defae5c4",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py": "321bb1b8c35aaa438fcced4e4cd75db2f230891489f7fca4446d298147eaba8e",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/gitops.py": "ebbdf1850a5d29caecb50a016d2533621e723f0c4b0554e12004a94ec6e8384e",
-      "pocket-lab-final-structure/runtime/api_fastapi/routers/harness.py": "4c8e87c07c6adda9d1bd9ce9204ed823819ca0d1ee7ed8eef05300e4ba35daa1",
+      "pocket-lab-final-structure/runtime/api_fastapi/routers/harness.py": "e0bb47cdea9be539c1a58f3b52cb369c4c70434f8de81d86425aacd8b68eaa94",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py": "df656e61d4d78e6ee9b95348a839118a85995edbaa449c23dd075aaaacf86e6d",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py": "fbfae5c9d0814819d4f5bf43429b39ea409c1859211cd2a23b059542686bcfe0",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py": "f3766153bdeec66c70cbba55851cee4593f7a45d5dfabee5c2fef4af13cecbdb",
@@ -18062,7 +18253,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_managed_enrollment.py": "1202aad81ce69535e7944badaa2b9658b229e4f5c22af21c16f7da6bb8385df3",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_evidence_receipts.py": "235bc1445412635b01980f631ef1fae301436a6163ad0dfb3ffbc4e34516ed7b",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_gate_faults.py": "115b0f5622cd008befc9030c4b31092b6400a0ac9a26ea8cf5337cb7cf7e2e24",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py": "c3ca37eeddc964df6a9d0e9a1d1a3318ae909527bfded8067c33588c19ee470f",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py": "b87116540cccee8c08c53d3c2e24371940d8c2c4eb314320a6fe8276a4e73ccd",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py": "e9ef4a881b48375b057a5d5c80302b502d07e1f176736e2bb0a689a5e27b7748",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py": "f80d59074faa298e6836cd63fd348c44c4b5dc3ea9837b19e813e22139c697c4",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_lifecycle_diagnostics.py": "6ca0ea3cdac825a7b91f517fef90e77dca515e96e7ab96006421131d24237c7c",
@@ -18075,7 +18266,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py": "1339604126f1045c0ccc792494fef16636bf3793bf4870658a2787f21235cfbd",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_approvals.py": "33c53257fbd7c218e3fb39aa0741fdcb79de980014386cf0b912624e21300423",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py": "8853ca237da1b8c27e60d00a53f4371215537c16743d8334c9956b84d1fbab1f",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py": "3a177b7b05251bb485d29ebedef6c08c20bfca91835f6b4aa23fc9dc0a77a19f",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py": "f43adbe85cce4baaf9e307c642b36ba1b0e513fd6ad0e19b2efeee5f5da46939",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_source_sync.py": "05f33d019d7af47b4f0f50dc08a626a7f24a082bc63cb87c415ba73e8a692ed2",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_recovery_subprojections.py": "1dbf2379ab9c3d8ad9c85773354f80514884787b440521a3eccc21b5b1bbfb8f",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_contract.py": "e0d0e3ecf8e9bb9c4cf1806fb565c9efefd5a79ed7c5cdaadd66fb7e1436739e",
@@ -18238,7 +18429,7 @@
       "scripts/dev/lite/setup-parity-tools.sh": "d12489a63a578e8cf6a06ba0cf73b354bf78ff8acec60a4c103eef312ab75ac4",
       "scripts/dev/lite/setup-system.sh": "508e775c78b4c328b65b303e9e0989e315b2f1d23f76f53c656252c2ac1942c2",
       "scripts/dev/lite/setup.sh": "db9a106eb4889bed57b68e0d19e651ef9d55c243b2507518f91abd30115a34a5",
-      "scripts/dev/lite/start-qualification.sh": "37e5d6449163fd4bd862e7285e1c7dc45ad1004592104c21d428ec8ce5c4deac",
+      "scripts/dev/lite/start-qualification.sh": "d78029cc3cb253d33df834584845ed287887cd4915f4512daa204a007ce75548",
       "scripts/dev/logs.sh": "7d115a63c433ee43df6dc6f034efdf908f40c322ef669a538b5be34c5ac07b42",
       "scripts/dev/long-gates/active-progress-soak.sh": "43c18a091d5366d61ef7474191b7d48d2b12034e96514c8572f2e85ae4e24ca8",
       "scripts/dev/long-gates/adaptive-runtime-hardening.sh": "f27effcddab74ea41657df4a126c11e83e1b48a17c200b553f54822da7751eed",

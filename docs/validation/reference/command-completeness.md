@@ -44,11 +44,14 @@ read in full and are preserved or linked as follows:
 | `qualification-maintenance-harness.md` | `POST /api/lite/harness/challenge` | SA-API-002 | ACTIVE | [API reference](api-reference.md) |
 | `qualification-maintenance-harness.md` | `sign(exact signing_payload)` | SA-AUTH-005 | ACTIVE | client signs only the server-returned canonical payload |
 | `qualification-maintenance-harness.md` | `POST /api/lite/harness/session` | SA-API-003 | ACTIVE | [API reference](api-reference.md) |
+| `qualification-maintenance-harness.md` | `POST /api/lite/harness/recovery/authorize` | SA-API-005 | ACTIVE | [API reference](api-reference.md) |
 | `qualification-maintenance-harness.md` | `GET /api/lite/status` | SA-LEGACY-021 | ACTIVE | normal Lite status; not harness authority |
 | `qualification-maintenance-harness.md` | `DELETE /api/lite/harness/session/{id}` | SA-API-004 | SUPERSEDED | current route is `DELETE /api/lite/harness/session/{session_id}` |
 | `qualification-maintenance-harness.md` | `task lite:harness:profiles` | SA-ENV-002 | ACTIVE | [Task reference](task-reference.md) |
 | `qualification-maintenance-harness.md` | `task lite:harness:status` | SA-ENV-002 | ACTIVE | [Task reference](task-reference.md) |
 | `qualification-maintenance-harness.md` | `task lite:harness:verify-off` | SA-CLEANUP-001 | ACTIVE | [Cleanup](../security-assurance/16-cleanup-default-off.md) |
+| `qualification-maintenance-harness.md` | `task lite:harness:recovery:authorize` | SA-RECOVERY-001 | ACTIVE | [Command catalog](command-catalog.md) |
+| `qualification-maintenance-harness.md` | `task lite:recovery:database:offline-promote` | SA-RECOVERY-002 | ACTIVE | [Command catalog](command-catalog.md) |
 | `qualification-maintenance-harness.md` | historical shell flag cleanup assignments | SA-CLEANUP-002 | SUPERSEDED | use `task lite:harness:verify-off` and sanitized runtime status |
 | `qualification-maintenance-harness.md` | `python3 scripts/dev/lite/harness.py verify-off` | SA-CLEANUP-003 | SUPERSEDED | use `task lite:harness:verify-off` |
 | `runtime-security-assurance-harness.md` | `GET /api/lite/harness/security-assurance/capabilities` | SA-API-010 | ACTIVE | [API reference](api-reference.md) |

@@ -47,10 +47,21 @@ HARNESS_BOOTSTRAP_PROFILE = "security-assurance-runner"
 HARNESS_BOOTSTRAP_PURPOSE = "security.assurance"
 HARNESS_UI_PERFORMANCE_PROFILE = "qualification-owner"
 HARNESS_UI_PERFORMANCE_PURPOSE = "ui-performance-60fps"
-HARNESS_BOOTSTRAP_PROFILES = frozenset({HARNESS_BOOTSTRAP_PROFILE, HARNESS_UI_PERFORMANCE_PROFILE})
+HARNESS_FLEET_ROLE_PROFILE = "fleet-role-qualifier"
+HARNESS_FLEET_ROLE_PURPOSE = "fleet.role_change"
+HARNESS_RECOVERY_PROFILE = "recovery-qualifier"
+HARNESS_RECOVERY_PURPOSE = "recovery.main_promotion"
+HARNESS_BOOTSTRAP_PROFILES = frozenset({
+    HARNESS_BOOTSTRAP_PROFILE,
+    HARNESS_UI_PERFORMANCE_PROFILE,
+    HARNESS_FLEET_ROLE_PROFILE,
+    HARNESS_RECOVERY_PROFILE,
+})
 HARNESS_BOOTSTRAP_PURPOSES = MappingProxyType({
     HARNESS_BOOTSTRAP_PROFILE: HARNESS_BOOTSTRAP_PURPOSE,
     HARNESS_UI_PERFORMANCE_PROFILE: HARNESS_UI_PERFORMANCE_PURPOSE,
+    HARNESS_FLEET_ROLE_PROFILE: HARNESS_FLEET_ROLE_PURPOSE,
+    HARNESS_RECOVERY_PROFILE: HARNESS_RECOVERY_PURPOSE,
 })
 HARNESS_BOOTSTRAP_TTL_SECONDS = 5 * 60
 HARNESS_PRINCIPAL_TTL_SECONDS = 12 * 60 * 60
@@ -58,10 +69,12 @@ HARNESS_PRINCIPAL_TTL_MIN_SECONDS = 60 * 60
 HARNESS_PRINCIPAL_TTL_MAX_SECONDS = 24 * 60 * 60
 HARNESS_BOOTSTRAP_STATE_RETENTION_SECONDS = 10 * 60
 HARNESS_BOOTSTRAP_MAX_PROOF_ATTEMPTS = 5
+HARNESS_RECOVERY_RECEIPT_TTL_SECONDS = 5 * 60
 
 _PRINCIPAL_ID_RE = re.compile(r"^[a-z][a-z0-9._-]{2,79}$")
 _PURPOSE_RE = re.compile(r"^[a-z][a-z0-9._:-]{0,79}$")
 _TARGET_SCOPE_RE = re.compile(r"^[a-z][a-z0-9._-]{2,63}$")
+_TARGET_DEVICE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
 _B64U_RE = re.compile(r"^[A-Za-z0-9_-]+={0,2}$")
 _PRODUCTION_ENVIRONMENTS = frozenset({"production", "release", "prod"})
 _DESTRUCTIVE_ACTIONS = frozenset({
@@ -105,6 +118,7 @@ class _BootstrapGrant:
     target_scope: str
     runtime_id: str
     revision_sha: str
+    target_device_id: str
     issued_at: str
     expires_at: str
     max_uses: int = 1
@@ -191,6 +205,16 @@ _PROFILE_DATA: dict[str, dict[str, Any]] = {
         "availability": "qualification-only",
         "capabilities": (
             "recovery.read", "backup.create", "backup.verify", "restore.preview",
+            "recovery.authorize",
+        ),
+        "destructive_capabilities": (),
+    },
+    "fleet-role-qualifier": {
+        "principal_class": "qualification",
+        "environment_scope": HARNESS_RUNTIME_ENVIRONMENT,
+        "availability": "qualification-only",
+        "capabilities": (
+            "device.capabilities.read", "device.roles.change",
         ),
         "destructive_capabilities": (),
     },
@@ -262,6 +286,9 @@ _ACTION_CAPABILITY: Mapping[str, str] = MappingProxyType({
     "backup.location.manage": "backup.location.manage",
     "restore.preview": "restore.preview",
     "restore.apply": "restore.apply",
+    "recovery.authorize": "recovery.authorize",
+    "device.capabilities.read": "device.capabilities.read",
+    "device.roles.change": "device.roles.change",
     "rules.draft": "rules.draft",
     "rules.activate": "rules.activate",
     "rules.rollback": "rules.rollback",
@@ -316,6 +343,47 @@ def qualification_owner_enabled() -> bool:
     return _flag("POCKETLAB_QUALIFICATION_OWNER")
 
 
+def _configured_target_device_id(*, required: bool = False) -> str:
+    value = os.environ.get("POCKETLAB_HARNESS_TARGET_DEVICE_ID", "").strip()
+    if not value:
+        if required:
+            raise HarnessConfigurationError(
+                "harness_target_device_required",
+                "The fleet qualification runtime must bind one exact target device.",
+                status_code=503,
+            )
+        return ""
+    if not _TARGET_DEVICE_ID_RE.fullmatch(value):
+        raise HarnessConfigurationError(
+            "harness_target_device_invalid",
+            "The configured qualification target device identifier is invalid.",
+            status_code=503,
+        )
+    return value
+
+
+def _configured_recovery_target() -> tuple[str, int]:
+    target_sha = os.environ.get("POCKETLAB_RECOVERY_TARGET_MAIN_SHA", "").strip().casefold()
+    target_schema_raw = os.environ.get("POCKETLAB_RECOVERY_TARGET_SCHEMA", "").strip()
+    if not re.fullmatch(r"[0-9a-f]{40}", target_sha):
+        raise HarnessConfigurationError(
+            "recovery_target_revision_invalid",
+            "The recovery qualification runtime must bind an exact target main revision.",
+            status_code=503,
+        )
+    try:
+        target_schema = int(target_schema_raw)
+    except (TypeError, ValueError):
+        target_schema = 0
+    if not 1 <= target_schema <= 999:
+        raise HarnessConfigurationError(
+            "recovery_target_schema_invalid",
+            "The recovery qualification runtime must bind a valid target schema.",
+            status_code=503,
+        )
+    return target_sha, target_schema
+
+
 def _bootstrap_profile_flags_match(profile: str, *, destructive: bool, owner: bool, test_bypass: bool) -> bool:
     """Keep each operator-approved bootstrap profile bound to its safe gates."""
     profile_name = str(profile or "").strip().casefold()
@@ -368,6 +436,11 @@ def validate_startup_configuration(*, environment_name: str | None = None) -> di
     bootstrap_principal = os.environ.get(HARNESS_BOOTSTRAP_PRINCIPAL_ENV, "").strip()
     bootstrap_fingerprint = os.environ.get(HARNESS_BOOTSTRAP_FINGERPRINT_ENV, "").strip().casefold()
     bootstrap_profile = os.environ.get(HARNESS_BOOTSTRAP_PROFILE_ENV, "").strip().casefold()
+    target_binding_present = bool(
+        os.environ.get("POCKETLAB_HARNESS_TARGET_DEVICE_ID", "").strip()
+        or os.environ.get("POCKETLAB_RECOVERY_TARGET_MAIN_SHA", "").strip()
+        or os.environ.get("POCKETLAB_RECOVERY_TARGET_SCHEMA", "").strip()
+    )
     bootstrap_metadata_present = bool(
         bootstrap_approval
         or bootstrap_principal
@@ -385,7 +458,7 @@ def validate_startup_configuration(*, environment_name: str | None = None) -> di
             test_bypass=test_bypass,
         )
     )
-    unsafe_flags = harness or destructive or owner or test_bypass or bootstrap_metadata_present
+    unsafe_flags = harness or destructive or owner or test_bypass or bootstrap_metadata_present or target_binding_present
     if env in _PRODUCTION_ENVIRONMENTS and unsafe_flags:
         raise HarnessConfigurationError(
             "harness_forbidden_in_production",
@@ -420,6 +493,24 @@ def validate_startup_configuration(*, environment_name: str | None = None) -> di
             "Key-bound assurance bootstrap requires an explicit safe qualification configuration.",
             status_code=503,
         )
+    if bootstrap_profile == HARNESS_FLEET_ROLE_PROFILE:
+        try:
+            _configured_target_device_id(required=True)
+        except HarnessError:
+            raise HarnessConfigurationError(
+                "harness_bootstrap_target_invalid",
+                "Fleet-role bootstrap requires an operator-bound target device.",
+                status_code=503,
+            ) from None
+    if bootstrap_profile == HARNESS_RECOVERY_PROFILE:
+        try:
+            _configured_recovery_target()
+        except HarnessError:
+            raise HarnessConfigurationError(
+                "harness_bootstrap_recovery_target_invalid",
+                "Recovery bootstrap requires an exact target main revision and schema.",
+                status_code=503,
+            ) from None
     return {
         "valid": True,
         "environment": env,
@@ -577,6 +668,7 @@ def _safe_bootstrap_grant(grant: _BootstrapGrant) -> dict[str, Any]:
         "target_scope": grant.target_scope,
         "runtime_id": grant.runtime_id,
         "revision_sha": grant.revision_sha,
+        "target_device_id": grant.target_device_id,
         "issued_at": grant.issued_at,
         "expires_at": grant.expires_at,
         "max_uses": grant.max_uses,
@@ -598,6 +690,7 @@ def _safe_bootstrap_challenge(
         "target_scope": grant.target_scope,
         "runtime_id": grant.runtime_id,
         "revision_sha": grant.revision_sha,
+        "target_device_id": grant.target_device_id,
         "issued_at": challenge.issued_at,
         "expires_at": challenge.expires_at,
         "algorithm": "ed25519",
@@ -647,6 +740,11 @@ def create_bootstrap_grant(*, principal_id: str, public_key: str) -> dict[str, A
             status_code=401,
         )
     revision = _runtime_revision()
+    target_device_id = (
+        _configured_target_device_id(required=True)
+        if bootstrap_profile == HARNESS_FLEET_ROLE_PROFILE
+        else ""
+    )
     now = _now()
     expires = now + timedelta(
         seconds=_bounded_int(
@@ -666,6 +764,7 @@ def create_bootstrap_grant(*, principal_id: str, public_key: str) -> dict[str, A
         target_scope=HARNESS_TARGET_SCOPE,
         runtime_id=_runtime_id(),
         revision_sha=revision,
+        target_device_id=target_device_id,
         issued_at=_iso(now),
         expires_at=_iso(expires),
     )
@@ -682,6 +781,7 @@ def create_bootstrap_grant(*, principal_id: str, public_key: str) -> dict[str, A
                 and not existing.consumed_at
                 and existing_expiry is not None
                 and existing_expiry > now
+                and existing.target_device_id == target_device_id
             ):
                 # A lost client response must be safe to retry without
                 # creating a second grant or forcing a second proof path.
@@ -702,6 +802,7 @@ def create_bootstrap_grant(*, principal_id: str, public_key: str) -> dict[str, A
                 event_type="bootstrap_grant_created",
                 reason_code="bootstrap_grant_created",
                 target_scope=HARNESS_TARGET_SCOPE,
+                target_device_id=target_device_id,
                 operation_id=grant.grant_id,
                 result="accepted",
                 summary="An ephemeral key-bound assurance bootstrap grant was created.",
@@ -731,6 +832,13 @@ def issue_bootstrap_challenge(*, grant_id: str) -> dict[str, Any]:
             raise HarnessError("bootstrap_grant_expired", "The bootstrap grant has expired.", status_code=401)
         if _runtime_id() != grant.runtime_id or _runtime_revision() != grant.revision_sha:
             raise HarnessError("bootstrap_binding_mismatch", "The bootstrap grant is bound to a different runtime revision.", status_code=401)
+        configured_target = (
+            _configured_target_device_id(required=True)
+            if grant.profile == HARNESS_FLEET_ROLE_PROFILE
+            else ""
+        )
+        if configured_target != grant.target_device_id:
+            raise HarnessError("bootstrap_target_mismatch", "The bootstrap grant is bound to a different qualification target.", status_code=401)
         if not _bootstrap_approval_configured(
             principal_id=grant.principal_id,
             public_key_fingerprint=grant.public_key_fingerprint,
@@ -777,6 +885,7 @@ def issue_bootstrap_challenge(*, grant_id: str) -> dict[str, Any]:
             "target_scope": grant.target_scope,
             "runtime_id": grant.runtime_id,
             "revision_sha": grant.revision_sha,
+            "target_device_id": grant.target_device_id,
             "nonce": nonce,
             "issued_at": _iso(now),
             "expires_at": _iso(challenge_expires),
@@ -833,6 +942,13 @@ def complete_bootstrap(
             raise HarnessError("bootstrap_grant_expired", "The bootstrap grant or challenge has expired.", status_code=401)
         if _runtime_id() != grant.runtime_id or _runtime_revision() != grant.revision_sha:
             raise HarnessError("bootstrap_binding_mismatch", "The bootstrap proof is bound to a different runtime revision.", status_code=401)
+        configured_target = (
+            _configured_target_device_id(required=True)
+            if grant.profile == HARNESS_FLEET_ROLE_PROFILE
+            else ""
+        )
+        if configured_target != grant.target_device_id:
+            raise HarnessError("bootstrap_target_mismatch", "The bootstrap grant is bound to a different qualification target.", status_code=401)
         if not _bootstrap_approval_configured(
             principal_id=grant.principal_id,
             public_key_fingerprint=grant.public_key_fingerprint,
@@ -913,9 +1029,9 @@ def complete_bootstrap(
             tx.execute(
                 """INSERT INTO synthetic_principals(
                        principal_id,principal_type,principal_class,display_name,enabled,
-                       environment_scope,target_scope,allowed_profiles_json,default_profile,
+                       environment_scope,target_scope,target_device_id,allowed_profiles_json,default_profile,
                        algorithm,public_key,public_key_fingerprint,created_at,expires_at
-                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (
                     identifier,
                     "synthetic_machine",
@@ -926,6 +1042,7 @@ def complete_bootstrap(
                     1,
                     environment(),
                     HARNESS_TARGET_SCOPE,
+                    grant.target_device_id,
                     _canonical([profile_name]),
                     profile_name,
                     "ed25519",
@@ -938,9 +1055,9 @@ def complete_bootstrap(
             tx.execute(
                 """INSERT INTO harness_sessions(
                        harness_session_id,principal_id,principal_class,purpose,
-                       capability_profile,capabilities_json,target_scope,runtime_id,
+                       capability_profile,capabilities_json,target_scope,target_device_id,runtime_id,
                        token_hash,started_at,expires_at,last_used_at,destructive_allowed,status
-                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (
                     session_id,
                     identifier,
@@ -949,6 +1066,7 @@ def complete_bootstrap(
                     profile_name,
                     _canonical(capabilities),
                     HARNESS_TARGET_SCOPE,
+                    grant.target_device_id,
                     grant.runtime_id,
                     _hash_opaque(session_token),
                     _iso(now),
@@ -966,6 +1084,7 @@ def complete_bootstrap(
                 principal_id=identifier,
                 principal_class="qualification",
                 target_scope=HARNESS_TARGET_SCOPE,
+                target_device_id=grant.target_device_id,
                 operation_id=grant.grant_id,
                 result="accepted",
                 summary="A disposable assurance principal was created from a verified machine key.",
@@ -980,6 +1099,7 @@ def complete_bootstrap(
                 purpose=grant.purpose,
                 capability=profile_name,
                 target_scope=HARNESS_TARGET_SCOPE,
+                target_device_id=grant.target_device_id,
                 operation_id=grant.grant_id,
                 result="accepted",
                 summary="The one-use assurance bootstrap grant was consumed.",
@@ -995,6 +1115,7 @@ def complete_bootstrap(
                 purpose=grant.purpose,
                 capability=profile_name,
                 target_scope=HARNESS_TARGET_SCOPE,
+                target_device_id=grant.target_device_id,
                 result="accepted",
                 summary="The bootstrap machine-key proof was verified.",
                 correlation_id=session_id,
@@ -1009,6 +1130,7 @@ def complete_bootstrap(
                 purpose=grant.purpose,
                 capability=profile_name,
                 target_scope=HARNESS_TARGET_SCOPE,
+                target_device_id=grant.target_device_id,
                 result="accepted",
                 summary="Short-lived harness session created from the bootstrap proof.",
                 correlation_id=session_id,
@@ -1031,6 +1153,7 @@ def complete_bootstrap(
             "target_scope": grant.target_scope,
             "runtime_id": grant.runtime_id,
             "revision_sha": grant.revision_sha,
+            "target_device_id": grant.target_device_id,
             "sanitized": True,
         },
         "principal": _safe_principal({
@@ -1103,6 +1226,27 @@ def _safe_scope(value: str) -> str:
     if result != HARNESS_TARGET_SCOPE or not _TARGET_SCOPE_RE.fullmatch(result):
         raise HarnessError("harness_target_mismatch", "Only the local server-host target scope is supported.", status_code=403)
     return result
+
+
+def _safe_target_device_id(value: str | None, *, profile: str) -> str:
+    requested = str(value or "").strip()
+    profile_name = str(profile or "").strip().casefold()
+    if profile_name == HARNESS_FLEET_ROLE_PROFILE:
+        bound = _configured_target_device_id(required=True)
+        if requested and requested != bound:
+            raise HarnessError(
+                "harness_target_mismatch",
+                "The fleet qualification session is bound to a different device.",
+                status_code=403,
+            )
+        return bound
+    if requested:
+        raise HarnessError(
+            "harness_target_mismatch",
+            "This qualification profile cannot select a device target.",
+            status_code=403,
+        )
+    return ""
 
 
 def _b64u_decode(value: str, *, expected_lengths: set[int]) -> bytes:
@@ -1190,6 +1334,7 @@ def _insert_audit(
     purpose: str | None = None,
     capability: str | None = None,
     target_scope: str | None = None,
+    target_device_id: str | None = None,
     operation_id: str | None = None,
     result: str = "rejected",
     summary: str,
@@ -1198,14 +1343,15 @@ def _insert_audit(
     tx.execute(
         """INSERT INTO harness_audit_events(
                occurred_at,event_type,reason_code,principal_id,principal_class,
-               harness_session_id,purpose,capability,target_scope,environment,
+               harness_session_id,purpose,capability,target_scope,target_device_id,environment,
                operation_id,result,summary,correlation_id
-           ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+           ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (
             _iso(), str(event_type)[:80], str(reason_code)[:80],
             str(principal_id or "")[:80] or None, str(principal_class or "")[:40] or None,
             str(harness_session_id or "")[:100] or None, str(purpose or "")[:80] or None,
             str(capability or "")[:120] or None, str(target_scope or "")[:64] or None,
+            str(target_device_id or "")[:128],
             environment()[:32], str(operation_id or "")[:100] or None, str(result)[:32],
             str(summary)[:240], str(correlation_id or uuid.uuid4().hex)[:80],
         ),
@@ -1245,6 +1391,7 @@ def _safe_principal(row: Mapping[str, Any]) -> dict[str, Any]:
         "enabled": bool(row.get("enabled")),
         "environment_scope": str(row.get("environment_scope") or "")[:32],
         "target_scope": str(row.get("target_scope") or "")[:64],
+        "target_device_id": str(row.get("target_device_id") or "")[:128],
         "allowed_profiles": [str(item)[:64] for item in profiles[:8]],
         "default_profile": str(row.get("default_profile") or "")[:64],
         "algorithm": str(row.get("algorithm") or "ed25519")[:32],
@@ -1293,6 +1440,17 @@ def register_principal(
                 "The exceptional Qualification Owner profile is not enabled.",
                 status_code=403,
             )
+    if HARNESS_FLEET_ROLE_PROFILE in names and names != [HARNESS_FLEET_ROLE_PROFILE]:
+        raise HarnessError(
+            "principal_profiles_invalid",
+            "Fleet-role qualification must use its own single-purpose principal.",
+            status_code=422,
+        )
+    target_device_id = (
+        _configured_target_device_id(required=True)
+        if HARNESS_FLEET_ROLE_PROFILE in names
+        else ""
+    )
     principal_class = _principal_class(names)
     ttl = max(60, min(int(expires_in_seconds), 7 * 24 * 60 * 60))
     now = _now()
@@ -1306,12 +1464,12 @@ def register_principal(
             tx.execute(
                 """INSERT INTO synthetic_principals(
                        principal_id,principal_type,principal_class,display_name,enabled,
-                       environment_scope,target_scope,allowed_profiles_json,default_profile,
+                       environment_scope,target_scope,target_device_id,allowed_profiles_json,default_profile,
                        algorithm,public_key,public_key_fingerprint,created_at,expires_at
-                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (
                     identifier, "synthetic_machine", principal_class, display, 1,
-                    environment(), HARNESS_TARGET_SCOPE, allowed_json, names[0], "ed25519",
+                    environment(), HARNESS_TARGET_SCOPE, target_device_id, allowed_json, names[0], "ed25519",
                     _b64u_encode(public_bytes), fingerprint, _iso(now), _iso(expires),
                 ),
             )
@@ -1429,7 +1587,7 @@ def revoke_authenticated_principal(
     return revoke_principal(principal_id, reason_code=reason_code)
 
 
-def issue_challenge(*, principal_id: str, purpose: str, profile: str, target_scope: str = HARNESS_TARGET_SCOPE, ttl_seconds: int | None = None) -> dict[str, Any]:
+def issue_challenge(*, principal_id: str, purpose: str, profile: str, target_scope: str = HARNESS_TARGET_SCOPE, target_device_id: str | None = None, ttl_seconds: int | None = None) -> dict[str, Any]:
     _require_enabled()
     identifier = _safe_principal_id(principal_id)
     safe_purpose = _safe_purpose(purpose)
@@ -1438,6 +1596,9 @@ def issue_challenge(*, principal_id: str, purpose: str, profile: str, target_sco
     _profile_for_runtime(profile_name)
     if profile_name == "qualification-owner" and not qualification_owner_enabled():
         raise HarnessError("qualification_owner_profile_disabled", "The exceptional Qualification Owner profile is not enabled.", status_code=403)
+    if profile_name == HARNESS_FLEET_ROLE_PROFILE and safe_purpose != HARNESS_FLEET_ROLE_PURPOSE:
+        raise HarnessError("harness_purpose_mismatch", "Fleet-role qualification requires its bound purpose.", status_code=403)
+    safe_target_device_id = _safe_target_device_id(target_device_id, profile=profile_name)
     ttl = _bounded_int("POCKETLAB_HARNESS_CHALLENGE_TTL_SECONDS", 120, 30, 300) if ttl_seconds is None else max(30, min(int(ttl_seconds), 300))
     now = _now()
     expires = now + timedelta(seconds=ttl)
@@ -1453,6 +1614,7 @@ def issue_challenge(*, principal_id: str, purpose: str, profile: str, target_sco
         "purpose": safe_purpose,
         "profile": profile_name,
         "target_scope": safe_scope,
+        "target_device_id": safe_target_device_id,
         "runtime_id": _runtime_id(),
     }
     signing_payload = _canonical(payload)
@@ -1467,7 +1629,11 @@ def issue_challenge(*, principal_id: str, purpose: str, profile: str, target_sco
                 raise HarnessError("principal_revoked", "The synthetic principal is disabled or revoked.", status_code=403)
             if expires_at is None or expires_at <= now:
                 raise HarnessError("principal_expired", "The synthetic principal has expired.", status_code=403)
-            if str(row["environment_scope"]) != environment() or str(row["target_scope"]) != safe_scope:
+            if (
+                str(row["environment_scope"]) != environment()
+                or str(row["target_scope"]) != safe_scope
+                or str(row["target_device_id"] or "") != safe_target_device_id
+            ):
                 raise HarnessError("harness_environment_mismatch", "The synthetic principal is scoped to a different runtime.", status_code=403)
             try:
                 allowed = json.loads(str(row["allowed_profiles_json"] or "[]"))
@@ -1484,12 +1650,13 @@ def issue_challenge(*, principal_id: str, purpose: str, profile: str, target_sco
             tx.execute(
                 """INSERT INTO harness_challenges(
                        challenge_id,principal_id,nonce_hash,signing_payload_hash,
-                       issued_at,expires_at,purpose,requested_profile,target_scope,
+                       issued_at,expires_at,purpose,requested_profile,target_scope,target_device_id,
                        runtime_id,created_at
-                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (
                     challenge_id, identifier, _hash_opaque(nonce), _hash_opaque(signing_payload),
                     _iso(now), _iso(expires), safe_purpose, profile_name, safe_scope,
+                    safe_target_device_id,
                     payload["runtime_id"], _iso(now),
                 ),
             )
@@ -1497,6 +1664,7 @@ def issue_challenge(*, principal_id: str, purpose: str, profile: str, target_sco
                 tx, event_type="challenge_issued", reason_code="challenge_issued",
                 principal_id=identifier, principal_class=str(row["principal_class"]),
                 purpose=safe_purpose, capability=profile_name, target_scope=safe_scope,
+                target_device_id=safe_target_device_id,
                 result="accepted", summary="Bounded synthetic-principal challenge issued.",
                 correlation_id=challenge_id,
             )
@@ -1506,6 +1674,7 @@ def issue_challenge(*, principal_id: str, purpose: str, profile: str, target_sco
         "profile": profile_name,
         "purpose": safe_purpose,
         "target_scope": safe_scope,
+        "target_device_id": safe_target_device_id,
         "runtime_id": payload["runtime_id"],
         "issued_at": payload["issued_at"],
         "expires_at": payload["expires_at"],
@@ -1526,7 +1695,7 @@ def _session_context(row: Mapping[str, Any]) -> dict[str, Any]:
     actor_type = "qualification" if profile_name == "qualification-owner" else (
         "maintenance" if str(row.get("principal_class") or "") == "maintenance" else "synthetic_machine"
     )
-    owner = profile_name == "qualification-owner"
+    owner = profile_name in {HARNESS_UI_PERFORMANCE_PROFILE, HARNESS_FLEET_ROLE_PROFILE}
     assurance = []
     if owner:
         assurance = [{
@@ -1544,6 +1713,7 @@ def _session_context(row: Mapping[str, Any]) -> dict[str, Any]:
         "purpose": str(row.get("purpose") or "")[:80],
         "capabilities": [str(item)[:120] for item in capabilities[:64]],
         "target_scope": str(row.get("target_scope") or "")[:64],
+        "target_device_id": str(row.get("target_device_id") or "")[:128],
         "runtime_id": str(row.get("runtime_id") or "")[:64],
         "destructive_allowed": bool(row.get("destructive_allowed")),
         "qualification_environment": environment() == HARNESS_RUNTIME_ENVIRONMENT,
@@ -1725,6 +1895,7 @@ def _safe_session(row: Mapping[str, Any]) -> dict[str, Any]:
         "capability_profile": str(row.get("capability_profile") or "")[:64],
         "capabilities": [str(item)[:120] for item in capabilities[:64]],
         "target_scope": str(row.get("target_scope") or "")[:64],
+        "target_device_id": str(row.get("target_device_id") or "")[:128],
         "started_at": row.get("started_at"),
         "expires_at": row.get("expires_at"),
         "last_used_at": row.get("last_used_at"),
@@ -1761,7 +1932,7 @@ def create_session(
         raise HarnessError("signature_invalid", "The synthetic-principal signature could not be verified.", status_code=401) from None
     expected_keys = {
         "v", "principal_id", "challenge_id", "nonce", "issued_at", "expires_at",
-        "purpose", "profile", "target_scope", "runtime_id",
+        "purpose", "profile", "target_scope", "target_device_id", "runtime_id",
     }
     if set(parsed) != expected_keys or parsed.get("challenge_id") != safe_challenge_id:
         raise HarnessError("challenge_context_mismatch", "The signed challenge context does not match the issued challenge.", status_code=401)
@@ -1773,6 +1944,10 @@ def create_session(
     profile_name = str(parsed.get("profile") or "").strip().casefold()
     safe_purpose = _safe_purpose(str(parsed.get("purpose") or ""))
     safe_scope = _safe_scope(str(parsed.get("target_scope") or ""))
+    safe_target_device_id = _safe_target_device_id(
+        str(parsed.get("target_device_id") or ""),
+        profile=profile_name,
+    )
     now = _now()
     try:
         issued = _parse_iso(str(parsed.get("issued_at") or ""))
@@ -1813,7 +1988,7 @@ def create_session(
                 raise HarnessError("challenge_not_found", "The harness challenge is no longer available.", status_code=401)
             if challenge["consumed_at"] is not None:
                 raise HarnessError("challenge_replayed", "The harness challenge has already been consumed.", status_code=401)
-            if str(challenge["principal_id"]) != identifier or str(challenge["requested_profile"]) != profile_name or str(challenge["purpose"]) != safe_purpose or str(challenge["target_scope"]) != safe_scope:
+            if str(challenge["principal_id"]) != identifier or str(challenge["requested_profile"]) != profile_name or str(challenge["purpose"]) != safe_purpose or str(challenge["target_scope"]) != safe_scope or str(challenge["target_device_id"] or "") != safe_target_device_id:
                 raise HarnessError("challenge_context_mismatch", "The signed challenge context does not match the issued challenge.", status_code=401)
             if str(challenge["runtime_id"]) != str(parsed.get("runtime_id")) or str(challenge["signing_payload_hash"]) != _hash_opaque(raw_payload) or str(challenge["nonce_hash"]) != _hash_opaque(nonce):
                 raise HarnessError("challenge_context_mismatch", "The signed challenge context does not match the issued challenge.", status_code=401)
@@ -1861,12 +2036,12 @@ def create_session(
                 tx.execute(
                     """INSERT INTO harness_sessions(
                            harness_session_id,principal_id,principal_class,purpose,
-                           capability_profile,capabilities_json,target_scope,runtime_id,
+                           capability_profile,capabilities_json,target_scope,target_device_id,runtime_id,
                            token_hash,started_at,expires_at,last_used_at,destructive_allowed,status
-                       ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                       ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                     (
                         session_id, identifier, str(principal["principal_class"]), safe_purpose,
-                        profile_name, _canonical(capabilities), safe_scope, str(parsed["runtime_id"]),
+                        profile_name, _canonical(capabilities), safe_scope, safe_target_device_id, str(parsed["runtime_id"]),
                         token_hash, _iso(now), _iso(session_expires), _iso(now),
                         1 if destructive_allowed else 0, "active",
                     ),
@@ -1876,14 +2051,16 @@ def create_session(
                     tx, event_type="authentication_succeeded", reason_code="signature_verified",
                     principal_id=identifier, principal_class=str(principal["principal_class"]),
                     harness_session_id=session_id, purpose=safe_purpose, capability=profile_name,
-                    target_scope=safe_scope, result="accepted", summary="Synthetic-principal challenge verified.",
+                    target_scope=safe_scope, target_device_id=safe_target_device_id,
+                    result="accepted", summary="Synthetic-principal challenge verified.",
                     correlation_id=session_id,
                 )
                 _insert_audit(
                     tx, event_type="session_created", reason_code="session_created",
                     principal_id=identifier, principal_class=str(principal["principal_class"]),
                     harness_session_id=session_id, purpose=safe_purpose, capability=profile_name,
-                    target_scope=safe_scope, result="accepted", summary="Short-lived harness session created.",
+                    target_scope=safe_scope, target_device_id=safe_target_device_id,
+                    result="accepted", summary="Short-lived harness session created.",
                     correlation_id=session_id,
                 )
                 row = tx.execute(
@@ -2010,6 +2187,8 @@ def enforce_capability(
     principal_id = str(harness.get("principal_id") or "")[:80]
     session_id = str(harness.get("session_id") or "")[:100]
     target_scope = str(harness.get("target_scope") or "")[:64]
+    target_device_id = str(harness.get("target_device_id") or "")[:128]
+    profile_name = str(harness.get("profile") or "").strip().casefold()
     denied: tuple[str, str] | None = None
     if not bool(harness.get("qualification_environment")) or not bool(harness.get("enabled")):
         denied = ("harness_disabled", "The synthetic harness is not active for this operation.")
@@ -2019,6 +2198,15 @@ def enforce_capability(
         denied = ("harness_action_unregistered", "The requested action has no registered harness capability.")
     elif capability not in set(harness.get("capabilities") or []):
         denied = ("harness_capability_denied", "The synthetic principal is not authorized for this capability.")
+    elif str(action_id or "") in {"device.roles.change", "device.capabilities.read"}:
+        if (
+            profile_name != HARNESS_FLEET_ROLE_PROFILE
+            or str(target_type or "") != "device"
+            or not target_device_id
+            or str(target_id or "") in {"server", "server-host", "local-server", "pocketlab-server"}
+            or str(target_id or "") != target_device_id
+        ):
+            denied = ("harness_target_mismatch", "The fleet qualification session is bound to one non-server device target.")
     elif str(target_type or "") == "device" and str(target_id or "") not in {"server", "server-host", "local-server", "pocketlab-server"}:
         denied = ("harness_target_mismatch", "This harness scope does not include secondary device targets.")
     is_destructive = bool(destructive) if destructive is not None else str(action_id or "") in _DESTRUCTIVE_ACTIONS
@@ -2033,6 +2221,7 @@ def enforce_capability(
                     principal_id=principal_id, principal_class=str(harness.get("principal_class") or ""),
                     harness_session_id=session_id, purpose=str(harness.get("purpose") or ""),
                     capability=capability or str(action_id or "")[:120], target_scope=target_scope,
+                    target_device_id=target_device_id,
                     operation_id=operation_id, result="rejected", summary=message,
                     correlation_id=session_id or None,
                 )
@@ -2044,10 +2233,239 @@ def enforce_capability(
                     tx, event_type="destructive_operation_admitted", reason_code="destructive_admitted",
                     principal_id=principal_id, principal_class=str(harness.get("principal_class") or ""),
                     harness_session_id=session_id, purpose=str(harness.get("purpose") or ""),
-                    capability=capability, target_scope=target_scope, operation_id=operation_id,
+                    capability=capability, target_scope=target_scope, target_device_id=target_device_id,
+                    operation_id=operation_id,
                     result="accepted", summary="Destructive operation passed the harness gate; normal operation safeguards still apply.",
                     correlation_id=session_id or None,
                 )
+
+
+def _safe_recovery_identifier(value: str, *, label: str) -> str:
+    result = str(value or "").strip()
+    if not re.fullmatch(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,119}$", result):
+        raise HarnessError(
+            "recovery_binding_invalid",
+            f"The recovery {label} is invalid.",
+            status_code=422,
+        )
+    return result
+
+
+def _safe_recovery_receipt(row: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "receipt_id": str(row.get("receipt_id") or "")[:120],
+        "principal_id": str(row.get("principal_id") or "")[:80],
+        "harness_session_id": str(row.get("harness_session_id") or "")[:100],
+        "action_id": str(row.get("action_id") or "")[:80],
+        "backup_id": str(row.get("backup_id") or "")[:120],
+        "preview_id": str(row.get("preview_id") or "")[:120],
+        "target_schema": int(row.get("target_schema") or 0),
+        "target_runtime_sha": str(row.get("target_runtime_sha") or "")[:40],
+        "issued_runtime_id": str(row.get("issued_runtime_id") or "")[:64],
+        "issued_runtime_revision": str(row.get("issued_runtime_revision") or "")[:40],
+        "issued_at": row.get("issued_at"),
+        "expires_at": row.get("expires_at"),
+        "consumed_at": row.get("consumed_at"),
+        "status": str(row.get("status") or "")[:16],
+        "sanitized": True,
+    }
+
+
+def issue_recovery_receipt(
+    auth_context: Mapping[str, Any],
+    *,
+    backup_id: str,
+    preview_id: str,
+    target_schema: int,
+    confirm: bool,
+) -> dict[str, Any]:
+    """Issue a one-use, runtime- and artifact-bound offline promotion receipt."""
+    _require_enabled()
+    harness = auth_context.get("harness") if isinstance(auth_context, Mapping) else None
+    if not isinstance(harness, Mapping):
+        raise HarnessError("harness_session_required", "A signed recovery qualification session is required.", status_code=401)
+    if (
+        str(harness.get("profile") or "").strip().casefold() != HARNESS_RECOVERY_PROFILE
+        or str(harness.get("purpose") or "").strip().casefold() != HARNESS_RECOVERY_PURPOSE
+        or str(harness.get("target_scope") or "") != HARNESS_TARGET_SCOPE
+        or str(harness.get("target_device_id") or "")
+        or str(harness.get("principal_class") or "") != "qualification"
+        or not bool(harness.get("qualification_environment"))
+        or bool(harness.get("destructive_allowed"))
+    ):
+        raise HarnessError("recovery_binding_mismatch", "Only the narrow recovery qualification session may issue this receipt.", status_code=403)
+    if not confirm:
+        raise HarnessError("recovery_confirmation_required", "Explicit recovery receipt confirmation is required.", status_code=400)
+    safe_backup_id = _safe_recovery_identifier(backup_id, label="backup id")
+    safe_preview_id = _safe_recovery_identifier(preview_id, label="preview id")
+    try:
+        expected_schema = int(target_schema)
+    except (TypeError, ValueError):
+        expected_schema = 0
+    target_sha, configured_schema = _configured_recovery_target()
+    if expected_schema != configured_schema:
+        raise HarnessError("recovery_target_schema_mismatch", "The receipt target schema does not match the operator binding.", status_code=403)
+
+    from . import lite_database_recovery
+
+    try:
+        backup = lite_database_recovery.verify_database_backup(safe_backup_id)
+    except Exception as exc:
+        raise HarnessError("recovery_backup_unverified", "The selected recovery backup could not be verified.", status_code=409) from exc
+    if str(backup.get("backup_id") or "") != safe_backup_id or str(backup.get("status") or "") != "verified":
+        raise HarnessError("recovery_backup_unverified", "The selected recovery backup is not verified.", status_code=409)
+    if int(backup.get("schema_version") or 0) > expected_schema:
+        raise HarnessError("recovery_backup_newer_than_target", "The selected recovery backup is newer than the target runtime schema.", status_code=409)
+    preview = lite_database_recovery.get_database_restore_preview(safe_preview_id)
+    if not isinstance(preview, dict) or str(preview.get("backup_id") or "") != safe_backup_id:
+        raise HarnessError("recovery_preview_mismatch", "The restore preview is not bound to the selected backup.", status_code=409)
+    if preview.get("status") != "ready" or preview.get("restore_allowed") is not True:
+        raise HarnessError("recovery_preview_blocked", "The selected restore preview is not ready for the offline handoff.", status_code=409)
+    if int(preview.get("schema_version") or 0) != int(backup.get("schema_version") or 0):
+        raise HarnessError("recovery_preview_mismatch", "The restore preview schema does not match the verified backup.", status_code=409)
+
+    now = _now()
+    expires = now + timedelta(
+        seconds=_bounded_int(
+            "POCKETLAB_HARNESS_RECOVERY_RECEIPT_TTL_SECONDS",
+            HARNESS_RECOVERY_RECEIPT_TTL_SECONDS,
+            60,
+            10 * 60,
+        )
+    )
+    token = secrets.token_urlsafe(40)
+    receipt = {
+        "receipt_id": "hrr-" + uuid.uuid4().hex,
+        "token_hash": _hash_opaque(token),
+        "principal_id": str(harness.get("principal_id") or "")[:80],
+        "harness_session_id": str(harness.get("session_id") or "")[:100],
+        "action_id": "recovery.authorize",
+        "backup_id": safe_backup_id,
+        "preview_id": safe_preview_id,
+        "target_schema": expected_schema,
+        "target_runtime_sha": target_sha,
+        "issued_runtime_id": str(harness.get("runtime_id") or "")[:64],
+        "issued_runtime_revision": _runtime_revision(),
+        "issued_at": _iso(now),
+        "expires_at": _iso(expires),
+        "status": "issued",
+    }
+    apply_migrations()
+    with connection() as conn, begin_immediate(conn) as tx:
+        tx.execute(
+            """INSERT INTO harness_recovery_receipts(
+                   receipt_id,token_hash,principal_id,harness_session_id,action_id,
+                   backup_id,preview_id,target_schema,target_runtime_sha,
+                   issued_runtime_id,issued_runtime_revision,issued_at,expires_at
+               ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (
+                receipt["receipt_id"],
+                receipt["token_hash"],
+                receipt["principal_id"],
+                receipt["harness_session_id"],
+                receipt["action_id"],
+                receipt["backup_id"],
+                receipt["preview_id"],
+                receipt["target_schema"],
+                receipt["target_runtime_sha"],
+                receipt["issued_runtime_id"],
+                receipt["issued_runtime_revision"],
+                receipt["issued_at"],
+                receipt["expires_at"],
+            ),
+        )
+        _insert_audit(
+            tx,
+            event_type="recovery_receipt_issued",
+            reason_code="recovery_receipt_issued",
+            principal_id=receipt["principal_id"],
+            principal_class="qualification",
+            harness_session_id=receipt["harness_session_id"],
+            purpose=HARNESS_RECOVERY_PURPOSE,
+            capability="recovery.authorize",
+            target_scope=HARNESS_TARGET_SCOPE,
+            operation_id=receipt["receipt_id"],
+            result="accepted",
+            summary="One-use recovery promotion receipt issued for one verified backup and preview.",
+            correlation_id=receipt["receipt_id"],
+        )
+    safe = _safe_recovery_receipt(receipt)
+    return {"receipt": safe, "receipt_token": token, "sanitized": True}
+
+
+def inspect_recovery_receipt(receipt_token: str) -> dict[str, Any]:
+    """Read and validate a receipt before the destructive handoff boundary."""
+    _require_enabled()
+    raw = str(receipt_token or "").strip()
+    if not 32 <= len(raw) <= 256:
+        raise HarnessError("recovery_receipt_invalid", "The recovery receipt is invalid or expired.", status_code=401)
+    apply_migrations()
+    with connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM harness_recovery_receipts WHERE token_hash=? LIMIT 1",
+            (_hash_opaque(raw),),
+        ).fetchone()
+    if not row:
+        raise HarnessError("recovery_receipt_invalid", "The recovery receipt is invalid or expired.", status_code=401)
+    result = dict(row)
+    if str(result.get("status") or "") != "issued":
+        raise HarnessError("recovery_receipt_replayed", "The recovery receipt has already been consumed or revoked.", status_code=401)
+    expiry = _parse_iso(str(result.get("expires_at") or ""))
+    if expiry is None or expiry <= _now():
+        with connection() as conn, begin_immediate(conn) as tx:
+            tx.execute("UPDATE harness_recovery_receipts SET status='expired' WHERE receipt_id=? AND status='issued'", (result["receipt_id"],))
+        raise HarnessError("recovery_receipt_expired", "The recovery receipt has expired.", status_code=401)
+    target_sha, target_schema = _configured_recovery_target()
+    if str(result.get("target_runtime_sha") or "") != target_sha or int(result.get("target_schema") or 0) != target_schema:
+        raise HarnessError("recovery_target_mismatch", "The recovery receipt is bound to a different target runtime.", status_code=401)
+    if str(result.get("issued_runtime_id") or "") != _runtime_id() or str(result.get("issued_runtime_revision") or "") != _runtime_revision():
+        raise HarnessError("recovery_runtime_mismatch", "The recovery receipt belongs to a different qualification runtime.", status_code=401)
+    return _safe_recovery_receipt(result)
+
+
+def consume_recovery_receipt(
+    receipt_token: str,
+    *,
+    expected_target_sha: str | None = None,
+    expected_target_schema: int | None = None,
+    expected_backup_id: str | None = None,
+    expected_preview_id: str | None = None,
+) -> dict[str, Any]:
+    """Atomically consume the receipt immediately before offline promotion."""
+    raw = str(receipt_token or "").strip()
+    inspected = inspect_recovery_receipt(raw)
+    if expected_target_sha and inspected["target_runtime_sha"] != str(expected_target_sha).strip().casefold():
+        raise HarnessError("recovery_target_mismatch", "The recovery receipt target revision does not match.", status_code=401)
+    if expected_target_schema is not None and int(inspected["target_schema"]) != int(expected_target_schema):
+        raise HarnessError("recovery_target_mismatch", "The recovery receipt target schema does not match.", status_code=401)
+    if expected_backup_id and inspected["backup_id"] != str(expected_backup_id):
+        raise HarnessError("recovery_binding_mismatch", "The recovery receipt backup does not match.", status_code=401)
+    if expected_preview_id and inspected["preview_id"] != str(expected_preview_id):
+        raise HarnessError("recovery_binding_mismatch", "The recovery receipt preview does not match.", status_code=401)
+    consumed_at = _iso()
+    with connection() as conn, begin_immediate(conn) as tx:
+        updated = tx.execute(
+            "UPDATE harness_recovery_receipts SET status='consumed',consumed_at=? WHERE receipt_id=? AND status='issued'",
+            (consumed_at, inspected["receipt_id"]),
+        )
+        if int(updated.rowcount or 0) != 1:
+            raise HarnessError("recovery_receipt_replayed", "The recovery receipt has already been consumed or revoked.", status_code=401)
+        _insert_audit(
+            tx,
+            event_type="recovery_receipt_consumed",
+            reason_code="recovery_receipt_consumed",
+            principal_id=inspected["principal_id"],
+            principal_class="qualification",
+            harness_session_id=inspected["harness_session_id"],
+            purpose=HARNESS_RECOVERY_PURPOSE,
+            capability="recovery.authorize",
+            target_scope=HARNESS_TARGET_SCOPE,
+            operation_id=inspected["receipt_id"],
+            result="accepted",
+            summary="One-use recovery promotion receipt consumed at the offline handoff boundary.",
+            correlation_id=inspected["receipt_id"],
+        )
+    return {**inspected, "status": "consumed", "consumed_at": consumed_at}
 
 
 def status_projection() -> dict[str, Any]:
