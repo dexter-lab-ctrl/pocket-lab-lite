@@ -852,7 +852,9 @@ const normalizeLiteDeviceName = (value) => String(value || '')
   .replace(/[^a-z0-9_.-]+/g, '-')
   .replace(/^[-._]+|[-._]+$/g, '');
 
-const mockLiteDevices = () => [
+const mockLiteDevices = () => {
+  const currentScenario = scenario();
+  const devices = [
   {
     id: 'pocket-lab-lite-server',
     name: 'Pocket Lab Lite Server',
@@ -930,7 +932,49 @@ const mockLiteDevices = () => [
     capability_labels: ['Storage Node', 'Backup Target'],
     storage: { ready: true, status: 'ready', available_gb: 92, media_roots: ['Pictures', 'DCIM'], summary: 'Storage device ready' },
   }
-];
+  ];
+
+  const healthy = devices.find((device) => device.id === 'test-phone-4');
+  if (healthy && currentScenario === 'devices-role-pending') {
+    healthy.desired_device_roles = ['compute', 'storage'];
+    healthy.active_device_roles = ['compute'];
+    healthy.device_role_status = 'applying';
+    healthy.device_role_reason_code = 'device_role_change_pending_verification';
+    healthy.device_roles = [
+      { id: 'compute', label: 'Compute', assignment_status: 'active' },
+      { id: 'storage', label: 'Storage', assignment_status: 'verifying' },
+    ];
+  }
+  if (healthy && currentScenario === 'devices-role-partial-capabilities') {
+    healthy.capability_states = [
+      { id: 'compute', authorization: 'allowed', observation: 'advertised', verification: 'verified', status: 'ready', effective: true },
+      { id: 'app_host', authorization: 'allowed', observation: 'advertised', verification: 'verified', status: 'ready', effective: true },
+      { id: 'media_storage', authorization: 'allowed', observation: 'advertised', verification: 'unverified', status: 'not_advertised', reason_code: 'device_capability_not_advertised', effective: false },
+      { id: 'backup_target', authorization: 'allowed', observation: 'not_advertised', verification: 'unverified', status: 'not_advertised', reason_code: 'device_capability_not_advertised', effective: false },
+    ];
+    healthy.capabilities = ['compute', 'app_host'];
+  }
+  if (healthy && currentScenario === 'devices-role-stale-capabilities') {
+    healthy.connection = 'offline';
+    healthy.status = 'offline';
+    healthy.capability_states = [
+      { id: 'compute', authorization: 'allowed', observation: 'advertised', verification: 'stale', status: 'stale', reason_code: 'device_capability_stale', effective: false },
+      { id: 'media_storage', authorization: 'allowed', observation: 'advertised', verification: 'stale', status: 'stale', reason_code: 'device_capability_stale', effective: false },
+    ];
+    healthy.capabilities = [];
+  }
+  if (healthy && currentScenario === 'devices-role-malformed') {
+    healthy.device_roles = [{ id: 'future_unknown', label: 'Future role', assignment_status: 'unknown' }, null, { label: 'Missing id' }];
+    healthy.device_role_ids = ['future_unknown'];
+    healthy.desired_device_roles = [];
+    healthy.active_device_roles = [];
+    healthy.device_role_status = 'blocked';
+    healthy.device_role_reason_code = 'device_role_invalid';
+    healthy.capability_states = [{ id: 'future_capability', authorization: 'blocked', observation: 'not_advertised', verification: 'unverified', status: 'blocked_by_role', reason_code: 'device_capability_not_authorized', effective: false }];
+    healthy.capabilities = [];
+  }
+  return devices;
+};
 
 export const handlers = [
   http.get('/ready', () => HttpResponse.json(controlPlane(), { status: controlPlane().ready ? 200 : 503 })),
@@ -1157,9 +1201,16 @@ export const handlers = [
     }, { headers: liteSafeReadHeaders(request) });
   }),
   http.get('/api/lite/security', ({ request }) => HttpResponse.json(mockLiteSecurityPayload(), { headers: liteSafeReadHeaders(request) })),
-  http.get('/api/lite/enterprise/access', () => HttpResponse.json({
+  http.get('/api/lite/enterprise/access', () => {
+    const currentScenario = scenario();
+    const humanRole = currentScenario === 'devices-role-review-required'
+      ? 'Operator'
+      : currentScenario === 'devices-role-blocked'
+        ? 'Viewer'
+        : 'Owner';
+    return HttpResponse.json({
     enterprise_enabled: true,
-    current_membership: { role: 'Owner', status: 'active' },
+    current_membership: { role: humanRole, status: 'active' },
     action_matrix: [
       { action_id: 'device.invite.compute', label: 'Add Compute device', roles: { Owner: 'allow', Admin: 'allow', Operator: 'allow', Auditor: 'deny', Viewer: 'deny' } },
       { action_id: 'device.invite.storage', label: 'Add Storage device', roles: { Owner: 'allow', Admin: 'approval', Operator: 'approval', Auditor: 'deny', Viewer: 'deny' } },
@@ -1170,7 +1221,8 @@ export const handlers = [
       { action_id: 'device.repair', label: 'Repair device agent', roles: { Owner: 'allow', Admin: 'allow', Operator: 'allow', Auditor: 'deny', Viewer: 'deny' } },
       { action_id: 'device.capabilities.read', label: 'Review device capabilities', roles: { Owner: 'allow', Admin: 'allow', Operator: 'allow', Auditor: 'allow', Viewer: 'allow' } },
     ],
-  })),
+    });
+  }),
   http.get('/api/lite/fleet', ({ request }) => HttpResponse.json({
     status: 'healthy',
     devices: mockLiteDevices(),
