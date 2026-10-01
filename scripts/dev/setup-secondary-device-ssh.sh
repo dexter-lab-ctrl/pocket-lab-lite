@@ -94,10 +94,10 @@ done
 [[ "$port" =~ ^[0-9]+$ ]] || fail "Port must be numeric"
 (( port >= 1 && port <= 65535 )) || fail "Port must be between 1 and 65535"
 
-ssh_dir="\${HOME}/.ssh"
-ssh_config="\${ssh_dir}/config"
-start_marker="# >>> pocket-lab-lite:\${alias_name} >>>"
-end_marker="# <<< pocket-lab-lite:\${alias_name} <<<"
+ssh_dir="${HOME}/.ssh"
+ssh_config="${ssh_dir}/config"
+start_marker="# >>> pocket-lab-lite:${alias_name} >>>"
+end_marker="# <<< pocket-lab-lite:${alias_name} <<<"
 
 mkdir -p "$ssh_dir"
 chmod 700 "$ssh_dir"
@@ -106,13 +106,13 @@ chmod 600 "$ssh_config"
 
 if [[ -n "$identity_file" ]]; then
   if [[ "$identity_file" == "~/"* ]]; then
-    identity_file="\${HOME}/\${identity_file#~/}"
+    identity_file="${HOME}/${identity_file#~/}"
   fi
   [[ -f "$identity_file" ]] || fail "Identity file does not exist: $identity_file"
 fi
 
 tmp="$(mktemp)"
-trap 'rm -f "$tmp" "\${tmp}.new"' EXIT
+trap 'rm -f "$tmp" "${tmp}.new"' EXIT
 
 awk -v start="$start_marker" -v end="$end_marker" '
   $0 == start { skip=1; next }
@@ -136,11 +136,11 @@ awk -v start="$start_marker" -v end="$end_marker" '
     printf '  IdentityFile %s\n' "$identity_file"
   fi
   printf '%s\n' "$end_marker"
-} > "\${tmp}.new"
+} > "${tmp}.new"
 
-backup="\${ssh_config}.pocketlab-backup"
+backup="${ssh_config}.pocketlab-backup"
 cp "$ssh_config" "$backup"
-mv "\${tmp}.new" "$ssh_config"
+mv "${tmp}.new" "$ssh_config"
 chmod 600 "$ssh_config"
 
 info "SSH alias written to $ssh_config"
