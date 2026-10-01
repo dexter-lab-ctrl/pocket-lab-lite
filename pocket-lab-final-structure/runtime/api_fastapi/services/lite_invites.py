@@ -627,6 +627,11 @@ def _invite_device_keys(record: dict[str, Any]) -> set[str]:
     return keys
 
 
+def _identity_match_key(value: Any) -> str:
+    """Normalize human-entered device names for case/separator-insensitive matching."""
+    return "".join(character for character in str(value or "").casefold() if character.isalnum())
+
+
 def revoke_invite(invite_id: str, *, reason: str = "") -> dict[str, Any] | None:
     wanted = str(invite_id or "").strip()
     if not wanted:
@@ -711,12 +716,17 @@ def find_invite_identity_conflict(device_name: str | None) -> dict[str, Any] | N
     wanted = normalize_node_id(device_name)
     if not wanted or wanted == "unknown-node":
         return None
+    wanted_match_key = _identity_match_key(device_name)
 
     payload = _invites_payload()
     for item in payload.get("invites", []):
         if not isinstance(item, dict):
             continue
-        if wanted not in _invite_device_keys(item):
+        if not any(
+            wanted_match_key == _identity_match_key(value)
+            for value in (item.get("device_id"), item.get("node_id"), item.get("hostname"), item.get("name"))
+            if value
+        ):
             continue
         if float(item.get("expires_at_epoch") or 0) <= _now_epoch():
             continue
@@ -748,6 +758,7 @@ def append_bootstrap_blocked_evidence(
     existing_node_name: str | None = None,
     intended_node_id: str | None = None,
     intended_node_name: str | None = None,
+    reason_code: str | None = None,
     reason: str | None = None,
     requested_by: str = "lite-bootstrap",
 ) -> dict[str, Any]:
@@ -760,6 +771,7 @@ def append_bootstrap_blocked_evidence(
     environment.
     """
     safe_invite = _safe_event_payload(invite or {})
+    safe_reason_code = str(reason_code or "invite_identity_mismatch")[:80]
     event = {
         "event_type": "pocketlab.events.fleet.bootstrap_blocked",
         "created_at": _now_iso(),
@@ -772,10 +784,10 @@ def append_bootstrap_blocked_evidence(
         "existing_node_name": existing_node_name or existing_node_id or "Unknown device",
         "intended_node_id": normalize_node_id(intended_node_id or safe_invite.get("hostname") or ""),
         "intended_node_name": intended_node_name or safe_invite.get("hostname") or "Invited device",
-        "reason_code": str(reason_code or "invite_identity_mismatch")[:80],
+        "reason_code": safe_reason_code,
         "summary": (
             "Invite role set did not match the server-bound role assignment; no local device state changed."
-            if reason_code == "invite_role_set_mismatch"
+            if safe_reason_code == "invite_role_set_mismatch"
             else "A mismatched device join was blocked without changing the enrolled identity."
         ),
         "requested_by": requested_by,
@@ -797,7 +809,7 @@ def append_bootstrap_blocked_evidence(
     append_device_lifecycle_event(
         str(intended_node_id or safe_invite.get("hostname") or existing_node_id or ""),
         "identity_mismatch_blocked",
-        reason_code="invite_identity_mismatch",
+        reason_code=safe_reason_code,
         summary="A mismatched device join was blocked without changing the enrolled identity.",
         status="blocked",
         occurred_at=event["created_at"],

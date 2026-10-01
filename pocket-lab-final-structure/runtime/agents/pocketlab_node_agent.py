@@ -24,6 +24,9 @@ from typing import Any, Dict
 CORE_DIR = Path(__file__).resolve().parents[1] / "core"
 if str(CORE_DIR) not in sys.path:
     sys.path.insert(0, str(CORE_DIR))
+AGENTS_DIR = Path(__file__).resolve().parent
+if str(AGENTS_DIR) not in sys.path:
+    sys.path.insert(0, str(AGENTS_DIR))
 
 from resource_telemetry import collect_resource_telemetry
 from lite_system_profile import collect_system_health, collect_system_profile, unavailable_system_profile

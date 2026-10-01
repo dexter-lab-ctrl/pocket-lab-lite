@@ -246,7 +246,7 @@ def test_storage_role_removal_is_dependency_aware(role_runtime):
 
 def test_role_change_redelivery_is_idempotent_at_agent_semantic_boundary(tmp_path, monkeypatch):
     ensure_runtime_path()
-    from agents.pocketlab_node_agent import LiteNodeAgent
+    from agents.pocketlab_node_agent import PocketLabNodeAgent
 
     env_file = tmp_path / "agent.env"
     env_file.write_text(
@@ -263,7 +263,7 @@ def test_role_change_redelivery_is_idempotent_at_agent_semantic_boundary(tmp_pat
     monkeypatch.setenv("POCKETLAB_NODE_ROLE_GENERATION", "4")
     monkeypatch.setenv("POCKETLAB_AGENT_ENV_FILE", str(env_file))
 
-    agent = LiteNodeAgent()
+    agent = PocketLabNodeAgent()
     first = agent._apply_device_roles({"node_id": "phone-two", "device_roles": ["compute", "storage"], "generation": 5})
     before = env_file.read_text(encoding="utf-8")
     second = agent._apply_device_roles({"node_id": "phone-two", "device_roles": ["compute", "storage"], "generation": 5})
