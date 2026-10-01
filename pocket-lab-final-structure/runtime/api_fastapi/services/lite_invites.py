@@ -16,6 +16,7 @@ from fastapi import Request
 from .. import deps
 from .fleet_registry import append_device_lifecycle_event, normalize_node_id, upsert_agent
 from .nats_bus import BUS
+from . import lite_device_roles
 
 LITE_INVITE_TTL_SECONDS = int(os.environ.get("POCKETLAB_LITE_INVITE_TTL_SECONDS", "1800"))
 
@@ -95,12 +96,24 @@ def _token_hint(token: str) -> str:
 
 
 def normalize_lite_role(role: str | None) -> str:
-    value = str(role or "compute").strip().lower()
-    normalized = _ROLE_ALIASES.get(value)
-    if not normalized or normalized not in LITE_ROLES:
+    # Legacy single-role adapter. Missing legacy role still maps to Compute for
+    # pre-multi-role callers only; new security-sensitive paths use
+    # normalize_device_roles() and never default unknown input.
+    if role is None or not str(role).strip():
+        return "compute"
+    try:
+        return lite_device_roles.normalize_device_role(role)
+    except lite_device_roles.DeviceRoleError as exc:
         allowed = ", ".join(sorted(LITE_ROLES))
-        raise ValueError(f"Unsupported Lite device role '{role}'. Allowed roles: {allowed}.")
-    return normalized
+        raise ValueError(f"Unsupported Lite device role '{role}'. Allowed roles: {allowed}.") from exc
+
+
+def normalize_device_roles(device_roles: Any = None, *, role: str | None = None) -> list[str]:
+    if device_roles is not None:
+        return lite_device_roles.normalize_device_roles(device_roles, joinable_only=True)
+    if role is not None and str(role).strip():
+        return lite_device_roles.normalize_device_roles([normalize_lite_role(role)], joinable_only=True)
+    raise lite_device_roles.DeviceRoleError("device_roles_required", "Choose at least one device role.")
 
 
 def role_metadata(role: str | None) -> dict[str, Any]:
@@ -360,6 +373,8 @@ def _public_invite(
         "hostname": record.get("hostname"),
         "role": record.get("role"),
         "role_label": record.get("role_label"),
+        "device_roles": list(record.get("device_roles") or ([record.get("role")] if record.get("role") else [])),
+        "device_role_labels": list(record.get("device_role_labels") or ([record.get("role_label")] if record.get("role_label") else [])),
         "capabilities": record.get("capabilities") or [],
         "created_at": record.get("created_at"),
         "updated_at": record.get("updated_at"),
@@ -435,6 +450,8 @@ def _safe_event_payload(record: dict[str, Any]) -> dict[str, Any]:
         "hostname": record.get("hostname"),
         "role": record.get("role"),
         "role_label": record.get("role_label"),
+        "device_roles": list(record.get("device_roles") or ([record.get("role")] if record.get("role") else [])),
+        "device_role_labels": list(record.get("device_role_labels") or ([record.get("role_label")] if record.get("role_label") else [])),
         "capabilities": record.get("capabilities") or [],
         "created_at": record.get("created_at"),
         "updated_at": record.get("updated_at"),
@@ -469,19 +486,35 @@ def _append_local_evidence(
         _write_state(name, payload)
 
 
-def create_lite_invite(*, role: str, hostname: str | None, request: Request | None = None) -> dict[str, Any]:
-    metadata = role_metadata(role)
-    hostname_text = (hostname or "").strip() or f"Pocket Lab {metadata['role_label']}"
+def create_lite_invite(
+    *,
+    hostname: str | None,
+    request: Request | None = None,
+    device_roles: Any = None,
+    role: str | None = None,
+    authorization: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    roles = normalize_device_roles(device_roles, role=role)
+    role_items = [lite_device_roles.role_metadata(item) for item in roles]
+    legacy_role = lite_device_roles.legacy_role_projection(roles)
+    hostname_text = (hostname or "").strip() or (
+        "Pocket Lab " + " + ".join(item["role_label"] for item in role_items)
+    )
     node_id = normalize_node_id(hostname_text)
     token = secrets.token_urlsafe(32)
     expires_at, expires_epoch = _expires_at()
     command_id = secrets.token_hex(12)
     invite_id = secrets.token_hex(12)
     base = _invite_base_url(request)
-    query = urlencode({"role": metadata["role"], "token": token})
+    query = urlencode({"roles": ",".join(roles), "role": legacy_role, "token": token})
     invite_url = f"{base}{_invite_path()}?{query}"
     bootstrap_url = _bootstrap_url_from_invite_url(invite_url)
     bootstrap_command = _bootstrap_command(bootstrap_url)
+    authorization = authorization or {}
+    actor = authorization.get("actor") if isinstance(authorization.get("actor"), dict) else {}
+    authz = authorization.get("authorization") if isinstance(authorization.get("authorization"), dict) else {}
+    capabilities = lite_device_roles.authorized_capabilities_for_roles(roles)
+    role_labels = [item["role_label"] for item in role_items]
 
     record = {
         "invite_id": invite_id,
@@ -489,9 +522,11 @@ def create_lite_invite(*, role: str, hostname: str | None, request: Request | No
         "job_id": command_id,
         "node_id": node_id,
         "hostname": hostname_text,
-        "role": metadata["role"],
-        "role_label": metadata["role_label"],
-        "capabilities": metadata["capabilities"],
+        "role": legacy_role,
+        "role_label": " + ".join(role_labels),
+        "device_roles": roles,
+        "device_role_labels": role_labels,
+        "capabilities": capabilities,
         "token_hash": _hash_token(token),
         "token_hint": _token_hint(token),
         "expires_at": expires_at,
@@ -508,15 +543,33 @@ def create_lite_invite(*, role: str, hostname: str | None, request: Request | No
     payload["updated_at"] = _now_iso()
     _write_state("fleet_invites.json", payload)
 
+    assignment = lite_device_roles.record_desired_roles(
+        node_id,
+        roles,
+        status="invite_pending",
+        action_id="device.invite",
+        actor_human_id=str(actor.get("identity_id") or ""),
+        actor_role=str(authz.get("role") or ""),
+        authorization_version=int(authz.get("authorization_version") or 1),
+        policy_revision=str(authorization.get("policy_revision") or ""),
+        correlation_id=command_id,
+        reason_code="device_invite_role_assignment",
+    )
+    record["device_role_generation"] = assignment["generation"]
+    payload["invites"][0]["device_role_generation"] = assignment["generation"]
+    _write_state("fleet_invites.json", payload)
+
     upsert_agent(
         {
             "node_id": node_id,
             "hostname": hostname_text,
-            "role": metadata["role"],
+            "role": legacy_role,
+            "device_roles": roles,
+            "device_role_generation": assignment["generation"],
             "status": "invited",
             "invite_id": invite_id,
             "auth_token_hash": record["token_hash"][:16],
-            "capabilities": metadata["capabilities"],
+            "capabilities": [],
         },
         event_type="fleet.agent_invited",
     )
@@ -524,9 +577,12 @@ def create_lite_invite(*, role: str, hostname: str | None, request: Request | No
     append_device_lifecycle_event(
         node_id,
         "invite_created",
-        summary="Device invite created.",
+        reason_code="device_invite_created",
+        summary="Device invite created with a server-bound role set.",
         occurred_at=record["created_at"],
         invite_id=invite_id,
+        generation_key=str(assignment["generation"]),
+        current_state={"device_roles": roles, "device_role_generation": assignment["generation"]},
     )
 
     public_invite = _public_invite(record, url=invite_url, bootstrap_url=bootstrap_url)
@@ -542,7 +598,6 @@ def create_lite_invite(*, role: str, hostname: str | None, request: Request | No
         "invite": public_invite,
         "event": _safe_event_payload(record),
     }
-
 
 def active_invite_device_keys() -> set[str]:
     keys: set[str] = set()
@@ -789,13 +844,17 @@ def latest_invite() -> dict[str, Any] | None:
         return None
     return _public_invite(valid[0])
 
-def invite_token_status(token: str, role: str | None = None) -> tuple[str, dict[str, Any] | None]:
+def invite_token_status(
+    token: str,
+    role: str | None = None,
+    device_roles: Any = None,
+) -> tuple[str, dict[str, Any] | None]:
     if not token:
         return "missing", None
 
     try:
-        expected_role = normalize_lite_role(role) if role else None
-    except ValueError:
+        expected_roles = normalize_device_roles(device_roles, role=role) if (device_roles is not None or role) else None
+    except (ValueError, lite_device_roles.DeviceRoleError):
         return "invalid_role", None
 
     token_hash = _hash_token(token)
@@ -806,8 +865,16 @@ def invite_token_status(token: str, role: str | None = None) -> tuple[str, dict[
             continue
         if item.get("token_hash") != token_hash:
             continue
-        if expected_role and item.get("role") != expected_role:
-            return "role_mismatch", item
+        stored_roles_raw = item.get("device_roles")
+        try:
+            stored_roles = normalize_device_roles(
+                stored_roles_raw if stored_roles_raw is not None else None,
+                role=str(item.get("role") or "") if stored_roles_raw is None else None,
+            )
+        except (ValueError, lite_device_roles.DeviceRoleError):
+            return "invalid_role", item
+        if expected_roles is not None and set(stored_roles) != set(expected_roles):
+            return "role_set_mismatch", item
         if float(item.get("expires_at_epoch") or 0) <= _now_epoch():
             return "expired", item
         if int(item.get("uses_remaining") or 0) <= 0 or str(item.get("status") or "").lower() in {
@@ -821,13 +888,13 @@ def invite_token_status(token: str, role: str | None = None) -> tuple[str, dict[
     return "not_found", None
 
 
-def validate_invite_token(token: str, role: str | None = None) -> dict[str, Any] | None:
-    status, item = invite_token_status(token, role=role)
+def validate_invite_token(token: str, role: str | None = None, device_roles: Any = None) -> dict[str, Any] | None:
+    status, item = invite_token_status(token, role=role, device_roles=device_roles)
     return item if status == "valid" else None
 
 
-def consume_invite_token(token: str, role: str | None = None) -> dict[str, Any] | None:
-    status, item = invite_token_status(token, role=role)
+def consume_invite_token(token: str, role: str | None = None, device_roles: Any = None) -> dict[str, Any] | None:
+    status, item = invite_token_status(token, role=role, device_roles=device_roles)
     if status != "valid" or not item:
         return None
 
@@ -858,10 +925,12 @@ def consume_invite_token(token: str, role: str | None = None) -> dict[str, Any] 
             "node_id": updated.get("node_id"),
             "hostname": updated.get("hostname"),
             "role": updated.get("role"),
+            "device_roles": updated.get("device_roles") or ([updated.get("role")] if updated.get("role") else []),
+            "device_role_generation": updated.get("device_role_generation") or 0,
             "status": "joining",
             "invite_id": updated.get("invite_id"),
             "auth_token_hash": str(updated.get("token_hash") or "")[:16],
-            "capabilities": updated.get("capabilities") or [],
+            "capabilities": [],
             "invite_created_at": updated.get("created_at"),
             "invite_accepted_at": updated.get("accepted_at"),
             "last_join_attempt_at": updated.get("accepted_at"),
