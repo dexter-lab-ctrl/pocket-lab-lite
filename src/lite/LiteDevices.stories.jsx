@@ -89,6 +89,84 @@ export const InviteIdentityMismatch = {
 };
 export const SavedOfflineSnapshot = createLiteStory('devices', 'offline-saved');
 
+export const SingleRoleCompute = {
+  ...createLiteStory('devices', 'devices-online', { viewport: 'desktop', notes: 'Canonical single-role Compute presentation.' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await expectDevices(canvasElement);
+    await expect(await canvas.findByText(/^Compute$/i)).toBeInTheDocument();
+  },
+};
+
+export const MultiRoleComputeStorage = {
+  ...createLiteStory('devices', 'devices-online', { viewport: 'desktop', notes: 'Canonical Compute + Storage device responsibilities.' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await expectDevices(canvasElement);
+    await expect(await canvas.findByText(/Compute \+ Storage/i)).toBeInTheDocument();
+    await openHealthyDeviceManage(canvasElement);
+    await expect(await canvas.findByText(/Photo Backup source remains independent from the Storage role/i)).toBeInTheDocument();
+  },
+};
+
+export const MultiRoleMobile = {
+  ...createLiteStory('devices', 'devices-online', { viewport: 'mobile390', notes: 'Multi-role cards and details on the mobile layout.' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await expectDevices(canvasElement);
+    await expect(await canvas.findByText(/Compute \+ Storage/i)).toBeInTheDocument();
+  },
+};
+
+export const RoleSelectionReviewRequired = {
+  ...createLiteStory('devices', 'devices-role-review-required', { viewport: 'desktop', notes: 'Operator selecting Storage receives backend-projected review-required guidance.' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await expectDevices(canvasElement);
+    await userEvent.click(await canvas.findByText(/Add a device/i));
+    const storeBackups = await canvas.findByText(/Store backups/i);
+    await userEvent.click(storeBackups);
+    await expect(await canvas.findByText(/Access check: Review required/i)).toBeInTheDocument();
+  },
+};
+
+export const RoleSelectionBlocked = {
+  ...createLiteStory('devices', 'devices-role-blocked', { viewport: 'desktop', notes: 'Viewer receives backend-projected read-only fleet authority.' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await expectDevices(canvasElement);
+    await userEvent.click(await canvas.findByText(/Add a device/i));
+    await expect(await canvas.findByText(/Not allowed for this role/i)).toBeInTheDocument();
+  },
+};
+
+export const RoleChangePendingVerification = {
+  ...createLiteStory('devices', 'devices-role-pending', { viewport: 'desktop', notes: 'Desired multi-role assignment is pending fresh device verification.' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await openHealthyDeviceManage(canvasElement);
+    await expect(await canvas.findByText(/assigned roles are server-owned responsibilities/i)).toBeInTheDocument();
+  },
+};
+
+export const RoleCapabilitiesPartiallyDegraded = {
+  ...createLiteStory('devices', 'devices-role-partial-capabilities', { viewport: 'desktop', notes: 'Compute remains ready while Storage capabilities are not advertised.' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await openHealthyDeviceManage(canvasElement);
+    await expect(await canvas.findByText(/Not advertised/i)).toBeInTheDocument();
+  },
+};
+
+export const RoleCapabilitiesStale = {
+  ...createLiteStory('devices', 'devices-role-stale-capabilities', { viewport: 'desktop', notes: 'Assigned roles do not override stale runtime evidence.' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await expectDevices(canvasElement);
+    await expect(await canvas.findByText(/Offline/i)).toBeInTheDocument();
+  },
+};
+
+export const RoleProjectionMalformedData = {
+  ...createLiteStory('devices', 'devices-role-malformed', { viewport: 'desktop', notes: 'Malformed/unknown role and capability data stays bounded instead of granting authority.' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await openHealthyDeviceManage(canvasElement);
+    await expect(await canvas.findByText(/Blocked by role/i)).toBeInTheDocument();
+  },
+};
+
 export const HealthyDeviceManageOpen = {
   ...createLiteStory('devices', 'devices-online', { viewport: 'desktop' }),
   play: async ({ canvasElement }) => openHealthyDeviceManage(canvasElement),

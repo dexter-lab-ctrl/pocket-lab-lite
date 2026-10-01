@@ -998,6 +998,84 @@
             <column ascending="true" name="receipt_id"/>
          </index>
       </table>
+      <table name="device_role_assignments" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="device_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="role" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="2" name="desired" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="3" name="active" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'pending'" digits="0" id="4" name="assignment_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="5" name="generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="assigned_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="7" name="assigned_by_human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="8" name="authorization_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
+            <parent column="version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="schema_migrations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="9" name="policy_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="10" name="correlation_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'pending'" digits="0" id="11" name="verification_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="12" name="verification_reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="verified_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="device_id" sequenceNumberInPK="1"/>
+         <primaryKey column="role" sequenceNumberInPK="2"/>
+         <index name="device_role_assignments_s_pk" unique="true">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="role"/>
+         </index>
+         <index name="idx_device_role_assignments_active" unique="false">
+            <column ascending="true" name="role"/>
+            <column ascending="true" name="active"/>
+            <column ascending="true" name="device_id"/>
+         </index>
+         <index name="idx_device_role_assignments_desired" unique="false">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="desired"/>
+            <column ascending="true" name="generation"/>
+         </index>
+         <index name="sqlite_autoindex_device_role_assignments_1" unique="true">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="role"/>
+         </index>
+      </table>
+      <table name="device_role_change_operations" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="change_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="device_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="requested_roles_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="4" name="previous_roles_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="6" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="7" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="8" name="requested_by_human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="9" name="requested_by_role" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="10" name="authorization_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
+            <parent column="version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="schema_migrations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="11" name="policy_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="12" name="correlation_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="13" name="request_fingerprint" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="change_id" sequenceNumberInPK="1"/>
+         <index name="device_role_change_operations_s_pk" unique="true">
+            <column ascending="true" name="change_id"/>
+         </index>
+         <index name="idx_device_role_change_device" unique="false">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="generation"/>
+         </index>
+         <index name="idx_device_role_change_status" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="updated_at"/>
+         </index>
+         <index name="sqlite_autoindex_device_role_change_operations_1" unique="true">
+            <column ascending="true" name="change_id"/>
+         </index>
+         <index name="sqlite_autoindex_device_role_change_operations_2" unique="true">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="generation"/>
+         </index>
+      </table>
       <table name="device_supervisor_state" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="device_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="1" digits="0" id="1" name="evidence_schema_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
@@ -1159,6 +1237,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="result" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="correlation_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="15" name="target_device_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <primaryKey column="event_id" sequenceNumberInPK="1"/>
          <index name="harness_audit_events_s_pk" unique="true">
             <column ascending="true" name="event_id"/>
@@ -1169,6 +1248,11 @@
             <column ascending="true" name="event_id"/>
          </index>
          <index name="idx_harness_audit_events_time" unique="false">
+            <column ascending="true" name="occurred_at"/>
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="idx_harness_audit_target_device" unique="false">
+            <column ascending="true" name="target_device_id"/>
             <column ascending="true" name="occurred_at"/>
             <column ascending="true" name="event_id"/>
          </index>
@@ -1189,6 +1273,7 @@
          <column autoUpdated="false" defaultValue="0" digits="0" id="10" name="failed_attempts" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="consumed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="13" name="target_device_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <primaryKey column="challenge_id" sequenceNumberInPK="1"/>
          <index name="harness_challenges_s_pk" unique="true">
             <column ascending="true" name="challenge_id"/>
@@ -1204,8 +1289,52 @@
             <column ascending="true" name="nonce_hash"/>
          </index>
       </table>
+      <table name="harness_recovery_receipts" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="receipt_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="token_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="principal_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="principal_id" foreignKey="" implied="false" onDeleteCascade="false" table="synthetic_principals"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="harness_session_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="harness_session_id" foreignKey="" implied="false" onDeleteCascade="false" table="harness_sessions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="action_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="backup_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="preview_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="target_schema" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="target_runtime_sha" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="issued_runtime_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="issued_runtime_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="issued_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="consumed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'issued'" digits="0" id="14" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="receipt_id" sequenceNumberInPK="1"/>
+         <index name="harness_recovery_receipts_s_pk" unique="true">
+            <column ascending="true" name="receipt_id"/>
+         </index>
+         <index name="idx_harness_recovery_receipts_binding" unique="false">
+            <column ascending="true" name="backup_id"/>
+            <column ascending="true" name="preview_id"/>
+            <column ascending="true" name="target_schema"/>
+            <column ascending="true" name="status"/>
+         </index>
+         <index name="idx_harness_recovery_receipts_status" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="expires_at"/>
+            <column ascending="true" name="issued_at"/>
+         </index>
+         <index name="sqlite_autoindex_harness_recovery_receipts_1" unique="true">
+            <column ascending="true" name="receipt_id"/>
+         </index>
+         <index name="sqlite_autoindex_harness_recovery_receipts_2" unique="true">
+            <column ascending="true" name="token_hash"/>
+         </index>
+      </table>
       <table name="harness_sessions" remarks="" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="harness_session_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="harness_session_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="harness_session_id" foreignKey="" implied="false" onDeleteCascade="false" table="harness_recovery_receipts"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="principal_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <parent column="principal_id" foreignKey="" implied="false" onDeleteCascade="false" table="synthetic_principals"/>
          </column>
@@ -1223,6 +1352,7 @@
          <column autoUpdated="false" defaultValue="'active'" digits="0" id="13" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="revoked_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="''" digits="0" id="15" name="revoke_reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="16" name="target_device_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <primaryKey column="harness_session_id" sequenceNumberInPK="1"/>
          <index name="harness_sessions_s_pk" unique="true">
             <column ascending="true" name="harness_session_id"/>
@@ -1231,6 +1361,11 @@
             <column ascending="true" name="status"/>
             <column ascending="true" name="expires_at"/>
             <column ascending="true" name="principal_id"/>
+         </index>
+         <index name="idx_harness_sessions_target_device" unique="false">
+            <column ascending="true" name="target_device_id"/>
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="expires_at"/>
          </index>
          <index name="sqlite_autoindex_harness_sessions_1" unique="true">
             <column ascending="true" name="harness_session_id"/>
@@ -1583,27 +1718,32 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="action_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="target_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="target_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="initiating_human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+         <column autoUpdated="false" defaultValue="''" digits="0" id="6" name="target_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="initiating_human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="initiating_role" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="required_approver_roles_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="required_assurance" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="policy_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="approved_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="approved_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="initiating_role" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="9" name="initiating_authorization_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
+            <parent column="version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="schema_migrations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="10" name="request_fingerprint" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="required_approver_roles_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="required_assurance" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="policy_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="approved_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="approved_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="rejected_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="rejected_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="cancelled_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="cancelled_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="consumed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="''" digits="0" id="21" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="''" digits="0" id="22" name="evidence_ref" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="rejected_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="rejected_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="cancelled_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="cancelled_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="23" name="consumed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="24" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="25" name="evidence_ref" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <primaryKey column="approval_id" sequenceNumberInPK="1"/>
          <index name="policy_approvals_s_pk" unique="true">
             <column ascending="true" name="approval_id"/>
@@ -1617,6 +1757,7 @@
             <column ascending="true" name="initiating_human_id"/>
             <column ascending="true" name="action_id"/>
             <column ascending="true" name="target_id"/>
+            <column ascending="true" name="target_revision"/>
             <column ascending="true" name="policy_revision"/>
             <column ascending="true" name="status"/>
          </index>
@@ -2140,6 +2281,8 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="version" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4">
             <child column="projection_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="app_current_state"/>
             <child column="auth_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="auth_sessions"/>
+            <child column="authorization_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="device_role_assignments"/>
+            <child column="authorization_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="device_role_change_operations"/>
             <child column="evidence_schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="device_supervisor_state"/>
             <child column="profile_schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="device_system_profiles"/>
             <child column="authorization_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="enterprise_configuration"/>
@@ -2147,6 +2290,7 @@
             <child column="auth_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="human_identities"/>
             <child column="schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_installed_release_identity"/>
             <child column="projection_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_revision_events"/>
+            <child column="initiating_authorization_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_approvals"/>
             <child column="schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="release_runtime_projection"/>
             <child column="schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="security_database_backups"/>
          </column>
@@ -2503,6 +2647,7 @@
             <child column="principal_id" foreignKey="" implied="false" onDeleteCascade="false" table="assurance_runs"/>
             <child column="principal_id" foreignKey="" implied="false" onDeleteCascade="false" table="harness_audit_events"/>
             <child column="principal_id" foreignKey="" implied="false" onDeleteCascade="false" table="harness_challenges"/>
+            <child column="principal_id" foreignKey="" implied="false" onDeleteCascade="false" table="harness_recovery_receipts"/>
             <child column="principal_id" foreignKey="" implied="false" onDeleteCascade="false" table="harness_sessions"/>
             <child column="requested_by_principal_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_activation_operations"/>
             <child column="created_by_principal_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_revisions"/>
@@ -2523,6 +2668,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="last_used_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="revoked_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="''" digits="0" id="16" name="revoke_reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="17" name="target_device_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <primaryKey column="principal_id" sequenceNumberInPK="1"/>
          <index name="synthetic_principals_s_pk" unique="true">
             <column ascending="true" name="principal_id"/>
@@ -2531,6 +2677,11 @@
             <column ascending="true" name="enabled"/>
             <column ascending="true" name="revoked_at"/>
             <column ascending="true" name="expires_at"/>
+         </index>
+         <index name="idx_synthetic_principals_target_device" unique="false">
+            <column ascending="true" name="target_device_id"/>
+            <column ascending="true" name="enabled"/>
+            <column ascending="true" name="revoked_at"/>
          </index>
          <index name="sqlite_autoindex_synthetic_principals_1" unique="true">
             <column ascending="true" name="principal_id"/>

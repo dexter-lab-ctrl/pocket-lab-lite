@@ -1180,9 +1180,10 @@ def _lite_device_from_node(item: dict[str, Any]) -> dict[str, Any] | None:
     if not isinstance(item, dict) or _is_dummy_device(item):
         return None
 
-    raw_role = item.get("role") or "compute"
+    raw_role = item.get("role")
+    legacy_role = item.get("_legacy_role", raw_role)
     try:
-        role_info = lite_invites.role_metadata(str(raw_role))
+        role_info = lite_invites.role_metadata(str(raw_role or "compute"))
     except ValueError:
         role_info = lite_invites.role_metadata("compute")
 
@@ -1217,6 +1218,14 @@ def _lite_device_from_node(item: dict[str, Any]) -> dict[str, Any] | None:
         "connection": _connection_label(status),
         "role": role_info["role"],
         "role_label": role_info["role_label"],
+        "_legacy_role": legacy_role,
+        "device_roles": item.get("device_roles") if isinstance(item.get("device_roles"), list) else [],
+        "desired_device_roles": item.get("desired_device_roles") if isinstance(item.get("desired_device_roles"), list) else [],
+        "active_device_roles": item.get("active_device_roles") if isinstance(item.get("active_device_roles"), list) else [],
+        "device_role_generation": item.get("device_role_generation") or 0,
+        "device_role_status": item.get("device_role_status") or "",
+        "device_role_reason_code": item.get("device_role_reason_code") or "",
+        "device_role_report_invalid": bool(item.get("device_role_report_invalid")),
         "capabilities": item.get("capabilities") if isinstance(item.get("capabilities"), list) else lite_device_capabilities.capability_ids_for_role(role_info["role"]),
         "capability_labels": item.get("capability_labels") if isinstance(item.get("capability_labels"), list) else lite_device_capabilities.labels_for_capabilities(
             item.get("capabilities") if isinstance(item.get("capabilities"), list) else lite_device_capabilities.capability_ids_for_role(role_info["role"])
@@ -1540,6 +1549,15 @@ def lite_fleet() -> dict[str, Any]:
             "capabilities": {"reported_at": item.get("last_capabilities_at"), "source": "agent_capabilities"},
             "remote_access": {"reported_at": item.get("last_tailnet_ready_at"), "source": "agent_private_connection"},
         }
+        try:
+            from . import lite_device_roles
+
+            item = lite_device_roles.enrich_device_projection(item)
+        except lite_device_roles.DeviceRoleError:
+            item["device_role_status"] = "blocked"
+            item["device_role_reason_code"] = "device_role_invalid"
+            item["capabilities"] = []
+            item["capability_states"] = []
         merged_devices.append(item)
 
     try:

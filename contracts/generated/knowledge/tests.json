@@ -473,6 +473,26 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+      "name": "tests/backend/test_lite_fleet_multi_role_authorization.py",
+      "source_refs": [
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_fleet_multi_role_invites_governance.py",
+      "name": "tests/backend/test_lite_fleet_multi_role_invites_governance.py",
+      "source_refs": [
+        "tests/backend/test_lite_fleet_multi_role_invites_governance.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_harness.py",
       "name": "tests/backend/test_lite_harness.py",
       "source_refs": [
@@ -2527,6 +2547,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5902aa50a9e1602dbe8ce971c26b60b50095ac6ff21757aa4eea69f6d87abb0f"
+    "source_fingerprint": "5c014a4c5563838ac674dd41d16975a1c93ca0993b41619c15187d787d7c19e3"
   }
 }

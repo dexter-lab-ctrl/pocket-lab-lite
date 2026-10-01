@@ -4437,6 +4437,15 @@ class ControlPlaneProjectionStore:
             # connection/supervisor truth so stale `allowed=true` can never survive
             # an offline transition or an expired supervisor report.
             item.update(guarded_recovery_contract(item))
+            try:
+                from . import lite_device_roles
+
+                item = lite_device_roles.enrich_device_projection(item)
+            except lite_device_roles.DeviceRoleError:
+                item["device_role_status"] = "blocked"
+                item["device_role_reason_code"] = "device_role_invalid"
+                item["capabilities"] = []
+                item["capability_states"] = []
             item["projection_only"] = True
             devices.append(item)
         if not devices:

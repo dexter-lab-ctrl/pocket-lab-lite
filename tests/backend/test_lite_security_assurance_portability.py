@@ -82,6 +82,9 @@ def test_runtime_launcher_owns_state_and_opa_path_after_scrub():
     assert 'export POCKETLAB_STATE_DIR="${POCKETLAB_STATE_DIR:-$POCKETLAB_BASE_DIR/state}"' in text
     assert 'export POCKETLAB_OPA_ACTIVE_POLICY_DIR="${POCKETLAB_OPA_ACTIVE_POLICY_DIR:-$POCKETLAB_STATE_DIR/opa/active}"' in text
     assert ".pocketlab-dev/state/opa/active" not in text
+    assert 'export POCKETLAB_QUALIFICATION_STATE_DIR="${POCKETLAB_QUALIFICATION_STATE_DIR:-$POCKETLAB_BASE_DIR/qualification-state}"' in text
+    assert 'STATE_DIR="$POCKETLAB_STATE_DIR"' in text
+    assert 'POCKETLAB_NATS_CREDENTIALS_FILE' in text
 
 
 def test_runtime_proxy_forwards_only_the_qualification_browser_bridge_on_api_paths():
@@ -104,6 +107,9 @@ def test_qualification_launcher_explicitly_sets_qualification_environment():
     assert "qualification-owner bootstrap requires the explicit Owner gate" in text
     assert "export POCKETLAB_HARNESS_DESTRUCTIVE=0" in text
     assert "export POCKETLAB_TEST_AUTH_BYPASS=0" in text
+    assert "export POCKETLAB_QUALIFICATION_STATE_DIR" in text
+    assert "export POCKETLAB_LITE_DB_PATH=\"$qualification_state_dir/pocketlab-lite.sqlite3\"" in text
+    assert "fleet-role-qualifier|recovery-qualifier" in text
 
 
 def test_ui_performance_key_bound_task_owns_the_explicit_owner_gate():

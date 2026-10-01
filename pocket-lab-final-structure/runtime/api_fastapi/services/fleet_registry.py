@@ -610,12 +610,40 @@ def _upsert_agent_unlocked(
         return existing
 
     event_fields = _event_timestamp_fields(event_type, data, now)
-    requested_role = str(data.get("role") or existing.get("role") or "compute").strip().lower().replace("-", "_")
-    effective_role = (
-        "server_host" if control_plane_claim
-        else "compute" if requested_role in {"server_host", "server", "control_plane", "control_plane_host"}
-        else requested_role or "compute"
+    from . import lite_device_roles
+
+    raw_reported_roles = (
+        data.get("device_roles")
+        if data.get("device_roles") is not None
+        else ([data.get("role")] if data.get("role") else None)
     )
+    role_report_invalid = False
+    if control_plane_claim:
+        reported_roles = ["server_host"]
+        effective_role = "server_host"
+    else:
+        try:
+            reported_roles = lite_device_roles.normalize_device_roles(
+                raw_reported_roles,
+                joinable_only=True,
+                allow_legacy_default=False,
+            )
+        except lite_device_roles.DeviceRoleError:
+            role_report_invalid = True
+            reported_roles = []
+        assignment = lite_device_roles.assignment_state(
+            node_id,
+            legacy_role=existing.get("role"),
+            protected_server_host=False,
+        )
+        if assignment.get("source") == "legacy_single_role":
+            assignment = lite_device_roles.ensure_legacy_assignment(node_id, existing.get("role"))
+        desired_roles = list(assignment.get("desired_device_roles") or [])
+        effective_role = (
+            lite_device_roles.legacy_role_projection(desired_roles)
+            if desired_roles
+            else str(existing.get("role") or "")
+        )
     normalized_event = str(event_type or "").lower()
     is_heartbeat = normalized_event.endswith("node_heartbeat") or normalized_event.endswith("node_seen")
     is_join_start = normalized_event.endswith("agent_join_started")
@@ -660,6 +688,8 @@ def _upsert_agent_unlocked(
         or existing.get("hostname")
         or node_id,
         "role": effective_role,
+        "reported_device_roles": reported_roles,
+        "device_role_report_invalid": bool(role_report_invalid),
         "ip": data.get("ip") or data.get("tailnet_ip") or existing.get("ip") or "",
         "tailnet_ip": data.get("tailnet_ip")
         or data.get("ip")
@@ -772,7 +802,9 @@ def _upsert_agent_unlocked(
         merged["advertised_capabilities"] = [
             _safe_profile_text(item, 80) for item in advertised[:32] if _safe_profile_text(item, 80)
         ]
-        merged["capabilities"] = list(merged["advertised_capabilities"])
+        # Advertised capabilities are observations only. Effective capabilities
+        # are projected after server-owned role authorization and verification.
+        merged["reported_capabilities"] = list(merged["advertised_capabilities"])
     if isinstance(data.get("storage"), dict):
         merged["storage"] = data["storage"]
     if isinstance(data.get("media_roots"), list):
@@ -795,6 +827,60 @@ def _upsert_agent_unlocked(
         merged["identity_revision"] = previous_identity_revision
     if merged.get("tailnet_ip"):
         merged["last_tailnet_ready_at"] = data.get("seen_at") or data.get("heartbeat_at") or now
+
+    if not control_plane_claim and is_heartbeat:
+        if role_report_invalid:
+            role_state = lite_device_roles.record_runtime_attestation(
+                node_id,
+                reported_roles=raw_reported_roles,
+                advertised_capabilities=merged.get("advertised_capabilities") or [],
+                online=not is_connection_lost,
+                identity_verified=True,
+                generation=data.get("device_role_generation"),
+            )
+            merged["device_role_status"] = "blocked"
+            merged["device_role_reason_code"] = "device_role_invalid"
+            merged["device_role_generation"] = role_state.get("generation") or 0
+            merged["desired_device_roles"] = role_state.get("desired_device_roles") or []
+            merged["active_device_roles"] = role_state.get("active_device_roles") or []
+            merged["device_roles"] = role_state.get("desired_device_roles") or []
+            append_device_lifecycle_event(
+                node_id,
+                "device_role_change_blocked",
+                reason_code="device_role_invalid",
+                summary="A device reported an invalid or protected role set; assigned authority was preserved.",
+                status="blocked",
+                occurred_at=now,
+                dedupe_key=f"{node_id}:device_role_invalid:{data.get('heartbeat_at') or now}",
+                current_state=existing or merged,
+            )
+        else:
+            role_state = lite_device_roles.record_runtime_attestation(
+                node_id,
+                reported_roles=reported_roles,
+                advertised_capabilities=merged.get("advertised_capabilities") or [],
+                online=not is_connection_lost,
+                identity_verified=True,
+                generation=data.get("device_role_generation"),
+            )
+            merged["device_role_status"] = role_state.get("status")
+            merged["device_role_reason_code"] = role_state.get("reason_code") or ""
+            merged["device_role_generation"] = role_state.get("generation") or 0
+            merged["desired_device_roles"] = role_state.get("desired_device_roles") or []
+            merged["active_device_roles"] = role_state.get("active_device_roles") or []
+            merged["device_roles"] = role_state.get("desired_device_roles") or []
+            merged["role"] = (
+                lite_device_roles.legacy_role_projection(role_state.get("desired_device_roles"))
+                if role_state.get("desired_device_roles")
+                else effective_role
+            )
+    try:
+        merged = lite_device_roles.enrich_device_projection(merged)
+    except lite_device_roles.DeviceRoleError:
+        merged["capabilities"] = []
+        merged["capability_states"] = []
+        merged["device_role_status"] = "blocked"
+        merged["device_role_reason_code"] = "device_role_invalid"
 
     agents[node_id] = merged
     payload["updated_at"] = now
@@ -1052,7 +1138,15 @@ def agent_fleet_nodes() -> List[Dict[str, Any]]:
                 "name": agent.get("name")
                 or agent.get("hostname")
                 or agent.get("node_id"),
-                "role": agent.get("role") or "compute",
+                "role": agent.get("role") or "",
+                "_legacy_role": agent.get("role") or None,
+                "device_roles": agent.get("device_roles") or [],
+                "desired_device_roles": agent.get("desired_device_roles") or [],
+                "active_device_roles": agent.get("active_device_roles") or [],
+                "device_role_generation": agent.get("device_role_generation") or 0,
+                "device_role_status": agent.get("device_role_status") or "",
+                "device_role_reason_code": agent.get("device_role_reason_code") or "",
+                "device_role_report_invalid": bool(agent.get("device_role_report_invalid")),
                 "ip": agent.get("tailnet_ip") or agent.get("ip") or "",
                 "status": "active" if status == "active" else status,
                 "isCurrent": bool(agent.get("isCurrent")),

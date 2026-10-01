@@ -82,6 +82,8 @@ Validates requests, owns safe read APIs, admits commands, and never delegates br
 - depends_on: `SQLite control-plane store`
 - protected_by: `Control API boundary`
 - protected_by: `Control API boundary`
+- publishes: `pocketlab.commands.node.{fleet_registry.normalize_node_id`
+- publishes: `pocketlab.events.fleet.device_role_change_requested`
 - recovers_with: `FastAPI unavailable`
 - recovers_with: `Caddy unavailable`
 - related_to: `pocketlab.commands.lite.backup.create`

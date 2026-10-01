@@ -2143,6 +2143,16 @@ def test_lite_catalog_includes_storage_and_device_capability_summary():
 def test_lite_fleet_adds_app_aware_device_capabilities(tmp_path):
     ensure_runtime_path()
     from api_fastapi.services import fleet_registry
+    from api_fastapi.services import lite_device_roles
+
+    lite_device_roles.record_desired_roles(
+        "storage-phone-1",
+        ["storage"],
+        status="accepted",
+        actor_human_id="test-owner",
+        actor_role="Owner",
+        correlation_id="storage-phone-1",
+    )
 
     fleet_registry.upsert_agent(
         {
@@ -2150,6 +2160,7 @@ def test_lite_fleet_adds_app_aware_device_capabilities(tmp_path):
             "name": "Storage Phone",
             "role": "storage",
             "status": "online",
+            "advertised_capabilities": ["media_storage", "backup_target"],
             "storage": {"available_gb": 92, "media_roots": ["Pictures", "DCIM"]},
         },
         event_type="fleet.node_heartbeat",

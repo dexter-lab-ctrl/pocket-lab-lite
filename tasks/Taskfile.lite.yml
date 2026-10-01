@@ -116,6 +116,8 @@ tasks:
     desc: Start a short-lived signed harness session
     requires:
       vars: [PRINCIPAL_ID, PROFILE, PURPOSE, KEY_FILE]
+    vars:
+      TARGET_DEVICE_ID: '{{default "" .TARGET_DEVICE_ID}}'
     cmds:
       - >-
         {{.PYTHON}} scripts/dev/lite/harness.py session-start
@@ -123,6 +125,19 @@ tasks:
         --profile "{{.PROFILE}}"
         --purpose "{{.PURPOSE}}"
         --key-file "{{.KEY_FILE}}"
+        {{if .TARGET_DEVICE_ID}}--target-device-id "{{.TARGET_DEVICE_ID}}"{{end}}
+
+  lite:harness:recovery:authorize:
+    desc: Issue a one-use receipt for an offline main-database promotion; the token is written only to a private file
+    requires:
+      vars: [BACKUP_ID, PREVIEW_ID, TARGET_SCHEMA, RECEIPT_FILE]
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/harness.py recovery-authorize
+        --backup-id "{{.BACKUP_ID}}"
+        --preview-id "{{.PREVIEW_ID}}"
+        --target-schema "{{.TARGET_SCHEMA}}"
+        --receipt-file "{{.RECEIPT_FILE}}"
 
   lite:qualification:start:
     desc: Explicitly start the qualification profile; requires a provisioning token and remains separate from normal Lite startup
@@ -151,6 +166,45 @@ tasks:
         --bootstrap-principal-id "{{.PRINCIPAL_ID}}"
         --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}"
         --bootstrap-profile qualification-owner
+
+  lite:qualification:start:key-bound:fleet-role:
+    desc: Explicitly start qualification with one exact synthetic Secondary-device role-change target
+    requires:
+      vars: [PRINCIPAL_ID, PUBLIC_KEY_FILE, TARGET_DEVICE_ID]
+    cmds:
+      - >-
+        python3 scripts/dev/lite/task_runtime.py shell -- scripts/dev/lite/start-qualification.sh
+        --bootstrap-principal-id "{{.PRINCIPAL_ID}}"
+        --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}"
+        --bootstrap-profile fleet-role-qualifier
+        --target-device-id "{{.TARGET_DEVICE_ID}}"
+
+  lite:qualification:start:key-bound:recovery:
+    desc: Explicitly start qualification with a target-main/schema-bound recovery bootstrap
+    requires:
+      vars: [PRINCIPAL_ID, PUBLIC_KEY_FILE, TARGET_MAIN_SHA, TARGET_SCHEMA]
+    cmds:
+      - >-
+        python3 scripts/dev/lite/task_runtime.py shell -- scripts/dev/lite/start-qualification.sh
+        --bootstrap-principal-id "{{.PRINCIPAL_ID}}"
+        --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}"
+        --bootstrap-profile recovery-qualifier
+        --recovery-target-main-sha "{{.TARGET_MAIN_SHA}}"
+        --recovery-target-schema "{{.TARGET_SCHEMA}}"
+
+  lite:recovery:database:offline-promote:
+    desc: Stop the exact Pocket Lab runtime set and atomically promote one authenticated verified backup to target main
+    requires:
+      vars: [RECEIPT_FILE, MAIN_STATE_DIR, QUALIFICATION_STATE_DIR, BACKUP_ROOT, TARGET_MAIN_SHA, TARGET_SCHEMA]
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/recover-main-database.py
+        --receipt-file "{{.RECEIPT_FILE}}"
+        --main-state-dir "{{.MAIN_STATE_DIR}}"
+        --qualification-state-dir "{{.QUALIFICATION_STATE_DIR}}"
+        --backup-root "{{.BACKUP_ROOT}}"
+        --target-main-sha "{{.TARGET_MAIN_SHA}}"
+        --target-schema "{{.TARGET_SCHEMA}}"
 
   lite:ui:perf:qualified:
     desc: Run renewable synthetic qualification-owner UI performance with bounded between-interaction session/bridge rotation

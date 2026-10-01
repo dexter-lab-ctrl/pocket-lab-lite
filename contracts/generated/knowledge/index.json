@@ -1148,6 +1148,15 @@
       "confidence": "contract-derived",
       "description": "Enterprise Access",
       "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:get:/api/lite/enterprise/access",
       "method": "GET",
       "name": "GET /api/lite/enterprise/access",
@@ -1876,6 +1885,38 @@
         "503"
       ],
       "route": "/api/lite/fleet/devices/{device_id}/recovery-history",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Get Lite Device Roles",
+      "domain": "devices",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/fleet/devices/{device_id}/roles",
+      "method": "GET",
+      "name": "GET /api/lite/fleet/devices/{device_id}/roles",
+      "operation_id": "get_lite_device_roles_api_lite_fleet_devices__device_id__roles_get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/fleet/devices/{device_id}/roles",
       "source_refs": [
         "contracts/generated/lite-openapi.json"
       ],
@@ -5249,6 +5290,29 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Recovery Authorize",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/recovery/authorize",
+      "method": "POST",
+      "name": "POST /api/lite/harness/recovery/authorize",
+      "operation_id": "recovery_authorize_api_lite_harness_recovery_authorize_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/harness/recovery/authorize",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-harness"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Execute Fault",
       "domain": "harness",
       "id": "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
@@ -6936,6 +7000,45 @@
         "503"
       ],
       "route": "/api/lite/fleet/devices/{device_id}/display-model",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Change Lite Device Roles",
+      "domain": "devices",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.changeDeviceRoles",
+          "resolved": true,
+          "source_module": "src/lite/devices/DeviceDetailsLazy.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:put:/api/lite/fleet/devices/{device_id}/roles",
+      "method": "PUT",
+      "name": "PUT /api/lite/fleet/devices/{device_id}/roles",
+      "operation_id": "change_lite_device_roles_api_lite_fleet_devices__device_id__roles_put",
+      "response_statuses": [
+        "202",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/fleet/devices/{device_id}/roles",
       "source_refs": [
         "contracts/generated/lite-openapi.json"
       ],
@@ -14081,6 +14184,28 @@
     },
     {
       "confidence": "source-derived",
+      "description": "A potentially destructive device or recovery action requires explicit confirmation before it can continue.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:confirmation_required",
+      "name": "confirmation_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Confirmation required"
+      ],
+      "user_interpretation": "Confirm this action before continuing."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
       "domain": "validation",
       "event_mapping": [],
@@ -14138,6 +14263,400 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "This safety target can resume in a later Full check."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The device has not advertised the capability required by its governed role assignment.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:device_capability_not_advertised",
+      "name": "device_capability_not_advertised",
+      "projection_mapping": [
+        "device_capabilities"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Capability not advertised"
+      ],
+      "user_interpretation": "The device has not advertised this capability."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The server policy does not authorize the device capability for its current governed role assignment.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:device_capability_not_authorized",
+      "name": "device_capability_not_authorized",
+      "projection_mapping": [
+        "device_capabilities"
+      ],
+      "retryable": false,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Capability not authorized"
+      ],
+      "user_interpretation": "This capability is not authorized for the device's current roles."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The device capability evidence is older than the governed freshness window.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:device_capability_stale",
+      "name": "device_capability_stale",
+      "projection_mapping": [
+        "device_capabilities"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Capability evidence stale"
+      ],
+      "user_interpretation": "Wait for a fresh device heartbeat before relying on this capability."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Fresh runtime evidence did not verify the capability required by the governed role assignment.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:device_capability_verification_failed",
+      "name": "device_capability_verification_failed",
+      "projection_mapping": [
+        "device_capabilities"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Capability verification failed"
+      ],
+      "user_interpretation": "Fresh device evidence did not verify this capability."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The observed or requested device role assignment is not authorized by the server-owned role policy.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:device_role_assignment_unauthorized",
+      "name": "device_role_assignment_unauthorized",
+      "projection_mapping": [
+        "device_roles"
+      ],
+      "retryable": false,
+      "severity": "high",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Role not authorized"
+      ],
+      "user_interpretation": "This device role is not authorized."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A role removal is blocked because active backup, recovery, or storage responsibilities still depend on that role.",
+      "domain": "devices",
+      "event_mapping": [
+        "pocketlab.events.fleet.device_role_change_blocked"
+      ],
+      "http_status": 409,
+      "id": "reason:device_role_change_blocked_by_dependency",
+      "name": "device_role_change_blocked_by_dependency",
+      "projection_mapping": [
+        "device_role_change_operations"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Role change blocked"
+      ],
+      "user_interpretation": "Move or stop the dependent storage responsibilities before removing this role."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A role change cannot be delivered while the target device is offline or not ready.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:device_role_change_device_offline",
+      "name": "device_role_change_device_offline",
+      "projection_mapping": [
+        "device_role_change_operations"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Device offline"
+      ],
+      "user_interpretation": "Bring this device online before changing its roles."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A governed role assignment could not be delivered or the target device identity was unavailable; no role is shown active until verification succeeds.",
+      "domain": "devices",
+      "event_mapping": [
+        "pocketlab.events.fleet.device_role_change_failed"
+      ],
+      "http_status": 503,
+      "id": "reason:device_role_change_failed",
+      "name": "device_role_change_failed",
+      "projection_mapping": [
+        "device_role_change_operations"
+      ],
+      "retryable": true,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Role change failed"
+      ],
+      "user_interpretation": "Pocket Lab could not apply the role change."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The requested role set does not match the server-owned role generation or the device's active generation.",
+      "domain": "devices",
+      "event_mapping": [
+        "pocketlab.events.fleet.device_role_change_blocked"
+      ],
+      "http_status": 409,
+      "id": "reason:device_role_change_generation_mismatch",
+      "name": "device_role_change_generation_mismatch",
+      "projection_mapping": [
+        "device_role_change_operations"
+      ],
+      "retryable": true,
+      "severity": "high",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Role update conflict"
+      ],
+      "user_interpretation": "Refresh the device roles before trying this change again."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A role change was blocked because the trusted device identity did not match the requested target.",
+      "domain": "devices",
+      "event_mapping": [
+        "pocketlab.events.fleet.device_role_change_blocked"
+      ],
+      "http_status": 409,
+      "id": "reason:device_role_change_identity_mismatch",
+      "name": "device_role_change_identity_mismatch",
+      "projection_mapping": [
+        "device_role_change_operations"
+      ],
+      "retryable": false,
+      "severity": "high",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Identity mismatch"
+      ],
+      "user_interpretation": "Device identity must match before roles can change."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A governed role change was delivered and is waiting for fresh verified device evidence before it becomes active.",
+      "domain": "devices",
+      "event_mapping": [
+        "pocketlab.events.fleet.device_role_change_requested"
+      ],
+      "http_status": 202,
+      "id": "reason:device_role_change_pending_verification",
+      "name": "device_role_change_pending_verification",
+      "projection_mapping": [
+        "device_role_change_operations"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Role verification pending"
+      ],
+      "user_interpretation": "The role change was sent; Pocket Lab is waiting for fresh device verification."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The governed role change requires the independent approval policy before it can be applied.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:device_role_change_requires_approval",
+      "name": "device_role_change_requires_approval",
+      "projection_mapping": [
+        "device_role_change_operations"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Approval required"
+      ],
+      "user_interpretation": "Approval is required before changing this device role."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A device reported an older role generation than the server-owned assignment.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:device_role_change_stale_generation",
+      "name": "device_role_change_stale_generation",
+      "projection_mapping": [
+        "device_role_change_operations"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Role update superseded"
+      ],
+      "user_interpretation": "A newer device role assignment is already active."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The requested device role is not recognized or the role set exceeds the governed limit.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 422,
+      "id": "reason:device_role_invalid",
+      "name": "device_role_invalid",
+      "projection_mapping": [
+        "device_roles"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Role unavailable"
+      ],
+      "user_interpretation": "Choose a recognized Pocket Lab device role."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A protected Server Host role was requested through a joined-device path and cannot be assigned there.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:device_role_not_joinable",
+      "name": "device_role_not_joinable",
+      "projection_mapping": [
+        "device_roles"
+      ],
+      "retryable": false,
+      "severity": "high",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Protected Server Host"
+      ],
+      "user_interpretation": "The protected Server Host role cannot be assigned to a joined device."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "At least one governed device role is required for the assignment.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 422,
+      "id": "reason:device_roles_required",
+      "name": "device_roles_required",
+      "projection_mapping": [
+        "device_roles"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Choose a device role"
+      ],
+      "user_interpretation": "Choose at least one device role."
     },
     {
       "confidence": "source-derived",
@@ -15438,6 +15957,30 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The invite identity does not match the enrolled device."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The roles reported while consuming an invite do not match the server-owned invite role set.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:invite_role_set_mismatch",
+      "name": "invite_role_set_mismatch",
+      "projection_mapping": [
+        "device_roles"
+      ],
+      "retryable": false,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Invite role mismatch"
+      ],
+      "user_interpretation": "The invited device roles do not match the invite."
     },
     {
       "confidence": "source-derived",
@@ -19826,10 +20369,10 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:845",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:877",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:72",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1653",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:902"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1004"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20026,7 +20569,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4145",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4509",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1664"
       ],
       "stream": "incomplete",
@@ -20046,7 +20589,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3762",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4126",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1665"
       ],
       "stream": "incomplete",
@@ -20066,7 +20609,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3792",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4156",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1667"
       ],
       "stream": "incomplete",
@@ -20086,7 +20629,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3775",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4139",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1666"
       ],
       "stream": "incomplete",
@@ -20106,7 +20649,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4232",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4596",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1677"
       ],
       "stream": "incomplete",
@@ -20146,7 +20689,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3832",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4196",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1680"
       ],
       "stream": "incomplete",
@@ -20166,7 +20709,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3875",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4239",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1681"
       ],
       "stream": "incomplete",
@@ -20186,7 +20729,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3933",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4297",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1683"
       ],
       "stream": "incomplete",
@@ -20206,7 +20749,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3893",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4257",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1682"
       ],
       "stream": "incomplete",
@@ -20248,7 +20791,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4001",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4365",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1685"
       ],
       "stream": "incomplete",
@@ -20268,7 +20811,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3975",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4339",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1684"
       ],
       "stream": "incomplete",
@@ -20348,7 +20891,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4394",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4758",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1679"
       ],
       "stream": "incomplete",
@@ -20368,7 +20911,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4267",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4631",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1678"
       ],
       "stream": "incomplete",
@@ -20482,7 +21025,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:137"
       ],
       "stream": "incomplete",
@@ -20506,7 +21049,28 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:657"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:683"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "node command subject",
+      "domain": "node",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.commands.node.{fleet_registry.normalize_node_id",
+      "name": "pocketlab.commands.node.{fleet_registry.normalize_node_id",
+      "publishers": [
+        "lite.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3524"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20525,7 +21089,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1591"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1685"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20565,7 +21129,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:548"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:574"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -20584,7 +21148,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620"
       ],
       "stream": "incomplete",
       "subscribers": [
@@ -21300,8 +21864,8 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:449",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:698",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:714"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:778",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:800"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21364,7 +21928,28 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1562"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1656"
+      ],
+      "stream": "incomplete",
+      "subscribers": [],
+      "type": "subject"
+    },
+    {
+      "classification": "internal metadata",
+      "confidence": "contract-derived",
+      "delivery": "incomplete",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "durability": "incomplete",
+      "id": "subject:pocketlab.events.fleet.device_role_change_requested",
+      "name": "pocketlab.events.fleet.device_role_change_requested",
+      "publishers": [
+        "lite.py"
+      ],
+      "retry": "incomplete",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3535"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21426,7 +22011,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:448",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:874"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:976"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21450,8 +22035,8 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:278",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:447",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:454",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:908"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1010",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:471"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21470,7 +22055,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:600"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:662"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21510,8 +22095,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1590",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:931",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1017",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1684",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:754"
       ],
       "stream": "incomplete",
@@ -21533,7 +22118,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:442"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:552"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21555,8 +22140,8 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:296",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:565",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:665"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:591",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:691"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21577,9 +22162,9 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:784",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:900",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:914"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1013",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1027",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:894"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21600,7 +22185,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:584"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:694"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21621,8 +22206,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:465",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:549"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:575",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:659"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21643,7 +22228,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:943"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1056"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21664,7 +22249,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:434"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:544"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21685,7 +22270,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:419"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:529"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21706,7 +22291,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:350"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:361"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21727,7 +22312,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:575"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:685"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -24637,7 +25222,8 @@
         "sqlite_autoindex_device_enrollment_registry_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
       ],
       "name": "device_enrollment_registry",
       "owner": "not a prepared projection",
@@ -24651,7 +25237,8 @@
       ],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
       ],
       "type": "table",
       "writer": "device lifecycle and projection services"
@@ -24960,6 +25547,65 @@
       "writer": "device lifecycle and projection services"
     },
     {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "devices",
+      "id": "table:device_role_assignments",
+      "indexes": [
+        "idx_device_role_assignments_active",
+        "idx_device_role_assignments_desired",
+        "sqlite_autoindex_device_role_assignments_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+      ],
+      "name": "device_role_assignments",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/fleet",
+        "/api/lite/devices/{device_id}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+      ],
+      "type": "table",
+      "writer": "device lifecycle and projection services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "devices",
+      "id": "table:device_role_change_operations",
+      "indexes": [
+        "idx_device_role_change_device",
+        "idx_device_role_change_status",
+        "sqlite_autoindex_device_role_change_operations_2",
+        "sqlite_autoindex_device_role_change_operations_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+      ],
+      "name": "device_role_change_operations",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/fleet",
+        "/api/lite/devices/{device_id}"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+      ],
+      "type": "table",
+      "writer": "device lifecycle and projection services"
+    },
+    {
       "classification": "restricted operational metadata",
       "confidence": "inferred",
       "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
@@ -25064,7 +25710,8 @@
       "indexes": [],
       "migration_sources": [
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
       ],
       "name": "enterprise_configuration",
       "owner": "not a prepared projection",
@@ -25074,7 +25721,8 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -25091,7 +25739,8 @@
       ],
       "migration_sources": [
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
       ],
       "name": "enterprise_memberships",
       "owner": "not a prepared projection",
@@ -25101,7 +25750,8 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -25113,11 +25763,13 @@
       "domain": "control_plane",
       "id": "table:harness_audit_events",
       "indexes": [
+        "idx_harness_audit_target_device",
         "idx_harness_audit_events_session",
         "idx_harness_audit_events_time"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "name": "harness_audit_events",
       "owner": "not a prepared projection",
@@ -25126,7 +25778,8 @@
       "sensitive_fields": [],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -25143,7 +25796,8 @@
         "sqlite_autoindex_harness_challenges_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "name": "harness_challenges",
       "owner": "not a prepared projection",
@@ -25155,7 +25809,37 @@
       ],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:harness_recovery_receipts",
+      "indexes": [
+        "idx_harness_recovery_receipts_binding",
+        "idx_harness_recovery_receipts_status",
+        "sqlite_autoindex_harness_recovery_receipts_2",
+        "sqlite_autoindex_harness_recovery_receipts_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
+      ],
+      "name": "harness_recovery_receipts",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "token_hash"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -25167,12 +25851,14 @@
       "domain": "control_plane",
       "id": "table:harness_sessions",
       "indexes": [
+        "idx_harness_sessions_target_device",
         "idx_harness_sessions_status",
         "sqlite_autoindex_harness_sessions_2",
         "sqlite_autoindex_harness_sessions_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "name": "harness_sessions",
       "owner": "not a prepared projection",
@@ -25183,7 +25869,8 @@
       ],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -25265,7 +25952,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
       ],
       "name": "human_identities",
       "owner": "not a prepared projection",
@@ -25282,7 +25970,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -25510,7 +26199,8 @@
       ],
       "migration_sources": [
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
       ],
       "name": "policy_approvals",
       "owner": "not a prepared projection",
@@ -25522,7 +26212,8 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -25590,7 +26281,8 @@
       ],
       "migration_sources": [
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
       ],
       "name": "policy_decisions",
       "owner": "not a prepared projection",
@@ -25600,7 +26292,8 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -26319,13 +27012,15 @@
       "domain": "control_plane",
       "id": "table:synthetic_principals",
       "indexes": [
+        "idx_synthetic_principals_target_device",
         "idx_synthetic_principals_status",
         "sqlite_autoindex_synthetic_principals_2",
         "sqlite_autoindex_synthetic_principals_1"
       ],
       "migration_sources": [
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "name": "synthetic_principals",
       "owner": "not a prepared projection",
@@ -26335,7 +27030,8 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -26968,6 +27664,26 @@
       "name": "tests/backend/test_lite_fastapi_runtime_diagnostics.py",
       "source_refs": [
         "tests/backend/test_lite_fastapi_runtime_diagnostics.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+      "name": "tests/backend/test_lite_fleet_multi_role_authorization.py",
+      "source_refs": [
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_fleet_multi_role_invites_governance.py",
+      "name": "tests/backend/test_lite_fleet_multi_role_invites_governance.py",
+      "source_refs": [
+        "tests/backend/test_lite_fleet_multi_role_invites_governance.py"
       ],
       "type": "test"
     },
@@ -31055,6 +31771,7 @@
         "table:enterprise_memberships",
         "table:harness_audit_events",
         "table:harness_challenges",
+        "table:harness_recovery_receipts",
         "table:harness_sessions",
         "table:human_credentials",
         "table:human_enrollment_claims",
@@ -31090,6 +31807,7 @@
         "api:get:/api/lite/fleet",
         "api:get:/api/lite/fleet/agent/bootstrap.sh",
         "api:get:/api/lite/fleet/devices/{device_id}/recovery-history",
+        "api:get:/api/lite/fleet/devices/{device_id}/roles",
         "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status",
         "api:get:/api/lite/fleet/health-summary",
         "api:get:/api/lite/fleet/invites/latest",
@@ -31103,6 +31821,7 @@
         "api:post:/api/lite/fleet/invites/{invite_id}/revoke",
         "api:post:/api/lite/fleet/remove-device",
         "api:put:/api/lite/fleet/devices/{device_id}/display-model",
+        "api:put:/api/lite/fleet/devices/{device_id}/roles",
         "domain:devices",
         "glossary:rejoin",
         "glossary:repair",
@@ -31115,10 +31834,28 @@
         "limitation:devices:accepted-1",
         "limitation:devices:gap-1",
         "reason:command_undeliverable",
+        "reason:confirmation_required",
+        "reason:device_capability_not_advertised",
+        "reason:device_capability_not_authorized",
+        "reason:device_capability_stale",
+        "reason:device_capability_verification_failed",
+        "reason:device_role_assignment_unauthorized",
+        "reason:device_role_change_blocked_by_dependency",
+        "reason:device_role_change_device_offline",
+        "reason:device_role_change_failed",
+        "reason:device_role_change_generation_mismatch",
+        "reason:device_role_change_identity_mismatch",
+        "reason:device_role_change_pending_verification",
+        "reason:device_role_change_requires_approval",
+        "reason:device_role_change_stale_generation",
+        "reason:device_role_invalid",
+        "reason:device_role_not_joinable",
+        "reason:device_roles_required",
         "reason:duplicate_device",
         "reason:identity_mismatch",
         "reason:invite_expired",
         "reason:invite_identity_mismatch",
+        "reason:invite_role_set_mismatch",
         "reason:legacy_telemetry_value",
         "reason:protected_server_host",
         "reason:remote_access_not_ready",
@@ -31131,6 +31868,7 @@
         "subject:pocketlab.events.fleet.config_updated",
         "subject:pocketlab.events.fleet.device_health_sampled",
         "subject:pocketlab.events.fleet.device_removed",
+        "subject:pocketlab.events.fleet.device_role_change_requested",
         "subject:pocketlab.events.fleet.health_changed",
         "subject:pocketlab.events.fleet.health_sampled",
         "subject:pocketlab.events.fleet.invite_accepted",
@@ -31161,6 +31899,8 @@
         "table:device_lifecycle_transactions",
         "table:device_recovery_history",
         "table:device_removal_receipts",
+        "table:device_role_assignments",
+        "table:device_role_change_operations",
         "table:device_supervisor_state",
         "table:device_system_profiles",
         "ui:litedevices"
@@ -31276,6 +32016,7 @@
         "api:post:/api/lite/harness/principal/revoke",
         "api:post:/api/lite/harness/principals",
         "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+        "api:post:/api/lite/harness/recovery/authorize",
         "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
         "api:post:/api/lite/harness/security-assurance/policy-sync",
         "api:post:/api/lite/harness/security-assurance/runs",
@@ -31509,6 +32250,7 @@
         "subject:pocketlab.commands.node",
         "subject:pocketlab.commands.node.all",
         "subject:pocketlab.commands.node.all.{command.replace",
+        "subject:pocketlab.commands.node.{fleet_registry.normalize_node_id",
         "subject:pocketlab.commands.node.{node_id}",
         "subject:pocketlab.commands.node.{node_id}.{command.replace",
         "subject:pocketlab.commands.node.{normalized_node_id}.agent.restart",
@@ -31966,6 +32708,8 @@
         "test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py",
         "test:tests/backend/test_lite_enterprise_identity_p2.py",
         "test:tests/backend/test_lite_fastapi_runtime_diagnostics.py",
+        "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+        "test:tests/backend/test_lite_fleet_multi_role_invites_governance.py",
         "test:tests/backend/test_lite_harness.py",
         "test:tests/backend/test_lite_home_capacity_contract.py",
         "test:tests/backend/test_lite_hot_path_profiler.py",
@@ -32379,6 +33123,7 @@
         "api:get:/api/lite/fleet",
         "api:get:/api/lite/fleet/agent/bootstrap.sh",
         "api:get:/api/lite/fleet/devices/{device_id}/recovery-history",
+        "api:get:/api/lite/fleet/devices/{device_id}/roles",
         "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status",
         "api:get:/api/lite/fleet/health-summary",
         "api:get:/api/lite/fleet/invites/latest",
@@ -32498,6 +33243,7 @@
         "api:post:/api/lite/harness/principal/revoke",
         "api:post:/api/lite/harness/principals",
         "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+        "api:post:/api/lite/harness/recovery/authorize",
         "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
         "api:post:/api/lite/harness/security-assurance/policy-sync",
         "api:post:/api/lite/harness/security-assurance/runs",
@@ -32548,6 +33294,7 @@
         "api:put:/api/lite/enterprise/identity/members/{human_id}",
         "api:put:/api/lite/enterprise/identity/mode",
         "api:put:/api/lite/fleet/devices/{device_id}/display-model",
+        "api:put:/api/lite/fleet/devices/{device_id}/roles",
         "api:put:/api/lite/identity/passkeys/{credential_id}"
       ],
       "capability": [
@@ -32764,9 +33511,26 @@
         "reason:cold_start_validation",
         "reason:command_undeliverable",
         "reason:configured_target_budget",
+        "reason:confirmation_required",
         "reason:connection_failed",
         "reason:csrf_required",
         "reason:deferred_resource_pressure",
+        "reason:device_capability_not_advertised",
+        "reason:device_capability_not_authorized",
+        "reason:device_capability_stale",
+        "reason:device_capability_verification_failed",
+        "reason:device_role_assignment_unauthorized",
+        "reason:device_role_change_blocked_by_dependency",
+        "reason:device_role_change_device_offline",
+        "reason:device_role_change_failed",
+        "reason:device_role_change_generation_mismatch",
+        "reason:device_role_change_identity_mismatch",
+        "reason:device_role_change_pending_verification",
+        "reason:device_role_change_requires_approval",
+        "reason:device_role_change_stale_generation",
+        "reason:device_role_invalid",
+        "reason:device_role_not_joinable",
+        "reason:device_roles_required",
         "reason:diagnostics_not_active",
         "reason:disabled",
         "reason:duplicate_device",
@@ -32832,6 +33596,7 @@
         "reason:invalid_domain",
         "reason:invite_expired",
         "reason:invite_identity_mismatch",
+        "reason:invite_role_set_mismatch",
         "reason:lease_active",
         "reason:legacy_multiple_active_runs",
         "reason:legacy_secret_rotation_retired",
@@ -33057,6 +33822,7 @@
         "subject:pocketlab.commands.node",
         "subject:pocketlab.commands.node.all",
         "subject:pocketlab.commands.node.all.{command.replace",
+        "subject:pocketlab.commands.node.{fleet_registry.normalize_node_id",
         "subject:pocketlab.commands.node.{node_id}",
         "subject:pocketlab.commands.node.{node_id}.{command.replace",
         "subject:pocketlab.commands.node.{normalized_node_id}.agent.restart",
@@ -33097,6 +33863,7 @@
         "subject:pocketlab.events.fleet.config_updated",
         "subject:pocketlab.events.fleet.device_health_sampled",
         "subject:pocketlab.events.fleet.device_removed",
+        "subject:pocketlab.events.fleet.device_role_change_requested",
         "subject:pocketlab.events.fleet.health_changed",
         "subject:pocketlab.events.fleet.health_sampled",
         "subject:pocketlab.events.fleet.invite_accepted",
@@ -33258,6 +34025,8 @@
         "table:device_lifecycle_transactions",
         "table:device_recovery_history",
         "table:device_removal_receipts",
+        "table:device_role_assignments",
+        "table:device_role_change_operations",
         "table:device_supervisor_state",
         "table:device_system_profiles",
         "table:domain_revisions",
@@ -33265,6 +34034,7 @@
         "table:enterprise_memberships",
         "table:harness_audit_events",
         "table:harness_challenges",
+        "table:harness_recovery_receipts",
         "table:harness_sessions",
         "table:human_credentials",
         "table:human_enrollment_claims",
@@ -33360,6 +34130,8 @@
         "test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py",
         "test:tests/backend/test_lite_enterprise_identity_p2.py",
         "test:tests/backend/test_lite_fastapi_runtime_diagnostics.py",
+        "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+        "test:tests/backend/test_lite_fleet_multi_role_invites_governance.py",
         "test:tests/backend/test_lite_harness.py",
         "test:tests/backend/test_lite_home_capacity_contract.py",
         "test:tests/backend/test_lite_hot_path_profiler.py",
@@ -34189,6 +34961,12 @@
         }
       ],
       "api:get:/api/lite/fleet/devices/{device_id}/recovery-history": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/fleet/devices/{device_id}/roles": [
         {
           "source": "domain:devices",
           "type": "owns"
@@ -35148,6 +35926,12 @@
           "type": "owns"
         }
       ],
+      "api:post:/api/lite/harness/recovery/authorize": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
       "api:post:/api/lite/harness/security-assurance/faults/{fault_id}": [
         {
           "source": "domain:harness",
@@ -35703,6 +36487,12 @@
         }
       ],
       "api:put:/api/lite/fleet/devices/{device_id}/display-model": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "api:put:/api/lite/fleet/devices/{device_id}/roles": [
         {
           "source": "domain:devices",
           "type": "owns"
@@ -37262,6 +38052,12 @@
           "type": "owns"
         }
       ],
+      "reason:confirmation_required": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
       "reason:connection_failed": [
         {
           "source": "domain:validation",
@@ -37277,6 +38073,102 @@
       "reason:deferred_resource_pressure": [
         {
           "source": "domain:security",
+          "type": "owns"
+        }
+      ],
+      "reason:device_capability_not_advertised": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_capability_not_authorized": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_capability_stale": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_capability_verification_failed": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_assignment_unauthorized": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_change_blocked_by_dependency": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_change_device_offline": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_change_failed": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_change_generation_mismatch": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_change_identity_mismatch": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_change_pending_verification": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_change_requires_approval": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_change_stale_generation": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_invalid": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_not_joinable": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_roles_required": [
+        {
+          "source": "domain:devices",
           "type": "owns"
         }
       ],
@@ -37665,6 +38557,12 @@
         }
       ],
       "reason:invite_identity_mismatch": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:invite_role_set_mismatch": [
         {
           "source": "domain:devices",
           "type": "owns"
@@ -38964,6 +39862,16 @@
           "type": "owns"
         }
       ],
+      "subject:pocketlab.commands.node.{fleet_registry.normalize_node_id": [
+        {
+          "source": "domain:node",
+          "type": "owns"
+        },
+        {
+          "source": "component:lite-api",
+          "type": "publishes"
+        }
+      ],
       "subject:pocketlab.commands.node.{node_id}": [
         {
           "source": "domain:node",
@@ -39346,6 +40254,16 @@
         {
           "source": "domain:devices",
           "type": "owns"
+        }
+      ],
+      "subject:pocketlab.events.fleet.device_role_change_requested": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        },
+        {
+          "source": "component:lite-api",
+          "type": "publishes"
         }
       ],
       "subject:pocketlab.events.fleet.health_changed": [
@@ -40866,6 +41784,34 @@
           "type": "reads"
         }
       ],
+      "table:device_role_assignments": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        },
+        {
+          "source": "api:get:/api/lite/devices/{device_id}",
+          "type": "reads"
+        },
+        {
+          "source": "api:get:/api/lite/fleet",
+          "type": "reads"
+        }
+      ],
+      "table:device_role_change_operations": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        },
+        {
+          "source": "api:get:/api/lite/devices/{device_id}",
+          "type": "reads"
+        },
+        {
+          "source": "api:get:/api/lite/fleet",
+          "type": "reads"
+        }
+      ],
       "table:device_supervisor_state": [
         {
           "source": "domain:devices",
@@ -40939,6 +41885,12 @@
         }
       ],
       "table:harness_challenges": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:harness_recovery_receipts": [
         {
           "source": "domain:control_plane",
           "type": "owns"
@@ -41684,6 +42636,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:confirmation_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:disabled",
           "type": "verified_by"
         },
@@ -41872,6 +42828,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:confirmation_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:connection_failed",
           "type": "verified_by"
         },
@@ -41881,6 +42841,70 @@
         },
         {
           "source": "reason:deferred_resource_pressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_not_advertised",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_not_authorized",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_stale",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_verification_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_assignment_unauthorized",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_blocked_by_dependency",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_device_offline",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_generation_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_pending_verification",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_requires_approval",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_stale_generation",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_not_joinable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_roles_required",
           "type": "verified_by"
         },
         {
@@ -42141,6 +43165,10 @@
         },
         {
           "source": "reason:invite_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:invite_role_set_mismatch",
           "type": "verified_by"
         },
         {
@@ -43018,6 +44046,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/fleet/devices/{device_id}/roles",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status",
           "type": "verified_by"
         },
@@ -43494,6 +44526,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/harness/recovery/authorize",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
           "type": "verified_by"
         },
@@ -43691,6 +44727,10 @@
         },
         {
           "source": "api:put:/api/lite/fleet/devices/{device_id}/display-model",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:put:/api/lite/fleet/devices/{device_id}/roles",
           "type": "verified_by"
         },
         {
@@ -43938,6 +44978,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:confirmation_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:protected_server_host",
           "type": "verified_by"
         }
@@ -44015,6 +45059,50 @@
         },
         {
           "source": "component:pwa",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_fleet_multi_role_authorization.py": [
+        {
+          "source": "reason:device_role_change_blocked_by_dependency",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_generation_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_pending_verification",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_stale_generation",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_not_joinable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:protected_server_host",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_fleet_multi_role_invites_governance.py": [
+        {
+          "source": "reason:invite_role_set_mismatch",
           "type": "verified_by"
         }
       ],
@@ -44751,6 +45839,10 @@
         },
         {
           "source": "reason:assurance_policy_sync_disabled",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:confirmation_required",
           "type": "verified_by"
         },
         {
@@ -46876,6 +47968,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:confirmation_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:connection_failed",
           "type": "verified_by"
         },
@@ -46885,6 +47981,70 @@
         },
         {
           "source": "reason:deferred_resource_pressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_not_advertised",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_not_authorized",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_stale",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_verification_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_assignment_unauthorized",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_blocked_by_dependency",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_device_offline",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_generation_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_pending_verification",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_requires_approval",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_stale_generation",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_not_joinable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_roles_required",
           "type": "verified_by"
         },
         {
@@ -47145,6 +48305,10 @@
         },
         {
           "source": "reason:invite_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:invite_role_set_mismatch",
           "type": "verified_by"
         },
         {
@@ -47934,6 +49098,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:confirmation_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:connection_failed",
           "type": "verified_by"
         },
@@ -47943,6 +49111,70 @@
         },
         {
           "source": "reason:deferred_resource_pressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_not_advertised",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_not_authorized",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_stale",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_verification_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_assignment_unauthorized",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_blocked_by_dependency",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_device_offline",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_generation_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_pending_verification",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_requires_approval",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_stale_generation",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_not_joinable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_roles_required",
           "type": "verified_by"
         },
         {
@@ -48203,6 +49435,10 @@
         },
         {
           "source": "reason:invite_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:invite_role_set_mismatch",
           "type": "verified_by"
         },
         {
@@ -49254,6 +50490,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/fleet/devices/{device_id}/roles",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status",
           "type": "verified_by"
         },
@@ -49730,6 +50970,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/harness/recovery/authorize",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
           "type": "verified_by"
         },
@@ -49927,6 +51171,10 @@
         },
         {
           "source": "api:put:/api/lite/fleet/devices/{device_id}/display-model",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:put:/api/lite/fleet/devices/{device_id}/roles",
           "type": "verified_by"
         },
         {
@@ -50908,6 +52156,14 @@
           "type": "reads"
         },
         {
+          "target": "table:device_role_assignments",
+          "type": "reads"
+        },
+        {
+          "target": "table:device_role_change_operations",
+          "type": "reads"
+        },
+        {
           "target": "table:device_supervisor_state",
           "type": "reads"
         },
@@ -51282,6 +52538,14 @@
           "type": "reads"
         },
         {
+          "target": "table:device_role_assignments",
+          "type": "reads"
+        },
+        {
+          "target": "table:device_role_change_operations",
+          "type": "reads"
+        },
+        {
           "target": "table:device_supervisor_state",
           "type": "reads"
         },
@@ -51309,6 +52573,16 @@
         }
       ],
       "api:get:/api/lite/fleet/devices/{device_id}/recovery-history": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/fleet/devices/{device_id}/roles": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -52668,6 +53942,16 @@
           "type": "verified_by"
         }
       ],
+      "api:post:/api/lite/harness/recovery/authorize": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:post:/api/lite/harness/security-assurance/faults/{fault_id}": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -53159,6 +54443,16 @@
         }
       ],
       "api:put:/api/lite/fleet/devices/{device_id}/display-model": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:put:/api/lite/fleet/devices/{device_id}/roles": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -55008,6 +56302,14 @@
         {
           "target": "threat-model:control-api",
           "type": "protected_by"
+        },
+        {
+          "target": "subject:pocketlab.commands.node.{fleet_registry.normalize_node_id",
+          "type": "publishes"
+        },
+        {
+          "target": "subject:pocketlab.events.fleet.device_role_change_requested",
+          "type": "publishes"
         },
         {
           "target": "troubleshooting:api-unavailable",
@@ -57326,6 +58628,10 @@
           "type": "owns"
         },
         {
+          "target": "table:harness_recovery_receipts",
+          "type": "owns"
+        },
+        {
           "target": "table:harness_sessions",
           "type": "owns"
         },
@@ -57462,6 +58768,10 @@
           "type": "owns"
         },
         {
+          "target": "api:get:/api/lite/fleet/devices/{device_id}/roles",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status",
           "type": "owns"
         },
@@ -57514,6 +58824,10 @@
           "type": "owns"
         },
         {
+          "target": "api:put:/api/lite/fleet/devices/{device_id}/roles",
+          "type": "owns"
+        },
+        {
           "target": "journey:add-device",
           "type": "owns"
         },
@@ -57542,6 +58856,74 @@
           "type": "owns"
         },
         {
+          "target": "reason:confirmation_required",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_capability_not_advertised",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_capability_not_authorized",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_capability_stale",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_capability_verification_failed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_assignment_unauthorized",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_change_blocked_by_dependency",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_change_device_offline",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_change_failed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_change_generation_mismatch",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_change_identity_mismatch",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_change_pending_verification",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_change_requires_approval",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_change_stale_generation",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_invalid",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_not_joinable",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_roles_required",
+          "type": "owns"
+        },
+        {
           "target": "reason:duplicate_device",
           "type": "owns"
         },
@@ -57555,6 +58937,10 @@
         },
         {
           "target": "reason:invite_identity_mismatch",
+          "type": "owns"
+        },
+        {
+          "target": "reason:invite_role_set_mismatch",
           "type": "owns"
         },
         {
@@ -57603,6 +58989,10 @@
         },
         {
           "target": "subject:pocketlab.events.fleet.device_removed",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.events.fleet.device_role_change_requested",
           "type": "owns"
         },
         {
@@ -57723,6 +59113,14 @@
         },
         {
           "target": "table:device_removal_receipts",
+          "type": "owns"
+        },
+        {
+          "target": "table:device_role_assignments",
+          "type": "owns"
+        },
+        {
+          "target": "table:device_role_change_operations",
           "type": "owns"
         },
         {
@@ -58147,6 +59545,10 @@
         },
         {
           "target": "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/harness/recovery/authorize",
           "type": "owns"
         },
         {
@@ -59087,6 +60489,10 @@
         },
         {
           "target": "subject:pocketlab.commands.node.all.{command.replace",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.commands.node.{fleet_registry.normalize_node_id",
           "type": "owns"
         },
         {
@@ -62622,6 +64028,32 @@
           "type": "verified_by"
         }
       ],
+      "reason:confirmation_required": [
+        {
+          "target": "test:tests/backend/test_lite_api.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_devices_production_readiness.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:connection_failed": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -62665,6 +64097,258 @@
         },
         {
           "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_capability_not_advertised": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_capability_not_authorized": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_capability_stale": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_capability_verification_failed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_assignment_unauthorized": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_change_blocked_by_dependency": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_change_device_offline": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_change_failed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_change_generation_mismatch": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_change_identity_mismatch": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_change_pending_verification": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_change_requires_approval": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_change_stale_generation": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_invalid": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_not_joinable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_roles_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
         },
         {
@@ -63532,6 +65216,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
           "type": "verified_by"
         },
@@ -63827,6 +65515,24 @@
         },
         {
           "target": "test:tests/backend/test_lite_devices_d2_d3.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:invite_role_set_mismatch": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_invites_governance.py",
           "type": "verified_by"
         },
         {
@@ -65167,6 +66873,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
           "type": "verified_by"
         },
         {
@@ -66920,6 +68630,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:019560eb8ba5cce6",
+      "source": "reason:device_role_not_joinable",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:01a5c983879475fd",
@@ -66992,7 +68711,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3875"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4239"
       ],
       "id": "rel:01d5bcfc59eaef09",
       "source": "component:lite-api",
@@ -67092,6 +68811,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:03255c8a18406a2b",
+      "source": "api:get:/api/lite/fleet",
+      "target": "table:device_role_assignments",
+      "type": "reads"
+    },
+    {
+      "evidence": [
         "src/lite/LiteRecovery.jsx"
       ],
       "id": "rel:03274774b8804477",
@@ -67128,7 +68856,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:549"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:659"
       ],
       "id": "rel:03591d373c92f6a4",
       "source": "component:agent-command-executor",
@@ -67232,6 +68960,15 @@
       "id": "rel:040a00d534e4e847",
       "source": "reason:identity_setup_rejected",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:04560e34ab51aac5",
+      "source": "reason:device_role_change_identity_mismatch",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -67410,7 +69147,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:584"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:694"
       ],
       "id": "rel:059be88dea06a65e",
       "source": "component:agent-signals",
@@ -67443,6 +69180,15 @@
       "source": "domain:security",
       "target": "api:post:/api/lite/security/scan",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:05c77be2ec5d144a",
+      "source": "reason:device_role_change_pending_verification",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -67762,7 +69508,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:442"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:552"
       ],
       "id": "rel:08078fc22e7ea260",
       "source": "component:agent-signals",
@@ -67939,6 +69685,15 @@
       "source": "component:security-coordinator",
       "target": "component:scanner-adapters",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:099bfb473bfd58d1",
+      "source": "reason:device_role_change_failed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -68311,6 +70066,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:0cbdc93b2500aff0",
+      "source": "reason:device_role_not_joinable",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:0cca9a3b33d43004",
@@ -68460,6 +70224,15 @@
       "id": "rel:0dbe12b5f955a50b",
       "source": "reason:owner_claim_passkey",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:0dc4fa5b510e381b",
+      "source": "api:put:/api/lite/fleet/devices/{device_id}/roles",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -68698,6 +70471,15 @@
       "id": "rel:0f697fc30d6e5af4",
       "source": "component:pwa",
       "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:0f69cf9b797a41ae",
+      "source": "reason:device_capability_verification_failed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -69269,6 +71051,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:133d33ac02c976aa",
+      "source": "api:get:/api/lite/fleet/devices/{device_id}/roles",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:1342ddde4a18981a",
@@ -69368,7 +71159,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:914"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:894"
       ],
       "id": "rel:13cef9faca6544c1",
       "source": "component:agent-signals",
@@ -69490,6 +71281,15 @@
       "id": "rel:1455e54234851bac",
       "source": "domain:lite",
       "target": "subject:pocketlab.events.lite.app.{event_prefix}.started",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:145b42c947b0b60f",
+      "source": "domain:devices",
+      "target": "reason:device_role_change_identity_mismatch",
       "type": "owns"
     },
     {
@@ -69629,7 +71429,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:584"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:694"
       ],
       "id": "rel:1539b66321cd6c08",
       "source": "component:agent-recovery",
@@ -70151,7 +71951,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:419"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:529"
       ],
       "id": "rel:198f4260cbe0723b",
       "source": "component:agent-command-executor",
@@ -70205,12 +72005,30 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:19b83d612b24238e",
+      "source": "domain:devices",
+      "target": "api:get:/api/lite/fleet/devices/{device_id}/roles",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "src/lite/LiteApp.jsx"
       ],
       "id": "rel:19c9e39b0b4858bc",
       "source": "ui:liteapp",
       "target": "api:get:/api/lite/apps/{app_id}/actions",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:19f2a6ca18a644fa",
+      "source": "api:get:/api/lite/fleet/devices/{device_id}/roles",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -70522,6 +72340,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:1bc60ead8421beb1",
+      "source": "reason:device_roles_required",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py"
       ],
       "id": "rel:1bd2c8fedca08bc7",
@@ -70779,6 +72606,15 @@
       "id": "rel:1da44206b34f219f",
       "source": "component:device-state",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:1dacdde074a73a99",
+      "source": "reason:confirmation_required",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -71229,6 +73065,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:217fdbf790566e70",
+      "source": "reason:device_role_change_stale_generation",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:2183acc456ff8bf8",
@@ -71324,6 +73169,15 @@
       "id": "rel:2236fdc7bcb97c4f",
       "source": "reason:webauthn_rp_id_invalid",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "id": "rel:2251487c18bc5aba",
+      "source": "reason:device_role_change_pending_verification",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
       "type": "verified_by"
     },
     {
@@ -71548,6 +73402,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:241aba319e4286f9",
+      "source": "domain:harness",
+      "target": "api:post:/api/lite/harness/recovery/authorize",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:241d874cb46b034c",
@@ -71575,12 +73438,30 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:2435d20aac72c8d7",
+      "source": "domain:devices",
+      "target": "reason:device_capability_not_advertised",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:2440081d732c9fe7",
       "source": "domain:enterprise",
       "target": "api:get:/api/lite/enterprise/identity/people",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:244788eaf7d8a365",
+      "source": "reason:confirmation_required",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -71990,6 +73871,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:26eee8129c21c42f",
+      "source": "reason:device_role_change_stale_generation",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_policy_approvals_p3_1.py"
       ],
       "id": "rel:2700d69d0e37e276",
@@ -72062,7 +73952,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:434"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:544"
       ],
       "id": "rel:27996b9b2cc5026b",
       "source": "component:agent-command-executor",
@@ -72856,6 +74746,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:2db64728592c5433",
+      "source": "domain:devices",
+      "target": "reason:device_role_assignment_unauthorized",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:762"
       ],
       "id": "rel:2dc52098dedaa50a",
@@ -73181,7 +75080,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620"
       ],
       "id": "rel:305f290db88db25e",
       "source": "component:agent-signals",
@@ -73511,6 +75410,15 @@
       "id": "rel:328a7bea9b711596",
       "source": "component:restore-preview",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:3298fc18d6c5ea44",
+      "source": "reason:device_role_invalid",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -74011,7 +75919,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:434"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:544"
       ],
       "id": "rel:36b34a5f16aaf15f",
       "source": "component:agent-signals",
@@ -74232,6 +76140,15 @@
       "id": "rel:37ab327ec20abe81",
       "source": "api:get:/api/lite/security/summary",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:37b45f1e689d8123",
+      "source": "reason:device_capability_stale",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -74477,6 +76394,15 @@
       "source": "component:lite-api",
       "target": "troubleshooting:api-unavailable",
       "type": "recovers_with"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:392e4658e82a943e",
+      "source": "domain:devices",
+      "target": "reason:device_role_not_joinable",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -74843,6 +76769,15 @@
       "id": "rel:3b5f1e5cde78f8f5",
       "source": "domain:telemetry",
       "target": "subject:pocketlab.events.telemetry",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:3b6d9b815c798d17",
+      "source": "domain:devices",
+      "target": "reason:invite_role_set_mismatch",
       "type": "owns"
     },
     {
@@ -75365,6 +77300,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "id": "rel:3f58fe05fb7167e9",
+      "source": "reason:device_role_change_stale_generation",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:3f5d406594b3d83b",
@@ -75843,6 +77787,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:425a288c4dbd89fe",
+      "source": "domain:devices",
+      "target": "reason:device_roles_required",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:4260bcb49f111cfe",
@@ -76158,6 +78111,15 @@
       "source": "domain:command",
       "target": "subject:pocketlab.events.command.worker_claimed",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:44486325d29c069e",
+      "source": "reason:device_role_change_requires_approval",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -76703,6 +78665,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:4919f50c2d5d0f0e",
+      "source": "domain:devices",
+      "target": "reason:device_role_change_device_offline",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:491a9da5c453e4c0",
@@ -76748,7 +78719,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4232"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4596"
       ],
       "id": "rel:4961dd30cdec3c93",
       "source": "component:lite-api",
@@ -76982,7 +78953,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4145"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4509"
       ],
       "id": "rel:4ae2f2e7982d1c97",
       "source": "component:lite-api",
@@ -77014,6 +78985,15 @@
       "id": "rel:4b1dc28a3cc9d5b4",
       "source": "reason:authentication_required",
       "target": "test:tests/backend/test_lite_qualification_owner.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:4b2865ed48d8743a",
+      "source": "reason:confirmation_required",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -77068,6 +79048,15 @@
       "id": "rel:4b946af56143adba",
       "source": "api:get:/api/lite/release",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:4ba15c19e34949be",
+      "source": "reason:device_roles_required",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -77297,6 +79286,24 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:4d4aca2d6fc22e37",
+      "source": "reason:device_capability_not_authorized",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:4d7037d24df38017",
+      "source": "domain:devices",
+      "target": "reason:confirmation_required",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:4d9428a5d9bc5e07",
@@ -77455,12 +79462,21 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:350"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:361"
       ],
       "id": "rel:4eb33eb8264509ea",
       "source": "component:agent-supervisor",
       "target": "subject:pocketlab.events.fleet.node_supervisor",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:4eb4d561d7e5a6a8",
+      "source": "reason:device_role_change_device_offline",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -77997,6 +80013,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "id": "rel:529e6b3b5749e1db",
+      "source": "reason:device_role_change_identity_mismatch",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:52abecfb8634db2f",
@@ -78012,6 +80037,15 @@
       "source": "domain:apps",
       "target": "subject:pocketlab.commands.catalog.refresh",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:53105962007f89bc",
+      "source": "reason:device_roles_required",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -78155,6 +80189,15 @@
       "id": "rel:541a74974ad896ef",
       "source": "reason:nats_fault_requires_active_assurance_run",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "id": "rel:5441d8d7089f3682",
+      "source": "reason:identity_mismatch",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
       "type": "verified_by"
     },
     {
@@ -78929,7 +80972,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:584"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:694"
       ],
       "id": "rel:599d46b0f79c390c",
       "source": "component:node-agent",
@@ -79042,6 +81085,15 @@
       "id": "rel:5a4ed3157cc4b337",
       "source": "component:frontend-state",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "id": "rel:5a52ad38460c8f93",
+      "source": "reason:device_role_not_joinable",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
       "type": "verified_by"
     },
     {
@@ -79274,6 +81326,15 @@
     },
     {
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3524"
+      ],
+      "id": "rel:5c6a7e8f20afd0c5",
+      "source": "component:lite-api",
+      "target": "subject:pocketlab.commands.node.{fleet_registry.normalize_node_id",
+      "type": "publishes"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:5c71adbaff35d3ff",
@@ -79339,7 +81400,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:419"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:529"
       ],
       "id": "rel:5cece4018cf60146",
       "source": "component:agent-recovery",
@@ -79530,12 +81591,21 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:575"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:685"
       ],
       "id": "rel:5ebc69feb2041b30",
       "source": "component:agent-signals",
       "target": "subject:pocketlab.events.fleet.node_telemetry",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:5ed269043056a150",
+      "source": "reason:device_role_change_blocked_by_dependency",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -79634,6 +81704,15 @@
       "id": "rel:5f4c6e4ce46b351c",
       "source": "domain:node",
       "target": "subject:pocketlab.commands.node.all.{command.replace",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:5f69db25c3268786",
+      "source": "domain:devices",
+      "target": "table:device_role_change_operations",
       "type": "owns"
     },
     {
@@ -80128,6 +82207,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:63b8d00ac86ca385",
+      "source": "reason:device_role_assignment_unauthorized",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_policy_opa_readiness.py"
       ],
       "id": "rel:63bb93ab6a0de539",
@@ -80218,7 +82306,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620"
       ],
       "id": "rel:64d1a0ec1f6ecb56",
       "source": "component:agent-command-executor",
@@ -80405,6 +82493,15 @@
       "source": "component:pwa",
       "target": "component:frontend-state",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:663fb029100073ed",
+      "source": "reason:device_role_change_failed",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -80886,6 +82983,15 @@
       "source": "component:agent-signals",
       "target": "table:device_heartbeats",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:69d872808d886324",
+      "source": "domain:devices",
+      "target": "api:put:/api/lite/fleet/devices/{device_id}/roles",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -81416,6 +83522,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_devices_production_readiness.py"
+      ],
+      "id": "rel:6cf8bc12261c6f5d",
+      "source": "reason:confirmation_required",
+      "target": "test:tests/backend/test_lite_devices_production_readiness.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:6cfecd1949e66ac1",
@@ -81580,7 +83695,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620"
       ],
       "id": "rel:6e83e47f9fe25a2a",
       "source": "component:agent-command-executor",
@@ -81873,7 +83988,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:943"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1056"
       ],
       "id": "rel:7029047d31809239",
       "source": "component:agent-command-executor",
@@ -81936,6 +84051,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:7093fdc5181dea84",
+      "source": "domain:devices",
+      "target": "reason:device_capability_stale",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_documentation_presentation_polish.py"
       ],
       "id": "rel:7097c70d42c608c2",
@@ -81972,6 +84096,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:70c691899fdf50d9",
+      "source": "reason:device_role_change_failed",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:70cf2053d5ce8857",
@@ -81994,6 +84127,15 @@
       ],
       "id": "rel:70dca9303d7bcb4a",
       "source": "reason:policy_unavailable",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:70f69b43cfca6d1c",
+      "source": "reason:device_role_change_device_offline",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
@@ -82080,7 +84222,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:943"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1056"
       ],
       "id": "rel:71ce16a6ad088fd2",
       "source": "component:agent-recovery",
@@ -82098,7 +84240,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620"
       ],
       "id": "rel:71d5971c7ce7cb1e",
       "source": "component:node-agent",
@@ -82305,6 +84447,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:735d735c98f2cf46",
+      "source": "reason:device_role_change_generation_mismatch",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:73613f1b3cd3ca30",
@@ -82350,7 +84501,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:914"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:894"
       ],
       "id": "rel:739ef9e473409282",
       "source": "component:agent-command-executor",
@@ -82998,6 +85149,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:787e3d4db6ff47f1",
+      "source": "reason:device_role_assignment_unauthorized",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:788cc6fd388f3c2f",
@@ -83237,6 +85397,15 @@
       "id": "rel:7ae861c78461df01",
       "source": "api:get:/api/lite/events",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:7b1e7f9bd4441e48",
+      "source": "reason:device_role_change_generation_mismatch",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -83730,6 +85899,15 @@
       "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
+      "id": "rel:7ef5fe205165acd5",
+      "source": "reason:device_capability_verification_failed",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
       "id": "rel:7f1f49cf1c833339",
       "source": "reason:policy_parameters_invalid",
       "target": "test:tests/docs/test_living_knowledgebase.py",
@@ -83929,7 +86107,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:350"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:361"
       ],
       "id": "rel:80315fb6ef5d20bf",
       "source": "component:agent-recovery",
@@ -83979,6 +86157,15 @@
       "id": "rel:80754d874530ba2b",
       "source": "journey:rules-authorization",
       "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:80a48a1d8fa35d47",
+      "source": "reason:device_role_invalid",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -84303,6 +86490,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:83ae76c4db935043",
+      "source": "reason:device_capability_not_advertised",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:83b279a3bcd0b687",
@@ -84538,6 +86734,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:85a8613eaac159fb",
+      "source": "reason:device_role_change_blocked_by_dependency",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_documentation_presentation_polish.py"
       ],
       "id": "rel:85d639cb9f4dab43",
@@ -84751,6 +86956,15 @@
       "id": "rel:8749d8ce87ee1538",
       "source": "journey:rules-authorization",
       "target": "test:tests/backend/test_lite_api.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "id": "rel:874ad259084cfd68",
+      "source": "reason:device_role_change_blocked_by_dependency",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
       "type": "verified_by"
     },
     {
@@ -85003,6 +87217,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "id": "rel:897b85c637139869",
+      "source": "reason:protected_server_host",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:898381fb44ecf00f",
@@ -85148,7 +87371,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:914"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:894"
       ],
       "id": "rel:8a4dc38eda8aacf2",
       "source": "component:node-agent",
@@ -85446,6 +87669,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:8c215fe337778c98",
+      "source": "domain:devices",
+      "target": "reason:device_role_change_requires_approval",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/e2e/lite-visual.spec.ts"
       ],
       "id": "rel:8c3f2c4630c47b53",
@@ -85595,6 +87827,15 @@
       "id": "rel:8ddd24cc1159b50f",
       "source": "reason:assurance_policy_sync_disabled",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:8df0838d81a4d049",
+      "source": "reason:device_role_not_joinable",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -86306,6 +88547,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:939882c54322eda6",
+      "source": "api:get:/api/lite/devices/{device_id}",
+      "target": "table:device_role_change_operations",
+      "type": "reads"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:9399838f0c9bc3a3",
@@ -86612,6 +88862,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:95f8ebcfab9f14e9",
+      "source": "domain:devices",
+      "target": "reason:device_role_change_generation_mismatch",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_devices_production_readiness.py"
       ],
       "id": "rel:95fa157000ecf639",
@@ -86639,7 +88898,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3792"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4156"
       ],
       "id": "rel:9622c3144190ef74",
       "source": "component:lite-api",
@@ -86697,7 +88956,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:442"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:552"
       ],
       "id": "rel:968ba7d4ca7d1baa",
       "source": "component:agent-command-executor",
@@ -86742,7 +89001,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:914"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:894"
       ],
       "id": "rel:970a0be8f8f4dc36",
       "source": "component:agent-recovery",
@@ -87031,7 +89290,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3933"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4297"
       ],
       "id": "rel:99ba9e8682cf6f1f",
       "source": "component:lite-api",
@@ -87073,6 +89332,15 @@
       "source": "component:worker",
       "target": "subject:pocketlab.events.worker.ignored",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:9a2d11d6e3915006",
+      "source": "reason:device_capability_verification_failed",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -87166,7 +89434,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620"
       ],
       "id": "rel:9b12159052e9fd99",
       "source": "component:agent-signals",
@@ -87247,7 +89515,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:943"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1056"
       ],
       "id": "rel:9ba8d503eb9c63d0",
       "source": "component:agent-signals",
@@ -87328,7 +89596,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620"
       ],
       "id": "rel:9c0708a2ede22c21",
       "source": "component:agent-recovery",
@@ -87454,7 +89722,16 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:9d6cfa480cc15e81",
+      "source": "domain:devices",
+      "target": "reason:device_capability_not_authorized",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620"
       ],
       "id": "rel:9d7830008fa15189",
       "source": "component:agent-recovery",
@@ -87635,6 +89912,15 @@
       "source": "reason:fault_restart_not_acted",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:9e615de105b7870a",
+      "source": "domain:devices",
+      "target": "reason:device_role_change_stale_generation",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -88079,6 +90365,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:a1b20007ffff1112",
+      "source": "reason:device_role_change_generation_mismatch",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:a1dd3a9c67a99aae",
@@ -88184,6 +90479,15 @@
       "source": "domain:devices",
       "target": "table:device_removal_receipts",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:a2caca3641f7b490",
+      "source": "api:post:/api/lite/harness/recovery/authorize",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -88667,6 +90971,15 @@
       "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
+      "id": "rel:a5ff27052d1019b1",
+      "source": "reason:device_role_change_requires_approval",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
       "id": "rel:a61de9a4d349c6d5",
       "source": "reason:owner_claim_origin_mismatch",
       "target": "test:tests/docs/test_operational_health_bridge.py",
@@ -88805,7 +91118,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4394"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4758"
       ],
       "id": "rel:a718626a5b5f2425",
       "source": "component:lite-api",
@@ -89086,6 +91399,15 @@
       "source": "domain:documentation",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:a9772071a665fa81",
+      "source": "domain:devices",
+      "target": "reason:device_capability_verification_failed",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -89408,6 +91730,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_fleet_multi_role_invites_governance.py"
+      ],
+      "id": "rel:ab97ec41a3b73ad5",
+      "source": "reason:invite_role_set_mismatch",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_invites_governance.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:abab2857d588951b",
@@ -89507,7 +91838,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:419"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:529"
       ],
       "id": "rel:acde3049040639a9",
       "source": "component:node-agent",
@@ -89589,7 +91920,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:549"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:659"
       ],
       "id": "rel:ad4b5fa43a0bd863",
       "source": "component:agent-signals",
@@ -89598,7 +91929,16 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:575"
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "id": "rel:ad509957b6528fa1",
+      "source": "reason:device_role_invalid",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:685"
       ],
       "id": "rel:ad5af6eb6102442b",
       "source": "component:agent-recovery",
@@ -89814,6 +92154,15 @@
     },
     {
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3535"
+      ],
+      "id": "rel:aeaad974edcf7064",
+      "source": "component:lite-api",
+      "target": "subject:pocketlab.events.fleet.device_role_change_requested",
+      "type": "publishes"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:aeb1de8251b13a16",
@@ -89958,6 +92307,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:b023ffb6c29715c1",
+      "source": "reason:device_role_change_stale_generation",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:b04791238cb4df57",
@@ -90057,12 +92415,21 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3832"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4196"
       ],
       "id": "rel:b0e17c2e06af2e29",
       "source": "component:lite-api",
       "target": "subject:pocketlab.commands.lite.database.backup",
       "type": "related_to"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:b0eda20b0c0bc6cb",
+      "source": "reason:device_role_change_pending_verification",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -90090,6 +92457,15 @@
       "id": "rel:b10f444ff44c000d",
       "source": "reason:outage_window_not_observed",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:b11e000e2a533691",
+      "source": "api:put:/api/lite/fleet/devices/{device_id}/roles",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -90397,7 +92773,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:943"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1056"
       ],
       "id": "rel:b363fa96daf3d3cf",
       "source": "component:node-agent",
@@ -90438,6 +92814,15 @@
       "id": "rel:b39602547b90add2",
       "source": "component:pwa",
       "target": "test:tests/backend/test_lite_device_system_profile.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:b39877560da875cb",
+      "source": "reason:device_role_change_blocked_by_dependency",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -90779,6 +93164,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:b6eb4a59bfdb51f2",
+      "source": "reason:device_capability_not_authorized",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_security_f11_events_contract.py"
       ],
       "id": "rel:b6f64f043f079b4d",
@@ -90902,6 +93296,24 @@
       "source": "component:browser",
       "target": "boundary:browser",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:b83167d5b54c2928",
+      "source": "reason:device_role_change_pending_verification",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:b841432883e8617a",
+      "source": "reason:device_capability_stale",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -91085,6 +93497,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:b9de69aef260e0a3",
+      "source": "domain:devices",
+      "target": "reason:device_role_change_blocked_by_dependency",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:b9e0244347e7372e",
@@ -91207,6 +93628,15 @@
       "id": "rel:ba43ec2dea8bf8e0",
       "source": "domain:operation",
       "target": "subject:pocketlab.events.operation.log.error",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:ba5fd6a75cdc3a4e",
+      "source": "domain:devices",
+      "target": "reason:device_role_change_pending_verification",
       "type": "owns"
     },
     {
@@ -91582,7 +94012,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3975"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4339"
       ],
       "id": "rel:bd798d574b62754a",
       "source": "component:lite-api",
@@ -92106,6 +94536,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:c1374355a46644a7",
+      "source": "reason:invite_role_set_mismatch",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:c1452ec352b7108a",
@@ -92115,7 +94554,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3893"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4257"
       ],
       "id": "rel:c146c302df54058b",
       "source": "component:lite-api",
@@ -92309,7 +94748,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:575"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:685"
       ],
       "id": "rel:c3621276065011e7",
       "source": "component:agent-command-executor",
@@ -92575,6 +95014,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:c58e658cc44ba266",
+      "source": "domain:devices",
+      "target": "reason:device_role_invalid",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
       ],
       "id": "rel:c591fc2e7bfdc257",
@@ -92643,6 +95091,15 @@
       "id": "rel:c69c03ec69fb082c",
       "source": "api:get:/health",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:c6cb08d0d68d0928",
+      "source": "reason:invite_role_set_mismatch",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -92782,7 +95239,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620"
       ],
       "id": "rel:c8049c346eca6fcb",
       "source": "component:node-agent",
@@ -92864,7 +95321,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:584"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:694"
       ],
       "id": "rel:c8e69e4d0d5a086d",
       "source": "component:agent-command-executor",
@@ -93247,6 +95704,15 @@
       "id": "rel:cb1e043d6074f5ed",
       "source": "api:get:/api/lite/security/apps/{app_id}",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:cb3be7b3a562dad6",
+      "source": "reason:device_role_invalid",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -93712,6 +96178,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:ce3603883af85073",
+      "source": "reason:device_role_change_identity_mismatch",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:ce3d40c743ed004f",
@@ -93865,7 +96340,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:549"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:659"
       ],
       "id": "rel:cf5787ab83722e94",
       "source": "component:agent-recovery",
@@ -94018,7 +96493,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:442"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:552"
       ],
       "id": "rel:d00f009747054e91",
       "source": "component:node-agent",
@@ -94072,7 +96547,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3762"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4126"
       ],
       "id": "rel:d0ac21c0cffa28c9",
       "source": "component:lite-api",
@@ -94089,6 +96564,15 @@
       "source": "journey:enterprise-identity",
       "target": "component:sqlite",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-asyncapi.json"
+      ],
+      "id": "rel:d0cfb3c5f36b8826",
+      "source": "domain:devices",
+      "target": "subject:pocketlab.events.fleet.device_role_change_requested",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -94310,6 +96794,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "id": "rel:d2bfdc83bb12302f",
+      "source": "reason:device_role_change_generation_mismatch",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:d2d4d84286d01ae3",
@@ -94334,6 +96827,15 @@
       "source": "component:backup-engine",
       "target": "boundary:messaging-execution",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:d2f97b5dffc30253",
+      "source": "reason:device_capability_stale",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -94445,11 +96947,29 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:d39ca061753a3928",
+      "source": "api:get:/api/lite/devices/{device_id}",
+      "target": "table:device_role_assignments",
+      "type": "reads"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:d3b343f1093689a1",
       "source": "api:delete:/api/lite/harness/session/{session_id}",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:d3c11fc6661bd4b1",
+      "source": "api:post:/api/lite/harness/recovery/authorize",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -94987,7 +97507,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4267"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4631"
       ],
       "id": "rel:d7a4bd398a93f098",
       "source": "component:lite-api",
@@ -95214,7 +97734,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:549"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:659"
       ],
       "id": "rel:d8f5394938dc5dad",
       "source": "component:node-agent",
@@ -96199,6 +98719,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:e0622a235990c8e7",
+      "source": "api:get:/api/lite/fleet",
+      "target": "table:device_role_change_operations",
+      "type": "reads"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:e0952edc77631e91",
@@ -96325,6 +98854,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-asyncapi.json"
+      ],
+      "id": "rel:e17173f04a2fb5ba",
+      "source": "domain:node",
+      "target": "subject:pocketlab.commands.node.{fleet_registry.normalize_node_id",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:e183538766e2362c",
@@ -96397,7 +98935,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:434"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:544"
       ],
       "id": "rel:e23a91973cdf44bd",
       "source": "component:agent-recovery",
@@ -96484,6 +99022,15 @@
       "source": "component:projection-subprocesses",
       "target": "threat-model:messaging-execution",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:e2bbf043de47311a",
+      "source": "reason:confirmation_required",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -96578,6 +99125,15 @@
       "source": "journey:change-password",
       "target": "component:api-guards",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:e392f2b944f37bf0",
+      "source": "reason:device_role_change_identity_mismatch",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -96979,6 +99535,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:e61841cc2b0410ef",
+      "source": "domain:control_plane",
+      "target": "table:harness_recovery_receipts",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:e62d4dba83a95e1d",
@@ -97106,6 +99671,15 @@
       "id": "rel:e6affeefa2fccd14",
       "source": "api:get:/api/lite/recovery/database",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:e6b8b55483abd0c6",
+      "source": "reason:device_capability_not_advertised",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -97568,6 +100142,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:ea601cabccfd8f32",
+      "source": "domain:devices",
+      "target": "reason:device_role_change_failed",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_phase3b_security_system_probe_revisions.py"
       ],
       "id": "rel:ea6611e6b9cbe7b5",
@@ -97595,7 +100178,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:434"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:544"
       ],
       "id": "rel:ea86e0baf76e7c4e",
       "source": "component:node-agent",
@@ -98141,7 +100724,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:419"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:529"
       ],
       "id": "rel:ee910fb7af30f39d",
       "source": "component:agent-signals",
@@ -98357,7 +100940,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:575"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:685"
       ],
       "id": "rel:f0a62a57d0c140d8",
       "source": "component:node-agent",
@@ -98604,6 +101187,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:f1fff929ff61308b",
+      "source": "reason:device_role_change_device_offline",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_documentation_ia.py"
       ],
       "id": "rel:f227b0fcb00be83f",
@@ -98811,7 +101403,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3775"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4139"
       ],
       "id": "rel:f38477f0420ebc7b",
       "source": "component:lite-api",
@@ -98982,6 +101574,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:f4efba253b259b25",
+      "source": "reason:device_capability_not_authorized",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_revision_sync_n4_n5.py"
       ],
       "id": "rel:f4f54309d499a48c",
@@ -99038,6 +101639,15 @@
       "source": "reason:disabled",
       "target": "test:tests/backend/test_lite_app_catalog_runtime_truth.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:f5519b9b8ea376d4",
+      "source": "domain:devices",
+      "target": "table:device_role_assignments",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -99228,6 +101838,15 @@
       "id": "rel:f6a730ca6421d804",
       "source": "reason:release_projection_unavailable",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:f6d7c5779d653128",
+      "source": "reason:device_role_assignment_unauthorized",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -99655,7 +102274,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:442"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:552"
       ],
       "id": "rel:f996167172b2181c",
       "source": "component:agent-recovery",
@@ -99664,11 +102283,29 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:f9a06b327056f432",
+      "source": "reason:device_capability_not_advertised",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:f9a4aca34c7922a0",
       "source": "domain:release",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:f9c40f0b8ac4e5d7",
+      "source": "reason:device_role_change_requires_approval",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -100141,7 +102778,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4001"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4365"
       ],
       "id": "rel:fe30f428c2df7938",
       "source": "component:lite-api",
@@ -100285,6 +102922,24 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:ff41b0f0bdf44f70",
+      "source": "reason:invite_role_set_mismatch",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_api.py"
+      ],
+      "id": "rel:ff80f8fa8074054f",
+      "source": "reason:confirmation_required",
+      "target": "test:tests/backend/test_lite_api.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:ff951a7df3828b61",
@@ -100303,33 +102958,33 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "5902aa50a9e1602dbe8ce971c26b60b50095ac6ff21757aa4eea69f6d87abb0f",
+  "source_fingerprint": "5c014a4c5563838ac674dd41d16975a1c93ca0993b41619c15187d787d7c19e3",
   "statistics": {
-    "entity_count": 1313,
+    "entity_count": 1341,
     "entity_type_counts": {
       "adr": 6,
-      "api": 225,
+      "api": 228,
       "capability": 5,
       "component": 58,
       "domain": 49,
       "glossary": 16,
       "journey": 24,
       "limitation": 18,
-      "reason-code": 244,
+      "reason-code": 262,
       "release": 3,
       "requirement": 10,
       "runbook": 5,
       "runtime-topology": 9,
-      "subject": 217,
-      "table": 78,
-      "test": 252,
+      "subject": 219,
+      "table": 81,
+      "test": 254,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3705,
-    "source_count": 289
+    "relation_count": 3810,
+    "source_count": 291
   }
 }

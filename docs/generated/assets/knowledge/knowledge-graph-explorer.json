@@ -684,6 +684,17 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Get Lite Device Roles",
+      "domain": "devices",
+      "id": "api:get:/api/lite/fleet/devices/{device_id}/roles",
+      "name": "GET /api/lite/fleet/devices/{device_id}/roles",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Lite Fleet Agent Restart Status",
       "domain": "devices",
       "id": "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status",
@@ -1993,6 +2004,17 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Recovery Authorize",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/recovery/authorize",
+      "name": "POST /api/lite/harness/recovery/authorize",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Execute Fault",
       "domain": "harness",
       "id": "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
@@ -2536,6 +2558,17 @@
       "domain": "devices",
       "id": "api:put:/api/lite/fleet/devices/{device_id}/display-model",
       "name": "PUT /api/lite/fleet/devices/{device_id}/display-model",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Change Lite Device Roles",
+      "domain": "devices",
+      "id": "api:put:/api/lite/fleet/devices/{device_id}/roles",
+      "name": "PUT /api/lite/fleet/devices/{device_id}/roles",
       "source_refs": [
         "contracts/generated/lite-openapi.json"
       ],
@@ -5072,6 +5105,18 @@
     },
     {
       "confidence": "source-derived",
+      "description": "A potentially destructive device or recovery action requires explicit confirmation before it can continue.",
+      "domain": "devices",
+      "id": "reason:confirmation_required",
+      "name": "confirmation_required",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
       "domain": "validation",
       "id": "reason:connection_failed",
@@ -5100,6 +5145,198 @@
       "domain": "security",
       "id": "reason:deferred_resource_pressure",
       "name": "deferred_resource_pressure",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The device has not advertised the capability required by its governed role assignment.",
+      "domain": "devices",
+      "id": "reason:device_capability_not_advertised",
+      "name": "device_capability_not_advertised",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The server policy does not authorize the device capability for its current governed role assignment.",
+      "domain": "devices",
+      "id": "reason:device_capability_not_authorized",
+      "name": "device_capability_not_authorized",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The device capability evidence is older than the governed freshness window.",
+      "domain": "devices",
+      "id": "reason:device_capability_stale",
+      "name": "device_capability_stale",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Fresh runtime evidence did not verify the capability required by the governed role assignment.",
+      "domain": "devices",
+      "id": "reason:device_capability_verification_failed",
+      "name": "device_capability_verification_failed",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The observed or requested device role assignment is not authorized by the server-owned role policy.",
+      "domain": "devices",
+      "id": "reason:device_role_assignment_unauthorized",
+      "name": "device_role_assignment_unauthorized",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A role removal is blocked because active backup, recovery, or storage responsibilities still depend on that role.",
+      "domain": "devices",
+      "id": "reason:device_role_change_blocked_by_dependency",
+      "name": "device_role_change_blocked_by_dependency",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A role change cannot be delivered while the target device is offline or not ready.",
+      "domain": "devices",
+      "id": "reason:device_role_change_device_offline",
+      "name": "device_role_change_device_offline",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A governed role assignment could not be delivered or the target device identity was unavailable; no role is shown active until verification succeeds.",
+      "domain": "devices",
+      "id": "reason:device_role_change_failed",
+      "name": "device_role_change_failed",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The requested role set does not match the server-owned role generation or the device's active generation.",
+      "domain": "devices",
+      "id": "reason:device_role_change_generation_mismatch",
+      "name": "device_role_change_generation_mismatch",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A role change was blocked because the trusted device identity did not match the requested target.",
+      "domain": "devices",
+      "id": "reason:device_role_change_identity_mismatch",
+      "name": "device_role_change_identity_mismatch",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A governed role change was delivered and is waiting for fresh verified device evidence before it becomes active.",
+      "domain": "devices",
+      "id": "reason:device_role_change_pending_verification",
+      "name": "device_role_change_pending_verification",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The governed role change requires the independent approval policy before it can be applied.",
+      "domain": "devices",
+      "id": "reason:device_role_change_requires_approval",
+      "name": "device_role_change_requires_approval",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A device reported an older role generation than the server-owned assignment.",
+      "domain": "devices",
+      "id": "reason:device_role_change_stale_generation",
+      "name": "device_role_change_stale_generation",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The requested device role is not recognized or the role set exceeds the governed limit.",
+      "domain": "devices",
+      "id": "reason:device_role_invalid",
+      "name": "device_role_invalid",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A protected Server Host role was requested through a joined-device path and cannot be assigned there.",
+      "domain": "devices",
+      "id": "reason:device_role_not_joinable",
+      "name": "device_role_not_joinable",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "At least one governed device role is required for the assignment.",
+      "domain": "devices",
+      "id": "reason:device_roles_required",
+      "name": "device_roles_required",
       "source_refs": [
         "contracts/generated/reason-codes.json",
         "contracts/metadata/documentation-platform.json"
@@ -5880,6 +6117,18 @@
       "domain": "devices",
       "id": "reason:invite_identity_mismatch",
       "name": "invite_identity_mismatch",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The roles reported while consuming an invite do not match the server-owned invite role set.",
+      "domain": "devices",
+      "id": "reason:invite_role_set_mismatch",
+      "name": "invite_role_set_mismatch",
       "source_refs": [
         "contracts/generated/reason-codes.json",
         "contracts/metadata/documentation-platform.json"
@@ -8058,10 +8307,10 @@
       "name": "pocketlab.commands.fleet.join",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:845",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:877",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:72",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1653",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:902"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1004"
       ],
       "type": "subject"
     },
@@ -8188,7 +8437,7 @@
       "name": "pocketlab.commands.lite.backup.create",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4145",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4509",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1664"
       ],
       "type": "subject"
@@ -8201,7 +8450,7 @@
       "name": "pocketlab.commands.lite.backup.location.discover",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3762",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4126",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1665"
       ],
       "type": "subject"
@@ -8214,7 +8463,7 @@
       "name": "pocketlab.commands.lite.backup.location.forget",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3792",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4156",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1667"
       ],
       "type": "subject"
@@ -8227,7 +8476,7 @@
       "name": "pocketlab.commands.lite.backup.location.select",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3775",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4139",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1666"
       ],
       "type": "subject"
@@ -8240,7 +8489,7 @@
       "name": "pocketlab.commands.lite.backup.verify",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4232",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4596",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1677"
       ],
       "type": "subject"
@@ -8266,7 +8515,7 @@
       "name": "pocketlab.commands.lite.database.backup",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3832",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4196",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1680"
       ],
       "type": "subject"
@@ -8279,7 +8528,7 @@
       "name": "pocketlab.commands.lite.database.backup.verify",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3875",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4239",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1681"
       ],
       "type": "subject"
@@ -8292,7 +8541,7 @@
       "name": "pocketlab.commands.lite.database.restore",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3933",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4297",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1683"
       ],
       "type": "subject"
@@ -8305,7 +8554,7 @@
       "name": "pocketlab.commands.lite.database.restore.preview",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3893",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4257",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1682"
       ],
       "type": "subject"
@@ -8329,7 +8578,7 @@
       "name": "pocketlab.commands.lite.maintenance.checkpoint",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4001",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4365",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1685"
       ],
       "type": "subject"
@@ -8342,7 +8591,7 @@
       "name": "pocketlab.commands.lite.maintenance.retention",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3975",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4339",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1684"
       ],
       "type": "subject"
@@ -8394,7 +8643,7 @@
       "name": "pocketlab.commands.lite.restore.apply",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4394",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4758",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1679"
       ],
       "type": "subject"
@@ -8407,7 +8656,7 @@
       "name": "pocketlab.commands.lite.restore.preview",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4267",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4631",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1678"
       ],
       "type": "subject"
@@ -8477,7 +8726,7 @@
       "name": "pocketlab.commands.node.all",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:137"
       ],
       "type": "subject"
@@ -8490,7 +8739,19 @@
       "name": "pocketlab.commands.node.all.{command.replace",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:657"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:683"
+      ],
+      "type": "subject"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "node command subject",
+      "domain": "node",
+      "id": "subject:pocketlab.commands.node.{fleet_registry.normalize_node_id",
+      "name": "pocketlab.commands.node.{fleet_registry.normalize_node_id",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3524"
       ],
       "type": "subject"
     },
@@ -8502,7 +8763,7 @@
       "name": "pocketlab.commands.node.{node_id}",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1591"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1685"
       ],
       "type": "subject"
     },
@@ -8526,7 +8787,7 @@
       "name": "pocketlab.commands.node.{normalized_node_id}.agent.restart",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:548"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:574"
       ],
       "type": "subject"
     },
@@ -8538,7 +8799,7 @@
       "name": "pocketlab.commands.node.{self.node_id}",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620"
       ],
       "type": "subject"
     },
@@ -8969,8 +9230,8 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:449",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:698",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:714"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:778",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:800"
       ],
       "type": "subject"
     },
@@ -9006,7 +9267,19 @@
       "name": "pocketlab.events.fleet.device_removed",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1562"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1656"
+      ],
+      "type": "subject"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "fleet event subject",
+      "domain": "devices",
+      "id": "subject:pocketlab.events.fleet.device_role_change_requested",
+      "name": "pocketlab.events.fleet.device_role_change_requested",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3535"
       ],
       "type": "subject"
     },
@@ -9043,7 +9316,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:448",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:874"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:976"
       ],
       "type": "subject"
     },
@@ -9057,8 +9330,8 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:278",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:447",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:454",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:908"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1010",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:471"
       ],
       "type": "subject"
     },
@@ -9070,7 +9343,7 @@
       "name": "pocketlab.events.fleet.invite_revoked",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:600"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:662"
       ],
       "type": "subject"
     },
@@ -9094,8 +9367,8 @@
       "name": "pocketlab.events.fleet.node_",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1590",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:931",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1017",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1684",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:754"
       ],
       "type": "subject"
@@ -9108,7 +9381,7 @@
       "name": "pocketlab.events.fleet.node_capabilities",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:442"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:552"
       ],
       "type": "subject"
     },
@@ -9121,8 +9394,8 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:296",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:565",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:665"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:591",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:691"
       ],
       "type": "subject"
     },
@@ -9134,9 +9407,9 @@
       "name": "pocketlab.events.fleet.node_command_result",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:784",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:900",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:914"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1013",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1027",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:894"
       ],
       "type": "subject"
     },
@@ -9148,7 +9421,7 @@
       "name": "pocketlab.events.fleet.node_health",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:584"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:694"
       ],
       "type": "subject"
     },
@@ -9160,8 +9433,8 @@
       "name": "pocketlab.events.fleet.node_heartbeat",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:465",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:549"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:575",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:659"
       ],
       "type": "subject"
     },
@@ -9173,7 +9446,7 @@
       "name": "pocketlab.events.fleet.node_left",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:943"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1056"
       ],
       "type": "subject"
     },
@@ -9185,7 +9458,7 @@
       "name": "pocketlab.events.fleet.node_profile",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:434"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:544"
       ],
       "type": "subject"
     },
@@ -9197,7 +9470,7 @@
       "name": "pocketlab.events.fleet.node_seen",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:419"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:529"
       ],
       "type": "subject"
     },
@@ -9209,7 +9482,7 @@
       "name": "pocketlab.events.fleet.node_supervisor",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:350"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:361"
       ],
       "type": "subject"
     },
@@ -9221,7 +9494,7 @@
       "name": "pocketlab.events.fleet.node_telemetry",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:575"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:685"
       ],
       "type": "subject"
     },
@@ -10853,7 +11126,8 @@
       "name": "device_enrollment_registry",
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
       ],
       "type": "table"
     },
@@ -10984,6 +11258,30 @@
       "confidence": "inferred",
       "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "devices",
+      "id": "table:device_role_assignments",
+      "name": "device_role_assignments",
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+      ],
+      "type": "table"
+    },
+    {
+      "confidence": "inferred",
+      "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "devices",
+      "id": "table:device_role_change_operations",
+      "name": "device_role_change_operations",
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+      ],
+      "type": "table"
+    },
+    {
+      "confidence": "inferred",
+      "description": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "devices",
       "id": "table:device_supervisor_state",
       "name": "device_supervisor_state",
       "source_refs": [
@@ -11030,7 +11328,8 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
       ],
       "type": "table"
     },
@@ -11043,7 +11342,8 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
       ],
       "type": "table"
     },
@@ -11055,7 +11355,8 @@
       "name": "harness_audit_events",
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "type": "table"
     },
@@ -11067,7 +11368,20 @@
       "name": "harness_challenges",
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
+      ],
+      "type": "table"
+    },
+    {
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:harness_recovery_receipts",
+      "name": "harness_recovery_receipts",
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "type": "table"
     },
@@ -11079,7 +11393,8 @@
       "name": "harness_sessions",
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "type": "table"
     },
@@ -11123,7 +11438,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
       ],
       "type": "table"
     },
@@ -11224,7 +11540,8 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
       ],
       "type": "table"
     },
@@ -11261,7 +11578,8 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
       ],
       "type": "table"
     },
@@ -11572,7 +11890,8 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
       ],
       "type": "table"
     },
@@ -12162,6 +12481,28 @@
       "name": "tests/backend/test_lite_fastapi_runtime_diagnostics.py",
       "source_refs": [
         "tests/backend/test_lite_fastapi_runtime_diagnostics.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+      "name": "tests/backend/test_lite_fleet_multi_role_authorization.py",
+      "source_refs": [
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_fleet_multi_role_invites_governance.py",
+      "name": "tests/backend/test_lite_fleet_multi_role_invites_governance.py",
+      "source_refs": [
+        "tests/backend/test_lite_fleet_multi_role_invites_governance.py"
       ],
       "type": "test"
     },
@@ -15751,6 +16092,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:019560eb8ba5cce6",
+      "source": "reason:device_role_not_joinable",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:01a5c983879475fd",
@@ -15863,7 +16218,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3875"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4239"
       ],
       "id": "rel:01d5bcfc59eaef09",
       "source": "component:lite-api",
@@ -16018,6 +16373,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:03255c8a18406a2b",
+      "source": "api:get:/api/lite/fleet",
+      "target": "table:device_role_assignments",
+      "type": "reads"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "src/lite/LiteRecovery.jsx"
       ],
       "id": "rel:03274774b8804477",
@@ -16074,7 +16443,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:549"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:659"
       ],
       "id": "rel:03591d373c92f6a4",
       "source": "component:agent-command-executor",
@@ -16233,6 +16602,20 @@
       "id": "rel:040a00d534e4e847",
       "source": "reason:identity_setup_rejected",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:04560e34ab51aac5",
+      "source": "reason:device_role_change_identity_mismatch",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -16511,7 +16894,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:584"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:694"
       ],
       "id": "rel:059be88dea06a65e",
       "source": "component:agent-signals",
@@ -16559,6 +16942,20 @@
       "source": "domain:security",
       "target": "api:post:/api/lite/security/scan",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:05c77be2ec5d144a",
+      "source": "reason:device_role_change_pending_verification",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -17058,7 +17455,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:442"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:552"
       ],
       "id": "rel:08078fc22e7ea260",
       "source": "component:agent-signals",
@@ -17330,6 +17727,20 @@
       "source": "component:security-coordinator",
       "target": "component:scanner-adapters",
       "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:099bfb473bfd58d1",
+      "source": "reason:device_role_change_failed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -17912,6 +18323,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:0cbdc93b2500aff0",
+      "source": "reason:device_role_not_joinable",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:0cca9a3b33d43004",
@@ -18141,6 +18566,20 @@
       "id": "rel:0dbe12b5f955a50b",
       "source": "reason:owner_claim_passkey",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:0dc4fa5b510e381b",
+      "source": "api:put:/api/lite/fleet/devices/{device_id}/roles",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -18509,6 +18948,20 @@
       "id": "rel:0f697fc30d6e5af4",
       "source": "component:pwa",
       "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:0f69cf9b797a41ae",
+      "source": "reason:device_capability_verification_failed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -19400,6 +19853,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:133d33ac02c976aa",
+      "source": "api:get:/api/lite/fleet/devices/{device_id}/roles",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:1342ddde4a18981a",
@@ -19554,7 +20021,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:914"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:894"
       ],
       "id": "rel:13cef9faca6544c1",
       "source": "component:agent-signals",
@@ -19741,6 +20208,20 @@
       "id": "rel:1455e54234851bac",
       "source": "domain:lite",
       "target": "subject:pocketlab.events.lite.app.{event_prefix}.started",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:145b42c947b0b60f",
+      "source": "domain:devices",
+      "target": "reason:device_role_change_identity_mismatch",
       "type": "owns"
     },
     {
@@ -19960,7 +20441,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:584"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:694"
       ],
       "id": "rel:1539b66321cd6c08",
       "source": "component:agent-recovery",
@@ -20767,7 +21248,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:419"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:529"
       ],
       "id": "rel:198f4260cbe0723b",
       "source": "component:agent-command-executor",
@@ -20851,12 +21332,40 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:19b83d612b24238e",
+      "source": "domain:devices",
+      "target": "api:get:/api/lite/fleet/devices/{device_id}/roles",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "src/lite/LiteApp.jsx"
       ],
       "id": "rel:19c9e39b0b4858bc",
       "source": "ui:liteapp",
       "target": "api:get:/api/lite/apps/{app_id}/actions",
       "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:19f2a6ca18a644fa",
+      "source": "api:get:/api/lite/fleet/devices/{device_id}/roles",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -21338,6 +21847,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:1bc60ead8421beb1",
+      "source": "reason:device_roles_required",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py"
       ],
       "id": "rel:1bd2c8fedca08bc7",
@@ -21735,6 +22258,20 @@
       "id": "rel:1da44206b34f219f",
       "source": "component:device-state",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:1dacdde074a73a99",
+      "source": "reason:confirmation_required",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -22435,6 +22972,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:217fdbf790566e70",
+      "source": "reason:device_role_change_stale_generation",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:2183acc456ff8bf8",
@@ -22580,6 +23131,20 @@
       "id": "rel:2236fdc7bcb97c4f",
       "source": "reason:webauthn_rp_id_invalid",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "id": "rel:2251487c18bc5aba",
+      "source": "reason:device_role_change_pending_verification",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
       "type": "verified_by"
     },
     {
@@ -22929,6 +23494,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:241aba319e4286f9",
+      "source": "domain:harness",
+      "target": "api:post:/api/lite/harness/recovery/authorize",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:241d874cb46b034c",
@@ -22971,12 +23550,40 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:2435d20aac72c8d7",
+      "source": "domain:devices",
+      "target": "reason:device_capability_not_advertised",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:2440081d732c9fe7",
       "source": "domain:enterprise",
       "target": "api:get:/api/lite/enterprise/identity/people",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:244788eaf7d8a365",
+      "source": "reason:confirmation_required",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -23611,6 +24218,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:26eee8129c21c42f",
+      "source": "reason:device_role_change_stale_generation",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_policy_approvals_p3_1.py"
       ],
       "id": "rel:2700d69d0e37e276",
@@ -23723,7 +24344,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:434"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:544"
       ],
       "id": "rel:27996b9b2cc5026b",
       "source": "component:agent-command-executor",
@@ -24957,6 +25578,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:2db64728592c5433",
+      "source": "domain:devices",
+      "target": "reason:device_role_assignment_unauthorized",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:762"
       ],
       "id": "rel:2dc52098dedaa50a",
@@ -25462,7 +26097,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620"
       ],
       "id": "rel:305f290db88db25e",
       "source": "component:agent-signals",
@@ -25972,6 +26607,20 @@
       "id": "rel:328a7bea9b711596",
       "source": "component:restore-preview",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:3298fc18d6c5ea44",
+      "source": "reason:device_role_invalid",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -26752,7 +27401,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:434"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:544"
       ],
       "id": "rel:36b34a5f16aaf15f",
       "source": "component:agent-signals",
@@ -27093,6 +27742,20 @@
       "id": "rel:37ab327ec20abe81",
       "source": "api:get:/api/lite/security/summary",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:37b45f1e689d8123",
+      "source": "reason:device_capability_stale",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -27473,6 +28136,20 @@
       "source": "component:lite-api",
       "target": "troubleshooting:api-unavailable",
       "type": "recovers_with"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:392e4658e82a943e",
+      "source": "domain:devices",
+      "target": "reason:device_role_not_joinable",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -28039,6 +28716,20 @@
       "id": "rel:3b5f1e5cde78f8f5",
       "source": "domain:telemetry",
       "target": "subject:pocketlab.events.telemetry",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:3b6d9b815c798d17",
+      "source": "domain:devices",
+      "target": "reason:invite_role_set_mismatch",
       "type": "owns"
     },
     {
@@ -28851,6 +29542,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "id": "rel:3f58fe05fb7167e9",
+      "source": "reason:device_role_change_stale_generation",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:3f5d406594b3d83b",
@@ -29594,6 +30299,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:425a288c4dbd89fe",
+      "source": "domain:devices",
+      "target": "reason:device_roles_required",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:4260bcb49f111cfe",
@@ -30079,6 +30798,20 @@
       "source": "domain:command",
       "target": "subject:pocketlab.events.command.worker_claimed",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:44486325d29c069e",
+      "source": "reason:device_role_change_requires_approval",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -30924,6 +31657,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:4919f50c2d5d0f0e",
+      "source": "domain:devices",
+      "target": "reason:device_role_change_device_offline",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:491a9da5c453e4c0",
@@ -30994,7 +31741,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4232"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4596"
       ],
       "id": "rel:4961dd30cdec3c93",
       "source": "component:lite-api",
@@ -31358,7 +32105,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4145"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4509"
       ],
       "id": "rel:4ae2f2e7982d1c97",
       "source": "component:lite-api",
@@ -31405,6 +32152,20 @@
       "id": "rel:4b1dc28a3cc9d5b4",
       "source": "reason:authentication_required",
       "target": "test:tests/backend/test_lite_qualification_owner.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:4b2865ed48d8743a",
+      "source": "reason:confirmation_required",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -31489,6 +32250,20 @@
       "id": "rel:4b946af56143adba",
       "source": "api:get:/api/lite/release",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:4ba15c19e34949be",
+      "source": "reason:device_roles_required",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -31848,6 +32623,34 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:4d4aca2d6fc22e37",
+      "source": "reason:device_capability_not_authorized",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:4d7037d24df38017",
+      "source": "domain:devices",
+      "target": "reason:confirmation_required",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:4d9428a5d9bc5e07",
@@ -32091,12 +32894,26 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:350"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:361"
       ],
       "id": "rel:4eb33eb8264509ea",
       "source": "component:agent-supervisor",
       "target": "subject:pocketlab.events.fleet.node_supervisor",
       "type": "publishes"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:4eb4d561d7e5a6a8",
+      "source": "reason:device_role_change_device_offline",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -32933,6 +33750,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "id": "rel:529e6b3b5749e1db",
+      "source": "reason:device_role_change_identity_mismatch",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:52abecfb8634db2f",
@@ -32953,6 +33784,20 @@
       "source": "domain:apps",
       "target": "subject:pocketlab.commands.catalog.refresh",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:53105962007f89bc",
+      "source": "reason:device_roles_required",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -33176,6 +34021,20 @@
       "id": "rel:541a74974ad896ef",
       "source": "reason:nats_fault_requires_active_assurance_run",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "id": "rel:5441d8d7089f3682",
+      "source": "reason:identity_mismatch",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
       "type": "verified_by"
     },
     {
@@ -34380,7 +35239,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:584"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:694"
       ],
       "id": "rel:599d46b0f79c390c",
       "source": "component:node-agent",
@@ -34553,6 +35412,20 @@
       "id": "rel:5a4ed3157cc4b337",
       "source": "component:frontend-state",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "id": "rel:5a52ad38460c8f93",
+      "source": "reason:device_role_not_joinable",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
       "type": "verified_by"
     },
     {
@@ -34915,6 +35788,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3524"
+      ],
+      "id": "rel:5c6a7e8f20afd0c5",
+      "source": "component:lite-api",
+      "target": "subject:pocketlab.commands.node.{fleet_registry.normalize_node_id",
+      "type": "publishes"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:5c71adbaff35d3ff",
@@ -35015,7 +35902,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:419"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:529"
       ],
       "id": "rel:5cece4018cf60146",
       "source": "component:agent-recovery",
@@ -35311,12 +36198,26 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:575"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:685"
       ],
       "id": "rel:5ebc69feb2041b30",
       "source": "component:agent-signals",
       "target": "subject:pocketlab.events.fleet.node_telemetry",
       "type": "publishes"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:5ed269043056a150",
+      "source": "reason:device_role_change_blocked_by_dependency",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -35470,6 +36371,20 @@
       "id": "rel:5f4c6e4ce46b351c",
       "source": "domain:node",
       "target": "subject:pocketlab.commands.node.all.{command.replace",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:5f69db25c3268786",
+      "source": "domain:devices",
+      "target": "table:device_role_change_operations",
       "type": "owns"
     },
     {
@@ -36239,6 +37154,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:63b8d00ac86ca385",
+      "source": "reason:device_role_assignment_unauthorized",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_policy_opa_readiness.py"
       ],
       "id": "rel:63bb93ab6a0de539",
@@ -36379,7 +37308,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620"
       ],
       "id": "rel:64d1a0ec1f6ecb56",
       "source": "component:agent-command-executor",
@@ -36666,6 +37595,20 @@
       "source": "component:pwa",
       "target": "component:frontend-state",
       "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:663fb029100073ed",
+      "source": "reason:device_role_change_failed",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -37412,6 +38355,20 @@
       "source": "component:agent-signals",
       "target": "table:device_heartbeats",
       "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:69d872808d886324",
+      "source": "domain:devices",
+      "target": "api:put:/api/lite/fleet/devices/{device_id}/roles",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -38237,6 +39194,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_devices_production_readiness.py"
+      ],
+      "id": "rel:6cf8bc12261c6f5d",
+      "source": "reason:confirmation_required",
+      "target": "test:tests/backend/test_lite_devices_production_readiness.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:6cfecd1949e66ac1",
@@ -38491,7 +39462,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620"
       ],
       "id": "rel:6e83e47f9fe25a2a",
       "source": "component:agent-command-executor",
@@ -38944,7 +39915,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:943"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1056"
       ],
       "id": "rel:7029047d31809239",
       "source": "component:agent-command-executor",
@@ -39042,6 +40013,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:7093fdc5181dea84",
+      "source": "domain:devices",
+      "target": "reason:device_capability_stale",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_documentation_presentation_polish.py"
       ],
       "id": "rel:7097c70d42c608c2",
@@ -39098,6 +40083,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:70c691899fdf50d9",
+      "source": "reason:device_role_change_failed",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:70cf2053d5ce8857",
@@ -39130,6 +40129,20 @@
       ],
       "id": "rel:70dca9303d7bcb4a",
       "source": "reason:policy_unavailable",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:70f69b43cfca6d1c",
+      "source": "reason:device_role_change_device_offline",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
@@ -39266,7 +40279,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:943"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1056"
       ],
       "id": "rel:71ce16a6ad088fd2",
       "source": "component:agent-recovery",
@@ -39294,7 +40307,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620"
       ],
       "id": "rel:71d5971c7ce7cb1e",
       "source": "component:node-agent",
@@ -39616,6 +40629,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:735d735c98f2cf46",
+      "source": "reason:device_role_change_generation_mismatch",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:73613f1b3cd3ca30",
@@ -39686,7 +40713,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:914"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:894"
       ],
       "id": "rel:739ef9e473409282",
       "source": "component:agent-command-executor",
@@ -40694,6 +41721,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:787e3d4db6ff47f1",
+      "source": "reason:device_role_assignment_unauthorized",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:788cc6fd388f3c2f",
@@ -41063,6 +42104,20 @@
       "id": "rel:7ae861c78461df01",
       "source": "api:get:/api/lite/events",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:7b1e7f9bd4441e48",
+      "source": "reason:device_role_change_generation_mismatch",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -41831,6 +42886,20 @@
       "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
+      "id": "rel:7ef5fe205165acd5",
+      "source": "reason:device_capability_verification_failed",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
       "id": "rel:7f1f49cf1c833339",
       "source": "reason:policy_parameters_invalid",
       "target": "test:tests/docs/test_living_knowledgebase.py",
@@ -42140,7 +43209,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:350"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:361"
       ],
       "id": "rel:80315fb6ef5d20bf",
       "source": "component:agent-recovery",
@@ -42215,6 +43284,20 @@
       "id": "rel:80754d874530ba2b",
       "source": "journey:rules-authorization",
       "target": "test:tests/backend/test_lite_identity_rules_ui_projection.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:80a48a1d8fa35d47",
+      "source": "reason:device_role_invalid",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -42719,6 +43802,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:83ae76c4db935043",
+      "source": "reason:device_capability_not_advertised",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:83b279a3bcd0b687",
@@ -43084,6 +44181,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:85a8613eaac159fb",
+      "source": "reason:device_role_change_blocked_by_dependency",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_documentation_presentation_polish.py"
       ],
       "id": "rel:85d639cb9f4dab43",
@@ -43412,6 +44523,20 @@
       "id": "rel:8749d8ce87ee1538",
       "source": "journey:rules-authorization",
       "target": "test:tests/backend/test_lite_api.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "id": "rel:874ad259084cfd68",
+      "source": "reason:device_role_change_blocked_by_dependency",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
       "type": "verified_by"
     },
     {
@@ -43804,6 +44929,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "id": "rel:897b85c637139869",
+      "source": "reason:protected_server_host",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:898381fb44ecf00f",
@@ -44029,7 +45168,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:914"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:894"
       ],
       "id": "rel:8a4dc38eda8aacf2",
       "source": "component:node-agent",
@@ -44492,6 +45631,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:8c215fe337778c98",
+      "source": "domain:devices",
+      "target": "reason:device_role_change_requires_approval",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/e2e/lite-visual.spec.ts"
       ],
       "id": "rel:8c3f2c4630c47b53",
@@ -44721,6 +45874,20 @@
       "id": "rel:8ddd24cc1159b50f",
       "source": "reason:assurance_policy_sync_disabled",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:8df0838d81a4d049",
+      "source": "reason:device_role_not_joinable",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -45827,6 +46994,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:939882c54322eda6",
+      "source": "api:get:/api/lite/devices/{device_id}",
+      "target": "table:device_role_change_operations",
+      "type": "reads"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:9399838f0c9bc3a3",
@@ -46298,6 +47479,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:95f8ebcfab9f14e9",
+      "source": "domain:devices",
+      "target": "reason:device_role_change_generation_mismatch",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_devices_production_readiness.py"
       ],
       "id": "rel:95fa157000ecf639",
@@ -46340,7 +47535,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3792"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4156"
       ],
       "id": "rel:9622c3144190ef74",
       "source": "component:lite-api",
@@ -46428,7 +47623,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:442"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:552"
       ],
       "id": "rel:968ba7d4ca7d1baa",
       "source": "component:agent-command-executor",
@@ -46498,7 +47693,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:914"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:894"
       ],
       "id": "rel:970a0be8f8f4dc36",
       "source": "component:agent-recovery",
@@ -46947,7 +48142,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3933"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4297"
       ],
       "id": "rel:99ba9e8682cf6f1f",
       "source": "component:lite-api",
@@ -47009,6 +48204,20 @@
       "source": "component:worker",
       "target": "subject:pocketlab.events.worker.ignored",
       "type": "publishes"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:9a2d11d6e3915006",
+      "source": "reason:device_capability_verification_failed",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -47157,7 +48366,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620"
       ],
       "id": "rel:9b12159052e9fd99",
       "source": "component:agent-signals",
@@ -47283,7 +48492,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:943"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1056"
       ],
       "id": "rel:9ba8d503eb9c63d0",
       "source": "component:agent-signals",
@@ -47409,7 +48618,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620"
       ],
       "id": "rel:9c0708a2ede22c21",
       "source": "component:agent-recovery",
@@ -47605,7 +48814,21 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:9d6cfa480cc15e81",
+      "source": "domain:devices",
+      "target": "reason:device_capability_not_authorized",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620"
       ],
       "id": "rel:9d7830008fa15189",
       "source": "component:agent-recovery",
@@ -47881,6 +49104,20 @@
       "source": "reason:fault_restart_not_acted",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:9e615de105b7870a",
+      "source": "domain:devices",
+      "target": "reason:device_role_change_stale_generation",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -48575,6 +49812,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:a1b20007ffff1112",
+      "source": "reason:device_role_change_generation_mismatch",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:a1dd3a9c67a99aae",
@@ -48735,6 +49986,20 @@
       "source": "domain:devices",
       "target": "table:device_removal_receipts",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:a2caca3641f7b490",
+      "source": "api:post:/api/lite/harness/recovery/authorize",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -49488,6 +50753,20 @@
       "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
+      "id": "rel:a5ff27052d1019b1",
+      "source": "reason:device_role_change_requires_approval",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
       "id": "rel:a61de9a4d349c6d5",
       "source": "reason:owner_claim_origin_mismatch",
       "target": "test:tests/docs/test_operational_health_bridge.py",
@@ -49701,7 +50980,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4394"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4758"
       ],
       "id": "rel:a718626a5b5f2425",
       "source": "component:lite-api",
@@ -50132,6 +51411,20 @@
       "source": "domain:documentation",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:a9772071a665fa81",
+      "source": "domain:devices",
+      "target": "reason:device_capability_verification_failed",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -50634,6 +51927,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_fleet_multi_role_invites_governance.py"
+      ],
+      "id": "rel:ab97ec41a3b73ad5",
+      "source": "reason:invite_role_set_mismatch",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_invites_governance.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:abab2857d588951b",
@@ -50788,7 +52095,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:419"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:529"
       ],
       "id": "rel:acde3049040639a9",
       "source": "component:node-agent",
@@ -50915,7 +52222,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:549"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:659"
       ],
       "id": "rel:ad4b5fa43a0bd863",
       "source": "component:agent-signals",
@@ -50929,7 +52236,21 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:575"
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "id": "rel:ad509957b6528fa1",
+      "source": "reason:device_role_invalid",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:685"
       ],
       "id": "rel:ad5af6eb6102442b",
       "source": "component:agent-recovery",
@@ -51265,6 +52586,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3535"
+      ],
+      "id": "rel:aeaad974edcf7064",
+      "source": "component:lite-api",
+      "target": "subject:pocketlab.events.fleet.device_role_change_requested",
+      "type": "publishes"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:aeb1de8251b13a16",
@@ -51489,6 +52824,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:b023ffb6c29715c1",
+      "source": "reason:device_role_change_stale_generation",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:b04791238cb4df57",
@@ -51643,12 +52992,26 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3832"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4196"
       ],
       "id": "rel:b0e17c2e06af2e29",
       "source": "component:lite-api",
       "target": "subject:pocketlab.commands.lite.database.backup",
       "type": "related_to"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:b0eda20b0c0bc6cb",
+      "source": "reason:device_role_change_pending_verification",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -51691,6 +53054,20 @@
       "id": "rel:b10f444ff44c000d",
       "source": "reason:outage_window_not_observed",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:b11e000e2a533691",
+      "source": "api:put:/api/lite/fleet/devices/{device_id}/roles",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -52168,7 +53545,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:943"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1056"
       ],
       "id": "rel:b363fa96daf3d3cf",
       "source": "component:node-agent",
@@ -52229,6 +53606,20 @@
       "id": "rel:b39602547b90add2",
       "source": "component:pwa",
       "target": "test:tests/backend/test_lite_device_system_profile.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:b39877560da875cb",
+      "source": "reason:device_role_change_blocked_by_dependency",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -52760,6 +54151,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:b6eb4a59bfdb51f2",
+      "source": "reason:device_capability_not_authorized",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_security_f11_events_contract.py"
       ],
       "id": "rel:b6f64f043f079b4d",
@@ -52948,6 +54353,34 @@
       "source": "component:browser",
       "target": "boundary:browser",
       "type": "protected_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:b83167d5b54c2928",
+      "source": "reason:device_role_change_pending_verification",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:b841432883e8617a",
+      "source": "reason:device_capability_stale",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -53236,6 +54669,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:b9de69aef260e0a3",
+      "source": "domain:devices",
+      "target": "reason:device_role_change_blocked_by_dependency",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:b9e0244347e7372e",
@@ -53423,6 +54870,20 @@
       "id": "rel:ba43ec2dea8bf8e0",
       "source": "domain:operation",
       "target": "subject:pocketlab.events.operation.log.error",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:ba5fd6a75cdc3a4e",
+      "source": "domain:devices",
+      "target": "reason:device_role_change_pending_verification",
       "type": "owns"
     },
     {
@@ -54008,7 +55469,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3975"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4339"
       ],
       "id": "rel:bd798d574b62754a",
       "source": "component:lite-api",
@@ -54822,6 +56283,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:c1374355a46644a7",
+      "source": "reason:invite_role_set_mismatch",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:c1452ec352b7108a",
@@ -54836,7 +56311,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3893"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4257"
       ],
       "id": "rel:c146c302df54058b",
       "source": "component:lite-api",
@@ -55135,7 +56610,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:575"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:685"
       ],
       "id": "rel:c3621276065011e7",
       "source": "component:agent-command-executor",
@@ -55546,6 +57021,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:c58e658cc44ba266",
+      "source": "domain:devices",
+      "target": "reason:device_role_invalid",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_opa_bootstrap_reconciliation.py"
       ],
       "id": "rel:c591fc2e7bfdc257",
@@ -55649,6 +57138,20 @@
       "id": "rel:c69c03ec69fb082c",
       "source": "api:get:/health",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:c6cb08d0d68d0928",
+      "source": "reason:invite_role_set_mismatch",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -55868,7 +57371,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:620"
       ],
       "id": "rel:c8049c346eca6fcb",
       "source": "component:node-agent",
@@ -55995,7 +57498,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:584"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:694"
       ],
       "id": "rel:c8e69e4d0d5a086d",
       "source": "component:agent-command-executor",
@@ -56588,6 +58091,20 @@
       "id": "rel:cb1e043d6074f5ed",
       "source": "api:get:/api/lite/security/apps/{app_id}",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:cb3be7b3a562dad6",
+      "source": "reason:device_role_invalid",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -57313,6 +58830,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:ce3603883af85073",
+      "source": "reason:device_role_change_identity_mismatch",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:ce3d40c743ed004f",
@@ -57551,7 +59082,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:549"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:659"
       ],
       "id": "rel:cf5787ab83722e94",
       "source": "component:agent-recovery",
@@ -57789,7 +59320,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:442"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:552"
       ],
       "id": "rel:d00f009747054e91",
       "source": "component:node-agent",
@@ -57873,7 +59404,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3762"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4126"
       ],
       "id": "rel:d0ac21c0cffa28c9",
       "source": "component:lite-api",
@@ -57895,6 +59426,20 @@
       "source": "journey:enterprise-identity",
       "target": "component:sqlite",
       "type": "uses"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-asyncapi.json"
+      ],
+      "id": "rel:d0cfb3c5f36b8826",
+      "source": "domain:devices",
+      "target": "subject:pocketlab.events.fleet.device_role_change_requested",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -58241,6 +59786,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "id": "rel:d2bfdc83bb12302f",
+      "source": "reason:device_role_change_generation_mismatch",
+      "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:d2d4d84286d01ae3",
@@ -58275,6 +59834,20 @@
       "source": "component:backup-engine",
       "target": "boundary:messaging-execution",
       "type": "protected_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:d2f97b5dffc30253",
+      "source": "reason:device_capability_stale",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -58451,11 +60024,39 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:d39ca061753a3928",
+      "source": "api:get:/api/lite/devices/{device_id}",
+      "target": "table:device_role_assignments",
+      "type": "reads"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:d3b343f1093689a1",
       "source": "api:delete:/api/lite/harness/session/{session_id}",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:d3c11fc6661bd4b1",
+      "source": "api:post:/api/lite/harness/recovery/authorize",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -59293,7 +60894,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4267"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4631"
       ],
       "id": "rel:d7a4bd398a93f098",
       "source": "component:lite-api",
@@ -59645,7 +61246,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:549"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:659"
       ],
       "id": "rel:d8f5394938dc5dad",
       "source": "component:node-agent",
@@ -61170,6 +62771,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:e0622a235990c8e7",
+      "source": "api:get:/api/lite/fleet",
+      "target": "table:device_role_change_operations",
+      "type": "reads"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:e0952edc77631e91",
@@ -61366,6 +62981,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-asyncapi.json"
+      ],
+      "id": "rel:e17173f04a2fb5ba",
+      "source": "domain:node",
+      "target": "subject:pocketlab.commands.node.{fleet_registry.normalize_node_id",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:e183538766e2362c",
@@ -61478,7 +63107,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:434"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:544"
       ],
       "id": "rel:e23a91973cdf44bd",
       "source": "component:agent-recovery",
@@ -61610,6 +63239,20 @@
       "source": "component:projection-subprocesses",
       "target": "threat-model:messaging-execution",
       "type": "protected_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_security_assurance_controls.py"
+      ],
+      "id": "rel:e2bbf043de47311a",
+      "source": "reason:confirmation_required",
+      "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -61754,6 +63397,20 @@
       "source": "journey:change-password",
       "target": "component:api-guards",
       "type": "uses"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:e392f2b944f37bf0",
+      "source": "reason:device_role_change_identity_mismatch",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -62380,6 +64037,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:e61841cc2b0410ef",
+      "source": "domain:control_plane",
+      "target": "table:harness_recovery_receipts",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:e62d4dba83a95e1d",
@@ -62572,6 +64243,20 @@
       "id": "rel:e6affeefa2fccd14",
       "source": "api:get:/api/lite/recovery/database",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:e6b8b55483abd0c6",
+      "source": "reason:device_capability_not_advertised",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -63289,6 +64974,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:ea601cabccfd8f32",
+      "source": "domain:devices",
+      "target": "reason:device_role_change_failed",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_phase3b_security_system_probe_revisions.py"
       ],
       "id": "rel:ea6611e6b9cbe7b5",
@@ -63331,7 +65030,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:434"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:544"
       ],
       "id": "rel:ea86e0baf76e7c4e",
       "source": "component:node-agent",
@@ -64177,7 +65876,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:419"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:529"
       ],
       "id": "rel:ee910fb7af30f39d",
       "source": "component:agent-signals",
@@ -64513,7 +66212,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:575"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:685"
       ],
       "id": "rel:f0a62a57d0c140d8",
       "source": "component:node-agent",
@@ -64895,6 +66594,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:f1fff929ff61308b",
+      "source": "reason:device_role_change_device_offline",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_documentation_ia.py"
       ],
       "id": "rel:f227b0fcb00be83f",
@@ -65217,7 +66930,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3775"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4139"
       ],
       "id": "rel:f38477f0420ebc7b",
       "source": "component:lite-api",
@@ -65483,6 +67196,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:f4efba253b259b25",
+      "source": "reason:device_capability_not_authorized",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_revision_sync_n4_n5.py"
       ],
       "id": "rel:f4f54309d499a48c",
@@ -65564,6 +67291,20 @@
       "source": "reason:disabled",
       "target": "test:tests/backend/test_lite_app_catalog_runtime_truth.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:f5519b9b8ea376d4",
+      "source": "domain:devices",
+      "target": "table:device_role_assignments",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -65859,6 +67600,20 @@
       "id": "rel:f6a730ca6421d804",
       "source": "reason:release_projection_unavailable",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:f6d7c5779d653128",
+      "source": "reason:device_role_assignment_unauthorized",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -66526,7 +68281,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:442"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:552"
       ],
       "id": "rel:f996167172b2181c",
       "source": "component:agent-recovery",
@@ -66540,11 +68295,39 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:f9a06b327056f432",
+      "source": "reason:device_capability_not_advertised",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:f9a4aca34c7922a0",
       "source": "domain:release",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:f9c40f0b8ac4e5d7",
+      "source": "reason:device_role_change_requires_approval",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -67277,7 +69060,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4001"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4365"
       ],
       "id": "rel:fe30f428c2df7938",
       "source": "component:lite-api",
@@ -67493,6 +69276,34 @@
       "source": "component:github-repository",
       "target": "boundary:external-release",
       "type": "protected_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:ff41b0f0bdf44f70",
+      "source": "reason:invite_role_set_mismatch",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_api.py"
+      ],
+      "id": "rel:ff80f8fa8074054f",
+      "source": "reason:confirmation_required",
+      "target": "test:tests/backend/test_lite_api.py",
+      "type": "verified_by"
     },
     {
       "derivation": {

@@ -950,6 +950,15 @@
       "confidence": "contract-derived",
       "description": "Enterprise Access",
       "domain": "enterprise",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:get:/api/lite/enterprise/access",
       "method": "GET",
       "name": "GET /api/lite/enterprise/access",
@@ -1678,6 +1687,38 @@
         "503"
       ],
       "route": "/api/lite/fleet/devices/{device_id}/recovery-history",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Get Lite Device Roles",
+      "domain": "devices",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/fleet/devices/{device_id}/roles",
+      "method": "GET",
+      "name": "GET /api/lite/fleet/devices/{device_id}/roles",
+      "operation_id": "get_lite_device_roles_api_lite_fleet_devices__device_id__roles_get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/fleet/devices/{device_id}/roles",
       "source_refs": [
         "contracts/generated/lite-openapi.json"
       ],
@@ -5051,6 +5092,29 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Recovery Authorize",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/recovery/authorize",
+      "method": "POST",
+      "name": "POST /api/lite/harness/recovery/authorize",
+      "operation_id": "recovery_authorize_api_lite_harness_recovery_authorize_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/harness/recovery/authorize",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-harness"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Execute Fault",
       "domain": "harness",
       "id": "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
@@ -6748,6 +6812,45 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Change Lite Device Roles",
+      "domain": "devices",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.changeDeviceRoles",
+          "resolved": true,
+          "source_module": "src/lite/devices/DeviceDetailsLazy.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:put:/api/lite/fleet/devices/{device_id}/roles",
+      "method": "PUT",
+      "name": "PUT /api/lite/fleet/devices/{device_id}/roles",
+      "operation_id": "change_lite_device_roles_api_lite_fleet_devices__device_id__roles_put",
+      "response_statuses": [
+        "202",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/fleet/devices/{device_id}/roles",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Rename Lite Passkey",
       "domain": "identity",
       "frontend_clients": [
@@ -6792,6 +6895,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5902aa50a9e1602dbe8ce971c26b60b50095ac6ff21757aa4eea69f6d87abb0f"
+    "source_fingerprint": "5c014a4c5563838ac674dd41d16975a1c93ca0993b41619c15187d787d7c19e3"
   }
 }

@@ -68,6 +68,84 @@ Providers are bounded and require no root privileges.
 
 Observation-only refreshes update prepared Device Facts without fabricating semantic health transitions.
 
+## Governed device roles and effective capabilities
+
+Pocket Lab Lite separates **human authority**, **device responsibility**, and
+**runtime capability**.
+
+```text
+human identity
+  → human membership role (Owner/Admin/Operator/Auditor/Viewer)
+  → Rules / OPA decision
+  → durable device-role assignment (Compute / Storage)
+  → node-agent role attestation and capability advertisement
+  → FastAPI identity/freshness/runtime verification
+  → effective capability projection
+```
+
+Human roles answer **who may request a Fleet change**. Device roles answer
+**what responsibilities a device is authorized to assume**. Runtime capability
+evidence answers **what the device currently reports and can actually provide**.
+The browser is not authoritative for any of those decisions.
+
+The canonical joinable role set is a bounded list:
+
+```json
+{
+  "device_roles": ["compute", "storage"]
+}
+```
+
+`server_host` remains protected and non-joinable. A joined device may be
+Compute-only, Storage-only, or Compute + Storage. The legacy single `role` field
+remains only as a lossy compatibility projection for older consumers.
+
+Durable desired/active assignment state is stored in normalized SQLite role
+assignment rows. Role changes carry a generation and request fingerprint so a
+stale response or delayed device acknowledgement cannot overwrite newer desired
+state. Agent/supervisor environment compatibility is preserved with
+`POCKETLAB_NODE_ROLE`, while canonical agents also carry `POCKETLAB_NODE_ROLES`
+and the role generation.
+
+### Authorization and verification are distinct
+
+Assigned roles authorize a bounded capability set, but assignment alone never
+makes a capability effective. Device-advertised roles and capabilities are
+observations only and cannot self-escalate authority.
+
+Conceptually:
+
+```text
+effective capability =
+  authorized by assigned device role
+  ∩ advertised/observed by the device
+  ∩ verified by FastAPI/runtime evidence
+  ∩ fresh enough for the capability
+  ∩ not blocked by current Rules or lifecycle state
+```
+
+This permits partial degradation. A Compute + Storage device can keep Compute
+ready while Storage is not advertised, unavailable, or stale.
+
+Photo Backup Source remains independent from the Storage role. A phone may have
+photo-source capabilities such as media access or backup tooling without being
+authorized as a Storage target. Conversely, assigning Storage does not imply
+photo-library source access.
+
+### Human governance
+
+Personal Mode keeps the local Owner as the human authority, subject to hard
+safety checks. Enterprise Mode projects Fleet actions into the shared Identity &
+Access action matrix and evaluates mutations through Rules/OPA. Higher-risk
+Storage assignment/removal can require the existing independent approval
+continuation for delegated Admin/Operator flows. Continuations are server-owned
+and bound to the exact action, device, role-set fingerprint, authorization
+version, policy revision, and expiry; the frontend cannot fabricate approval.
+
+Role removal changes authorization/responsibility only. External backup/media
+data is not implicitly deleted. Removing Storage is blocked while backend
+dependency evidence still shows active backup, restore, or storage mappings.
+
 ## Capability lifecycle
 
 Capabilities are backend-owned records generated from the capability registry and verification adapters. The lifecycle is:

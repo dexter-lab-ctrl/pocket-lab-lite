@@ -354,6 +354,8 @@ export const liteApi = {
   },
   deviceRemovalAssessment: (deviceId) => conditionalRead(`/api/lite/devices/${encodeURIComponent(deviceId || '')}/removal-assessment`),
   revokeDeviceInvite: (inviteId, payload = {}) => postJson(`/api/lite/fleet/invites/${encodeURIComponent(inviteId || '')}/revoke`, payload),
+  deviceRoles: (deviceId) => readJson(`/api/lite/fleet/devices/${encodeURIComponent(deviceId || '')}/roles`),
+  changeDeviceRoles: (deviceId, payload = {}) => putJson(`/api/lite/fleet/devices/${encodeURIComponent(deviceId || '')}/roles`, payload),
   updateDeviceDisplayModel: (deviceId, consumerModelName = '', expectedProfileRevision = null, expectedConsumerModelName = null) => putJson(`/api/lite/fleet/devices/${encodeURIComponent(deviceId || '')}/display-model`, {
     consumer_model_name: consumerModelName || null,
     expected_profile_revision: Number.isFinite(Number(expectedProfileRevision)) ? Number(expectedProfileRevision) : null,

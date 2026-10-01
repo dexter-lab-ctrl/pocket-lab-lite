@@ -12,13 +12,14 @@ device_heartbeats
 command_lifecycle
 backup_manifest_index
 audit_evidence_index
+policy_approvals
 enterprise_memberships
 webauthn_challenges
 policy_temporary_exceptions
 policy_recovery_resolutions
-policy_approvals
 policy_runtime_state
 human_enrollment_claims
+harness_recovery_receipts
 enterprise_configuration
 device_system_profiles
 device_lifecycle_transactions
@@ -39,10 +40,11 @@ lite_revision_events
 lite_installed_release_identity
 identity_audit_events
 human_credentials
-harness_sessions
 harness_challenges
 harness_audit_events
 device_supervisor_state
+device_role_change_operations
+device_role_assignments
 device_removal_receipts
 device_health_current
 device_health_attention
@@ -58,6 +60,7 @@ webauthn_credentials
 security_database_restores
 recovery_code_batches
 policy_decision_details
+harness_sessions
 auth_sessions
 security_scan_runs
 assurance_runs

@@ -389,6 +389,36 @@ Source-derived devices persistence object; detailed ownership is conservatively 
 | Indexes | idx_device_removal_receipts_device_time, sqlite_autoindex_device_removal_receipts_1 |
 | Confidence | inferred |
 
+## `device_role_assignments`
+
+Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | devices |
+| Owner | not a prepared projection |
+| Writer | device lifecycle and projection services |
+| Readers | /api/lite/fleet, /api/lite/devices/{device_id} |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | idx_device_role_assignments_active, idx_device_role_assignments_desired, sqlite_autoindex_device_role_assignments_1 |
+| Confidence | inferred |
+
+## `device_role_change_operations`
+
+Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | devices |
+| Owner | not a prepared projection |
+| Writer | device lifecycle and projection services |
+| Readers | /api/lite/fleet, /api/lite/devices/{device_id} |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | idx_device_role_change_device, idx_device_role_change_status, sqlite_autoindex_device_role_change_operations_2, sqlite_autoindex_device_role_change_operations_1 |
+| Confidence | inferred |
+
 ## `device_supervisor_state`
 
 Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.
@@ -476,7 +506,7 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | Readers | — |
 | Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
 | Classification | internal operational metadata |
-| Indexes | idx_harness_audit_events_session, idx_harness_audit_events_time |
+| Indexes | idx_harness_audit_target_device, idx_harness_audit_events_session, idx_harness_audit_events_time |
 | Confidence | inferred |
 
 ## `harness_challenges`
@@ -494,6 +524,21 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | Indexes | idx_harness_challenges_expiry, sqlite_autoindex_harness_challenges_2, sqlite_autoindex_harness_challenges_1 |
 | Confidence | inferred |
 
+## `harness_recovery_receipts`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | restricted operational metadata |
+| Indexes | idx_harness_recovery_receipts_binding, idx_harness_recovery_receipts_status, sqlite_autoindex_harness_recovery_receipts_2, sqlite_autoindex_harness_recovery_receipts_1 |
+| Confidence | inferred |
+
 ## `harness_sessions`
 
 Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
@@ -506,7 +551,7 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | Readers | — |
 | Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
 | Classification | restricted operational metadata |
-| Indexes | idx_harness_sessions_status, sqlite_autoindex_harness_sessions_2, sqlite_autoindex_harness_sessions_1 |
+| Indexes | idx_harness_sessions_target_device, idx_harness_sessions_status, sqlite_autoindex_harness_sessions_2, sqlite_autoindex_harness_sessions_1 |
 | Confidence | inferred |
 
 ## `human_credentials`
@@ -1091,7 +1136,7 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | Readers | — |
 | Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
 | Classification | internal operational metadata |
-| Indexes | idx_synthetic_principals_status, sqlite_autoindex_synthetic_principals_2, sqlite_autoindex_synthetic_principals_1 |
+| Indexes | idx_synthetic_principals_target_device, idx_synthetic_principals_status, sqlite_autoindex_synthetic_principals_2, sqlite_autoindex_synthetic_principals_1 |
 | Confidence | inferred |
 
 ## `webauthn_challenges`

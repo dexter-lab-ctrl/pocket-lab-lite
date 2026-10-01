@@ -622,6 +622,28 @@
     },
     {
       "confidence": "source-derived",
+      "description": "A potentially destructive device or recovery action requires explicit confirmation before it can continue.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:confirmation_required",
+      "name": "confirmation_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Confirmation required"
+      ],
+      "user_interpretation": "Confirm this action before continuing."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
       "domain": "validation",
       "event_mapping": [],
@@ -679,6 +701,400 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "This safety target can resume in a later Full check."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The device has not advertised the capability required by its governed role assignment.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:device_capability_not_advertised",
+      "name": "device_capability_not_advertised",
+      "projection_mapping": [
+        "device_capabilities"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Capability not advertised"
+      ],
+      "user_interpretation": "The device has not advertised this capability."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The server policy does not authorize the device capability for its current governed role assignment.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:device_capability_not_authorized",
+      "name": "device_capability_not_authorized",
+      "projection_mapping": [
+        "device_capabilities"
+      ],
+      "retryable": false,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Capability not authorized"
+      ],
+      "user_interpretation": "This capability is not authorized for the device's current roles."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The device capability evidence is older than the governed freshness window.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:device_capability_stale",
+      "name": "device_capability_stale",
+      "projection_mapping": [
+        "device_capabilities"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Capability evidence stale"
+      ],
+      "user_interpretation": "Wait for a fresh device heartbeat before relying on this capability."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Fresh runtime evidence did not verify the capability required by the governed role assignment.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:device_capability_verification_failed",
+      "name": "device_capability_verification_failed",
+      "projection_mapping": [
+        "device_capabilities"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Capability verification failed"
+      ],
+      "user_interpretation": "Fresh device evidence did not verify this capability."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The observed or requested device role assignment is not authorized by the server-owned role policy.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:device_role_assignment_unauthorized",
+      "name": "device_role_assignment_unauthorized",
+      "projection_mapping": [
+        "device_roles"
+      ],
+      "retryable": false,
+      "severity": "high",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Role not authorized"
+      ],
+      "user_interpretation": "This device role is not authorized."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A role removal is blocked because active backup, recovery, or storage responsibilities still depend on that role.",
+      "domain": "devices",
+      "event_mapping": [
+        "pocketlab.events.fleet.device_role_change_blocked"
+      ],
+      "http_status": 409,
+      "id": "reason:device_role_change_blocked_by_dependency",
+      "name": "device_role_change_blocked_by_dependency",
+      "projection_mapping": [
+        "device_role_change_operations"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Role change blocked"
+      ],
+      "user_interpretation": "Move or stop the dependent storage responsibilities before removing this role."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A role change cannot be delivered while the target device is offline or not ready.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:device_role_change_device_offline",
+      "name": "device_role_change_device_offline",
+      "projection_mapping": [
+        "device_role_change_operations"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Device offline"
+      ],
+      "user_interpretation": "Bring this device online before changing its roles."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A governed role assignment could not be delivered or the target device identity was unavailable; no role is shown active until verification succeeds.",
+      "domain": "devices",
+      "event_mapping": [
+        "pocketlab.events.fleet.device_role_change_failed"
+      ],
+      "http_status": 503,
+      "id": "reason:device_role_change_failed",
+      "name": "device_role_change_failed",
+      "projection_mapping": [
+        "device_role_change_operations"
+      ],
+      "retryable": true,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Role change failed"
+      ],
+      "user_interpretation": "Pocket Lab could not apply the role change."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The requested role set does not match the server-owned role generation or the device's active generation.",
+      "domain": "devices",
+      "event_mapping": [
+        "pocketlab.events.fleet.device_role_change_blocked"
+      ],
+      "http_status": 409,
+      "id": "reason:device_role_change_generation_mismatch",
+      "name": "device_role_change_generation_mismatch",
+      "projection_mapping": [
+        "device_role_change_operations"
+      ],
+      "retryable": true,
+      "severity": "high",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Role update conflict"
+      ],
+      "user_interpretation": "Refresh the device roles before trying this change again."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A role change was blocked because the trusted device identity did not match the requested target.",
+      "domain": "devices",
+      "event_mapping": [
+        "pocketlab.events.fleet.device_role_change_blocked"
+      ],
+      "http_status": 409,
+      "id": "reason:device_role_change_identity_mismatch",
+      "name": "device_role_change_identity_mismatch",
+      "projection_mapping": [
+        "device_role_change_operations"
+      ],
+      "retryable": false,
+      "severity": "high",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Identity mismatch"
+      ],
+      "user_interpretation": "Device identity must match before roles can change."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A governed role change was delivered and is waiting for fresh verified device evidence before it becomes active.",
+      "domain": "devices",
+      "event_mapping": [
+        "pocketlab.events.fleet.device_role_change_requested"
+      ],
+      "http_status": 202,
+      "id": "reason:device_role_change_pending_verification",
+      "name": "device_role_change_pending_verification",
+      "projection_mapping": [
+        "device_role_change_operations"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Role verification pending"
+      ],
+      "user_interpretation": "The role change was sent; Pocket Lab is waiting for fresh device verification."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The governed role change requires the independent approval policy before it can be applied.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:device_role_change_requires_approval",
+      "name": "device_role_change_requires_approval",
+      "projection_mapping": [
+        "device_role_change_operations"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Approval required"
+      ],
+      "user_interpretation": "Approval is required before changing this device role."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A device reported an older role generation than the server-owned assignment.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:device_role_change_stale_generation",
+      "name": "device_role_change_stale_generation",
+      "projection_mapping": [
+        "device_role_change_operations"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Role update superseded"
+      ],
+      "user_interpretation": "A newer device role assignment is already active."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The requested device role is not recognized or the role set exceeds the governed limit.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 422,
+      "id": "reason:device_role_invalid",
+      "name": "device_role_invalid",
+      "projection_mapping": [
+        "device_roles"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Role unavailable"
+      ],
+      "user_interpretation": "Choose a recognized Pocket Lab device role."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A protected Server Host role was requested through a joined-device path and cannot be assigned there.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:device_role_not_joinable",
+      "name": "device_role_not_joinable",
+      "projection_mapping": [
+        "device_roles"
+      ],
+      "retryable": false,
+      "severity": "high",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Protected Server Host"
+      ],
+      "user_interpretation": "The protected Server Host role cannot be assigned to a joined device."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "At least one governed device role is required for the assignment.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 422,
+      "id": "reason:device_roles_required",
+      "name": "device_roles_required",
+      "projection_mapping": [
+        "device_roles"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Choose a device role"
+      ],
+      "user_interpretation": "Choose at least one device role."
     },
     {
       "confidence": "source-derived",
@@ -1979,6 +2395,30 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The invite identity does not match the enrolled device."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The roles reported while consuming an invite do not match the server-owned invite role set.",
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:invite_role_set_mismatch",
+      "name": "invite_role_set_mismatch",
+      "projection_mapping": [
+        "device_roles"
+      ],
+      "retryable": false,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Invite role mismatch"
+      ],
+      "user_interpretation": "The invited device roles do not match the invite."
     },
     {
       "confidence": "source-derived",
@@ -4901,6 +5341,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5902aa50a9e1602dbe8ce971c26b60b50095ac6ff21757aa4eea69f6d87abb0f"
+    "source_fingerprint": "5c014a4c5563838ac674dd41d16975a1c93ca0993b41619c15187d787d7c19e3"
   }
 }

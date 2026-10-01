@@ -150,7 +150,16 @@ class LiteAgentSupervisor:
             or socket.gethostname()
         )
         self.node_name = self.env_data.get("POCKETLAB_NODE_NAME") or self.node_id
-        self.role = self.env_data.get("POCKETLAB_NODE_ROLE") or self.env_data.get("POCKETLAB_ROLE") or "compute"
+        raw_roles = self.env_data.get("POCKETLAB_NODE_ROLES") or self.env_data.get("POCKETLAB_NODE_ROLE") or self.env_data.get("POCKETLAB_ROLE") or "compute"
+        role_aliases = {"compute": "compute", "app_host": "compute", "storage": "storage", "storage_node": "storage"}
+        roles: list[str] = []
+        for item in str(raw_roles).split(","):
+            normalized = role_aliases.get(item.strip().lower().replace("-", "_").replace(" ", "_"))
+            if normalized and normalized not in roles:
+                roles.append(normalized)
+        self.device_roles = sorted(roles or ["compute"], key=lambda role: (0 if role == "compute" else 1, role))
+        self.role = "compute" if "compute" in self.device_roles else self.device_roles[0]
+        self.device_role_generation = max(0, int(self.env_data.get("POCKETLAB_NODE_ROLE_GENERATION") or "0"))
         self.nats_url = self.env_data.get("POCKETLAB_NATS_URL", "")
         self.agent_process = f"pocketlab-agent-{self.node_id}"
         self.supervisor_process = f"pocketlab-agent-supervisor-{self.node_id}"
@@ -180,7 +189,9 @@ class LiteAgentSupervisor:
         env = {**os.environ, **self.env_data}
         env["POCKETLAB_NODE_ID"] = self.node_id
         env["POCKETLAB_NODE_NAME"] = self.node_name
+        env["POCKETLAB_NODE_ROLES"] = ",".join(self.device_roles)
         env["POCKETLAB_NODE_ROLE"] = self.role
+        env["POCKETLAB_NODE_ROLE_GENERATION"] = str(self.device_role_generation)
         env["POCKETLAB_AGENT_FILE"] = str(self.agent_file)
         return env
 
@@ -403,6 +414,8 @@ class LiteAgentSupervisor:
             "name": self.node_name,
             "hostname": self.node_name,
             "role": self.role,
+            "device_roles": list(self.device_roles),
+            "device_role_generation": self.device_role_generation,
             "status": agent_status,
             "agent_status": agent_status,
             "agent_process": self.agent_process,

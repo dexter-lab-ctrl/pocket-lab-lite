@@ -71,6 +71,7 @@ generator_version: 3
 | `GET /api/lite/fleet` | devices | LiteDevices, LiteRulesEnterprise | get_lite_fleet_api_lite_fleet_get | contract-derived |
 | `GET /api/lite/fleet/agent/bootstrap.sh` | devices | — | lite_fleet_agent_bootstrap_script_api_lite_fleet_agent_bootstrap_sh_get | contract-derived |
 | `GET /api/lite/fleet/devices/{device_id}/recovery-history` | devices | — | get_lite_device_recovery_history_api_lite_fleet_devices__device_id__recovery_history_get | contract-derived |
+| `GET /api/lite/fleet/devices/{device_id}/roles` | devices | — | get_lite_device_roles_api_lite_fleet_devices__device_id__roles_get | contract-derived |
 | `GET /api/lite/fleet/devices/{node_id}/restart-agent/status` | devices | LiteDevices | lite_fleet_agent_restart_status_api_lite_fleet_devices__node_id__restart_agent_status_get | contract-derived |
 | `GET /api/lite/fleet/health-summary` | devices | — | get_lite_fleet_health_summary_api_lite_fleet_health_summary_get | contract-derived |
 | `GET /api/lite/fleet/invites/latest` | devices | — | get_latest_lite_fleet_invite_api_lite_fleet_invites_latest_get | contract-derived |
@@ -190,6 +191,7 @@ generator_version: 3
 | `POST /api/lite/harness/principal/revoke` | harness | — | revoke_authenticated_principal_api_lite_harness_principal_revoke_post | contract-derived |
 | `POST /api/lite/harness/principals` | harness | — | register_principal_api_lite_harness_principals_post | contract-derived |
 | `POST /api/lite/harness/principals/{principal_id}/revoke` | harness | — | revoke_principal_api_lite_harness_principals__principal_id__revoke_post | contract-derived |
+| `POST /api/lite/harness/recovery/authorize` | harness | — | recovery_authorize_api_lite_harness_recovery_authorize_post | contract-derived |
 | `POST /api/lite/harness/security-assurance/faults/{fault_id}` | harness | — | execute_fault_api_lite_harness_security_assurance_faults__fault_id__post | contract-derived |
 | `POST /api/lite/harness/security-assurance/policy-sync` | harness | — | policy_sync_api_lite_harness_security_assurance_policy_sync_post | contract-derived |
 | `POST /api/lite/harness/security-assurance/runs` | harness | — | create_run_api_lite_harness_security_assurance_runs_post | contract-derived |
@@ -240,6 +242,7 @@ generator_version: 3
 | `PUT /api/lite/enterprise/identity/members/{human_id}` | enterprise | — | update_enterprise_member_api_lite_enterprise_identity_members__human_id__put | contract-derived |
 | `PUT /api/lite/enterprise/identity/mode` | enterprise | — | update_enterprise_mode_api_lite_enterprise_identity_mode_put | contract-derived |
 | `PUT /api/lite/fleet/devices/{device_id}/display-model` | devices | — | update_lite_device_display_model_api_lite_fleet_devices__device_id__display_model_put | contract-derived |
+| `PUT /api/lite/fleet/devices/{device_id}/roles` | devices | — | change_lite_device_roles_api_lite_fleet_devices__device_id__roles_put | contract-derived |
 | `PUT /api/lite/identity/passkeys/{credential_id}` | identity | LiteIdentity | rename_lite_passkey_api_lite_identity_passkeys__credential_id__put | contract-derived |
 
 ## UI → API

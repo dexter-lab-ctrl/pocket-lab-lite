@@ -18,10 +18,10 @@ Tasks remain source-derived; commands are documented but never executed by this 
 | Development loop | 60 |
 | Documentation loop | 55 |
 | API-validation loop | 12 |
-| Runtime-evidence loop | 33 |
+| Runtime-evidence loop | 34 |
 | Security-analysis loop | 34 |
 | Release loop | 19 |
-| Recovery-diagnostics loop | 6 |
+| Recovery-diagnostics loop | 9 |
 
 ## `default`
 
@@ -4118,6 +4118,40 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Example:** `task lite:harness:profiles`
 
+## `lite:harness:recovery:authorize`
+
+**Purpose:** Issue a one-use receipt for an offline main-database promotion; the token is written only to a private file
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/harness.py recovery-authorize --backup-id "{{.BACKUP_ID}}" --preview-id "{{.PREVIEW_ID}}" --target-schema "{{.TARGET_SCHEMA}}" --receipt-file "{{.RECEIPT_FILE}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/harness.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:harness:recovery:authorize`
+
 ## `lite:harness:session:start`
 
 **Purpose:** Start a short-lived signed harness session
@@ -4130,7 +4164,7 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Commands:**
 
-- `{{.PYTHON}} scripts/dev/lite/harness.py session-start --principal-id "{{.PRINCIPAL_ID}}" --profile "{{.PROFILE}}" --purpose "{{.PURPOSE}}" --key-file "{{.KEY_FILE}}"`
+- `{{.PYTHON}} scripts/dev/lite/harness.py session-start --principal-id "{{.PRINCIPAL_ID}}" --profile "{{.PROFILE}}" --purpose "{{.PURPOSE}}" --key-file "{{.KEY_FILE}}" {{if .TARGET_DEVICE_ID}}--target-device-id "{{.TARGET_DEVICE_ID}}"{{end}}`
 
 **Environment:** None source-discovered
 
@@ -4356,6 +4390,74 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Example:** `task lite:qualification:start:key-bound:faults`
 
+## `lite:qualification:start:key-bound:fleet-role`
+
+**Purpose:** Explicitly start qualification with one exact synthetic Secondary-device role-change target
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `python3 scripts/dev/lite/task_runtime.py shell -- scripts/dev/lite/start-qualification.sh --bootstrap-principal-id "{{.PRINCIPAL_ID}}" --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}" --bootstrap-profile fleet-role-qualifier --target-device-id "{{.TARGET_DEVICE_ID}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/start-qualification.sh, scripts/dev/lite/task_runtime.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=True; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=False; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:qualification:start:key-bound:fleet-role`
+
+## `lite:qualification:start:key-bound:recovery`
+
+**Purpose:** Explicitly start qualification with a target-main/schema-bound recovery bootstrap
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `python3 scripts/dev/lite/task_runtime.py shell -- scripts/dev/lite/start-qualification.sh --bootstrap-principal-id "{{.PRINCIPAL_ID}}" --bootstrap-public-key-file "{{.PUBLIC_KEY_FILE}}" --bootstrap-profile recovery-qualifier --recovery-target-main-sha "{{.TARGET_MAIN_SHA}}" --recovery-target-schema "{{.TARGET_SCHEMA}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/start-qualification.sh, scripts/dev/lite/task_runtime.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=True; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=False; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:qualification:start:key-bound:recovery`
+
 ## `lite:qualification:start:key-bound:ui-performance`
 
 **Purpose:** Explicitly start qualification with the operator-approved synthetic qualification-owner UI-performance bootstrap; destructive authority remains off
@@ -4389,6 +4491,40 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:qualification:start:key-bound:ui-performance`
+
+## `lite:recovery:database:offline-promote`
+
+**Purpose:** Stop the exact Pocket Lab runtime set and atomically promote one authenticated verified backup to target main
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/recover-main-database.py --receipt-file "{{.RECEIPT_FILE}}" --main-state-dir "{{.MAIN_STATE_DIR}}" --qualification-state-dir "{{.QUALIFICATION_STATE_DIR}}" --backup-root "{{.BACKUP_ROOT}}" --target-main-sha "{{.TARGET_MAIN_SHA}}" --target-schema "{{.TARGET_SCHEMA}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/recover-main-database.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=True; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:recovery:database:offline-promote`
 
 ## `lite:runtime:resilience:check`
 

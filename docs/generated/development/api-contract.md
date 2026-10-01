@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_contracts.py
-source_fingerprint: 24bc737da1dd6f7ca88769ef052f9a5d4c13c8ecc3f872910dd9809374855bf2
+source_fingerprint: 5606a8647a629f8b744ae8cdc0abe3df8086a3f9110d72df751932f67f50e6de
 schema_revision: 1
 validation_status: generated
 ---
@@ -19,7 +19,7 @@ validation_status: generated
 <span class="pl-status pl-status--patch-provided">Development guidance</span>
 </div>
 
-FastAPI OpenAPI is the canonical HTTP contract. This generated Lite view contains **214 paths** and **225 operations**.
+FastAPI OpenAPI is the canonical HTTP contract. This generated Lite view contains **216 paths** and **228 operations**.
 
 - Source: `pocket-lab-final-structure/runtime/api_fastapi/main.py`
 - Contract: `contracts/generated/lite-openapi.json`

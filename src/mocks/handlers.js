@@ -852,7 +852,9 @@ const normalizeLiteDeviceName = (value) => String(value || '')
   .replace(/[^a-z0-9_.-]+/g, '-')
   .replace(/^[-._]+|[-._]+$/g, '');
 
-const mockLiteDevices = () => [
+const mockLiteDevices = () => {
+  const currentScenario = scenario();
+  const devices = [
   {
     id: 'pocket-lab-lite-server',
     name: 'Pocket Lab Lite Server',
@@ -862,6 +864,10 @@ const mockLiteDevices = () => [
     remote_access: true,
     role: 'server_host',
     role_label: 'Server Host',
+    device_roles: [{ id: 'server_host', label: 'Server Host', assignment_status: 'active' }],
+    device_role_ids: ['server_host'],
+    desired_device_roles: ['server_host'],
+    active_device_roles: ['server_host'],
     is_current: true,
     capabilities: ['app_host', 'compute', 'security_scanner'],
     capability_labels: ['App Host', 'Compute', 'Security Scanner'],
@@ -874,7 +880,12 @@ const mockLiteDevices = () => [
     last_seen: mockIso(-20 * 60 * 1000),
     remote_access: false,
     role: 'compute',
-    role_label: 'App Host',
+    role_label: 'Compute',
+    device_roles: [{ id: 'compute', label: 'Compute', assignment_status: 'active' }],
+    device_role_ids: ['compute'],
+    desired_device_roles: ['compute'],
+    active_device_roles: ['compute'],
+    device_role_generation: 1,
     capabilities: ['app_host', 'compute'],
     capability_labels: ['App Host', 'Compute'],
   },
@@ -886,8 +897,21 @@ const mockLiteDevices = () => [
     last_seen: mockIso(),
     remote_access: false,
     role: 'compute',
-    role_label: 'App Host',
-    capabilities: ['app_host', 'compute'],
+    role_label: 'Compute + Storage',
+    device_roles: [
+      { id: 'compute', label: 'Compute', assignment_status: 'active' },
+      { id: 'storage', label: 'Storage', assignment_status: 'active' },
+    ],
+    device_role_ids: ['compute', 'storage'],
+    desired_device_roles: ['compute', 'storage'],
+    active_device_roles: ['compute', 'storage'],
+    device_role_generation: 3,
+    capabilities: ['app_host', 'compute', 'media_storage', 'backup_target', 'restore_target'],
+    capability_states: [
+      { id: 'app_host', authorization: 'allowed', observation: 'advertised', verification: 'verified', status: 'ready', effective: true },
+      { id: 'media_storage', authorization: 'allowed', observation: 'advertised', verification: 'verified', status: 'ready', effective: true },
+      { id: 'media_backup_source', authorization: 'independent_runtime_policy', observation: 'advertised', verification: 'verified', status: 'ready', effective: true },
+    ],
     capability_labels: ['App Host', 'Compute'],
   },
   {
@@ -898,12 +922,59 @@ const mockLiteDevices = () => [
     last_seen: mockIso(),
     remote_access: true,
     role: 'storage',
-    role_label: 'Storage Node',
+    role_label: 'Storage',
+    device_roles: [{ id: 'storage', label: 'Storage', assignment_status: 'active' }],
+    device_role_ids: ['storage'],
+    desired_device_roles: ['storage'],
+    active_device_roles: ['storage'],
+    device_role_generation: 2,
     capabilities: ['media_storage', 'backup_target'],
     capability_labels: ['Storage Node', 'Backup Target'],
     storage: { ready: true, status: 'ready', available_gb: 92, media_roots: ['Pictures', 'DCIM'], summary: 'Storage device ready' },
   }
-];
+  ];
+
+  const healthy = devices.find((device) => device.id === 'test-phone-4');
+  if (healthy && currentScenario === 'devices-role-pending') {
+    healthy.desired_device_roles = ['compute', 'storage'];
+    healthy.active_device_roles = ['compute'];
+    healthy.device_role_status = 'applying';
+    healthy.device_role_reason_code = 'device_role_change_pending_verification';
+    healthy.device_roles = [
+      { id: 'compute', label: 'Compute', assignment_status: 'active' },
+      { id: 'storage', label: 'Storage', assignment_status: 'verifying' },
+    ];
+  }
+  if (healthy && currentScenario === 'devices-role-partial-capabilities') {
+    healthy.capability_states = [
+      { id: 'compute', authorization: 'allowed', observation: 'advertised', verification: 'verified', status: 'ready', effective: true },
+      { id: 'app_host', authorization: 'allowed', observation: 'advertised', verification: 'verified', status: 'ready', effective: true },
+      { id: 'media_storage', authorization: 'allowed', observation: 'advertised', verification: 'unverified', status: 'not_advertised', reason_code: 'device_capability_not_advertised', effective: false },
+      { id: 'backup_target', authorization: 'allowed', observation: 'not_advertised', verification: 'unverified', status: 'not_advertised', reason_code: 'device_capability_not_advertised', effective: false },
+    ];
+    healthy.capabilities = ['compute', 'app_host'];
+  }
+  if (healthy && currentScenario === 'devices-role-stale-capabilities') {
+    healthy.connection = 'offline';
+    healthy.status = 'offline';
+    healthy.capability_states = [
+      { id: 'compute', authorization: 'allowed', observation: 'advertised', verification: 'stale', status: 'stale', reason_code: 'device_capability_stale', effective: false },
+      { id: 'media_storage', authorization: 'allowed', observation: 'advertised', verification: 'stale', status: 'stale', reason_code: 'device_capability_stale', effective: false },
+    ];
+    healthy.capabilities = [];
+  }
+  if (healthy && currentScenario === 'devices-role-malformed') {
+    healthy.device_roles = [{ id: 'future_unknown', label: 'Future role', assignment_status: 'unknown' }, null, { label: 'Missing id' }];
+    healthy.device_role_ids = ['future_unknown'];
+    healthy.desired_device_roles = [];
+    healthy.active_device_roles = [];
+    healthy.device_role_status = 'blocked';
+    healthy.device_role_reason_code = 'device_role_invalid';
+    healthy.capability_states = [{ id: 'future_capability', authorization: 'blocked', observation: 'not_advertised', verification: 'unverified', status: 'blocked_by_role', reason_code: 'device_capability_not_authorized', effective: false }];
+    healthy.capabilities = [];
+  }
+  return devices;
+};
 
 export const handlers = [
   http.get('/ready', () => HttpResponse.json(controlPlane(), { status: controlPlane().ready ? 200 : 503 })),
@@ -1130,6 +1201,28 @@ export const handlers = [
     }, { headers: liteSafeReadHeaders(request) });
   }),
   http.get('/api/lite/security', ({ request }) => HttpResponse.json(mockLiteSecurityPayload(), { headers: liteSafeReadHeaders(request) })),
+  http.get('/api/lite/enterprise/access', () => {
+    const currentScenario = scenario();
+    const humanRole = currentScenario === 'devices-role-review-required'
+      ? 'Operator'
+      : currentScenario === 'devices-role-blocked'
+        ? 'Viewer'
+        : 'Owner';
+    return HttpResponse.json({
+    enterprise_enabled: true,
+    current_membership: { role: humanRole, status: 'active' },
+    action_matrix: [
+      { action_id: 'device.invite.compute', label: 'Add Compute device', roles: { Owner: 'allow', Admin: 'allow', Operator: 'allow', Auditor: 'deny', Viewer: 'deny' } },
+      { action_id: 'device.invite.storage', label: 'Add Storage device', roles: { Owner: 'allow', Admin: 'approval', Operator: 'approval', Auditor: 'deny', Viewer: 'deny' } },
+      { action_id: 'device.roles.assign.compute', label: 'Assign Compute', roles: { Owner: 'allow', Admin: 'allow', Operator: 'allow', Auditor: 'deny', Viewer: 'deny' } },
+      { action_id: 'device.roles.assign.storage', label: 'Assign Storage', roles: { Owner: 'allow', Admin: 'approval', Operator: 'approval', Auditor: 'deny', Viewer: 'deny' } },
+      { action_id: 'device.roles.change', label: 'Change device roles', roles: { Owner: 'allow', Admin: 'approval', Operator: 'approval', Auditor: 'deny', Viewer: 'deny' } },
+      { action_id: 'device.restart', label: 'Restart device agent', roles: { Owner: 'allow', Admin: 'allow', Operator: 'allow', Auditor: 'deny', Viewer: 'deny' } },
+      { action_id: 'device.repair', label: 'Repair device agent', roles: { Owner: 'allow', Admin: 'allow', Operator: 'allow', Auditor: 'deny', Viewer: 'deny' } },
+      { action_id: 'device.capabilities.read', label: 'Review device capabilities', roles: { Owner: 'allow', Admin: 'allow', Operator: 'allow', Auditor: 'allow', Viewer: 'allow' } },
+    ],
+    });
+  }),
   http.get('/api/lite/fleet', ({ request }) => HttpResponse.json({
     status: 'healthy',
     devices: mockLiteDevices(),
@@ -1146,8 +1239,8 @@ export const handlers = [
       },
     } : {}),
     roles: [
-      { role: 'compute', role_label: 'App Host', description: 'Runs apps and services for your Pocket Lab.' },
-      { role: 'storage', role_label: 'Storage Node', description: 'Stores backups, files, or app data.' }
+      { role: 'compute', role_label: 'Compute', description: 'Run apps and general Pocket Lab work.' },
+      { role: 'storage', role_label: 'Storage', description: 'Store backups and provide recovery storage.' }
     ],
     latest_invite: null,
     capability_summary: {
@@ -1478,9 +1571,14 @@ export const handlers = [
   }),
   http.post('/api/lite/fleet/add-device', async ({ request }) => {
     const body = await request.json().catch(() => ({}));
-    const role = body.role === 'storage' ? 'storage' : 'compute';
-    const roleLabel = role === 'storage' ? 'Storage Node' : 'App Host';
-    const hostname = body.hostname || (role === 'storage' ? 'Pocket Lab Storage Node' : 'Pocket Lab App Host');
+    const deviceRoles = Array.isArray(body.device_roles) && body.device_roles.length
+      ? [...new Set(body.device_roles.filter((role) => ['compute', 'storage'].includes(role)))]
+      : body.role === 'storage' ? ['storage'] : ['compute'];
+    if (!deviceRoles.length) return HttpResponse.json({ detail: { status: 'blocked', reason_code: 'device_roles_required', message: 'Choose at least one device role.' } }, { status: 422 });
+    const role = deviceRoles.includes('compute') ? 'compute' : 'storage';
+    const roleLabels = deviceRoles.map((item) => item === 'storage' ? 'Storage' : 'Compute');
+    const roleLabel = roleLabels.join(' + ');
+    const hostname = body.hostname || `Pocket Lab ${roleLabel}`;
     const requested = normalizeLiteDeviceName(hostname);
     const conflict = mockLiteDevices().find((device) => [device.id, device.name, device.hostname, device.node_id].map(normalizeLiteDeviceName).includes(requested));
     if (conflict) {
@@ -1511,21 +1609,61 @@ export const handlers = [
       summary: `Invite ready for ${hostname}.`,
       command_id: 'mock-add-device',
       job_id: 'mock-add-device',
-      bootstrap_url: 'http://127.0.0.1:8443/api/lite/fleet/agent/bootstrap.sh?role=' + role + '&token=mock-invite-token',
-      bootstrap_command: "curl -fsSL 'http://127.0.0.1:8443/api/lite/fleet/agent/bootstrap.sh?role=" + role + "&token=mock-invite-token' | bash",
-      copy_text: "curl -fsSL 'http://127.0.0.1:8443/api/lite/fleet/agent/bootstrap.sh?role=" + role + "&token=mock-invite-token' | bash",
+      bootstrap_url: 'http://127.0.0.1:8443/api/lite/fleet/agent/bootstrap.sh?roles=' + deviceRoles.join(',') + '&role=' + role + '&token=mock-invite-token',
+      bootstrap_command: "curl -fsSL 'http://127.0.0.1:8443/api/lite/fleet/agent/bootstrap.sh?roles=" + deviceRoles.join(',') + "&role=" + role + "&token=mock-invite-token' | bash",
+      copy_text: "curl -fsSL 'http://127.0.0.1:8443/api/lite/fleet/agent/bootstrap.sh?roles=" + deviceRoles.join(',') + "&role=" + role + "&token=mock-invite-token' | bash",
       invite: {
-        url: 'http://127.0.0.1:8443/api/join.sh?role=' + role + '&token=mock-invite-token',
-        bootstrap_url: 'http://127.0.0.1:8443/api/lite/fleet/agent/bootstrap.sh?role=' + role + '&token=mock-invite-token',
-        bootstrap_command: "curl -fsSL 'http://127.0.0.1:8443/api/lite/fleet/agent/bootstrap.sh?role=" + role + "&token=mock-invite-token' | bash",
-        copy_text: "curl -fsSL 'http://127.0.0.1:8443/api/lite/fleet/agent/bootstrap.sh?role=" + role + "&token=mock-invite-token' | bash",
+        url: 'http://127.0.0.1:8443/api/join.sh?roles=' + deviceRoles.join(',') + '&role=' + role + '&token=mock-invite-token',
+        bootstrap_url: 'http://127.0.0.1:8443/api/lite/fleet/agent/bootstrap.sh?roles=' + deviceRoles.join(',') + '&role=' + role + '&token=mock-invite-token',
+        bootstrap_command: "curl -fsSL 'http://127.0.0.1:8443/api/lite/fleet/agent/bootstrap.sh?roles=" + deviceRoles.join(',') + "&role=" + role + "&token=mock-invite-token' | bash",
+        copy_text: "curl -fsSL 'http://127.0.0.1:8443/api/lite/fleet/agent/bootstrap.sh?roles=" + deviceRoles.join(',') + "&role=" + role + "&token=mock-invite-token' | bash",
         token_hint: 'mock…oken',
         hostname,
         role,
         role_label: roleLabel,
+        device_roles: deviceRoles,
+        device_role_labels: roleLabels,
+        device_role_generation: 1,
         expires_at: expiresAt,
         instructions: 'Open this invite on the new device while it is connected to the same Pocket Lab private network.',
       },
+    }, { status: 202 });
+  }),
+  http.get('/api/lite/fleet/devices/:nodeId/roles', ({ params }) => {
+    const device = mockLiteDevices().find((item) => item.id === params.nodeId);
+    if (!device) return HttpResponse.json({ detail: 'Device not found' }, { status: 404 });
+    return HttpResponse.json({
+      status: device.device_role_status || 'active',
+      node_id: device.id,
+      device_roles: device.device_roles || [],
+      desired_device_roles: device.desired_device_roles || device.device_role_ids || [],
+      active_device_roles: device.active_device_roles || device.device_role_ids || [],
+      generation: device.device_role_generation || 1,
+      capability_states: device.capability_states || (device.capabilities || []).map((id) => ({ id, authorization: 'allowed', observation: 'advertised', verification: 'verified', status: 'ready', effective: true })),
+      protected_server_host: device.role === 'server_host',
+      updated_at: mockIso(),
+    });
+  }),
+  http.put('/api/lite/fleet/devices/:nodeId/roles', async ({ params, request }) => {
+    const body = await request.json().catch(() => ({}));
+    const roles = Array.isArray(body.device_roles) ? [...new Set(body.device_roles)] : [];
+    if (!body.confirm) return HttpResponse.json({ detail: { status: 'blocked', reason_code: 'confirmation_required', message: 'Confirm the device role change before applying it.' } }, { status: 400 });
+    if (!roles.length || roles.some((role) => !['compute', 'storage'].includes(role))) {
+      return HttpResponse.json({ detail: { status: 'blocked', reason_code: 'device_role_invalid', message: 'Choose at least one valid device role.' } }, { status: 422 });
+    }
+    if (params.nodeId === 'pocket-lab-lite-server') {
+      return HttpResponse.json({ detail: { status: 'blocked', reason_code: 'device_role_not_joinable', message: 'Server Host is protected.' } }, { status: 409 });
+    }
+    return HttpResponse.json({
+      accepted: true,
+      status: 'applying',
+      node_id: params.nodeId,
+      device_roles: roles,
+      previous_device_roles: ['compute'],
+      generation: Number(body.expected_generation || 1) + 1,
+      command_id: 'mock-role-change',
+      reason_code: 'device_role_change_pending_verification',
+      summary: 'Role change sent. Pocket Lab will show it as active only after fresh device verification.',
     }, { status: 202 });
   }),
   http.post('/api/lite/policy/apply', () => HttpResponse.json({ status: 'retired', accepted: false, reason_code: 'generic_policy_toggle_retired' }, { status: 410 })),

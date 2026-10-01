@@ -4,6 +4,7 @@ import {
   GlassCard,
   LiteButton,
   roleLabel,
+  deviceRoleSummary,
   deviceCapabilitySummary,
   canonicalDevicePresentation,
   deviceLinkState,
@@ -138,7 +139,7 @@ function DeviceCard({
 
         <div className="lite-device-card-heading">
           <span className="lite-device-card-kicker">
-            {isServerCard ? 'Server host' : device?.role_label || roleLabel(device?.role)}
+            {isServerCard ? 'Server host' : deviceRoleSummary(device)}
           </span>
           <h2>{deviceName}</h2>
           {isServerCard ? <p>Protected host for this self-hosted workspace.</p> : null}

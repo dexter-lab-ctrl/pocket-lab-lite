@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 30e4700ac47f810754e99ac3591ddff7662f052f1e7ff69a2f215f09921efc15
+source_fingerprint: 8e93a33747e2c70cf221895fe1929ecb18b5c3577c1b32ce9ea5bee0a428b73c
 schema_revision: 1
 validation_status: generated
 ---
@@ -104,6 +104,7 @@ validation_status: generated
 | src/lite/devices/DeviceDetailsLazy.jsx | liteApi.deviceHealth | GET | `/api/lite/devices/{param}/health` | query | no | dynamic |
 | src/lite/devices/DeviceDetailsLazy.jsx | liteApi.deviceHealthHistory | GET | `/api/lite/devices/{param}/health/history` | query | no | dynamic |
 | src/lite/devices/DeviceDetailsLazy.jsx | liteApi.deviceHistory | GET | `/api/lite/devices/{param}/history` | query | no | dynamic |
+| src/lite/devices/DeviceDetailsLazy.jsx | liteApi.changeDeviceRoles | PUT | `/api/lite/fleet/devices/{param}/roles` | mutation | no | dynamic |
 | src/lite/devices/DeviceModelPickerLazy.jsx | liteApi.updateDeviceDisplayModel | PUT | `/api/lite/fleet/devices/{param}/display-model` | mutation | no | dynamic |
 | src/lite/devices/DevicePhotoBackup.jsx | liteApi.photoBackup | GET | `/api/lite/devices/{param}/photo-backup` | query | no | dynamic |
 | src/lite/devices/DevicePhotoBackup.jsx | liteApi.startPhotoBackup | POST | `/api/lite/devices/{param}/photo-backup` | mutation | no | dynamic |
@@ -137,10 +138,13 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/devices/:deviceId/photo-backup/repair` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/devices/:deviceId/removal-assessment` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/diagnostics/frontend-lifecycle/challenge` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/enterprise/access` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/events` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/fleet` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/fleet/add-device` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/fleet/devices/:nodeId/restart-agent` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/fleet/devices/:nodeId/roles` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | PUT | `/api/lite/fleet/devices/:nodeId/roles` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/fleet/remove-device` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/identity` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/identity/login` | mock | yes | static |
@@ -329,6 +333,7 @@ validation_status: generated
 - `/api/lite/harness/principals`
 - `/api/lite/harness/principals/{principal_id}`
 - `/api/lite/harness/principals/{principal_id}/revoke`
+- `/api/lite/harness/recovery/authorize`
 - `/api/lite/harness/security-assurance/capabilities`
 - `/api/lite/harness/security-assurance/faults`
 - `/api/lite/harness/security-assurance/faults/{fault_id}`

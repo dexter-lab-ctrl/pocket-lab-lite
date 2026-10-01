@@ -368,6 +368,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="target_device_id">target_device_id</span></td>
+                                    <td>TEXT</td>
+                                    <td>2000000000</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>&#39;&#39;</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -416,6 +433,12 @@
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
                                     <td>occurred_at + event_id</td>
                                 </tr>
+                                <tr>
+                                    <td title='Indexed'>idx_harness_audit_target_device</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>target_device_id + occurred_at + event_id</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div><!-- /.box-body -->
@@ -441,37 +464,39 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="313,5,746,519">
-<area shape="rect" id="node2" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,126,269,366">
+<area shape="rect" id="node1" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="313,5,746,548">
+<area shape="rect" id="node2" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,126,269,396">
 </map>
                                         <a name='diagram'><img id="oneDegreeImg" src="../diagrams/tables/harness_audit_events.1degree.png" usemap="#oneDegreeRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="418,5,641,99">
-<area shape="rect" id="node2" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,441,269,682">
-<area shape="rect" id="node3" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="313,117,746,630">
-<area shape="rect" id="node4" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="400,648,659,742">
-<area shape="rect" id="node5" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="410,760,649,854">
+<area shape="rect" id="node2" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,675,269,945">
+<area shape="rect" id="node3" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="313,117,746,660">
+<area shape="rect" id="node4" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="400,677,659,771">
+<area shape="rect" id="node5" href="harness_recovery_receipts.html" target="_top" title="harness_recovery_receipts" alt="" coords="790,787,1112,881">
+<area shape="rect" id="node6" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="410,824,649,918">
 </map>
                                         <a name='diagram'><img id="twodegreesDegreeImg" src="../diagrams/tables/harness_audit_events.2degrees.png" usemap="#twoDegreesRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="oneimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagramImplied" name="oneDegreeRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="313,5,746,519">
-<area shape="rect" id="node2" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,126,269,366">
+<area shape="rect" id="node1" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="313,5,746,548">
+<area shape="rect" id="node2" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,126,269,396">
 </map>
                                         <a name='diagram'><img id="oneimpliedDegreeImg" src="../diagrams/tables/harness_audit_events.implied1degrees.png" usemap="#oneDegreeRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twoimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagramImplied" name="twoDegreesRelationshipsDiagramImplied">
 <area shape="rect" id="node1" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="418,5,641,99">
-<area shape="rect" id="node2" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,701,269,942">
-<area shape="rect" id="node3" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="313,117,746,630">
-<area shape="rect" id="node4" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="400,648,659,742">
-<area shape="rect" id="node5" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="410,760,649,854">
-<area shape="rect" id="node6" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="790,907,1130,1001">
-<area shape="rect" id="node7" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="416,907,643,1001">
+<area shape="rect" id="node2" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,745,269,1015">
+<area shape="rect" id="node3" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="313,117,746,660">
+<area shape="rect" id="node4" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="400,677,659,771">
+<area shape="rect" id="node5" href="harness_recovery_receipts.html" target="_top" title="harness_recovery_receipts" alt="" coords="798,787,1121,881">
+<area shape="rect" id="node6" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="410,824,649,918">
+<area shape="rect" id="node7" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="790,971,1130,1065">
+<area shape="rect" id="node8" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="416,971,643,1065">
 </map>
                                         <a name='diagram'><img id="twoimpliedDegreeImg" src="../diagrams/tables/harness_audit_events.implied2degrees.png" usemap="#twoDegreesRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>

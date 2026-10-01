@@ -10,7 +10,7 @@ from .. import deps
 from ..services.action_queue import submit_domain_command
 from ..services.live_status import LIVE_STATUS
 from ..services.nats_bus import BUS
-from ..services import fleet_registry, lite_catalog, lite_invites, lite_photo_backup
+from ..services import fleet_registry, lite_catalog, lite_invites, lite_photo_backup, lite_policy_opa
 
 router = APIRouter(tags=["fleet"])
 
@@ -510,7 +510,7 @@ async def restart_lite_fleet_agent(
     is offline, the command remains visible as queued; delivery requires the agent
     to reconnect to NATS.
     """
-    deps.require_auth(request, write=True)
+    auth_context = deps.require_auth(request, write=True)
     payload = payload or {}
     normalized_node_id = fleet_registry.normalize_node_id(node_id)
     agent = fleet_registry.get_agent(normalized_node_id)
@@ -534,6 +534,32 @@ async def restart_lite_fleet_agent(
                 "node_id": normalized_node_id,
             },
         )
+
+    try:
+        lite_policy_opa.evaluate_authorization(
+            auth_context=auth_context,
+            action_id="device.restart",
+            target_type="device",
+            target_id=normalized_node_id,
+            target_revision=str(agent.get("revision") or agent.get("last_seen_at") or "current"),
+            target={
+                "protected_server_host": False,
+                "device_roles": agent.get("device_roles") or ([role] if role else []),
+                "connection": agent.get("connection") or agent.get("status") or "unknown",
+            },
+            request_context={"source": "lite-devices"},
+        )
+    except lite_policy_opa.PolicyDecisionError as exc:
+        raise HTTPException(
+            status_code=exc.status_code,
+            headers={"Cache-Control": "no-store"},
+            detail={
+                "status": "blocked",
+                "accepted": False,
+                "reason_code": exc.reason_code,
+                "message": exc.message,
+            },
+        ) from exc
 
     command_payload = {
         "reason": str(payload.get("reason") or "Lite Devices restart requested"),
@@ -839,12 +865,22 @@ async def create_fleet_join(
 ) -> dict:
     deps.require_auth(request, write=True)
     payload = payload or {}
-    role = str(payload.get("role") or "compute")
+    try:
+        device_roles = lite_invites.normalize_device_roles(
+            payload.get("device_roles"),
+            role=str(payload.get("role") or "") or None,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail="Choose at least one valid device role.") from exc
     hostname = payload.get("hostname")
     return await submit_domain_command(
         "pocketlab.commands.fleet.join",
         "fleet.join.requested",
-        {"role": role, "hostname": hostname},
+        {
+            "device_roles": device_roles,
+            "role": "compute" if "compute" in device_roles else device_roles[0],
+            "hostname": hostname,
+        },
     )
 
 
@@ -855,11 +891,19 @@ def lite_fleet_agent_bootstrap_blocked(payload: dict | None = None):
     """Record a token-gated audit event when a device refuses a mismatched invite."""
     payload = payload or {}
     token = str(payload.get("token") or "").strip()
-    role = str(payload.get("role") or "compute").strip() or "compute"
+    role = str(payload.get("role") or "").strip() or None
+    roles_value = payload.get("device_roles")
     if not token:
         raise HTTPException(status_code=400, detail="Missing invite token")
 
-    status, invite = lite_invites.invite_token_status(token, role=role)
+    status, invite = lite_invites.invite_token_status(token, role=role, device_roles=roles_value)
+    if status == "role_set_mismatch" and invite:
+        lite_invites.append_bootstrap_blocked_evidence(
+            invite,
+            reason_code="invite_role_set_mismatch",
+            reason="Invite role set did not match the server-bound role assignment.",
+            requested_by="lite-bootstrap",
+        )
     if status not in {"valid", "used"} or not invite:
         raise HTTPException(status_code=403, detail=f"Invite token is invalid: {status}")
 
@@ -885,12 +929,20 @@ def lite_fleet_agent_bootstrap_blocked(payload: dict | None = None):
 def lite_fleet_agent_bootstrap_env(payload: dict | None = None, request: Request = None):
     """Consume a Lite invite only after the joining device passes local identity checks."""
     payload = payload or {}
-    role = str(payload.get("role") or "compute").strip() or "compute"
+    role = str(payload.get("role") or "").strip() or None
+    roles_value = payload.get("device_roles")
     token = str(payload.get("token") or "").strip()
     if not token:
         raise HTTPException(status_code=400, detail="Missing invite token")
 
-    status, invite = lite_invites.invite_token_status(token, role=role)
+    status, invite = lite_invites.invite_token_status(token, role=role, device_roles=roles_value)
+    if status == "role_set_mismatch" and invite:
+        lite_invites.append_bootstrap_blocked_evidence(
+            invite,
+            reason_code="invite_role_set_mismatch",
+            reason="Invite role set did not match the server-bound role assignment.",
+            requested_by="lite-bootstrap",
+        )
     if status == "expired":
         raise HTTPException(status_code=410, detail="Invite token has expired")
     if status == "used":
@@ -898,12 +950,17 @@ def lite_fleet_agent_bootstrap_env(payload: dict | None = None, request: Request
     if status != "valid":
         raise HTTPException(status_code=403, detail=f"Invite token is invalid: {status}")
 
-    consumed = lite_invites.consume_invite_token(token, role=role)
+    consumed = lite_invites.consume_invite_token(token, role=role, device_roles=roles_value)
     if consumed is None:
         raise HTTPException(status_code=410, detail="Invite token is no longer available")
 
     hostname = str(consumed.get("hostname") or consumed.get("node_id") or "pocket-lite-device")
-    role = str(consumed.get("role") or role)
+    device_roles = lite_invites.normalize_device_roles(
+        consumed.get("device_roles"),
+        role=str(consumed.get("role") or "") or None,
+    )
+    role = "compute" if "compute" in device_roles else device_roles[0]
+    role_generation = int(consumed.get("device_role_generation") or 1)
 
     cfg = fleet_registry.bootstrap_config(role=role, hostname=hostname)
     node_id = cfg["node_id"]
@@ -928,10 +985,12 @@ def lite_fleet_agent_bootstrap_env(payload: dict | None = None, request: Request
             "hostname": node_name,
             "name": node_name,
             "role": role,
+            "device_roles": device_roles,
+            "device_role_generation": role_generation,
             "status": "joining",
             "agent_status": "joining",
             "auth_token_hash": agent_token_hash,
-            "capabilities": consumed.get("capabilities") or ["pending-agent"],
+            "capabilities": [],
             "accepted_at": deps.now_utc_iso(),
         },
         event_type="fleet.agent_join_started",
@@ -941,7 +1000,9 @@ def lite_fleet_agent_bootstrap_env(payload: dict | None = None, request: Request
     secure_origin = str(lite_catalog.access_status(request).get("secure_origin") or "").rstrip("/")
     control_origin = secure_origin if secure_origin.startswith("https://") else request_base
     env_lines = [
+        f"export POCKETLAB_NODE_ROLES={json.dumps(','.join(device_roles))}",
         f"export POCKETLAB_NODE_ROLE={json.dumps(role)}",
+        f"export POCKETLAB_NODE_ROLE_GENERATION={json.dumps(str(role_generation))}",
         f"export POCKETLAB_NODE_ID={json.dumps(node_id)}",
         f"export POCKETLAB_NODE_NAME={json.dumps(node_name)}",
         f"export POCKETLAB_AGENT_TOKEN={json.dumps(agent_token)}",
@@ -958,7 +1019,8 @@ def lite_fleet_agent_bootstrap_env(payload: dict | None = None, request: Request
     openapi_extra={"x-pocketlab-side-effectful-read": True, "x-pocketlab-sensitive": True},
 )
 def lite_fleet_agent_bootstrap_script(
-    role: str = "compute",
+    roles: str = "",
+    role: str = "",
     token: str = "",
     request: Request = None,
 ):
@@ -968,12 +1030,27 @@ def lite_fleet_agent_bootstrap_script(
     This prevents an already-enrolled phone from accidentally overwriting its
     local agent identity with a different invite.
     """
-    role = (role or "compute").strip() or "compute"
+    role = (role or "").strip()
+    roles = (roles or "").strip()
     token = (token or "").strip()
     if not token:
         raise HTTPException(status_code=400, detail="Missing invite token")
 
-    status, invite = lite_invites.invite_token_status(token, role=role)
+    try:
+        requested_roles = lite_invites.normalize_device_roles(
+            roles if roles else None,
+            role=role or None,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail="Invite role set is invalid.") from exc
+    status, invite = lite_invites.invite_token_status(token, device_roles=requested_roles)
+    if status == "role_set_mismatch" and invite:
+        lite_invites.append_bootstrap_blocked_evidence(
+            invite,
+            reason_code="invite_role_set_mismatch",
+            reason="Invite role set did not match the server-bound role assignment.",
+            requested_by="lite-bootstrap",
+        )
     if status == "expired":
         raise HTTPException(status_code=410, detail="Invite token has expired")
     if status == "used":
@@ -982,14 +1059,19 @@ def lite_fleet_agent_bootstrap_script(
         raise HTTPException(status_code=403, detail=f"Invite token is invalid: {status}")
 
     hostname = str(invite.get("hostname") or invite.get("node_id") or "pocket-lite-device")
-    role = str(invite.get("role") or role)
+    device_roles = lite_invites.normalize_device_roles(
+        invite.get("device_roles"),
+        role=str(invite.get("role") or "") or None,
+    )
+    role = "compute" if "compute" in device_roles else device_roles[0]
+    role_generation = int(invite.get("device_role_generation") or 1)
     node_id = fleet_registry.normalize_node_id(hostname)
     node_name = hostname
 
     request_base = str(request.base_url).rstrip("/") if request is not None else ""
     accept_url = f"{request_base}/api/lite/fleet/agent/bootstrap.env"
     blocked_url = f"{request_base}/api/lite/fleet/agent/bootstrap-blocked"
-    accept_payload_arg = shlex.quote(json.dumps({"role": role, "token": token}))
+    accept_payload_arg = shlex.quote(json.dumps({"device_roles": device_roles, "role": role, "token": token}))
     preview_nats_url = _public_nats_url_for_invite(
         request,
         os.environ.get("POCKETLAB_NATS_URL", "nats://127.0.0.1:4222"),
@@ -1000,7 +1082,7 @@ set -Eeuo pipefail
 
 echo "== Pocket Lab Lite device bootstrap =="
 echo "Device name: {node_name}"
-echo "Device role: {role}"
+echo "Device roles: {", ".join(device_roles)}"
 echo "Node id: {node_id}"
 echo ""
 # The token-gated accept step returns: export POCKETLAB_NATS_URL={json.dumps(preview_nats_url)}
@@ -1009,6 +1091,8 @@ ENV_FILE="$HOME/.pocketlab-lite-agent.env"
 INTENDED_NODE_ID={shlex.quote(node_id)}
 INTENDED_NODE_NAME={shlex.quote(node_name)}
 INVITE_ROLE={shlex.quote(role)}
+INVITE_ROLES={shlex.quote(",".join(device_roles))}
+INVITE_ROLE_GENERATION={shlex.quote(str(role_generation))}
 INVITE_TOKEN={shlex.quote(token)}
 ACCEPT_URL={shlex.quote(accept_url)}
 BLOCKED_URL={shlex.quote(blocked_url)}
@@ -1021,6 +1105,7 @@ post_blocked_evidence() {{
   POCKETLAB_BLOCKED_URL="$BLOCKED_URL" \
   POCKETLAB_BLOCKED_TOKEN="$INVITE_TOKEN" \
   POCKETLAB_BLOCKED_ROLE="$INVITE_ROLE" \
+  POCKETLAB_BLOCKED_ROLES="$INVITE_ROLES" \
   POCKETLAB_EXISTING_NODE_ID="${{EXISTING_NODE_ID:-}}" \
   POCKETLAB_EXISTING_NODE_NAME="${{EXISTING_NODE_NAME:-}}" \
   POCKETLAB_INTENDED_NODE_ID="$INTENDED_NODE_ID" \
@@ -1031,7 +1116,8 @@ import os
 import urllib.request
 payload = {{
     "token": os.environ.get("POCKETLAB_BLOCKED_TOKEN", ""),
-    "role": os.environ.get("POCKETLAB_BLOCKED_ROLE", "compute"),
+    "role": os.environ.get("POCKETLAB_BLOCKED_ROLE", ""),
+    "device_roles": [item for item in os.environ.get("POCKETLAB_BLOCKED_ROLES", "").split(",") if item],
     "existing_node_id": os.environ.get("POCKETLAB_EXISTING_NODE_ID", ""),
     "existing_node_name": os.environ.get("POCKETLAB_EXISTING_NODE_NAME", ""),
     "intended_node_id": os.environ.get("POCKETLAB_INTENDED_NODE_ID", ""),
@@ -1163,7 +1249,7 @@ echo "Join accepted. This device should show as Joining, then Online after heart
     return Response(content=bash_script, media_type="text/x-shellscript; charset=utf-8")
 
 @router.get("/api/join.sh", include_in_schema=False)
-def join_script(role: str = "compute", token: str = "", request: Request = None):
+def join_script(roles: str = "", role: str = "", token: str = "", request: Request = None):
     """Backward-compatible alias for the guarded Lite bootstrap script.
 
     The legacy route no longer consumes an invite before device-local identity
@@ -1175,17 +1261,25 @@ def join_script(role: str = "compute", token: str = "", request: Request = None)
     if not deps.settings().enable_join_script:
         raise HTTPException(status_code=403, detail="Join script generation is disabled")
 
-    role = (role or "compute").strip() or "compute"
+    role = (role or "").strip()
+    roles = (roles or "").strip()
     token = (token or "").strip()
     if not token:
         raise HTTPException(status_code=400, detail="Missing token")
 
-    status, invite = lite_invites.invite_token_status(token, role=role)
+    try:
+        requested_roles = lite_invites.normalize_device_roles(
+            roles if roles else None,
+            role=role or None,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail="Invite role set is invalid.") from exc
+    status, invite = lite_invites.invite_token_status(token, device_roles=requested_roles)
     if _is_browser_join_request(request):
         return _join_invite_html(
             status=status,
             invite=invite,
-            role=role,
+            role="compute" if "compute" in requested_roles else requested_roles[0],
             token=token,
             request=request,
         )
@@ -1197,4 +1291,9 @@ def join_script(role: str = "compute", token: str = "", request: Request = None)
     if status != "valid" or not invite:
         raise HTTPException(status_code=403, detail=f"Invite token is invalid: {status}")
 
-    return lite_fleet_agent_bootstrap_script(role=role, token=token, request=request)
+    return lite_fleet_agent_bootstrap_script(
+        roles=",".join(requested_roles),
+        role="compute" if "compute" in requested_roles else requested_roles[0],
+        token=token,
+        request=request,
+    )

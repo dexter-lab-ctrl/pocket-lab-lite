@@ -17,10 +17,13 @@ interface.
 | `lite:harness:bootstrap` | `harness.py bootstrap --principal-id --key-file` | approved client; key-bound qualification grant | consumes one grant and creates session authority |
 | `lite:harness:principal:create` | `harness.py principal-create ...` | manual operator provisioning | registers public principal; legacy compatibility path |
 | `lite:harness:session:start` | `harness.py session-start ...` | approved client with registered principal/key | creates a short-lived signed session |
+| `lite:harness:recovery:authorize` | `harness.py recovery-authorize ...` | recovery-qualifier session bound to target main SHA/schema | issues one private-file recovery receipt; token is not printed |
 | `lite:qualification:start` | `start-qualification.sh` | operator-controlled qualification | legacy token-based startup; keep separate from normal startup |
 | `lite:qualification:start:key-bound` | bounded `task_runtime.py` → `start-qualification.sh --bootstrap-*` | Server Phone operator + approved public key | scrubs DEV state then enables key-bound qualification, non-destructive |
 | `lite:qualification:start:key-bound:ui-performance` | bounded `task_runtime.py` → `start-qualification.sh --bootstrap-* --bootstrap-profile qualification-owner` | Server Phone operator + explicit qualification-owner gate | enables the synthetic qualification-owner UI-performance profile; destructive authority remains off |
 | `lite:qualification:start:key-bound:faults` | bounded task runtime plus fixed fault-control enablement | explicit Server Phone qualification only | scrubs DEV state then enables registered non-destructive fault controls |
+| `lite:qualification:start:key-bound:fleet-role` | bounded `task_runtime.py` → `start-qualification.sh --bootstrap-profile fleet-role-qualifier --target-device-id` | Server Phone operator + approved public key + one exact Secondary ID | enables one target-bound fleet role-change profile; Server Host and other devices remain denied |
+| `lite:qualification:start:key-bound:recovery` | bounded `task_runtime.py` → `start-qualification.sh --bootstrap-profile recovery-qualifier --recovery-target-main-sha --recovery-target-schema` | Server Phone operator + approved public key + exact target main/schema | enables recovery qualification bound to one target runtime contract |
 
 The private key is never a Taskfile value printed into output. The key-bound
 launcher accepts only the public-key file for operator approval. On a Server
@@ -83,6 +86,12 @@ normalized/sanitized report API only; it does not parse raw scanner output.
 `lite:check` is the broader Lite validation gate and may be used at final
 exact-head qualification. It does not replace the authenticated runtime
 assurance suites.
+
+## Recovery handoff
+
+| Task | Wrapper | Environment / authority | Side effect |
+| --- | --- | --- | --- |
+| `lite:recovery:database:offline-promote` | `recover-main-database.py` | stopped Server Phone runtime; one consumed recovery receipt | stages only target-main migrations, preserves rollback/journal evidence, and atomically promotes one verified compatible backup |
 
 ## Return semantics
 

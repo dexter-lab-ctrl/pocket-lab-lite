@@ -174,7 +174,8 @@ principal and current environment.
 | `debug-observer` | `debug` | qualification-only | `status.read`, `fleet.read`, `recovery.read`, `security.read`, `identity.read_sanitized`, `rules.read`, `diagnostics.read`, `projection.read`, `evidence.read_sanitized` |
 | `test-runner` | `test` | qualification-only | `diagnostics.read`, `test.safe`, `projection.refresh`, `health.probe` |
 | `security-qualifier` | `qualification` | qualification-only | `security.read`, `security.scan.quick`, `security.scan.full`, `security.scan.app`, `security.evidence.read` |
-| `recovery-qualifier` | `qualification` | qualification-only | `recovery.read`, `backup.create`, `backup.verify`, `restore.preview` |
+| `recovery-qualifier` | `qualification` | qualification-only and target-main/schema-bound | `recovery.read`, `backup.create`, `backup.verify`, `restore.preview`, `recovery.authorize` |
+| `fleet-role-qualifier` | `qualification` | qualification-only and one exact Secondary target | `fleet.read`, `device.capabilities.read`, `device.roles.change` |
 | `release-qualifier` | `qualification` | qualification-only | `release.read`, `health.probe`, `diagnostics.read`, `evidence.read_sanitized` |
 | `maintenance-runner` | `maintenance` | `DEFERRED` | `status.read`, `diagnostics.read`, `agent.restart`, `projection.refresh`, `backup.verify`, `health.probe` |
 | `qualification-owner` | `qualification` | qualification-only and separately gated | `qualification.read`, `status.read`, `fleet.read`, `recovery.read`, `security.read`, `diagnostics.read`, `evidence.read_sanitized`, `health.probe`, `backup.create`, `backup.verify`, `backup.location.manage`, `restore.preview`, `restore.apply`, `device.remove`, `catalog.install`, `identity.passkey.revoke`, `rules.read`, `rules.simulate`, `rules.draft`, `rules.activate`, `rules.rollback` |
@@ -431,11 +432,19 @@ not bypass those controls.
 Use `recovery-qualifier` for Recovery reads, backup creation/verification, and
 restore preview. A real restore requires the existing selected-backup,
 manifest, confirmation, checkpoint, revision, protected-target, and worker
-guards. The profile does not include `restore.apply` or device removal.
+guards. The profile does not include `restore.apply` or device removal. The
+`recovery.authorize` capability can issue only one short-lived receipt for the
+exact verified backup, ready preview, target main SHA, and target schema; the
+offline promotion helper consumes it once and never edits migration rows.
 
 The existing [Server Phone Recovery qualification record](../recovery/server-phone-backup-restore-live-qualification.md)
 remains the source for its historical live evidence. A local harness test or a
 mocked browser test is not a live Server Phone result.
+
+Use `fleet-role-qualifier` only for a live role-change qualification against
+one exact Secondary device ID. Its challenge, session, OPA input, action, and
+audit evidence carry that immutable target binding. Server Host and every other
+device are denied, and the profile cannot issue recovery receipts.
 
 ## Destructive qualification
 
@@ -458,17 +467,17 @@ without explicit authorization for that exact action and target.
 
 ## Target scoping
 
-The only implemented target scope is:
+The normal harness target scope is:
 
 ```text
 local_server_host_only
 ```
 
 It is included in the challenge, session, capability check, OPA input, and
-audit record. A device target is accepted only for the fixed server-host
-identifiers already recognized by the backend. Arbitrary secondary device IDs
-cannot broaden authority. A future secondary-device qualification requires a
-new profile and target contract; it is not implied by this harness.
+audit record. A device target is accepted only by `fleet-role-qualifier`, which
+requires one exact target ID supplied at key-bound startup. Arbitrary secondary
+device IDs cannot broaden authority; Server Host is explicitly rejected for
+fleet role actions. Other profiles remain local-server-only.
 
 ## Session expiry
 
@@ -585,11 +594,15 @@ headers are rejected at FastAPI and stripped at Caddy.
 | `... session-start ...` | Obtain challenge, sign locally, and create session |
 | `... session-status --session-id <id>` | Read session status |
 | `... session-stop --session-id <id>` | Revoke session |
+| `... recovery-authorize --backup-id <id> --preview-id <id> --target-schema <schema> --receipt-file <private-path>` | Issue one-use offline recovery receipt; writes the opaque token only to the private file |
 
 Equivalent Taskfile entries are `lite:harness:profiles`,
 `lite:harness:status`, `lite:harness:verify-off`,
 `lite:harness:principal:create`, `lite:harness:session:start`, and
-`lite:qualification:start`.
+`lite:harness:recovery:authorize`. Qualification and offline recovery use
+`lite:qualification:start:key-bound:fleet-role`,
+`lite:qualification:start:key-bound:recovery`, and
+`lite:recovery:database:offline-promote` with their required exact bindings.
 
 ## Environment variables
 

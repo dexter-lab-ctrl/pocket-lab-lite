@@ -72,6 +72,8 @@ Execution ownership: use the component/API ownership links above; no additional 
 - `table:device_lifecycle_transactions`
 - `table:device_recovery_history`
 - `table:device_removal_receipts`
+- `table:device_role_assignments`
+- `table:device_role_change_operations`
 - `table:device_supervisor_state`
 - `table:device_system_profiles`
 

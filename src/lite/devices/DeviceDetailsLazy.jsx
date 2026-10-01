@@ -7,6 +7,7 @@ import {
 import React from 'react';
 import { AlertTriangle, Clock3, HeartPulse, Smartphone, X } from 'lucide-react';
 import { formatLiteTime, liteApi } from '../../lib/liteApi.js';
+import { liteEnterpriseApi } from '../../lib/liteEnterpriseApi.js';
 import { liteQueryKeys, liteQueryPaths } from '../../lib/liteQueryClient.js';
 import { useLiteQuery } from '../../hooks/useLiteQuery.js';
 import { useLiteDeviceHealthReviewFlow } from '../../hooks/useLiteDeviceHealthReviewFlow.js';
@@ -31,6 +32,8 @@ import {
   deviceStatusLabel,
   normalizeBackendState,
   roleLabel,
+  deviceRoleSummary,
+  DEVICE_ROLE_OPTIONS,
 } from '../LiteUi.jsx';
 
 const DEVICE_DETAILS_USES_PROGRESSIVE_FOUNDATION = true;
@@ -90,6 +93,7 @@ export function capabilityStatusLabel(value, reasonCode = '') {
   if (status === 'unsupported') return 'Unsupported';
   if (status === 'stale') return 'Stale';
   if (status === 'blocked') return 'Blocked';
+  if (status === 'blocked_by_role') return 'Blocked by role';
   if (status === 'not_applicable') return 'Not applicable';
   if (status === 'advertised') return 'Advertised';
   if (
@@ -425,7 +429,7 @@ function technicalRows(device) {
   const supervisorSoftware = facts.software?.supervisor || {};
   return [
     { label: 'Device id', value: device?.id },
-    { label: 'Role', value: device?.role_label || roleLabel(device?.role) },
+    { label: 'Roles', value: deviceRoleSummary(device) },
     { label: 'Status', value: deviceStatusLabel(effectiveDeviceStatus(device)) },
     { label: 'Connection', value: deviceConnectionLabel(device) },
     {
@@ -497,6 +501,114 @@ function trustSummary(device) {
     { label: 'Invite accepted', value: formatLiteTime(enrollment.invite_accepted_at) },
     { label: 'Blocked joins', value: String(identity.blocked_join_count || 0) },
   ];
+}
+
+function DeviceRoleManager({ device, onChanged }) {
+  const initialRoles = React.useMemo(() => {
+    const preferred = Array.isArray(device?.desired_device_roles) && device.desired_device_roles.length
+      ? device.desired_device_roles
+      : Array.isArray(device?.device_role_ids) && device.device_role_ids.length
+        ? device.device_role_ids
+        : device?.role && device.role !== 'server_host' ? [device.role] : [];
+    return preferred.filter((role) => ['compute', 'storage'].includes(role)).slice(0, 2);
+  }, [device?.desired_device_roles, device?.device_role_ids, device?.role]);
+  const [draftRoles, setDraftRoles] = React.useState(initialRoles);
+  const [confirming, setConfirming] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+  const [result, setResult] = React.useState(null);
+  const [access, setAccess] = React.useState(null);
+
+  React.useEffect(() => {
+    setDraftRoles(initialRoles);
+    setConfirming(false);
+  }, [initialRoles.join(',')]);
+  React.useEffect(() => {
+    let active = true;
+    liteEnterpriseApi.access().then((payload) => { if (active) setAccess(payload); }).catch(() => { if (active) setAccess(null); });
+    return () => { active = false; };
+  }, []);
+
+  const currentHumanRole = access?.current_membership?.role || access?.current_role || access?.role?.id || '';
+  const storagePresenceChanges = initialRoles.includes('storage') !== draftRoles.includes('storage');
+  const matrixAction = storagePresenceChanges ? 'device.roles.assign.storage' : 'device.roles.assign.compute';
+  const matrixRow = (access?.action_matrix || []).find((row) => row.action_id === matrixAction);
+  const authorityMode = currentHumanRole && matrixRow?.roles ? matrixRow.roles[currentHumanRole] : '';
+  const authorityLabel = authorityMode === 'approval'
+    ? 'Review required'
+    : authorityMode === 'deny'
+      ? 'Not allowed'
+      : authorityMode === 'step_up'
+        ? 'Passkey confirmation'
+        : authorityMode === 'allow'
+          ? 'Direct'
+          : 'Server will check';
+  const changed = initialRoles.join(',') !== draftRoles.join(',');
+
+  function toggleRole(role) {
+    const checked = draftRoles.includes(role);
+    const next = checked
+      ? draftRoles.filter((item) => item !== role)
+      : [...draftRoles, role].sort((left, right) => (left === 'compute' ? -1 : right === 'compute' ? 1 : left.localeCompare(right)));
+    if (!next.length) return;
+    setDraftRoles(next);
+    setConfirming(false);
+    setResult(null);
+  }
+
+  async function applyRoles() {
+    if (!changed || authorityMode === 'deny') return;
+    if (!confirming) {
+      setConfirming(true);
+      return;
+    }
+    setBusy(true);
+    setResult(null);
+    try {
+      const payload = await liteApi.changeDeviceRoles(device?.id || device?.node_id, {
+        device_roles: draftRoles,
+        confirm: true,
+        expected_generation: Number(device?.device_role_generation || 0),
+      });
+      setResult({ tone: 'ready', message: payload?.summary || 'Role change sent for verification.' });
+      setConfirming(false);
+      onChanged?.();
+    } catch (error) {
+      const detail = error?.payload?.detail || {};
+      setResult({
+        tone: detail?.reason_code === 'device_role_change_requires_approval' || detail?.reason_code === 'approval_required' ? 'review' : 'critical',
+        message: detail?.message || detail?.summary || error?.message || 'Pocket Lab could not change these roles.',
+      });
+      setConfirming(false);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="lite-device-awareness-section" aria-label="Device roles">
+      <span>Responsibilities</span>
+      <strong>{deviceRoleSummary(device)}</strong>
+      <p>Roles authorize what this device may do. Capabilities below still have to be reported, verified, fresh, and allowed by current Safety Rules.</p>
+      <div className="lite-role-selector" role="group" aria-label="Change device roles">
+        {DEVICE_ROLE_OPTIONS.map((role) => {
+          const checked = draftRoles.includes(role.value);
+          return (
+            <label key={role.value} className={`lite-role-card ${checked ? 'lite-role-card-selected' : ''}`}>
+              <input type="checkbox" checked={checked} onChange={() => toggleRole(role.value)} disabled={busy} />
+              <span><strong>{role.label}</strong><span>{role.description}</span></span>
+            </label>
+          );
+        })}
+      </div>
+      <p role="note"><strong>Access check: {authorityLabel}.</strong> Pocket Lab re-checks this on the server before applying any role change.</p>
+      <p role="note">Photo Backup source is a separate device capability. Sending photos to Pocket Lab does not make this device a Storage node.</p>
+      {confirming ? <p role="alert">Confirm the exact role set: {draftRoles.map((role) => roleLabel(role)).join(' + ')}. Storage changes may affect backups or recovery and will be blocked if dependencies are still in use.</p> : null}
+      {result ? <p className={`is-${result.tone}`} role="status">{result.message}</p> : null}
+      <LiteButton tone={confirming ? 'primary' : 'secondary'} onClick={applyRoles} disabled={!changed || busy || authorityMode === 'deny'}>
+        {busy ? 'Applying…' : confirming ? 'Confirm role change' : authorityMode === 'approval' ? 'Request role change' : 'Change roles'}
+      </LiteButton>
+    </section>
+  );
 }
 
 function LiteDeferredDetails({ render, delayFrames = 1 }) {
@@ -585,6 +697,13 @@ function DeviceAwarenessDetails({ device }) {
           {trustSummary(device).map((item) => <div key={item.label}><dt>{item.label}</dt><dd>{item.value || 'Not reported'}</dd></div>)}
         </dl>
         {device?.identity?.repair_required ? <p className="is-review">Repair or rejoin must be started explicitly.</p> : null}
+      </section>,
+
+      <section key="role-boundary" className="lite-device-awareness-section" aria-label="Device role boundary">
+        <span>Assigned roles</span>
+        <strong>{deviceRoleSummary(device)}</strong>
+        <p>Assigned roles are server-owned responsibilities. A reported capability is effective only when the assigned role authorizes it and Pocket Lab verifies fresh runtime evidence.</p>
+        <p>Photo Backup source remains independent from the Storage role.</p>
       </section>,
 
       <section key="capabilities" className="lite-device-awareness-section" aria-label="Device capabilities">
@@ -814,7 +933,12 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
         ) : null}
       </section>
 
-      {!isProtectedServer ? <DevicePhotoBackup deviceId={initialDeviceId} /> : null}
+      {!isProtectedServer ? (
+        <>
+          <DeviceRoleManager device={device} onChanged={() => detailsQuery.refetch?.()} />
+          <DevicePhotoBackup deviceId={initialDeviceId} />
+        </>
+      ) : null}
 
       <LiteDeferredDetails delayFrames={DEVICE_DETAILS_NONCRITICAL_DELAY_FRAMES} render={() => {
         const healthResources = proactiveHealth ? healthResourceRows(proactiveHealth, device) : [];
