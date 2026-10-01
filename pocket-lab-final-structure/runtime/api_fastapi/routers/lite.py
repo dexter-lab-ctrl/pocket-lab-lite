@@ -18,7 +18,7 @@ from .. import deps
 from ..db.connection import database_path
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_backup_locations, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_photo_backup, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_core_projections, lite_phase3b_projections, lite_phase3c_projections, lite_identity_auth, lite_policy_opa, lite_policy_approvals
+from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_backup_locations, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_photo_backup, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_core_projections, lite_phase3b_projections, lite_phase3c_projections, lite_identity_auth, lite_policy_opa, lite_policy_approvals, lite_device_roles
 from ..services.lite_control_plane_store import (
     CONTROL_PLANE,
     DeviceAwarenessError,
@@ -1007,11 +1007,28 @@ class LiteAppActionRequest(BaseModel):
 
 
 class LiteAddDeviceRequest(BaseModel):
-    role: Literal["compute", "storage"] = Field(
-        default="compute",
-        description="Lite device role: compute for App Host or storage for Storage Node",
+    device_roles: list[Literal["compute", "storage"]] | None = Field(
+        default=None,
+        min_length=1,
+        max_length=2,
+        description="Canonical joinable device roles. One or both of compute/storage may be selected.",
+    )
+    role: Literal["compute", "storage"] | None = Field(
+        default=None,
+        description="Legacy single-role compatibility input. New clients should send device_roles.",
     )
     hostname: str | None = None
+
+
+class LiteDeviceRoleChangeRequest(BaseModel):
+    device_roles: list[Literal["compute", "storage"]] = Field(
+        min_length=1,
+        max_length=2,
+        description="Exact desired device role set.",
+    )
+    confirm: bool = False
+    expected_generation: int | None = Field(default=None, ge=0)
+    reason: str | None = Field(default=None, max_length=220)
 
 
 class LiteDeviceDisplayModelRequest(BaseModel):
@@ -1166,11 +1183,30 @@ def _duplicate_device_detail(conflict: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _requested_device_roles(payload: LiteAddDeviceRequest | LiteDeviceRoleChangeRequest) -> list[str]:
+    try:
+        if isinstance(payload, LiteAddDeviceRequest):
+            return lite_device_roles.normalize_device_roles(
+                payload.device_roles,
+                joinable_only=True,
+            ) if payload.device_roles is not None else lite_device_roles.normalize_device_roles(
+                [payload.role] if payload.role else None,
+                joinable_only=True,
+            )
+        return lite_device_roles.normalize_device_roles(payload.device_roles, joinable_only=True)
+    except lite_device_roles.DeviceRoleError as exc:
+        raise HTTPException(
+            status_code=exc.status_code,
+            detail={"status": "blocked", "reason_code": exc.reason_code, "message": exc.message},
+        ) from exc
+
+
 def _candidate_device_name(payload: LiteAddDeviceRequest) -> str:
     if (payload.hostname or "").strip():
         return str(payload.hostname).strip()
-    role_info = lite_invites.role_metadata(payload.role)
-    return f"Pocket Lab {role_info['role_label']}"
+    roles = _requested_device_roles(payload)
+    labels = [lite_device_roles.ROLE_LABELS.get(role, role.title()) for role in roles]
+    return f"Pocket Lab {' + '.join(labels)}"
 
 
 def _phase3b_prepared_read(request: Request, projection_domain: str, *, view_model: str) -> Response:
@@ -3208,38 +3244,359 @@ def revoke_lite_fleet_invite(
 
 @router.post("/fleet/add-device", status_code=202)
 async def add_lite_device(payload: LiteAddDeviceRequest, request: Request) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
-    try:
-        device_name = _candidate_device_name(payload)
-        device_conflict = fleet_registry.find_device_identity_conflict(device_name)
-        invite_conflict = lite_invites.find_invite_identity_conflict(device_name)
-        conflict = device_conflict or invite_conflict
-        if conflict:
-            source = str(conflict.get("source") or "device_record") if isinstance(conflict, dict) else "device_record"
-            protected = bool(isinstance(conflict, dict) and (conflict.get("protected_server_host") or conflict.get("role") == "server_host"))
-            conflict_device_id = str(
-                conflict.get("device_id") or conflict.get("node_id") or conflict.get("id") or device_name
-            )
-            fleet_registry.append_device_lifecycle_event(
-                conflict_device_id,
-                "protected_host_blocked" if protected else "duplicate_name_blocked",
-                reason_code="protected_server_host" if protected else "device_name_in_use",
-                summary="Protected server host name cannot be reused." if protected else "Device name is already in use.",
-                status="blocked",
-            )
-            raise HTTPException(status_code=409, detail=_duplicate_device_detail({**conflict, "conflict_source": source}))
+    auth_context = deps.require_auth(request, write=True)
+    device_roles = _requested_device_roles(payload)
+    device_name = _candidate_device_name(payload)
+    node_id = fleet_registry.normalize_node_id(device_name)
+    authorization = auth_context.get("authorization") if isinstance(auth_context.get("authorization"), dict) else {}
+    authorization_version = max(1, int(authorization.get("authorization_version") or 1))
+    request_fingerprint = lite_device_roles.request_fingerprint(
+        action_id="device.invite",
+        device_id=node_id,
+        requested_roles=device_roles,
+        authorization_version=authorization_version,
+        generation=0,
+    )
 
+    device_conflict = fleet_registry.find_device_identity_conflict(device_name)
+    invite_conflict = lite_invites.find_invite_identity_conflict(device_name)
+    conflict = device_conflict or invite_conflict
+    if conflict:
+        source = str(conflict.get("source") or "device_record") if isinstance(conflict, dict) else "device_record"
+        protected = bool(
+            isinstance(conflict, dict)
+            and (conflict.get("protected_server_host") or conflict.get("role") == "server_host")
+        )
+        conflict_device_id = str(
+            conflict.get("device_id") or conflict.get("node_id") or conflict.get("id") or device_name
+        )
+        fleet_registry.append_device_lifecycle_event(
+            conflict_device_id,
+            "protected_host_blocked" if protected else "duplicate_name_blocked",
+            reason_code="protected_server_host" if protected else "device_name_in_use",
+            summary="Protected server host name cannot be reused." if protected else "Device name is already in use.",
+            status="blocked",
+        )
+        raise HTTPException(status_code=409, detail=_duplicate_device_detail({**conflict, "conflict_source": source}))
+
+    policy_decision = await _enforce_lite_policy(
+        auth_context=auth_context,
+        action_id="device.invite",
+        target_type="device",
+        target_id=node_id,
+        target_revision=request_fingerprint,
+        target={
+            "requested_device_roles": device_roles,
+            "current_device_roles": [],
+            "storage_role_change": "storage" in device_roles,
+            "protected_server_host": False,
+            "request_fingerprint": request_fingerprint,
+        },
+        correlation_id=request_fingerprint,
+    )
+    continuation_id = str(policy_decision.get("continuation_approval_id") or "")
+    if continuation_id:
+        try:
+            await asyncio.to_thread(
+                lite_policy_approvals.consume_matching,
+                auth_context=auth_context,
+                approval_id=continuation_id,
+                action_id="device.invite",
+                target_type="device",
+                target_id=node_id,
+                target_revision=request_fingerprint,
+                policy_revision=str(policy_decision.get("policy_revision") or ""),
+                request_fingerprint=request_fingerprint,
+            )
+        except lite_policy_approvals.ApprovalError as exc:
+            raise HTTPException(
+                status_code=exc.status_code,
+                headers={"Cache-Control": "no-store"},
+                detail={"status": "blocked", "accepted": False, "reason_code": exc.reason_code, "message": exc.message},
+            ) from exc
+
+    try:
         result = lite_invites.create_lite_invite(
+            device_roles=device_roles,
             role=payload.role,
             hostname=payload.hostname,
             request=request,
+            authorization={**auth_context, "policy_revision": str(policy_decision.get("policy_revision") or "")},
         )
-    except ValueError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except (ValueError, lite_device_roles.DeviceRoleError) as exc:
+        reason_code = getattr(exc, "reason_code", "device_role_invalid")
+        message = getattr(exc, "message", str(exc))
+        raise HTTPException(
+            status_code=getattr(exc, "status_code", 422),
+            detail={"status": "blocked", "reason_code": reason_code, "message": message},
+        ) from exc
 
     await lite_invites.publish_invite_evidence(result)
     CONTROL_PLANE.invalidate_domain("fleet")
     return {key: value for key, value in result.items() if key != "event"}
+
+
+@router.get("/fleet/devices/{device_id}/roles")
+def get_lite_device_roles(device_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    if not _ensure_fleet_awareness_projection():
+        raise HTTPException(status_code=503, detail="Device role state is still being prepared.")
+    try:
+        details = CONTROL_PLANE.device_details(device_id)
+    except DeviceAwarenessError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+    device = details.get("device") if isinstance(details.get("device"), dict) else {}
+    protected = bool(
+        device.get("protected_server_host")
+        or device.get("is_current")
+        or str(device.get("role") or "") == "server_host"
+    )
+    state = lite_device_roles.assignment_state(
+        device_id,
+        legacy_role=device.get("role"),
+        protected_server_host=protected,
+    )
+    enriched = lite_device_roles.enrich_device_projection({**device, "id": device_id})
+    return {
+        "status": state.get("status") or "unknown",
+        "node_id": device_id,
+        "device_roles": enriched.get("device_roles") or [],
+        "desired_device_roles": state.get("desired_device_roles") or [],
+        "active_device_roles": state.get("active_device_roles") or [],
+        "generation": int(state.get("generation") or 0),
+        "capability_states": enriched.get("capability_states") or [],
+        "protected_server_host": protected,
+        "reason_code": state.get("reason_code") or "",
+        "updated_at": deps.now_utc_iso(),
+    }
+
+
+@router.put("/fleet/devices/{device_id}/roles", status_code=202)
+async def change_lite_device_roles(
+    device_id: str,
+    payload: LiteDeviceRoleChangeRequest,
+    request: Request,
+) -> dict[str, Any]:
+    auth_context = deps.require_auth(request, write=True)
+    if not payload.confirm:
+        raise HTTPException(
+            status_code=400,
+            detail={"status": "blocked", "reason_code": "confirmation_required", "message": "Confirm the device role change before applying it."},
+        )
+    requested_roles = _requested_device_roles(payload)
+    if not _ensure_fleet_awareness_projection():
+        raise HTTPException(status_code=503, detail="Device role state is still being prepared.")
+    try:
+        details = CONTROL_PLANE.device_details(device_id)
+    except DeviceAwarenessError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+    device = details.get("device") if isinstance(details.get("device"), dict) else {}
+    protected = bool(
+        device.get("protected_server_host")
+        or device.get("is_current")
+        or str(device.get("role") or "") in {"server_host", "server", "control_plane", "control_plane_host"}
+    )
+    if protected:
+        raise HTTPException(
+            status_code=409,
+            detail={"status": "blocked", "reason_code": "device_role_not_joinable", "message": "Server Host is protected and its role cannot be changed here."},
+        )
+    identity_status = str(device.get("identity_status") or "").lower()
+    if identity_status in {"mismatch", "conflict", "blocked", "rejected"}:
+        fleet_registry.append_device_lifecycle_event(
+            device_id,
+            "device_role_change_blocked",
+            reason_code="device_role_change_identity_mismatch",
+            summary="Device role change was blocked because trusted identity did not match.",
+            status="blocked",
+        )
+        raise HTTPException(
+            status_code=409,
+            detail={"status": "blocked", "reason_code": "device_role_change_identity_mismatch", "message": "Device identity must match before roles can change."},
+        )
+    connection = str(device.get("connection") or device.get("connection_state") or device.get("status") or "").lower()
+    if connection not in {"online", "active", "healthy", "ready"}:
+        raise HTTPException(
+            status_code=409,
+            detail={"status": "blocked", "reason_code": "device_role_change_device_offline", "message": "Bring this device online before changing its roles."},
+        )
+
+    state = lite_device_roles.assignment_state(device_id, legacy_role=device.get("role"))
+    current_roles = list(state.get("desired_device_roles") or [])
+    generation = int(state.get("generation") or 0)
+    if payload.expected_generation is not None and int(payload.expected_generation) != generation:
+        raise HTTPException(
+            status_code=409,
+            detail={"status": "blocked", "reason_code": "device_role_change_failed", "message": "Device roles changed. Refresh and review them again.", "current_generation": generation},
+        )
+    dependency = lite_device_roles.role_change_dependency_assessment(device, current_roles, requested_roles)
+    if not dependency.get("safe"):
+        fleet_registry.append_device_lifecycle_event(
+            device_id,
+            "device_role_change_blocked",
+            reason_code="device_role_change_blocked_by_dependency",
+            summary="Storage role is still required by active backup or recovery responsibilities.",
+            status="blocked",
+            current_state=device,
+        )
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "blocked",
+                "reason_code": "device_role_change_blocked_by_dependency",
+                "message": "Move or stop the listed storage responsibilities before removing Storage.",
+                "blockers": dependency.get("blockers") or [],
+            },
+        )
+
+    authorization = auth_context.get("authorization") if isinstance(auth_context.get("authorization"), dict) else {}
+    authorization_version = max(1, int(authorization.get("authorization_version") or 1))
+    request_fingerprint = lite_device_roles.request_fingerprint(
+        action_id="device.roles.change",
+        device_id=device_id,
+        requested_roles=requested_roles,
+        authorization_version=authorization_version,
+        generation=generation,
+    )
+    storage_role_change = ("storage" in current_roles) != ("storage" in requested_roles)
+    policy_decision = await _enforce_lite_policy(
+        auth_context=auth_context,
+        action_id="device.roles.change",
+        target_type="device",
+        target_id=device_id,
+        target_revision=request_fingerprint,
+        target={
+            "requested_device_roles": requested_roles,
+            "current_device_roles": current_roles,
+            "storage_role_change": storage_role_change,
+            "protected_server_host": False,
+            "request_fingerprint": request_fingerprint,
+            "current_generation": generation,
+        },
+        correlation_id=request_fingerprint,
+    )
+    continuation_id = str(policy_decision.get("continuation_approval_id") or "")
+    if continuation_id:
+        try:
+            await asyncio.to_thread(
+                lite_policy_approvals.consume_matching,
+                auth_context=auth_context,
+                approval_id=continuation_id,
+                action_id="device.roles.change",
+                target_type="device",
+                target_id=device_id,
+                target_revision=request_fingerprint,
+                policy_revision=str(policy_decision.get("policy_revision") or ""),
+                request_fingerprint=request_fingerprint,
+            )
+        except lite_policy_approvals.ApprovalError as exc:
+            raise HTTPException(
+                status_code=exc.status_code,
+                headers={"Cache-Control": "no-store"},
+                detail={"status": "blocked", "accepted": False, "reason_code": exc.reason_code, "message": exc.message},
+            ) from exc
+
+    actor = auth_context.get("actor") if isinstance(auth_context.get("actor"), dict) else {}
+    assignment = lite_device_roles.record_desired_roles(
+        device_id,
+        requested_roles,
+        status="accepted",
+        action_id="device.roles.change",
+        actor_human_id=str(actor.get("identity_id") or ""),
+        actor_role=str(authorization.get("role") or ""),
+        authorization_version=authorization_version,
+        policy_revision=str(policy_decision.get("policy_revision") or ""),
+        correlation_id=request_fingerprint,
+        expected_generation=generation,
+        reason_code="device_role_change_pending_verification",
+    )
+    command_payload = {
+        "node_id": fleet_registry.normalize_node_id(device_id),
+        "device_roles": requested_roles,
+        "generation": int(assignment["generation"]),
+    }
+    command = fleet_registry.create_node_command(
+        device_id,
+        "device.roles.apply",
+        command_payload,
+        requested_by="governed-role-change",
+    )
+    subject = f"pocketlab.commands.node.{fleet_registry.normalize_node_id(device_id)}.device.roles.apply"
+    try:
+        from ..services.nats_bus import BUS
+
+        await BUS.publish_json(
+            subject,
+            "fleet.node_command_requested",
+            {**command, "command_subject": subject},
+            trace_id=command["command_id"],
+        )
+        await BUS.publish_json(
+            "pocketlab.events.fleet.device_role_change_requested",
+            "fleet.device_role_change_requested",
+            {
+                "node_id": fleet_registry.normalize_node_id(device_id),
+                "command_id": command["command_id"],
+                "device_roles": requested_roles,
+                "generation": assignment["generation"],
+                "status": "applying",
+                "sanitized": True,
+            },
+            trace_id=command["command_id"],
+        )
+    except Exception as exc:
+        lite_device_roles.mark_change_status(
+            device_id,
+            int(assignment["generation"]),
+            "failed",
+            "device_role_change_failed",
+            "Role assignment was saved but could not be delivered to the device.",
+        )
+        fleet_registry.append_device_lifecycle_event(
+            device_id,
+            "device_role_change_failed",
+            reason_code="device_role_change_failed",
+            summary="Role assignment was saved but command delivery failed.",
+            status="failed",
+            command_id=command["command_id"],
+            generation_key=str(assignment["generation"]),
+            current_state=device,
+        )
+        raise HTTPException(
+            status_code=503,
+            detail={"status": "failed", "reason_code": "device_role_change_failed", "message": "Pocket Lab could not deliver the role change. No capability is shown as active until verification succeeds."},
+        ) from exc
+
+    lite_device_roles.mark_change_status(
+        device_id,
+        int(assignment["generation"]),
+        "applying",
+        "device_role_change_pending_verification",
+        "Role change was delivered. Pocket Lab is waiting for fresh device verification.",
+    )
+    fleet_registry.append_device_lifecycle_event(
+        device_id,
+        "device_role_change_requested",
+        reason_code="device_role_change_pending_verification",
+        summary="Governed device role change requested and sent for runtime verification.",
+        status="applying",
+        command_id=command["command_id"],
+        dedupe_key=f"{device_id}:device_role_change:{assignment['generation']}",
+        generation_key=str(assignment["generation"]),
+        current_state=device,
+    )
+    CONTROL_PLANE.invalidate_domain("fleet")
+    return {
+        "accepted": True,
+        "status": "applying",
+        "node_id": device_id,
+        "device_roles": requested_roles,
+        "previous_device_roles": current_roles,
+        "generation": int(assignment["generation"]),
+        "command_id": command["command_id"],
+        "reason_code": "device_role_change_pending_verification",
+        "summary": "Role change sent. Pocket Lab will show it as active only after fresh device verification.",
+    }
 
 
 @router.post("/fleet/remove-device")
@@ -3304,7 +3661,9 @@ async def remove_lite_device(payload: LiteRemoveDeviceRequest, request: Request)
                 action_id="device.remove",
                 target_type="device",
                 target_id=device_id,
+                target_revision=str(current_assessment.get("assessment_revision") or removal_generation),
                 policy_revision=str(policy_decision.get("policy_revision") or ""),
+                request_fingerprint=str(current_assessment.get("assessment_revision") or removal_generation),
             )
         except lite_policy_approvals.ApprovalError as exc:
             raise HTTPException(
