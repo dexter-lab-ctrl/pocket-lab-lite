@@ -503,6 +503,42 @@ def record_runtime_attestation(
     return assignment_state(safe_id)
 
 
+def retire_device_roles(device_id: str, *, reason_code: str = "device_removed") -> dict[str, Any]:
+    """Deactivate governed role authority without deleting historical assignment rows."""
+    apply_migrations()
+    safe_id = _safe_node_id(device_id)
+    now = _now()
+    with connection() as conn:
+        with begin_immediate(conn) as tx:
+            rows = _rows_for_device(tx, safe_id)
+            generation = max([int(row["generation"] or 0) for row in rows] or [0])
+            tx.execute(
+                """UPDATE device_role_assignments
+                   SET desired=0,active=0,assignment_status='retired',
+                       verification_status='retired',verification_reason=?,updated_at=?
+                   WHERE device_id=?""",
+                (_safe_text(reason_code, 80), now, safe_id),
+            )
+            tx.execute(
+                """UPDATE device_role_change_operations
+                   SET status='retired',reason_code=?,summary=?,updated_at=?
+                   WHERE device_id=? AND status NOT IN ('failed','cancelled','retired')""",
+                (
+                    _safe_text(reason_code, 80),
+                    "Device role authority retired with the enrolled device; historical records were preserved.",
+                    now,
+                    safe_id,
+                ),
+            )
+    return {
+        "device_id": safe_id,
+        "generation": generation,
+        "status": "retired",
+        "reason_code": reason_code,
+        "sanitized": True,
+    }
+
+
 def mark_change_status(device_id: str, generation: int, status: str, reason_code: str, summary: str) -> None:
     apply_migrations()
     with connection() as conn:
