@@ -966,7 +966,7 @@ function normalizeDeviceCapabilityState(value) {
       const id = safeString(item);
       return id ? { id, label: id.replace(/_/g, ' '), status: 'unknown', source: 'legacy' } : null;
     }
-    return copySafeKeys(item, ['id', 'label', 'status', 'source', 'verified_at', 'reason_code']);
+    return copySafeKeys(item, ['id', 'label', 'status', 'source', 'verified_at', 'reason_code', 'authorization', 'observation', 'verification', 'effective']);
   }).filter((item) => item?.id);
 }
 
@@ -1144,6 +1144,15 @@ export function selectLiteDeviceCard(device = {}) {
     hostname: safeString(device.hostname || device.name || id, 'Device'),
     role: safeString(device.role || device.role_id || ''),
     role_label: safeString(device.role_label || safeDeviceRoleLabel(device.role || device.role_id)),
+    device_roles: Array.isArray(device.device_roles) ? device.device_roles.slice(0, 2).map((item) => isObject(item)
+      ? copySafeKeys(item, ['id', 'label', 'assignment_status'])
+      : { id: safeString(item), label: safeDeviceRoleLabel(item), assignment_status: 'unknown' }).filter((item) => item?.id) : [],
+    device_role_ids: Array.isArray(device.device_role_ids) ? device.device_role_ids.slice(0, 2).map(safeString).filter(Boolean) : [],
+    desired_device_roles: Array.isArray(device.desired_device_roles) ? device.desired_device_roles.slice(0, 2).map(safeString).filter(Boolean) : [],
+    active_device_roles: Array.isArray(device.active_device_roles) ? device.active_device_roles.slice(0, 2).map(safeString).filter(Boolean) : [],
+    device_role_generation: Math.max(0, Number(device.device_role_generation || 0)),
+    device_role_status: normalizeDeviceStatus(device.device_role_status || ''),
+    device_role_reason_code: safeString(device.device_role_reason_code || ''),
     status,
     status_label: safeDeviceStatusLabel(device),
     connection: safeDeviceConnectionState(device),
@@ -1444,6 +1453,8 @@ export function selectDeviceInviteView(payload = {}) {
     hostname: safeString(invite.hostname || invite.name || ''),
     role: safeString(invite.role || ''),
     role_label: safeString(invite.role_label || safeDeviceRoleLabel(invite.role)),
+    device_roles: Array.isArray(invite.device_roles) ? invite.device_roles.slice(0, 2).map(safeString).filter(Boolean) : (invite.role ? [safeString(invite.role)] : []),
+    device_role_labels: Array.isArray(invite.device_role_labels) ? invite.device_role_labels.slice(0, 2).map(safeString).filter(Boolean) : [],
     expires_at: safeIso(invite.expires_at),
     created_at: safeIso(invite.created_at),
     invite_ready: Boolean(invite.status === 'invite_ready' || invite.ready || invite.copy_text || bootstrapCommand || bootstrapUrl),
