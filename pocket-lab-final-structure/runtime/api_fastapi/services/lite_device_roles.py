@@ -277,6 +277,7 @@ def record_desired_roles(
     roles: Any,
     *,
     status: str,
+    action_id: str = "device.roles.change",
     actor_human_id: str = "",
     actor_role: str = "",
     authorization_version: int = 1,
@@ -317,7 +318,7 @@ def record_desired_roles(
                         previous = []
             generation = current_generation + 1
             fingerprint = request_fingerprint(
-                action_id="device.roles.change",
+                action_id=action_id,
                 device_id=safe_id,
                 requested_roles=requested,
                 authorization_version=authorization_version,
@@ -368,7 +369,7 @@ def record_desired_roles(
     return {
         "change_id": change_id, "device_id": safe_id, "generation": generation,
         "requested_device_roles": requested, "previous_device_roles": previous,
-        "status": status[:32], "request_fingerprint": fingerprint,
+        "status": status[:32], "action_id": action_id[:120], "request_fingerprint": fingerprint,
         "reason_code": reason_code, "sanitized": True,
     }
 
