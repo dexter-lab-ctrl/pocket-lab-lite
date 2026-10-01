@@ -1157,6 +1157,20 @@ export const handlers = [
     }, { headers: liteSafeReadHeaders(request) });
   }),
   http.get('/api/lite/security', ({ request }) => HttpResponse.json(mockLiteSecurityPayload(), { headers: liteSafeReadHeaders(request) })),
+  http.get('/api/lite/enterprise/access', () => HttpResponse.json({
+    enterprise_enabled: true,
+    current_membership: { role: 'Owner', status: 'active' },
+    action_matrix: [
+      { action_id: 'device.invite.compute', label: 'Add Compute device', roles: { Owner: 'allow', Admin: 'allow', Operator: 'allow', Auditor: 'deny', Viewer: 'deny' } },
+      { action_id: 'device.invite.storage', label: 'Add Storage device', roles: { Owner: 'allow', Admin: 'approval', Operator: 'approval', Auditor: 'deny', Viewer: 'deny' } },
+      { action_id: 'device.roles.assign.compute', label: 'Assign Compute', roles: { Owner: 'allow', Admin: 'allow', Operator: 'allow', Auditor: 'deny', Viewer: 'deny' } },
+      { action_id: 'device.roles.assign.storage', label: 'Assign Storage', roles: { Owner: 'allow', Admin: 'approval', Operator: 'approval', Auditor: 'deny', Viewer: 'deny' } },
+      { action_id: 'device.roles.change', label: 'Change device roles', roles: { Owner: 'allow', Admin: 'approval', Operator: 'approval', Auditor: 'deny', Viewer: 'deny' } },
+      { action_id: 'device.restart', label: 'Restart device agent', roles: { Owner: 'allow', Admin: 'allow', Operator: 'allow', Auditor: 'deny', Viewer: 'deny' } },
+      { action_id: 'device.repair', label: 'Repair device agent', roles: { Owner: 'allow', Admin: 'allow', Operator: 'allow', Auditor: 'deny', Viewer: 'deny' } },
+      { action_id: 'device.capabilities.read', label: 'Review device capabilities', roles: { Owner: 'allow', Admin: 'allow', Operator: 'allow', Auditor: 'allow', Viewer: 'allow' } },
+    ],
+  })),
   http.get('/api/lite/fleet', ({ request }) => HttpResponse.json({
     status: 'healthy',
     devices: mockLiteDevices(),
