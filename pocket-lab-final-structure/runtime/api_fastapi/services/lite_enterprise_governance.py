@@ -21,6 +21,8 @@ POLICY_TEMPLATE_ID = "enterprise_governance"
 POLICY_DEFAULTS = {
     "admin_device_remove_approval": 1,
     "operator_device_remove_approval": 1,
+    "admin_storage_role_approval": 1,
+    "operator_storage_role_approval": 1,
 }
 
 ROLE_CATALOG: dict[str, dict[str, str]] = {
@@ -49,6 +51,14 @@ ROLE_CATALOG: dict[str, dict[str, str]] = {
 ACTION_CATALOG = (
     ("people.manage", "Manage people", "Create, suspend, reactivate, remove and assign access to people."),
     ("enterprise.mode.change", "Change workspace mode", "Switch between Personal and Enterprise Mode."),
+    ("device.invite.compute", "Add Compute device", "Create an invite for a device that can run apps."),
+    ("device.invite.storage", "Add Storage device", "Create an invite that grants backup and recovery storage responsibilities."),
+    ("device.roles.assign.compute", "Assign Compute", "Grant the Compute device role."),
+    ("device.roles.assign.storage", "Assign Storage", "Grant the Storage device role."),
+    ("device.roles.change", "Change device roles", "Change an enrolled device's governed role set."),
+    ("device.restart", "Restart device agent", "Request a safe agent restart on an enrolled device."),
+    ("device.repair", "Repair device agent", "Request a safe agent repair on an enrolled device."),
+    ("device.capabilities.read", "Review device capabilities", "Review authorized, observed and verified device capabilities."),
     ("device.remove", "Remove devices", "Retire a confirmed non-server device from Pocket Lab."),
     ("catalog.install", "Install apps", "Install an approved app through the normal server-owned execution path."),
     ("rules.draft", "Draft Rules", "Create a typed immutable Rules candidate for review."),
@@ -91,6 +101,8 @@ def ensure_policy_templates() -> None:
             "parameters": {
                 "admin_device_remove_approval": {"type": "integer", "minimum": 0, "maximum": 1, "default": 1},
                 "operator_device_remove_approval": {"type": "integer", "minimum": 0, "maximum": 1, "default": 1},
+                "admin_storage_role_approval": {"type": "integer", "minimum": 0, "maximum": 1, "default": 1},
+                "operator_storage_role_approval": {"type": "integer", "minimum": 0, "maximum": 1, "default": 1},
             },
         },
     )
@@ -153,7 +165,14 @@ def _mode_for(action: str, role: str, params: dict[str, int]) -> str:
     if role == "Admin":
         if action == "device.remove":
             return "approval" if params["admin_device_remove_approval"] else "allow"
-        if action in {"people.manage", "catalog.install", "rules.draft", "rules.simulate", "approvals.review", "exceptions.manage", "evidence.read"}:
+        if action in {"device.invite.storage", "device.roles.assign.storage", "device.roles.change"}:
+            return "approval" if params["admin_storage_role_approval"] else "allow"
+        if action in {
+            "device.invite.compute", "device.roles.assign.compute", "device.restart",
+            "device.repair", "device.capabilities.read",
+            "people.manage", "catalog.install", "rules.draft", "rules.simulate",
+            "approvals.review", "exceptions.manage", "evidence.read",
+        }:
             return "allow"
         if action in {"backup.create", "backup.verify", "restore.preview"}:
             return "allow"
@@ -161,15 +180,21 @@ def _mode_for(action: str, role: str, params: dict[str, int]) -> str:
     if role == "Operator":
         if action == "device.remove":
             return "approval" if params["operator_device_remove_approval"] else "allow"
-        if action in {"catalog.install", "rules.simulate", "evidence.read"}:
+        if action in {"device.invite.storage", "device.roles.assign.storage", "device.roles.change"}:
+            return "approval" if params["operator_storage_role_approval"] else "allow"
+        if action in {
+            "device.invite.compute", "device.roles.assign.compute", "device.restart",
+            "device.repair", "device.capabilities.read", "catalog.install",
+            "rules.simulate", "evidence.read",
+        }:
             return "allow"
         if action in {"backup.create", "backup.verify", "restore.preview"}:
             return "allow"
         return "deny"
     if role == "Auditor":
-        return "allow" if action in {"evidence.read", "rules.simulate"} else "deny"
+        return "allow" if action in {"evidence.read", "rules.simulate", "device.capabilities.read"} else "deny"
     if role == "Viewer":
-        return "allow" if action == "evidence.read" else "deny"
+        return "allow" if action in {"evidence.read", "device.capabilities.read"} else "deny"
     return "deny"
 
 
