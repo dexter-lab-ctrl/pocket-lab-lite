@@ -31,18 +31,22 @@ _STORAGE_ROOT_LABELS = {
 
 
 def normalize_role(role: Any) -> str:
-    value = str(role or "compute").strip().lower().replace("-", "_").replace(" ", "_")
-    if value in {"server", "server_host"}:
-        return "server_host"
-    if value in {"storage", "storage_node"}:
-        return "storage"
-    if value in {"compute", "app_host"}:
-        return "compute"
-    return "compute"
+    # Compatibility wrapper only. Security-sensitive normalization is owned by
+    # lite_device_roles and never silently turns malformed input into Compute.
+    from . import lite_device_roles
+
+    return lite_device_roles.normalize_device_role(role)
 
 
 def capability_ids_for_role(role: Any) -> list[str]:
-    return list(_CAPABILITIES_BY_ROLE.get(normalize_role(role), _CAPABILITIES_BY_ROLE["compute"]))
+    normalized = normalize_role(role)
+    return list(_CAPABILITIES_BY_ROLE.get(normalized, []))
+
+
+def capability_ids_for_roles(roles: Any) -> list[str]:
+    from . import lite_device_roles
+
+    return lite_device_roles.authorized_capabilities_for_roles(roles)
 
 
 
@@ -125,12 +129,23 @@ def storage_summary_from_node(node: dict[str, Any], capabilities: list[str]) -> 
 
 
 def apply_device_capabilities(device: dict[str, Any]) -> dict[str, Any]:
-    capabilities = capability_ids_for_role(device.get("role"))
-    device["capabilities"] = capabilities
+    from . import lite_device_roles
+
+    enriched = lite_device_roles.enrich_device_projection(device)
+    device.update(enriched)
+    capabilities = list(device.get("capabilities") or [])
     device["capability_labels"] = labels_for_capabilities(capabilities)
     storage = storage_summary_from_node(device, capabilities)
     if storage:
         device["storage"] = storage
+    elif "storage" in (device.get("device_role_ids") or []):
+        device["storage"] = {
+            "status": "not_ready",
+            "ready": False,
+            "available_gb": None,
+            "media_roots": [],
+            "summary": "Storage role is assigned but runtime verification is not ready.",
+        }
     return device
 
 
