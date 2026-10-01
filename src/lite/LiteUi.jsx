@@ -75,13 +75,15 @@ export function LiteRefreshButton({
 export const DEVICE_ROLE_OPTIONS = [
   {
     value: 'compute',
-    label: 'App Host',
-    description: 'Runs apps and services for your Pocket Lab.',
+    label: 'Compute',
+    actionLabel: 'Run apps',
+    description: 'Run apps and general Pocket Lab work on this device.',
   },
   {
     value: 'storage',
-    label: 'Storage Node',
-    description: 'Stores backups, files, or app data.',
+    label: 'Storage',
+    actionLabel: 'Store backups',
+    description: 'Store backups and provide recovery storage from this device.',
   },
 ];
 
@@ -140,7 +142,21 @@ export function appWorkspaceEmbedAllowed(item) {
 
 export function roleLabel(value) {
   if (String(value || '').toLowerCase() === 'server_host') return 'Server host';
-  return DEVICE_ROLE_OPTIONS.find((role) => role.value === value)?.label || 'App Host';
+  return DEVICE_ROLE_OPTIONS.find((role) => role.value === value)?.label || 'Device';
+}
+
+export function deviceRoleLabels(device) {
+  const rows = Array.isArray(device?.device_roles) ? device.device_roles : [];
+  const ids = rows.length
+    ? rows.map((item) => typeof item === 'string' ? item : item?.id).filter(Boolean)
+    : Array.isArray(device?.device_role_ids) ? device.device_role_ids : device?.role ? [device.role] : [];
+  return ids.map((role) => roleLabel(role)).filter(Boolean);
+}
+
+export function deviceRoleSummary(device) {
+  const labels = deviceRoleLabels(device);
+  if (!labels.length) return 'Role pending';
+  return labels.join(' + ');
 }
 
 export const DEVICE_CAPABILITY_LABELS = {
