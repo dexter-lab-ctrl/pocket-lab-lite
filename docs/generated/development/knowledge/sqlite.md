@@ -389,6 +389,36 @@ Source-derived devices persistence object; detailed ownership is conservatively 
 | Indexes | idx_device_removal_receipts_device_time, sqlite_autoindex_device_removal_receipts_1 |
 | Confidence | inferred |
 
+## `device_role_assignments`
+
+Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | devices |
+| Owner | not a prepared projection |
+| Writer | device lifecycle and projection services |
+| Readers | /api/lite/fleet, /api/lite/devices/{device_id} |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | idx_device_role_assignments_active, idx_device_role_assignments_desired, sqlite_autoindex_device_role_assignments_1 |
+| Confidence | inferred |
+
+## `device_role_change_operations`
+
+Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | devices |
+| Owner | not a prepared projection |
+| Writer | device lifecycle and projection services |
+| Readers | /api/lite/fleet, /api/lite/devices/{device_id} |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | idx_device_role_change_device, idx_device_role_change_status, sqlite_autoindex_device_role_change_operations_2, sqlite_autoindex_device_role_change_operations_1 |
+| Confidence | inferred |
+
 ## `device_supervisor_state`
 
 Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.

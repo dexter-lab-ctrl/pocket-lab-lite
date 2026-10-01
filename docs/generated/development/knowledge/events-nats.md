@@ -59,6 +59,7 @@ Credentials are never included. Incomplete delivery semantics remain explicitly 
 | `pocketlab.commands.node` | node | lite_photo_backup.py, pocketlab_worker.py | pocketlab_worker.py | incomplete | incomplete | incomplete |
 | `pocketlab.commands.node.all` | node | — | pocketlab_node_agent.py | incomplete | incomplete | incomplete |
 | `pocketlab.commands.node.all.{command.replace` | node | fleet.py | — | incomplete | incomplete | incomplete |
+| `pocketlab.commands.node.{fleet_registry.normalize_node_id` | node | lite.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.node.{node_id}` | node | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.node.{node_id}.{command.replace` | node | fleet.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.node.{normalized_node_id}.agent.restart` | node | — | — | incomplete | incomplete | incomplete |
@@ -99,6 +100,7 @@ Credentials are never included. Incomplete delivery semantics remain explicitly 
 | `pocketlab.events.fleet.config_updated` | devices | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.fleet.device_health_sampled` | devices | live_status.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.fleet.device_removed` | devices | fleet_registry.py | — | incomplete | incomplete | incomplete |
+| `pocketlab.events.fleet.device_role_change_requested` | devices | lite.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.fleet.health_changed` | devices | live_status.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.fleet.health_sampled` | devices | live_status.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.fleet.invite_accepted` | devices | — | — | incomplete | incomplete | incomplete |

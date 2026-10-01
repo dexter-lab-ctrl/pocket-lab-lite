@@ -523,6 +523,12 @@
           "type": "owns"
         }
       ],
+      "api:get:/api/lite/fleet/devices/{device_id}/roles": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status": [
         {
           "source": "ui:litedevices",
@@ -2032,6 +2038,12 @@
         }
       ],
       "api:put:/api/lite/fleet/devices/{device_id}/display-model": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "api:put:/api/lite/fleet/devices/{device_id}/roles": [
         {
           "source": "domain:devices",
           "type": "owns"
@@ -3591,6 +3603,12 @@
           "type": "owns"
         }
       ],
+      "reason:confirmation_required": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
       "reason:connection_failed": [
         {
           "source": "domain:validation",
@@ -3606,6 +3624,102 @@
       "reason:deferred_resource_pressure": [
         {
           "source": "domain:security",
+          "type": "owns"
+        }
+      ],
+      "reason:device_capability_not_advertised": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_capability_not_authorized": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_capability_stale": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_capability_verification_failed": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_assignment_unauthorized": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_change_blocked_by_dependency": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_change_device_offline": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_change_failed": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_change_generation_mismatch": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_change_identity_mismatch": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_change_pending_verification": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_change_requires_approval": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_change_stale_generation": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_invalid": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_role_not_joinable": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:device_roles_required": [
+        {
+          "source": "domain:devices",
           "type": "owns"
         }
       ],
@@ -3994,6 +4108,12 @@
         }
       ],
       "reason:invite_identity_mismatch": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:invite_role_set_mismatch": [
         {
           "source": "domain:devices",
           "type": "owns"
@@ -5293,6 +5413,16 @@
           "type": "owns"
         }
       ],
+      "subject:pocketlab.commands.node.{fleet_registry.normalize_node_id": [
+        {
+          "source": "domain:node",
+          "type": "owns"
+        },
+        {
+          "source": "component:lite-api",
+          "type": "publishes"
+        }
+      ],
       "subject:pocketlab.commands.node.{node_id}": [
         {
           "source": "domain:node",
@@ -5675,6 +5805,16 @@
         {
           "source": "domain:devices",
           "type": "owns"
+        }
+      ],
+      "subject:pocketlab.events.fleet.device_role_change_requested": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        },
+        {
+          "source": "component:lite-api",
+          "type": "publishes"
         }
       ],
       "subject:pocketlab.events.fleet.health_changed": [
@@ -7195,6 +7335,34 @@
           "type": "reads"
         }
       ],
+      "table:device_role_assignments": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        },
+        {
+          "source": "api:get:/api/lite/devices/{device_id}",
+          "type": "reads"
+        },
+        {
+          "source": "api:get:/api/lite/fleet",
+          "type": "reads"
+        }
+      ],
+      "table:device_role_change_operations": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        },
+        {
+          "source": "api:get:/api/lite/devices/{device_id}",
+          "type": "reads"
+        },
+        {
+          "source": "api:get:/api/lite/fleet",
+          "type": "reads"
+        }
+      ],
       "table:device_supervisor_state": [
         {
           "source": "domain:devices",
@@ -8013,6 +8181,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:confirmation_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:disabled",
           "type": "verified_by"
         },
@@ -8201,6 +8373,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:confirmation_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:connection_failed",
           "type": "verified_by"
         },
@@ -8210,6 +8386,70 @@
         },
         {
           "source": "reason:deferred_resource_pressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_not_advertised",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_not_authorized",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_stale",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_verification_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_assignment_unauthorized",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_blocked_by_dependency",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_device_offline",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_generation_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_pending_verification",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_requires_approval",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_stale_generation",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_not_joinable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_roles_required",
           "type": "verified_by"
         },
         {
@@ -8470,6 +8710,10 @@
         },
         {
           "source": "reason:invite_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:invite_role_set_mismatch",
           "type": "verified_by"
         },
         {
@@ -9347,6 +9591,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/fleet/devices/{device_id}/roles",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status",
           "type": "verified_by"
         },
@@ -10023,6 +10271,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:put:/api/lite/fleet/devices/{device_id}/roles",
+          "type": "verified_by"
+        },
+        {
           "source": "api:put:/api/lite/identity/passkeys/{credential_id}",
           "type": "verified_by"
         },
@@ -10267,6 +10519,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:confirmation_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:protected_server_host",
           "type": "verified_by"
         }
@@ -10344,6 +10600,50 @@
         },
         {
           "source": "component:pwa",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_fleet_multi_role_authorization.py": [
+        {
+          "source": "reason:device_role_change_blocked_by_dependency",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_generation_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_pending_verification",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_stale_generation",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_not_joinable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:protected_server_host",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_fleet_multi_role_invites_governance.py": [
+        {
+          "source": "reason:invite_role_set_mismatch",
           "type": "verified_by"
         }
       ],
@@ -11080,6 +11380,10 @@
         },
         {
           "source": "reason:assurance_policy_sync_disabled",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:confirmation_required",
           "type": "verified_by"
         },
         {
@@ -13205,6 +13509,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:confirmation_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:connection_failed",
           "type": "verified_by"
         },
@@ -13214,6 +13522,70 @@
         },
         {
           "source": "reason:deferred_resource_pressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_not_advertised",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_not_authorized",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_stale",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_verification_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_assignment_unauthorized",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_blocked_by_dependency",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_device_offline",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_generation_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_pending_verification",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_requires_approval",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_stale_generation",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_not_joinable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_roles_required",
           "type": "verified_by"
         },
         {
@@ -13474,6 +13846,10 @@
         },
         {
           "source": "reason:invite_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:invite_role_set_mismatch",
           "type": "verified_by"
         },
         {
@@ -14263,6 +14639,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:confirmation_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:connection_failed",
           "type": "verified_by"
         },
@@ -14272,6 +14652,70 @@
         },
         {
           "source": "reason:deferred_resource_pressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_not_advertised",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_not_authorized",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_stale",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_capability_verification_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_assignment_unauthorized",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_blocked_by_dependency",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_device_offline",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_generation_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_pending_verification",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_requires_approval",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_change_stale_generation",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_role_not_joinable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:device_roles_required",
           "type": "verified_by"
         },
         {
@@ -14532,6 +14976,10 @@
         },
         {
           "source": "reason:invite_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:invite_role_set_mismatch",
           "type": "verified_by"
         },
         {
@@ -15583,6 +16031,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/fleet/devices/{device_id}/roles",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status",
           "type": "verified_by"
         },
@@ -16256,6 +16708,10 @@
         },
         {
           "source": "api:put:/api/lite/fleet/devices/{device_id}/display-model",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:put:/api/lite/fleet/devices/{device_id}/roles",
           "type": "verified_by"
         },
         {
@@ -17237,6 +17693,14 @@
           "type": "reads"
         },
         {
+          "target": "table:device_role_assignments",
+          "type": "reads"
+        },
+        {
+          "target": "table:device_role_change_operations",
+          "type": "reads"
+        },
+        {
           "target": "table:device_supervisor_state",
           "type": "reads"
         },
@@ -17611,6 +18075,14 @@
           "type": "reads"
         },
         {
+          "target": "table:device_role_assignments",
+          "type": "reads"
+        },
+        {
+          "target": "table:device_role_change_operations",
+          "type": "reads"
+        },
+        {
           "target": "table:device_supervisor_state",
           "type": "reads"
         },
@@ -17638,6 +18110,16 @@
         }
       ],
       "api:get:/api/lite/fleet/devices/{device_id}/recovery-history": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/fleet/devices/{device_id}/roles": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -19497,6 +19979,16 @@
           "type": "verified_by"
         }
       ],
+      "api:put:/api/lite/fleet/devices/{device_id}/roles": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:put:/api/lite/identity/passkeys/{credential_id}": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -21337,6 +21829,14 @@
         {
           "target": "threat-model:control-api",
           "type": "protected_by"
+        },
+        {
+          "target": "subject:pocketlab.commands.node.{fleet_registry.normalize_node_id",
+          "type": "publishes"
+        },
+        {
+          "target": "subject:pocketlab.events.fleet.device_role_change_requested",
+          "type": "publishes"
         },
         {
           "target": "troubleshooting:api-unavailable",
@@ -23791,6 +24291,10 @@
           "type": "owns"
         },
         {
+          "target": "api:get:/api/lite/fleet/devices/{device_id}/roles",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status",
           "type": "owns"
         },
@@ -23843,6 +24347,10 @@
           "type": "owns"
         },
         {
+          "target": "api:put:/api/lite/fleet/devices/{device_id}/roles",
+          "type": "owns"
+        },
+        {
           "target": "journey:add-device",
           "type": "owns"
         },
@@ -23871,6 +24379,74 @@
           "type": "owns"
         },
         {
+          "target": "reason:confirmation_required",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_capability_not_advertised",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_capability_not_authorized",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_capability_stale",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_capability_verification_failed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_assignment_unauthorized",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_change_blocked_by_dependency",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_change_device_offline",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_change_failed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_change_generation_mismatch",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_change_identity_mismatch",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_change_pending_verification",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_change_requires_approval",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_change_stale_generation",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_invalid",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_role_not_joinable",
+          "type": "owns"
+        },
+        {
+          "target": "reason:device_roles_required",
+          "type": "owns"
+        },
+        {
           "target": "reason:duplicate_device",
           "type": "owns"
         },
@@ -23884,6 +24460,10 @@
         },
         {
           "target": "reason:invite_identity_mismatch",
+          "type": "owns"
+        },
+        {
+          "target": "reason:invite_role_set_mismatch",
           "type": "owns"
         },
         {
@@ -23932,6 +24512,10 @@
         },
         {
           "target": "subject:pocketlab.events.fleet.device_removed",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.events.fleet.device_role_change_requested",
           "type": "owns"
         },
         {
@@ -24052,6 +24636,14 @@
         },
         {
           "target": "table:device_removal_receipts",
+          "type": "owns"
+        },
+        {
+          "target": "table:device_role_assignments",
+          "type": "owns"
+        },
+        {
+          "target": "table:device_role_change_operations",
           "type": "owns"
         },
         {
@@ -25416,6 +26008,10 @@
         },
         {
           "target": "subject:pocketlab.commands.node.all.{command.replace",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.commands.node.{fleet_registry.normalize_node_id",
           "type": "owns"
         },
         {
@@ -28951,6 +29547,32 @@
           "type": "verified_by"
         }
       ],
+      "reason:confirmation_required": [
+        {
+          "target": "test:tests/backend/test_lite_api.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_devices_production_readiness.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:connection_failed": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -28994,6 +29616,258 @@
         },
         {
           "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_capability_not_advertised": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_capability_not_authorized": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_capability_stale": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_capability_verification_failed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_assignment_unauthorized": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_change_blocked_by_dependency": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_change_device_offline": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_change_failed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_change_generation_mismatch": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_change_identity_mismatch": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_change_pending_verification": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_change_requires_approval": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_change_stale_generation": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_invalid": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_role_not_joinable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:device_roles_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
         },
         {
@@ -29861,6 +30735,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
           "type": "verified_by"
         },
@@ -30156,6 +31034,24 @@
         },
         {
           "target": "test:tests/backend/test_lite_devices_d2_d3.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:invite_role_set_mismatch": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_invites_governance.py",
           "type": "verified_by"
         },
         {
@@ -31496,6 +32392,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
           "type": "verified_by"
         },
         {
@@ -33013,6 +33913,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5902aa50a9e1602dbe8ce971c26b60b50095ac6ff21757aa4eea69f6d87abb0f"
+    "source_fingerprint": "9cb9692ea7eb27887dac97361bc0a4dd3fc0bbc858ec584bfab233b2b592a255"
   }
 }

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: f5203483348ee7e7fb609da1cd465b79b9b9caeb0ccbf4a595f8d7c53900dd29
+source_fingerprint: fca4c9f696d4cebc392c22f5c4aea4874a54b4aaad54944ac8e9fcc6ea26fa86
 schema_revision: 1
 validation_status: generated
 ---
@@ -100,7 +100,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_ADMISSION_` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/workload_admission.py |
 | `POCKETLAB_ADMISSION_SHUTDOWN_DRAIN_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/workload_admission.py |
 | `POCKETLAB_ADMISSION_TIMEOUT_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/workload_admission.py |
-| `POCKETLAB_AGENT_ENV_FILE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py |
+| `POCKETLAB_AGENT_ENV_FILE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py, pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py |
 | `POCKETLAB_AGENT_FILE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py |
 | `POCKETLAB_AGENT_HEARTBEAT_SECONDS` | configuration | 15 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh, pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py |
 | `POCKETLAB_AGENT_NATS_PASSWORD` | secret | not documented for secret variables | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py |
@@ -136,6 +136,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_BASE_DIR` | configuration | $POCKET_LAB_BASE_DIR | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/bootstrap-stage-health.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_generation.py, pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py, pocket-lab-final-structure/runtime/core/control_plane_core.py, pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_reconciler.py, scripts/dev/check-lite-phase3b-projections.sh, scripts/dev/check-lite-phase3c-projections.sh |
 | `POCKETLAB_BASE_URL` | configuration | http://127.0.0.1:8080 | yes | component-dependent | scripts/dev/check-lite-projection-registry-server-phone.sh |
 | `POCKETLAB_BLOCKED_ROLE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py |
+| `POCKETLAB_BLOCKED_ROLES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py |
 | `POCKETLAB_BLOCKED_TOKEN` | secret | not documented for secret variables | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py |
 | `POCKETLAB_BLOCKED_URL` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py |
 | `POCKETLAB_BOOTSTRAP_DRY_RUN` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/bootstrap.sh |
@@ -629,6 +630,8 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_NODE_MAJOR` | configuration | 24 | yes | component-dependent | scripts/dev/check-wsl-ubuntu-dev.sh, scripts/dev/setup-wsl-ubuntu-dev.sh |
 | `POCKETLAB_NODE_NAME` | configuration | $NODE_ID | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py, pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py, pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py |
 | `POCKETLAB_NODE_ROLE` | configuration | compute | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py, pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py, pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py |
+| `POCKETLAB_NODE_ROLES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py, pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py, pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py |
+| `POCKETLAB_NODE_ROLE_GENERATION` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py, pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py, pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py |
 | `POCKETLAB_NODE_VERSION` | configuration | 24.16.0 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-cdp.sh, scripts/dev/lite/run-ui-performance-live.sh |
 | `POCKETLAB_OASDIFF_BIN` | configuration | $ROOT/.pocketlab-dev/tools/parity/bin/oasdiff | yes | component-dependent | scripts/test/parity/run_oasdiff.sh |
 | `POCKETLAB_OASDIFF_VERSION` | configuration | 1.17.0 | yes | component-dependent | scripts/dev/lite/setup-parity-tools.sh |

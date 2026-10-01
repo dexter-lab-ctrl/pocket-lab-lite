@@ -345,6 +345,27 @@
       },
       "LiteAddDeviceRequest": {
         "properties": {
+          "device_roles": {
+            "anyOf": [
+              {
+                "items": {
+                  "enum": [
+                    "compute",
+                    "storage"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Canonical joinable device roles. One or both of compute/storage may be selected.",
+            "title": "Device Roles"
+          },
           "hostname": {
             "anyOf": [
               {
@@ -357,14 +378,20 @@
             "title": "Hostname"
           },
           "role": {
-            "default": "compute",
-            "description": "Lite device role: compute for App Host or storage for Storage Node",
-            "enum": [
-              "compute",
-              "storage"
+            "anyOf": [
+              {
+                "enum": [
+                  "compute",
+                  "storage"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
             ],
-            "title": "Role",
-            "type": "string"
+            "description": "Legacy single-role compatibility input. New clients should send device_roles.",
+            "title": "Role"
           }
         },
         "title": "LiteAddDeviceRequest",
@@ -840,6 +867,58 @@
           }
         },
         "title": "LiteDeviceDisplayModelRequest",
+        "type": "object"
+      },
+      "LiteDeviceRoleChangeRequest": {
+        "properties": {
+          "confirm": {
+            "default": false,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "device_roles": {
+            "description": "Exact desired device role set.",
+            "items": {
+              "enum": [
+                "compute",
+                "storage"
+              ],
+              "type": "string"
+            },
+            "maxItems": 2,
+            "minItems": 1,
+            "title": "Device Roles",
+            "type": "array"
+          },
+          "expected_generation": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Generation"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 220,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "required": [
+          "device_roles"
+        ],
+        "title": "LiteDeviceRoleChangeRequest",
         "type": "object"
       },
       "LiteIdentityLoginRequest": {
@@ -8003,10 +8082,20 @@
         "parameters": [
           {
             "in": "query",
+            "name": "roles",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Roles",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
             "name": "role",
             "required": false,
             "schema": {
-              "default": "compute",
+              "default": "",
               "title": "Role",
               "type": "string"
             }
@@ -8289,6 +8378,162 @@
           }
         },
         "summary": "Get Lite Device Recovery History",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/fleet/devices/{device_id}/roles": {
+      "get": {
+        "operationId": "get_lite_device_roles_api_lite_fleet_devices__device_id__roles_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_id",
+            "required": true,
+            "schema": {
+              "title": "Device Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Device Roles Api Lite Fleet Devices  Device Id  Roles Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested resource is not available."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get Lite Device Roles",
+        "tags": [
+          "lite"
+        ]
+      },
+      "put": {
+        "operationId": "change_lite_device_roles_api_lite_fleet_devices__device_id__roles_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_id",
+            "required": true,
+            "schema": {
+              "title": "Device Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteDeviceRoleChangeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Change Lite Device Roles Api Lite Fleet Devices  Device Id  Roles Put",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Change Lite Device Roles",
         "tags": [
           "lite"
         ]

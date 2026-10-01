@@ -273,6 +273,10 @@
         "title": "GET /api/lite/fleet/devices/{device_id}/recovery-history",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-fleet-devices-device-id-recovery-history"
       },
+      "endpoint:GET:/api/lite/fleet/devices/{device_id}/roles": {
+        "title": "GET /api/lite/fleet/devices/{device_id}/roles",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-fleet-devices-device-id-roles"
+      },
       "endpoint:GET:/api/lite/fleet/devices/{node_id}/restart-agent/status": {
         "title": "GET /api/lite/fleet/devices/{node_id}/restart-agent/status",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-fleet-devices-node-id-restart-agent-status"
@@ -949,6 +953,10 @@
         "title": "PUT /api/lite/fleet/devices/{device_id}/display-model",
         "url": "../../docs/reference/api/lite-api.md#put-api-lite-fleet-devices-device-id-display-model"
       },
+      "endpoint:PUT:/api/lite/fleet/devices/{device_id}/roles": {
+        "title": "PUT /api/lite/fleet/devices/{device_id}/roles",
+        "url": "../../docs/reference/api/lite-api.md#put-api-lite-fleet-devices-device-id-roles"
+      },
       "endpoint:PUT:/api/lite/identity/passkeys/{credential_id}": {
         "title": "PUT /api/lite/identity/passkeys/{credential_id}",
         "url": "../../docs/reference/api/lite-api.md#put-api-lite-identity-passkeys-credential-id"
@@ -1125,6 +1133,10 @@
         "title": "pocketlab.commands.node.all.{command.replace",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-node-all-command-replace"
       },
+      "event:pocketlab.commands.node.{fleet_registry.normalize_node_id": {
+        "title": "pocketlab.commands.node.{fleet_registry.normalize_node_id",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-node-fleet-registry-normalize-node-id"
+      },
       "event:pocketlab.commands.node.{node_id}": {
         "title": "pocketlab.commands.node.{node_id}",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-node-node-id"
@@ -1284,6 +1296,10 @@
       "event:pocketlab.events.fleet.device_removed": {
         "title": "pocketlab.events.fleet.device_removed",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-device-removed"
+      },
+      "event:pocketlab.events.fleet.device_role_change_requested": {
+        "title": "pocketlab.events.fleet.device_role_change_requested",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-device-role-change-requested"
       },
       "event:pocketlab.events.fleet.health_changed": {
         "title": "pocketlab.events.fleet.health_changed",
@@ -1973,6 +1989,10 @@
         "title": "configured_target_budget",
         "url": "../../docs/generated/development/reason-codes.md#configured-target-budget"
       },
+      "reason:confirmation_required": {
+        "title": "confirmation_required",
+        "url": "../../docs/generated/development/reason-codes.md#confirmation-required"
+      },
       "reason:connection_failed": {
         "title": "connection_failed",
         "url": "../../docs/generated/development/reason-codes.md#connection-failed"
@@ -1984,6 +2004,70 @@
       "reason:deferred_resource_pressure": {
         "title": "deferred_resource_pressure",
         "url": "../../docs/generated/development/reason-codes.md#deferred-resource-pressure"
+      },
+      "reason:device_capability_not_advertised": {
+        "title": "device_capability_not_advertised",
+        "url": "../../docs/generated/development/reason-codes.md#device-capability-not-advertised"
+      },
+      "reason:device_capability_not_authorized": {
+        "title": "device_capability_not_authorized",
+        "url": "../../docs/generated/development/reason-codes.md#device-capability-not-authorized"
+      },
+      "reason:device_capability_stale": {
+        "title": "device_capability_stale",
+        "url": "../../docs/generated/development/reason-codes.md#device-capability-stale"
+      },
+      "reason:device_capability_verification_failed": {
+        "title": "device_capability_verification_failed",
+        "url": "../../docs/generated/development/reason-codes.md#device-capability-verification-failed"
+      },
+      "reason:device_role_assignment_unauthorized": {
+        "title": "device_role_assignment_unauthorized",
+        "url": "../../docs/generated/development/reason-codes.md#device-role-assignment-unauthorized"
+      },
+      "reason:device_role_change_blocked_by_dependency": {
+        "title": "device_role_change_blocked_by_dependency",
+        "url": "../../docs/generated/development/reason-codes.md#device-role-change-blocked-by-dependency"
+      },
+      "reason:device_role_change_device_offline": {
+        "title": "device_role_change_device_offline",
+        "url": "../../docs/generated/development/reason-codes.md#device-role-change-device-offline"
+      },
+      "reason:device_role_change_failed": {
+        "title": "device_role_change_failed",
+        "url": "../../docs/generated/development/reason-codes.md#device-role-change-failed"
+      },
+      "reason:device_role_change_generation_mismatch": {
+        "title": "device_role_change_generation_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#device-role-change-generation-mismatch"
+      },
+      "reason:device_role_change_identity_mismatch": {
+        "title": "device_role_change_identity_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#device-role-change-identity-mismatch"
+      },
+      "reason:device_role_change_pending_verification": {
+        "title": "device_role_change_pending_verification",
+        "url": "../../docs/generated/development/reason-codes.md#device-role-change-pending-verification"
+      },
+      "reason:device_role_change_requires_approval": {
+        "title": "device_role_change_requires_approval",
+        "url": "../../docs/generated/development/reason-codes.md#device-role-change-requires-approval"
+      },
+      "reason:device_role_change_stale_generation": {
+        "title": "device_role_change_stale_generation",
+        "url": "../../docs/generated/development/reason-codes.md#device-role-change-stale-generation"
+      },
+      "reason:device_role_invalid": {
+        "title": "device_role_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#device-role-invalid"
+      },
+      "reason:device_role_not_joinable": {
+        "title": "device_role_not_joinable",
+        "url": "../../docs/generated/development/reason-codes.md#device-role-not-joinable"
+      },
+      "reason:device_roles_required": {
+        "title": "device_roles_required",
+        "url": "../../docs/generated/development/reason-codes.md#device-roles-required"
       },
       "reason:diagnostics_not_active": {
         "title": "diagnostics_not_active",
@@ -2244,6 +2328,10 @@
       "reason:invite_identity_mismatch": {
         "title": "invite_identity_mismatch",
         "url": "../../docs/generated/development/reason-codes.md#invite-identity-mismatch"
+      },
+      "reason:invite_role_set_mismatch": {
+        "title": "invite_role_set_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#invite-role-set-mismatch"
       },
       "reason:lease_active": {
         "title": "lease_active",
@@ -2978,6 +3066,16 @@
         "schema_url": "../../docs/generated/schemaspy/tables/device_removal_receipts.html",
         "title": "device_removal_receipts"
       },
+      "table:device_role_assignments": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#device-role-assignments",
+        "schema_url": "../../docs/generated/schemaspy/tables/device_role_assignments.html",
+        "title": "device_role_assignments"
+      },
+      "table:device_role_change_operations": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#device-role-change-operations",
+        "schema_url": "../../docs/generated/schemaspy/tables/device_role_change_operations.html",
+        "title": "device_role_change_operations"
+      },
       "table:device_supervisor_state": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#device-supervisor-state",
         "schema_url": "../../docs/generated/schemaspy/tables/device_supervisor_state.html",
@@ -3246,7 +3344,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "9ce058c724bcb82d540b3caccf5f35192235411a93fd4f8abb4b2068e57f04f5",
+    "aggregate_fingerprint": "43f393781655dbe61823e2bf6c42b38a3b6f955e6690e21124281afb90fccc69",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3256,8 +3354,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "204711484f7bc0eaef802657ee762a9f88d1135f19775ba46172dac045abc11a",
-      "contracts/metadata/documentation-platform.json": "4abb77231da2cdc3838d29eb9f7d054ff52e2a4e81188c9a536dbb430e5d2520",
+      "contracts/generated/lite-openapi.json": "628a716c66dadec32afa90e6bfcbe3690e6dccb20f6b20df336cbe8f24e85abd",
+      "contracts/metadata/documentation-platform.json": "beb223fca558ca6150f7c35927953294652eb4ce69e4d565e3c460e314158de6",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -3295,6 +3393,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql": "28a5e9c0db90565883c685dec3874fdf430644341d9dc8dfd75a40beb50f80b4",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql": "d1cd045b515f41a1bed07712f32d204f2b96633536e4eb0a00a39f9ce89e18b4",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0036_assurance_execution_lifecycle.sql": "1421ef805eba817feaff7f963ceaa0a14fe8534e1c4956eae4e846ef70e6ef80",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql": "1f16d2afda6a3dc88b2d94e2cc567b046a2adf88153dfc7af4a81e2317ecc930",
       "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4"
     },
     "validation_state": "generated"

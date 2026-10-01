@@ -12,11 +12,11 @@ device_heartbeats
 command_lifecycle
 backup_manifest_index
 audit_evidence_index
+policy_approvals
 enterprise_memberships
 webauthn_challenges
 policy_temporary_exceptions
 policy_recovery_resolutions
-policy_approvals
 policy_runtime_state
 human_enrollment_claims
 enterprise_configuration
@@ -43,6 +43,8 @@ harness_sessions
 harness_challenges
 harness_audit_events
 device_supervisor_state
+device_role_change_operations
+device_role_assignments
 device_removal_receipts
 device_health_current
 device_health_attention

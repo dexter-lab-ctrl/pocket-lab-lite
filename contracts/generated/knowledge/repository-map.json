@@ -194,6 +194,7 @@
         "subject:pocketlab.commands.node",
         "subject:pocketlab.commands.node.all",
         "subject:pocketlab.commands.node.all.{command.replace",
+        "subject:pocketlab.commands.node.{fleet_registry.normalize_node_id",
         "subject:pocketlab.commands.node.{node_id}",
         "subject:pocketlab.commands.node.{node_id}.{command.replace",
         "subject:pocketlab.commands.node.{normalized_node_id}.agent.restart",
@@ -234,6 +235,7 @@
         "subject:pocketlab.events.fleet.config_updated",
         "subject:pocketlab.events.fleet.device_health_sampled",
         "subject:pocketlab.events.fleet.device_removed",
+        "subject:pocketlab.events.fleet.device_role_change_requested",
         "subject:pocketlab.events.fleet.health_changed",
         "subject:pocketlab.events.fleet.health_sampled",
         "subject:pocketlab.events.fleet.invite_accepted",
@@ -428,6 +430,7 @@
         "api:get:/api/lite/fleet",
         "api:get:/api/lite/fleet/agent/bootstrap.sh",
         "api:get:/api/lite/fleet/devices/{device_id}/recovery-history",
+        "api:get:/api/lite/fleet/devices/{device_id}/roles",
         "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status",
         "api:get:/api/lite/fleet/health-summary",
         "api:get:/api/lite/fleet/invites/latest",
@@ -597,6 +600,7 @@
         "api:put:/api/lite/enterprise/identity/members/{human_id}",
         "api:put:/api/lite/enterprise/identity/mode",
         "api:put:/api/lite/fleet/devices/{device_id}/display-model",
+        "api:put:/api/lite/fleet/devices/{device_id}/roles",
         "api:put:/api/lite/identity/passkeys/{credential_id}",
         "domain:api",
         "domain:architecture",
@@ -705,6 +709,8 @@
         "table:device_lifecycle_transactions",
         "table:device_recovery_history",
         "table:device_removal_receipts",
+        "table:device_role_assignments",
+        "table:device_role_change_operations",
         "table:device_supervisor_state",
         "table:device_system_profiles",
         "table:domain_revisions",
@@ -817,9 +823,26 @@
         "reason:cold_start_validation",
         "reason:command_undeliverable",
         "reason:configured_target_budget",
+        "reason:confirmation_required",
         "reason:connection_failed",
         "reason:csrf_required",
         "reason:deferred_resource_pressure",
+        "reason:device_capability_not_advertised",
+        "reason:device_capability_not_authorized",
+        "reason:device_capability_stale",
+        "reason:device_capability_verification_failed",
+        "reason:device_role_assignment_unauthorized",
+        "reason:device_role_change_blocked_by_dependency",
+        "reason:device_role_change_device_offline",
+        "reason:device_role_change_failed",
+        "reason:device_role_change_generation_mismatch",
+        "reason:device_role_change_identity_mismatch",
+        "reason:device_role_change_pending_verification",
+        "reason:device_role_change_requires_approval",
+        "reason:device_role_change_stale_generation",
+        "reason:device_role_invalid",
+        "reason:device_role_not_joinable",
+        "reason:device_roles_required",
         "reason:diagnostics_not_active",
         "reason:disabled",
         "reason:duplicate_device",
@@ -885,6 +908,7 @@
         "reason:invalid_domain",
         "reason:invite_expired",
         "reason:invite_identity_mismatch",
+        "reason:invite_role_set_mismatch",
         "reason:lease_active",
         "reason:legacy_multiple_active_runs",
         "reason:legacy_secret_rotation_retired",
@@ -1145,9 +1169,26 @@
         "reason:cold_start_validation",
         "reason:command_undeliverable",
         "reason:configured_target_budget",
+        "reason:confirmation_required",
         "reason:connection_failed",
         "reason:csrf_required",
         "reason:deferred_resource_pressure",
+        "reason:device_capability_not_advertised",
+        "reason:device_capability_not_authorized",
+        "reason:device_capability_stale",
+        "reason:device_capability_verification_failed",
+        "reason:device_role_assignment_unauthorized",
+        "reason:device_role_change_blocked_by_dependency",
+        "reason:device_role_change_device_offline",
+        "reason:device_role_change_failed",
+        "reason:device_role_change_generation_mismatch",
+        "reason:device_role_change_identity_mismatch",
+        "reason:device_role_change_pending_verification",
+        "reason:device_role_change_requires_approval",
+        "reason:device_role_change_stale_generation",
+        "reason:device_role_invalid",
+        "reason:device_role_not_joinable",
+        "reason:device_roles_required",
         "reason:diagnostics_not_active",
         "reason:disabled",
         "reason:duplicate_device",
@@ -1213,6 +1254,7 @@
         "reason:invalid_domain",
         "reason:invite_expired",
         "reason:invite_identity_mismatch",
+        "reason:invite_role_set_mismatch",
         "reason:lease_active",
         "reason:legacy_multiple_active_runs",
         "reason:legacy_secret_rotation_retired",
@@ -1892,6 +1934,19 @@
     },
     {
       "entities": [
+        "table:device_enrollment_registry",
+        "table:device_role_assignments",
+        "table:device_role_change_operations",
+        "table:enterprise_configuration",
+        "table:enterprise_memberships",
+        "table:human_identities",
+        "table:policy_approvals",
+        "table:policy_decisions"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+    },
+    {
+      "entities": [
         "subject:pocketlab.events.api.started",
         "subject:pocketlab.events.api.stopped"
       ],
@@ -1954,7 +2009,9 @@
         "subject:pocketlab.commands.lite.maintenance.checkpoint",
         "subject:pocketlab.commands.lite.maintenance.retention",
         "subject:pocketlab.commands.lite.restore.apply",
-        "subject:pocketlab.commands.lite.restore.preview"
+        "subject:pocketlab.commands.lite.restore.preview",
+        "subject:pocketlab.commands.node.{fleet_registry.normalize_node_id",
+        "subject:pocketlab.events.fleet.device_role_change_requested"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
     },
@@ -2999,6 +3056,18 @@
         "test:tests/backend/test_lite_fastapi_runtime_diagnostics.py"
       ],
       "source": "tests/backend/test_lite_fastapi_runtime_diagnostics.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_fleet_multi_role_authorization.py"
+      ],
+      "source": "tests/backend/test_lite_fleet_multi_role_authorization.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_fleet_multi_role_invites_governance.py"
+      ],
+      "source": "tests/backend/test_lite_fleet_multi_role_invites_governance.py"
     },
     {
       "entities": [
@@ -4237,6 +4306,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5902aa50a9e1602dbe8ce971c26b60b50095ac6ff21757aa4eea69f6d87abb0f"
+    "source_fingerprint": "9cb9692ea7eb27887dac97361bc0a4dd3fc0bbc858ec584bfab233b2b592a255"
   }
 }

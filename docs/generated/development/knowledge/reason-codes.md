@@ -45,9 +45,26 @@ generator_version: 3
 | `cold_start_validation` | validation | Cold-start validation is in progress. | warning | yes | no | Cold-start validation is in progress. |
 | `command_undeliverable` | devices | The target agent cannot currently receive the command. | warning | yes | no | The target agent cannot currently receive the command. |
 | `configured_target_budget` | security | The configured atomic-target budget was reached after durable checkpoint work. | warning | yes | no | The remaining safety targets can resume in a later Full check. |
+| `confirmation_required` | devices | A potentially destructive device or recovery action requires explicit confirmation before it can continue. | warning | yes | no | Confirm this action before continuing. |
 | `connection_failed` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | warning | yes | no | Runtime Security Assurance could not continue safely. |
 | `csrf_required` | identity | A human-session write was rejected because its CSRF proof was missing or invalid. | warning | yes | no | Refresh the page and try again. |
 | `deferred_resource_pressure` | security | A heavy Security target was not omitted; it was deferred after a durable checkpoint by a backend resource decision. | warning | yes | no | This safety target can resume in a later Full check. |
+| `device_capability_not_advertised` | devices | The device has not advertised the capability required by its governed role assignment. | warning | yes | no | The device has not advertised this capability. |
+| `device_capability_not_authorized` | devices | The server policy does not authorize the device capability for its current governed role assignment. | warning | no | yes | This capability is not authorized for the device's current roles. |
+| `device_capability_stale` | devices | The device capability evidence is older than the governed freshness window. | warning | yes | no | Wait for a fresh device heartbeat before relying on this capability. |
+| `device_capability_verification_failed` | devices | Fresh runtime evidence did not verify the capability required by the governed role assignment. | warning | yes | no | Fresh device evidence did not verify this capability. |
+| `device_role_assignment_unauthorized` | devices | The observed or requested device role assignment is not authorized by the server-owned role policy. | high | no | yes | This device role is not authorized. |
+| `device_role_change_blocked_by_dependency` | devices | A role removal is blocked because active backup, recovery, or storage responsibilities still depend on that role. | warning | yes | no | Move or stop the dependent storage responsibilities before removing this role. |
+| `device_role_change_device_offline` | devices | A role change cannot be delivered while the target device is offline or not ready. | warning | yes | no | Bring this device online before changing its roles. |
+| `device_role_change_failed` | devices | A governed role assignment could not be delivered or the target device identity was unavailable; no role is shown active until verification succeeds. | error | yes | no | Pocket Lab could not apply the role change. |
+| `device_role_change_generation_mismatch` | devices | The requested role set does not match the server-owned role generation or the device's active generation. | high | yes | no | Refresh the device roles before trying this change again. |
+| `device_role_change_identity_mismatch` | devices | A role change was blocked because the trusted device identity did not match the requested target. | high | no | yes | Device identity must match before roles can change. |
+| `device_role_change_pending_verification` | devices | A governed role change was delivered and is waiting for fresh verified device evidence before it becomes active. | warning | yes | no | The role change was sent; Pocket Lab is waiting for fresh device verification. |
+| `device_role_change_requires_approval` | devices | The governed role change requires the independent approval policy before it can be applied. | warning | yes | no | Approval is required before changing this device role. |
+| `device_role_change_stale_generation` | devices | A device reported an older role generation than the server-owned assignment. | warning | yes | no | A newer device role assignment is already active. |
+| `device_role_invalid` | devices | The requested device role is not recognized or the role set exceeds the governed limit. | warning | yes | no | Choose a recognized Pocket Lab device role. |
+| `device_role_not_joinable` | devices | A protected Server Host role was requested through a joined-device path and cannot be assigned there. | high | no | yes | The protected Server Host role cannot be assigned to a joined device. |
+| `device_roles_required` | devices | At least one governed device role is required for the assignment. | warning | yes | no | Choose at least one device role. |
 | `diagnostics_not_active` | validation | Diagnostics are not active. | warning | yes | no | Diagnostics are not active. |
 | `disabled` | system | The requested capability is disabled. | warning | yes | no | The requested capability is disabled. |
 | `duplicate_device` | devices | A matching device or invite already exists. | warning | yes | no | A matching device or invite already exists. |
@@ -113,6 +130,7 @@ generator_version: 3
 | `invalid_domain` | projections | The requested projection domain is invalid. | warning | yes | no | The requested projection domain is invalid. |
 | `invite_expired` | devices | The device invite is no longer valid. | warning | yes | yes | The device invite is no longer valid. |
 | `invite_identity_mismatch` | devices | The invite identity does not match the enrolled device. | high | no | yes | The invite identity does not match the enrolled device. |
+| `invite_role_set_mismatch` | devices | The roles reported while consuming an invite do not match the server-owned invite role set. | warning | no | yes | The invited device roles do not match the invite. |
 | `lease_active` | projections | Another bounded owner currently holds the lease. | warning | yes | no | Another bounded owner currently holds the lease. |
 | `legacy_multiple_active_runs` | system | Legacy state contains multiple active runs. | warning | yes | no | Legacy state contains multiple active runs. |
 | `legacy_secret_rotation_retired` | identity | The legacy generic secret-rotation endpoint is retired and is not a human password operation. | info | no | yes | Use the Identity password controls instead. |

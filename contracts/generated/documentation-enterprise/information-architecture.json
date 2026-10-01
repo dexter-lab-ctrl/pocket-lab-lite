@@ -22,7 +22,7 @@
     "derived",
     "human-review"
   ],
-  "cross_link_count": 903,
+  "cross_link_count": 910,
   "extensions": {
     "security_assurance_correlation": {
       "contract": "contracts/generated/documentation-enterprise/security-assurance-correlation.json",
@@ -628,9 +628,7 @@
       ],
       "architecture": "generated/production/architecture/device-onboarding.md",
       "audience": "user",
-      "boundaries": [
-        "managed-device"
-      ],
+      "boundaries": [],
       "components": [
         "component:agent-command-executor",
         "component:agent-recovery",
@@ -657,6 +655,8 @@
         "table:device_lifecycle_transactions",
         "table:device_recovery_history",
         "table:device_removal_receipts",
+        "table:device_role_assignments",
+        "table:device_role_change_operations",
         "table:device_supervisor_state",
         "table:device_system_profiles"
       ],
@@ -1103,6 +1103,18 @@
           "depth": 2,
           "relation_type": "reads",
           "source": "api:get:/api/lite/fleet",
+          "target": "table:device_role_assignments"
+        },
+        {
+          "depth": 2,
+          "relation_type": "reads",
+          "source": "api:get:/api/lite/fleet",
+          "target": "table:device_role_change_operations"
+        },
+        {
+          "depth": 2,
+          "relation_type": "reads",
+          "source": "api:get:/api/lite/fleet",
           "target": "table:device_supervisor_state"
         },
         {
@@ -1146,18 +1158,6 @@
           "relation_type": "depends_on",
           "source": "component:agent-supervisor",
           "target": "component:agent-recovery"
-        },
-        {
-          "depth": 2,
-          "relation_type": "protected_by",
-          "source": "component:agent-supervisor",
-          "target": "boundary:managed-device"
-        },
-        {
-          "depth": 2,
-          "relation_type": "protected_by",
-          "source": "component:agent-supervisor",
-          "target": "threat-model:managed-device"
         }
       ],
       "expansion": {
@@ -1168,9 +1168,7 @@
       },
       "guide": "generated/production/devices.md",
       "id": "feature-journey:devices",
-      "security_controls": [
-        "CTRL-EXECUTION-OWNERS"
-      ],
+      "security_controls": [],
       "slug": "devices",
       "source_journeys": [
         "journey:add-device",
@@ -2982,6 +2980,8 @@
         "table:device_lifecycle_transactions",
         "table:device_recovery_history",
         "table:device_removal_receipts",
+        "table:device_role_assignments",
+        "table:device_role_change_operations",
         "table:device_supervisor_state",
         "table:device_system_profiles"
       ],
@@ -3091,6 +3091,18 @@
           "relation_type": "reads",
           "source": "api:get:/api/lite/fleet",
           "target": "table:device_removal_receipts"
+        },
+        {
+          "depth": 2,
+          "relation_type": "reads",
+          "source": "api:get:/api/lite/fleet",
+          "target": "table:device_role_assignments"
+        },
+        {
+          "depth": 2,
+          "relation_type": "reads",
+          "source": "api:get:/api/lite/fleet",
+          "target": "table:device_role_change_operations"
         },
         {
           "depth": 2,
@@ -3519,6 +3531,8 @@
         "table:device_lifecycle_transactions",
         "table:device_recovery_history",
         "table:device_removal_receipts",
+        "table:device_role_assignments",
+        "table:device_role_change_operations",
         "table:device_supervisor_state",
         "table:device_system_profiles",
         "table:lite_installed_release_identity",
@@ -17578,7 +17592,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "10700a1d43b456d14296705ef431c0cbff61de83f01e4ac78ab93a8585328775",
+  "source_fingerprint": "128a7455b525fa029be85bc240f10de88102f3beb90619983ced16e992206e0a",
   "top_level": [
     "start-here",
     "use",

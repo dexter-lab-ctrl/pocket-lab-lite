@@ -48,11 +48,11 @@
         "battery_policy_threshold",
         "checkpoint_ineligible",
         "configured_target_budget",
+        "confirmation_required",
         "deferred_resource_pressure",
-        "elapsed_budget_exhausted",
-        "enterprise_connect_links_retired",
-        "enterprise_mode_disabled",
-        "enterprise_owner_authority_required"
+        "device_capability_not_advertised",
+        "device_capability_not_authorized",
+        "device_capability_stale"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -174,11 +174,11 @@
         "battery_policy_threshold",
         "checkpoint_ineligible",
         "configured_target_budget",
+        "confirmation_required",
         "deferred_resource_pressure",
-        "elapsed_budget_exhausted",
-        "enterprise_connect_links_retired",
-        "enterprise_mode_disabled",
-        "enterprise_owner_authority_required"
+        "device_capability_not_advertised",
+        "device_capability_not_authorized",
+        "device_capability_stale"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -234,6 +234,11 @@
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
         "command_undeliverable",
+        "device_role_change_failed",
+        "device_role_change_generation_mismatch",
+        "device_role_change_identity_mismatch",
+        "device_role_change_stale_generation",
+        "device_role_not_joinable",
         "legacy_telemetry_value"
       ],
       "residual_risk": "human review; no arbitrary RPN",
@@ -262,6 +267,11 @@
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
         "command_undeliverable",
+        "device_role_change_failed",
+        "device_role_change_generation_mismatch",
+        "device_role_change_identity_mismatch",
+        "device_role_change_stale_generation",
+        "device_role_not_joinable",
         "legacy_telemetry_value",
         "policy_source_update_pending"
       ],
@@ -343,11 +353,11 @@
         "battery_policy_threshold",
         "checkpoint_ineligible",
         "configured_target_budget",
+        "confirmation_required",
         "deferred_resource_pressure",
-        "elapsed_budget_exhausted",
-        "enterprise_connect_links_retired",
-        "enterprise_mode_disabled",
-        "enterprise_owner_authority_required"
+        "device_capability_not_advertised",
+        "device_capability_not_authorized",
+        "device_capability_stale"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -433,6 +443,11 @@
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
         "command_undeliverable",
+        "device_role_change_failed",
+        "device_role_change_generation_mismatch",
+        "device_role_change_identity_mismatch",
+        "device_role_change_stale_generation",
+        "device_role_not_joinable",
         "legacy_telemetry_value"
       ],
       "residual_risk": "human review; no arbitrary RPN",
@@ -490,11 +505,11 @@
         "battery_policy_threshold",
         "checkpoint_ineligible",
         "configured_target_budget",
+        "confirmation_required",
         "deferred_resource_pressure",
-        "elapsed_budget_exhausted",
-        "enterprise_connect_links_retired",
-        "enterprise_mode_disabled",
-        "enterprise_owner_authority_required"
+        "device_capability_not_advertised",
+        "device_capability_not_authorized",
+        "device_capability_stale"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -617,11 +632,11 @@
         "battery_policy_threshold",
         "checkpoint_ineligible",
         "configured_target_budget",
+        "confirmation_required",
         "deferred_resource_pressure",
-        "elapsed_budget_exhausted",
-        "enterprise_connect_links_retired",
-        "enterprise_mode_disabled",
-        "enterprise_owner_authority_required"
+        "device_capability_not_advertised",
+        "device_capability_not_authorized",
+        "device_capability_stale"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -759,11 +774,11 @@
         "battery_policy_threshold",
         "checkpoint_ineligible",
         "configured_target_budget",
+        "confirmation_required",
         "deferred_resource_pressure",
-        "elapsed_budget_exhausted",
-        "enterprise_connect_links_retired",
-        "enterprise_mode_disabled",
-        "enterprise_owner_authority_required"
+        "device_capability_not_advertised",
+        "device_capability_not_authorized",
+        "device_capability_stale"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -819,10 +834,10 @@
         "assurance_policy_sync_denied",
         "assurance_policy_sync_disabled",
         "battery_policy_threshold",
-        "generic_policy_toggle_retired",
-        "identity_unavailable",
-        "opa_status_unknown",
-        "owner_approval_policy_inconsistent"
+        "device_capability_not_authorized",
+        "device_role_assignment_unauthorized",
+        "device_role_change_requires_approval",
+        "generic_policy_toggle_retired"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -852,11 +867,11 @@
         "assurance_policy_sync_denied",
         "assurance_policy_sync_disabled",
         "battery_policy_threshold",
+        "device_capability_not_authorized",
+        "device_role_assignment_unauthorized",
+        "device_role_change_requires_approval",
         "generic_policy_toggle_retired",
-        "human_session_required",
-        "identity_unavailable",
-        "owner_approval_policy_inconsistent",
-        "policy_action_not_registered"
+        "human_session_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -883,6 +898,7 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "device_role_change_requires_approval",
         "independent_approval_satisfied",
         "owner_approval_policy_inconsistent"
       ],
@@ -945,11 +961,11 @@
         "battery_policy_threshold",
         "checkpoint_ineligible",
         "configured_target_budget",
+        "confirmation_required",
         "deferred_resource_pressure",
-        "elapsed_budget_exhausted",
-        "enterprise_connect_links_retired",
-        "enterprise_mode_disabled",
-        "enterprise_owner_authority_required"
+        "device_capability_not_advertised",
+        "device_capability_not_authorized",
+        "device_capability_stale"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",

@@ -373,6 +373,18 @@
       "user_message": "The remaining safety targets can resume in a later Full check."
     },
     {
+      "code": "confirmation_required",
+      "domain": "devices",
+      "http_status": 409,
+      "meaning": "A potentially destructive device or recovery action requires explicit confirmation before it can continue.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Confirm this action before continuing."
+    },
+    {
       "code": "connection_failed",
       "domain": "validation",
       "http_status": 409,
@@ -407,6 +419,198 @@
       "severity": "warning",
       "terminal": false,
       "user_message": "This safety target can resume in a later Full check."
+    },
+    {
+      "code": "device_capability_not_advertised",
+      "domain": "devices",
+      "http_status": 409,
+      "meaning": "The device has not advertised the capability required by its governed role assignment.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "The device has not advertised this capability."
+    },
+    {
+      "code": "device_capability_not_authorized",
+      "domain": "devices",
+      "http_status": 403,
+      "meaning": "The server policy does not authorize the device capability for its current governed role assignment.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "warning",
+      "terminal": true,
+      "user_message": "This capability is not authorized for the device's current roles."
+    },
+    {
+      "code": "device_capability_stale",
+      "domain": "devices",
+      "http_status": 409,
+      "meaning": "The device capability evidence is older than the governed freshness window.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Wait for a fresh device heartbeat before relying on this capability."
+    },
+    {
+      "code": "device_capability_verification_failed",
+      "domain": "devices",
+      "http_status": 409,
+      "meaning": "Fresh runtime evidence did not verify the capability required by the governed role assignment.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Fresh device evidence did not verify this capability."
+    },
+    {
+      "code": "device_role_assignment_unauthorized",
+      "domain": "devices",
+      "http_status": 403,
+      "meaning": "The observed or requested device role assignment is not authorized by the server-owned role policy.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "high",
+      "terminal": true,
+      "user_message": "This device role is not authorized."
+    },
+    {
+      "code": "device_role_change_blocked_by_dependency",
+      "domain": "devices",
+      "http_status": 409,
+      "meaning": "A role removal is blocked because active backup, recovery, or storage responsibilities still depend on that role.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Move or stop the dependent storage responsibilities before removing this role."
+    },
+    {
+      "code": "device_role_change_device_offline",
+      "domain": "devices",
+      "http_status": 409,
+      "meaning": "A role change cannot be delivered while the target device is offline or not ready.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Bring this device online before changing its roles."
+    },
+    {
+      "code": "device_role_change_failed",
+      "domain": "devices",
+      "http_status": 503,
+      "meaning": "A governed role assignment could not be delivered or the target device identity was unavailable; no role is shown active until verification succeeds.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "error",
+      "terminal": false,
+      "user_message": "Pocket Lab could not apply the role change."
+    },
+    {
+      "code": "device_role_change_generation_mismatch",
+      "domain": "devices",
+      "http_status": 409,
+      "meaning": "The requested role set does not match the server-owned role generation or the device's active generation.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "high",
+      "terminal": false,
+      "user_message": "Refresh the device roles before trying this change again."
+    },
+    {
+      "code": "device_role_change_identity_mismatch",
+      "domain": "devices",
+      "http_status": 409,
+      "meaning": "A role change was blocked because the trusted device identity did not match the requested target.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "high",
+      "terminal": true,
+      "user_message": "Device identity must match before roles can change."
+    },
+    {
+      "code": "device_role_change_pending_verification",
+      "domain": "devices",
+      "http_status": 202,
+      "meaning": "A governed role change was delivered and is waiting for fresh verified device evidence before it becomes active.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "The role change was sent; Pocket Lab is waiting for fresh device verification."
+    },
+    {
+      "code": "device_role_change_requires_approval",
+      "domain": "devices",
+      "http_status": 409,
+      "meaning": "The governed role change requires the independent approval policy before it can be applied.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Approval is required before changing this device role."
+    },
+    {
+      "code": "device_role_change_stale_generation",
+      "domain": "devices",
+      "http_status": 409,
+      "meaning": "A device reported an older role generation than the server-owned assignment.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "A newer device role assignment is already active."
+    },
+    {
+      "code": "device_role_invalid",
+      "domain": "devices",
+      "http_status": 422,
+      "meaning": "The requested device role is not recognized or the role set exceeds the governed limit.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Choose a recognized Pocket Lab device role."
+    },
+    {
+      "code": "device_role_not_joinable",
+      "domain": "devices",
+      "http_status": 409,
+      "meaning": "A protected Server Host role was requested through a joined-device path and cannot be assigned there.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "high",
+      "terminal": true,
+      "user_message": "The protected Server Host role cannot be assigned to a joined device."
+    },
+    {
+      "code": "device_roles_required",
+      "domain": "devices",
+      "http_status": 422,
+      "meaning": "At least one governed device role is required for the assignment.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Choose at least one device role."
     },
     {
       "code": "diagnostics_not_active",
@@ -1187,6 +1391,18 @@
       "severity": "high",
       "terminal": true,
       "user_message": "The invite identity does not match the enrolled device."
+    },
+    {
+      "code": "invite_role_set_mismatch",
+      "domain": "devices",
+      "http_status": 409,
+      "meaning": "The roles reported while consuming an invite do not match the server-owned invite role set.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "warning",
+      "terminal": true,
+      "user_message": "The invited device roles do not match the invite."
     },
     {
       "code": "lease_active",
@@ -2934,5 +3150,5 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "20efd5b0ffc7e6c2e47fcea16c2b6d071ca5903e7a3340bd381aa1ad2e0eaedf"
+  "source_fingerprint": "0d7d1b9302551bd97f7d6ffa85a15f2a2c84d5a343ed3903f61648376795657f"
 }

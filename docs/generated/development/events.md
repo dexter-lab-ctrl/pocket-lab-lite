@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 78749ab71bc4aea430650fc8b3be24811e8a9f48feb26a77d03a88c93baa7c4e
+source_fingerprint: fb25f671e62f2a54cd546ffc41162c41bf61b9e15aba9f7bea40325800aa27fd
 schema_revision: 1
 validation_status: generated
 ---
@@ -21,7 +21,7 @@ validation_status: generated
 
 Subjects are scanned from current runtime source. This does not reintroduce the retired full-product typed-operation catalog.
 
-## Detected subjects (216)
+## Detected subjects (218)
 
 - `pocketlab.commands.`
 - `pocketlab.commands.catalog.refresh`
@@ -65,6 +65,7 @@ Subjects are scanned from current runtime source. This does not reintroduce the 
 - `pocketlab.commands.node.`
 - `pocketlab.commands.node.all.`
 - `pocketlab.commands.node.all.{command.replace`
+- `pocketlab.commands.node.{fleet_registry.normalize_node_id`
 - `pocketlab.commands.node.{node_id}.`
 - `pocketlab.commands.node.{node_id}.{command.replace`
 - `pocketlab.commands.node.{normalized_node_id}.agent.restart`
@@ -105,6 +106,7 @@ Subjects are scanned from current runtime source. This does not reintroduce the 
 - `pocketlab.events.fleet.config_updated`
 - `pocketlab.events.fleet.device_health_sampled`
 - `pocketlab.events.fleet.device_removed`
+- `pocketlab.events.fleet.device_role_change_requested`
 - `pocketlab.events.fleet.health_changed`
 - `pocketlab.events.fleet.health_sampled`
 - `pocketlab.events.fleet.invite_accepted`

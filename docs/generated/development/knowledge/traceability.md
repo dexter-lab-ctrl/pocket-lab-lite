@@ -69,6 +69,7 @@ generator_version: 3
 | GET /api/lite/fleet | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/fleet/agent/bootstrap.sh | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/fleet/devices/{device_id}/recovery-history | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| GET /api/lite/fleet/devices/{device_id}/roles | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/fleet/devices/{node_id}/restart-agent/status | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/fleet/health-summary | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | GET /api/lite/fleet/invites/latest | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
@@ -238,6 +239,7 @@ generator_version: 3
 | PUT /api/lite/enterprise/identity/members/{human_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | PUT /api/lite/enterprise/identity/mode | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | PUT /api/lite/fleet/devices/{device_id}/display-model | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| PUT /api/lite/fleet/devices/{device_id}/roles | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | PUT /api/lite/identity/passkeys/{credential_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | Device command executor | component | test:tests/backend/test_lite_device_system_profile.py, test:tests/backend/test_lite_devices_production_readiness.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_documentation_presentation_polish.py, test:tests/docs/test_enterprise_completion.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
 | Reconnect watchdog and supervisor recovery | component | test:tests/backend/test_lite_device_system_profile.py, test:tests/backend/test_lite_devices_durable_enrollment.py, test:tests/backend/test_lite_devices_production_readiness.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_documentation_presentation_polish.py, test:tests/docs/test_enterprise_completion.py, test:tests/docs/test_living_knowledgebase.py | test-linked |

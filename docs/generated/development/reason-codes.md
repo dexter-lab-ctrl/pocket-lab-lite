@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 27bd1d85496a7b82ad8cbb01f741cc8f6cca7bd6ca291eb1f1fc6339794f5d88
+source_fingerprint: 6ff7e133ddf9f0799dc499e3f966621d2360aff4170cbe67f44fcb9be14d124b
 schema_revision: 1
 validation_status: generated
 ---
@@ -53,9 +53,26 @@ validation_status: generated
 | `cold_start_validation` | validation | Cold-start validation is in progress. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `command_undeliverable` | devices | The target agent cannot currently receive the command. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `configured_target_budget` | security | The configured atomic-target budget was reached after durable checkpoint work. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
+| `confirmation_required` | devices | A potentially destructive device or recovery action requires explicit confirmation before it can continue. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py |
 | `connection_failed` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |
 | `csrf_required` | identity | A human-session write was rejected because its CSRF proof was missing or invalid. | yes | no | 403 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `deferred_resource_pressure` | security | A heavy Security target was not omitted; it was deferred after a durable checkpoint by a backend resource decision. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py |
+| `device_capability_not_advertised` | devices | The device has not advertised the capability required by its governed role assignment. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_roles.py |
+| `device_capability_not_authorized` | devices | The server policy does not authorize the device capability for its current governed role assignment. | no | yes | 403 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_roles.py |
+| `device_capability_stale` | devices | The device capability evidence is older than the governed freshness window. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_roles.py |
+| `device_capability_verification_failed` | devices | Fresh runtime evidence did not verify the capability required by the governed role assignment. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_roles.py |
+| `device_role_assignment_unauthorized` | devices | The observed or requested device role assignment is not authorized by the server-owned role policy. | no | yes | 403 | high | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_roles.py |
+| `device_role_change_blocked_by_dependency` | devices | A role removal is blocked because active backup, recovery, or storage responsibilities still depend on that role. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_roles.py |
+| `device_role_change_device_offline` | devices | A role change cannot be delivered while the target device is offline or not ready. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py |
+| `device_role_change_failed` | devices | A governed role assignment could not be delivered or the target device identity was unavailable; no role is shown active until verification succeeds. | yes | no | 503 | error | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_roles.py and runtime/agents/pocketlab_node_agent.py |
+| `device_role_change_generation_mismatch` | devices | The requested role set does not match the server-owned role generation or the device's active generation. | yes | no | 409 | high | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_roles.py and runtime/agents/pocketlab_node_agent.py |
+| `device_role_change_identity_mismatch` | devices | A role change was blocked because the trusted device identity did not match the requested target. | no | yes | 409 | high | pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py and runtime/agents/pocketlab_node_agent.py |
+| `device_role_change_pending_verification` | devices | A governed role change was delivered and is waiting for fresh verified device evidence before it becomes active. | yes | no | 202 | warning | pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py |
+| `device_role_change_requires_approval` | devices | The governed role change requires the independent approval policy before it can be applied. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_roles.py |
+| `device_role_change_stale_generation` | devices | A device reported an older role generation than the server-owned assignment. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_roles.py and runtime/agents/pocketlab_node_agent.py |
+| `device_role_invalid` | devices | The requested device role is not recognized or the role set exceeds the governed limit. | yes | no | 422 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_roles.py |
+| `device_role_not_joinable` | devices | A protected Server Host role was requested through a joined-device path and cannot be assigned there. | no | yes | 409 | high | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_roles.py and runtime/agents/pocketlab_node_agent.py |
+| `device_roles_required` | devices | At least one governed device role is required for the assignment. | yes | no | 422 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_roles.py |
 | `diagnostics_not_active` | validation | Diagnostics are not active. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `disabled` | system | The requested capability is disabled. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `duplicate_device` | devices | A matching device or invite already exists. | yes | no | 409 | warning | structured reason/failure fields in Lite backend or contracts metadata |
@@ -121,6 +138,7 @@ validation_status: generated
 | `invalid_domain` | projections | The requested projection domain is invalid. | yes | no | 400 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `invite_expired` | devices | The device invite is no longer valid. | yes | yes | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `invite_identity_mismatch` | devices | The invite identity does not match the enrolled device. | no | yes | 409 | high | structured reason/failure fields in Lite backend or contracts metadata |
+| `invite_role_set_mismatch` | devices | The roles reported while consuming an invite do not match the server-owned invite role set. | no | yes | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py |
 | `lease_active` | projections | Another bounded owner currently holds the lease. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `legacy_multiple_active_runs` | system | Legacy state contains multiple active runs. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `legacy_secret_rotation_retired` | identity | The legacy generic secret-rotation endpoint is retired and is not a human password operation. | no | yes | 410 | info | structured reason/failure fields in Lite backend or contracts metadata |

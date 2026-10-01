@@ -31,6 +31,8 @@ device_awareness_state
 device_health_attention
 device_health_current
 device_removal_receipts
+device_role_assignments
+device_role_change_operations
 device_supervisor_state
 harness_audit_events
 harness_challenges
@@ -57,11 +59,11 @@ device_system_profiles
 enterprise_configuration
 human_enrollment_claims
 policy_runtime_state
-policy_approvals
 policy_recovery_resolutions
 policy_temporary_exceptions
 webauthn_challenges
 enterprise_memberships
+policy_approvals
 audit_evidence_index
 backup_manifest_index
 command_lifecycle

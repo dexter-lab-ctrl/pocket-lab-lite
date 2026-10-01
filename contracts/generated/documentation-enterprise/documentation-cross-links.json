@@ -2152,17 +2152,6 @@
       "target_type": "page"
     },
     {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:devices:03fb149e303155c9",
-      "relation_type": "protected_by",
-      "source": "page:generated/enterprise/journeys/devices",
-      "target": "threat-model:managed-device",
-      "target_type": "threat-model"
-    },
-    {
       "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
@@ -2183,17 +2172,6 @@
       "source": "page:generated/enterprise/journeys/devices",
       "target": "api:get:/api/lite/fleet",
       "target_type": "api"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:devices:0e9a24aef72e4b03",
-      "relation_type": "protected_by",
-      "source": "page:generated/enterprise/journeys/devices",
-      "target": "boundary:managed-device",
-      "target_type": "boundary"
     },
     {
       "depth": 1,
@@ -2537,6 +2515,17 @@
       "target_type": "test"
     },
     {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:devices:757e0fbcb38e58b2",
+      "relation_type": "reads",
+      "source": "page:generated/enterprise/journeys/devices",
+      "target": "table:device_role_change_operations",
+      "target_type": "table"
+    },
+    {
       "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
@@ -2557,6 +2546,17 @@
       "source": "page:generated/enterprise/journeys/devices",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
       "target_type": "test"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:devices:7ed99391900735f9",
+      "relation_type": "reads",
+      "source": "page:generated/enterprise/journeys/devices",
+      "target": "table:device_role_assignments",
+      "target_type": "table"
     },
     {
       "depth": 2,
@@ -2879,17 +2879,6 @@
       "target_type": "test"
     },
     {
-      "evidence": [
-        "contracts/generated/documentation-enterprise/security-controls.json",
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:devices:control:CTRL-EXECUTION-OWNERS",
-      "relation_type": "protected-by",
-      "source": "page:generated/enterprise/journeys/devices",
-      "target": "CTRL-EXECUTION-OWNERS",
-      "target_type": "control"
-    },
-    {
       "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
@@ -2949,6 +2938,26 @@
       "relation_type": "owns-or-projects-data",
       "source": "page:generated/enterprise/journeys/devices",
       "target": "table:device_health_current",
+      "target_type": "table"
+    },
+    {
+      "evidence": [
+        "contracts/generated/knowledge/data-lineage.json"
+      ],
+      "id": "link:journey:devices:data:5627186c010d0c5f",
+      "relation_type": "owns-or-projects-data",
+      "source": "page:generated/enterprise/journeys/devices",
+      "target": "table:device_role_change_operations",
+      "target_type": "table"
+    },
+    {
+      "evidence": [
+        "contracts/generated/knowledge/data-lineage.json"
+      ],
+      "id": "link:journey:devices:data:619e13232023eca7",
+      "relation_type": "owns-or-projects-data",
+      "source": "page:generated/enterprise/journeys/devices",
+      "target": "table:device_role_assignments",
       "target_type": "table"
     },
     {
@@ -6922,6 +6931,17 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:remote-access:757e0fbcb38e58b2",
+      "relation_type": "reads",
+      "source": "page:generated/enterprise/journeys/remote-access",
+      "target": "table:device_role_change_operations",
+      "target_type": "table"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:remote-access:7733f72eb5cdb1a7",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/remote-access",
@@ -6949,6 +6969,17 @@
       "source": "page:generated/enterprise/journeys/remote-access",
       "target": "test:tests/docs/test_enterprise_completion.py",
       "target_type": "test"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:remote-access:7ed99391900735f9",
+      "relation_type": "reads",
+      "source": "page:generated/enterprise/journeys/remote-access",
+      "target": "table:device_role_assignments",
+      "target_type": "table"
     },
     {
       "depth": 2,
@@ -7352,6 +7383,26 @@
       "relation_type": "owns-or-projects-data",
       "source": "page:generated/enterprise/journeys/remote-access",
       "target": "table:device_health_current",
+      "target_type": "table"
+    },
+    {
+      "evidence": [
+        "contracts/generated/knowledge/data-lineage.json"
+      ],
+      "id": "link:journey:remote-access:data:5627186c010d0c5f",
+      "relation_type": "owns-or-projects-data",
+      "source": "page:generated/enterprise/journeys/remote-access",
+      "target": "table:device_role_change_operations",
+      "target_type": "table"
+    },
+    {
+      "evidence": [
+        "contracts/generated/knowledge/data-lineage.json"
+      ],
+      "id": "link:journey:remote-access:data:619e13232023eca7",
+      "relation_type": "owns-or-projects-data",
+      "source": "page:generated/enterprise/journeys/remote-access",
+      "target": "table:device_role_assignments",
       "target_type": "table"
     },
     {
@@ -8430,10 +8481,30 @@
       "evidence": [
         "contracts/generated/knowledge/data-lineage.json"
       ],
+      "id": "link:journey:rules:data:5627186c010d0c5f",
+      "relation_type": "owns-or-projects-data",
+      "source": "page:generated/enterprise/journeys/rules",
+      "target": "table:device_role_change_operations",
+      "target_type": "table"
+    },
+    {
+      "evidence": [
+        "contracts/generated/knowledge/data-lineage.json"
+      ],
       "id": "link:journey:rules:data:57b0b8958ce45b89",
       "relation_type": "owns-or-projects-data",
       "source": "page:generated/enterprise/journeys/rules",
       "target": "table:security_maintenance_runs",
+      "target_type": "table"
+    },
+    {
+      "evidence": [
+        "contracts/generated/knowledge/data-lineage.json"
+      ],
+      "id": "link:journey:rules:data:619e13232023eca7",
+      "relation_type": "owns-or-projects-data",
+      "source": "page:generated/enterprise/journeys/rules",
+      "target": "table:device_role_assignments",
       "target_type": "table"
     },
     {

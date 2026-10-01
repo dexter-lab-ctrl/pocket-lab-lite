@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 9bbf035e99c9c9a2d12ff852f9a0c6efff1d1db11ed91fb0872aa2ccf0307726
+source_fingerprint: 3e22b33c2f777476d6e428d9179bd6e287e3550b1a82c016fe22bf820b3018b0
 schema_revision: 1
 validation_status: generated
 ---
@@ -1912,6 +1912,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 
 | Name | Location | Required | Schema |
 | --- | --- | --- | --- |
+| roles | query | no | `string` |
 | role | query | no | `string` |
 | token | query | no | `string` |
 
@@ -1978,6 +1979,58 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | 200 | Successful Response | application/json: `object` |
 | 400 | The supplied opaque cursor is invalid or stale. | application/json: `PocketLabApiError` |
 | 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-fleet-devices-device-id-roles"></a>
+## GET `/api/lite/fleet/devices/{device_id}/roles`
+
+- Operation ID: `get_lite_device_roles_api_lite_fleet_devices__device_id__roles_get`
+- Summary: Get Lite Device Roles
+- Deprecated: no
+- Tags: `lite`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| device_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="put-api-lite-fleet-devices-device-id-roles"></a>
+## PUT `/api/lite/fleet/devices/{device_id}/roles`
+
+- Operation ID: `change_lite_device_roles_api_lite_fleet_devices__device_id__roles_put`
+- Summary: Change Lite Device Roles
+- Deprecated: no
+- Tags: `lite`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| device_id | path | yes | `string` |
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `LiteDeviceRoleChangeRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 

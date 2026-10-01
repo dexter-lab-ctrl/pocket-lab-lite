@@ -66,6 +66,8 @@
         "table:device_lifecycle_transactions",
         "table:device_recovery_history",
         "table:device_removal_receipts",
+        "table:device_role_assignments",
+        "table:device_role_change_operations",
         "table:device_supervisor_state",
         "table:device_system_profiles"
       ],
@@ -771,6 +773,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5902aa50a9e1602dbe8ce971c26b60b50095ac6ff21757aa4eea69f6d87abb0f"
+    "source_fingerprint": "9cb9692ea7eb27887dac97361bc0a4dd3fc0bbc858ec584bfab233b2b592a255"
   }
 }

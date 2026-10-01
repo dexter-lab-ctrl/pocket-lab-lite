@@ -95,6 +95,8 @@ Execution ownership: FastAPI → NATS/JetStream → node agent/supervisor.
 - `table:device_lifecycle_transactions`
 - `table:device_recovery_history`
 - `table:device_removal_receipts`
+- `table:device_role_assignments`
+- `table:device_role_change_operations`
 - `table:device_supervisor_state`
 - `table:device_system_profiles`
 
@@ -106,11 +108,11 @@ Execution ownership: FastAPI → NATS/JetStream → node agent/supervisor.
 
 ### Boundaries
 
-- `managed-device`
+- No boundary relation was emitted.
 
 ### Controls
 
-- `CTRL-EXECUTION-OWNERS`
+- No control was joined without a proven boundary relationship.
 
 ## Tests and validation
 

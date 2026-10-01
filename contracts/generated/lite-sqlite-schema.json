@@ -1,7 +1,7 @@
 {
   "lite_sqlite_schema": {
     "database": "temporary data-free SQLite",
-    "migration_count": 36,
+    "migration_count": 37,
     "objects": [
       {
         "checks": [],
@@ -2948,7 +2948,8 @@
           }
         ],
         "migration_sources": [
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
         ],
         "name": "device_enrollment_registry",
         "projection_owner": "not a prepared projection",
@@ -4608,6 +4609,357 @@
       },
       {
         "checks": [
+          "role IN ('compute','storage'",
+          "desired IN (0,1",
+          "active IN (0,1",
+          "generation >= 0",
+          "authorization_version >= 1"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "device_id",
+            "nullable": false,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "role",
+            "nullable": false,
+            "primary_key_position": 2
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "desired",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "active",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'pending'",
+            "name": "assignment_status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "generation",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "assigned_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "assigned_by_human_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "1",
+            "name": "authorization_version",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "policy_revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "correlation_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'pending'",
+            "name": "verification_status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "verification_reason",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "verified_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "updated_at",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "devices",
+        "foreign_keys": [],
+        "indexes": [
+          {
+            "columns": [
+              "role",
+              "active",
+              "device_id"
+            ],
+            "name": "idx_device_role_assignments_active",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "device_id",
+              "desired",
+              "generation"
+            ],
+            "name": "idx_device_role_assignments_desired",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "device_id",
+              "role"
+            ],
+            "name": "sqlite_autoindex_device_role_assignments_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        ],
+        "name": "device_role_assignments",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [
+          "/api/lite/fleet",
+          "/api/lite/devices/{device_id}"
+        ],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE device_role_assignments (\n    device_id TEXT NOT NULL,\n    role TEXT NOT NULL CHECK(role IN ('compute','storage')),\n    desired INTEGER NOT NULL DEFAULT 0 CHECK(desired IN (0,1)),\n    active INTEGER NOT NULL DEFAULT 0 CHECK(active IN (0,1)),\n    assignment_status TEXT NOT NULL DEFAULT 'pending',\n    generation INTEGER NOT NULL DEFAULT 0 CHECK(generation >= 0),\n    assigned_at TEXT,\n    assigned_by_human_id TEXT NOT NULL DEFAULT '',\n    authorization_version INTEGER NOT NULL DEFAULT 1 CHECK(authorization_version >= 1),\n    policy_revision TEXT NOT NULL DEFAULT '',\n    correlation_id TEXT NOT NULL DEFAULT '',\n    verification_status TEXT NOT NULL DEFAULT 'pending',\n    verification_reason TEXT NOT NULL DEFAULT '',\n    verified_at TEXT,\n    updated_at TEXT NOT NULL,\n    PRIMARY KEY(device_id, role)\n)",
+        "type": "table",
+        "writer": "device lifecycle and projection services"
+      },
+      {
+        "checks": [
+          "generation >= 1",
+          "length(requested_roles_json",
+          "length(previous_roles_json",
+          "authorization_version >= 1"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "change_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "device_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "generation",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "requested_roles_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'[]'",
+            "name": "previous_roles_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "reason_code",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "summary",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "requested_by_human_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "requested_by_role",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "1",
+            "name": "authorization_version",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "policy_revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "correlation_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "request_fingerprint",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "created_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "updated_at",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "devices",
+        "foreign_keys": [],
+        "indexes": [
+          {
+            "columns": [
+              "device_id",
+              "generation"
+            ],
+            "name": "idx_device_role_change_device",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "status",
+              "updated_at"
+            ],
+            "name": "idx_device_role_change_status",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "device_id",
+              "generation"
+            ],
+            "name": "sqlite_autoindex_device_role_change_operations_2",
+            "origin": "u",
+            "partial": false,
+            "unique": true
+          },
+          {
+            "columns": [
+              "change_id"
+            ],
+            "name": "sqlite_autoindex_device_role_change_operations_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        ],
+        "name": "device_role_change_operations",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived devices persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [
+          "/api/lite/fleet",
+          "/api/lite/devices/{device_id}"
+        ],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE device_role_change_operations (\n    change_id TEXT PRIMARY KEY,\n    device_id TEXT NOT NULL,\n    generation INTEGER NOT NULL CHECK(generation >= 1),\n    requested_roles_json TEXT NOT NULL CHECK(length(requested_roles_json) <= 512),\n    previous_roles_json TEXT NOT NULL DEFAULT '[]' CHECK(length(previous_roles_json) <= 512),\n    status TEXT NOT NULL,\n    reason_code TEXT NOT NULL DEFAULT '',\n    summary TEXT NOT NULL DEFAULT '',\n    requested_by_human_id TEXT NOT NULL DEFAULT '',\n    requested_by_role TEXT NOT NULL DEFAULT '',\n    authorization_version INTEGER NOT NULL DEFAULT 1 CHECK(authorization_version >= 1),\n    policy_revision TEXT NOT NULL DEFAULT '',\n    correlation_id TEXT NOT NULL DEFAULT '',\n    request_fingerprint TEXT NOT NULL DEFAULT '',\n    created_at TEXT NOT NULL,\n    updated_at TEXT NOT NULL,\n    UNIQUE(device_id, generation)\n)",
+        "type": "table",
+        "writer": "device lifecycle and projection services"
+      },
+      {
+        "checks": [
           "evidence_schema_version BETWEEN 1 AND 100",
           "nats_reachable IN (0,1",
           "repair_count >= 0"
@@ -5213,7 +5565,8 @@
         "indexes": [],
         "migration_sources": [
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
         ],
         "name": "enterprise_configuration",
         "projection_owner": "not a prepared projection",
@@ -5344,7 +5697,8 @@
         ],
         "migration_sources": [
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
         ],
         "name": "enterprise_memberships",
         "projection_owner": "not a prepared projection",
@@ -6275,7 +6629,8 @@
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
         ],
         "name": "human_identities",
         "projection_owner": "not a prepared projection",
@@ -7343,9 +7698,9 @@
       },
       {
         "checks": [
-          "action_id = 'device.remove'",
-          "target_type = 'device'",
-          "required_assurance = 'policy.approval.device.remove'",
+          "action_id IN ('device.remove','device.invite','device.roles.change'",
+          "target_type='device'",
+          "initiating_authorization_version >= 1",
           "status IN ('pending','approved','rejected','cancelled','expired','consumed','invalidated'"
         ],
         "classification": "restricted operational metadata",
@@ -7394,6 +7749,13 @@
           },
           {
             "declared_type": "TEXT",
+            "default": "''",
+            "name": "target_revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
             "default": null,
             "name": "initiating_human_id",
             "nullable": false,
@@ -7403,6 +7765,20 @@
             "declared_type": "TEXT",
             "default": null,
             "name": "initiating_role",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "1",
+            "name": "initiating_authorization_version",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "request_fingerprint",
             "nullable": false,
             "primary_key_position": 0
           },
@@ -7539,6 +7915,7 @@
               "initiating_human_id",
               "action_id",
               "target_id",
+              "target_revision",
               "policy_revision",
               "status"
             ],
@@ -7579,7 +7956,8 @@
         ],
         "migration_sources": [
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
         ],
         "name": "policy_approvals",
         "projection_owner": "not a prepared projection",
@@ -7590,7 +7968,7 @@
         "sensitive_fields": [
           "evidence_ref"
         ],
-        "sql": "CREATE TABLE policy_approvals (\n    approval_id TEXT PRIMARY KEY,\n    originating_decision_id TEXT NOT NULL UNIQUE,\n    correlation_id TEXT NOT NULL,\n    action_id TEXT NOT NULL CHECK (action_id = 'device.remove'),\n    target_type TEXT NOT NULL CHECK (target_type = 'device'),\n    target_id TEXT NOT NULL,\n    initiating_human_id TEXT NOT NULL,\n    initiating_role TEXT NOT NULL,\n    required_approver_roles_json TEXT NOT NULL,\n    required_assurance TEXT NOT NULL CHECK (required_assurance = 'policy.approval.device.remove'),\n    policy_revision TEXT NOT NULL,\n    status TEXT NOT NULL CHECK (status IN ('pending','approved','rejected','cancelled','expired','consumed','invalidated')),\n    created_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    approved_at TEXT, approved_by_human_id TEXT,\n    rejected_at TEXT, rejected_by_human_id TEXT,\n    cancelled_at TEXT, cancelled_by_human_id TEXT,\n    consumed_at TEXT,\n    reason_code TEXT NOT NULL DEFAULT '', evidence_ref TEXT NOT NULL DEFAULT '',\n    FOREIGN KEY(initiating_human_id) REFERENCES human_identities(human_id),\n    FOREIGN KEY(approved_by_human_id) REFERENCES human_identities(human_id)\n)",
+        "sql": "CREATE TABLE policy_approvals (\n    approval_id TEXT PRIMARY KEY,\n    originating_decision_id TEXT NOT NULL UNIQUE,\n    correlation_id TEXT NOT NULL,\n    action_id TEXT NOT NULL CHECK(action_id IN ('device.remove','device.invite','device.roles.change')),\n    target_type TEXT NOT NULL CHECK(target_type='device'),\n    target_id TEXT NOT NULL,\n    target_revision TEXT NOT NULL DEFAULT '',\n    initiating_human_id TEXT NOT NULL,\n    initiating_role TEXT NOT NULL,\n    initiating_authorization_version INTEGER NOT NULL DEFAULT 1 CHECK(initiating_authorization_version >= 1),\n    request_fingerprint TEXT NOT NULL DEFAULT '',\n    required_approver_roles_json TEXT NOT NULL,\n    required_assurance TEXT NOT NULL,\n    policy_revision TEXT NOT NULL,\n    status TEXT NOT NULL CHECK(status IN ('pending','approved','rejected','cancelled','expired','consumed','invalidated')),\n    created_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    approved_at TEXT, approved_by_human_id TEXT,\n    rejected_at TEXT, rejected_by_human_id TEXT,\n    cancelled_at TEXT, cancelled_by_human_id TEXT,\n    consumed_at TEXT,\n    reason_code TEXT NOT NULL DEFAULT '',\n    evidence_ref TEXT NOT NULL DEFAULT '',\n    FOREIGN KEY(initiating_human_id) REFERENCES human_identities(human_id),\n    FOREIGN KEY(approved_by_human_id) REFERENCES human_identities(human_id)\n)",
         "type": "table",
         "writer": "source-defined control-plane service"
       },
@@ -7895,7 +8273,8 @@
         ],
         "migration_sources": [
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
         ],
         "name": "policy_decisions",
         "projection_owner": "not a prepared projection",
@@ -12689,7 +13068,7 @@
     "row_count_enforced": 0
   },
   "metadata": {
-    "aggregate_fingerprint": "3b912c23c875c1bfa3ccf38a38bdab571b19d52af4f9a7dfe2a07ce96007b9f0",
+    "aggregate_fingerprint": "35c947ee8e6d033f7e7d7e035ce8efe3f2031051dcb0cc0881005f1327288e8a",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -12699,7 +13078,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/metadata/documentation-platform.json": "4abb77231da2cdc3838d29eb9f7d054ff52e2a4e81188c9a536dbb430e5d2520",
+      "contracts/metadata/documentation-platform.json": "beb223fca558ca6150f7c35927953294652eb4ce69e4d565e3c460e314158de6",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -12737,6 +13116,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql": "28a5e9c0db90565883c685dec3874fdf430644341d9dc8dfd75a40beb50f80b4",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0035_security_assurance.sql": "d1cd045b515f41a1bed07712f32d204f2b96633536e4eb0a00a39f9ce89e18b4",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0036_assurance_execution_lifecycle.sql": "1421ef805eba817feaff7f963ceaa0a14fe8534e1c4956eae4e846ef70e6ef80",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql": "1f16d2afda6a3dc88b2d94e2cc567b046a2adf88153dfc7af4a81e2317ecc930",
       "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4"
     },
     "validation_state": "generated"
