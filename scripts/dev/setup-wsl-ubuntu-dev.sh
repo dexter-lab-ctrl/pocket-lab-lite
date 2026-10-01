@@ -35,7 +35,7 @@ sudo apt-get update
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
   build-essential ca-certificates curl git gnupg jq lsb-release make \
   python3 python3-dev python3-pip python3-venv pipx rsync unzip wget zip \
-  shellcheck yamllint
+  openssh-client shellcheck yamllint
 ok "Base Ubuntu packages installed"
 
 if ! have docker; then
