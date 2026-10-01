@@ -157,6 +157,10 @@
         "title": "GET /api/lite/devices/{device_id}/removal-assessment",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-devices-device-id-removal-assessment"
       },
+      "endpoint:GET:/api/lite/devices/{node_id}/photo-backup": {
+        "title": "GET /api/lite/devices/{node_id}/photo-backup",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-devices-node-id-photo-backup"
+      },
       "endpoint:GET:/api/lite/diagnostics/frontend-lifecycle/challenge": {
         "title": "GET /api/lite/diagnostics/frontend-lifecycle/challenge",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-diagnostics-frontend-lifecycle-challenge"
@@ -340,6 +344,10 @@
       "endpoint:GET:/api/lite/identity/owner-claim/status": {
         "title": "GET /api/lite/identity/owner-claim/status",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-identity-owner-claim-status"
+      },
+      "endpoint:GET:/api/lite/media-backup": {
+        "title": "GET /api/lite/media-backup",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-media-backup"
       },
       "endpoint:GET:/api/lite/policy": {
         "title": "GET /api/lite/policy",
@@ -584,6 +592,18 @@
       "endpoint:POST:/api/lite/catalog/remove": {
         "title": "POST /api/lite/catalog/remove",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-catalog-remove"
+      },
+      "endpoint:POST:/api/lite/devices/{node_id}/photo-backup": {
+        "title": "POST /api/lite/devices/{node_id}/photo-backup",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-devices-node-id-photo-backup"
+      },
+      "endpoint:POST:/api/lite/devices/{node_id}/photo-backup/cancel": {
+        "title": "POST /api/lite/devices/{node_id}/photo-backup/cancel",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-devices-node-id-photo-backup-cancel"
+      },
+      "endpoint:POST:/api/lite/devices/{node_id}/photo-backup/repair": {
+        "title": "POST /api/lite/devices/{node_id}/photo-backup/repair",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-devices-node-id-photo-backup-repair"
       },
       "endpoint:POST:/api/lite/diagnostics/frontend-lifecycle": {
         "title": "POST /api/lite/diagnostics/frontend-lifecycle",
@@ -1061,6 +1081,18 @@
         "title": "pocketlab.commands.lite.maintenance.retention",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-maintenance-retention"
       },
+      "event:pocketlab.commands.lite.media_backup.cancel": {
+        "title": "pocketlab.commands.lite.media_backup.cancel",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-media-backup-cancel"
+      },
+      "event:pocketlab.commands.lite.media_backup.repair": {
+        "title": "pocketlab.commands.lite.media_backup.repair",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-media-backup-repair"
+      },
+      "event:pocketlab.commands.lite.media_backup.start": {
+        "title": "pocketlab.commands.lite.media_backup.start",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-media-backup-start"
+      },
       "event:pocketlab.commands.lite.restore.apply": {
         "title": "pocketlab.commands.lite.restore.apply",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-restore-apply"
@@ -1232,6 +1264,10 @@
       "event:pocketlab.events.drift.{action}_started": {
         "title": "pocketlab.events.drift.{action}_started",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-events-drift-action-started"
+      },
+      "event:pocketlab.events.fleet": {
+        "title": "pocketlab.events.fleet",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet"
       },
       "event:pocketlab.events.fleet.bootstrap_blocked": {
         "title": "pocketlab.events.fleet.bootstrap_blocked",
@@ -1472,6 +1508,18 @@
       "event:pocketlab.events.lite.database.restore.{rollback_status}": {
         "title": "pocketlab.events.lite.database.restore.{rollback_status}",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-database-restore-rollback-status"
+      },
+      "event:pocketlab.events.lite.photo_backup.cancel": {
+        "title": "pocketlab.events.lite.photo_backup.cancel",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-photo-backup-cancel"
+      },
+      "event:pocketlab.events.lite.photo_backup.tools_repair": {
+        "title": "pocketlab.events.lite.photo_backup.tools_repair",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-photo-backup-tools-repair"
+      },
+      "event:pocketlab.events.lite.photo_backup.updated": {
+        "title": "pocketlab.events.lite.photo_backup.updated",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-photo-backup-updated"
       },
       "event:pocketlab.events.lite.restore.checkpoint_created": {
         "title": "pocketlab.events.lite.restore.checkpoint_created",
@@ -2661,6 +2709,10 @@
         "title": "unregistered_domain",
         "url": "../../docs/generated/development/reason-codes.md#unregistered-domain"
       },
+      "reason:unsafe_live_media_import": {
+        "title": "unsafe_live_media_import",
+        "url": "../../docs/generated/development/reason-codes.md#unsafe-live-media-import"
+      },
       "reason:version_not_reported": {
         "title": "version_not_reported",
         "url": "../../docs/generated/development/reason-codes.md#version-not-reported"
@@ -3194,7 +3246,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "11d75702a9f1b47676b85c5360968a866656c2a7ed286d72dfcf8d8ffc8b2d68",
+    "aggregate_fingerprint": "9ce058c724bcb82d540b3caccf5f35192235411a93fd4f8abb4b2068e57f04f5",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3204,8 +3256,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "8d70d2565517e6782d0afafcaf1e9d6090b6fe9c73cf9eb2feeaa0892ea3737b",
-      "contracts/metadata/documentation-platform.json": "c71f6ce0bb40f489bb1f65cf513e6e10572e9e752883827a6588763bfd864313",
+      "contracts/generated/lite-openapi.json": "204711484f7bc0eaef802657ee762a9f88d1135f19775ba46172dac045abc11a",
+      "contracts/metadata/documentation-platform.json": "4abb77231da2cdc3838d29eb9f7d054ff52e2a4e81188c9a536dbb430e5d2520",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",

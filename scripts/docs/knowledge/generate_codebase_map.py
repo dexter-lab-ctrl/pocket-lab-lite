@@ -27,7 +27,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[3]
 GENERATOR = "scripts/docs/knowledge/generate_codebase_map.py"
 SCHEMA_VERSION = "1.0.0"
-GENERATOR_VERSION = 1
+GENERATOR_VERSION = 2
 SOURCE_COMMIT = os.environ.get("SOURCE_COMMIT", "").strip() or "uncommitted"
 SCHEMA = ROOT / "schemas/knowledge/repository-codebase-map.schema.json"
 OUT = ROOT / "contracts/generated/knowledge/repository-codebase-map.json"
@@ -784,7 +784,10 @@ def build_browser_projection(model: dict[str, Any]) -> dict[str, Any]:
         # targets.  Keep kind/source metadata in the canonical model while
         # omitting that duplicate metadata from the static browser payload.
         "external": {k: {"name": v.get("name")} for k, v in external.items() if v.get("kind") != "symbol"},
-        "indexes": {"by_path": model["indexes"]["by_path"], "children_by_parent": model["indexes"]["children_by_parent"], "relationships_from": model["indexes"]["relationships_from"], "relationships_to": model["indexes"]["relationships_to"], "search": search},
+        # The browser projection already carries the full relationship list.
+        # Rebuilding the two reverse indexes once in the static browser keeps
+        # this downloaded artifact bounded without reducing canonical evidence.
+        "indexes": {"by_path": model["indexes"]["by_path"], "children_by_parent": model["indexes"]["children_by_parent"], "search": search},
         "capabilities": model["capabilities"],
     }
     safe_text("browser codebase map", canonical_json(projection))

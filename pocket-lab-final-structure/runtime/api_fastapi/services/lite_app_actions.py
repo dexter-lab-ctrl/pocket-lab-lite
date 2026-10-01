@@ -543,6 +543,15 @@ def _apply_import_photos_truth(actions: dict[str, Any], media: Any) -> None:
             "reason": "Import photos is already running.",
         })
         return
+    if lite_photoprism_media.live_phone_import_blocked():
+        action.update({
+            "enabled": False,
+            "status": "not_ready",
+            "summary": "Import photos is paused for live phone folders. Use Back up photos instead.",
+            "disabled_reason": "Use Back up photos for live phone folders.",
+            "reason": "Use Back up photos for live phone folders.",
+        })
+        return
     if _media_import_completed(media):
         historical_result = {
             "status": "imported",

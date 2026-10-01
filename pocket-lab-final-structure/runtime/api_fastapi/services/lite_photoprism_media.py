@@ -274,6 +274,27 @@ def _mappings() -> dict[str, Any]:
         return {"mappings": [], "count": 0, "summary": "No media folders connected yet."}
 
 
+def live_phone_import_blocked() -> bool:
+    try:
+        mappings = lite_app_storage.runtime_mappings(PHOTOPRISM_APP_ID)
+    except Exception:
+        return True
+    for mapping in mappings:
+        if not isinstance(mapping, dict):
+            continue
+        if str(mapping.get("target") or "import").lower() != "import":
+            continue
+        source_type = str(mapping.get("source_type") or "").lower()
+        source_path = str(mapping.get("source_path") or "").lower()
+        if (
+            source_type == "phone_media"
+            or source_path == "~/storage"
+            or source_path.startswith("~/storage/")
+        ):
+            return True
+    return False
+
+
 def mapping_count() -> int:
     payload = _mappings()
     return int(payload.get("count") or len(payload.get("mappings") or []) or 0)
@@ -634,6 +655,16 @@ def media_command(action_id: str, *, reason: str | None = None, command_id: str 
                 "app_id": PHOTOPRISM_APP_ID,
                 "action_id": str(active.get("action_id") or action),
                 "summary": "PhotoPrism media action is already running.",
+            },
+        )
+    if action == "import_photos" and live_phone_import_blocked():
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "unsafe_live_media_import",
+                "app_id": PHOTOPRISM_APP_ID,
+                "action_id": action,
+                "summary": "Import photos is paused for live phone folders. Use Back up photos instead.",
             },
         )
     count = mapping_count()
@@ -1203,6 +1234,19 @@ def execute_media_operation(command: dict[str, Any]) -> dict[str, Any]:
     """
     _validate_app_id(command.get("app_id"))
     action = validate_action_id(command.get("action_id") or command.get("operation"))
+    if action == "import_photos" and live_phone_import_blocked():
+        operation = record_operation(
+            command,
+            status="failed",
+            summary="Import photos is paused for live phone folders. Use Back up photos instead.",
+        )
+        return {
+            "status": "failed",
+            "app_id": PHOTOPRISM_APP_ID,
+            "action_id": action,
+            "operation": operation,
+            "reason_code": "unsafe_live_media_import",
+        }
     count = mapping_count()
     if count < 1:
         operation = record_operation(command, status="not_ready", summary="Connect a photo folder first.")

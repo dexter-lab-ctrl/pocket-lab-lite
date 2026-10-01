@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 7fbc5b3d92e26b875c893ec2bc79ddf1c149e4689a023a1b21c71ad46b55c12a
+source_fingerprint: 78749ab71bc4aea430650fc8b3be24811e8a9f48feb26a77d03a88c93baa7c4e
 schema_revision: 1
 validation_status: generated
 ---
@@ -21,7 +21,7 @@ validation_status: generated
 
 FastAPI OpenAPI is the canonical browser/backend contract. Redocly validates the generated Lite-only view.
 
-## Lite paths (210)
+## Lite paths (214)
 
 - `/api/lite/apps/lifecycle`
 - `/api/lite/apps/lifecycle/{app_id}`
@@ -50,6 +50,9 @@ FastAPI OpenAPI is the canonical browser/backend contract. Redocly validates the
 - `/api/lite/devices/{device_id}/health/history`
 - `/api/lite/devices/{device_id}/history`
 - `/api/lite/devices/{device_id}/removal-assessment`
+- `/api/lite/devices/{node_id}/photo-backup`
+- `/api/lite/devices/{node_id}/photo-backup/cancel`
+- `/api/lite/devices/{node_id}/photo-backup/repair`
 - `/api/lite/diagnostics/frontend-lifecycle`
 - `/api/lite/diagnostics/frontend-lifecycle/challenge`
 - `/api/lite/diagnostics/runtime`
@@ -157,6 +160,7 @@ FastAPI OpenAPI is the canonical browser/backend contract. Redocly validates the
 - `/api/lite/identity/setup`
 - `/api/lite/identity/step-up/options`
 - `/api/lite/identity/step-up/verify`
+- `/api/lite/media-backup`
 - `/api/lite/policy`
 - `/api/lite/policy/apply`
 - `/api/lite/policy/decisions/{decision_id}`

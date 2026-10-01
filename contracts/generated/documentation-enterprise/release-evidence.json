@@ -91,8 +91,8 @@
         "source": "dist.zip",
         "status": "observed",
         "value": {
-          "bytes": 551811,
-          "sha256": "c7ec9dd661f846875be6747561b4796f3d5c525f7dbbd18e9be221f85917fa50"
+          "bytes": 1080116,
+          "sha256": "ed7ab8a495e2525671d59ac606903539330759b0c6140829ac7d14b9cc23c83f"
         }
       },
       "release_presence": {
@@ -402,10 +402,10 @@
   "exact_tag": "lite-2026.08.12.2",
   "fingerprints": {
     "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
-    "asyncapi": "c7efb2a97b0314a431a6494cd426a4053d2ce3fdd430312fbd9073b0e2167652",
-    "documentation": "8e567c93ebaaa9d4ba637cedf79c11719e18d3dcb6c12f67f5c654b1ae188f9e",
-    "openapi": "8d70d2565517e6782d0afafcaf1e9d6090b6fe9c73cf9eb2feeaa0892ea3737b",
-    "operational_health": "09bd04b18418c62f18ce74af8602236b581d195736bb95846e2c119b53de96ab"
+    "asyncapi": "384382353d118780dd7401f0433b21d6e70f00b257aab38fd9bcb6863b1d82dd",
+    "documentation": "e7f5b010cc8cacdfef3444f1d3cb7c12ae2746da4e3c2db7c6c896955e6f430e",
+    "openapi": "204711484f7bc0eaef802657ee762a9f88d1135f19775ba46172dac045abc11a",
+    "operational_health": "3150650e18b8e200695ce67b6ea4feec63d36f69f5710e8d2036a16b394ed452"
   },
   "frontend_version": "1.0.0",
   "implementation_status": "implemented",

@@ -42,6 +42,7 @@ generator_version: 3
 | `GET /api/lite/devices/{device_id}/health/history` | devices | — | get_lite_device_health_history_api_lite_devices__device_id__health_history_get | contract-derived |
 | `GET /api/lite/devices/{device_id}/history` | devices | — | get_lite_device_lifecycle_history_api_lite_devices__device_id__history_get | contract-derived |
 | `GET /api/lite/devices/{device_id}/removal-assessment` | devices | LiteDevices | get_lite_device_removal_assessment_api_lite_devices__device_id__removal_assessment_get | contract-derived |
+| `GET /api/lite/devices/{node_id}/photo-backup` | devices | — | lite_photo_backup_device_status_api_lite_devices__node_id__photo_backup_get | contract-derived |
 | `GET /api/lite/diagnostics/frontend-lifecycle/challenge` | diagnostics | — | get_frontend_lifecycle_diagnostics_challenge_api_lite_diagnostics_frontend_lifecycle_challenge_get | contract-derived |
 | `GET /api/lite/diagnostics/runtime` | diagnostics | — | get_lite_runtime_diagnostics_api_lite_diagnostics_runtime_get | contract-derived |
 | `GET /api/lite/diagnostics/runtime/full` | diagnostics | — | get_lite_runtime_diagnostics_full_api_lite_diagnostics_runtime_full_get | contract-derived |
@@ -88,6 +89,7 @@ generator_version: 3
 | `GET /api/lite/harness/status` | harness | — | status_api_lite_harness_status_get | contract-derived |
 | `GET /api/lite/identity` | identity | — | get_lite_identity_api_lite_identity_get | contract-derived |
 | `GET /api/lite/identity/owner-claim/status` | identity | LiteIdentity | owner_claim_status_api_lite_identity_owner_claim_status_get | contract-derived |
+| `GET /api/lite/media-backup` | media-backup | — | lite_photo_backup_fleet_status_api_lite_media_backup_get | contract-derived |
 | `GET /api/lite/policy` | rules | LiteRules | get_lite_policy_api_lite_policy_get | contract-derived |
 | `GET /api/lite/policy/decisions/{decision_id}` | rules | — | get_lite_policy_decision_api_lite_policy_decisions__decision_id__get | contract-derived |
 | `GET /api/lite/policy/templates` | rules | — | get_lite_policy_templates_api_lite_policy_templates_get | contract-derived |
@@ -149,6 +151,9 @@ generator_version: 3
 | `POST /api/lite/apps/{app_id}/update/apply` | apps | — | apply_lite_app_update_api_lite_apps__app_id__update_apply_post | contract-derived |
 | `POST /api/lite/catalog/install` | apps | — | install_lite_catalog_item_api_lite_catalog_install_post | contract-derived |
 | `POST /api/lite/catalog/remove` | apps | — | remove_lite_catalog_item_api_lite_catalog_remove_post | contract-derived |
+| `POST /api/lite/devices/{node_id}/photo-backup` | devices | — | start_lite_photo_backup_api_lite_devices__node_id__photo_backup_post | contract-derived |
+| `POST /api/lite/devices/{node_id}/photo-backup/cancel` | devices | — | cancel_lite_photo_backup_api_lite_devices__node_id__photo_backup_cancel_post | contract-derived |
+| `POST /api/lite/devices/{node_id}/photo-backup/repair` | devices | — | repair_lite_photo_backup_tools_api_lite_devices__node_id__photo_backup_repair_post | contract-derived |
 | `POST /api/lite/diagnostics/frontend-lifecycle` | diagnostics | — | record_frontend_lifecycle_diagnostics_api_lite_diagnostics_frontend_lifecycle_post | contract-derived |
 | `POST /api/lite/enterprise/identity/enrollment/consume` | enterprise | — | legacy_person_claim_consume_api_lite_enterprise_identity_enrollment_consume_post | contract-derived |
 | `POST /api/lite/enterprise/identity/enrollment/passkey/options` | enterprise | — | legacy_person_claim_passkey_options_api_lite_enterprise_identity_enrollment_passkey_options_post | contract-derived |

@@ -1,23 +1,24 @@
 {
   "approved_change_classes": [
-    "add the loopback-only Runtime Security Assurance Harness OpenAPI surface under /api/lite/harness/security-assurance/*, including fixed capability/suite/preflight/run/findings/report/cancel operations; these endpoints remain fail-closed behind harness enablement, loopback-only transport, Ed25519 proof, short-lived qualification session, least-privilege capability, fixed target-scope, resource, and worker-owned execution gates",
-    "add the qualification-only key-bound bootstrap challenge/complete operations and durable assurance events/resume operations; bootstrap remains direct-loopback, operator-approved, fixed-profile, one-use, short-lived, and unavailable through Caddy or production",
-    "add the read-only /api/lite/runtime operation exposing the sanitized PM2 Runtime Contract projection; the route adds no browser-side execution, NATS access, backend secrets, or state-changing behavior",
-    "add the qualification-only POST /api/lite/harness/browser/bridge surface; it is direct-loopback-only, requires a signed short-lived ui-performance-60fps synthetic session and qualification.browser_bridge capability, returns a process-ephemeral browser projection, never persists credentials, and is unavailable through Caddy or production"
+    "add GET and POST /api/lite/devices/{node_id}/photo-backup for backend-owned Photo Backup status and start admission, with device capability, storage, connectivity, lifecycle, workload, and safe-provider guards",
+    "add POST /api/lite/devices/{node_id}/photo-backup/cancel and /api/lite/devices/{node_id}/photo-backup/repair for bounded cancellation and explicit recovery paths, preserving worker/node-agent ownership and sanitized evidence",
+    "add GET /api/lite/media-backup for the prepared media-backup projection without browser-side execution or hidden read-side effects",
+    "add PhotoPrism WebDAV credential lifecycle and constrained transfer contracts while keeping app passwords out of browser state, argv, logs, and evidence; documented revocation remains session-id based",
+    "promote the exact generated Photo Backup OpenAPI contract after DEV-PC focused/full gates and exact-feature-runtime qualification; real secondary-device media transfer remains unvalidated because no permitted secondary source was online and is deferred to a future PR"
   ],
   "baseline": "contracts/parity/openapi-baseline.json",
   "contract": "contracts/generated/lite-openapi.json",
-  "previous_sha256": "683093d477f48a1e54959ed51de4498003d3854e51b55b957ec75ad84d6bc929",
-  "promoted_sha256": "8d70d2565517e6782d0afafcaf1e9d6090b6fe9c73cf9eb2feeaa0892ea3737b",
+  "previous_sha256": "8d70d2565517e6782d0afafcaf1e9d6090b6fe9c73cf9eb2feeaa0892ea3737b",
+  "promoted_sha256": "204711484f7bc0eaef802657ee762a9f88d1135f19775ba46172dac045abc11a",
   "sanitized": true,
   "schema_version": "1.0.0",
   "security_review": {
     "documents_500": false,
     "raw_secrets_included": false,
     "runtime_routes_removed": false,
-    "write_operations_added": false
+    "write_operations_added": true
   },
-  "source_revision": "perf/lite-ui-60fps-performance-contract@e9b2ec2790e4ff63604eb8ff618fec8e74ede4fb",
+  "source_revision": "feat/photoprism-webdav-photo-backup@393c75e04b475aa355dd9a34fbffd8b425fc2b1d",
   "status": "promoted",
-  "validation_status": "dev-pc-contract-and-harness-tests-validated; physical-runtime-qualification-pending"
+  "validation_status": "dev-pc-and-exact-feature-runtime-photo-backup-validated; real-secondary-device-media-transfer-unvalidated-and-deferred"
 }

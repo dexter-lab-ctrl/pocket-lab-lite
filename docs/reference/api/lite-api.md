@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 2f6c8073ac4a457dd8443811feca3eaa66429e1396b1be70be79c5c6d573937c
+source_fingerprint: 9bbf035e99c9c9a2d12ff852f9a0c6efff1d1db11ed91fb0872aa2ccf0307726
 schema_revision: 1
 validation_status: generated
 ---
@@ -699,6 +699,110 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
 | 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-devices-node-id-photo-backup"></a>
+## GET `/api/lite/devices/{node_id}/photo-backup`
+
+- Operation ID: `lite_photo_backup_device_status_api_lite_devices__node_id__photo_backup_get`
+- Summary: Lite Photo Backup Device Status
+- Deprecated: no
+- Tags: `fleet`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| node_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-devices-node-id-photo-backup"></a>
+## POST `/api/lite/devices/{node_id}/photo-backup`
+
+- Operation ID: `start_lite_photo_backup_api_lite_devices__node_id__photo_backup_post`
+- Summary: Start Lite Photo Backup
+- Deprecated: no
+- Tags: `fleet`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| node_id | path | yes | `string` |
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | anyOf(`object`, `null`) | no |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-devices-node-id-photo-backup-cancel"></a>
+## POST `/api/lite/devices/{node_id}/photo-backup/cancel`
+
+- Operation ID: `cancel_lite_photo_backup_api_lite_devices__node_id__photo_backup_cancel_post`
+- Summary: Cancel Lite Photo Backup
+- Deprecated: no
+- Tags: `fleet`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| node_id | path | yes | `string` |
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | anyOf(`object`, `null`) | no |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-devices-node-id-photo-backup-repair"></a>
+## POST `/api/lite/devices/{node_id}/photo-backup/repair`
+
+- Operation ID: `repair_lite_photo_backup_tools_api_lite_devices__node_id__photo_backup_repair_post`
+- Summary: Repair Lite Photo Backup Tools
+- Deprecated: no
+- Tags: `fleet`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| node_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
@@ -3104,6 +3208,21 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | 200 | Successful Response | application/json: `object` |
 | 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-media-backup"></a>
+## GET `/api/lite/media-backup`
+
+- Operation ID: `lite_photo_backup_fleet_status_api_lite_media_backup_get`
+- Summary: Lite Photo Backup Fleet Status
+- Deprecated: no
+- Tags: `fleet`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-policy"></a>

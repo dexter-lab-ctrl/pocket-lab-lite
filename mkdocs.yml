@@ -322,6 +322,7 @@ nav:
       - Bootstrap Lite: operations/bootstrap-lite.md
       - Durable device enrollment: operations/devices-durable-enrollment.md
       - Device production readiness: operations/devices-production-readiness.md
+      - Photo backup to PhotoPrism WebDAV: operations/photo-backup-photoprism-webdav.md
       - Lite Security model: security/lite-security-model.md
       - Backup & restore reference: recovery/backup-restore.md
       - Lite validation: validation/lite-validation.md

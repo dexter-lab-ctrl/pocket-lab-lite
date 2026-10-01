@@ -178,6 +178,7 @@ WORKLOADS: Mapping[str, WorkloadDefinition] = {
         _workload("security.scanner.execute", "security_scanner_execution", ExecutionOwner.WORKER_OWNED, CostClass.HEAVY, AdmissionClass.WORKER_OWNED, 3600.0, cancellation_safe=False, retry_safe=True, coalescing_safe=False, authoritative=True, audit=True),
         _workload("security.assurance.execute", "runtime_security_assurance_execution", ExecutionOwner.WORKER_OWNED, CostClass.HEAVY, AdmissionClass.WORKER_OWNED, 7200.0, cancellation_safe=False, retry_safe=True, coalescing_safe=False, authoritative=True, audit=True),
         _workload("backup.execute", "backup_restore_execution", ExecutionOwner.WORKER_OWNED, CostClass.HEAVY, AdmissionClass.WORKER_OWNED, 3600.0, cancellation_safe=False, retry_safe=True, coalescing_safe=False, authoritative=True, audit=True),
+        _workload("photo_backup.execute", "remote_media_copy_execution", ExecutionOwner.WORKER_OWNED, CostClass.HEAVY, AdmissionClass.WORKER_OWNED, 7200.0, cancellation_safe=False, retry_safe=True, coalescing_safe=False, authoritative=True, audit=True),
         _workload("recovery.execute", "backup_restore_execution", ExecutionOwner.WORKER_OWNED, CostClass.HEAVY, AdmissionClass.WORKER_OWNED, 3600.0, cancellation_safe=False, retry_safe=False, coalescing_safe=False, authoritative=True, audit=True),
         _workload("package.repair", "package_runtime_repair", ExecutionOwner.WORKER_OWNED, CostClass.HEAVY, AdmissionClass.WORKER_OWNED, 1800.0, cancellation_safe=False, retry_safe=True, coalescing_safe=False, authoritative=True, audit=True),
     )

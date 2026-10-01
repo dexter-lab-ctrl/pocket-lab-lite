@@ -314,6 +314,14 @@
       if (Number(root.dataset.nodeCount || 0) && Number(root.dataset.nodeCount) !== data.statistics.nodes) throw new Error('node count mismatch');
       data.nodeMap = new Map(data.nodes.map((node) => [node.id, node]));
       data.relMap = new Map(data.relationships.map((rel) => [rel.id, rel]));
+      const relationshipsFrom = Object.create(null);
+      const relationshipsTo = Object.create(null);
+      data.relationships.forEach((rel) => {
+        (relationshipsFrom[rel.a] ||= []).push(rel.id);
+        (relationshipsTo[rel.b] ||= []).push(rel.id);
+      });
+      data.indexes.relationships_from = relationshipsFrom;
+      data.indexes.relationships_to = relationshipsTo;
       state.data = data;
       bindFilters();
 

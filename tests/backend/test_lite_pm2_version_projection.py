@@ -50,7 +50,15 @@ def _run_common(tmp_path: Path, body: str, **extra: str) -> subprocess.Completed
 
 def test_source_version_is_repo_version_plus_exact_source_digest(tmp_path: Path):
     package_version = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))["version"]
-    digest = hashlib.sha256(COMMON.read_bytes()).hexdigest()[:12]
+    source_digest = hashlib.sha256(COMMON.read_bytes()).hexdigest()
+    revision = subprocess.check_output(
+        ["git", "rev-parse", "--verify", "HEAD"],
+        cwd=ROOT,
+        text=True,
+    ).strip()
+    digest = hashlib.sha256(
+        f"git={revision}\nsource={source_digest}\n".encode("utf-8")
+    ).hexdigest()[:12]
     result = _run_common(tmp_path, 'pocketlab_source_version "$COMMON_PATH"')
     assert result.returncode == 0, result.stderr
     assert result.stdout.strip().endswith(f"{package_version}+sha.{digest}")

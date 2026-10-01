@@ -131,6 +131,7 @@
         "domain:lite",
         "domain:live_status",
         "domain:manual",
+        "domain:media-backup",
         "domain:node",
         "domain:operation",
         "domain:operations",
@@ -182,6 +183,9 @@
         "subject:pocketlab.commands.lite.device.restart",
         "subject:pocketlab.commands.lite.maintenance.checkpoint",
         "subject:pocketlab.commands.lite.maintenance.retention",
+        "subject:pocketlab.commands.lite.media_backup.cancel",
+        "subject:pocketlab.commands.lite.media_backup.repair",
+        "subject:pocketlab.commands.lite.media_backup.start",
         "subject:pocketlab.commands.lite.restore.apply",
         "subject:pocketlab.commands.lite.restore.preview",
         "subject:pocketlab.commands.lite.security.app_scan",
@@ -225,6 +229,7 @@
         "subject:pocketlab.events.drift.scan_started",
         "subject:pocketlab.events.drift.{action}",
         "subject:pocketlab.events.drift.{action}_started",
+        "subject:pocketlab.events.fleet",
         "subject:pocketlab.events.fleet.bootstrap_blocked",
         "subject:pocketlab.events.fleet.config_updated",
         "subject:pocketlab.events.fleet.device_health_sampled",
@@ -285,6 +290,9 @@
         "subject:pocketlab.events.lite.database.restore.started",
         "subject:pocketlab.events.lite.database.restore.{event_suffix}",
         "subject:pocketlab.events.lite.database.restore.{rollback_status}",
+        "subject:pocketlab.events.lite.photo_backup.cancel",
+        "subject:pocketlab.events.lite.photo_backup.tools_repair",
+        "subject:pocketlab.events.lite.photo_backup.updated",
         "subject:pocketlab.events.lite.restore.checkpoint_created",
         "subject:pocketlab.events.lite.restore.completed",
         "subject:pocketlab.events.lite.restore.failed",
@@ -391,6 +399,7 @@
         "api:get:/api/lite/devices/{device_id}/health/history",
         "api:get:/api/lite/devices/{device_id}/history",
         "api:get:/api/lite/devices/{device_id}/removal-assessment",
+        "api:get:/api/lite/devices/{node_id}/photo-backup",
         "api:get:/api/lite/diagnostics/frontend-lifecycle/challenge",
         "api:get:/api/lite/diagnostics/runtime",
         "api:get:/api/lite/diagnostics/runtime/full",
@@ -437,6 +446,7 @@
         "api:get:/api/lite/harness/status",
         "api:get:/api/lite/identity",
         "api:get:/api/lite/identity/owner-claim/status",
+        "api:get:/api/lite/media-backup",
         "api:get:/api/lite/policy",
         "api:get:/api/lite/policy/decisions/{decision_id}",
         "api:get:/api/lite/policy/templates",
@@ -498,6 +508,9 @@
         "api:post:/api/lite/apps/{app_id}/update/apply",
         "api:post:/api/lite/catalog/install",
         "api:post:/api/lite/catalog/remove",
+        "api:post:/api/lite/devices/{node_id}/photo-backup",
+        "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
+        "api:post:/api/lite/devices/{node_id}/photo-backup/repair",
         "api:post:/api/lite/diagnostics/frontend-lifecycle",
         "api:post:/api/lite/enterprise/identity/enrollment/consume",
         "api:post:/api/lite/enterprise/identity/enrollment/passkey/options",
@@ -603,6 +616,7 @@
         "domain:lite",
         "domain:live_status",
         "domain:manual",
+        "domain:media-backup",
         "domain:node",
         "domain:operation",
         "domain:operations",
@@ -646,6 +660,7 @@
         "domain:lite",
         "domain:live_status",
         "domain:manual",
+        "domain:media-backup",
         "domain:node",
         "domain:operation",
         "domain:operations",
@@ -986,6 +1001,7 @@
         "reason:thermal_policy_threshold",
         "reason:trusted_local_admin",
         "reason:unregistered_domain",
+        "reason:unsafe_live_media_import",
         "reason:version_not_reported",
         "reason:webauthn_algorithm_unsupported",
         "reason:webauthn_assertion_invalid",
@@ -1313,6 +1329,7 @@
         "reason:thermal_policy_threshold",
         "reason:trusted_local_admin",
         "reason:unregistered_domain",
+        "reason:unsafe_live_media_import",
         "reason:version_not_reported",
         "reason:webauthn_algorithm_unsupported",
         "reason:webauthn_assertion_invalid",
@@ -2037,6 +2054,9 @@
         "subject:pocketlab.commands.lite.database.restore.preview",
         "subject:pocketlab.commands.lite.maintenance.checkpoint",
         "subject:pocketlab.commands.lite.maintenance.retention",
+        "subject:pocketlab.commands.lite.media_backup.cancel",
+        "subject:pocketlab.commands.lite.media_backup.repair",
+        "subject:pocketlab.commands.lite.media_backup.start",
         "subject:pocketlab.commands.lite.restore.apply",
         "subject:pocketlab.commands.lite.restore.preview",
         "subject:pocketlab.commands.lite.security.assurance",
@@ -2094,6 +2114,9 @@
         "subject:pocketlab.events.lite.database.restore.started",
         "subject:pocketlab.events.lite.database.restore.{event_suffix}",
         "subject:pocketlab.events.lite.database.restore.{rollback_status}",
+        "subject:pocketlab.events.lite.photo_backup.cancel",
+        "subject:pocketlab.events.lite.photo_backup.tools_repair",
+        "subject:pocketlab.events.lite.photo_backup.updated",
         "subject:pocketlab.events.lite.restore.checkpoint_created",
         "subject:pocketlab.events.lite.restore.completed",
         "subject:pocketlab.events.lite.restore.failed",
@@ -2234,6 +2257,16 @@
         "subject:pocketlab.events.fleet.invite_revoked"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands.lite.media_backup.cancel",
+        "subject:pocketlab.commands.lite.media_backup.repair",
+        "subject:pocketlab.commands.lite.media_backup.start",
+        "subject:pocketlab.commands.node",
+        "subject:pocketlab.events.fleet"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py"
     },
     {
       "entities": [
@@ -3161,6 +3194,18 @@
     },
     {
       "entities": [
+        "test:tests/backend/test_lite_photo_backup.py"
+      ],
+      "source": "tests/backend/test_lite_photo_backup.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_photo_backup_agent.py"
+      ],
+      "source": "tests/backend/test_lite_photo_backup_agent.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_lite_photoprism_backup.py"
       ],
       "source": "tests/backend/test_lite_photoprism_backup.py"
@@ -4037,6 +4082,12 @@
     },
     {
       "entities": [
+        "test:tests/e2e/lite-photo-backup.spec.ts"
+      ],
+      "source": "tests/e2e/lite-photo-backup.spec.ts"
+    },
+    {
+      "entities": [
         "test:tests/e2e/lite-rules-activation-progress.spec.ts"
       ],
       "source": "tests/e2e/lite-rules-activation-progress.spec.ts"
@@ -4186,6 +4237,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "05687def94543b367c4060bf5016a6faaffd9b742a2f9aa0f81eb1e702bff6af"
+    "source_fingerprint": "5902aa50a9e1602dbe8ce971c26b60b50095ac6ff21757aa4eea69f6d87abb0f"
   }
 }

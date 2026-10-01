@@ -4314,6 +4314,28 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Live phone media import is intentionally blocked; use the managed Photo Backup workflow instead.",
+      "domain": "apps",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:unsafe_live_media_import",
+      "name": "unsafe_live_media_import",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Use Back up photos"
+      ],
+      "user_interpretation": "Import photos is paused for live phone folders. Use Back up photos instead."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The device has not reported a trustworthy software version for this component, so Pocket Lab keeps the version unknown rather than inventing one.",
       "domain": "devices",
       "event_mapping": [],
@@ -4879,6 +4901,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "05687def94543b367c4060bf5016a6faaffd9b742a2f9aa0f81eb1e702bff6af"
+    "source_fingerprint": "5902aa50a9e1602dbe8ce971c26b60b50095ac6ff21757aa4eea69f6d87abb0f"
   }
 }

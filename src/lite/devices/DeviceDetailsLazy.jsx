@@ -11,6 +11,7 @@ import { liteQueryKeys, liteQueryPaths } from '../../lib/liteQueryClient.js';
 import { useLiteQuery } from '../../hooks/useLiteQuery.js';
 import { useLiteDeviceHealthReviewFlow } from '../../hooks/useLiteDeviceHealthReviewFlow.js';
 import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
+import DevicePhotoBackup from './DevicePhotoBackup.jsx';
 import { ResourceMetric, SoftwarePosture } from '../components/DeviceFactsPrimitives.jsx';
 import { isLitePerformanceMode } from '../liteNavigationRuntime.js';
 import { useLiteUiStore } from '../../stores/liteUiStore.js';
@@ -812,6 +813,8 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
           </LiteButton>
         ) : null}
       </section>
+
+      {!isProtectedServer ? <DevicePhotoBackup deviceId={initialDeviceId} /> : null}
 
       <LiteDeferredDetails delayFrames={DEVICE_DETAILS_NONCRITICAL_DELAY_FRAMES} render={() => {
         const healthResources = proactiveHealth ? healthResourceRows(proactiveHealth, device) : [];

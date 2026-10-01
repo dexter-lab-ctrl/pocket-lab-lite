@@ -10,7 +10,7 @@ from .. import deps
 from ..services.action_queue import submit_domain_command
 from ..services.live_status import LIVE_STATUS
 from ..services.nats_bus import BUS
-from ..services import fleet_registry, lite_invites
+from ..services import fleet_registry, lite_catalog, lite_invites, lite_photo_backup
 
 router = APIRouter(tags=["fleet"])
 
@@ -313,6 +313,190 @@ async def send_fleet_agent_command(
         "bus": BUS.status(),
     }
 
+
+
+@router.get("/api/lite/media-backup")
+def lite_photo_backup_fleet_status(request: Request) -> dict:
+    deps.require_auth(request)
+    return lite_photo_backup.fleet_status(request)
+
+
+@router.get("/api/lite/devices/{node_id}/photo-backup")
+def lite_photo_backup_device_status(node_id: str, request: Request) -> dict:
+    deps.require_auth(request)
+    return lite_photo_backup.status(node_id, request)
+
+
+@router.post("/api/lite/devices/{node_id}/photo-backup", status_code=202)
+async def start_lite_photo_backup(
+    node_id: str,
+    payload: dict | None = None,
+    request: Request = None,
+) -> dict:
+    deps.require_auth(request, write=True)
+    payload = payload or {}
+    command = lite_photo_backup.make_start_command(
+        node_id,
+        payload.get("collections"),
+        reason=str(payload.get("reason") or "manual photo backup"),
+        request=request,
+    )
+    if command.get("idempotent"):
+        return {
+            "accepted": True,
+            "status": "already_running",
+            "backup_id": command.get("backup_id"),
+            "node_id": command.get("node_id"),
+            "summary": "Photo backup is already running.",
+            "sanitized": True,
+        }
+    try:
+        submitted = await submit_domain_command(
+            lite_photo_backup.PHOTO_BACKUP_START_SUBJECT,
+            "lite.photo_backup.requested",
+            command,
+            trace_id=str(command.get("backup_id") or command.get("command_id") or ""),
+        )
+    except Exception:
+        lite_photo_backup.mark_submission_failed(
+            str(command.get("backup_id") or "")
+        )
+        raise
+    return {
+        "accepted": True,
+        "status": submitted.get("status") or "queued",
+        "backup_id": command["backup_id"],
+        "node_id": command["node_id"],
+        "summary": "Photo backup queued.",
+        "sanitized": True,
+    }
+
+
+@router.post("/api/lite/devices/{node_id}/photo-backup/cancel", status_code=202)
+async def cancel_lite_photo_backup(
+    node_id: str,
+    payload: dict | None = None,
+    request: Request = None,
+) -> dict:
+    deps.require_auth(request, write=True)
+    payload = payload or {}
+    command = lite_photo_backup.make_cancel_command(
+        node_id,
+        reason=str(payload.get("reason") or "manual photo backup cancel"),
+    )
+    if command.get("idle"):
+        return {
+            "accepted": True,
+            "status": "idle",
+            "backup_id": command.get("backup_id") or "",
+            "node_id": command["node_id"],
+            "summary": "No photo backup is running.",
+            "sanitized": True,
+        }
+    submitted = await submit_domain_command(
+        lite_photo_backup.PHOTO_BACKUP_CANCEL_SUBJECT,
+        "lite.photo_backup.cancel_requested",
+        command,
+        trace_id=str(command.get("command_id") or ""),
+    )
+    return {
+        "accepted": True,
+        "status": submitted.get("status") or "queued",
+        "backup_id": command.get("backup_id") or "",
+        "node_id": command["node_id"],
+        "summary": "Stopping photo backup safely.",
+        "sanitized": True,
+    }
+
+
+@router.post("/api/lite/devices/{node_id}/photo-backup/repair", status_code=202)
+async def repair_lite_photo_backup_tools(
+    node_id: str,
+    request: Request,
+) -> dict:
+    deps.require_auth(request, write=True)
+    command = lite_photo_backup.make_repair_command(node_id)
+    submitted = await submit_domain_command(
+        lite_photo_backup.PHOTO_BACKUP_REPAIR_SUBJECT,
+        "lite.photo_backup.tools_repair_requested",
+        command,
+        trace_id=str(command.get("command_id") or ""),
+    )
+    return {
+        "accepted": True,
+        "status": submitted.get("status") or "queued",
+        "node_id": command["node_id"],
+        "summary": "Photo backup tools repair requested.",
+        "sanitized": True,
+    }
+
+
+def _photo_backup_agent_identity(request: Request) -> tuple[str, str]:
+    node_id = str(request.headers.get("x-pocketlab-node-id") or "").strip()
+    agent_token = str(request.headers.get("x-pocketlab-agent-token") or "").strip()
+    lite_photo_backup.authenticate_agent(node_id, agent_token)
+    return fleet_registry.normalize_node_id(node_id), agent_token
+
+
+@router.get(
+    "/api/lite/internal/photo-backup/credentials/{credential_ref}",
+    include_in_schema=False,
+)
+def consume_lite_photo_backup_credential(
+    credential_ref: str,
+    backup_id: str = Query("", max_length=120),
+    request: Request = None,
+    response: Response = None,
+) -> dict:
+    node_id, _ = _photo_backup_agent_identity(request)
+    if response is not None:
+        response.headers["Cache-Control"] = "no-store"
+    return lite_photo_backup.consume_credential(
+        credential_ref=credential_ref,
+        node_id=node_id,
+        backup_id=backup_id,
+    )
+
+
+@router.get(
+    "/api/lite/internal/photo-backup/{backup_id}/capacity",
+    include_in_schema=False,
+)
+def lite_photo_backup_agent_capacity(
+    backup_id: str,
+    request: Request,
+    response: Response,
+) -> dict:
+    node_id, _ = _photo_backup_agent_identity(request)
+    response.headers["Cache-Control"] = "no-store"
+    return lite_photo_backup.capacity_for_agent(backup_id, node_id)
+
+
+@router.post(
+    "/api/lite/internal/photo-backup/{backup_id}/progress",
+    include_in_schema=False,
+)
+async def lite_photo_backup_agent_progress(
+    backup_id: str,
+    payload: dict | None = None,
+    request: Request = None,
+    response: Response = None,
+) -> dict:
+    node_id, _ = _photo_backup_agent_identity(request)
+    if response is not None:
+        response.headers["Cache-Control"] = "no-store"
+    result = lite_photo_backup.record_agent_progress(
+        backup_id,
+        node_id,
+        payload or {},
+    )
+    await lite_photo_backup.publish_audit_events(
+        lite_photo_backup.claim_progress_audit_events(
+            backup_id,
+            node_id,
+        )
+    )
+    return result
 
 
 @router.post("/api/lite/fleet/devices/{node_id}/restart-agent", status_code=202)
@@ -753,6 +937,9 @@ def lite_fleet_agent_bootstrap_env(payload: dict | None = None, request: Request
         event_type="fleet.agent_join_started",
     )
 
+    request_base = str(request.base_url).rstrip("/") if request is not None else ""
+    secure_origin = str(lite_catalog.access_status(request).get("secure_origin") or "").rstrip("/")
+    control_origin = secure_origin if secure_origin.startswith("https://") else request_base
     env_lines = [
         f"export POCKETLAB_NODE_ROLE={json.dumps(role)}",
         f"export POCKETLAB_NODE_ID={json.dumps(node_id)}",
@@ -761,6 +948,7 @@ def lite_fleet_agent_bootstrap_env(payload: dict | None = None, request: Request
         f"export POCKETLAB_NATS_URL={json.dumps(nats_url)}",
         f"export POCKETLAB_NATS_USER={json.dumps(nats_user)}",
         f"export POCKETLAB_NATS_PASSWORD={json.dumps(nats_password)}",
+        f"export POCKETLAB_CONTROL_ORIGIN={json.dumps(control_origin)}",
     ]
     return Response(content="\n".join(env_lines) + "\n", media_type="text/plain; charset=utf-8")
 
@@ -914,6 +1102,15 @@ fi
 AGENT_FILE="$HOME/pocket-lab-lite/pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py"
 SUPERVISOR_FILE="$HOME/pocket-lab-lite/pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py"
 COMMON_FILE="$HOME/pocket-lab-lite/pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh"
+MEDIA_TOOLS_FILE="$HOME/pocket-lab-lite/pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/ensure-fleet-media-tools.sh"
+
+if [ -f "$MEDIA_TOOLS_FILE" ]; then
+  if ! bash "$MEDIA_TOOLS_FILE"; then
+    echo "Photo backup tools are not ready yet. Device enrollment will continue."
+  fi
+elif ! command -v rclone >/dev/null 2>&1; then
+  echo "Photo backup tools helper is unavailable. Device enrollment will continue."
+fi
 
 if [ -f "$AGENT_FILE" ]; then
   echo "Starting Pocket Lab Lite node agent..."

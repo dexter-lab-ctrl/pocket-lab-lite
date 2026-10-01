@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 929d6a9d55426a3aa21a185114d990086ffa195950de69ac185b05b58df27d20
+source_fingerprint: f5203483348ee7e7fb609da1cd465b79b9b9caeb0ccbf4a595f8d7c53900dd29
 schema_revision: 1
 validation_status: generated
 ---
@@ -153,6 +153,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_COMMAND_RETRY_BASE_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/reliability.py |
 | `POCKETLAB_COMMAND_RETRY_MAX_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/reliability.py |
 | `POCKETLAB_COMPONENT_ROLE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_runtime_services.py |
+| `POCKETLAB_CONTROL_ORIGIN` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py, pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py |
 | `POCKETLAB_CONTROL_PROJECTION_START_DELAY_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py |
 | `POCKETLAB_CORE_SUPERVISOR_CADDY_FAILURE_THRESHOLD` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py |
 | `POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS` | configuration | 120 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py |
@@ -673,6 +674,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_PHONE_PM2_SERVICE_STABILIZATION_SECONDS` | configuration | 600 | yes | component-dependent | scripts/dev/check-lite-runtime-resilience-server-phone.sh |
 | `POCKETLAB_PHONE_RUNTIME_CONTRACT_STABILIZATION_SECONDS` | configuration | 600 | yes | component-dependent | scripts/dev/check-lite-runtime-resilience-server-phone.sh |
 | `POCKETLAB_PHONE_TOPOLOGY_ATTEMPTS` | configuration | 20 | yes | component-dependent | scripts/dev/check-lite-runtime-resilience-server-phone.sh |
+| `POCKETLAB_PHOTOPRISM_COMMAND_TIMEOUT_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py |
 | `POCKETLAB_PHOTOPRISM_ENV_REVISION` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh |
 | `POCKETLAB_PHOTOPRISM_INSTALLER` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py |
 | `POCKETLAB_PHOTOPRISM_INSTALL_TIMEOUT_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py |
@@ -680,6 +682,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_PHOTOPRISM_PACKAGE_URL` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh |
 | `POCKETLAB_PHOTOPRISM_PROCESS` | configuration | pocketlab-app-photoprism | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py |
 | `POCKETLAB_PHOTOPRISM_ROOT` | configuration | path supplied by the owning component | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_backup.py, pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_reconciler.py |
+| `POCKETLAB_PHOTO_BACKUP_CREDENTIAL_TTL_SECONDS` | secret | not documented for secret variables | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py |
 | `POCKETLAB_PLAYWRIGHT_CHANNEL` | configuration | chrome | yes | component-dependent | scripts/dev/install-playwright-browser.sh |
 | `POCKETLAB_PLAYWRIGHT_REPORT_PATH` | configuration | .pocketlab-dev/reports/playwright-browser.json | yes | component-dependent | scripts/dev/install-playwright-browser.sh |
 | `POCKETLAB_PLAYWRIGHT_VIDEO` | configuration | source-defined or empty | yes | component-dependent | playwright.config.ts |

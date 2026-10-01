@@ -48,12 +48,15 @@ Credentials are never included. Incomplete delivery semantics remain explicitly 
 | `pocketlab.commands.lite.device.restart` | devices | FastAPI | node agent | JetStream durable command | — | bounded command lifecycle |
 | `pocketlab.commands.lite.maintenance.checkpoint` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.maintenance.retention` | lite | — | — | incomplete | incomplete | incomplete |
+| `pocketlab.commands.lite.media_backup.cancel` | lite | — | — | incomplete | incomplete | incomplete |
+| `pocketlab.commands.lite.media_backup.repair` | lite | — | — | incomplete | incomplete | incomplete |
+| `pocketlab.commands.lite.media_backup.start` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.restore.apply` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.restore.preview` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.security.app_scan` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.security.assurance` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.security.scan` | security | FastAPI | pocket-worker | JetStream durable pull | pocketlab_command_worker_v1 | bounded max-deliver and stale-run recovery |
-| `pocketlab.commands.node` | node | pocketlab_worker.py | pocketlab_worker.py | incomplete | incomplete | incomplete |
+| `pocketlab.commands.node` | node | lite_photo_backup.py, pocketlab_worker.py | pocketlab_worker.py | incomplete | incomplete | incomplete |
 | `pocketlab.commands.node.all` | node | — | pocketlab_node_agent.py | incomplete | incomplete | incomplete |
 | `pocketlab.commands.node.all.{command.replace` | node | fleet.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.node.{node_id}` | node | — | — | incomplete | incomplete | incomplete |
@@ -91,6 +94,7 @@ Credentials are never included. Incomplete delivery semantics remain explicitly 
 | `pocketlab.events.drift.scan_started` | drift | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.drift.{action}` | drift | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.drift.{action}_started` | drift | domain_commands.py | — | incomplete | incomplete | incomplete |
+| `pocketlab.events.fleet` | devices | lite_photo_backup.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.fleet.bootstrap_blocked` | devices | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.fleet.config_updated` | devices | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.fleet.device_health_sampled` | devices | live_status.py | — | incomplete | incomplete | incomplete |
@@ -151,6 +155,9 @@ Credentials are never included. Incomplete delivery semantics remain explicitly 
 | `pocketlab.events.lite.database.restore.started` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.lite.database.restore.{event_suffix}` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.lite.database.restore.{rollback_status}` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
+| `pocketlab.events.lite.photo_backup.cancel` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
+| `pocketlab.events.lite.photo_backup.tools_repair` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
+| `pocketlab.events.lite.photo_backup.updated` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.lite.restore.checkpoint_created` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.lite.restore.completed` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.lite.restore.failed` | lite | domain_commands.py | — | incomplete | incomplete | incomplete |

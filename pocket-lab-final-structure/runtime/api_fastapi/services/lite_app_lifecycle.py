@@ -468,6 +468,12 @@ def _media_action_ready(installed: bool, route_enabled: bool, media: dict[str, A
         return False, "PhotoPrism is not ready yet.", "unavailable"
     if media.get("operation_running"):
         return False, "PhotoPrism media action is already running.", "running"
+    if lite_photoprism_media.live_phone_import_blocked():
+        return (
+            False,
+            "Use Back up photos for live phone folders.",
+            "not_ready",
+        )
     if int(media.get("mapping_count") or 0) < 1:
         return False, "Connect a photo folder first.", "not_ready"
     return True, None, "ready"
@@ -605,7 +611,14 @@ def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recov
             media_ready,
             "Import photos",
             reason=media_reason,
-            summary="Import connected photos into PhotoPrism. PhotoPrism handles library indexing.",
+            summary=(
+                "Import connected photos into PhotoPrism. PhotoPrism handles library indexing."
+                if media_ready
+                else (
+                    media_reason
+                    or "Import photos is not ready yet."
+                )
+            ),
             status=media_status,
         ),
     }

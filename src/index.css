@@ -26319,3 +26319,146 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
     animation: none !important;
   }
 }
+
+/* Phase 1 Photo Backup — Devices-first, low-power friendly controls. */
+.lite-device-photo-backup {
+  display: grid;
+  gap: 0.8rem;
+  margin: 0.9rem 0;
+  padding: 0.9rem;
+  border: 1px solid var(--lite-border, rgba(148, 163, 184, 0.24));
+  border-radius: 1rem;
+  background: var(--lite-surface, rgba(15, 23, 42, 0.32));
+}
+
+.lite-device-photo-backup-head,
+.lite-device-photo-backup-actions,
+.lite-device-photo-backup-progress > div {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.lite-device-photo-backup-head > div {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.lite-device-photo-backup-head strong {
+  font-size: 1rem;
+}
+
+.lite-device-photo-backup-head p,
+.lite-device-photo-backup-note,
+.lite-device-photo-backup-transfer,
+.lite-device-photo-backup-error {
+  margin: 0;
+}
+
+.lite-device-photo-backup-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.12);
+  flex: 0 0 auto;
+}
+
+.lite-device-photo-backup-collections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.lite-device-photo-backup-collections label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.25rem;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--lite-border, rgba(148, 163, 184, 0.24));
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.lite-device-photo-backup-collections label.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.lite-device-photo-backup-progress {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.lite-device-photo-backup-progress > div {
+  justify-content: space-between;
+}
+
+.lite-device-photo-backup-progress progress {
+  width: 100%;
+  height: 0.55rem;
+}
+
+.lite-device-photo-backup-actions {
+  flex-wrap: wrap;
+}
+
+.lite-device-photo-backup-error {
+  color: var(--lite-danger, #ef4444);
+}
+
+@media (max-width: 640px) {
+  .lite-device-photo-backup-actions > * {
+    flex: 1 1 100%;
+  }
+}
+
+
+/* Phase 1 Photo Backup — lightweight App Catalog truth only. */
+.lite-catalog-photo-backup-truth {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0.75rem 0;
+  padding: 0.85rem;
+  border: 1px solid var(--lite-border, rgba(148, 163, 184, 0.28));
+  border-radius: 1rem;
+  background: rgba(59, 130, 246, 0.06);
+}
+.lite-catalog-photo-backup-truth > div:first-child {
+  display: grid;
+  gap: 0.2rem;
+}
+.lite-catalog-photo-backup-truth > div:first-child > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.lite-catalog-photo-backup-truth p,
+.lite-catalog-photo-backup-truth small {
+  margin: 0;
+}
+.lite-catalog-photo-backup-truth dl {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+}
+.lite-catalog-photo-backup-truth dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+}
+.lite-catalog-photo-backup-truth dt {
+  color: var(--lite-muted, #64748b);
+}
+.lite-catalog-photo-backup-truth dd {
+  margin: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+}

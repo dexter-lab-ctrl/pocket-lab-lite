@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 8a32f3b521ad7e8ef5247208e10b1fca00d80a8c07d692d34fbe45f36a8211b2
+source_fingerprint: 27bd1d85496a7b82ad8cbb01f741cc8f6cca7bd6ca291eb1f1fc6339794f5d88
 schema_revision: 1
 validation_status: generated
 ---
@@ -237,6 +237,7 @@ validation_status: generated
 | `thermal_policy_threshold` | security | Reliable device temperature telemetry reached the explicitly configured device threshold. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
 | `trusted_local_admin` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `unregistered_domain` | projections | The requested domain is not registered. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `unsafe_live_media_import` | apps | Live phone media import is intentionally blocked; use the managed Photo Backup workflow instead. | no | yes | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_media.py |
 | `version_not_reported` | devices | The device has not reported a trustworthy software version for this component, so Pocket Lab keeps the version unknown rather than inventing one. | yes | no | 200 | info | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_facts.py |
 | `webauthn_algorithm_unsupported` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `webauthn_assertion_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |

@@ -1934,6 +1934,34 @@ function shouldRefreshCatalogAfterAppAction(actionId = '', response = {}) {
   ].some(changed);
 }
 
+function PhotoBackupTruthCard({ devices = [], summary = '' }) {
+  const rows = (Array.isArray(devices) ? devices : []).slice(0, 3);
+  const latest = rows
+    .map((item) => item?.latest_backup)
+    .filter(Boolean)
+    .sort((left, right) => String(right?.updated_at || '').localeCompare(String(left?.updated_at || '')))[0] || null;
+  const live = ['queued', 'planning', 'waiting_for_credentials', 'starting', 'transferring', 'cancelling']
+    .includes(String(latest?.status || '').toLowerCase());
+  return (
+    <section className="lite-catalog-photo-backup-truth" aria-label="Photo backup">
+      <div>
+        <span><Camera className="h-4 w-4" />Photo backup</span>
+        <strong>{live ? 'Backing up photos' : summary || 'Photo backup status'}</strong>
+        <p>Managed by Pocket Lab on enrolled devices. PhotoPrism receives completed files through its protected WebDAV originals path.</p>
+      </div>
+      {latest ? (
+        <dl>
+          <div><dt>Latest</dt><dd>{latest.summary || latest.status || 'Checked'}</dd></div>
+          <div><dt>Backed up</dt><dd>{Number(latest.items_transferred || 0)} item{Number(latest.items_transferred || 0) === 1 ? '' : 's'}</dd></div>
+          <div><dt>Last update</dt><dd>{formatLiteTime(latest.completed_at || latest.updated_at)}</dd></div>
+        </dl>
+      ) : (
+        <small>Open a device in Devices to choose folders, start a backup, retry, or stop it.</small>
+      )}
+    </section>
+  );
+}
+
 function CatalogManagePortal({
   app,
   lifecycle,
@@ -1956,6 +1984,8 @@ function CatalogManagePortal({
   connectPhoneStorageFromPreview,
   loadStoragePreview,
   setStoragePreviewNotice,
+  photoBackupDevices,
+  photoBackupSummary,
 }) {
   const appKey = catalogAppKey(app);
   const manageAppOpen = useLiteUiStore((state) => state.manageAppId === appKey);
@@ -2140,6 +2170,9 @@ function CatalogManagePortal({
           {manageBodyReady ? (
             <>
               <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} />
+              {isPhotoPrismApp(app) ? (
+                <PhotoBackupTruthCard devices={photoBackupDevices} summary={photoBackupSummary} />
+              ) : null}
               <div className="lite-catalog-manage-quick-actions" aria-label="Quick app actions">
                 <LiteButton onClick={(event) => { stopGestureEvent(event); openAppFullScreen(app, event); }} disabled={!canOpen} tone="secondary"><ExternalLink className="h-4 w-4" />Open full screen</LiteButton>
               </div>
@@ -2336,6 +2369,37 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     select: selectPhotoPrismActionsView,
     snapshotSelect: selectPhotoPrismActionsView,
   });
+  const { data: mediaBackupData } = useLiteQuery({
+    queryKey: ['lite', 'media-backup'],
+    path: '/api/lite/media-backup',
+    queryFn: liteApi.mediaBackup,
+    enabled: apps.length === 0 || apps.some((app) => isPhotoPrismApp(app)),
+    pollingMode: 'relaxed',
+    staleTime: 60_000,
+    isLive: (payload) => (payload?.devices || []).some((device) => (
+      ['queued', 'planning', 'waiting_for_credentials', 'starting', 'transferring', 'cancelling']
+        .includes(String(device?.latest_backup?.status || '').toLowerCase())
+    )),
+    refetchOnWindowFocus: false,
+  });
+  const photoBackupDevices = Array.isArray(mediaBackupData?.devices) ? mediaBackupData.devices : [];
+  const photoBackupLatest = photoBackupDevices
+    .map((device) => device?.latest_backup)
+    .filter(Boolean)
+    .sort((left, right) => String(right?.updated_at || '').localeCompare(String(left?.updated_at || '')))[0] || null;
+  const photoBackupLive = photoBackupDevices.some((device) => (
+    ['queued', 'planning', 'waiting_for_credentials', 'starting', 'transferring', 'cancelling']
+      .includes(String(device?.latest_backup?.status || '').toLowerCase())
+  ));
+  const photoBackupReadyCount = photoBackupDevices.filter((device) => device?.ready).length;
+  const photoBackupSummary = photoBackupLive
+    ? 'Photo backup is running'
+    : ['completed', 'partial_storage_limit'].includes(String(photoBackupLatest?.status || '').toLowerCase())
+      ? `Photos protected by Pocket Lab · Last backup ${formatLiteTime(photoBackupLatest?.completed_at || photoBackupLatest?.updated_at)}`
+      : photoBackupReadyCount
+        ? `Photo backup ready on ${photoBackupReadyCount} device${photoBackupReadyCount === 1 ? '' : 's'}`
+        : 'Photo backup not ready yet';
+
   const appActionMutation = useLiteMutation({
     mutationFn: ({ appId = 'photoprism', actionId, payload = {} }) => liteApi.runAppAction(appId, actionId, payload),
     invalidateForAction: ({ appId = 'photoprism', actionId }, response) => getLiteAppActionInvalidations(appId, actionId, response),
@@ -2991,6 +3055,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <span><ShieldCheck className="h-4 w-4" />{app?.security_profile?.label || 'Protected app'}</span>
             <span><FileCheck className="h-4 w-4" />{app?.backup_profile?.config || 'Config protected'}</span>
             <span><FileCheck className="h-4 w-4" />{app?.backup_profile?.media || 'Media excluded'}</span>
+            {isPhotoPrismApp(app) ? <span><Camera className="h-4 w-4" />{photoBackupSummary}</span> : null}
           </div>
         ) : null}
         {installed && lifecycle ? (
@@ -3042,6 +3107,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             connectPhoneStorageFromPreview={connectPhoneStorageFromPreview}
             loadStoragePreview={loadStoragePreview}
             setStoragePreviewNotice={setStoragePreviewNotice}
+            photoBackupDevices={photoBackupDevices}
+            photoBackupSummary={photoBackupSummary}
           />
         ) : null}
         <div className="lite-catalog-meta lite-catalog-meta-grid">

@@ -4439,6 +4439,18 @@
         "user_message": "The requested domain is not registered."
       },
       {
+        "code": "unsafe_live_media_import",
+        "domain": "apps",
+        "http_status": 409,
+        "meaning": "Live phone media import is intentionally blocked; use the managed Photo Backup workflow instead.",
+        "next_action": "Review the owning evidence and operator guidance before another action.",
+        "observed_in_current_health": [],
+        "retryable": false,
+        "severity": "warning",
+        "terminal": true,
+        "user_message": "Import photos is paused for live phone folders. Use Back up photos instead."
+      },
+      {
         "code": "version_not_reported",
         "domain": "devices",
         "http_status": 200,
@@ -7366,5 +7378,5 @@
     "schema_version": "1.0.0"
   },
   "schema_version": "1.0.0",
-  "source_fingerprint": "b7829a36663fea307c32f847e69a2893c1cb8d7f10975b332828a94efc9f13f5"
+  "source_fingerprint": "20efd5b0ffc7e6c2e47fcea16c2b6d071ca5903e7a3340bd381aa1ad2e0eaedf"
 }

@@ -281,6 +281,12 @@
           "type": "uses"
         }
       ],
+      "api:get:/api/lite/devices/{node_id}/photo-backup": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/diagnostics/frontend-lifecycle/challenge": [
         {
           "source": "domain:diagnostics",
@@ -630,6 +636,12 @@
         },
         {
           "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/media-backup": [
+        {
+          "source": "domain:media-backup",
           "type": "owns"
         }
       ],
@@ -1164,6 +1176,24 @@
       "api:post:/api/lite/catalog/remove": [
         {
           "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/devices/{node_id}/photo-backup": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/devices/{node_id}/photo-backup/cancel": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/devices/{node_id}/photo-backup/repair": [
+        {
+          "source": "domain:devices",
           "type": "owns"
         }
       ],
@@ -4665,6 +4695,12 @@
           "type": "owns"
         }
       ],
+      "reason:unsafe_live_media_import": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
       "reason:version_not_reported": [
         {
           "source": "domain:devices",
@@ -5131,6 +5167,24 @@
           "type": "related_to"
         }
       ],
+      "subject:pocketlab.commands.lite.media_backup.cancel": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
+        }
+      ],
+      "subject:pocketlab.commands.lite.media_backup.repair": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
+        }
+      ],
+      "subject:pocketlab.commands.lite.media_backup.start": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
+        }
+      ],
       "subject:pocketlab.commands.lite.restore.apply": [
         {
           "source": "domain:lite",
@@ -5586,6 +5640,12 @@
       "subject:pocketlab.events.drift.{action}_started": [
         {
           "source": "domain:drift",
+          "type": "owns"
+        }
+      ],
+      "subject:pocketlab.events.fleet": [
+        {
+          "source": "domain:devices",
           "type": "owns"
         }
       ],
@@ -6104,6 +6164,24 @@
         }
       ],
       "subject:pocketlab.events.lite.database.restore.{rollback_status}": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
+        }
+      ],
+      "subject:pocketlab.events.lite.photo_backup.cancel": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
+        }
+      ],
+      "subject:pocketlab.events.lite.photo_backup.tools_repair": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
+        }
+      ],
+      "subject:pocketlab.events.lite.photo_backup.updated": [
         {
           "source": "domain:lite",
           "type": "owns"
@@ -8859,6 +8937,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:unsafe_live_media_import",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:version_not_reported",
           "type": "verified_by"
         },
@@ -9149,6 +9231,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/devices/{node_id}/photo-backup",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/diagnostics/frontend-lifecycle/challenge",
           "type": "verified_by"
         },
@@ -9330,6 +9416,10 @@
         },
         {
           "source": "api:get:/api/lite/identity/owner-claim/status",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/media-backup",
           "type": "verified_by"
         },
         {
@@ -9574,6 +9664,18 @@
         },
         {
           "source": "api:post:/api/lite/catalog/remove",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/devices/{node_id}/photo-backup",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/devices/{node_id}/photo-backup/repair",
           "type": "verified_by"
         },
         {
@@ -10642,6 +10744,34 @@
         },
         {
           "source": "reason:unregistered_domain",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_photo_backup.py": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:interrupted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:protected_server_host",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:unsafe_live_media_import",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_photo_backup_agent.py": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:interrupted",
           "type": "verified_by"
         }
       ],
@@ -13811,6 +13941,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:unsafe_live_media_import",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:version_not_reported",
           "type": "verified_by"
         },
@@ -14865,6 +14999,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:unsafe_live_media_import",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:version_not_reported",
           "type": "verified_by"
         },
@@ -15161,6 +15299,16 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-photo-backup.spec.ts": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:interrupted",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-rules-activation-progress.spec.ts": [
         {
           "source": "reason:policy_activation_pending",
@@ -15316,6 +15464,10 @@
         },
         {
           "source": "api:get:/api/lite/devices/{device_id}/removal-assessment",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/devices/{node_id}/photo-backup",
           "type": "verified_by"
         },
         {
@@ -15500,6 +15652,10 @@
         },
         {
           "source": "api:get:/api/lite/identity/owner-claim/status",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/media-backup",
           "type": "verified_by"
         },
         {
@@ -15744,6 +15900,18 @@
         },
         {
           "source": "api:post:/api/lite/catalog/remove",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/devices/{node_id}/photo-backup",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/devices/{node_id}/photo-backup/repair",
           "type": "verified_by"
         },
         {
@@ -17125,6 +17293,16 @@
           "type": "verified_by"
         }
       ],
+      "api:get:/api/lite/devices/{node_id}/photo-backup": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:get:/api/lite/diagnostics/frontend-lifecycle/challenge": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -17640,6 +17818,16 @@
         }
       ],
       "api:get:/api/lite/identity/owner-claim/status": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/media-backup": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -18410,6 +18598,36 @@
         }
       ],
       "api:post:/api/lite/catalog/remove": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/devices/{node_id}/photo-backup": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/devices/{node_id}/photo-backup/cancel": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/devices/{node_id}/photo-backup/repair": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -21633,6 +21851,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_agent.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_photoprism_backup.py",
           "type": "verified_by"
         },
@@ -21690,6 +21916,10 @@
         },
         {
           "target": "test:tests/e2e/lite-performance.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-photo-backup.spec.ts",
           "type": "verified_by"
         },
         {
@@ -23289,6 +23519,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:unsafe_live_media_import",
+          "type": "owns"
+        },
+        {
           "target": "subject:pocketlab.commands.catalog.refresh",
           "type": "owns"
         },
@@ -23541,6 +23775,10 @@
           "type": "owns"
         },
         {
+          "target": "api:get:/api/lite/devices/{node_id}/photo-backup",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/fleet",
           "type": "owns"
         },
@@ -23562,6 +23800,18 @@
         },
         {
           "target": "api:get:/api/lite/fleet/invites/latest",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/devices/{node_id}/photo-backup",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/devices/{node_id}/photo-backup/repair",
           "type": "owns"
         },
         {
@@ -23662,6 +23912,10 @@
         },
         {
           "target": "subject:pocketlab.commands.lite.device.restart",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.events.fleet",
           "type": "owns"
         },
         {
@@ -24881,6 +25135,18 @@
           "type": "owns"
         },
         {
+          "target": "subject:pocketlab.commands.lite.media_backup.cancel",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.commands.lite.media_backup.repair",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.commands.lite.media_backup.start",
+          "type": "owns"
+        },
+        {
           "target": "subject:pocketlab.commands.lite.restore.apply",
           "type": "owns"
         },
@@ -25037,6 +25303,18 @@
           "type": "owns"
         },
         {
+          "target": "subject:pocketlab.events.lite.photo_backup.cancel",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.events.lite.photo_backup.tools_repair",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.events.lite.photo_backup.updated",
+          "type": "owns"
+        },
+        {
           "target": "subject:pocketlab.events.lite.restore.checkpoint_created",
           "type": "owns"
         },
@@ -25118,6 +25396,12 @@
       "domain:manual": [
         {
           "target": "subject:pocketlab.events.manual",
+          "type": "owns"
+        }
+      ],
+      "domain:media-backup": [
+        {
+          "target": "api:get:/api/lite/media-backup",
           "type": "owns"
         }
       ],
@@ -29781,6 +30065,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_agent.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_recovery.py",
           "type": "verified_by"
         },
@@ -29818,6 +30110,10 @@
         },
         {
           "target": "test:tests/docs/test_supply_chain_runner_hardening.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-photo-backup.spec.ts",
           "type": "verified_by"
         }
       ],
@@ -31207,6 +31503,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_policy_analysis_p2_3.py",
           "type": "verified_by"
         },
@@ -31828,6 +32128,24 @@
         },
         {
           "target": "test:tests/backend/test_lite_phase4_phase5_adaptive_runtime.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:unsafe_live_media_import": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
           "type": "verified_by"
         },
         {
@@ -32695,6 +33013,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "05687def94543b367c4060bf5016a6faaffd9b742a2f9aa0f81eb1e702bff6af"
+    "source_fingerprint": "5902aa50a9e1602dbe8ce971c26b60b50095ac6ff21757aa4eea69f6d87abb0f"
   }
 }

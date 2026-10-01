@@ -18,7 +18,7 @@ from .. import deps
 from ..db.connection import database_path
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_backup_locations, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_core_projections, lite_phase3b_projections, lite_phase3c_projections, lite_identity_auth, lite_policy_opa, lite_policy_approvals
+from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_backup_locations, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_photo_backup, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_core_projections, lite_phase3b_projections, lite_phase3c_projections, lite_identity_auth, lite_policy_opa, lite_policy_approvals
 from ..services.lite_control_plane_store import (
     CONTROL_PLANE,
     DeviceAwarenessError,
@@ -3328,6 +3328,7 @@ async def remove_lite_device(payload: LiteRemoveDeviceRequest, request: Request)
             dedupe_key=f"{device_id}:removal_requested:{removal_generation}",
             generation_key=removal_generation, current_state=removal_state,
         )
+        revoked_photo_backup_credentials = lite_photo_backup.revoke_for_node(device_id)
         retirement = CONTROL_PLANE.retire_enrolled_device(
             device_id,
             reason_code=payload.reason or "confirmed_device_retirement",
@@ -3347,6 +3348,7 @@ async def remove_lite_device(payload: LiteRemoveDeviceRequest, request: Request)
             "removed_from": [],
             "removal_receipt": retirement.get("receipt") or {},
             "updated_at": deps.now_utc_iso(),
+            "photo_backup_credentials_revoked": int(revoked_photo_backup_credentials),
         }
         try:
             compatibility_cleanup = fleet_registry.remove_device_records(device_id)

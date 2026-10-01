@@ -2528,7 +2528,7 @@ def test_lite_app_action_center_blocks_disabled_media_actions_without_mapping(mo
     assert removed.status_code == 404
 
 
-def test_lite_app_action_center_enables_media_actions_after_mapping_and_queues(monkeypatch):
+def test_lite_app_action_center_blocks_live_phone_import_after_mapping(monkeypatch):
     _force_photoprism_installed_for_action_tests(monkeypatch)
     from api_fastapi.services.nats_bus import BUS
 
@@ -2547,7 +2547,9 @@ def test_lite_app_action_center_enables_media_actions_after_mapping_and_queues(m
     actions_response = client().get("/api/lite/apps/photoprism/actions")
     assert actions_response.status_code == 200
     actions = actions_response.json()["actions"]
-    assert actions["import_photos"]["enabled"] is True
+    assert actions["import_photos"]["enabled"] is False
+    assert actions["import_photos"]["status"] == "not_ready"
+    assert "Back up photos" in actions["import_photos"]["summary"]
     assert "index_photos" not in actions
     assert "cancel_media" not in actions
 
@@ -2555,9 +2557,8 @@ def test_lite_app_action_center_enables_media_actions_after_mapping_and_queues(m
     assert lifecycle.status_code == 200
     lifecycle_payload = lifecycle.json()
     assert lifecycle_payload["media"]["mapping_count"] == 1
-    assert lifecycle_payload["actions"]["import_photos"]["enabled"] is True
-    assert "index_photos" not in lifecycle_payload["actions"]
-    assert "cancel_media" not in lifecycle_payload["actions"]
+    assert lifecycle_payload["actions"]["import_photos"]["enabled"] is False
+    assert "Back up photos" in lifecycle_payload["actions"]["import_photos"]["summary"]
 
     published: list[tuple[str, str, dict]] = []
     BUS.connected = True
@@ -2568,20 +2569,16 @@ def test_lite_app_action_center_enables_media_actions_after_mapping_and_queues(m
 
     monkeypatch.setattr(BUS, "publish_json", fake_publish)
 
-    queued = client().post(
+    blocked = client().post(
         "/api/lite/apps/photoprism/actions/import_photos",
         json={"reason": "manual photo import"},
     )
-    assert queued.status_code == 200
-    payload = queued.json()
-    assert payload["accepted"] is True
-    assert payload["status"] == "queued"
-    assert payload["app_id"] == "photoprism"
-    assert payload["action_id"] == "import_photos"
-    assert payload["media_operation"]["status"] == "queued"
-    assert any(item[0] == "pocketlab.commands.lite.app.media" for item in published)
-    assert "photoprism index" not in queued.text.lower()
-    assert "password" not in queued.text.lower()
+    assert blocked.status_code == 409
+    detail = blocked.json().get("detail") or blocked.json()
+    assert detail["status"] == "disabled"
+    assert "Back up photos" in detail["summary"]
+    assert published == []
+    assert "password" not in blocked.text.lower()
 
 
 def test_lite_app_action_center_worker_subject_registered():
@@ -2684,6 +2681,7 @@ def test_lite_restore_worker_result_emits_failed_lifecycle_after_rollback(monkey
 def test_lite_media_worker_applies_storage_mappings_before_photoprism_cli(tmp_path, monkeypatch):
     ensure_runtime_path()
     from api_fastapi.services import lite_app_storage, lite_photoprism_media
+    monkeypatch.setattr(lite_photoprism_media, "live_phone_import_blocked", lambda: False)
 
     source = tmp_path / "phone-storage"
     source.mkdir()
@@ -2751,6 +2749,7 @@ def test_lite_media_worker_applies_storage_mappings_before_photoprism_cli(tmp_pa
 def test_lite_media_worker_fails_safely_when_mapping_source_not_ready(tmp_path, monkeypatch):
     ensure_runtime_path()
     from api_fastapi.services import lite_app_storage, lite_photoprism_media
+    monkeypatch.setattr(lite_photoprism_media, "live_phone_import_blocked", lambda: False)
 
     app_root = tmp_path / "photoprism"
     env_file = app_root / "config" / "photoprism.env"
@@ -3130,6 +3129,7 @@ def test_lite_storage_and_app_lifecycle_ui_source_is_present():
 def test_lite_photoprism_media_optimizer_deduplicates_overlapping_mappings(tmp_path, monkeypatch):
     ensure_runtime_path()
     from api_fastapi.services import lite_app_storage, lite_photoprism_media
+    monkeypatch.setattr(lite_photoprism_media, "live_phone_import_blocked", lambda: False)
 
     storage = tmp_path / "storage"
     dcim = storage / "shared" / "DCIM"
@@ -3338,6 +3338,7 @@ def test_lite_photoprism_lifecycle_reconciles_orphaned_running_operation(monkeyp
 def test_lite_photoprism_media_failure_hides_app_owned_output(tmp_path, monkeypatch):
     ensure_runtime_path()
     from api_fastapi.services import lite_app_storage, lite_photoprism_media
+    monkeypatch.setattr(lite_photoprism_media, "live_phone_import_blocked", lambda: False)
 
     storage = tmp_path / "storage"
     dcim = storage / "shared" / "DCIM"
