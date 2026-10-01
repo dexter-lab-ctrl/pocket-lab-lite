@@ -24,6 +24,10 @@ PROTECTED_ACTIONS = frozenset(
     {
         "catalog.install",
         "device.remove",
+        "device.invite",
+        "device.roles.change",
+        "device.restart",
+        "device.repair",
         "identity.passkey.revoke",
         "backup.create",
         "backup.verify",
@@ -332,15 +336,24 @@ def _server_continuation_facts(input_doc: dict[str, Any]) -> tuple[str | None, s
         from . import lite_policy_approvals
 
         revision = _safe_revision()
+        fleet_approval_actions = {"device.remove", "device.invite", "device.roles.change"}
         if (
-            input_doc["action"]["id"] == "device.remove"
+            input_doc["action"]["id"] in fleet_approval_actions
             and input_doc["target"]["type"] == "device"
             and actor.get("enterprise_enabled") is True
             and actor.get("role") in {"Admin", "Operator"}
         ):
+            target = input_doc.get("target") or {}
+            state = target.get("state") if isinstance(target.get("state"), dict) else {}
             return lite_policy_approvals.matching_approved(
-                initiating_human_id=str(actor["id"]), action_id="device.remove", target_type="device",
-                target_id=str(input_doc["target"]["id"]), policy_revision=revision,
+                initiating_human_id=str(actor["id"]),
+                action_id=str(input_doc["action"]["id"]),
+                target_type="device",
+                target_id=str(target.get("id") or ""),
+                target_revision=str(target.get("revision") or ""),
+                policy_revision=revision,
+                authorization_version=int(actor.get("authorization_version") or 1),
+                request_fingerprint=str(state.get("request_fingerprint") or target.get("revision") or ""),
             ), None
         if input_doc["action"]["id"] == "catalog.install" and input_doc["target"]["type"] == "app":
             device_id = str((input_doc["target"].get("state") or {}).get("target_node_id") or "").strip()
@@ -390,13 +403,20 @@ def _record_decision(*, input_doc: dict[str, Any], decision: dict[str, Any], eva
 
 def _approval_requirement_is_valid(input_doc: dict[str, Any], decision: dict[str, Any]) -> bool:
     actor = input_doc.get("actor") or {}
+    action_id = str(input_doc.get("action", {}).get("id") or "")
     requirements = decision.get("requirements") if isinstance(decision.get("requirements"), dict) else {}
+    expected_assurance = {
+        "device.remove": "policy.approval.device.remove",
+        "device.invite": "policy.approval.device.invite",
+        "device.roles.change": "policy.approval.device.roles.change",
+    }.get(action_id)
     return bool(
-        input_doc.get("action", {}).get("id") == "device.remove"
+        expected_assurance
+        and input_doc.get("target", {}).get("type") == "device"
         and actor.get("type") == "human"
         and actor.get("enterprise_enabled") is True
         and actor.get("role") in {"Admin", "Operator"}
-        and requirements.get("required_assurance") == "policy.approval.device.remove"
+        and requirements.get("required_assurance") == expected_assurance
         and requirements.get("required_approver_roles")
     )
 
@@ -488,21 +508,25 @@ def evaluate_authorization(
             try:
                 from . import lite_policy_approvals
 
+                target = input_doc.get("target") or {}
+                target_state = target.get("state") if isinstance(target.get("state"), dict) else {}
                 approval = lite_policy_approvals.create_from_decision(
                     decision_id=recorded["decision_id"],
                     initiating_role=str(actor.get("role") or ""),
+                    authorization_version=int(actor.get("authorization_version") or 1),
+                    request_fingerprint=str(target_state.get("request_fingerprint") or target.get("revision") or ""),
                 )["approval"]
             except Exception as exc:
                 raise PolicyDecisionError(
                     "approval_record_unavailable",
-                    "Independent approval could not be recorded, so the device removal remains blocked.",
+                    "Independent approval could not be recorded, so the protected fleet change remains blocked.",
                     status_code=503,
                     decision=recorded,
                 ) from exc
             recorded["approval"] = approval
             raise PolicyDecisionError(
                 "approval_required",
-                "An independent active Enterprise Owner or Admin must approve this device removal. No removal has started.",
+                "An independent active Enterprise Owner or Admin must approve this protected fleet change. Nothing has been applied.",
                 status_code=409,
                 decision=recorded,
             )
