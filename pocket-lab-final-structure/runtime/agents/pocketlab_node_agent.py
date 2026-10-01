@@ -402,15 +402,22 @@ class PocketLabNodeAgent:
         if generation < self.device_role_generation:
             return {
                 "accepted": False,
-                "reason_code": "device_role_change_failed",
+                "reason_code": "device_role_change_stale_generation",
                 "message": "A newer device role generation is already active.",
                 "generation": self.device_role_generation,
             }
-        if generation == self.device_role_generation and roles == self.device_roles:
+        if generation == self.device_role_generation:
+            if roles == self.device_roles:
+                return {
+                    "accepted": True,
+                    "unchanged": True,
+                    "device_roles": list(self.device_roles),
+                    "generation": self.device_role_generation,
+                }
             return {
-                "accepted": True,
-                "unchanged": True,
-                "device_roles": list(self.device_roles),
+                "accepted": False,
+                "reason_code": "device_role_change_generation_mismatch",
+                "message": "The role set does not match the active role generation.",
                 "generation": self.device_role_generation,
             }
         self._persist_device_roles(roles, generation)

@@ -830,8 +830,20 @@ def _upsert_agent_unlocked(
 
     if not control_plane_claim and is_heartbeat:
         if role_report_invalid:
+            role_state = lite_device_roles.record_runtime_attestation(
+                node_id,
+                reported_roles=raw_reported_roles,
+                advertised_capabilities=merged.get("advertised_capabilities") or [],
+                online=not is_connection_lost,
+                identity_verified=True,
+                generation=data.get("device_role_generation"),
+            )
             merged["device_role_status"] = "blocked"
             merged["device_role_reason_code"] = "device_role_invalid"
+            merged["device_role_generation"] = role_state.get("generation") or 0
+            merged["desired_device_roles"] = role_state.get("desired_device_roles") or []
+            merged["active_device_roles"] = role_state.get("active_device_roles") or []
+            merged["device_roles"] = role_state.get("desired_device_roles") or []
             append_device_lifecycle_event(
                 node_id,
                 "device_role_change_blocked",
@@ -1126,7 +1138,15 @@ def agent_fleet_nodes() -> List[Dict[str, Any]]:
                 "name": agent.get("name")
                 or agent.get("hostname")
                 or agent.get("node_id"),
-                "role": agent.get("role") or "compute",
+                "role": agent.get("role") or "",
+                "_legacy_role": agent.get("role") or None,
+                "device_roles": agent.get("device_roles") or [],
+                "desired_device_roles": agent.get("desired_device_roles") or [],
+                "active_device_roles": agent.get("active_device_roles") or [],
+                "device_role_generation": agent.get("device_role_generation") or 0,
+                "device_role_status": agent.get("device_role_status") or "",
+                "device_role_reason_code": agent.get("device_role_reason_code") or "",
+                "device_role_report_invalid": bool(agent.get("device_role_report_invalid")),
                 "ip": agent.get("tailnet_ip") or agent.get("ip") or "",
                 "status": "active" if status == "active" else status,
                 "isCurrent": bool(agent.get("isCurrent")),

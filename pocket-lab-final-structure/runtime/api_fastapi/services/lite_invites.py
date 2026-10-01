@@ -495,7 +495,9 @@ def create_lite_invite(
     authorization: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     roles = normalize_device_roles(device_roles, role=role)
-    role_items = [lite_device_roles.role_metadata(item) for item in roles]
+    # Preserve the established invite-facing labels (App Host / Storage Node)
+    # while the role service owns canonical normalization and authorization.
+    role_items = [role_metadata(item) for item in roles]
     legacy_role = lite_device_roles.legacy_role_projection(roles)
     hostname_text = (hostname or "").strip() or (
         "Pocket Lab " + " + ".join(item["role_label"] for item in role_items)

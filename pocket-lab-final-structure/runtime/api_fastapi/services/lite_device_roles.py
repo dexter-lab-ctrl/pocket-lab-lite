@@ -49,13 +49,13 @@ PHOTO_SOURCE_CAPABILITIES = frozenset({
     "photoprism_webdav_upload",
 })
 OBSERVATION_ALIASES = {
-    "app_host": frozenset({"app_host", "host_apps", "compute"}),
-    "compute": frozenset({"compute", "host_apps"}),
-    "media_storage": frozenset({"media_storage", "provide_storage", "store_backups", "backup_target"}),
-    "backup_target": frozenset({"backup_target", "store_backups"}),
-    "restore_target": frozenset({"restore_target", "provide_storage"}),
-    "provide_storage": frozenset({"provide_storage", "media_storage"}),
-    "store_backups": frozenset({"store_backups", "backup_target"}),
+    "app_host": frozenset({"app_host", "host_apps"}),
+    "compute": frozenset({"compute"}),
+    "media_storage": frozenset({"media_storage"}),
+    "backup_target": frozenset({"backup_target"}),
+    "restore_target": frozenset({"restore_target"}),
+    "provide_storage": frozenset({"provide_storage"}),
+    "store_backups": frozenset({"store_backups"}),
 }
 ROLE_REASON_CODES = frozenset({
     "device_roles_required",
@@ -66,6 +66,8 @@ ROLE_REASON_CODES = frozenset({
     "device_role_change_blocked_by_dependency",
     "device_role_change_device_offline",
     "device_role_change_identity_mismatch",
+    "device_role_change_stale_generation",
+    "device_role_change_generation_mismatch",
     "device_role_change_failed",
     "device_role_change_pending_verification",
     "device_capability_not_authorized",
@@ -412,14 +414,29 @@ def record_runtime_attestation(
     desired = list(state.get("desired_device_roles") or [])
     if not desired:
         return state
+    report_invalid = False
     try:
         reported = normalize_device_roles(reported_roles, joinable_only=True)
     except DeviceRoleError:
         reported = []
+        report_invalid = True
     advertised = {str(item).strip() for item in (advertised_capabilities if isinstance(advertised_capabilities, list) else []) if str(item).strip()}
     current_generation = int(state.get("generation") or 0)
-    if generation is not None and int(generation) not in {0, current_generation}:
-        return {**state, "status": "blocked", "reason_code": "device_role_change_identity_mismatch"}
+    if generation is not None:
+        try:
+            reported_generation = int(generation)
+        except (TypeError, ValueError):
+            return {**state, "status": "blocked", "reason_code": "device_role_change_generation_mismatch"}
+        if reported_generation not in {0, current_generation}:
+            return {
+                **state,
+                "status": "blocked",
+                "reason_code": (
+                    "device_role_change_stale_generation"
+                    if reported_generation < current_generation
+                    else "device_role_change_generation_mismatch"
+                ),
+            }
     identity_ok = bool(identity_verified)
     exact_match = set(reported) == set(desired)
     now = _now()
@@ -444,6 +461,11 @@ def record_runtime_attestation(
                         assignment_status = "removed"
                         verification_status = "verified"
                         verification_reason = ""
+                elif report_invalid:
+                    active = 0
+                    assignment_status = "blocked"
+                    verification_status = "failed"
+                    verification_reason = "device_role_invalid"
                 elif not identity_ok:
                     active = 0
                     assignment_status = "blocked"
@@ -481,7 +503,7 @@ def record_runtime_attestation(
                 )
             unauthorized_report = bool(set(reported) - set(desired))
             final_status = (
-                "active" if identity_ok and online and exact_match
+                "active" if identity_ok and online and exact_match and not report_invalid
                 and all(
                     row["verification_status"] == "verified"
                     for row in tx.execute(
@@ -489,11 +511,12 @@ def record_runtime_attestation(
                         (safe_id,),
                     ).fetchall()
                 )
-                else "blocked" if (not identity_ok or unauthorized_report)
+                else "blocked" if (report_invalid or not identity_ok or unauthorized_report)
                 else "verifying"
             )
             reason = "" if final_status == "active" else (
-                "device_role_change_identity_mismatch" if not identity_ok
+                "device_role_invalid" if report_invalid
+                else "device_role_change_identity_mismatch" if not identity_ok
                 else "device_role_assignment_unauthorized" if unauthorized_report
                 else "device_role_change_pending_verification"
             )
@@ -588,18 +611,43 @@ def role_change_dependency_assessment(device: dict[str, Any], current_roles: Any
     return {"safe": not blockers, "blockers": blockers[:8], "storage_role_removed": True}
 
 
-def capability_projection(device: dict[str, Any], roles: Any) -> list[dict[str, Any]]:
+def capability_projection(
+    device: dict[str, Any],
+    roles: Any,
+    *,
+    verified_roles: Any = None,
+) -> list[dict[str, Any]]:
     server_host = bool(device.get("protected_server_host") or str(device.get("role") or "") == "server_host")
-    role_ids = ["server_host"] if server_host else normalize_device_roles(roles, joinable_only=True)
-    authorized = set(authorized_capabilities_for_roles(role_ids if not server_host else ["compute"], server_host=server_host))
+    if server_host:
+        role_ids = ["server_host"]
+        verified_role_ids = ["server_host"]
+    else:
+        try:
+            role_ids = normalize_device_roles(roles, joinable_only=True)
+        except DeviceRoleError:
+            role_ids = []
+        try:
+            verified_role_ids = normalize_device_roles(verified_roles, joinable_only=True)
+        except DeviceRoleError:
+            verified_role_ids = []
+    authorized = set(authorized_capabilities_for_roles(role_ids, server_host=server_host)) if role_ids else set()
+    verified_authorized = (
+        set(authorized_capabilities_for_roles(verified_role_ids, server_host=server_host))
+        if verified_role_ids else set()
+    )
     authorized.update(BASELINE_AGENT_CAPABILITIES)
-    advertised = {
-        str(item.get("id") or "").strip() if isinstance(item, dict) else str(item).strip()
-        for item in (device.get("advertised_capabilities") or device.get("capabilities") or [])
-    }
+    role_bound_capabilities = set().union(
+        *(AUTHORIZED_CAPABILITIES_BY_ROLE.get(role, frozenset()) for role in role_ids)
+    ) if role_ids else set()
+    advertised_order: list[str] = []
+    for item in (device.get("advertised_capabilities") or device.get("capabilities") or []):
+        capability = str(item.get("id") or "").strip() if isinstance(item, dict) else str(item).strip()
+        if capability and capability not in advertised_order:
+            advertised_order.append(capability)
+    advertised = set(advertised_order)
     advertised.discard("")
     online = str(device.get("connection") or device.get("status") or "").lower() in {"online", "active", "healthy", "ready"}
-    universe = sorted(authorized.union(advertised))
+    universe = advertised_order + sorted(authorized - advertised)
     rows: list[dict[str, Any]] = []
     for capability in universe:
         independent = capability in PHOTO_SOURCE_CAPABILITIES
@@ -615,6 +663,15 @@ def capability_projection(device: dict[str, Any], roles: Any) -> list[dict[str, 
         elif not observed:
             status = "not_advertised"
             reason = "device_capability_not_advertised"
+        elif capability in role_bound_capabilities and (
+            bool(device.get("device_role_report_invalid")) or capability not in verified_authorized
+        ):
+            status = "verification_pending"
+            reason = (
+                "device_role_invalid"
+                if device.get("device_role_report_invalid")
+                else "device_role_change_pending_verification"
+            )
         else:
             status = "ready"
             reason = ""
@@ -633,12 +690,14 @@ def capability_projection(device: dict[str, Any], roles: Any) -> list[dict[str, 
 def enrich_device_projection(device: dict[str, Any]) -> dict[str, Any]:
     result = dict(device)
     server_host = bool(result.get("protected_server_host") or result.get("is_current") or str(result.get("role") or "") == "server_host")
+    legacy_role = result.get("_legacy_role") if "_legacy_role" in result else result.get("role")
     state = assignment_state(
         str(result.get("id") or result.get("node_id") or ""),
-        legacy_role=result.get("role"),
+        legacy_role=legacy_role,
         protected_server_host=server_host,
     )
     role_ids = list(state.get("desired_device_roles") or (["server_host"] if server_host else []))
+    active_role_ids = list(state.get("active_device_roles") or (["server_host"] if server_host else []))
     result["device_roles"] = [
         {
             "id": role,
@@ -656,10 +715,19 @@ def enrich_device_projection(device: dict[str, Any]) -> dict[str, Any]:
     result["device_role_generation"] = int(state.get("generation") or 0)
     result["device_role_status"] = state.get("status") or "unknown"
     result["device_role_reason_code"] = state.get("reason_code") or ""
+    if result.get("device_role_report_invalid"):
+        result["device_role_status"] = "blocked"
+        result["device_role_reason_code"] = "device_role_invalid"
+        active_role_ids = []
     if not server_host and role_ids:
         result["role"] = legacy_role_projection(role_ids)
         result["role_label"] = " + ".join(ROLE_LABELS.get(role, role.title()) for role in role_ids)
         result["role_compatibility_lossy"] = len(role_ids) > 1
-    result["capability_states"] = capability_projection(result, role_ids or (["compute"] if not server_host else ["server_host"]))
+    result["capability_states"] = capability_projection(
+        result,
+        role_ids,
+        verified_roles=active_role_ids,
+    )
     result["capabilities"] = [item["id"] for item in result["capability_states"] if item["effective"]]
+    result.pop("_legacy_role", None)
     return result

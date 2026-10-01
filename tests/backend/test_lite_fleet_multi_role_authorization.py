@@ -154,6 +154,109 @@ def test_runtime_attestation_cannot_self_escalate_compute(role_runtime):
     assert compute["effective"] is False
 
 
+def test_unassigned_runtime_role_is_observation_only(role_runtime):
+    _, roles = role_runtime
+    projected = roles.enrich_device_projection(
+        {
+            "id": "unassigned-storage",
+            "role": "storage",
+            "_legacy_role": None,
+            "connection": "online",
+            "advertised_capabilities": ["media_storage", "backup_target"],
+        }
+    )
+    storage = {item["id"]: item for item in projected["capability_states"]}["media_storage"]
+    assert projected["device_role_ids"] == []
+    assert storage["authorization"] == "blocked"
+    assert storage["effective"] is False
+
+
+def test_assigned_role_stays_pending_until_runtime_attestation(role_runtime):
+    _, roles = role_runtime
+    roles.record_desired_roles(
+        "pending-storage",
+        ["storage"],
+        status="accepted",
+        actor_human_id="owner-1",
+        actor_role="Owner",
+        correlation_id="pending-storage",
+    )
+    projected = roles.enrich_device_projection(
+        {
+            "id": "pending-storage",
+            "role": "storage",
+            "connection": "online",
+            "advertised_capabilities": ["media_storage", "backup_target"],
+        }
+    )
+    storage = {item["id"]: item for item in projected["capability_states"]}["media_storage"]
+    assert storage["status"] == "verification_pending"
+    assert storage["reason_code"] == "device_role_change_pending_verification"
+    assert storage["effective"] is False
+
+
+def test_invalid_runtime_role_report_blocks_assigned_authority(role_runtime):
+    _, roles = role_runtime
+    assignment = roles.record_desired_roles(
+        "malformed-role-report",
+        ["compute"],
+        status="accepted",
+        actor_human_id="owner-1",
+        actor_role="Owner",
+        correlation_id="malformed-role-report",
+    )
+    state = roles.record_runtime_attestation(
+        "malformed-role-report",
+        reported_roles=["server_host"],
+        advertised_capabilities=["compute", "host_apps"],
+        online=True,
+        identity_verified=True,
+        generation=assignment["generation"],
+    )
+    assert state["status"] == "blocked"
+    assert state["reason_code"] == "device_role_invalid"
+    assert state["active_device_roles"] == []
+
+
+def test_runtime_generation_rejects_stale_and_future_reports(role_runtime):
+    _, roles = role_runtime
+    first = roles.record_desired_roles(
+        "generation-fenced",
+        ["compute"],
+        status="accepted",
+        actor_human_id="owner-1",
+        actor_role="Owner",
+        correlation_id="generation-fenced-1",
+    )
+    second = roles.record_desired_roles(
+        "generation-fenced",
+        ["compute", "storage"],
+        status="accepted",
+        actor_human_id="owner-1",
+        actor_role="Owner",
+        correlation_id="generation-fenced-2",
+        expected_generation=first["generation"],
+    )
+    stale = roles.record_runtime_attestation(
+        "generation-fenced",
+        reported_roles=["compute"],
+        advertised_capabilities=["compute", "host_apps"],
+        online=True,
+        identity_verified=True,
+        generation=first["generation"],
+    )
+    future = roles.record_runtime_attestation(
+        "generation-fenced",
+        reported_roles=["compute", "storage"],
+        advertised_capabilities=["compute", "host_apps", "media_storage", "backup_target"],
+        online=True,
+        identity_verified=True,
+        generation=second["generation"] + 1,
+    )
+    assert stale["reason_code"] == "device_role_change_stale_generation"
+    assert future["reason_code"] == "device_role_change_generation_mismatch"
+
+
 def test_multi_role_requires_fresh_verified_runtime_evidence(role_runtime):
     _, roles = role_runtime
     assignment = roles.record_desired_roles(
@@ -273,6 +376,11 @@ def test_role_change_redelivery_is_idempotent_at_agent_semantic_boundary(tmp_pat
     assert second["accepted"] is True
     assert second["unchanged"] is True
     assert before == after
+
+    mismatch = agent._apply_device_roles({"node_id": "phone-two", "device_roles": ["compute"], "generation": 5})
+    assert mismatch["accepted"] is False
+    assert mismatch["reason_code"] == "device_role_change_generation_mismatch"
+    assert env_file.read_text(encoding="utf-8") == after
 
 
 def test_role_change_identity_mismatch_fails_closed(role_runtime):
