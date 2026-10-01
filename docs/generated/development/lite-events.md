@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 61ddb4c36f8990a2492cf57acf2ee759126b131cf0e8f4557871f25958284067
+source_fingerprint: 958c8a9babc4d74fdd4efc5372e8c729cd8fe32e247055b312a31590c8e96dbd
 schema_revision: 1
 validation_status: generated
 ---
@@ -64,7 +64,7 @@ Missing delivery metadata is explicitly marked `incomplete`; the generator does 
 | `pocketlab.commands.lite.security.app_scan` | lite | command |  |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_profiles.py:13 |
 | `pocketlab.commands.lite.security.assurance` | lite | command |  |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1660, pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:55, pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:381, pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:579, pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:657 |
 | `pocketlab.commands.lite.security.scan` | security | command | FastAPI | pocket-worker | POCKETLAB_COMMANDS / pocketlab_command_worker_v1 | verified-metadata | pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1659, pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py:11, pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:545 |
-| `pocketlab.commands.node` | node | command | lite_photo_backup.py, pocketlab_worker.py | pocketlab_worker.py | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136, pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2194, pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1404, pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605 |
+| `pocketlab.commands.node` | node | command | lite_photo_backup.py, pocketlab_worker.py | pocketlab_worker.py | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136, pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2201, pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1404, pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605 |
 | `pocketlab.commands.node.all` | node | command |  | pocketlab_node_agent.py | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:510, pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:137 |
 | `pocketlab.commands.node.all.{command.replace` | node | command | fleet.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:657 |
 | `pocketlab.commands.node.{node_id}` | node | command |  |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1591 |
@@ -102,7 +102,7 @@ Missing delivery metadata is explicitly marked `incomplete`; the generator does 
 | `pocketlab.events.drift.scan_started` | drift | event | domain_commands.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:157 |
 | `pocketlab.events.drift.{action}` | drift | event | domain_commands.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:243 |
 | `pocketlab.events.drift.{action}_started` | drift | event | domain_commands.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:235 |
-| `pocketlab.events.fleet` | fleet | event | lite_photo_backup.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2207 |
+| `pocketlab.events.fleet` | fleet | event | lite_photo_backup.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2214 |
 | `pocketlab.events.fleet.bootstrap_blocked` | fleet | event |  |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:449, pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:698, pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:714 |
 | `pocketlab.events.fleet.config_updated` | fleet | event | domain_commands.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:306 |
 | `pocketlab.events.fleet.device_health_sampled` | fleet | event | live_status.py |  | incomplete / incomplete | incomplete | pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:627 |

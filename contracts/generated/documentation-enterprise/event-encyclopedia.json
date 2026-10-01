@@ -1573,7 +1573,7 @@
       "security_classification": "internal metadata",
       "source_owner": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2194",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2201",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1404",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605"
       ],
@@ -3020,7 +3020,7 @@
       "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
       "security_classification": "internal metadata",
       "source_owner": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2207"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2214"
       ],
       "tests": [],
       "ui_state": "FastAPI projection only; browser never subscribes to NATS"

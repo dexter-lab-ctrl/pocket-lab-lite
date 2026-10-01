@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 80389c2927f3fa2a65f491f25b30193fa1d7a5718edde02c54555720bea46de9
+source_fingerprint: f5203483348ee7e7fb609da1cd465b79b9b9caeb0ccbf4a595f8d7c53900dd29
 schema_revision: 1
 validation_status: generated
 ---
@@ -674,6 +674,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_PHONE_PM2_SERVICE_STABILIZATION_SECONDS` | configuration | 600 | yes | component-dependent | scripts/dev/check-lite-runtime-resilience-server-phone.sh |
 | `POCKETLAB_PHONE_RUNTIME_CONTRACT_STABILIZATION_SECONDS` | configuration | 600 | yes | component-dependent | scripts/dev/check-lite-runtime-resilience-server-phone.sh |
 | `POCKETLAB_PHONE_TOPOLOGY_ATTEMPTS` | configuration | 20 | yes | component-dependent | scripts/dev/check-lite-runtime-resilience-server-phone.sh |
+| `POCKETLAB_PHOTOPRISM_COMMAND_TIMEOUT_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py |
 | `POCKETLAB_PHOTOPRISM_ENV_REVISION` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh |
 | `POCKETLAB_PHOTOPRISM_INSTALLER` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py |
 | `POCKETLAB_PHOTOPRISM_INSTALL_TIMEOUT_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py |

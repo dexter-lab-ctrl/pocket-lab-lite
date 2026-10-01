@@ -21210,6 +21210,29 @@
       },
       {
         "affected_components": [
+          "FastAPI"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_PHOTOPRISM_COMMAND_TIMEOUT_SECONDS",
+        "owner": "FastAPI/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "bootstrap/runtime"
         ],
         "affects_release": true,
@@ -31567,7 +31590,7 @@
         "security_classification": "internal metadata",
         "source_owner": [
           "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2194",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2201",
           "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1404",
           "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605"
         ],
@@ -33014,7 +33037,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2207"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2214"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -47132,10 +47155,10 @@
       "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
-        "asyncapi": "f004a9372bee070289c656926f74c485155c74e3003d7ecd2775e00f2ef89e4b",
-        "documentation": "03a0c130a13ef6e51e3475d9874334c337a8082f4f5498c5e389a4300eda4192",
+        "asyncapi": "384382353d118780dd7401f0433b21d6e70f00b257aab38fd9bcb6863b1d82dd",
+        "documentation": "e7f5b010cc8cacdfef3444f1d3cb7c12ae2746da4e3c2db7c6c896955e6f430e",
         "openapi": "204711484f7bc0eaef802657ee762a9f88d1135f19775ba46172dac045abc11a",
-        "operational_health": "e6266a3a9c3b0f4f2424143426182e114418e5172cc0559438b2f7c7919cfb98"
+        "operational_health": "3150650e18b8e200695ce67b6ea4feec63d36f69f5710e8d2036a16b394ed452"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -117577,5 +117600,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "2ee8240422a635e7e25073e13f6d9301e7963fea0dc15831bf24a8ebfa184311"
+  "source_fingerprint": "656296afc85c6d2068e69a760f1cdc1e53a6726051294f9648e564dd49acbfd5"
 }

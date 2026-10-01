@@ -12101,6 +12101,24 @@
         "pocket-lab-final-structure"
       ],
       "deprecated_aliases": [],
+      "name": "POCKETLAB_PHOTOPRISM_COMMAND_TIMEOUT_SECONDS",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure"
+      ],
+      "deprecated_aliases": [],
       "name": "POCKETLAB_PHOTOPRISM_ENV_REVISION",
       "production": true,
       "required": false,
@@ -17886,7 +17904,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "2db16abed9e9556768ee9551614f9c7c6e594489ddd896cbb267b54724f4e35d",
+    "aggregate_fingerprint": "ae3bb77d01b591606be920c8dbed1e6688dc5d5c8d2561411f92559504015ad0",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -17990,7 +18008,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_lifecycle_diagnostics.py": "6ca0ea3cdac825a7b91f517fef90e77dca515e96e7ab96006421131d24237c7c",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_phase3b_projections.py": "0ca0448ae5ead1f92e3dbeefb23c8293e91de6885b2cbbb119be500c968b6267",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_phase3c_projections.py": "cab9a59573ab61e16ae4af62176ee7ddf24416104eb0bd78ee37d6a45a0b39c2",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py": "e4ec02c09ade4ce37365f52143644fdd86cde6412b3ce039881d052b6c8b347c",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py": "c5b2f5e30cd0820596c1dcf9b30f86e334016c168d0b23f256f5f541266f027d",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_backup.py": "c66e1ebc3bcd8cedc9e95fbe0b005481bcb2c616533bca55f23a3d887f5b82f6",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_lifecycle.py": "dffed3d8cbbd745ad27f9681037bce477e38b5fe59da8197fca8b3cd64ba5853",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_media.py": "15c6be2a53d5e587530cd6c18d5a4baacfa07164741af8bd2e972f04228df9b9",
