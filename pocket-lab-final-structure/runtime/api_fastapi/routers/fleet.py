@@ -10,7 +10,7 @@ from .. import deps
 from ..services.action_queue import submit_domain_command
 from ..services.live_status import LIVE_STATUS
 from ..services.nats_bus import BUS
-from ..services import fleet_registry, lite_catalog, lite_invites, lite_photo_backup
+from ..services import fleet_registry, lite_catalog, lite_invites, lite_photo_backup, lite_policy_opa
 
 router = APIRouter(tags=["fleet"])
 
@@ -510,7 +510,7 @@ async def restart_lite_fleet_agent(
     is offline, the command remains visible as queued; delivery requires the agent
     to reconnect to NATS.
     """
-    deps.require_auth(request, write=True)
+    auth_context = deps.require_auth(request, write=True)
     payload = payload or {}
     normalized_node_id = fleet_registry.normalize_node_id(node_id)
     agent = fleet_registry.get_agent(normalized_node_id)
@@ -534,6 +534,32 @@ async def restart_lite_fleet_agent(
                 "node_id": normalized_node_id,
             },
         )
+
+    try:
+        lite_policy_opa.evaluate_authorization(
+            auth_context=auth_context,
+            action_id="device.restart",
+            target_type="device",
+            target_id=normalized_node_id,
+            target_revision=str(agent.get("revision") or agent.get("last_seen_at") or "current"),
+            target={
+                "protected_server_host": False,
+                "device_roles": agent.get("device_roles") or ([role] if role else []),
+                "connection": agent.get("connection") or agent.get("status") or "unknown",
+            },
+            request_context={"source": "lite-devices"},
+        )
+    except lite_policy_opa.PolicyDecisionError as exc:
+        raise HTTPException(
+            status_code=exc.status_code,
+            headers={"Cache-Control": "no-store"},
+            detail={
+                "status": "blocked",
+                "accepted": False,
+                "reason_code": exc.reason_code,
+                "message": exc.message,
+            },
+        ) from exc
 
     command_payload = {
         "reason": str(payload.get("reason") or "Lite Devices restart requested"),
