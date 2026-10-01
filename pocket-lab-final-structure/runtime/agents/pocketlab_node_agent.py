@@ -80,15 +80,39 @@ def telemetry_snapshot() -> Dict[str, Any]:
 
 
 
+def _normalize_device_roles(value: Any) -> list[str]:
+    if isinstance(value, str):
+        source = [part for part in value.split(",") if part.strip()]
+    elif isinstance(value, (list, tuple, set)):
+        source = list(value)
+    else:
+        source = []
+    aliases = {
+        "compute": "compute", "app_host": "compute", "app-host": "compute",
+        "storage": "storage", "storage_node": "storage", "storage-node": "storage",
+    }
+    roles: list[str] = []
+    for item in source:
+        role = aliases.get(str(item or "").strip().lower().replace(" ", "_"))
+        if not role:
+            raise ValueError("invalid_device_role")
+        if role not in roles:
+            roles.append(role)
+    roles.sort(key=lambda role: (0 if role == "compute" else 1, role))
+    if not roles:
+        raise ValueError("device_roles_required")
+    return roles
+
+
 def advertised_capabilities(
-    role: str,
+    roles: Any,
     *,
     is_control_plane: bool,
     supervisor_available: bool,
     rclone_available: bool = False,
     photo_storage_access: bool = False,
 ) -> list[str]:
-    normalized = str(role or "compute").strip().lower().replace("-", "_").replace(" ", "_")
+    normalized_roles = _normalize_device_roles(roles)
     capabilities = {
         "heartbeat",
         "telemetry",
@@ -100,9 +124,9 @@ def advertised_capabilities(
     }
     if supervisor_available:
         capabilities.update({"agent-supervisor", "agent-repair", "supervisor_recovery"})
-    if normalized in {"storage", "storage_node", "backup_target"}:
+    if "storage" in normalized_roles:
         capabilities.update({"provide_storage", "store_backups", "backup_target", "restore_target"})
-    else:
+    if "compute" in normalized_roles:
         capabilities.update({"host_apps", "compute"})
     if photo_storage_access:
         capabilities.add("media_backup_source")
@@ -146,7 +170,12 @@ class PocketLabNodeAgent:
         host = socket.gethostname() or platform.node() or "pocket-node"
         self.node_id = normalize_node_id(env("POCKETLAB_NODE_ID", host))
         self.hostname = env("POCKETLAB_NODE_NAME", host)
-        self.role = env("POCKETLAB_NODE_ROLE", "compute")
+        configured_roles = env("POCKETLAB_NODE_ROLES", "").strip()
+        legacy_role = env("POCKETLAB_NODE_ROLE", "").strip()
+        self.device_roles = _normalize_device_roles(configured_roles or legacy_role or "compute")
+        self.role = "compute" if "compute" in self.device_roles else self.device_roles[0]
+        self.device_role_generation = max(0, int(env("POCKETLAB_NODE_ROLE_GENERATION", "0") or "0"))
+        self.agent_env_file = Path(env("POCKETLAB_AGENT_ENV_FILE", str(Path.home() / ".pocketlab-lite-agent.env"))).expanduser()
         self.is_control_plane = env("POCKETLAB_IS_CONTROL_PLANE", "0").strip().lower() in {
             "1", "true", "yes", "on"
         }
@@ -187,7 +216,7 @@ class PocketLabNodeAgent:
             / "photo-backup-active.json"
         )
         self.capabilities = advertised_capabilities(
-            self.role,
+            self.device_roles,
             is_control_plane=self.is_control_plane,
             supervisor_available=bool(shutil.which("pm2")),
             rclone_available=bool(self.photo_backup.get("rclone_available")),
@@ -318,6 +347,8 @@ class PocketLabNodeAgent:
             "name": self.hostname,
             "hostname": self.hostname,
             "role": self.role,
+            "device_roles": list(self.device_roles),
+            "device_role_generation": self.device_role_generation,
             "is_control_plane": self.is_control_plane,
             "agent_version": AGENT_VERSION,
             "platform": platform.platform(),
@@ -330,6 +361,71 @@ class PocketLabNodeAgent:
             "photo_backup": dict(self.photo_backup),
             "nats_connected_at": self.connected_at,
             "reconnect_count": self.reconnect_count,
+        }
+
+    def _persist_device_roles(self, roles: list[str], generation: int) -> None:
+        """Atomically update only the role fields in the existing agent env file."""
+        path = self.agent_env_file
+        path.parent.mkdir(parents=True, exist_ok=True)
+        existing: list[str] = []
+        if path.exists():
+            existing = path.read_text(encoding="utf-8").splitlines()
+        role_keys = {"POCKETLAB_NODE_ROLES", "POCKETLAB_NODE_ROLE", "POCKETLAB_NODE_ROLE_GENERATION"}
+        kept = []
+        for line in existing:
+            stripped = line.strip()
+            key = stripped.removeprefix("export ").split("=", 1)[0].strip() if "=" in stripped else ""
+            if key not in role_keys:
+                kept.append(line)
+        legacy = "compute" if "compute" in roles else roles[0]
+        kept.extend([
+            f"export POCKETLAB_NODE_ROLES={json.dumps(','.join(roles))}",
+            f"export POCKETLAB_NODE_ROLE={json.dumps(legacy)}",
+            f"export POCKETLAB_NODE_ROLE_GENERATION={json.dumps(str(generation))}",
+        ])
+        tmp = path.with_name(path.name + ".roles.tmp")
+        tmp.write_text("\n".join(kept) + "\n", encoding="utf-8")
+        os.chmod(tmp, 0o600)
+        os.replace(tmp, path)
+
+    def _apply_device_roles(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        target = normalize_node_id(str(payload.get("node_id") or self.node_id))
+        if target != self.node_id:
+            raise ValueError("device_role_change_identity_mismatch")
+        roles = _normalize_device_roles(payload.get("device_roles"))
+        generation = int(payload.get("generation") or 0)
+        if generation <= 0:
+            raise ValueError("device_role_change_failed")
+        if generation < self.device_role_generation:
+            return {
+                "accepted": False,
+                "reason_code": "device_role_change_failed",
+                "message": "A newer device role generation is already active.",
+                "generation": self.device_role_generation,
+            }
+        if generation == self.device_role_generation and roles == self.device_roles:
+            return {
+                "accepted": True,
+                "unchanged": True,
+                "device_roles": list(self.device_roles),
+                "generation": self.device_role_generation,
+            }
+        self._persist_device_roles(roles, generation)
+        self.device_roles = roles
+        self.role = "compute" if "compute" in roles else roles[0]
+        self.device_role_generation = generation
+        self.capabilities = advertised_capabilities(
+            self.device_roles,
+            is_control_plane=self.is_control_plane,
+            supervisor_available=bool(shutil.which("pm2")),
+            rclone_available=bool(self.photo_backup.get("rclone_available")),
+            photo_storage_access=bool(self.photo_backup.get("photo_storage_access")),
+        )
+        return {
+            "accepted": True,
+            "device_roles": list(self.device_roles),
+            "generation": self.device_role_generation,
+            "capabilities": list(self.capabilities),
         }
 
     async def safe_publish(
@@ -600,7 +696,7 @@ class PocketLabNodeAgent:
     def _refresh_photo_backup_capabilities(self) -> None:
         self.photo_backup = collect_photo_backup_capabilities()
         self.capabilities = advertised_capabilities(
-            self.role,
+            self.device_roles,
             is_control_plane=self.is_control_plane,
             supervisor_available=bool(shutil.which("pm2")),
             rclone_available=bool(self.photo_backup.get("rclone_available")),
@@ -837,6 +933,9 @@ class PocketLabNodeAgent:
                 result = {"telemetry": telemetry_snapshot()}
             elif command_name in {"agent.describe", "describe"}:
                 result = {"agent": self.base_payload()}
+            elif command_name == "device.roles.apply":
+                result = self._apply_device_roles(command_payload)
+                status = "completed" if result.get("accepted") else "blocked"
             elif command_name in {"agent.restart", "restart"}:
                 result = {
                     "message": "Restart requested; PM2 will restart the agent when available.",
