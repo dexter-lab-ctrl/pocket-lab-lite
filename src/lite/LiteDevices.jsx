@@ -31,6 +31,7 @@ import { useLiteAddDeviceFlow } from '../hooks/useLiteAddDeviceFlow.js';
 import { useLiteDeviceRemovalFlow } from '../hooks/useLiteDeviceRemovalFlow.js';
 import { useLiteServiceWorkerUpdateBlocker } from '../hooks/useLiteServiceWorkerUpdateBlocker.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
+import { liteEnterpriseApi } from '../lib/liteEnterpriseApi.js';
 import { createLiteFeedbackDeduper, triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import {
   GlassCard,
@@ -662,7 +663,7 @@ export function fleetOperationalStory({ data, devices = [], onlineDevices = 0, h
 
 export default function DevicesScreen() {
   const [hostname, setHostname] = useState('');
-  const [selectedRole, setSelectedRole] = useState('compute');
+  const [selectedRoles, setSelectedRoles] = useState(['compute']);
   const [addDeviceOpen, setAddDeviceOpen] = useState(false);
   const [remoteAccessDetailsOpen, setRemoteAccessDetailsOpen] = useState(false);
   const [result, setResult] = useState(null);
@@ -702,6 +703,10 @@ export default function DevicesScreen() {
     staleTime: 15_000,
     select: selectDevicesScreenView,
     snapshotSelect: selectDevicesScreenView,
+  });
+  const access = useLiteResource(liteEnterpriseApi.access, [], {
+    pollingMode: 'slow',
+    staleTime: 60_000,
   });
   const removalFlow = useLiteDeviceRemovalFlow({ backendReachable, savedStateOnly });
   const rawDevices = data?.devices || [];
@@ -756,12 +761,26 @@ export default function DevicesScreen() {
   const healthAttentionCurrent = Boolean(data?.health_summary?.attention_current);
   const healthAttentionCount = healthAttentionCurrent ? Number(data?.health_summary?.attention_count || 0) : 0;
   const fleetStory = fleetOperationalStory({ data, devices, onlineDevices, healthAttentionCount, savedStateOnly });
-  const selectedRoleLabel = roleLabel(selectedRole);
+  const selectedRoleLabels = selectedRoles.map((role) => roleLabel(role));
+  const selectedRoleLabel = selectedRoleLabels.join(' + ');
   const candidateDeviceName = hostname.trim() || `Pocket Lab ${selectedRoleLabel}`;
+  const currentHumanRole = access.data?.current_membership?.role || access.data?.current_role || access.data?.role?.id || '';
+  const inviteMatrixAction = selectedRoles.includes('storage') ? 'device.invite.storage' : 'device.invite.compute';
+  const inviteMatrixRow = (access.data?.action_matrix || []).find((row) => row.action_id === inviteMatrixAction);
+  const addDeviceAuthorityMode = currentHumanRole && inviteMatrixRow?.roles ? inviteMatrixRow.roles[currentHumanRole] : '';
+  const addDeviceAuthorityLabel = addDeviceAuthorityMode === 'approval'
+    ? 'Review required'
+    : addDeviceAuthorityMode === 'deny'
+      ? 'Not allowed for this role'
+      : addDeviceAuthorityMode === 'step_up'
+        ? 'Passkey confirmation'
+        : addDeviceAuthorityMode === 'allow'
+          ? 'Direct'
+          : 'Server will check';
   const localNameConflict = findDeviceNameConflict(candidateDeviceName, devices);
   const activeNameConflict = localNameConflict || serverConflict;
   const addDeviceFlow = useLiteAddDeviceFlow({ devices, latestInvite, backendReachable, savedStateOnly, remoteAccessReady });
-  const addDeviceDisabled = busy || addDeviceFlow.writeBlocked || Boolean(activeNameConflict);
+  const addDeviceDisabled = busy || addDeviceFlow.writeBlocked || Boolean(activeNameConflict) || addDeviceAuthorityMode === 'deny';
   useEffect(() => {
     if (addDeviceFlow.value !== 'deviceOnline' || !invite || !pendingInviteId.current) return;
     const id = `device:joined:${pendingInviteId.current}`;
@@ -809,7 +828,7 @@ export default function DevicesScreen() {
   }, [removeCandidate?.id]);
 
   async function addDevice() {
-    const validation = addDeviceFlow.validateName(candidateDeviceName, selectedRole);
+    const validation = addDeviceFlow.validateName(candidateDeviceName, selectedRoles.join(','));
     if (!validation.ok) { setActionError(validation.reason); return; }
     addDeviceFlow.createInvite();
     setBusy(true);
@@ -819,7 +838,7 @@ export default function DevicesScreen() {
     setActionError(null);
     setServerConflict(null);
     try {
-      const payload = await liteApi.addDevice({ role: selectedRole, hostname: hostname || undefined });
+      const payload = await liteApi.addDevice({ device_roles: selectedRoles, hostname: hostname || undefined });
       setResult(payload);
       if (payload?.status === 'invite_ready' && payload?.invite) {
         setInvite(payload.invite);
@@ -1121,7 +1140,7 @@ export default function DevicesScreen() {
             onChange={(event) => {
               setHostname(event.target.value);
               setServerConflict(null);
-              addDeviceFlow.enterDevice(event.target.value, selectedRole);
+              addDeviceFlow.enterDevice(event.target.value, selectedRoles.join(','));
             }}
             placeholder="Optional, for example: Kitchen tablet"
             aria-label="Device name"
@@ -1134,25 +1153,46 @@ export default function DevicesScreen() {
             </div>
           ) : null}
 
-          <div className="lite-devices-field-label">Select a role</div>
-          <div className="lite-role-selector" role="radiogroup" aria-label="Device role">
-            {DEVICE_ROLE_OPTIONS.map((role) => (
-              <button
-                key={role.value}
-                type="button"
-                className={`lite-role-card ${selectedRole === role.value ? 'lite-role-card-selected' : ''}`}
-                onClick={() => {
-                  setSelectedRole(role.value);
-                  setServerConflict(null);
-                  addDeviceFlow.enterDevice(candidateDeviceName, role.value);
-                }}
-                role="radio"
-                aria-checked={selectedRole === role.value}
-              >
-                <strong>{role.label}</strong>
-                <span>{role.description}</span>
-              </button>
-            ))}
+          <div className="lite-devices-field-label">What should this device do?</div>
+          <div className="lite-role-selector" role="group" aria-label="Device responsibilities">
+            {DEVICE_ROLE_OPTIONS.map((role) => {
+              const checked = selectedRoles.includes(role.value);
+              return (
+                <label
+                  key={role.value}
+                  className={`lite-role-card ${checked ? 'lite-role-card-selected' : ''}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => {
+                      const next = checked
+                        ? selectedRoles.filter((item) => item !== role.value)
+                        : [...selectedRoles, role.value].sort((left, right) => (left === 'compute' ? -1 : right === 'compute' ? 1 : left.localeCompare(right)));
+                      if (!next.length) return;
+                      setSelectedRoles(next);
+                      setServerConflict(null);
+                      addDeviceFlow.enterDevice(candidateDeviceName, next.join(','));
+                    }}
+                  />
+                  <span>
+                    <strong>{role.actionLabel || role.label}</strong>
+                    <small>{role.label} role</small>
+                    <span>{role.description}</span>
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+          <div className="lite-devices-safe-note" role="status" aria-live="polite">
+            <strong>Access check: {addDeviceAuthorityLabel}</strong>
+            <span>
+              {addDeviceAuthorityMode === 'approval'
+                ? 'Pocket Lab will create a review request before this role set can be used.'
+                : addDeviceAuthorityMode === 'deny'
+                  ? 'Your current human role cannot create this kind of device invite.'
+                  : 'Pocket Lab will verify your current human role and Safety Rules on the server.'}
+            </span>
           </div>
 
           <div className="lite-devices-safe-note">
@@ -1170,7 +1210,7 @@ export default function DevicesScreen() {
 
           <div className="mt-5">
             <LiteButton onClick={addDevice} disabled={addDeviceDisabled}>
-              {busy ? 'Preparing invite...' : (addDeviceFlow.writeBlocked ? 'Reconnect to continue' : activeNameConflict ? 'Device already added' : 'Add Device')}
+              {busy ? 'Preparing invite...' : (addDeviceFlow.writeBlocked ? 'Reconnect to continue' : activeNameConflict ? 'Device already added' : addDeviceAuthorityMode === 'deny' ? 'Not allowed' : addDeviceAuthorityMode === 'approval' ? 'Request Add Device' : 'Add Device')}
             </LiteButton>
           </div>
 
@@ -1195,8 +1235,8 @@ export default function DevicesScreen() {
 
               <div className="lite-invite-card-body">
                 <div>
-                  <span>Role</span>
-                  <strong>{latestInvite.role_label || selectedRoleLabel}</strong>
+                  <span>Roles</span>
+                  <strong>{(latestInvite.device_role_labels || []).join(' + ') || latestInvite.role_label || selectedRoleLabel}</strong>
                 </div>
                 <div>
                   <span>Expires at</span>
