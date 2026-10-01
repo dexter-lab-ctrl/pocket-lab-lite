@@ -22,8 +22,56 @@ device_current_state parent row deleted by an older/external/manual path
 
 That shape matches the reported database evidence. The initiating historical
 caller is not present in the current repository and is therefore unvalidated.
-Migration `0022_device_durable_enrollment.sql` closes the database path for every
+Migrations `0022_device_durable_enrollment.sql` and
+`0037_fleet_multi_role_authorization.sql` closes the database path for every
 caller by preventing deletion of durable enrollment and current rows.
+
+## Multi-role enrollment ownership
+
+Canonical device-role state is no longer owned by a heartbeat or by
+`fleet_agents.json`. The normalized control-plane relation
+`device_role_assignments` owns desired/active role state for joined devices,
+while `device_role_change_operations` retains the bounded change lifecycle,
+generation, correlation, policy revision, and request fingerprint.
+
+```text
+device_enrollment_registry
+  = durable device identity/lifecycle
+
+device_role_assignments
+  = durable desired + active Compute/Storage responsibilities
+
+device_role_change_operations
+  = role-change generation + verification lifecycle
+
+fleet/heartbeat/supervisor data
+  = runtime observations only
+```
+
+Legacy enrolled records with a single `compute` or `storage` role are projected
+as a one-element canonical role set. The legacy `role` field and
+`POCKETLAB_NODE_ROLE` remain compatibility projections; new canonical paths use
+`device_roles` / `POCKETLAB_NODE_ROLES`.
+
+A pending invite binds the exact role set before bootstrap. Tampering the
+bootstrap request to add/remove roles, including an attempt to obtain protected
+`server_host`, fails closed and records sanitized evidence. Duplicate-device and
+protected-host checks remain independent of the selected role set.
+
+Post-enrollment role changes are generation-checked, require current trusted
+identity and an online delivery path, and remain in applying/verifying state
+until a fresh device report confirms the assigned role set. The node agent
+applies only the semantic `device.roles.apply` command and atomically rewrites
+only role-related environment fields. Re-delivery of the same role set and
+generation is idempotent.
+
+Storage removal is dependency-aware. Active backup/recovery/storage
+responsibilities block removal of the Storage role. This changes authorization
+only; retained backup or media data is not implicitly deleted. Device retirement
+deactivates role authority while preserving assignment/change history.
+
+Photo Backup Source is not a Storage role. Photo-source runtime capabilities
+remain independently verified and may exist on Compute-only devices.
 
 ## Canonical ownership
 
@@ -76,7 +124,8 @@ transaction:
 3. writes a `removal_completed` lifecycle event;
 4. writes a durable sanitized removal receipt;
 5. writes audit evidence;
-6. increments fleet/audit revisions.
+6. increments fleet/audit revisions;
+7. retires active device-role authority without deleting role history.
 
 Compatibility JSON and NATS evidence are exports only. They do not own lifecycle
 truth. Protected server hosts and healthy online devices fail closed.
@@ -136,7 +185,9 @@ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q \
   tests/backend/test_lite_sqlite_migrations.py \
   tests/backend/test_lite_command_lifecycle_reconciliation.py \
   tests/backend/test_lite_command_attention_audit_idempotency.py \
-  tests/backend/test_lite_devices_d2_d3.py
+  tests/backend/test_lite_devices_d2_d3.py \
+  tests/backend/test_lite_fleet_multi_role_authorization.py \
+  tests/backend/test_lite_fleet_multi_role_invites_governance.py
 
 python3 -m pytest -q tests/backend/test_lite_api.py
 npm run build
