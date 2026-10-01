@@ -130,6 +130,49 @@ transaction:
 Compatibility JSON and NATS evidence are exports only. They do not own lifecycle
 truth. Protected server hosts and healthy online devices fail closed.
 
+## Dev-PC SSH access to a secondary Termux test device
+
+Pocket Lab's fleet join remains application/control-plane driven; SSH is an
+operator/development convenience and is not part of device authorization or
+capability truth.
+
+For a secondary Android/Termux test device, configure a stable local SSH alias
+from the WSL2 Dev PC without committing a Tailnet IP, MagicDNS name, Termux user,
+or private key path:
+
+```bash
+bash scripts/dev/setup-secondary-device-ssh.sh \
+  --host '<secondary-device-tailnet-host-or-ip>' \
+  --user '<termux-user>' \
+  --identity-file ~/.ssh/id_ed25519
+```
+
+The default alias is:
+
+```bash
+ssh pocketlab-secondary
+```
+
+Use `--alias <name>` when a more specific local alias is desired. The helper
+defaults to Termux OpenSSH port `8022`; override it with `--port` when the
+device uses another port.
+
+The helper is intentionally local-only and idempotent. It:
+
+- writes a bounded marker block in `~/.ssh/config`;
+- replaces only the block for the selected alias;
+- creates a backup of the prior SSH config before replacement;
+- keeps `~/.ssh` and `~/.ssh/config` permissions restricted;
+- never copies private keys;
+- never writes invite tokens, NATS credentials, Pocket Lab secrets, or backend
+  environment values;
+- accepts a Tailscale MagicDNS name or Tailnet IPv4 instead of hardcoding a
+  deployment-specific address in the repository.
+
+This is intentionally separate from the existing Server Phone convenience alias
+(such as `ssh pocketlab-termux`). Both aliases can coexist in the same Dev-PC
+SSH config.
+
 ## Acceptance sequence
 
 Set a test device id that is safe to disconnect and rejoin:
