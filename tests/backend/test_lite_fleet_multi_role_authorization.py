@@ -383,6 +383,40 @@ def test_role_change_redelivery_is_idempotent_at_agent_semantic_boundary(tmp_pat
     assert env_file.read_text(encoding="utf-8") == after
 
 
+def test_protected_server_host_agent_identity_is_supported_but_not_joinable(tmp_path, monkeypatch):
+    ensure_runtime_path()
+    from agents.pocketlab_node_agent import PocketLabNodeAgent
+
+    env_file = tmp_path / "server-agent.env"
+    env_file.write_text(
+        "export POCKETLAB_NODE_ID=pocket-lab-lite-server\n"
+        "export POCKETLAB_NODE_NAME=Pocket Lab Lite Server\n"
+        "export POCKETLAB_NODE_ROLE=server_host\n"
+        "export POCKETLAB_IS_CONTROL_PLANE=1\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("POCKETLAB_NODE_ID", "pocket-lab-lite-server")
+    monkeypatch.setenv("POCKETLAB_NODE_NAME", "Pocket Lab Lite Server")
+    monkeypatch.setenv("POCKETLAB_NODE_ROLE", "server_host")
+    monkeypatch.delenv("POCKETLAB_NODE_ROLES", raising=False)
+    monkeypatch.setenv("POCKETLAB_IS_CONTROL_PLANE", "1")
+    monkeypatch.setenv("POCKETLAB_AGENT_ENV_FILE", str(env_file))
+
+    agent = PocketLabNodeAgent()
+
+    assert agent.device_roles == ["server_host"]
+    assert agent.role == "server_host"
+    assert "compute" in agent.capabilities
+    with pytest.raises(ValueError, match="device_role_not_joinable"):
+        agent._apply_device_roles(
+            {
+                "node_id": "pocket-lab-lite-server",
+                "device_roles": ["server_host"],
+                "generation": 1,
+            }
+        )
+
+
 def test_role_change_identity_mismatch_fails_closed(role_runtime):
     _, roles = role_runtime
     assignment = roles.record_desired_roles(

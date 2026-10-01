@@ -83,7 +83,7 @@ def telemetry_snapshot() -> Dict[str, Any]:
 
 
 
-def _normalize_device_roles(value: Any) -> list[str]:
+def _normalize_device_roles(value: Any, *, allow_protected: bool = True) -> list[str]:
     if isinstance(value, str):
         source = [part for part in value.split(",") if part.strip()]
     elif isinstance(value, (list, tuple, set)):
@@ -93,12 +93,16 @@ def _normalize_device_roles(value: Any) -> list[str]:
     aliases = {
         "compute": "compute", "app_host": "compute", "app-host": "compute",
         "storage": "storage", "storage_node": "storage", "storage-node": "storage",
+        "server": "server_host", "server_host": "server_host",
+        "control_plane": "server_host", "control-plane": "server_host",
     }
     roles: list[str] = []
     for item in source:
         role = aliases.get(str(item or "").strip().lower().replace(" ", "_"))
         if not role:
             raise ValueError("invalid_device_role")
+        if role == "server_host" and not allow_protected:
+            raise ValueError("device_role_not_joinable")
         if role not in roles:
             roles.append(role)
     roles.sort(key=lambda role: (0 if role == "compute" else 1, role))
@@ -129,7 +133,7 @@ def advertised_capabilities(
         capabilities.update({"agent-supervisor", "agent-repair", "supervisor_recovery"})
     if "storage" in normalized_roles:
         capabilities.update({"provide_storage", "store_backups", "backup_target", "restore_target"})
-    if "compute" in normalized_roles:
+    if "compute" in normalized_roles or "server_host" in normalized_roles:
         capabilities.update({"host_apps", "compute"})
     if photo_storage_access:
         capabilities.add("media_backup_source")
@@ -395,7 +399,7 @@ class PocketLabNodeAgent:
         target = normalize_node_id(str(payload.get("node_id") or self.node_id))
         if target != self.node_id:
             raise ValueError("device_role_change_identity_mismatch")
-        roles = _normalize_device_roles(payload.get("device_roles"))
+        roles = _normalize_device_roles(payload.get("device_roles"), allow_protected=False)
         generation = int(payload.get("generation") or 0)
         if generation <= 0:
             raise ValueError("device_role_change_failed")
