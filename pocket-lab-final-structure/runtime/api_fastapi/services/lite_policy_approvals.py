@@ -10,7 +10,12 @@ from ..db.connection import begin_immediate, connection
 from ..db.migrations import apply_migrations
 from . import lite_enterprise_identity
 
-APPROVAL_PURPOSE = "policy.approval.device.remove"
+APPROVAL_PURPOSES = {
+    "device.remove": "policy.approval.device.remove",
+    "device.invite": "policy.approval.device.invite",
+    "device.roles.change": "policy.approval.device.roles.change",
+}
+APPROVAL_ACTIONS = frozenset(APPROVAL_PURPOSES)
 APPROVER_ROLES = frozenset({"Owner", "Admin"})
 # Owner is root-equivalent and never enters an independent approval continuation.
 # Keeping Owner out of this set is a backend defense even if a stale/faulty OPA
@@ -113,9 +118,14 @@ def _public_exception(row: Any) -> dict[str, Any]:
     return item
 
 
-def _approved_assurance(context: dict[str, Any]) -> bool:
+def _approved_assurance(context: dict[str, Any], purpose: str) -> bool:
     now = _iso()
-    return any(isinstance(item, dict) and item.get("purpose") == APPROVAL_PURPOSE and str(item.get("expires_at") or "") > now for item in ((context.get("session") or {}).get("assurance") or []))
+    return any(
+        isinstance(item, dict)
+        and item.get("purpose") == purpose
+        and str(item.get("expires_at") or "") > now
+        for item in ((context.get("session") or {}).get("assurance") or [])
+    )
 
 
 def cancel_impossible_owner_requests(*, actor_human_id: str, reason_code: str = "owner_authority_policy_inconsistency") -> dict[str, Any]:
@@ -159,14 +169,20 @@ def cancel_impossible_owner_requests(*, actor_human_id: str, reason_code: str = 
     }
 
 
-def create_from_decision(*, decision_id: str, initiating_role: str) -> dict[str, Any]:
-    """Persist exactly one valid delegated continuation for a real OPA decision."""
+def create_from_decision(
+    *,
+    decision_id: str,
+    initiating_role: str,
+    authorization_version: int = 1,
+    request_fingerprint: str = "",
+) -> dict[str, Any]:
+    """Persist one exact delegated continuation for a fleet policy decision."""
     apply_migrations()
     safe_role = str(initiating_role or "").strip()
     if safe_role == "Owner":
         raise ApprovalError(
             "owner_approval_policy_inconsistent",
-            "Owner authority cannot require independent device-removal approval. Safety Rules need synchronization.",
+            "Owner authority cannot require independent fleet approval. Safety Rules need synchronization.",
             503,
         )
     if safe_role not in REQUESTER_ROLES:
@@ -174,23 +190,60 @@ def create_from_decision(*, decision_id: str, initiating_role: str) -> dict[str,
     now = _now()
     with connection() as conn:
         with begin_immediate(conn) as tx:
-            decision = tx.execute("SELECT * FROM policy_decisions WHERE decision_id=?", (str(decision_id)[:120],)).fetchone()
-            if not decision or decision["reason_code"] != "approval_required" or decision["action_id"] != "device.remove" or int(decision["allow"]):
-                raise ApprovalError("approval_provenance_invalid", "Approval requires a real approval-required device-removal decision.", 409)
-            existing = tx.execute("SELECT * FROM policy_approvals WHERE originating_decision_id=?", (decision["decision_id"],)).fetchone()
+            decision = tx.execute(
+                "SELECT * FROM policy_decisions WHERE decision_id=?",
+                (str(decision_id)[:120],),
+            ).fetchone()
+            action_id = str(decision["action_id"] or "") if decision else ""
+            if (
+                not decision
+                or decision["reason_code"] != "approval_required"
+                or action_id not in APPROVAL_ACTIONS
+                or str(decision["target_type"] or "") != "device"
+                or int(decision["allow"])
+            ):
+                raise ApprovalError("approval_provenance_invalid", "Approval requires a real approval-required fleet decision.", 409)
+            existing = tx.execute(
+                "SELECT * FROM policy_approvals WHERE originating_decision_id=?",
+                (decision["decision_id"],),
+            ).fetchone()
             if existing:
                 return {"approval": _public_approval(existing), "created": False}
+            purpose = APPROVAL_PURPOSES[action_id]
+            target_revision = str(decision["target_revision"] or "")[:160]
+            fingerprint = (str(request_fingerprint or "").strip() or target_revision)[:120]
             approval_id = "apr-" + uuid.uuid4().hex
             tx.execute(
-                """INSERT INTO policy_approvals(approval_id,originating_decision_id,correlation_id,action_id,target_type,target_id,
-                   initiating_human_id,initiating_role,required_approver_roles_json,required_assurance,policy_revision,status,created_at,expires_at,reason_code,evidence_ref)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                (approval_id, decision["decision_id"], decision["correlation_id"], "device.remove", "device", decision["target_id"],
-                 decision["actor_id"], safe_role, json.dumps(sorted(APPROVER_ROLES), separators=(",", ":")), APPROVAL_PURPOSE,
-                 decision["policy_revision"], "pending", _iso(now), _iso(now + timedelta(minutes=15)), "approval_required", f"policy:{decision['decision_id']}"),
+                """INSERT INTO policy_approvals(
+                       approval_id,originating_decision_id,correlation_id,action_id,target_type,target_id,
+                       target_revision,initiating_human_id,initiating_role,initiating_authorization_version,
+                       request_fingerprint,required_approver_roles_json,required_assurance,policy_revision,
+                       status,created_at,expires_at,reason_code,evidence_ref
+                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (
+                    approval_id, decision["decision_id"], decision["correlation_id"], action_id,
+                    "device", decision["target_id"], target_revision, decision["actor_id"], safe_role,
+                    max(1, int(authorization_version or 1)), fingerprint,
+                    json.dumps(sorted(APPROVER_ROLES), separators=(",", ":")), purpose,
+                    decision["policy_revision"], "pending", _iso(now),
+                    _iso(now + timedelta(minutes=15)), "approval_required",
+                    f"policy:{decision['decision_id']}",
+                ),
             )
-            _event(tx, kind="approval", subject_id=approval_id, actor_human_id=decision["actor_id"], event_type="approval.requested", reason_code="approval_required", summary="Independent approval requested for a delegated device removal.", correlation_id=decision["correlation_id"])
-            row = tx.execute("SELECT * FROM policy_approvals WHERE approval_id=?", (approval_id,)).fetchone()
+            _event(
+                tx,
+                kind="approval",
+                subject_id=approval_id,
+                actor_human_id=decision["actor_id"],
+                event_type="approval.requested",
+                reason_code="approval_required",
+                summary="Independent approval requested for a governed fleet change.",
+                correlation_id=decision["correlation_id"],
+            )
+            row = tx.execute(
+                "SELECT * FROM policy_approvals WHERE approval_id=?",
+                (approval_id,),
+            ).fetchone()
     return {"approval": _public_approval(row), "created": True}
 
 
@@ -258,7 +311,7 @@ def transition(*, auth_context: dict[str, Any], approval_id: str, action: str) -
                     raise ApprovalError("approval_approver_role_required", "Only an active Enterprise Owner or Admin can approve this request.")
                 if actor_id == row["initiating_human_id"]:
                     raise ApprovalError("approval_self_forbidden", "Independent approval is required.", 409)
-                if not _approved_assurance(context):
+                if not _approved_assurance(context, str(row["required_assurance"] or "")):
                     raise ApprovalError("approval_step_up_required", "Confirm this approval with your passkey first.", 428)
                 tx.execute("UPDATE policy_approvals SET status='approved',approved_at=?,approved_by_human_id=? WHERE approval_id=? AND status='pending'", (_iso(now), actor_id, row["approval_id"]))
                 event_type, message = "approval.approved", "Approved — retry the original action to continue."
@@ -288,45 +341,94 @@ def transition(*, auth_context: dict[str, Any], approval_id: str, action: str) -
     return {"approval": public_updated, "message": message}
 
 
-def matching_approved(*, initiating_human_id: str, action_id: str, target_type: str, target_id: str, policy_revision: str) -> str | None:
-    """Return only a server-derived, currently eligible delegated continuation id."""
+def matching_approved(
+    *,
+    initiating_human_id: str,
+    action_id: str,
+    target_type: str,
+    target_id: str,
+    target_revision: str,
+    policy_revision: str,
+    authorization_version: int = 1,
+    request_fingerprint: str = "",
+) -> str | None:
+    """Return only an exact, still-current server-owned continuation id."""
     apply_migrations()
     now = _iso()
+    fingerprint = (str(request_fingerprint or "").strip() or str(target_revision or "").strip())[:120]
     with connection() as conn:
         row = conn.execute(
-            """SELECT a.approval_id FROM policy_approvals a JOIN enterprise_memberships m ON m.human_id=a.approved_by_human_id
+            """SELECT a.approval_id FROM policy_approvals a
+               JOIN enterprise_memberships m ON m.human_id=a.approved_by_human_id
                JOIN human_identities h ON h.human_id=a.approved_by_human_id
                WHERE a.initiating_human_id=? AND a.initiating_role IN ('Admin','Operator')
-                 AND a.action_id=? AND a.target_type=? AND a.target_id=? AND a.policy_revision=?
-                 AND a.status='approved' AND a.expires_at>? AND a.approved_by_human_id<>a.initiating_human_id
-                 AND m.status='active' AND m.role IN ('Owner','Admin') AND h.status='active' ORDER BY a.approved_at DESC LIMIT 1""",
-            (initiating_human_id[:120], action_id[:120], target_type[:80], target_id[:160], policy_revision[:80], now),
+                 AND a.action_id=? AND a.target_type=? AND a.target_id=?
+                 AND a.target_revision=? AND a.policy_revision=?
+                 AND a.initiating_authorization_version=? AND a.request_fingerprint=?
+                 AND a.status='approved' AND a.expires_at>?
+                 AND a.approved_by_human_id<>a.initiating_human_id
+                 AND m.status='active' AND m.role IN ('Owner','Admin') AND h.status='active'
+               ORDER BY a.approved_at DESC LIMIT 1""",
+            (
+                initiating_human_id[:120], action_id[:120], target_type[:80], target_id[:160],
+                target_revision[:160], policy_revision[:80], max(1, int(authorization_version or 1)),
+                fingerprint, now,
+            ),
         ).fetchone()
     return str(row["approval_id"]) if row else None
 
 
-def consume_matching(*, auth_context: dict[str, Any], approval_id: str, action_id: str, target_type: str, target_id: str, policy_revision: str) -> dict[str, Any]:
-    """Atomically consume the OPA-matched delegated continuation before execution."""
+def consume_matching(
+    *,
+    auth_context: dict[str, Any],
+    approval_id: str,
+    action_id: str,
+    target_type: str,
+    target_id: str,
+    target_revision: str,
+    policy_revision: str,
+    request_fingerprint: str = "",
+) -> dict[str, Any]:
+    """Atomically consume the exact continuation immediately before execution."""
     apply_migrations()
-    _, actor_id, role = _actor_context(auth_context, roles=REQUESTER_ROLES)
+    context, actor_id, role = _actor_context(auth_context, roles=REQUESTER_ROLES)
+    authorization = context.get("authorization") or {}
+    authorization_version = max(1, int(authorization.get("authorization_version") or 1))
     now = _iso()
+    fingerprint = (str(request_fingerprint or "").strip() or str(target_revision or "").strip())[:120]
     with connection() as conn:
         with begin_immediate(conn) as tx:
             row = tx.execute(
-                """SELECT a.* FROM policy_approvals a JOIN enterprise_memberships m ON m.human_id=a.approved_by_human_id
+                """SELECT a.* FROM policy_approvals a
+                   JOIN enterprise_memberships m ON m.human_id=a.approved_by_human_id
                    JOIN human_identities h ON h.human_id=a.approved_by_human_id
-                   WHERE a.approval_id=? AND a.initiating_human_id=? AND a.initiating_role IN ('Admin','Operator')
-                     AND a.action_id=? AND a.target_type=? AND a.target_id=? AND a.policy_revision=?
-                     AND a.status='approved' AND a.expires_at>? AND a.approved_by_human_id<>a.initiating_human_id
+                   WHERE a.approval_id=? AND a.initiating_human_id=?
+                     AND a.initiating_role IN ('Admin','Operator')
+                     AND a.action_id=? AND a.target_type=? AND a.target_id=?
+                     AND a.target_revision=? AND a.policy_revision=?
+                     AND a.initiating_authorization_version=? AND a.request_fingerprint=?
+                     AND a.status='approved' AND a.expires_at>?
+                     AND a.approved_by_human_id<>a.initiating_human_id
                      AND m.status='active' AND m.role IN ('Owner','Admin') AND h.status='active'""",
-                (approval_id[:120], actor_id, action_id[:120], target_type[:80], target_id[:160], policy_revision[:80], now),
+                (
+                    approval_id[:120], actor_id, action_id[:120], target_type[:80], target_id[:160],
+                    target_revision[:160], policy_revision[:80], authorization_version, fingerprint, now,
+                ),
             ).fetchone()
             if not row:
                 raise ApprovalError("approval_continuation_unavailable", "The independent approval is no longer valid; request a new approval.", 409)
-            changed = tx.execute("UPDATE policy_approvals SET status='consumed',consumed_at=? WHERE approval_id=? AND status='approved'", (now, row["approval_id"])).rowcount
+            changed = tx.execute(
+                "UPDATE policy_approvals SET status='consumed',consumed_at=? WHERE approval_id=? AND status='approved'",
+                (now, row["approval_id"]),
+            ).rowcount
             if changed != 1:
                 raise ApprovalError("approval_continuation_unavailable", "The independent approval was already used.", 409)
-            _event(tx, kind="approval", subject_id=row["approval_id"], actor_human_id=actor_id, event_type="approval.consumed", reason_code="approval_consumed", summary="Approved device removal continuation consumed for one execution attempt.", correlation_id=row["correlation_id"])
+            _event(
+                tx, kind="approval", subject_id=row["approval_id"], actor_human_id=actor_id,
+                event_type="approval.consumed", reason_code="approval_consumed",
+                summary="Approved fleet continuation consumed for one execution attempt.",
+                correlation_id=row["correlation_id"],
+            )
     return {"approval_id": approval_id, "consumed": True, "initiating_role": role}
 
 
