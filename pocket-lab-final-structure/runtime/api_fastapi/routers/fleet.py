@@ -897,6 +897,13 @@ def lite_fleet_agent_bootstrap_blocked(payload: dict | None = None):
         raise HTTPException(status_code=400, detail="Missing invite token")
 
     status, invite = lite_invites.invite_token_status(token, role=role, device_roles=roles_value)
+    if status == "role_set_mismatch" and invite:
+        lite_invites.append_bootstrap_blocked_evidence(
+            invite,
+            reason_code="invite_role_set_mismatch",
+            reason="Invite role set did not match the server-bound role assignment.",
+            requested_by="lite-bootstrap",
+        )
     if status not in {"valid", "used"} or not invite:
         raise HTTPException(status_code=403, detail=f"Invite token is invalid: {status}")
 
@@ -929,6 +936,13 @@ def lite_fleet_agent_bootstrap_env(payload: dict | None = None, request: Request
         raise HTTPException(status_code=400, detail="Missing invite token")
 
     status, invite = lite_invites.invite_token_status(token, role=role, device_roles=roles_value)
+    if status == "role_set_mismatch" and invite:
+        lite_invites.append_bootstrap_blocked_evidence(
+            invite,
+            reason_code="invite_role_set_mismatch",
+            reason="Invite role set did not match the server-bound role assignment.",
+            requested_by="lite-bootstrap",
+        )
     if status == "expired":
         raise HTTPException(status_code=410, detail="Invite token has expired")
     if status == "used":
@@ -1030,6 +1044,13 @@ def lite_fleet_agent_bootstrap_script(
     except Exception as exc:
         raise HTTPException(status_code=422, detail="Invite role set is invalid.") from exc
     status, invite = lite_invites.invite_token_status(token, device_roles=requested_roles)
+    if status == "role_set_mismatch" and invite:
+        lite_invites.append_bootstrap_blocked_evidence(
+            invite,
+            reason_code="invite_role_set_mismatch",
+            reason="Invite role set did not match the server-bound role assignment.",
+            requested_by="lite-bootstrap",
+        )
     if status == "expired":
         raise HTTPException(status_code=410, detail="Invite token has expired")
     if status == "used":
