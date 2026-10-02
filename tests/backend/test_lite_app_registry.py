@@ -55,11 +55,15 @@ def test_registry_exposes_versioned_photoprism_contract():
 
 @pytest.mark.parametrize(
     "value",
-    ["../foo", "foo/bar", "foo?x=y", "foo#fragment", "%2e%2e", "/absolute", "UPPER"],
+    ["../foo", "foo/bar", "foo?x=y", "foo#fragment", "%2e%2e", "/absolute"],
 )
 def test_registry_rejects_unsafe_app_ids(value):
     with pytest.raises(Exception):
         lite_app_registry.normalize_app_id(value)
+
+
+def test_registry_normalizes_case_without_changing_route_identity():
+    assert lite_app_registry.normalize_app_id("PhotoPrism") == "photoprism"
 
 
 def test_registry_rejects_duplicate_ids():
