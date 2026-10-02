@@ -12,12 +12,12 @@ import time
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_backup_targets, lite_app_operations, lite_app_profiles, lite_app_runtime, lite_app_storage, lite_app_update, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media, lite_recovery_subprojections
+from . import lite_app_backup_targets, lite_app_operations, lite_app_profiles, lite_app_registry, lite_app_runtime, lite_app_storage, lite_app_update, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media, lite_recovery_subprojections
 from .lite_control_plane_store import CONTROL_PLANE
 
 _LOGGER = logging.getLogger(__name__)
-SUPPORTED_APP_IDS = {"photoprism"}
-_SAFE_ROUTE = "/apps/photoprism/"
+SUPPORTED_APP_IDS = frozenset(lite_app_registry.app_ids())
+_SAFE_ROUTE = lite_app_registry.app_definition("photoprism").route
 _SECRET_MARKERS = (
     "token",
     "password",
