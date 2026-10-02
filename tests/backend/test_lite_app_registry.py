@@ -106,6 +106,13 @@ def test_photoprism_adapter_binding_is_explicit_and_fail_closed():
     assert registry["example-app"].adapter == "missing-adapter"
 
 
+def test_adapter_service_bindings_are_explicit_and_metadata_is_not_execution():
+    assert lite_app_adapters.supports_service("photoprism", "actions") is True
+    assert lite_app_adapters.supports_service("photoprism", "backup") is True
+    assert lite_app_adapters.supports_service("photoprism", "not-a-service") is False
+    assert lite_app_adapters.supports_service("example-app", "actions") is False
+
+
 def test_action_contract_is_registry_owned():
     ids = lite_app_registry.registered_action_ids("photoprism")
 
