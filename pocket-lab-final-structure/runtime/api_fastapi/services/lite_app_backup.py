@@ -9,11 +9,11 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_backup_targets, lite_backup, lite_backup_locations, lite_backup_manifest
+from . import lite_app_backup_targets, lite_app_registry, lite_backup, lite_backup_locations, lite_backup_manifest
 from .lite_backup_policy import backup_layout
 
-SUPPORTED_APP_IDS = {"photoprism"}
-APP_LABELS = {"photoprism": "PhotoPrism"}
+SUPPORTED_APP_IDS = frozenset(app_id for app_id in lite_app_registry.app_ids() if lite_app_registry.supports(app_id, "backup"))
+APP_LABELS = {app_id: lite_app_registry.app_definition(app_id).name for app_id in SUPPORTED_APP_IDS}
 
 APP_BACKUP_CREATE_SUBJECT = "pocketlab.commands.lite.app.backup.create"
 APP_RESTORE_PREVIEW_SUBJECT = "pocketlab.commands.lite.app.restore.preview"
