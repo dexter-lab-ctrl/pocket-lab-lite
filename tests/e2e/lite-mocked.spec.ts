@@ -101,92 +101,9 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
   });
 
   test('Apps isolates a synthetic app to its declared capabilities', async ({ page }) => {
-    await installScenario(page, 'catalog-ready');
-
-    await page.route('**/api/lite/catalog', async (route) => {
-      const response = await route.fetch();
-      const payload = await response.json();
-      const photoprism = payload.apps?.[0] || payload.items?.[0];
-      const syntheticLifecycle = {
-        ...(photoprism?.lifecycle || {}),
-        app_id: 'example-app',
-        name: 'Example App',
-        status: 'ready',
-        summary: 'Example App is ready.',
-        media: {},
-        storage: {},
-        security: { status: 'not_supported', summary: 'Safety check is not supported.' },
-        backup: { status: 'not_supported', summary: 'Backup is not supported.' },
-        actions: {
-          open: { id: 'open', label: 'Open', category: 'access', enabled: true, status: 'ready' },
-          open_full_screen: { id: 'open_full_screen', label: 'Open full screen', category: 'access', enabled: true, status: 'ready' },
-        },
-      };
-      const synthetic = {
-        ...photoprism,
-        id: 'example-app',
-        name: 'Example App',
-        category: 'Utilities',
-        summary: 'Synthetic test-only application.',
-        status: 'ready',
-        install_state: 'installed',
-        installed: true,
-        actions: { install: false, open: true, details: true, retry: false, remove: false },
-        runtime: { route: '/apps/example-app/', url: '/apps/example-app/', health: 'healthy' },
-        access: {
-          https_ready: true,
-          route_ready: true,
-          open_url: '/apps/example-app/',
-          message: 'Example App is ready over secure access.',
-        },
-        storage: {},
-        media: {},
-        security_profile: {},
-        backup_profile: {},
-        lifecycle: syntheticLifecycle,
-        lifecycle_summary: { status: 'ready', summary: 'Example App is ready.' },
-        platform_contract: {
-          schema_version: 1,
-          id: 'example-app',
-          name: 'Example App',
-          category: 'Utilities',
-          summary: 'Synthetic test-only application.',
-          platforms: ['android-termux-arm64'],
-          capabilities: { open: true },
-          actions: {
-            open: { label: 'Open', category: 'access', summary: 'Open Example App.', risk: 'low' },
-            open_full_screen: { label: 'Open full screen', category: 'access', summary: 'Open Example App full screen.', risk: 'low' },
-          },
-        },
-      };
-      const apps = [synthetic, photoprism].filter(Boolean);
-      await route.fulfill({
-        response,
-        json: { ...payload, apps, items: apps, count: apps.length },
-      });
-    });
-
-    await page.route('**/api/lite/apps/example-app/actions', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          status: 'healthy',
-          app_id: 'example-app',
-          app_label: 'Example App',
-          summary: 'Example App actions are available.',
-          actions: {
-            open: { id: 'open', label: 'Open', category: 'access', enabled: true, status: 'ready' },
-            open_full_screen: { id: 'open_full_screen', label: 'Open full screen', category: 'access', enabled: true, status: 'ready' },
-          },
-          action_list: [],
-          action_groups: [{ id: 'access', label: 'Open', actions: ['open', 'open_full_screen'] }],
-          media: {},
-        }),
-      });
-    });
-
+    await installScenario(page, 'catalog-multi-app');
     await page.goto('/?screen=catalog');
+
     const screen = page.locator('[data-lite-screen-id="catalog"]');
     const exampleCard = screen.locator('.lite-catalog-app-card').filter({ hasText: 'Example App' });
     const photoPrismCard = screen.locator('.lite-catalog-app-card').filter({ hasText: 'PhotoPrism' });
