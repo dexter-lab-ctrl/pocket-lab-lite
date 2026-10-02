@@ -11,7 +11,7 @@ from fastapi import HTTPException, Request
 
 from .. import deps
 from .fleet_registry import normalize_node_id
-from . import lite_app_runtime
+from . import lite_app_registry, lite_app_runtime
 
 COMMAND_SUBJECT = "pocketlab.commands.lite.catalog.install"
 PHOTOPRISM_APP_ID = "photoprism"
