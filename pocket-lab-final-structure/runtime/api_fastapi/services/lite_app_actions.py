@@ -8,9 +8,9 @@ from datetime import datetime, timezone
 
 from fastapi import HTTPException
 
-from . import lite_app_backup, lite_app_backup_targets, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_app_update, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media, lite_security
+from . import lite_app_backup, lite_app_backup_targets, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_app_registry, lite_app_update, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media, lite_security
 
-SUPPORTED_APP_IDS = {"photoprism"}
+SUPPORTED_APP_IDS = frozenset(lite_app_registry.app_ids())
 SUPPORTED_ACTIONS = {
     "open",
     "open_full_screen",
@@ -37,98 +37,20 @@ ACTION_CATEGORY_LABELS = {
 }
 
 ACTION_DEFINITIONS: dict[str, dict[str, Any]] = {
-    "open": {
-        "label": "Open",
-        "category": "access",
-        "summary": "Open PhotoPrism through Pocket Lab.",
-        "risk": "low",
-        "execution_owner": "browser_navigation",
-    },
-    "open_full_screen": {
-        "label": "Open full screen",
-        "category": "access",
-        "summary": "Open PhotoPrism in a full browser tab.",
-        "risk": "low",
-        "execution_owner": "browser_navigation",
-    },
-    "install_to_phone": {
-        "label": "Install to phone",
-        "category": "access",
-        "summary": "Install the PhotoPrism web app shortcut on this phone.",
-        "risk": "low",
-        "execution_owner": "browser_navigation",
-    },
-    "connect_photos": {
-        "label": "Connect photos",
-        "category": "media",
-        "summary": "Choose where PhotoPrism should look for pictures.",
-        "risk": "low",
-        "execution_owner": "fastapi",
-    },
-    "import_photos": {
-        "label": "Import photos",
-        "category": "media",
-        "summary": "Bring connected photos into PhotoPrism. PhotoPrism handles indexing and media details.",
-        "risk": "low",
-        "execution_owner": "backend_worker",
-    },
-    "check_app": {
-        "label": "Check app",
-        "category": "safety",
-        "summary": "Check PhotoPrism route, app files, settings, backup metadata, and action state. Skips photos and media.",
-        "risk": "low",
-        "execution_owner": "backend_worker",
-    },
-    "backup_app": {
-        "label": "Back up app",
-        "category": "recovery",
-        "summary": "Save settings, mappings, route records, and safe app records. Media is excluded by default.",
-        "risk": "low",
-        "execution_owner": "backend_worker",
-    },
-    "preview_restore": {
-        "label": "Preview restore",
-        "category": "recovery",
-        "summary": "Review what would be restored before making changes.",
-        "risk": "review",
-        "execution_owner": "backend_worker",
-    },
-    "backup_to_storage": {
-        "label": "Back up to storage device",
-        "category": "recovery",
-        "summary": "Join a storage device to save app backups elsewhere.",
-        "risk": "low",
-        "execution_owner": "backend_worker",
-    },
-    "repair_app": {
-        "label": "Repair",
-        "category": "recovery",
-        "summary": "Fix route, health, and storage setup safely.",
-        "risk": "review",
-        "execution_owner": "backend_worker",
-    },
-    "install_app": {
-        "label": "Install",
-        "category": "setup",
-        "summary": "Set up PhotoPrism through the backend worker.",
-        "risk": "review",
-        "execution_owner": "backend_worker",
-    },
-    "update_app": {
-        "label": "Update",
-        "category": "setup",
-        "summary": "Check whether this app is ready for a safe update. No update is applied.",
-        "risk": "review",
-        "execution_owner": "backend_worker",
-    },
-    "remove_app": {
-        "label": "Remove app",
-        "category": "danger",
-        "summary": "Remove PhotoPrism only after explicit confirmation. Media, backups, and backend records are preserved by default.",
-        "risk": "destructive",
-        "execution_owner": "backend_worker",
-    },
+    action_id: {
+        **dict(definition),
+        "execution_owner": (
+            "browser_navigation"
+            if action_id in {"open", "open_full_screen", "install_to_phone"}
+            else "fastapi"
+            if action_id == "connect_photos"
+            else "backend_worker"
+        ),
+    }
+    for app_id in lite_app_registry.app_ids()
+    for action_id, definition in lite_app_registry.app_definition(app_id).actions.items()
 }
+
 
 
 ACTION_DETAIL_DEFINITIONS: dict[str, dict[str, Any]] = {
