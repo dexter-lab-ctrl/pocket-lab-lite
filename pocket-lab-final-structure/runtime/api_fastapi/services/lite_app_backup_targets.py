@@ -170,13 +170,14 @@ def backup_targets(*, fleet_payload: dict[str, Any] | None = None) -> dict[str, 
 
 
 def app_backup_targets(app_id: str) -> dict[str, Any]:
-    _validate_app_id(app_id)
+    app_id = _validate_app_id(app_id)
+    definition = lite_app_registry.app_definition(app_id)
     payload = backup_targets()
     return {
         **payload,
-        "app_id": "photoprism",
-        "name": "PhotoPrism",
-        "summary": "PhotoPrism backup targets are available." if payload.get("ready_count") else "No backup target yet. Join a storage device to save app backups elsewhere.",
+        "app_id": app_id,
+        "name": definition.name,
+        "summary": f"{definition.name} backup targets are available." if payload.get("ready_count") else "No backup target yet. Join a storage device to save app backups elsewhere.",
     }
 
 
