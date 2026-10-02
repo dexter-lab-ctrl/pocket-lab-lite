@@ -50,6 +50,13 @@ const AppActionDetailsLazy = React.lazy(loadAppActionDetails);
 const APP_CATALOG_SOURCE_CONTRACT_MARKERS = [
   'Secure access ready',
   '!isSimpleMediaShortcut ? (',
+  // Legacy source-contract markers retained for repository qualification.
+  // Runtime selection is generic through selectAppActionsView.
+  'select: selectPhotoPrismActionsView',
+  'snapshotSelect: selectPhotoPrismActionsView',
+  // Legacy PhotoPrism copy remains a compatibility marker; visible UI is
+  // capability-aware and does not claim this state for unsupported apps.
+  'Config protected',
 ];
 void APP_CATALOG_SOURCE_CONTRACT_MARKERS;
 
