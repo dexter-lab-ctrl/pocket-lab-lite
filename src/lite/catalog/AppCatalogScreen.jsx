@@ -2424,7 +2424,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   });
   const installAppMutation = useLiteMutation({
     mutationFn: ({ appId, targetNodeId }) => liteApi.installApp(appId, { target_node_id: targetNodeId }),
-    invalidate: [liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
+    invalidateForAction: ({ appId }) => [
+      liteQueryKeys.catalog(),
+      appId ? liteQueryKeys.appActions(appId) : null,
+    ],
   });
   useLiteServiceWorkerUpdateBlocker('app-catalog-workflow', Boolean(
     busyId
