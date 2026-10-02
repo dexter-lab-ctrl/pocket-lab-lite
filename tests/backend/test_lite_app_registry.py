@@ -1,0 +1,115 @@
+from __future__ import annotations
+
+from dataclasses import replace
+
+import pytest
+
+from pocket_lab_test_utils import ensure_runtime_path
+
+
+ensure_runtime_path()
+
+from api_fastapi.services import lite_app_adapters, lite_app_registry  # noqa: E402
+
+
+def _example(**overrides):
+    base = lite_app_registry.app_definition("photoprism")
+    values = {
+        "id": "example-app",
+        "name": "Example App",
+        "category": "Test",
+        "summary": "Synthetic test-only app.",
+        "adapter": "example",
+        "route": "/apps/example-app/",
+        "upstream": "127.0.0.1:2999",
+        "process": "pocketlab-app-example",
+        "platforms": ("android-termux-arm64",),
+        "capabilities": frozenset({"open"}),
+        "actions": {
+            "open": {
+                "label": "Open",
+                "category": "access",
+                "summary": "Open the synthetic app.",
+                "risk": "low",
+            }
+        },
+        "presentation": {},
+    }
+    values.update(overrides)
+    return replace(base, **values)
+
+
+def test_registry_exposes_versioned_photoprism_contract():
+    registry = lite_app_registry.public_registry()
+
+    assert registry["schema_version"] == 1
+    assert registry["count"] >= 1
+    photoprism = next(item for item in registry["apps"] if item["id"] == "photoprism")
+    assert photoprism["name"] == "PhotoPrism"
+    assert photoprism["capabilities"]["open"] is True
+    assert photoprism["capabilities"]["security_check"] is True
+    assert "adapter" not in photoprism
+    assert "upstream" not in photoprism
+    assert "process" not in photoprism
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["../foo", "foo/bar", "foo?x=y", "foo#fragment", "%2e%2e", "/absolute", "UPPER"],
+)
+def test_registry_rejects_unsafe_app_ids(value):
+    with pytest.raises(Exception):
+        lite_app_registry.normalize_app_id(value)
+
+
+def test_registry_rejects_duplicate_ids():
+    app = _example()
+    with pytest.raises(RuntimeError, match="Duplicate app id"):
+        lite_app_registry.validate_test_definitions((app, app))
+
+
+def test_registry_rejects_duplicate_routes():
+    first = _example(id="example-one", route="/apps/example-one/")
+    second = _example(id="example-two", route="/apps/example-one/")
+    with pytest.raises(RuntimeError, match="must own exactly|Duplicate app route"):
+        lite_app_registry.validate_test_definitions((first, second))
+
+
+def test_registry_rejects_route_escape():
+    with pytest.raises(RuntimeError, match="must own exactly"):
+        lite_app_registry.validate_test_definitions(
+            (_example(route="/api/lite/apps/example-app/"),)
+        )
+
+
+def test_registry_does_not_store_shell_commands_or_secrets():
+    rendered = repr(lite_app_registry.public_registry()).lower()
+
+    assert "bash -c" not in rendered
+    assert "subprocess" not in rendered
+    assert "password" not in rendered
+    assert "api_key" not in rendered
+    assert "private key" not in rendered
+
+
+def test_photoprism_adapter_binding_is_explicit_and_fail_closed():
+    adapter = lite_app_adapters.adapter_for("photoprism")
+
+    assert adapter.app_id == "photoprism"
+
+    synthetic = _example(adapter="missing-adapter")
+    registry = lite_app_registry.validate_test_definitions((synthetic,))
+    assert registry["example-app"].adapter == "missing-adapter"
+
+
+def test_action_contract_is_registry_owned():
+    ids = lite_app_registry.registered_action_ids("photoprism")
+
+    assert {"open", "install_app", "repair_app", "backup_app", "remove_app"} <= ids
+    assert lite_app_registry.action_definition("photoprism", "open")["risk"] == "low"
+    assert lite_app_registry.action_definition("photoprism", "does_not_exist") is None
+
+
+def test_unknown_app_fails_closed():
+    with pytest.raises(Exception):
+        lite_app_registry.app_definition("unknown-app")
