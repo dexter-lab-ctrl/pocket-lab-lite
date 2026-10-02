@@ -670,18 +670,40 @@ export function selectLiteCatalogAppSummary(app = {}) {
   const access = isObject(app.access) ? app.access : {};
   const runtime = isObject(app.runtime) ? app.runtime : {};
   const actions = isObject(app.actions) ? app.actions : {};
+  const platformContract = isObject(app.platform_contract) ? app.platform_contract : {};
+  const platformCapabilities = isObject(platformContract.capabilities) ? platformContract.capabilities : {};
+  const platformActions = isObject(platformContract.actions) ? platformContract.actions : {};
   const canonical = selectCanonicalAppState(app);
   return {
-    id: safeString(app.id || 'photoprism'),
-    name: safeString(app.name || app.label || 'PhotoPrism'),
-    label: safeString(app.label || app.name || 'PhotoPrism'),
-    category: safeString(app.category || 'Photos'),
+    id: safeString(app.id || 'app'),
+    name: safeString(app.name || app.label || 'App'),
+    label: safeString(app.label || app.name || 'App'),
+    category: safeString(app.category || 'Apps'),
     summary: safeString(app.summary || ''),
     status: normalizeStatus(canonical.running ? 'ready' : canonical.degraded || canonical.stopped ? 'needs_attention' : canonical.installed ? 'installed' : app.status || 'not_installed'),
     health: normalizeStatus(app.health || runtime.health || ''),
     installed: canonical.installed,
     install_state: canonical.installationState,
     actions: copySafeKeys(actions, ['open', 'install', 'remove', 'retry']),
+    platform_contract: {
+      schema_version: Number(platformContract.schema_version || 0),
+      id: safeString(platformContract.id || app.id || ''),
+      name: safeString(platformContract.name || app.name || app.label || ''),
+      category: safeString(platformContract.category || app.category || ''),
+      summary: safeString(platformContract.summary || app.summary || ''),
+      platforms: Array.isArray(platformContract.platforms) ? platformContract.platforms.slice(0, 8).map(safeString).filter(Boolean) : [],
+      capabilities: Object.fromEntries(
+        Object.entries(platformCapabilities)
+          .filter(([key, value]) => /^[a-z0-9_]+$/.test(key) && value === true)
+          .slice(0, 32)
+      ),
+      actions: Object.fromEntries(
+        Object.entries(platformActions)
+          .filter(([key, value]) => /^[a-z0-9_]+$/.test(key) && isObject(value))
+          .slice(0, 32)
+          .map(([key, value]) => [key, copySafeKeys(value, ['label', 'category', 'summary', 'risk'])])
+      ),
+    },
     access: copySafeKeys(access, ['route_ready', 'open_url', 'route', 'url', 'message', 'https_ready', 'open']),
     runtime: copySafeKeys(runtime, ['route', 'url', 'health', 'process', 'status', 'checked_at', 'installation_state', 'process_status', 'reachable', 'running', 'state_conflict', 'evidence_quality', 'authoritative_source', 'evidence']),
     canonical_state: canonical,
