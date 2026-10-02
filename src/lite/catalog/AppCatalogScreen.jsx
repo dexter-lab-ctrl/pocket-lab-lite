@@ -2368,7 +2368,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const appActionsLive = useCallback((payload) => Boolean(actionBusyKey) || isLiteAppActionsViewLive(payload) || hasLivePhotoPrismAppActionsPayload(payload), [actionBusyKey]);
   const {
     data: appActionsData,
-    refresh: refreshPhotoprismActions,
+    refresh: refreshFeaturedAppActions,
   } = useLiteQuery({
     queryKey: liteQueryKeys.appActions(featuredAppId || 'none'),
     path: featuredAppId ? liteQueryPaths.appActions(featuredAppId) : null,
@@ -2452,7 +2452,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     setPullRefresh({ pulling: false, ready: false, offsetY: 0 });
     catalogPullSpring.start({ catalogPullY: 0, immediate: reduceMotion, config: config.gentle });
     refresh();
-    refreshAppActions('photoprism');
+    if (featuredAppId) refreshAppActions(featuredAppId);
     setQuickActionsAppId(null);
   }, [catalogPullSpring, reduceMotion, refresh]);
 
@@ -2504,12 +2504,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   });
 
 
-  const refreshAppActions = useCallback(async (appId = 'photoprism') => {
+  const refreshAppActions = useCallback(async (appId = featuredAppId) => {
     try {
-      const normalizedAppId = String(appId || 'photoprism').toLowerCase();
-      const payload = normalizedAppId === 'photoprism'
-        ? await refreshPhotoprismActions()
-        : await liteApi.appActions(appId || 'photoprism');
+      const normalizedAppId = String(appId || featuredAppId || '').trim().toLowerCase();
+      if (!normalizedAppId) return null;
+      const payload = normalizedAppId === featuredAppId
+        ? await refreshFeaturedAppActions()
+        : await liteApi.appActions(normalizedAppId);
       const snapshot = normalizeAppActionsPayload(payload || {});
       setActionSnapshots((current) => ({
         ...current,
@@ -2519,17 +2520,17 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     } catch (_error) {
       return null;
     }
-  }, [refreshPhotoprismActions]);
+  }, [featuredAppId, refreshFeaturedAppActions]);
 
 
   useEffect(() => {
-    if (!appActionsData) return;
+    if (!appActionsData || !featuredAppId) return;
     const snapshot = normalizeAppActionsPayload(appActionsData || {});
     setActionSnapshots((current) => ({
       ...current,
-      photoprism: snapshot,
+      [featuredAppId]: snapshot,
     }));
-  }, [appActionsData]);
+  }, [appActionsData, featuredAppId]);
 
   // Lifecycle reads are authoritative for terminal feedback. Only operations
   // initiated on this screen are tracked, and a stable reference settles once
