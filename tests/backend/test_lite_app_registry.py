@@ -114,6 +114,28 @@ def test_action_contract_is_registry_owned():
     assert lite_app_registry.action_definition("photoprism", "does_not_exist") is None
 
 
+def test_synthetic_second_app_proves_multi_app_registry_without_production_enablement():
+    production = lite_app_registry.app_definition("photoprism")
+    synthetic = _example(
+        capabilities=frozenset({"open"}),
+        actions={
+            "open": {
+                "label": "Open",
+                "category": "access",
+                "summary": "Open the synthetic app.",
+                "risk": "low",
+            }
+        },
+    )
+
+    registry = lite_app_registry.validate_test_definitions((production, synthetic))
+
+    assert tuple(sorted(registry)) == ("example-app", "photoprism")
+    assert registry["example-app"].capabilities == frozenset({"open"})
+    assert "backup_app" not in registry["example-app"].actions
+    assert "example-app" not in lite_app_registry.app_ids()
+
+
 def test_unknown_app_fails_closed():
     with pytest.raises(Exception):
         lite_app_registry.app_definition("unknown-app")
