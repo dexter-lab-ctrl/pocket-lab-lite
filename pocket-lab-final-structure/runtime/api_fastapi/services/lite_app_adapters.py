@@ -7,11 +7,14 @@ import urllib.request
 from pathlib import Path
 from typing import Any, Protocol
 
+from fastapi import HTTPException
+
 from . import lite_app_registry
 
 
 class AppAdapter(Protocol):
     app_id: str
+    services: frozenset[str]
 
     def route_ready(self) -> bool: ...
 
@@ -55,6 +58,15 @@ def _caddyfile_text() -> str:
 
 class PhotoPrismAdapter:
     app_id = "photoprism"
+    services = frozenset({
+        "actions",
+        "backup",
+        "backup_to_storage",
+        "install",
+        "lifecycle",
+        "profiles",
+        "update_readiness",
+    })
 
     @property
     def definition(self) -> lite_app_registry.AppDefinition:
@@ -136,9 +148,27 @@ def adapter_for(app_id: Any) -> AppAdapter:
     return adapter
 
 
+def supports_service(app_id: Any, service: str) -> bool:
+    try:
+        adapter = adapter_for(app_id)
+    except (HTTPException, RuntimeError):
+        return False
+    return str(service or "").strip() in adapter.services
+
+
+def app_ids_for_service(service: str) -> tuple[str, ...]:
+    return tuple(
+        app_id
+        for app_id in lite_app_registry.app_ids()
+        if supports_service(app_id, service)
+    )
+
+
 def validate_adapter_bindings() -> None:
     for app_id in lite_app_registry.app_ids():
-        adapter_for(app_id)
+        adapter = adapter_for(app_id)
+        if not adapter.services:
+            raise RuntimeError(f"App adapter {app_id!r} must explicitly declare implemented services")
 
 
 validate_adapter_bindings()
