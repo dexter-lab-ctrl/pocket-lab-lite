@@ -779,11 +779,15 @@ def app_actions(app_id: str) -> dict[str, Any]:
         or str(profile.get("install_state") or "").startswith("installed")
     )
     _ensure_action_contract(actions, catalog=catalog, media=media, installed=installed)
+    definition = lite_app_registry.app_definition(app_id)
+    for action in actions.values():
+        if isinstance(action, dict):
+            action["app_id"] = app_id
     return {
         "status": "healthy",
-        "app_id": "photoprism",
-        "name": "PhotoPrism",
-        "summary": "PhotoPrism Action Center is available.",
+        "app_id": app_id,
+        "name": definition.name,
+        "summary": f"{definition.name} Action Center is available.",
         "actions": actions,
         "items": actions,
         "action_list": list(actions.values()),
@@ -815,7 +819,7 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
 
     if action == "backup_to_storage":
         response = lite_app_backup.backup_to_storage_readiness(
-            "photoprism",
+            app_id,
             payload.get("target_device_id"),
             reason=reason,
         )
@@ -828,7 +832,7 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
             detail={
                 "status": "disabled",
                 "accepted": False,
-                "app_id": "photoprism",
+                "app_id": app_id,
                 "action_id": action,
                 "summary": disabled_reason,
                 "disabled_reason": disabled_reason,
@@ -842,11 +846,11 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
             "kind": "url",
             "status": "ready",
             "accepted": False,
-            "app_id": "photoprism",
+            "app_id": app_id,
             "action_id": action,
             "label": action_profile.get("label"),
-            "url": action_profile.get("url") or "/apps/photoprism/",
-            "summary": "Open PhotoPrism through Pocket Lab.",
+            "url": action_profile.get("url") or lite_app_registry.app_definition(app_id).route,
+            "summary": f"Open {lite_app_registry.app_definition(app_id).name} through Pocket Lab.",
         }
 
     if action == "connect_photos":
@@ -854,19 +858,19 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
             "kind": "guidance",
             "status": "ready",
             "accepted": False,
-            "app_id": "photoprism",
+            "app_id": app_id,
             "action_id": action,
             "label": action_profile.get("label"),
             "summary": "Use the media folder buttons to connect phone photos safely.",
         }
 
     if action == "backup_app":
-        command = lite_app_backup.app_backup_command("photoprism", mode="config_only", reason=reason)
-        return {"kind": "backup", "command": command, "summary": "PhotoPrism app backup queued."}
+        command = lite_app_backup.app_backup_command(app_id, mode="config_only", reason=reason)
+        return {"kind": "backup", "command": command, "summary": f"{lite_app_registry.app_definition(app_id).name} app backup queued."}
 
     if action == "preview_restore":
-        command = lite_app_backup.app_restore_preview_command("photoprism", backup_id=payload.get("backup_id") or "latest", reason=reason)
-        return {"kind": "restore_preview", "command": command, "summary": "PhotoPrism restore preview queued."}
+        command = lite_app_backup.app_restore_preview_command(app_id, backup_id=payload.get("backup_id") or "latest", reason=reason)
+        return {"kind": "restore_preview", "command": command, "summary": f"{lite_app_registry.app_definition(app_id).name} restore preview queued."}
 
     if action == "check_app":
         run_id = f"security-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
@@ -878,20 +882,20 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
                 "command_id": run_id,
                 "scope": "local",
                 "profile": "app",
-                "app_id": "photoprism",
+                "app_id": app_id,
                 "reason": reason or "manual app check",
                 "requested_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             },
-            "summary": "Checking PhotoPrism safety.",
+            "summary": f"Checking {lite_app_registry.app_definition(app_id).name} safety.",
         }
 
     if action == "repair_app":
-        command = lite_app_operations.command_for_operation("photoprism", action, reason=reason)
+        command = lite_app_operations.command_for_operation(app_id, action, reason=reason)
         return {
             "kind": "app_operation",
             "command": command,
             "subject": lite_app_operations.subject_for_action(action),
-            "summary": "Repairing PhotoPrism safely.",
+            "summary": f"Repairing {lite_app_registry.app_definition(app_id).name} safely.",
         }
 
     if action == "import_photos":
@@ -903,14 +907,14 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
         return {"kind": "install_app", "command": command, "summary": "PhotoPrism install started."}
 
     if action == "update_app":
-        command = lite_app_update.update_command("photoprism", reason=reason)
-        return {"kind": "update_check", "command": command, "subject": lite_app_update.APP_UPDATE_CHECK_SUBJECT, "summary": "Checking PhotoPrism update readiness."}
+        command = lite_app_update.update_command(app_id, reason=reason)
+        return {"kind": "update_check", "command": command, "subject": lite_app_update.APP_UPDATE_CHECK_SUBJECT, "summary": f"Checking {lite_app_registry.app_definition(app_id).name} update readiness."}
 
     raise HTTPException(
         status_code=501,
         detail={
             "status": "not_implemented",
-            "app_id": "photoprism",
+            "app_id": app_id,
             "action_id": action,
             "summary": "This app action is not implemented yet.",
         },
