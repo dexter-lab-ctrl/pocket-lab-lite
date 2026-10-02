@@ -14,10 +14,11 @@ from .fleet_registry import normalize_node_id
 from . import lite_app_registry, lite_app_runtime
 
 COMMAND_SUBJECT = "pocketlab.commands.lite.catalog.install"
-PHOTOPRISM_APP_ID = "photoprism"
-PHOTOPRISM_ROUTE = "/apps/photoprism/"
-PHOTOPRISM_UPSTREAM = "127.0.0.1:2342"
-PHOTOPRISM_PROCESS = "pocketlab-app-photoprism"
+PHOTOPRISM_DEFINITION = lite_app_registry.app_definition("photoprism")
+PHOTOPRISM_APP_ID = PHOTOPRISM_DEFINITION.id
+PHOTOPRISM_ROUTE = PHOTOPRISM_DEFINITION.route
+PHOTOPRISM_UPSTREAM = PHOTOPRISM_DEFINITION.upstream
+PHOTOPRISM_PROCESS = PHOTOPRISM_DEFINITION.process
 INSTALL_STEPS_TOTAL = 7
 RUNNING_OPERATION_STATUSES = {"queued", "running", "installing", "preparing"}
 
@@ -316,9 +317,12 @@ def _operation_id() -> str:
 
 
 def validate_install_request(app_id: str, target_node_id: str | None = None) -> dict[str, Any]:
-    normalized_app = str(app_id or "").strip().lower()
+    definition = lite_app_registry.app_definition(app_id)
+    normalized_app = definition.id
+    if not lite_app_registry.supports(normalized_app, "install"):
+        raise HTTPException(status_code=409, detail="This app does not support installation.")
     if normalized_app != PHOTOPRISM_APP_ID:
-        raise HTTPException(status_code=400, detail="PhotoPrism is the first supported Lite app.")
+        raise HTTPException(status_code=409, detail="This registered app has no install adapter yet.")
     target = normalize_node_id(target_node_id or _server_node_id())
     server_id = _server_node_id()
     if target != server_id:
