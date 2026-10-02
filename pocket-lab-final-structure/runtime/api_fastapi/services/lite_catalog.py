@@ -320,7 +320,7 @@ def validate_install_request(app_id: str, target_node_id: str | None = None) -> 
     try:
         definition = lite_app_registry.app_definition(app_id)
     except HTTPException as exc:
-        raise HTTPException(status_code=400, detail="This app is not available in the Lite catalog.") from exc
+        raise HTTPException(status_code=400, detail="PhotoPrism is the first app available in the Lite catalog.") from exc
     normalized_app = definition.id
     if not lite_app_registry.supports(normalized_app, "install"):
         raise HTTPException(status_code=409, detail="This app does not support installation.")
