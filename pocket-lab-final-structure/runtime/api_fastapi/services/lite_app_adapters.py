@@ -1,0 +1,144 @@
+from __future__ import annotations
+
+import json
+import os
+import re
+import urllib.request
+from pathlib import Path
+from typing import Any, Protocol
+
+from . import lite_app_registry
+
+
+class AppAdapter(Protocol):
+    app_id: str
+
+    def route_ready(self) -> bool: ...
+
+    def embed_origin(self) -> str | None: ...
+
+    def hydrate_live_state(self, app: dict[str, Any]) -> None: ...
+
+
+def _url_json_healthy(url: str, *, timeout: float = 1.5) -> bool:
+    try:
+        request = urllib.request.Request(url, method="GET")
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            status = int(getattr(response, "status", response.getcode()))
+            if status < 200 or status >= 400:
+                return False
+            body = response.read(1024)
+            payload = json.loads(body.decode("utf-8", errors="replace"))
+            return payload.get("status") in {"operational", "healthy", "ok"}
+    except Exception:
+        return False
+
+
+def _url_reachable(url: str, *, timeout: float = 1.5) -> bool:
+    try:
+        request = urllib.request.Request(url, method="HEAD")
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            status = int(getattr(response, "status", response.getcode()))
+            return 200 <= status < 400
+    except Exception:
+        return False
+
+
+def _caddyfile_text() -> str:
+    default = "~/pocket-lab-lite/caddy/Caddyfile"
+    caddyfile = Path(os.environ.get("POCKETLAB_CADDYFILE") or os.environ.get("CADDYFILE") or default).expanduser()
+    try:
+        return caddyfile.read_text(encoding="utf-8", errors="replace")
+    except Exception:
+        return ""
+
+
+class PhotoPrismAdapter:
+    app_id = "photoprism"
+
+    @property
+    def definition(self) -> lite_app_registry.AppDefinition:
+        return lite_app_registry.app_definition(self.app_id)
+
+    def route_ready(self) -> bool:
+        route = self.definition.route.rstrip("/")
+        status_url = f"http://127.0.0.1:8443{route}/api/v1/status"
+        root_url = f"http://127.0.0.1:8443{self.definition.route}"
+        return _url_json_healthy(status_url) or _url_reachable(root_url)
+
+    def embed_origin(self) -> str | None:
+        content = _caddyfile_text()
+        if not content or f"handle {self.definition.route}*" not in content:
+            return None
+        if "header_down -X-Frame-Options" not in content or "header_down -Content-Security-Policy" not in content:
+            return None
+        match = re.search(
+            r'Content-Security-Policy\s+"frame-ancestors\s+\'self\'\s+(https://[A-Za-z0-9.-]+\.ts\.net)"',
+            content,
+        )
+        return match.group(1) if match else None
+
+    def hydrate_live_state(self, app: dict[str, Any]) -> None:
+        runtime = app.get("runtime") if isinstance(app.get("runtime"), dict) else {}
+        installed = app.get("status") == "ready" or app.get("install_state") == "installed" or app.get("installed") is True
+        if not installed or runtime.get("health") != "healthy":
+            return
+
+        route_ready = self.route_ready()
+        embed_origin = self.embed_origin() if route_ready else None
+        runtime = app.setdefault("runtime", {})
+        access = app.setdefault("access", {})
+        actions = app.setdefault("actions", {})
+        workspace = app.setdefault("workspace", {})
+        runtime["route"] = runtime.get("route") or self.definition.route
+
+        if route_ready:
+            runtime["url"] = self.definition.route
+            access["route_ready"] = True
+            access["open_url"] = self.definition.route
+            access["message"] = "Open is ready."
+            actions["open"] = True
+            if embed_origin:
+                access["embed_allowed"] = True
+                access["embed_policy"] = "portal_only"
+                access["embed_origin"] = embed_origin
+                workspace["embed_allowed"] = True
+                workspace["mode"] = "embed"
+                runtime["embed_allowed"] = True
+            else:
+                access["embed_allowed"] = False
+                access["embed_policy"] = "full_screen"
+                access.pop("embed_origin", None)
+                workspace["embed_allowed"] = False
+                runtime["embed_allowed"] = False
+        else:
+            access["route_ready"] = False
+            access["open_url"] = None
+            access["message"] = "Open is not ready yet."
+            access["embed_allowed"] = False
+            access["embed_policy"] = "full_screen"
+            access.pop("embed_origin", None)
+            workspace["embed_allowed"] = False
+            runtime["embed_allowed"] = False
+            actions["open"] = False
+
+
+_ADAPTERS: dict[str, AppAdapter] = {
+    "photoprism": PhotoPrismAdapter(),
+}
+
+
+def adapter_for(app_id: Any) -> AppAdapter:
+    definition = lite_app_registry.app_definition(app_id)
+    adapter = _ADAPTERS.get(definition.adapter)
+    if adapter is None or adapter.app_id != definition.id:
+        raise RuntimeError(f"App adapter binding is unavailable for {definition.id!r}")
+    return adapter
+
+
+def validate_adapter_bindings() -> None:
+    for app_id in lite_app_registry.app_ids():
+        adapter_for(app_id)
+
+
+validate_adapter_bindings()
