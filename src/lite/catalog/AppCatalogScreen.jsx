@@ -1691,6 +1691,16 @@ function isPhotoPrismApp(app) {
   return String(app?.id || '').toLowerCase() === 'photoprism' || String(app?.name || '').toLowerCase() === 'photoprism';
 }
 
+function appSupports(app, capability) {
+  const capabilities = app?.platform_contract?.capabilities;
+  if (capabilities && Object.prototype.hasOwnProperty.call(capabilities, capability)) {
+    return capabilities[capability] === true;
+  }
+  // Compatibility for saved snapshots created before the Universal App Platform
+  // contract was projected. PhotoPrism remains the only legacy production app.
+  return isPhotoPrismApp(app);
+}
+
 function storageMappings(app) {
   const mappings = app?.storage?.mappings;
   return Array.isArray(mappings) ? mappings : [];
@@ -3059,11 +3069,15 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <span>Self-hosted app</span>
           </div>
         ) : null}
-        {installed ? (
+        {installed && (
+          appSupports(app, 'security_check')
+          || appSupports(app, 'backup')
+          || appSupports(app, 'media_sources')
+        ) ? (
           <div className="lite-catalog-profile-markers" aria-label="App protection and backup readiness">
-            <span><ShieldCheck className="h-4 w-4" />{app?.security_profile?.label || 'Protected app'}</span>
-            <span><FileCheck className="h-4 w-4" />{app?.backup_profile?.config || 'Config protected'}</span>
-            <span><FileCheck className="h-4 w-4" />{app?.backup_profile?.media || 'Media excluded'}</span>
+            {appSupports(app, 'security_check') ? <span><ShieldCheck className="h-4 w-4" />{app?.security_profile?.label || 'Safety check available'}</span> : null}
+            {appSupports(app, 'backup') ? <span><FileCheck className="h-4 w-4" />{app?.backup_profile?.config || app?.backup_profile?.label || 'Backup available'}</span> : null}
+            {appSupports(app, 'media_sources') && app?.backup_profile?.media ? <span><FileCheck className="h-4 w-4" />{app.backup_profile.media}</span> : null}
             {isPhotoPrismApp(app) ? <span><Camera className="h-4 w-4" />{photoBackupSummary}</span> : null}
           </div>
         ) : null}
@@ -3080,9 +3094,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             </div>
             <div className="lite-catalog-summary-chips" aria-label="App health summary">
               <span><Server className="h-4 w-4" />Route</span>
-              <span><FolderOpen className="h-4 w-4" />{lifecycleStorageLabel(lifecycle, app)}</span>
-              <span><ShieldCheck className="h-4 w-4" />{lifecycleSecurityLabel(lifecycle, app)}</span>
-              <span><FileCheck className="h-4 w-4" />{lifecycleBackupLabel(lifecycle, app)}</span>
+              {appSupports(app, 'media_sources') ? <span><FolderOpen className="h-4 w-4" />{lifecycleStorageLabel(lifecycle, app)}</span> : null}
+              {appSupports(app, 'security_check') ? <span><ShieldCheck className="h-4 w-4" />{lifecycleSecurityLabel(lifecycle, app)}</span> : null}
+              {appSupports(app, 'backup') ? <span><FileCheck className="h-4 w-4" />{lifecycleBackupLabel(lifecycle, app)}</span> : null}
             </div>
             {lifecycleAttention.length ? (
               <div className="lite-catalog-summary-attention">
