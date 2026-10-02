@@ -2452,9 +2452,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     setPullRefresh({ pulling: false, ready: false, offsetY: 0 });
     catalogPullSpring.start({ catalogPullY: 0, immediate: reduceMotion, config: config.gentle });
     refresh();
-    if (featuredAppId) refreshAppActions(featuredAppId);
+    if (featuredAppId) refreshFeaturedAppActions();
     setQuickActionsAppId(null);
-  }, [catalogPullSpring, reduceMotion, refresh]);
+  }, [catalogPullSpring, featuredAppId, reduceMotion, refresh, refreshFeaturedAppActions]);
 
   const bindCatalogPull = useDrag(({ active, movement: [, my], direction: [, dy], cancel, event }) => {
     if (typeof window !== 'undefined' && window.scrollY > 4) {
