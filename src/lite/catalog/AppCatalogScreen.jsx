@@ -33,7 +33,7 @@ import { useLiteServiceWorkerUpdateBlocker } from '../../hooks/useLiteServiceWor
 import { formatLiteTime, liteApi } from '../../lib/liteApi.js';
 import { createLiteFeedbackDeduper } from '../../lib/liteNativeFeedback.js';
 import { liteQueryKeys, liteQueryPaths } from '../../lib/liteQueryClient.js';
-import { isLiteAppActionsViewLive, selectCanonicalAppState, selectCatalogSummaryView, selectPhotoPrismActionsView } from '../../lib/liteViewModels.js';
+import { isLiteAppActionsViewLive, selectAppActionsView, selectCanonicalAppState, selectCatalogSummaryView, selectPhotoPrismActionsView } from '../../lib/liteViewModels.js';
 import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LiteRefreshButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from '../LiteUi.jsx';
 import { LiteConsequenceSummary, LiteEmptyState, LiteFreshness } from '../LiteUx.jsx';
 import { useLiteUiStore } from '../../stores/liteUiStore.js';
@@ -110,16 +110,16 @@ function updateLiteCatalogVisualViewportVar() {
 
 function catalogAppKey(appOrId) {
   if (appOrId && typeof appOrId === 'object') {
-    return String(appOrId.id || appOrId.name || 'photoprism').trim().toLowerCase() || 'photoprism';
+    return String(appOrId.id || appOrId.name || 'app').trim().toLowerCase() || 'app';
   }
-  return String(appOrId || 'photoprism').trim().toLowerCase() || 'photoprism';
+  return String(appOrId || 'app').trim().toLowerCase() || 'app';
 }
 
 function stopGestureEvent(event) {
   event?.stopPropagation?.();
 }
 
-const KNOWN_APP_NAMES = ['PhotoPrism'];
+const KNOWN_APP_NAMES = [];
 
 function appHostLabel(app, lifecycle, fallbackName = 'Server Host') {
   if (lifecycle?.host_device?.label) return lifecycle.host_device.label;
@@ -2353,21 +2353,22 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
   const apps = data?.apps || data?.items || [];
   const access = data?.access || {};
-  const featuredApp = apps.find((app) => KNOWN_APP_NAMES.includes(app?.name) || String(app?.id || '').toLowerCase() === 'photoprism') || apps[0];
+  const featuredApp = apps[0];
+  const featuredAppId = String(featuredApp?.id || '').trim().toLowerCase();
   const appActionsLive = useCallback((payload) => Boolean(actionBusyKey) || isLiteAppActionsViewLive(payload) || hasLivePhotoPrismAppActionsPayload(payload), [actionBusyKey]);
   const {
     data: appActionsData,
     refresh: refreshPhotoprismActions,
   } = useLiteQuery({
-    queryKey: liteQueryKeys.appActions('photoprism'),
-    path: liteQueryPaths.appActions('photoprism'),
-    queryFn: () => liteApi.appActions('photoprism'),
-    enabled: apps.length === 0 || apps.some((app) => isPhotoPrismApp(app)),
+    queryKey: liteQueryKeys.appActions(featuredAppId || 'none'),
+    path: featuredAppId ? liteQueryPaths.appActions(featuredAppId) : null,
+    queryFn: () => liteApi.appActions(featuredAppId),
+    enabled: Boolean(featuredAppId),
     pollingMode: 'normal',
     isLive: appActionsLive,
     staleTime: 10_000,
-    select: selectPhotoPrismActionsView,
-    snapshotSelect: selectPhotoPrismActionsView,
+    select: selectAppActionsView,
+    snapshotSelect: selectAppActionsView,
   });
   const { data: mediaBackupData } = useLiteQuery({
     queryKey: ['lite', 'media-backup'],
