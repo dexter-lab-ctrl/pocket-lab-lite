@@ -1484,12 +1484,6 @@ def get_lite_activity_summary(request: Request) -> Response:
     return _phase3c_activity_summary_read(request)
 
 
-@router.get("/apps/registry")
-def get_lite_app_registry(request: Request) -> dict[str, Any]:
-    deps.require_auth(request)
-    return lite_app_registry.public_registry()
-
-
 @router.get("/catalog")
 def get_lite_catalog(request: Request) -> Response:
     deps.require_auth(request)
