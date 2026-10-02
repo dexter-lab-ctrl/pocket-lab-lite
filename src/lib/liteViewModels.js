@@ -440,6 +440,36 @@ function normalizeMediaSummary(media = null) {
   };
 }
 
+export function selectAppActionsView(payload = {}) {
+  const actions = collectActions(payload || {});
+  const actionList = Object.values(actions);
+  const latestResults = actionList.reduce((items, action) => {
+    if (action.latest_result || action.result) items[action.id] = action.latest_result || action.result;
+    return items;
+  }, {});
+  const latestTroubleshooting = actionList.reduce((items, action) => {
+    if (action.troubleshooting) items[action.id] = action.troubleshooting;
+    return items;
+  }, {});
+  const output = {
+    view_model: 'app-actions-s3-v1',
+    version: LITE_APP_CATALOG_VIEW_MODEL_VERSION,
+    app_id: safeString(payload?.app_id || ''),
+    app_label: safeString(payload?.app_label || payload?.name || 'App'),
+    status: normalizeStatus(payload?.status || 'ready'),
+    actions,
+    action_list: actionList,
+    action_groups: groupActions(actions),
+    latest_results: latestResults,
+    latest_troubleshooting_records: latestTroubleshooting,
+    media: normalizeMediaSummary(payload?.media),
+    updated_at: payload?.updated_at || payload?.checked_at || null,
+    checked_at: payload?.checked_at || payload?.updated_at || null,
+    live_action_ids: actionList.filter(isLiteAppActionLive).map((action) => action.id),
+  };
+  return withSnapshotMeta(payload, output);
+}
+
 export function selectPhotoPrismActionsView(payload = {}) {
   if (payload?.view_model === 'photoprism-actions-s3-v1' && payload?.version === LITE_APP_CATALOG_VIEW_MODEL_VERSION) return payload;
   const actions = collectActions(payload || {});
