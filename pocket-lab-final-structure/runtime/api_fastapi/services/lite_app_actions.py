@@ -11,21 +11,11 @@ from fastapi import HTTPException
 from . import lite_app_backup, lite_app_backup_targets, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_app_registry, lite_app_update, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media, lite_security
 
 SUPPORTED_APP_IDS = frozenset(lite_app_registry.app_ids())
-SUPPORTED_ACTIONS = {
-    "open",
-    "open_full_screen",
-    "install_to_phone",
-    "connect_photos",
-    "check_app",
-    "backup_app",
-    "preview_restore",
-    "import_photos",
-    "backup_to_storage",
-    "install_app",
-    "update_app",
-    "repair_app",
-    "remove_app",
-}
+SUPPORTED_ACTIONS = frozenset(
+    action_id
+    for app_id in lite_app_registry.app_ids()
+    for action_id in lite_app_registry.registered_action_ids(app_id)
+)
 
 ACTION_CATEGORY_LABELS = {
     "access": "Open",
@@ -163,27 +153,32 @@ TERMINAL_STATUS_VALUES = {"succeeded", "success", "done", "completed", "review",
 
 
 def _validate_app_id(app_id: Any) -> str:
-    normalized = str(app_id or "").strip().lower().replace("_", "-")
-    if normalized not in SUPPORTED_APP_IDS:
+    try:
+        definition = lite_app_registry.app_definition(app_id)
+    except HTTPException as exc:
         raise HTTPException(
             status_code=404,
-            detail={
-                "status": "unsupported_app",
-                "summary": "PhotoPrism is the first app with a Lite Action Center.",
-            },
+            detail={"status": "unsupported_app", "summary": "This app is not registered in Pocket Lab Lite."},
+        ) from exc
+    if definition.id not in SUPPORTED_APP_IDS:
+        raise HTTPException(
+            status_code=409,
+            detail={"status": "unsupported_app", "summary": "This registered app has no action adapter."},
         )
-    return normalized
+    return definition.id
 
 
-def validate_action_id(action_id: Any) -> str:
+def validate_action_id(action_id: Any, *, app_id: str | None = None) -> str:
     normalized = str(action_id or "").strip().lower().replace("-", "_")
-    if normalized not in SUPPORTED_ACTIONS:
+    supported = (
+        lite_app_registry.registered_action_ids(app_id)
+        if app_id
+        else SUPPORTED_ACTIONS
+    )
+    if normalized not in supported:
         raise HTTPException(
             status_code=404,
-            detail={
-                "status": "unsupported_action",
-                "summary": "Choose a supported PhotoPrism action.",
-            },
+            detail={"status": "unsupported_action", "summary": "This action is not supported for the selected app."},
         )
     return normalized
 
@@ -740,19 +735,23 @@ def _live_catalog_app(app_id: str) -> dict[str, Any]:
 
 
 def app_actions(app_id: str) -> dict[str, Any]:
-    _validate_app_id(app_id)
-    profile = lite_app_lifecycle.app_lifecycle_profile("photoprism")
+    app_id = _validate_app_id(app_id)
+    profile = lite_app_lifecycle.app_lifecycle_profile(app_id)
     raw_actions = profile.get("actions") if isinstance(profile.get("actions"), dict) else {}
     actions: dict[str, Any] = {}
     for action_id, action in raw_actions.items():
-        if action_id in SUPPORTED_ACTIONS:
+        if action_id in lite_app_registry.registered_action_ids(app_id):
             actions[action_id] = _normalize_action(action_id, action)
-    live_media = profile.get("media") or lite_photoprism_media.media_status("photoprism")
+    live_media = profile.get("media") or (
+        lite_photoprism_media.media_status(app_id)
+        if lite_app_registry.supports(app_id, "media_sources")
+        else {}
+    )
     saved_media: dict[str, Any] = {}
     try:
         from .lite_control_plane_store import CONTROL_PLANE
 
-        saved = CONTROL_PLANE.app_current_subprojections("photoprism", max_age_seconds=None)
+        saved = CONTROL_PLANE.app_current_subprojections(app_id, max_age_seconds=None)
         if isinstance(saved, dict) and isinstance(saved.get("media"), dict):
             saved_media = saved["media"]
     except Exception as exc:  # prepared-state enrichment must never break action reads
@@ -799,14 +798,14 @@ def app_actions(app_id: str) -> dict[str, Any]:
 
 
 def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | None = None, reason: str | None = None) -> dict[str, Any]:
-    _validate_app_id(app_id)
-    action = validate_action_id(action_id)
+    app_id = _validate_app_id(app_id)
+    action = validate_action_id(action_id, app_id=app_id)
     payload = payload or {}
     reason = payload.get("reason") if reason is None else reason
-    profile = lite_app_lifecycle.app_lifecycle_profile("photoprism")
+    profile = lite_app_lifecycle.app_lifecycle_profile(app_id)
     action_profile = (profile.get("actions") or {}).get(action)
     if not isinstance(action_profile, dict):
-        raise HTTPException(status_code=404, detail={"status": "unsupported_action", "summary": "Choose a supported PhotoPrism action."})
+        raise HTTPException(status_code=404, detail={"status": "unsupported_action", "summary": "This action is not supported for the selected app."})
 
     # Destructive and target-specific actions validate their own preconditions so
     # callers get precise, safe reasons such as confirmation_required or target_not_ready.
