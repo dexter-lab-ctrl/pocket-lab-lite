@@ -2169,7 +2169,7 @@ function CatalogManagePortal({
         <div className="lite-catalog-manage-scroll" ref={manageScrollRef}>
           {manageBodyReady ? (
             <>
-              <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} />
+              {isPhotoPrismApp(app) ? <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} /> : null}
               {isPhotoPrismApp(app) ? (
                 <PhotoBackupTruthCard devices={photoBackupDevices} summary={photoBackupSummary} />
               ) : null}
@@ -2245,7 +2245,7 @@ function CatalogManagePortal({
                   ))}
                 </div>
               </div>
-              {manageExtrasReady ? (
+              {manageExtrasReady && isPhotoPrismApp(app) ? (
                 <>
                   <div className="lite-catalog-action-reasons">
                     {[
@@ -2770,7 +2770,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
   async function runLifecycleAction(app, actionId, event, extraPayload = {}) {
     event?.stopPropagation?.();
-    if (!isPhotoPrismApp(app) || !actionId) return;
+    if (!app?.id || !actionId) return;
+    if (['connect_photos', 'import_photos'].includes(actionId) && !isPhotoPrismApp(app)) return;
     const flowAction = actionFromSnapshot(actionSnapshots[appSnapshotKey(app)] || null, actionId, lifecycleAction(lifecycleProfile(app), actionId));
     appActionFlow.review({ appId: app.id || 'photoprism', actionId, actionLabel: flowAction?.label, risk: flowAction?.risk, destructive: flowAction?.destructive, confirmationRequired: flowAction?.confirmation_required || actionId === 'remove_app', disabledReason: flowAction?.disabled_reason || flowAction?.reason });
     const flowSubmit = appActionFlow.submit({ actionId, confirmed: Boolean(extraPayload.confirm), confirmationRequired: flowAction?.confirmation_required || actionId === 'remove_app', destructive: flowAction?.destructive });
@@ -2870,6 +2871,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       const repairAppAction = actionState('repair_app');
       const removeAppAction = actionState('remove_app');
       const isPhotosImported = photosAlreadyImported(lifecycle, actionSnapshot, app, importPhotosAction);
+      const declaredActions = app?.platform_contract?.actions || {};
+      const snapshotActions = actionSnapshot?.actions || {};
+      const supportedActionIds = new Set([
+        ...Object.keys(declaredActions),
+        ...Object.keys(snapshotActions),
+        ...(canOpen ? ['open', 'open_full_screen', 'install_to_phone'] : []),
+      ]);
       return {
         mediaSummary: lifecycleMediaSummary(lifecycle),
         hostLabel: appHostLabel(app, lifecycle, targetName),
@@ -2883,7 +2891,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         tone: 'primary',
         onClick: (event) => openApp(app, event),
         disabled: !canOpen || openAction.enabled === false,
-        title: lifecycleActionReason(openAction) || app?.access?.message || 'Open PhotoPrism.',
+        title: lifecycleActionReason(openAction) || app?.access?.message || `Open ${app?.name || 'app'}.`,
         result,
       },
       {
@@ -2985,9 +2993,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           ...installAppAction,
           enabled: false,
           status: 'installed',
-          summary: 'PhotoPrism is installed and running.',
-          disabled_reason: 'PhotoPrism is already installed and running.',
-          reason: 'PhotoPrism is already installed and running.',
+          summary: `${app?.name || 'App'} is installed and running.`,
+          disabled_reason: `${app?.name || 'App'} is already installed and running.`,
+          reason: `${app?.name || 'App'} is already installed and running.`,
         } : installAppAction,
         busyKey: actionBusyKey,
         tone: 'ghost',
@@ -3017,7 +3025,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         title: lifecycleActionReason(removeAppAction),
         result,
       },
-        ],
+        ].filter((entry) => supportedActionIds.has(entry.actionId)),
       };
     };
     const quickActionsOpen = quickActionsAppId === app.id;
