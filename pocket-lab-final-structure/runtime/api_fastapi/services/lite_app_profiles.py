@@ -5,10 +5,10 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_storage, lite_backup, lite_catalog, lite_catalog_live, lite_security, lite_app_backup_targets, lite_app_backup
+from . import lite_app_registry, lite_app_storage, lite_backup, lite_catalog, lite_catalog_live, lite_security, lite_app_backup_targets, lite_app_backup
 
-SUPPORTED_APP_IDS = {"photoprism"}
-APP_NAMES = {"photoprism": "PhotoPrism"}
+SUPPORTED_APP_IDS = frozenset(lite_app_registry.app_ids())
+APP_NAMES = {app_id: lite_app_registry.app_definition(app_id).name for app_id in SUPPORTED_APP_IDS}
 
 APP_SECURITY_CHECK_SUBJECT = "pocketlab.commands.lite.security.app_scan"
 APP_BACKUP_SUBJECT = lite_app_backup.APP_BACKUP_CREATE_SUBJECT
