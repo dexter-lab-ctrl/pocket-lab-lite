@@ -1055,7 +1055,8 @@ export const handlers = [
     });
   }),
   http.get('/api/lite/catalog', ({ request }) => {
-    const ready = scenario() === 'catalog-ready';
+    const multiApp = rawScenario() === 'catalog-multi-app';
+    const ready = scenario() === 'catalog-ready' || multiApp;
     const installing = scenario() === 'catalog-installing';
     const app = {
       id: 'photoprism', name: 'PhotoPrism', category: 'Photos',
@@ -1083,10 +1084,77 @@ export const handlers = [
       lifecycle: mockAppLifecycleProfiles()[0],
       lifecycle_summary: { status: 'ready', summary: 'PhotoPrism is ready, protected, and recoverable.', host: 'Runs on Server Phone', storage: 'Media connected', security: 'Protected app', backup: 'Backup ready', attention_count: 0 },
     };
-    return HttpResponse.json({ status: 'healthy', access: { https_ready: true, secure_origin: 'https://pocket-lab-lite.example.ts.net', route_mode: 'tailscale_caddy', pwa_ready: true, message: 'Secure access is ready.' }, apps: [app], items: [app], count: 1, updated_at: mockIso() }, { headers: liteSafeReadHeaders(request) });
+    const syntheticLifecycle = {
+      ...(app.lifecycle || {}),
+      app_id: 'example-app',
+      name: 'Example App',
+      status: 'ready',
+      summary: 'Example App is ready.',
+      media: {},
+      storage: {},
+      security: { status: 'not_supported', summary: 'Safety check is not supported.' },
+      backup: { status: 'not_supported', summary: 'Backup is not supported.' },
+      actions: {
+        open: { id: 'open', label: 'Open', category: 'access', enabled: true, status: 'ready' },
+        open_full_screen: { id: 'open_full_screen', label: 'Open full screen', category: 'access', enabled: true, status: 'ready' },
+      },
+    };
+    const synthetic = {
+      id: 'example-app',
+      name: 'Example App',
+      category: 'Utilities',
+      summary: 'Synthetic test-only application.',
+      status: 'ready',
+      install_state: 'installed',
+      installed: true,
+      target: app.target,
+      actions: { install: false, open: true, details: true, retry: false, remove: false },
+      runtime: { route: '/apps/example-app/', url: '/apps/example-app/', health: 'healthy', version: 'test-only' },
+      access: { https_ready: true, route_ready: true, open_url: '/apps/example-app/', message: 'Example App is ready over secure access.' },
+      host_device_id: app.host_device_id,
+      host_device_name: app.host_device_name,
+      storage: {},
+      media: {},
+      security_profile: {},
+      backup_profile: {},
+      lifecycle: syntheticLifecycle,
+      lifecycle_summary: { status: 'ready', summary: 'Example App is ready.', attention_count: 0 },
+      platform_contract: {
+        schema_version: 1,
+        id: 'example-app',
+        name: 'Example App',
+        category: 'Utilities',
+        summary: 'Synthetic test-only application.',
+        platforms: ['android-termux-arm64'],
+        capabilities: { open: true },
+        actions: {
+          open: { label: 'Open', category: 'access', summary: 'Open Example App.', risk: 'low' },
+          open_full_screen: { label: 'Open full screen', category: 'access', summary: 'Open Example App full screen.', risk: 'low' },
+        },
+      },
+    };
+    const apps = multiApp ? [synthetic, app] : [app];
+    return HttpResponse.json({ status: 'healthy', access: { https_ready: true, secure_origin: 'https://pocket-lab-lite.example.ts.net', route_mode: 'tailscale_caddy', pwa_ready: true, message: 'Secure access is ready.' }, apps, items: apps, count: apps.length, updated_at: mockIso() }, { headers: liteSafeReadHeaders(request) });
   }),
   http.get('/api/lite/apps/lifecycle', ({ request }) => HttpResponse.json({ status: 'healthy', summary: 'Unified App Lifecycle profiles are available.', apps: mockAppLifecycleProfiles(), items: mockAppLifecycleProfiles(), count: mockAppLifecycleProfiles().length, ready_count: 1, attention_count: 0, updated_at: mockIso() }, { headers: liteSafeReadHeaders(request) })),
   http.get('/api/lite/apps/lifecycle/photoprism', () => HttpResponse.json(mockAppLifecycleProfiles()[0])),
+  http.get('/api/lite/apps/example-app/actions', ({ request }) => {
+    const actions = {
+      open: { id: 'open', app_id: 'example-app', label: 'Open', category: 'access', enabled: true, status: 'ready', summary: 'Open Example App.' },
+      open_full_screen: { id: 'open_full_screen', app_id: 'example-app', label: 'Open full screen', category: 'access', enabled: true, status: 'ready', summary: 'Open Example App full screen.' },
+    };
+    return HttpResponse.json({
+      status: 'healthy',
+      app_id: 'example-app',
+      name: 'Example App',
+      summary: 'Example App Action Center is available.',
+      actions,
+      items: actions,
+      action_list: Object.values(actions),
+      action_groups: [{ id: 'access', label: 'Open', actions: ['open', 'open_full_screen'] }],
+      media: {},
+    }, { headers: liteSafeReadHeaders(request) });
+  }),
   http.get('/api/lite/apps/photoprism/actions', ({ request }) => {
     const actions = mockUnifiedAppActions();
     return HttpResponse.json({
