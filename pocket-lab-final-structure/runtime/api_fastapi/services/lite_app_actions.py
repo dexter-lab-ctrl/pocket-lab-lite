@@ -8,9 +8,9 @@ from datetime import datetime, timezone
 
 from fastapi import HTTPException
 
-from . import lite_app_backup, lite_app_backup_targets, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_app_registry, lite_app_update, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media, lite_security
+from . import lite_app_adapters, lite_app_backup, lite_app_backup_targets, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_app_registry, lite_app_update, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media, lite_security
 
-SUPPORTED_APP_IDS = frozenset(lite_app_registry.app_ids())
+SUPPORTED_APP_IDS = frozenset(lite_app_adapters.app_ids_for_service("actions"))
 SUPPORTED_ACTIONS = frozenset(
     action_id
     for app_id in lite_app_registry.app_ids()
