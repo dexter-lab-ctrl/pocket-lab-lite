@@ -6,9 +6,9 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import fleet_registry, lite_device_capabilities
+from . import fleet_registry, lite_app_registry, lite_device_capabilities
 
-SUPPORTED_APP_IDS = {"photoprism"}
+SUPPORTED_APP_IDS = frozenset(app_id for app_id in lite_app_registry.app_ids() if lite_app_registry.supports(app_id, "backup_to_storage"))
 BACKUP_TO_STORAGE_SUBJECT = "pocketlab.commands.lite.app.backup.transfer"
 _MIN_FREE_GB = 1.0
 _SECRET_MARKERS = (
