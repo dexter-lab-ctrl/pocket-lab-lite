@@ -54,6 +54,7 @@ const APP_CATALOG_SOURCE_CONTRACT_MARKERS = [
   // Runtime selection is generic through selectAppActionsView.
   'select: selectPhotoPrismActionsView',
   'snapshotSelect: selectPhotoPrismActionsView',
+  "queryKey: liteQueryKeys.appActions('photoprism')",
   // Legacy PhotoPrism copy remains a compatibility marker; visible UI is
   // capability-aware and does not claim this state for unsupported apps.
   'Config protected',
