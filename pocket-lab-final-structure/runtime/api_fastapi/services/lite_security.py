@@ -32,6 +32,7 @@ from .workload_admission import WORKLOADS, WORKLOAD_ADMISSION
 from . import lite_security_policy as policy
 from .process_runtime import PROCESS_RUNTIME
 from . import lite_security_generation
+from . import lite_app_registry
 from . import lite_security_optimization as optimization
 
 
@@ -7100,6 +7101,10 @@ def _app_execution_timeline_for_phase(run: dict[str, Any], phase: str) -> list[d
     except ValueError:
         current_index = 0
 
+    app_id = str(run.get("app_id") or "").strip().lower()
+    app_label = str(run.get("app_label") or "App")
+    prefix = app_id.replace("-", "_") or "app"
+
     def status_for(step_phase: str, target_id: str | None = None) -> str:
         if phase == step_phase:
             return "running"
@@ -7115,13 +7120,42 @@ def _app_execution_timeline_for_phase(run: dict[str, Any], phase: str) -> list[d
     return [
         _timeline_step("request_accepted", "Request accepted", "FastAPI accepted the explicit App Check request.", "completed" if current_index >= 0 else "pending"),
         _timeline_step("worker_picked_up", "Worker picked it up", "The backend worker started the app check.", "completed" if current_index >= 1 or phase in terminal_phases else "pending"),
-        _timeline_step("app_route", "App route checked", "PhotoPrism same-origin route health was checked without exposing route internals.", status_for("route_running", "photoprism_route")),
-        _timeline_step("app_files", "App files checked", "Selected PhotoPrism app files were checked with media folders skipped.", status_for("app_files_running", "photoprism_app_files")),
-        _timeline_step("app_settings", "App settings checked", "PhotoPrism settings were checked with runtime secrets protected.", status_for("settings_running", "photoprism_settings")),
-        _timeline_step("app_backup_metadata", "App backup metadata checked", "PhotoPrism backup metadata was summarized without scanning payloads.", status_for("backup_metadata_running", "photoprism_backup_metadata")),
-        _timeline_step("app_action_state", "App action state checked", "PhotoPrism safe action readiness was summarized without loading backend-only evidence.", status_for("action_state_running", "photoprism_action_state")),
+        _timeline_step("app_route", "App route checked", f"{app_label} same-origin route health was checked without exposing route internals.", status_for("route_running", f"{prefix}_route")),
+        _timeline_step("app_files", "App files checked", f"Selected {app_label} app files were checked with protected user-data exclusions.", status_for("app_files_running", f"{prefix}_app_files")),
+        _timeline_step("app_settings", "App settings checked", f"{app_label} settings were checked with runtime secrets protected.", status_for("settings_running", f"{prefix}_settings")),
+        _timeline_step("app_backup_metadata", "App backup metadata checked", f"{app_label} backup metadata was summarized without scanning payloads.", status_for("backup_metadata_running", f"{prefix}_backup_metadata")),
+        _timeline_step("app_action_state", "App action state checked", f"{app_label} safe action readiness was summarized without loading backend-only evidence.", status_for("action_state_running", f"{prefix}_action_state")),
         _timeline_step("evidence_saved", "Evidence saved", "Sanitized app target evidence and coverage summary were saved.", evidence_status),
     ]
+
+def _app_route_health(app_id: str) -> dict[str, Any]:
+    try:
+        target = policy.app_check_target(app_id)
+    except ValueError:
+        return {"status": "missing", "route_ready": False, "summary": "App Check target is not registered."}
+    health_path = str(target.get("health_path") or "")
+    expected = target.get("expected_health") if isinstance(target.get("expected_health"), dict) else {}
+    app_label = str(target.get("app_label") or "App")
+    if not health_path.startswith(f"/apps/{app_id}/"):
+        return {"status": "partial", "route_ready": False, "summary": "App health route contract needs review."}
+    url = f"http://127.0.0.1:8443{health_path}"
+    request = urllib.request.Request(url, headers={"Accept": "application/json"})
+    try:
+        with urllib.request.urlopen(request, timeout=3) as response:  # nosec B310 - validated loopback-only app health route
+            status_code = int(getattr(response, "status", 0) or 0)
+            payload = _load_json_text(response.read(2048).decode("utf-8", errors="replace"))
+            matches = isinstance(payload, dict) and all(payload.get(key) == value for key, value in expected.items())
+            return {
+                "status": "checked" if 200 <= status_code < 300 else "partial",
+                "route_ready": bool(matches),
+                "summary": f"{app_label} route metadata is operational." if matches else f"{app_label} route metadata needs review.",
+            }
+    except (urllib.error.URLError, TimeoutError, OSError):
+        return {
+            "status": "partial",
+            "route_ready": False,
+            "summary": f"{app_label} route metadata was not reachable quickly.",
+        }
 
 
 def _app_route_posture(app_id: str) -> dict[str, Any]:
@@ -7129,44 +7163,66 @@ def _app_route_posture(app_id: str) -> dict[str, Any]:
         target = policy.app_check_target(app_id)
     except ValueError:
         return {"status": "missing", "summary": "App Check target is not registered."}
-    route = str(target.get("route") or "/apps/photoprism/")
-    health_path = str(target.get("health_path") or "/apps/photoprism/api/v1/status")
-    health = _photoprism_route_health() if app_id == "photoprism" else {"status": "missing", "route_ready": False}
+    route = str(target.get("route") or "")
+    health_path = str(target.get("health_path") or "")
+    health = _app_route_health(app_id)
     route_ready = bool(health.get("route_ready"))
+    app_label = str(target.get("app_label") or "App")
     return policy.redact_value({
         "app_id": target.get("app_id"),
-        "app_label": target.get("app_label"),
+        "app_label": app_label,
         "status": "checked" if route_ready else "partial",
         "route_label": route,
         "health_endpoint_label": health_path,
         "expected_health": target.get("expected_health"),
         "route_ready": route_ready,
         "execution_owner": "backend worker and app runtime",
-        "summary": "PhotoPrism route is operational." if route_ready else "PhotoPrism route needs review or was not reachable quickly.",
+        "summary": f"{app_label} route is operational." if route_ready else f"{app_label} route needs review or was not reachable quickly.",
     })
 
 
-def _photoprism_action_state_summary() -> dict[str, Any]:
-    actions = ["check_app", "repair_app", "backup_app", "preview_restore", "update_app"]
+def _app_action_state_summary(app_id: str) -> dict[str, Any]:
+    target = policy.app_check_target(app_id)
+    app_label = str(target.get("app_label") or "App")
+    actions = sorted(lite_app_registry.registered_action_ids(app_id))
     return policy.redact_value({
         "status": "checked",
-        "app_id": "photoprism",
-        "app_label": "PhotoPrism",
+        "app_id": app_id,
+        "app_label": app_label,
         "checked_actions": actions,
-        "summary": "PhotoPrism action readiness was summarized without loading raw evidence.",
-        "what_did_not_happen": ["No app settings were changed.", "No photo files were scanned.", "No backend-only evidence was loaded into the UI."],
+        "summary": f"{app_label} action readiness was summarized without loading raw evidence.",
+        "what_did_not_happen": [
+            "No app settings were changed.",
+            "Protected user-data files were not scanned outside the adapter-owned target contract.",
+            "No backend-only evidence was loaded into the UI.",
+        ],
     })
 
 
-def _photoprism_backup_metadata_summary(root: Path) -> dict[str, Any]:
-    summary = _backup_metadata_summary(root)
+def _app_backup_metadata_summary(root: Path, app_id: str) -> dict[str, Any]:
+    target = policy.app_check_target(app_id)
+    app_label = str(target.get("app_label") or "App")
+    candidates: list[Path] = []
+    for relative in target.get("backup_relatives") or []:
+        rel = Path(str(relative))
+        candidates.extend([root / rel, Path.home() / rel])
+    present: list[Path] = []
+    for candidate in candidates:
+        try:
+            if candidate.exists():
+                present.append(candidate)
+        except OSError:
+            continue
     return policy.redact_value({
-        **summary,
-        "app_id": "photoprism",
-        "app_label": "PhotoPrism",
-        "skipped": ["backup payloads", "restic repository contents", "restore checkpoints", "PhotoPrism database files"],
+        "status": "checked" if present else "missing",
+        "app_id": app_id,
+        "app_label": app_label,
+        "checked_candidates": len(candidates),
+        "present_count": len(present),
+        "summary": f"{app_label} backup metadata summary is available." if present else f"{app_label} backup metadata was not found on this device.",
+        "present_labels": [str(item).replace(str(Path.home()), "~") for item in present[:6]],
+        "skipped": ["backup payloads", "restic repository contents", "restore checkpoints", "protected user data"],
     })
-
 
 def _overall_budget_exhausted(started: float, profile: str) -> bool:
     key = "full_overall" if profile == policy.SCAN_PROFILE_FULL else "app_overall" if profile == policy.SCAN_PROFILE_APP else "overall"
@@ -7453,16 +7509,36 @@ def _first_existing(paths: list[Path]) -> Path | None:
     return None
 
 
-def _photoprism_proot_targets(rootfs: Path | None) -> list[tuple[Path, str, bool, str, str, str]]:
+def _app_proot_targets(rootfs: Path | None, app_id: str) -> list[tuple[Path, str, bool, str, str, str]]:
     if not rootfs:
         return []
-    app_path = rootfs / "opt/photoprism"
-    binary_path = rootfs / "usr/local/bin/photoprism"
-    targets = [(app_path, "vuln,misconfig", False, "target-photoprism-trivy.json", "PhotoPrism app files", "photoprism_app_files")]
+    target = policy.app_check_target(app_id)
+    app_label = str(target.get("app_label") or "App")
+    prefix = app_id.replace("-", "_")
+    app_path = rootfs / str(target["proot_app_path"])
+    binary_path = rootfs / str(target["proot_binary_path"])
+    targets = [
+        (
+            app_path,
+            "vuln,misconfig",
+            False,
+            f"target-{prefix}-trivy.json",
+            f"{app_label} app files",
+            f"{prefix}_app_files",
+        )
+    ]
     if binary_path.exists():
-        targets.append((binary_path, "vuln,misconfig", False, "target-photoprism-binary-trivy.json", "PhotoPrism app binary", "photoprism_app_binary"))
+        targets.append(
+            (
+                binary_path,
+                "vuln,misconfig",
+                False,
+                f"target-{prefix}-binary-trivy.json",
+                f"{app_label} app binary",
+                f"{prefix}_app_binary",
+            )
+        )
     return targets
-
 
 def _backup_metadata_summary(root: Path) -> dict[str, Any]:
     candidates = policy.backup_metadata_candidates(root)
