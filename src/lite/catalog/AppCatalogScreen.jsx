@@ -2224,7 +2224,7 @@ function CatalogManagePortal({
                               result={entry.result}
                               tone={entry.tone}
                               onClick={entry.onClick}
-                              onViewDetails={() => openActionDetails(entry.actionId, app.id || 'photoprism')}
+                              onViewDetails={() => openActionDetails(entry.actionId, app.id)}
                               detailsExpanded={detailsActionId === entry.actionId}
                               disabled={entry.disabled}
                               title={entry.title}
@@ -3072,7 +3072,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           <div className="lite-catalog-quick-actions" role="menu" aria-label={`${app.name} quick actions`}>
             <button type="button" onClick={(event) => { event.stopPropagation(); openApp(app, event); setQuickActionsAppId(null); }} disabled={!canOpen}>Open</button>
             {installed && lifecycle ? <button type="button" onClick={(event) => { event.stopPropagation(); openManageSheet(app, 'safety'); }}>Manage</button> : null}
-            <button type="button" onClick={(event) => { event.stopPropagation(); setQuickActionsAppId(null); refresh(); refreshAppActions(app.id || 'photoprism'); }}>Refresh</button>
+            <button type="button" onClick={(event) => { event.stopPropagation(); setQuickActionsAppId(null); refresh(); refreshAppActions(app.id); }}>Refresh</button>
           </div>
         ) : null}
         {installed ? (
