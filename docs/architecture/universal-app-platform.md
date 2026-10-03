@@ -2,7 +2,7 @@
 
 ## Status
 
-Source implementation in progress on `feat/universal-app-platform`.
+Source implementation is complete on `feat/universal-app-platform`. Qualification remains separate and is not implied by this status.
 
 The Universal App Platform introduces a repository-owned, fail-closed application registry and backend adapter boundary. PhotoPrism is the first production application migrated to the platform. Existing PhotoPrism installer, media, backup, recovery, and scanner implementations remain app-specific behind that boundary.
 
@@ -42,7 +42,9 @@ The public registry projection deliberately excludes backend-only bindings such 
 
 `lite_app_adapters.py` binds a registered app to backend-owned implementation logic.
 
-Adapters may provide bounded app-specific readiness and live-state hydration. They do not accept arbitrary commands from manifests and do not turn registry data into executable shell.
+Adapters own bounded app-specific catalog projection, lifecycle projection, safety/backup profiles, readiness/live-state hydration, media specialization where applicable, and specialized action preparation. Generic services dispatch through the selected app adapter instead of calling PhotoPrism directly.
+
+Adapters do not accept arbitrary commands from manifests and do not turn registry data into executable shell. Executable behavior remains a static backend implementation owned by the repository.
 
 PhotoPrism readiness remains limited to loopback Pocket Lab routes with short timeouts. Same-origin/Tailscale embed policy remains derived from the server-owned Caddy configuration.
 
@@ -70,9 +72,9 @@ Action definitions are registry-owned presentation metadata. Execution remains b
 
 The platform now sources PhotoPrism canonical identity, route, upstream, process name, capability set, and supported action definitions from the registry.
 
-Live catalog hydration delegates to the PhotoPrism adapter rather than embedding PhotoPrism-specific readiness logic in the generic catalog hydrator.
+Catalog enumeration now walks registered adapter-backed apps. Lifecycle, safety/backup profile reads, live catalog hydration, and specialized install/remove/media action preparation all dispatch through the selected adapter.
 
-Specialized PhotoPrism media workflows intentionally remain PhotoPrism-specific.
+PhotoPrism remains the first production adapter and reuses the mature installer, lifecycle, media, backup, recovery, and scanner implementations behind that boundary. Specialized PhotoPrism media workflows intentionally remain PhotoPrism-specific.
 
 ## Security invariants
 
@@ -104,7 +106,7 @@ A future production app should require:
 7. backup/security scope definitions where supported;
 8. backend, frontend, Storybook, and Playwright coverage.
 
-A new app must not be enabled merely by adding display metadata.
+A new app must not be enabled merely by adding display metadata. The registry entry, adapter service declarations, required adapter projection hooks, governed handlers, route/readiness implementation, and declared capabilities must agree or the platform fails closed.
 
 ## Validation
 
@@ -119,4 +121,4 @@ The branch includes targeted registry tests for:
 - registry-owned action contracts;
 - unknown-app fail-closed behavior.
 
-Full repository validation and runtime qualification remain required before merge.
+Implementation completeness is distinct from qualification. Repository validation and runtime qualification remain required before merge, but are intentionally not claimed by this document.
