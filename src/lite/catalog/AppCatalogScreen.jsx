@@ -227,11 +227,14 @@ const PHONE_STORAGE_CONNECTED_FOLDERS = [
 ];
 
 
-function actionCopy(actionId) {
-  return PHOTO_PRISM_ACTION_COPY[actionId] || {
-    eyebrow: 'Action',
-    label: actionId.replace(/_/g, ' '),
-    description: 'Pocket Lab will run this through its protected local service.',
+function actionCopy(actionId, action = {}) {
+  const category = appActionCategory(actionId, action);
+  const appId = String(action?.app_id || '').toLowerCase();
+  const legacyPhotoPrism = appId === 'photoprism' || !appId ? PHOTO_PRISM_ACTION_COPY[actionId] : null;
+  return {
+    eyebrow: action?.category_label || APP_ACTION_CATEGORY_COPY[category]?.label || legacyPhotoPrism?.eyebrow || 'Action',
+    label: action?.label || legacyPhotoPrism?.label || actionId.replace(/_/g, ' '),
+    description: action?.summary || legacyPhotoPrism?.description || 'Pocket Lab will run this through its protected local service.',
   };
 }
 
@@ -608,7 +611,7 @@ function actionRunTimestamp(action = {}, result = null, key = 'last') {
 function normalizeAppAction(entry) {
   const action = entry?.action || {};
   const actionId = entry?.actionId || action?.id || '';
-  const copy = actionCopy(actionId);
+  const copy = actionCopy(actionId, action);
   const busy = Boolean(entry?.busy);
   const actionStatus = normalizedActionValue(action?.status);
   const connected = Boolean(entry?.connected || ['connected', 'already_connected'].includes(actionStatus));
@@ -1588,7 +1591,7 @@ function actionDetailRunHistoryLabels(actionId) {
 }
 
 function fallbackActionDetails(actionId, action = {}, result = null) {
-  const copy = actionCopy(actionId);
+  const copy = actionCopy(actionId, action);
   const summary = result?.summary || action?.summary || copy.description || 'Action details are available.';
   const browserOnly = ['open', 'open_full_screen', 'install_to_phone'].includes(actionId);
   const disabled = action?.enabled === false;
