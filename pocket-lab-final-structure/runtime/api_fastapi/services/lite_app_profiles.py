@@ -225,7 +225,11 @@ def photoprism_backup_profile() -> dict[str, Any]:
 
 
 def app_backup_profiles() -> dict[str, Any]:
-    profiles = [photoprism_backup_profile()]
+    profiles = [
+        lite_app_adapters.adapter_for(app_id).backup_profile()
+        for app_id in SUPPORTED_APP_IDS
+        if lite_app_adapters.supports_service(app_id, "backup_profile")
+    ]
     return {
         "status": "healthy",
         "summary": "App backup profiles are available.",
@@ -237,8 +241,11 @@ def app_backup_profiles() -> dict[str, Any]:
 
 
 def app_backup_profile(app_id: str) -> dict[str, Any]:
-    _validate_app_id(app_id)
-    return photoprism_backup_profile()
+    normalized = _validate_app_id(app_id)
+    adapter = lite_app_adapters.adapter_for(normalized)
+    if not lite_app_adapters.supports_service(normalized, "backup_profile"):
+        raise HTTPException(status_code=409, detail={"status": "not_supported", "summary": "This app has no backup profile adapter."})
+    return adapter.backup_profile()
 
 
 def photoprism_security_profile() -> dict[str, Any]:
@@ -310,7 +317,11 @@ def photoprism_security_profile() -> dict[str, Any]:
 
 
 def app_security_profiles() -> dict[str, Any]:
-    profiles = [photoprism_security_profile()]
+    profiles = [
+        lite_app_adapters.adapter_for(app_id).security_profile()
+        for app_id in SUPPORTED_APP_IDS
+        if lite_app_adapters.supports_service(app_id, "security_profile")
+    ]
     return {
         "status": "healthy",
         "summary": "Protected app profiles are available.",
@@ -322,8 +333,11 @@ def app_security_profiles() -> dict[str, Any]:
 
 
 def app_security_profile(app_id: str) -> dict[str, Any]:
-    _validate_app_id(app_id)
-    return photoprism_security_profile()
+    normalized = _validate_app_id(app_id)
+    adapter = lite_app_adapters.adapter_for(normalized)
+    if not lite_app_adapters.supports_service(normalized, "security_profile"):
+        raise HTTPException(status_code=409, detail={"status": "not_supported", "summary": "This app has no safety profile adapter."})
+    return adapter.security_profile()
 
 
 def app_security_check_not_implemented(app_id: str, reason: str | None = None) -> dict[str, Any]:
@@ -331,7 +345,7 @@ def app_security_check_not_implemented(app_id: str, reason: str | None = None) -
     return {
         "status": "not_implemented",
         "accepted": False,
-        "app_id": "photoprism",
+        "app_id": _validate_app_id(app_id),
         "summary": "App-specific safety checks are prepared, but execution is not enabled yet. Use Run Safety Check for the current device-wide scan.",
         "reason": _public_text(reason, "manual app safety check"),
         "next_step": "Extend the worker with a bounded app security command before enabling app-specific execution.",
@@ -348,7 +362,7 @@ def app_restore_preview_not_implemented(app_id: str) -> dict[str, Any]:
     return {
         "status": "not_implemented",
         "accepted": False,
-        "app_id": "photoprism",
+        "app_id": _validate_app_id(app_id),
         "summary": "Restore preview coming soon for app-specific recovery.",
     }
 
@@ -358,6 +372,6 @@ def app_restore_not_implemented(app_id: str) -> dict[str, Any]:
     return {
         "status": "not_implemented",
         "accepted": False,
-        "app_id": "photoprism",
+        "app_id": _validate_app_id(app_id),
         "summary": "App restore is disabled until preview, confirmation, checkpoint, whitelist, and health validation are implemented.",
     }
