@@ -113,6 +113,26 @@ def test_adapter_service_bindings_are_explicit_and_metadata_is_not_execution():
     assert lite_app_adapters.supports_service("example-app", "actions") is False
 
 
+def test_photoprism_adapter_owns_end_to_end_projection_and_special_action_hooks():
+    adapter = lite_app_adapters.adapter_for("photoprism")
+
+    for method_name in (
+        "catalog_payload",
+        "lifecycle_profile",
+        "security_profile",
+        "backup_profile",
+        "media_status",
+        "media_import_blocked",
+        "prepare_special_action",
+    ):
+        assert callable(getattr(adapter, method_name, None)), method_name
+
+    assert lite_app_adapters.supports_service("photoprism", "catalog") is True
+    assert lite_app_adapters.supports_service("photoprism", "lifecycle") is True
+    assert lite_app_adapters.supports_service("photoprism", "security_profile") is True
+    assert lite_app_adapters.supports_service("photoprism", "backup_profile") is True
+
+
 def test_action_contract_is_registry_owned():
     ids = lite_app_registry.registered_action_ids("photoprism")
 
