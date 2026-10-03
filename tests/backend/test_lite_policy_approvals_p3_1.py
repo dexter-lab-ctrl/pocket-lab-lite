@@ -6,6 +6,7 @@ from pathlib import Path
 import shutil
 
 import pytest
+from fastapi import HTTPException
 
 from pocket_lab_test_utils import ensure_runtime_path, isolated_state_dir
 
@@ -131,7 +132,7 @@ def test_admin_request_requires_independent_step_up_and_is_single_use(approvals_
     assert no_step_up.value.reason_code == "approval_step_up_required"
 
     owner_auth["session"]["assurance"] = [{
-        "purpose": approvals.APPROVAL_PURPOSE,
+        "purpose": approvals.APPROVAL_PURPOSES["device.remove"],
         "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat().replace("+00:00", "Z"),
     }]
     approved = approvals.transition(auth_context=owner_auth, approval_id=approval_id, action="approve")
@@ -241,7 +242,7 @@ def test_concurrent_consumption_is_single_use(approvals_runtime):
     _insert_approval_required_decision(actor_id=admin_id, decision_id="decision-race", target_id="node-race")
     approval_id = approvals.create_from_decision(decision_id="decision-race", initiating_role="Admin")["approval"]["approval_id"]
     owner_auth["session"]["assurance"] = [{
-        "purpose": approvals.APPROVAL_PURPOSE,
+        "purpose": approvals.APPROVAL_PURPOSES["device.remove"],
         "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat().replace("+00:00", "Z"),
     }]
     approvals.transition(auth_context=owner_auth, approval_id=approval_id, action="approve")
@@ -263,3 +264,180 @@ def test_concurrent_consumption_is_single_use(approvals_runtime):
         results = list(pool.map(lambda _: consume(), range(2)))
     assert results.count(True) == 1
     assert results.count(False) == 1
+
+
+def test_app_remove_approval_is_exact_app_action_revision_and_single_use(approvals_runtime):
+    from api_fastapi.db.connection import begin_immediate, connection
+    from api_fastapi.services import lite_policy_approvals as approvals
+
+    _, _, owner_auth, admin_id, admin_auth = approvals_runtime
+    now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    with connection() as conn:
+        with begin_immediate(conn) as tx:
+            tx.execute(
+                "INSERT INTO policy_decisions(occurred_at,decision_id,correlation_id,actor_type,actor_id,action_id,target_type,target_id,target_revision,allow,reason_code,policy_revision,evaluation_ms) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (
+                    now,
+                    "decision-app-remove",
+                    "corr-app-remove",
+                    "human",
+                    admin_id,
+                    "app.remove",
+                    "app",
+                    "photoprism",
+                    "contract-app-a",
+                    0,
+                    "approval_required",
+                    "revision-p3",
+                    0.1,
+                ),
+            )
+
+    created = approvals.create_from_decision(
+        decision_id="decision-app-remove",
+        initiating_role="Admin",
+        authorization_version=1,
+        request_fingerprint="contract-app-a",
+    )
+    approval_id = created["approval"]["approval_id"]
+    assert created["approval"]["target_type"] == "app"
+    assert created["approval"]["target_id"] == "photoprism"
+    assert created["approval"]["required_assurance"] == "policy.approval.app.remove"
+
+    owner_auth["session"]["assurance"] = [{
+        "purpose": "policy.approval.app.remove",
+        "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat().replace("+00:00", "Z"),
+    }]
+    approvals.transition(auth_context=owner_auth, approval_id=approval_id, action="approve")
+
+    assert approvals.matching_approved(
+        initiating_human_id=admin_id,
+        action_id="app.remove",
+        target_type="app",
+        target_id="other-app",
+        target_revision="contract-app-a",
+        policy_revision="revision-p3",
+        authorization_version=1,
+        request_fingerprint="contract-app-a",
+    ) is None
+    assert approvals.matching_approved(
+        initiating_human_id=admin_id,
+        action_id="app.remove",
+        target_type="app",
+        target_id="photoprism",
+        target_revision="contract-app-b",
+        policy_revision="revision-p3",
+        authorization_version=1,
+        request_fingerprint="contract-app-b",
+    ) is None
+
+    assert approvals.matching_approved(
+        initiating_human_id=admin_id,
+        action_id="app.remove",
+        target_type="app",
+        target_id="photoprism",
+        target_revision="contract-app-a",
+        policy_revision="revision-p3",
+        authorization_version=1,
+        request_fingerprint="contract-app-a",
+    ) == approval_id
+
+    consumed = approvals.consume_matching(
+        auth_context=admin_auth,
+        approval_id=approval_id,
+        action_id="app.remove",
+        target_type="app",
+        target_id="photoprism",
+        target_revision="contract-app-a",
+        policy_revision="revision-p3",
+        request_fingerprint="contract-app-a",
+    )
+    assert consumed["consumed"] is True
+
+    with pytest.raises(approvals.ApprovalError) as replay:
+        approvals.consume_matching(
+            auth_context=admin_auth,
+            approval_id=approval_id,
+            action_id="app.remove",
+            target_type="app",
+            target_id="photoprism",
+            target_revision="contract-app-a",
+            policy_revision="revision-p3",
+            request_fingerprint="contract-app-a",
+        )
+    assert replay.value.reason_code == "approval_continuation_unavailable"
+
+
+def test_temporary_app_exception_is_exact_action_app_device_capability_and_revision(approvals_runtime, monkeypatch):
+    from api_fastapi.services import lite_app_governance, lite_policy_approvals as approvals
+
+    _, _, owner_auth, admin_id, _ = approvals_runtime
+    monkeypatch.setattr(
+        lite_app_governance,
+        "resource_contract",
+        lambda *_args, **_kwargs: {
+            "required_capability": "install",
+            "contract_revision": "contract-install-a",
+        },
+    )
+    monkeypatch.setattr(approvals, "_active_revision", lambda: "revision-p3")
+
+    created = approvals.create_exception(
+        auth_context=owner_auth,
+        app_id="photoprism",
+        action_id="app.install",
+        device_id="pocket-lab-lite-server",
+        human_id=admin_id,
+        reason="Temporary installation window",
+        duration_minutes=15,
+    )
+    exception_id = created["exception"]["exception_id"]
+
+    assert approvals.matching_exception(
+        human_id=admin_id,
+        action_id="app.install",
+        app_id="photoprism",
+        device_id="pocket-lab-lite-server",
+        required_capability="install",
+        target_revision="contract-install-a",
+        policy_revision="revision-p3",
+    ) == exception_id
+
+    assert approvals.matching_exception(
+        human_id=admin_id,
+        action_id="app.install",
+        app_id="photoprism",
+        device_id="different-device",
+        required_capability="install",
+        target_revision="contract-install-a",
+        policy_revision="revision-p3",
+    ) is None
+    assert approvals.matching_exception(
+        human_id=admin_id,
+        action_id="app.install",
+        app_id="photoprism",
+        device_id="pocket-lab-lite-server",
+        required_capability="install",
+        target_revision="contract-install-b",
+        policy_revision="revision-p3",
+    ) is None
+    assert approvals.matching_exception(
+        human_id=admin_id,
+        action_id="app.install",
+        app_id="photoprism",
+        device_id="pocket-lab-lite-server",
+        required_capability="install",
+        target_revision="contract-install-a",
+        policy_revision="stale-revision",
+    ) is None
+
+    with pytest.raises(HTTPException):
+        approvals.matching_exception(
+            human_id=admin_id,
+            action_id="app.install",
+            app_id="unknown-app",
+            device_id="pocket-lab-lite-server",
+            required_capability="install",
+            target_revision="contract-install-a",
+            policy_revision="revision-p3",
+        )

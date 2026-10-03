@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 
 from fastapi import HTTPException
 
-from . import lite_app_adapters, lite_app_backup, lite_app_backup_targets, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_app_registry, lite_app_update, lite_catalog, lite_catalog_live, lite_security
+from . import lite_app_adapters, lite_app_backup, lite_app_backup_targets, lite_app_governance, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_app_registry, lite_app_update, lite_catalog, lite_catalog_live, lite_security
 
 SUPPORTED_APP_IDS = frozenset(lite_app_adapters.app_ids_for_service("actions"))
 SUPPORTED_ACTIONS = frozenset(
@@ -693,6 +693,7 @@ def _normalize_action(action_id: str, raw_action: Any, *, app_id: str) -> dict[s
     first_ran_at = _first_ran_at(action, result)
     last_ran_at = _last_ran_at(action) or first_ran_at
     run_count = _run_count(action, result)
+    governance = lite_app_governance.sanitize_governance_reference(action.get("governance"))
     normalized.update({
         "id": action_id,
         "app_id": lite_app_registry.normalize_app_id(app_id),
@@ -716,6 +717,7 @@ def _normalize_action(action_id: str, raw_action: Any, *, app_id: str) -> dict[s
         "run_count": run_count,
         "details": _details_payload(action_id, action, app_id=app_id, label=label, status=status, enabled=enabled, summary=summary, result=result, disabled_reason=disabled_reason),
         "troubleshooting": troubleshooting,
+        "governance": governance if len(governance) > 1 else None,
     })
     if not result:
         normalized["result"] = {}
@@ -724,6 +726,8 @@ def _normalize_action(action_id: str, raw_action: Any, *, app_id: str) -> dict[s
         normalized.pop("disabled_reason", None)
     if not normalized.get("reason"):
         normalized.pop("reason", None)
+    if not normalized.get("governance"):
+        normalized.pop("governance", None)
     return normalized
 
 
@@ -756,6 +760,9 @@ def _compact_current_operation(value: Any) -> dict[str, Any] | None:
     progress = value.get("progress") if isinstance(value.get("progress"), dict) else {}
     if progress:
         result["progress"] = _progress_payload(str(value.get("action_id") or "action"), value, str(value.get("status") or "running"))
+    governance = lite_app_governance.sanitize_governance_reference(value.get("governance"))
+    if len(governance) > 1:
+        result["governance"] = governance
     return result or None
 
 

@@ -15,6 +15,9 @@ export const liteQueryKeys = {
   activitySummary: () => ['lite', 'system', 'activity-summary'],
   catalog: () => ['lite', 'catalog'],
   appActions: (appId = 'photoprism') => ['lite', 'app', String(appId || 'photoprism').toLowerCase(), 'actions'],
+  appResource: (appId = '') => ['lite', 'app', String(appId || '').toLowerCase(), 'resource'],
+  appCredentials: (appId = '') => ['lite', 'app', String(appId || '').toLowerCase(), 'credential-status'],
+  appRecovery: (appId = '') => ['lite', 'app', String(appId || '').toLowerCase(), 'recovery'],
   fleet: () => ['lite', 'fleet'],
   device: (deviceId = '') => ['lite', 'fleet', 'device', String(deviceId || '')],
   deviceHealth: (deviceId = '') => ['lite', 'fleet', 'device-health', String(deviceId || '')],
@@ -64,6 +67,9 @@ export const liteQueryPaths = {
   activitySummary: '/api/lite/system/activity-summary',
   catalog: '/api/lite/catalog',
   appActions: (appId = 'photoprism') => `/api/lite/apps/${encodeURIComponent(appId || 'photoprism')}/actions`,
+  appResource: (appId = '') => `/api/lite/apps/${encodeURIComponent(appId || '')}/resource`,
+  appCredentials: (appId = '') => `/api/lite/apps/${encodeURIComponent(appId || '')}/credentials`,
+  appRecovery: (appId = '') => `/api/lite/apps/${encodeURIComponent(appId || '')}/recovery`,
   fleet: '/api/lite/fleet',
   device: (deviceId = '') => `/api/lite/devices/${encodeURIComponent(deviceId || '')}`,
   deviceHealth: (deviceId = '') => `/api/lite/devices/${encodeURIComponent(deviceId || '')}/health`,
@@ -127,3 +133,13 @@ export function createLiteQueryClient() {
 }
 
 export const liteQueryClient = createLiteQueryClient();
+
+
+export function invalidateLiteAppResourceQueries() {
+  return liteQueryClient.invalidateQueries({
+    predicate: (query) => {
+      const key = Array.isArray(query?.queryKey) ? query.queryKey : [];
+      return key[0] === 'lite' && key[1] === 'app' && key[3] === 'resource';
+    },
+  });
+}

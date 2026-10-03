@@ -1633,6 +1633,14 @@ export function getLiteDeviceMutationInvalidations(actionId = '', result = {}) {
     || ['add_device', 'remove_device', 'restart_agent', 'update_device_model'].includes(normalized)
   );
   if (statusChanged) keys.push(['lite', 'status']);
+  const placementChanged = Boolean(
+    result?.capabilities_changed
+    || result?.device_capabilities_changed
+    || result?.role_changed
+    || result?.device_role_changed
+    || ['device_role_change', 'change_device_role', 'update_device_role'].includes(normalized)
+  );
+  if (placementChanged) keys.push(['lite', 'app']);
   return keys;
 }
 
@@ -3247,4 +3255,68 @@ export function getLiteRecoveryMutationInvalidations(actionId = '', result = {})
     keys.push(['lite', 'recovery', 'history']);
   }
   return keys;
+}
+
+
+export function selectAppResourceView(payload = {}) {
+  if (!isObject(payload)) return null;
+  const authority = isObject(payload.authority) ? payload.authority : {};
+  const recovery = isObject(payload.recovery) ? payload.recovery : {};
+  const credentials = isObject(payload.credentials) ? payload.credentials : {};
+  const actions = (Array.isArray(authority.actions) ? authority.actions : []).slice(0, 24).map((item) => ({
+    action_id: safeString(item?.action_id || ''),
+    label: safeString(item?.label || ''),
+    mode: safeString(item?.mode || 'deny'),
+    allowed: Boolean(item?.allowed),
+    requires_approval: Boolean(item?.requires_approval),
+    requires_temporary_access: Boolean(item?.requires_temporary_access),
+    temporary_access_supported: Boolean(item?.temporary_access_supported),
+    temporary_access_active: Boolean(item?.temporary_access_active),
+    temporary_access_expires_at: safeString(item?.temporary_access_expires_at || ''),
+    requires_step_up: Boolean(item?.requires_step_up),
+    required_capability: safeString(item?.required_capability || ''),
+  }));
+  const credentialItems = (Array.isArray(credentials.credentials) ? credentials.credentials : []).slice(0, 12).map((item) => ({
+    credential_id: safeString(item?.credential_id || ''),
+    label: safeString(item?.label || 'App credential'),
+    purpose: safeString(item?.purpose || ''),
+    required: Boolean(item?.required),
+    management: safeString(item?.management || 'external_or_manual'),
+    status: safeString(item?.status || 'external_manual'),
+    last_verified_at: safeString(item?.last_verified_at || ''),
+  }));
+  return {
+    resource_type: payload.resource_type === 'app' ? 'app' : '',
+    app_id: safeString(payload.app_id || ''),
+    app_label: safeString(payload.app_label || ''),
+    authority: {
+      mode: safeString(authority.mode || ''),
+      role: safeString(authority.role || ''),
+      summary: safeString(authority.summary || ''),
+      actions,
+    },
+    recovery: {
+      backup_supported: Boolean(recovery.backup_supported),
+      restore_preview_supported: Boolean(recovery.restore_preview_supported),
+      restore_apply_supported: Boolean(recovery.restore_apply_supported),
+      protected_user_data_excluded: recovery.protected_user_data_excluded !== false,
+      credential_rebinding_required: Boolean(recovery.credential_rebinding_required),
+      recovery_ready: Boolean(recovery.recovery_ready),
+      recovery_blockers: (Array.isArray(recovery.recovery_blockers) ? recovery.recovery_blockers : []).slice(0, 6).map((item) => safeString(item)).filter(Boolean),
+      credential_backup_policy: isObject(recovery.credential_backup_policy)
+        ? copySafeKeys(recovery.credential_backup_policy, ['app_backup', 'workspace_database', 'secret_material'])
+        : null,
+      summary: safeString(recovery.summary || ''),
+    },
+    credential_status: {
+      credential_required: Boolean(credentials.credential_required),
+      configured: Boolean(credentials.configured),
+      missing: Boolean(credentials.missing),
+      needs_rotation: Boolean(credentials.needs_rotation),
+      summary: safeString(credentials.summary || ''),
+      items: credentialItems,
+      secret_values_exposed: false,
+    },
+    updated_at: safeString(payload.updated_at || ''),
+  };
 }

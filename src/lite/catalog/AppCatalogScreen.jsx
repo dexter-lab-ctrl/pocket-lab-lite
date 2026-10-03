@@ -33,7 +33,7 @@ import { useLiteServiceWorkerUpdateBlocker } from '../../hooks/useLiteServiceWor
 import { formatLiteTime, liteApi } from '../../lib/liteApi.js';
 import { createLiteFeedbackDeduper } from '../../lib/liteNativeFeedback.js';
 import { liteQueryKeys, liteQueryPaths } from '../../lib/liteQueryClient.js';
-import { isLiteAppActionsViewLive, selectAppActionsView, selectCanonicalAppState, selectCatalogSummaryView, selectPhotoPrismActionsView } from '../../lib/liteViewModels.js';
+import { isLiteAppActionsViewLive, selectAppActionsView, selectAppResourceView, selectCanonicalAppState, selectCatalogSummaryView, selectPhotoPrismActionsView } from '../../lib/liteViewModels.js';
 import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LiteRefreshButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from '../LiteUi.jsx';
 import { LiteConsequenceSummary, LiteEmptyState, LiteFreshness } from '../LiteUx.jsx';
 import { useLiteUiStore } from '../../stores/liteUiStore.js';
@@ -2007,6 +2007,7 @@ function CatalogManagePortal({
   setStoragePreviewNotice,
   photoBackupDevices,
   photoBackupSummary,
+  appResource,
 }) {
   const appKey = catalogAppKey(app);
   const manageAppOpen = useLiteUiStore((state) => state.manageAppId === appKey);
@@ -2109,6 +2110,25 @@ function CatalogManagePortal({
   const activeAppActionGroups = manageViewModel
     ? groupAppActions(appActionEntries, manageSection)
     : [];
+  const appAuthority = appResource?.authority || {};
+  const credentialStatus = appResource?.credential_status || {};
+  const appRecovery = appResource?.recovery || {};
+  const enterpriseAccess = appAuthority.mode === 'enterprise';
+  const approvalRequired = (appAuthority.actions || []).some((item) => item?.requires_approval);
+  const temporaryAccessRequired = (appAuthority.actions || []).some((item) => item?.requires_temporary_access);
+  const blockedByRules = (appAuthority.actions || []).length > 0
+    && !(appAuthority.actions || []).some((item) => item?.allowed || item?.requires_approval || item?.temporary_access_supported);
+  const accessSummary = blockedByRules
+    ? 'Access is blocked by Rules.'
+    : approvalRequired
+      ? 'Some app changes need approval.'
+      : temporaryAccessRequired
+        ? 'Some app changes need temporary access.'
+        : appAuthority.summary || 'App access follows current Safety Rules.';
+  const showAccessSafety = enterpriseAccess
+    || credentialStatus.missing
+    || credentialStatus.needs_rotation
+    || (appRecovery.recovery_blockers || []).length > 0;
 
   return createPortal(
     <div
@@ -2197,6 +2217,17 @@ function CatalogManagePortal({
               <div className="lite-catalog-manage-quick-actions" aria-label="Quick app actions">
                 <LiteButton onClick={(event) => { stopGestureEvent(event); openAppFullScreen(app, event); }} disabled={!canOpen} tone="secondary"><ExternalLink className="h-4 w-4" />Open full screen</LiteButton>
               </div>
+              {showAccessSafety ? (
+                <StateSurface
+                  tone={blockedByRules || credentialStatus.missing ? 'degraded' : approvalRequired || credentialStatus.needs_rotation || (appRecovery.recovery_blockers || []).length ? 'review' : 'neutral'}
+                  title={enterpriseAccess ? 'Access & safety' : 'App readiness'}
+                  description={[
+                    enterpriseAccess ? accessSummary : '',
+                    credentialStatus.missing ? 'A required app credential is missing.' : credentialStatus.needs_rotation ? 'An app credential needs rotation.' : '',
+                    (appRecovery.recovery_blockers || [])[0] || '',
+                  ].filter(Boolean).join(' ')}
+                />
+              ) : null}
               <div className="lite-catalog-manage-section-tabs" role="tablist" aria-label="Manage app sections">
                 {MANAGE_SECTION_ORDER.map((sectionId) => (
                   <LiteManageSectionTab
@@ -2333,6 +2364,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   });
   const setManageApp = useLiteUiStore((state) => state.setManageApp);
   const clearManageApp = useLiteUiStore((state) => state.clearManageApp);
+  const manageAppId = useLiteUiStore((state) => state.manageAppId || '');
   const longPressRef = useRef(null);
   const catalogFeedbackDeduper = useRef(createLiteFeedbackDeduper());
   const initiatedCatalogOperations = useRef(new Map());
@@ -2391,6 +2423,16 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     select: selectAppActionsView,
     snapshotSelect: selectAppActionsView,
   });
+  const { data: managedAppResource } = useLiteQuery({
+    queryKey: liteQueryKeys.appResource(manageAppId || 'none'),
+    path: manageAppId ? liteQueryPaths.appResource(manageAppId) : null,
+    queryFn: () => liteApi.appResource(manageAppId),
+    enabled: Boolean(manageAppId),
+    pollingMode: 'relaxed',
+    staleTime: 20_000,
+    select: selectAppResourceView,
+    refetchOnWindowFocus: false,
+  });
   const { data: mediaBackupData } = useLiteQuery({
     queryKey: ['lite', 'media-backup'],
     path: '/api/lite/media-backup',
@@ -2431,6 +2473,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     invalidateForAction: ({ appId }) => [
       liteQueryKeys.catalog(),
       appId ? liteQueryKeys.appActions(appId) : null,
+      appId ? liteQueryKeys.appResource(appId) : null,
     ],
   });
   useLiteServiceWorkerUpdateBlocker('app-catalog-workflow', Boolean(
@@ -3147,6 +3190,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             setStoragePreviewNotice={setStoragePreviewNotice}
             photoBackupDevices={photoBackupDevices}
             photoBackupSummary={photoBackupSummary}
+            appResource={manageAppId === catalogAppKey(app) ? managedAppResource : null}
           />
         ) : null}
         <div className="lite-catalog-meta lite-catalog-meta-grid">

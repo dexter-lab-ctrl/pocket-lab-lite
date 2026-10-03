@@ -439,6 +439,25 @@ tasks:
     cmds:
       - npm run test:unit
 
+
+  lite:test:app-governance:
+    desc: Run focused Universal App Platform governance backend and frontend source contracts
+    deps: [lite:dev:scratch:prepare]
+    cmds:
+      - >-
+        PYTHONPATH=tests:pocket-lab-final-structure/runtime
+        PYTEST_DISABLE_PLUGIN_AUTOLOAD=1
+        PYTHONFAULTHANDLER=1
+        {{.PYTHON}} -m pytest -q
+        tests/backend/test_lite_app_registry.py
+        tests/backend/test_lite_app_governance.py
+        tests/backend/test_lite_app_governance_integration.py
+        tests/backend/test_lite_app_governance_continuations.py
+        tests/backend/test_lite_app_governance_source_guards.py
+        tests/backend/test_lite_policy_approvals_p3_1.py
+      - npm run test:unit -- src/lib/liteAppGovernance.test.js
+
+
   lite:test:ux:maturity:
     desc: Run the repository-owned Pocket Lab Lite UX maturity contract and mocked cross-tab qualification
     cmds:

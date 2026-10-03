@@ -4,6 +4,7 @@ import { Activity, FileCheck2, FileSearch, FlaskConical, HeartPulse, History, Sh
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { liteEnterpriseApi } from '../lib/liteEnterpriseApi.js';
+import { invalidateLiteAppResourceQueries } from '../lib/liteQueryClient.js';
 import { getLitePasskey } from '../lib/liteWebAuthn.js';
 import {
   getApprovalPresentation,
@@ -84,8 +85,8 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
   const [candidateRevision, setCandidateRevision] = useState('');
   const [policyDraft, setPolicyDraft] = useState({ admin_device_remove_approval: true, operator_device_remove_approval: true, change_summary: '' });
   const [simulationResult, setSimulationResult] = useState(null);
-  const [simulation, setSimulation] = useState({ revision_id: '', action_id: 'catalog.install', target_id: '', mode: 'real_derived', scenario: { confirmed: false, revision_validated: false, protected_server_host: false, assurance_recent: false } });
-  const [exceptionDraft, setExceptionDraft] = useState({ app_id: 'photoprism', device_id: '', human_id: '', reason: '', duration_minutes: 15 });
+  const [simulation, setSimulation] = useState({ revision_id: '', action_id: 'app.install', target_id: '', mode: 'real_derived', scenario: { confirmed: false, revision_validated: false, protected_server_host: false, assurance_recent: false } });
+  const [exceptionDraft, setExceptionDraft] = useState({ app_id: 'photoprism', action_id: 'app.install', device_id: '', human_id: '', reason: '', duration_minutes: 15 });
   const pushToast = useLiteUiStore((state) => state.pushToast);
 
   const access = useLiteResource(liteEnterpriseApi.access, []);
@@ -114,7 +115,7 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
   const activeRevision = health.data?.db_active_revision || '';
   const knownGoodRevision = health.data?.known_good_revision || '';
   const people = exceptions.data?.eligible_people || [];
-  const devices = useMemo(() => (fleet.data?.devices || []).filter((device) => (device?.device_id || device?.id) && !device?.protected_server_host && device?.role !== 'server_host'), [fleet.data]);
+  const devices = useMemo(() => (fleet.data?.devices || []).filter((device) => (device?.device_id || device?.id)), [fleet.data]);
   const enterpriseOverview = useMemo(() => buildLiteEnterpriseRulesOverview({ health: health.data, approvals: approvals.data?.approvals || [], exceptions: exceptions.data?.exceptions || [] }), [health.data, approvals.data, exceptions.data]);
 
   useEffect(() => {
@@ -200,12 +201,18 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
 
   async function activateRevision(revisionId) {
     const result = await execute(`policy:activate:${revisionId}`, () => ownerStepUp('policy.rules.activate', () => liteEnterpriseApi.activateRuleRevision(revisionId)), 'Rules activation requested.', [health.refresh, revisions.refresh]);
-    if (result?.operation) setActivation(result.operation);
+    if (result?.operation) {
+      setActivation(result.operation);
+      await invalidateLiteAppResourceQueries();
+    }
   }
 
   async function rollbackRules() {
     const result = await execute('policy:rollback', () => ownerStepUp('policy.rules.rollback', () => liteEnterpriseApi.rollbackRules()), 'Known-good Rules restoration requested.', [health.refresh, revisions.refresh]);
-    if (result?.operation) setActivation(result.operation);
+    if (result?.operation) {
+      setActivation(result.operation);
+      await invalidateLiteAppResourceQueries();
+    }
   }
 
   async function refreshActivation() {
@@ -217,7 +224,10 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
   async function resolveUncertainActivation() {
     if (!activation?.operation_id) return;
     const result = await execute('policy:resolve', () => ownerStepUp('policy.rules.activate', () => liteEnterpriseApi.resolveRuleActivation(activation.operation_id)), 'Recovered Rules state proved and recorded.', [health.refresh, revisions.refresh, access.refresh, templates.refresh]);
-    if (result?.operation) setActivation(result.operation);
+    if (result?.operation) {
+      setActivation(result.operation);
+      await invalidateLiteAppResourceQueries();
+    }
   }
 
   async function runSimulation(event) {
@@ -242,7 +252,7 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
       try { return await liteEnterpriseApi.transitionApproval(approval.approval_id, action); }
       catch (firstError) {
         if (action !== 'approve' || (firstError?.status !== 428 && errorCode(firstError) !== 'approval_step_up_required')) throw firstError;
-        const purpose = 'policy.approval.device.remove';
+        const purpose = approval.required_assurance || (approval.action_id === 'app.remove' ? 'policy.approval.app.remove' : 'policy.approval.device.remove');
         setNotice({ title: 'Confirm this review with your passkey', message: 'Independent approval needs recent passkey confirmation from the reviewer.' });
         const options = await liteApi.passkeyStepUpOptions(purpose);
         const credential = await getLitePasskey(options);
@@ -255,12 +265,14 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
 
   async function createException(event) {
     event.preventDefault();
-    await execute('exception:create', () => liteEnterpriseApi.createException({ ...exceptionDraft, duration_minutes: Number(exceptionDraft.duration_minutes) }), 'Temporary access is active for the exact scope and expiry shown.', [exceptions.refresh]);
+    const result = await execute('exception:create', () => liteEnterpriseApi.createException({ ...exceptionDraft, duration_minutes: Number(exceptionDraft.duration_minutes) }), 'Temporary access is active for the exact scope and expiry shown.', [exceptions.refresh]);
+    if (result) await invalidateLiteAppResourceQueries();
     setExceptionDraft((value) => ({ ...value, reason: '' }));
   }
 
   async function revokeException(exceptionId) {
-    await execute(`exception:${exceptionId}:revoke`, () => liteEnterpriseApi.revokeException(exceptionId), 'Temporary access revoked.', [exceptions.refresh]);
+    const result = await execute(`exception:${exceptionId}:revoke`, () => liteEnterpriseApi.revokeException(exceptionId), 'Temporary access revoked.', [exceptions.refresh]);
+    if (result) await invalidateLiteAppResourceQueries();
   }
 
   const policyParameters = templates.data?.effective_parameters || accessData.policy_parameters || {};
@@ -366,7 +378,7 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
       {section === 'exceptions' ? (
         <GlassCard className="lite-rules-card">
           <div className="lite-rules-card-head"><LiteHelpHeading title="Temporary access" helpKey="rules.exceptions" as="h3" /><span className="lite-rules-soft-badge">Narrow + expiring</span></div>
-          {!canReadExceptions ? <RoleUnavailable title="Temporary access is not available to this role" description="Owner/Admin can create or revoke exact exceptions. Auditor can review them. Operator and Viewer do not receive this continuation surface." /> : <><StateSurface tone="neutral" title="Exact scope only" description="Temporary access is bound to one app, one device, one active person, the current Rules revision and at most 60 minutes. Wildcards remain blocked by the server." />{canManageExceptions ? <form onSubmit={createException} className="lite-rules-form-grid mt-4"><label><span>App</span><select value={exceptionDraft.app_id} onChange={(event) => setExceptionDraft((value) => ({ ...value, app_id: event.target.value }))}><option value="photoprism">PhotoPrism</option></select></label><label><span>Device</span><select required value={exceptionDraft.device_id} onChange={(event) => setExceptionDraft((value) => ({ ...value, device_id: event.target.value }))}><option value="">Select a device</option>{devices.map((device) => { const id = device.device_id || device.id; return <option key={id} value={id}>{device.display_name || device.name || 'Pocket Lab device'}</option>; })}</select></label><label><span>Person</span><select required value={exceptionDraft.human_id} onChange={(event) => setExceptionDraft((value) => ({ ...value, human_id: event.target.value }))}><option value="">Select a person</option>{people.map((person) => <option key={person.human_id} value={person.human_id}>{person.display_name} · {person.role}</option>)}</select></label><label><span>Expires in</span><select value={String(exceptionDraft.duration_minutes)} onChange={(event) => setExceptionDraft((value) => ({ ...value, duration_minutes: Number(event.target.value) }))}><option value="5">5 minutes</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="60">60 minutes</option></select></label><label className="lite-rules-form-wide"><span>Reason</span><input required maxLength="240" value={exceptionDraft.reason} onChange={(event) => setExceptionDraft((value) => ({ ...value, reason: event.target.value }))} /></label><LiteButton type="submit" disabled={Boolean(busy) || enterpriseReadOnly || !exceptionDraft.device_id || !exceptionDraft.human_id}>Create temporary access</LiteButton></form> : <StateSurface tone="neutral" title="Read-only temporary access" description="Auditor can review exact scope and lifecycle but cannot create or revoke exceptions." className="mt-3" />}<div className="lite-rules-decision-list mt-4">{(exceptions.data?.exceptions || []).map((exception) => { const state = getLiteStatusPresentation(exception.status); return <div key={exception.exception_id} className="lite-rules-exception-row"><StatusBadge status={state.tone}>{state.label}</StatusBadge><div><strong>{exception.app_id} on {exception.device_id}</strong><span>{exception.reason}</span><small>Expires {formatLiteTime(exception.expires_at)}</small></div>{canManageExceptions && exception.status === 'active' ? <LiteButton variant="secondary" onClick={() => revokeException(exception.exception_id)} disabled={Boolean(busy)}>Revoke</LiteButton> : null}</div>; })}</div>{!exceptions.loading && !(exceptions.data?.exceptions || []).length ? <StateSurface tone="neutral" title="No temporary access" description="No active or recent exact exceptions are recorded." /> : null}</>}
+          {!canReadExceptions ? <RoleUnavailable title="Temporary access is not available to this role" description="Owner/Admin can create or revoke exact exceptions. Auditor can review them. Operator and Viewer do not receive this continuation surface." /> : <><StateSurface tone="neutral" title="Exact scope only" description="Temporary access is bound to one registered app action, one verified target device, one active person, the current Rules revision and at most 60 minutes. Wildcards remain blocked by the server." />{canManageExceptions ? <form onSubmit={createException} className="lite-rules-form-grid mt-4"><label><span>App</span><select value={exceptionDraft.app_id} onChange={(event) => setExceptionDraft((value) => ({ ...value, app_id: event.target.value }))}><option value="photoprism">PhotoPrism</option></select></label><label><span>App action</span><select value={exceptionDraft.action_id} onChange={(event) => setExceptionDraft((value) => ({ ...value, action_id: event.target.value }))}><option value="app.install">Install app</option></select></label><label><span>Device</span><select required value={exceptionDraft.device_id} onChange={(event) => setExceptionDraft((value) => ({ ...value, device_id: event.target.value }))}><option value="">Select a device</option>{devices.map((device) => { const id = device.device_id || device.id; const serverHost = device.protected_server_host || device.role === 'server_host'; return <option key={id} value={id}>{serverHost ? 'Server Host' : device.display_name || device.name || 'Pocket Lab device'}</option>; })}</select></label><label><span>Person</span><select required value={exceptionDraft.human_id} onChange={(event) => setExceptionDraft((value) => ({ ...value, human_id: event.target.value }))}><option value="">Select a person</option>{people.map((person) => <option key={person.human_id} value={person.human_id}>{person.display_name} · {person.role}</option>)}</select></label><label><span>Expires in</span><select value={String(exceptionDraft.duration_minutes)} onChange={(event) => setExceptionDraft((value) => ({ ...value, duration_minutes: Number(event.target.value) }))}><option value="5">5 minutes</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="60">60 minutes</option></select></label><label className="lite-rules-form-wide"><span>Reason</span><input required maxLength="240" value={exceptionDraft.reason} onChange={(event) => setExceptionDraft((value) => ({ ...value, reason: event.target.value }))} /></label><LiteButton type="submit" disabled={Boolean(busy) || enterpriseReadOnly || !exceptionDraft.device_id || !exceptionDraft.human_id}>Create temporary access</LiteButton></form> : <StateSurface tone="neutral" title="Read-only temporary access" description="Auditor can review exact scope and lifecycle but cannot create or revoke exceptions." className="mt-3" />}<div className="lite-rules-decision-list mt-4">{(exceptions.data?.exceptions || []).map((exception) => { const state = getLiteStatusPresentation(exception.status); return <div key={exception.exception_id} className="lite-rules-exception-row"><StatusBadge status={state.tone}>{state.label}</StatusBadge><div><strong>{exception.app_id} · {getLiteRulesActionLabel(exception.action_id) || exception.action_id}</strong><span>{exception.reason}</span><small>{exception.device_id} · Expires {formatLiteTime(exception.expires_at)}</small></div>{canManageExceptions && exception.status === 'active' ? <LiteButton variant="secondary" onClick={() => revokeException(exception.exception_id)} disabled={Boolean(busy)}>Revoke</LiteButton> : null}</div>; })}</div>{!exceptions.loading && !(exceptions.data?.exceptions || []).length ? <StateSurface tone="neutral" title="No temporary access" description="No active or recent exact exceptions are recorded." /> : null}</>}
         </GlassCard>
       ) : null}
     </section>

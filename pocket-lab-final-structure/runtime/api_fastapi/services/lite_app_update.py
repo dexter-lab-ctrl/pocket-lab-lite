@@ -12,7 +12,7 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_adapters, lite_app_backup, lite_app_registry, lite_catalog, lite_catalog_live, lite_security
+from . import lite_app_adapters, lite_app_backup, lite_app_governance, lite_app_registry, lite_catalog, lite_catalog_live, lite_security
 
 SUPPORTED_APP_IDS = frozenset(app_id for app_id in lite_app_adapters.app_ids_for_service("update_readiness") if lite_app_registry.supports(app_id, "update_readiness"))
 APP_LABELS = {app_id: lite_app_registry.app_definition(app_id).name for app_id in SUPPORTED_APP_IDS}
@@ -415,6 +415,7 @@ def record_update_request(command: dict[str, Any]) -> dict[str, Any]:
             ],
         },
         "evidence_ref": f"apps/{app}/update/{_safe_ref(command.get('command_id'), 'latest')}.json",
+        "governance": lite_app_governance.sanitize_governance_reference(command.get("governance")),
     }
     _write_state({"pending_update_check": pending})
     return pending

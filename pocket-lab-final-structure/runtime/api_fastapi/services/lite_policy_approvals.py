@@ -8,12 +8,13 @@ from typing import Any
 
 from ..db.connection import begin_immediate, connection
 from ..db.migrations import apply_migrations
-from . import lite_enterprise_identity
+from . import lite_app_governance, lite_app_registry, lite_enterprise_identity
 
 APPROVAL_PURPOSES = {
     "device.remove": "policy.approval.device.remove",
     "device.invite": "policy.approval.device.invite",
     "device.roles.change": "policy.approval.device.roles.change",
+    "app.remove": "policy.approval.app.remove",
 }
 APPROVAL_ACTIONS = frozenset(APPROVAL_PURPOSES)
 APPROVER_ROLES = frozenset({"Owner", "Admin"})
@@ -176,7 +177,7 @@ def create_from_decision(
     authorization_version: int = 1,
     request_fingerprint: str = "",
 ) -> dict[str, Any]:
-    """Persist one exact delegated continuation for a fleet policy decision."""
+    """Persist one exact delegated continuation for a protected policy decision."""
     apply_migrations()
     safe_role = str(initiating_role or "").strip()
     if safe_role == "Owner":
@@ -195,14 +196,15 @@ def create_from_decision(
                 (str(decision_id)[:120],),
             ).fetchone()
             action_id = str(decision["action_id"] or "") if decision else ""
+            expected_target_type = "app" if action_id.startswith("app.") else "device"
             if (
                 not decision
                 or decision["reason_code"] != "approval_required"
                 or action_id not in APPROVAL_ACTIONS
-                or str(decision["target_type"] or "") != "device"
+                or str(decision["target_type"] or "") != expected_target_type
                 or int(decision["allow"])
             ):
-                raise ApprovalError("approval_provenance_invalid", "Approval requires a real approval-required fleet decision.", 409)
+                raise ApprovalError("approval_provenance_invalid", "Approval requires a real approval-required protected-action decision.", 409)
             existing = tx.execute(
                 "SELECT * FROM policy_approvals WHERE originating_decision_id=?",
                 (decision["decision_id"],),
@@ -222,7 +224,7 @@ def create_from_decision(
                    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (
                     approval_id, decision["decision_id"], decision["correlation_id"], action_id,
-                    "device", decision["target_id"], target_revision, decision["actor_id"], safe_role,
+                    expected_target_type, decision["target_id"], target_revision, decision["actor_id"], safe_role,
                     max(1, int(authorization_version or 1)), fingerprint,
                     json.dumps(sorted(APPROVER_ROLES), separators=(",", ":")), purpose,
                     decision["policy_revision"], "pending", _iso(now),
@@ -237,7 +239,7 @@ def create_from_decision(
                 actor_human_id=decision["actor_id"],
                 event_type="approval.requested",
                 reason_code="approval_required",
-                summary="Independent approval requested for a governed fleet change.",
+                summary="Independent approval requested for an exact governed resource change.",
                 correlation_id=decision["correlation_id"],
             )
             row = tx.execute(
@@ -426,23 +428,74 @@ def consume_matching(
             _event(
                 tx, kind="approval", subject_id=row["approval_id"], actor_human_id=actor_id,
                 event_type="approval.consumed", reason_code="approval_consumed",
-                summary="Approved fleet continuation consumed for one execution attempt.",
+                summary="Approved continuation consumed for one exact execution attempt.",
                 correlation_id=row["correlation_id"],
             )
     return {"approval_id": approval_id, "consumed": True, "initiating_role": role}
 
 
-def matching_exception(*, human_id: str, app_id: str, device_id: str, policy_revision: str) -> str | None:
-    """Resolve a still-active exact exception; callers pass no browser grant flag."""
+def matching_exception(
+    *,
+    human_id: str,
+    action_id: str,
+    app_id: str,
+    device_id: str,
+    required_capability: str,
+    target_revision: str,
+    policy_revision: str,
+) -> str | None:
+    """Resolve a still-active exact app/action/device/contract exception."""
     apply_migrations()
+    semantic = lite_app_governance.semantic_action(action_id)
+    if semantic not in lite_app_governance.TEMPORARY_EXCEPTION_ACTIONS:
+        return None
+    canonical_app = lite_app_registry.app_definition(app_id).id
     with connection() as conn:
         row = conn.execute(
             """SELECT exception_id FROM policy_temporary_exceptions
-               WHERE action_id='catalog.install' AND human_id=? AND app_id=? AND device_id=? AND policy_revision=?
+               WHERE action_id=? AND human_id=? AND app_id=? AND device_id=?
+                 AND required_capability=? AND target_revision=? AND policy_revision=?
                  AND status='active' AND expires_at>? ORDER BY created_at DESC LIMIT 1""",
-            (human_id[:120], app_id[:160], device_id[:160], policy_revision[:80], _iso()),
+            (
+                semantic[:120], human_id[:120], canonical_app[:160], device_id[:160],
+                str(required_capability or "")[:80], str(target_revision or "")[:160],
+                policy_revision[:80], _iso(),
+            ),
         ).fetchone()
     return str(row["exception_id"]) if row else None
+
+
+def active_exception_details(
+    *,
+    human_id: str,
+    action_id: str,
+    app_id: str,
+    device_id: str,
+    required_capability: str,
+    target_revision: str,
+) -> dict[str, Any] | None:
+    """Return the sanitized exact active exception for one current app contract."""
+    try:
+        policy_revision = _active_revision()
+    except ApprovalError:
+        return None
+    exception_id = matching_exception(
+        human_id=human_id,
+        action_id=action_id,
+        app_id=app_id,
+        device_id=device_id,
+        required_capability=required_capability,
+        target_revision=target_revision,
+        policy_revision=policy_revision,
+    )
+    if not exception_id:
+        return None
+    with connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM policy_temporary_exceptions WHERE exception_id=? AND status='active' AND expires_at>?",
+            (exception_id, _iso()),
+        ).fetchone()
+    return _public_exception(row) if row else None
 
 
 def _active_revision() -> str:
@@ -456,22 +509,64 @@ def _active_revision() -> str:
     return revision[:80]
 
 
-def create_exception(*, auth_context: dict[str, Any], app_id: str, device_id: str, human_id: str, reason: str, duration_minutes: int) -> dict[str, Any]:
+def create_exception(
+    *,
+    auth_context: dict[str, Any],
+    app_id: str,
+    device_id: str,
+    human_id: str,
+    reason: str,
+    duration_minutes: int,
+    action_id: str = "app.install",
+) -> dict[str, Any]:
     apply_migrations()
     _, actor_id, _ = _actor_context(auth_context, roles=EXCEPTION_ROLES)
-    safe_app, safe_device, safe_human, safe_reason = str(app_id).strip()[:160], str(device_id).strip()[:160], str(human_id).strip()[:120], str(reason).strip()[:240]
-    if not safe_app or not safe_device or not safe_human or not safe_reason or any(value in {"*", "all", "global"} for value in (safe_app.casefold(), safe_device.casefold(), safe_human.casefold())):
-        raise ApprovalError("exception_scope_invalid", "An exact app, device, requesting identity, and bounded reason are required.", 422)
+    safe_app = lite_app_registry.app_definition(app_id).id
+    safe_action = lite_app_governance.semantic_action(action_id)
+    safe_device = str(device_id).strip()[:160]
+    safe_human = str(human_id).strip()[:120]
+    safe_reason = str(reason).strip()[:240]
+    if safe_action not in lite_app_governance.TEMPORARY_EXCEPTION_ACTIONS:
+        raise ApprovalError("exception_action_invalid", "Temporary access is not supported for that app action.", 422)
+    if not safe_device or not safe_human or not safe_reason or any(value in {"*", "all", "global"} for value in (safe_device.casefold(), safe_human.casefold())):
+        raise ApprovalError("exception_scope_invalid", "An exact app, action, device, requesting identity, and bounded reason are required.", 422)
     if not 1 <= int(duration_minutes) <= 60:
         raise ApprovalError("exception_expiry_invalid", "Temporary exceptions must expire within 60 minutes.", 422)
+    contract = lite_app_governance.resource_contract(
+        safe_app,
+        safe_action,
+        target_device_id=safe_device,
+        require_placement=True,
+        enforce_placement=True,
+    )
     revision, now = _active_revision(), _now()
     with connection() as conn:
         with begin_immediate(conn) as tx:
             if not tx.execute("SELECT human_id FROM human_identities WHERE human_id=? AND status='active'", (safe_human,)).fetchone():
                 raise ApprovalError("exception_identity_unknown", "The requesting identity is not active.", 404)
             exception_id = "exc-" + uuid.uuid4().hex
-            tx.execute("INSERT INTO policy_temporary_exceptions(exception_id,action_id,app_id,device_id,human_id,policy_revision,reason,created_by_human_id,status,created_at,expires_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)", (exception_id, "catalog.install", safe_app, safe_device, safe_human, revision, safe_reason, actor_id, "active", _iso(now), _iso(now + timedelta(minutes=int(duration_minutes)))))
-            _event(tx, kind="exception", subject_id=exception_id, actor_human_id=actor_id, event_type="exception.created", reason_code="temporary_exception_created", summary="Narrow temporary catalog-install exception created.", correlation_id=exception_id)
+            tx.execute(
+                """INSERT INTO policy_temporary_exceptions(
+                       exception_id,action_id,app_id,device_id,human_id,required_capability,target_revision,
+                       policy_revision,reason,created_by_human_id,status,created_at,expires_at
+                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (
+                    exception_id, safe_action, safe_app, safe_device, safe_human,
+                    str(contract["required_capability"])[:80], str(contract["contract_revision"])[:160],
+                    revision, safe_reason, actor_id, "active", _iso(now),
+                    _iso(now + timedelta(minutes=int(duration_minutes))),
+                ),
+            )
+            _event(
+                tx,
+                kind="exception",
+                subject_id=exception_id,
+                actor_human_id=actor_id,
+                event_type="exception.created",
+                reason_code="temporary_exception_created",
+                summary="Narrow temporary app-action access created.",
+                correlation_id=exception_id,
+            )
             row = tx.execute("SELECT * FROM policy_temporary_exceptions WHERE exception_id=?", (exception_id,)).fetchone()
     return {"exception": _public_exception(row)}
 
@@ -513,6 +608,6 @@ def revoke_exception(*, auth_context: dict[str, Any], exception_id: str) -> dict
             if row["status"] != "active":
                 raise ApprovalError("exception_unusable", "That temporary exception is no longer active.", 409)
             tx.execute("UPDATE policy_temporary_exceptions SET status='revoked',revoked_at=?,revoked_by_human_id=? WHERE exception_id=? AND status='active'", (_iso(), actor_id, row["exception_id"]))
-            _event(tx, kind="exception", subject_id=row["exception_id"], actor_human_id=actor_id, event_type="exception.revoked", reason_code="temporary_exception_revoked", summary="Temporary catalog-install exception revoked.", correlation_id=row["exception_id"])
+            _event(tx, kind="exception", subject_id=row["exception_id"], actor_human_id=actor_id, event_type="exception.revoked", reason_code="temporary_exception_revoked", summary="Temporary app-action access revoked.", correlation_id=row["exception_id"])
             updated = tx.execute("SELECT * FROM policy_temporary_exceptions WHERE exception_id=?", (row["exception_id"],)).fetchone()
     return {"exception": _public_exception(updated)}
