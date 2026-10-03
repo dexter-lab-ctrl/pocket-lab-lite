@@ -2634,7 +2634,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       rememberCatalogOperation(response, 'install_app');
       setResult(response);
       await refresh();
-      await refreshAppActions(app.id || 'photoprism');
+      await refreshAppActions(app.id);
     } catch (err) {
       setActionError(err.message);
     } finally {
@@ -2795,7 +2795,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     if (!app?.id || !actionId) return;
     if (['connect_photos', 'import_photos'].includes(actionId) && !isPhotoPrismApp(app)) return;
     const flowAction = actionFromSnapshot(actionSnapshots[appSnapshotKey(app)] || null, actionId, lifecycleAction(lifecycleProfile(app), actionId));
-    appActionFlow.review({ appId: app.id || 'photoprism', actionId, actionLabel: flowAction?.label, risk: flowAction?.risk, destructive: flowAction?.destructive, confirmationRequired: flowAction?.confirmation_required || actionId === 'remove_app', disabledReason: flowAction?.disabled_reason || flowAction?.reason });
+    appActionFlow.review({ appId: app.id, actionId, actionLabel: flowAction?.label, risk: flowAction?.risk, destructive: flowAction?.destructive, confirmationRequired: flowAction?.confirmation_required || actionId === 'remove_app', disabledReason: flowAction?.disabled_reason || flowAction?.reason });
     const flowSubmit = appActionFlow.submit({ actionId, confirmed: Boolean(extraPayload.confirm), confirmationRequired: flowAction?.confirmation_required || actionId === 'remove_app', destructive: flowAction?.destructive });
     if (!flowSubmit.ok) { setActionError(flowSubmit.reason); return; }
     const busyKey = `${app.id}:${actionId}`;
@@ -2803,7 +2803,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     setActionError(null);
     setResult({ status: 'queued', action_id: actionId, summary: 'Sending app action to Pocket Lab...' });
     try {
-      const appId = app.id || 'photoprism';
+      const appId = app.id;
       const response = await appActionMutation.run({
         appId,
         actionId,
@@ -2940,9 +2940,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           ...importPhotosAction,
           enabled: false,
           status: 'imported',
-          summary: 'Photos are already imported. PhotoPrism will handle new photos.',
-          disabled_reason: 'Photos are already imported. PhotoPrism will handle new photos.',
-          reason: 'Photos are already imported. PhotoPrism will handle new photos.',
+          summary: isPhotoPrismApp(app) ? 'Photos are already imported. PhotoPrism will handle new photos.' : 'Media import is already complete.',
+          disabled_reason: isPhotoPrismApp(app) ? 'Photos are already imported. PhotoPrism will handle new photos.' : 'Media import is already complete.',
+          reason: isPhotoPrismApp(app) ? 'Photos are already imported. PhotoPrism will handle new photos.' : 'Media import is already complete.',
         } : importPhotosAction,
         busyKey: actionBusyKey,
         progress: importProgress,
@@ -2950,7 +2950,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         onClick: (event) => runLifecycleAction(app, 'import_photos', event),
         disabled: isPhotosImported || importPhotosAction.enabled !== true || actionBusyKey === `${app.id}:import_photos`,
         title: isPhotosImported
-          ? 'Photos are already imported. PhotoPrism will handle new photos.'
+          ? (isPhotoPrismApp(app) ? 'Photos are already imported. PhotoPrism will handle new photos.' : 'Media import is already complete.')
           : lifecycleActionReason(importPhotosAction),
         result,
       },
@@ -3267,16 +3267,24 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         <GlassCard className="lite-catalog-remove-confirm" role="dialog" aria-label="Confirm remove">
           <div>
             <span>Confirm remove</span>
-            <h2>Remove PhotoPrism?</h2>
-            <p>This removes PhotoPrism from this Pocket Lab when removal is available. Your photo files and existing backups stay protected.</p>
+            <h2>Remove {removeConfirmApp.name || 'this app'}?</h2>
+            <p>
+              This removes {removeConfirmApp.name || 'the app'} from this Pocket Lab when removal is available.
+              Protected user data and existing backups are preserved by default.
+            </p>
           </div>
           <LiteConsequenceSummary value={{
-            title: 'Before PhotoPrism is removed',
+            title: `Before ${removeConfirmApp.name || 'this app'} is removed`,
             summary: 'Review the effect on this app before continuing.',
-            will: ['Remove the PhotoPrism app service and its Pocket Lab access route when removal is available.'],
-            willNot: ['Delete your photo files.', 'Delete existing backups by default.'],
-            reversible: 'Reinstalling the app can restore the app service. Your data protection depends on the backups you keep.',
-            availability: 'PhotoPrism will be unavailable after removal until it is installed again.',
+            will: [`Remove the ${removeConfirmApp.name || 'app'} service and its Pocket Lab access route when removal is available.`],
+            willNot: [
+              appSupports(removeConfirmApp, 'media_sources') ? 'Delete connected media files by default.' : 'Delete protected user data by default.',
+              'Delete existing backups by default.',
+            ],
+            reversible: appSupports(removeConfirmApp, 'install')
+              ? 'Reinstalling the app can restore the app service. Recovery depends on the backups you keep.'
+              : 'Recovery depends on the app-specific recovery capabilities and backups you keep.',
+            availability: `${removeConfirmApp.name || 'The app'} will be unavailable after removal until it is installed or recovered again.`,
           }} />
           <div className="lite-catalog-remove-confirm-actions">
             <LiteButton tone="danger" onClick={(event) => confirmRemoveApp(removeConfirmApp, event)}>Confirm remove</LiteButton>
