@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 
 from fastapi import HTTPException
 
-from . import lite_app_adapters, lite_app_backup, lite_app_backup_targets, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_app_registry, lite_app_update, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media, lite_security
+from . import lite_app_adapters, lite_app_backup, lite_app_backup_targets, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_app_registry, lite_app_update, lite_catalog, lite_catalog_live, lite_security
 
 SUPPORTED_APP_IDS = frozenset(lite_app_adapters.app_ids_for_service("actions"))
 SUPPORTED_ACTIONS = frozenset(
@@ -444,7 +444,7 @@ def _merge_canonical_media(live_media: Any, saved_media: Any) -> dict[str, Any]:
         return merged
     return {**saved, **live}
 
-def _apply_import_photos_truth(actions: dict[str, Any], media: Any) -> None:
+def _apply_import_photos_truth(actions: dict[str, Any], media: Any, *, app_id: str = "photoprism") -> None:
     """Keep current import readiness separate from historical completion."""
     action = actions.get("import_photos")
     if not isinstance(action, dict) or not isinstance(media, dict):
@@ -460,7 +460,8 @@ def _apply_import_photos_truth(actions: dict[str, Any], media: Any) -> None:
             "reason": "Import photos is already running.",
         })
         return
-    if lite_photoprism_media.live_phone_import_blocked():
+    adapter = lite_app_adapters.adapter_for(app_id)
+    if adapter.media_import_blocked():
         action.update({
             "enabled": False,
             "status": "not_ready",
@@ -545,7 +546,7 @@ def _ensure_action_contract(
             install["reason"] = install["disabled_reason"]
 
     _apply_connect_photos_truth(actions, media)
-    _apply_import_photos_truth(actions, media)
+    _apply_import_photos_truth(actions, media, app_id=app_id)
 
 
 def _details_payload(
@@ -743,8 +744,9 @@ def app_actions(app_id: str) -> dict[str, Any]:
     for action_id, action in raw_actions.items():
         if action_id in lite_app_registry.registered_action_ids(app_id):
             actions[action_id] = _normalize_action(action_id, action, app_id=app_id)
+    adapter = lite_app_adapters.adapter_for(app_id)
     live_media = profile.get("media") or (
-        lite_photoprism_media.media_status(app_id)
+        adapter.media_status()
         if lite_app_registry.supports(app_id, "media_sources")
         else {}
     )
@@ -814,9 +816,12 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
 
     # Destructive and target-specific actions validate their own preconditions so
     # callers get precise, safe reasons such as confirmation_required or target_not_ready.
+    adapter = lite_app_adapters.adapter_for(app_id)
     if action == "remove_app":
-        response = lite_photoprism_lifecycle.remove_not_implemented(payload)
-        return {"kind": "remove_not_implemented", "response": response, "summary": response.get("summary")}
+        prepared = adapter.prepare_special_action(action, payload, reason)
+        if prepared is None:
+            raise HTTPException(status_code=501, detail={"status": "not_implemented", "app_id": app_id, "action_id": action, "summary": "This app has no remove handler."})
+        return prepared
 
     if action == "backup_to_storage":
         response = lite_app_backup.backup_to_storage_readiness(
@@ -855,15 +860,11 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
         }
 
     if action == "connect_photos":
-        return {
-            "kind": "guidance",
-            "status": "ready",
-            "accepted": False,
-            "app_id": app_id,
-            "action_id": action,
-            "label": action_profile.get("label"),
-            "summary": "Use the media folder buttons to connect phone photos safely.",
-        }
+        prepared = adapter.prepare_special_action(action, payload, reason)
+        if prepared is None:
+            raise HTTPException(status_code=501, detail={"status": "not_implemented", "app_id": app_id, "action_id": action, "summary": "This app has no media connection handler."})
+        prepared.setdefault("label", action_profile.get("label"))
+        return prepared
 
     if action == "backup_app":
         command = lite_app_backup.app_backup_command(app_id, mode="config_only", reason=reason)
@@ -899,13 +900,13 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
             "summary": f"Repairing {lite_app_registry.app_definition(app_id).name} safely.",
         }
 
-    if action == "import_photos":
-        command = lite_photoprism_media.media_command(action, reason=reason)
-        return {"kind": "media", "command": command, "summary": action_profile.get("summary") or f"{action_profile.get('label')} queued."}
-
-    if action == "install_app":
-        command = lite_photoprism_lifecycle.install_command(reason=reason)
-        return {"kind": "install_app", "command": command, "summary": "PhotoPrism install started."}
+    if action in {"import_photos", "install_app"}:
+        prepared = adapter.prepare_special_action(action, payload, reason)
+        if prepared is None:
+            raise HTTPException(status_code=501, detail={"status": "not_implemented", "app_id": app_id, "action_id": action, "summary": "This app has no handler for this action."})
+        if action == "import_photos" and not prepared.get("summary"):
+            prepared["summary"] = action_profile.get("summary") or f"{action_profile.get('label')} queued."
+        return prepared
 
     if action == "update_app":
         command = lite_app_update.update_command(app_id, reason=reason)
