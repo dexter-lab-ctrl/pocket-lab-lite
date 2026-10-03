@@ -22,6 +22,8 @@ class AppAdapter(Protocol):
 
     def embed_origin(self) -> str | None: ...
 
+    def should_probe_live_state(self, app: dict[str, Any]) -> bool: ...
+
     def hydrate_live_state(self, app: dict[str, Any]) -> None: ...
 
     def catalog_payload(self, state: dict[str, Any], access: dict[str, Any]) -> dict[str, Any]: ...
@@ -177,7 +179,14 @@ class PhotoPrismAdapter:
             runtime["embed_allowed"] = False
             actions["open"] = False
 
+    def should_probe_live_state(self, app: dict[str, Any]) -> bool:
+        runtime = app.get("runtime") if isinstance(app.get("runtime"), dict) else {}
+        installed = app.get("status") == "ready" or app.get("install_state") == "installed" or app.get("installed") is True
+        return bool(installed and runtime.get("health") == "healthy")
+
     def hydrate_live_state(self, app: dict[str, Any]) -> None:
+        if not self.should_probe_live_state(app):
+            return
         route_ready = self.route_ready()
         embed_origin = self.embed_origin() if route_ready else None
         self.hydrate_with_readiness(app, route_ready=route_ready, embed_origin=embed_origin)
