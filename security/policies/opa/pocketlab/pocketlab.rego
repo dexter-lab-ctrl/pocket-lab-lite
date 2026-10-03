@@ -208,6 +208,15 @@ semantic_app_action if {
 	}
 }
 
+app_placement_requirement_satisfied if {
+	input.target.state.placement_required == false
+}
+
+app_placement_requirement_satisfied if {
+	input.target.state.placement_required == true
+	input.target.state.placement_ready == true
+}
+
 app_resource_ready if {
 	semantic_app_action
 	authorized_actor
@@ -219,7 +228,7 @@ app_resource_ready if {
 	input.target.state.required_capability != ""
 	input.target.state.capability_supported == true
 	input.target.state.platform_supported == true
-	input.target.state.placement_ready == true
+	app_placement_requirement_satisfied
 	input.target.state.contract_revision == input.target.revision
 	input.target.state.request_fingerprint == input.target.revision
 }

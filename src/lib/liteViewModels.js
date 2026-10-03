@@ -3261,6 +3261,7 @@ export function selectAppResourceView(payload = {}) {
     mode: safeString(item?.mode || 'deny'),
     allowed: Boolean(item?.allowed),
     requires_approval: Boolean(item?.requires_approval),
+    requires_temporary_access: Boolean(item?.requires_temporary_access),
     temporary_access_supported: Boolean(item?.temporary_access_supported),
     requires_step_up: Boolean(item?.requires_step_up),
     required_capability: safeString(item?.required_capability || ''),

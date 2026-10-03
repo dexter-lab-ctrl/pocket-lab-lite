@@ -52,6 +52,16 @@ READ_ONLY_ACTIONS = frozenset({"app.open", "app.credentials.read_status"})
 GOVERNED_ACTIONS = frozenset(set(SEMANTIC_CAPABILITIES) - READ_ONLY_ACTIONS)
 APPROVAL_ACTIONS = frozenset({"app.remove"})
 TEMPORARY_EXCEPTION_ACTIONS = frozenset({"app.install"})
+PLACEMENT_REQUIRED_ACTIONS = frozenset({
+    "app.install",
+    "app.security_check",
+    "app.repair",
+    "app.backup.create",
+    "app.backup.to_storage",
+    "app.restore.preview",
+    "app.update.check",
+    "app.remove",
+})
 ACTION_LABELS = {
     "app.open": "Open app",
     "app.install": "Install app",
@@ -225,10 +235,11 @@ def resource_contract(
     target_device_id: Any = None,
     operation_id: Any = None,
     fleet_payload: dict[str, Any] | None = None,
-    require_placement: bool = False,
+    require_placement: bool | None = None,
 ) -> dict[str, Any]:
     definition = lite_app_registry.app_definition(app_id)
     semantic = semantic_action(action_id)
+    placement_required = semantic in PLACEMENT_REQUIRED_ACTIONS if require_placement is None else bool(require_placement)
     capability = SEMANTIC_CAPABILITIES[semantic]
     supported = capability in definition.capabilities
     if not supported:
@@ -248,7 +259,7 @@ def resource_contract(
         target_device_id=target_device_id,
         fleet_payload=fleet_payload,
     )
-    if require_placement and (not platform_supported or not placement["ready"]):
+    if placement_required and (not platform_supported or not placement["ready"]):
         raise HTTPException(
             status_code=409,
             detail={
@@ -284,6 +295,7 @@ def resource_contract(
         "contract_revision": revision,
         "operation_id": _safe_operation_id(operation_id),
         "target_device_id": str(placement.get("target_device_id") or ""),
+        "placement_required": placement_required,
         "placement": placement,
         "risk": risk,
         "consequence": CONSEQUENCE.get(semantic, "mutation"),
@@ -302,6 +314,7 @@ def policy_target(contract: dict[str, Any]) -> dict[str, Any]:
         "required_capability": contract["required_capability"],
         "capability_supported": bool(contract["capability_supported"]),
         "platform_supported": bool(contract["platform_supported"]),
+        "placement_required": bool(contract.get("placement_required")),
         "placement_ready": bool((contract.get("placement") or {}).get("ready")),
         "placement_reason_code": str((contract.get("placement") or {}).get("reason_code") or ""),
         "target_device_id": contract.get("target_device_id") or "",
@@ -372,8 +385,9 @@ def authority_projection(auth_context: dict[str, Any], *, app_id: Any | None = N
                 "action_id": semantic,
                 "label": ACTION_LABELS[semantic],
                 "mode": mode,
-                "allowed": mode in {"allow", "temporary_access"},
+                "allowed": mode == "allow",
                 "requires_approval": mode == "approval",
+                "requires_temporary_access": mode == "temporary_access",
                 "temporary_access_supported": semantic in TEMPORARY_EXCEPTION_ACTIONS,
                 "requires_step_up": False,
                 "required_capability": capability,
