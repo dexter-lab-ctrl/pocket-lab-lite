@@ -1854,6 +1854,12 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
     if kind in {"url", "guidance"}:
         return {key: value for key, value in action.items() if key != "kind"}
 
+    if kind == "already_installed":
+        response = action.get("response")
+        if isinstance(response, dict):
+            return response
+        raise HTTPException(status_code=500, detail={"status": "invalid_adapter_contract", "summary": "App adapter returned an invalid already-installed response."})
+
     if kind == "backup":
         command = action["command"]
         try:
@@ -2176,19 +2182,48 @@ async def install_lite_catalog_item(payload: LiteCatalogInstallRequest, request:
     app_ref = (payload.app_id or "").strip()
     if not app_ref:
         raise HTTPException(status_code=400, detail="Choose an app to install.")
+
+    app_id = _require_app_service(app_ref, "install")
+    adapter = lite_app_adapters.adapter_for(app_id)
     params = {**payload.params}
     if payload.version:
         params["version"] = payload.version
 
-    command = lite_catalog.install_command(
-        app_ref,
-        payload.target_node_id,
-        requested_by=payload.requested_by,
-        dry_run=payload.dry_run,
-        params=params,
+    prepared = adapter.prepare_special_action(
+        "install_app",
+        {
+            "target_node_id": payload.target_node_id,
+            "requested_by": payload.requested_by,
+            "dry_run": payload.dry_run,
+            "params": params,
+            "version": payload.version,
+        },
+        reason=str(params.get("reason") or "").strip() or None,
     )
-    if command.get("already_installed"):
-        return lite_catalog.already_installed_response(command)
+    if not isinstance(prepared, dict):
+        raise HTTPException(
+            status_code=501,
+            detail={"status": "not_implemented", "app_id": app_id, "summary": "This app has no install handler."},
+        )
+    if prepared.get("kind") == "already_installed":
+        response = prepared.get("response")
+        if isinstance(response, dict):
+            return response
+        raise HTTPException(status_code=500, detail={"status": "invalid_adapter_contract", "summary": "Install adapter returned an invalid already-installed response."})
+    if prepared.get("kind") != "install_app":
+        raise HTTPException(
+            status_code=500,
+            detail={"status": "invalid_adapter_contract", "summary": "Install adapter returned an invalid action kind."},
+        )
+
+    command = prepared.get("command") if isinstance(prepared.get("command"), dict) else None
+    subject = prepared.get("subject")
+    event = prepared.get("event") or "lite.catalog.install.requested"
+    if not command or not subject:
+        raise HTTPException(
+            status_code=500,
+            detail={"status": "invalid_adapter_contract", "summary": "Install adapter did not provide a command and subject."},
+        )
 
     policy_revision = hashlib.sha256(
         json.dumps(
@@ -2206,7 +2241,7 @@ async def install_lite_catalog_item(payload: LiteCatalogInstallRequest, request:
         auth_context=auth_context,
         action_id="catalog.install",
         target_type="app",
-        target_id=str(command.get("app_id") or app_ref),
+        target_id=str(command.get("app_id") or app_id),
         target_revision=policy_revision,
         target={
             "target_node_id": command.get("target_node_id"),
@@ -2217,25 +2252,26 @@ async def install_lite_catalog_item(payload: LiteCatalogInstallRequest, request:
     )
 
     await ensure_worker_execution_ready()
-    lite_catalog.record_install_queued(command)
+    adapter.record_special_action_queued("install_app", command)
     try:
         queued = await submit_domain_command(
-            lite_catalog.COMMAND_SUBJECT,
-            "lite.catalog.install.requested",
+            subject,
+            event,
             command,
-            trace_id=command["operation_id"],
+            trace_id=command.get("operation_id") or command.get("command_id"),
         )
     except Exception:
-        lite_catalog.discard_operation(command["operation_id"])
+        adapter.discard_special_action_queued("install_app", command)
         raise
+
     queued.update(
         {
             "accepted": True,
-            "status": "queued",
-            "operation_id": command["operation_id"],
-            "app_id": lite_catalog.PHOTOPRISM_APP_ID,
-            "target_node_id": command["target_node_id"],
-            "message": "PhotoPrism install started.",
+            "status": queued.get("status") or "queued",
+            "operation_id": command.get("operation_id"),
+            "app_id": command.get("app_id") or app_id,
+            "target_node_id": command.get("target_node_id"),
+            "message": prepared.get("summary") or "App install started.",
             "authorization": {
                 "decision_id": policy_decision.get("decision_id"),
                 "reason_code": policy_decision.get("reason_code"),
