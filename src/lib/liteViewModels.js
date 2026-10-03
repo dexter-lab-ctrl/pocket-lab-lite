@@ -502,10 +502,10 @@ function safeStorageMappings(storage = {}) {
   ]));
 }
 
-function selectLifecycleActions(actions = {}) {
+function selectLifecycleActions(actions = {}, appId = '') {
   if (!isObject(actions)) return {};
   return Object.entries(actions).reduce((selected, [actionId, action]) => {
-    const normalized = normalizeLiteAppAction({ id: actionId, ...(action || {}) }, actionId);
+    const normalized = normalizeLiteAppAction({ app_id: action?.app_id || appId, id: actionId, ...(action || {}) }, actionId);
     if (normalized) selected[actionId] = normalized;
     return selected;
   }, {});
@@ -526,7 +526,7 @@ function selectLifecycleSummary(lifecycle = {}) {
     attention: Array.isArray(lifecycle.attention)
       ? lifecycle.attention.slice(0, 4).map((item) => copySafeKeys(item, ['id', 'title', 'summary', 'status']))
       : [],
-    actions: selectLifecycleActions(lifecycle.actions),
+    actions: selectLifecycleActions(lifecycle.actions, safeString(lifecycle.app_id || '')),
   };
 }
 
