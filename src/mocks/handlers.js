@@ -1204,7 +1204,7 @@ export const handlers = [
     } else if (selected === 'app-governance-temporary-allowed') {
       role = 'Operator';
       summary = 'Temporary access until 11:45 PM.';
-      actions = baseActions.map((item) => item.action_id === 'app.install' ? { ...item, mode: 'allow', allowed: true, temporary_access_supported: true } : item);
+      actions = baseActions.map((item) => item.action_id === 'app.install' ? { ...item, mode: 'temporary_active', allowed: true, requires_temporary_access: false, temporary_access_supported: true, temporary_access_active: true, temporary_access_expires_at: '2026-10-04T00:15:00Z' } : item);
     } else if (selected === 'app-governance-blocked') {
       role = 'Viewer';
       summary = 'Access is blocked by Rules.';
@@ -1244,6 +1244,7 @@ export const handlers = [
         credential_rebinding_required: missingCredential,
         recovery_ready: !recoveryBlocked,
         recovery_blockers: recoveryBlocked ? ['Required storage device is unavailable.'] : [],
+        credential_backup_policy: { app_backup: 'neither', workspace_database: 'metadata_only', secret_material: 'not_stored' },
         summary: recoveryBlocked ? 'Required storage device is unavailable.' : example ? 'Recovery is not supported for this app.' : 'App recovery is ready.',
       },
       updated_at: mockIso(),
@@ -1864,6 +1865,7 @@ export const handlers = [
         credential_rebinding_required: false,
         recovery_ready: selected !== 'app-governance-recovery-blocker',
         recovery_blockers: selected === 'app-governance-recovery-blocker' ? ['Required storage device is unavailable.'] : [],
+        credential_backup_policy: { app_backup: 'neither', workspace_database: 'metadata_only', secret_material: 'not_stored' },
         summary: selected === 'app-governance-recovery-blocker' ? 'Required storage device is unavailable.' : 'App recovery is ready.',
       },
     }));

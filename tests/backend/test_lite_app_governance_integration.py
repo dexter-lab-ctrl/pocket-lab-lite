@@ -345,3 +345,70 @@ def test_sanitized_evidence_link_keeps_actor_reference_but_no_session_material()
     assert link["initiating_actor"] == {"type": "human", "id": "human-owner"}
     assert "session" not in link
     assert "token" not in json.dumps(link).lower()
+
+
+def test_credential_metadata_cannot_claim_backend_secret_management(tmp_path, monkeypatch):
+    state = isolated_state_dir(tmp_path)
+    monkeypatch.setenv("POCKETLAB_LITE_DB_PATH", str(state / "pocketlab-lite.sqlite3"))
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(state))
+    reset_sqlite_path_cache()
+    SQLITE_READS.invalidate()
+    deps.core.SETTINGS = deps.core.Settings(state_dir=state)
+    apply_migrations()
+
+    with pytest.raises(HTTPException):
+        lite_app_credentials.update_metadata(
+            "photoprism",
+            credential_id="app_sign_in",
+            status="configured",
+            management="pocket_lab_metadata",
+        )
+
+
+def test_governance_reference_persistence_is_whitelisted_and_secret_free():
+    value = {
+        "app_id": "photoprism",
+        "semantic_action": "app.backup.create",
+        "operation_id": "app-op-1",
+        "authorization_decision_id": "decision-1",
+        "policy_revision": "policy-1",
+        "contract_revision": "contract-1",
+        "target_device_id": "server",
+        "initiating_actor": {"type": "human", "id": "human-owner", "session_id": "do-not-copy"},
+        "token": "do-not-copy",
+        "password": "do-not-copy",
+    }
+    clean = lite_app_governance.sanitize_governance_reference(value)
+    assert clean["initiating_actor"] == {"type": "human", "id": "human-owner"}
+    rendered = json.dumps(clean).lower()
+    assert "session_id" not in rendered
+    assert "token" not in rendered
+    assert "password" not in rendered
+
+
+def test_recovery_contract_declares_secret_safe_credential_backup_policy(monkeypatch):
+    from api_fastapi.services import lite_app_backup, lite_app_credentials
+
+    monkeypatch.setattr(
+        lite_app_backup,
+        "app_backup_status",
+        lambda app_id: {
+            "backup_supported": True,
+            "restore_preview_supported": True,
+            "restore_apply_supported": False,
+            "profile": {"media_included": False},
+            "latest_backup": None,
+            "storage_target": {},
+        },
+    )
+    monkeypatch.setattr(
+        lite_app_credentials,
+        "credential_status",
+        lambda app_id: {"credentials": [], "secret_values_stored_here": False},
+    )
+    projection = lite_app_governance.recovery_projection("photoprism")
+    assert projection["credential_backup_policy"] == {
+        "app_backup": "neither",
+        "workspace_database": "metadata_only",
+        "secret_material": "not_stored",
+    }
