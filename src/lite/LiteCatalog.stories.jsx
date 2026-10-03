@@ -106,3 +106,60 @@ export const ActionFailedManageOpen = {
   play: async ({ canvasElement }) => openManage(canvasElement),
 };
 export const Mobile320 = createLiteStory('catalog', 'healthy', { viewport: 'mobile360', notes: 'Narrow mobile density guard; exact 320px overflow is covered by Playwright.' });
+
+
+async function expectManageAccessState(canvasElement, expected) {
+  await openManage(canvasElement);
+  const body = within(canvasElement.ownerDocument.body);
+  const dialog = await body.findByRole('dialog', { name: /Manage PhotoPrism/i });
+  await expect(await within(dialog).findByText(expected)).toBeInTheDocument();
+}
+
+export const GovernedFullAccess = {
+  ...createLiteStory('catalog', 'app-governance-full-access', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => expectManageAccessState(canvasElement, /You can manage this app/i),
+};
+
+export const GovernedReadOnly = {
+  ...createLiteStory('catalog', 'app-governance-read-only', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => expectManageAccessState(canvasElement, /Read-only access/i),
+};
+
+export const GovernedApprovalRequired = {
+  ...createLiteStory('catalog', 'app-governance-approval-required', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => expectManageAccessState(canvasElement, /needs approval/i),
+};
+
+export const GovernedTemporaryAccess = {
+  ...createLiteStory('catalog', 'app-governance-temporary-allowed', { viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => expectManageAccessState(canvasElement, /Temporary access until/i),
+};
+
+export const GovernedBlockedByRules = {
+  ...createLiteStory('catalog', 'app-governance-blocked', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => expectManageAccessState(canvasElement, /blocked by Rules/i),
+};
+
+export const GovernedMissingCredential = {
+  ...createLiteStory('catalog', 'app-governance-missing-credential', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => expectManageAccessState(canvasElement, /credential is missing/i),
+};
+
+export const GovernedRecoveryBlocker = {
+  ...createLiteStory('catalog', 'app-governance-recovery-blocker', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => expectManageAccessState(canvasElement, /storage device is unavailable/i),
+};
+
+export const GovernedUnsupportedCapability = {
+  ...createLiteStory('catalog', 'catalog-multi-app', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await expectApps(canvasElement);
+    const cards = canvas.getAllByText('Example App');
+    await expect(cards.length).toBeGreaterThan(0);
+    const manageButtons = await canvas.findAllByRole('button', { name: 'Manage' });
+    await userEvent.click(manageButtons[0]);
+    const body = within(canvasElement.ownerDocument.body);
+    const dialog = await body.findByRole('dialog', { name: 'Manage Example App' });
+    await expect(within(dialog).queryByText(/Back up app|Preview restore|Check app|Repair app/i)).not.toBeInTheDocument();
+  },
+};

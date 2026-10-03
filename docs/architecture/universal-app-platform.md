@@ -2,9 +2,9 @@
 
 ## Status
 
-Source implementation is complete on `feat/universal-app-platform`. Qualification remains separate and is not implied by this status.
+The Universal App Platform foundation lives on `feat/universal-app-platform`. The stacked governance integration on `feat/universal-app-platform-governance-integration` extends that foundation so every registered app can participate in the existing Identity, Rules/OPA, approvals, device-capability, Recovery, Security-evidence, credential-metadata, and audit architecture. Qualification remains separate and is not implied by source-complete status.
 
-The Universal App Platform introduces a repository-owned, fail-closed application registry and backend adapter boundary. PhotoPrism is the first production application migrated to the platform. Existing PhotoPrism installer, media, backup, recovery, and scanner implementations remain app-specific behind that boundary.
+The platform uses a repository-owned, fail-closed application registry and backend adapter boundary. PhotoPrism remains the first production application migrated to the platform. Existing PhotoPrism installer, media, backup, recovery, and scanner implementations remain app-specific behind that boundary; cross-feature governance is generic and registry-derived.
 
 ## Control flow
 
@@ -122,3 +122,213 @@ The branch includes targeted registry tests for:
 - unknown-app fail-closed behavior.
 
 Implementation completeness is distinct from qualification. Repository validation and runtime qualification remain required before merge, but are intentionally not claimed by this document.
+
+
+## Governed app resource model
+
+Every registered app is treated as one canonical Pocket Lab resource. The backend derives the resource envelope from the App Registry; the browser never supplies adapter identity or declared capability truth.
+
+The safe authorization envelope includes:
+
+- `resource_type = app`;
+- canonical registry `app_id` and label;
+- canonical semantic action such as `app.install` or `app.backup.create`;
+- the required declared capability;
+- target device when the action actually executes against a device;
+- registry schema identity and deterministic contract revision;
+- operation/correlation identity;
+- server-derived actor authority;
+- safe consequence/risk metadata.
+
+Unknown apps, malformed IDs, missing capabilities, unsupported platforms, stale target revisions, and required-but-unverified placements fail closed.
+
+Semantic actions preserve compatibility rather than forcing a flag-day rewrite. Existing identifiers such as `catalog.install`, `backup.create`, and `restore.preview` map to canonical app actions before authorization. Legacy routes therefore cannot bypass the app-resource policy boundary.
+
+## Identity & Access
+
+The existing workspace roles remain authoritative:
+
+- Owner;
+- Admin;
+- Operator;
+- Auditor;
+- Viewer.
+
+No second RBAC model is introduced.
+
+In Personal Mode the local Owner keeps direct authority for supported app operations, subject to hard safety guards and any required passkey step-up. No enterprise permissions matrix is added to the default Apps experience.
+
+In Enterprise Mode app-resource authority is projected from the same server-owned role and membership truth used by Identity & Access and Rules. App access is capability-aware and can distinguish direct authority, independent approval, temporary access, or denial.
+
+Owner remains root-equivalent for supported Pocket Lab operations and is never placed into a peer-approval deadlock. Passkey step-up remains separate from independent approval.
+
+## Rules / OPA integration
+
+Protected app mutations use the existing OPA decision path.
+
+OPA input receives only server-derived app facts:
+
+- canonical app ID;
+- semantic action;
+- required capability;
+- platform support;
+- whether placement is required;
+- verified placement state when required;
+- target device identity;
+- deterministic app contract revision;
+- actor role and Enterprise/Personal mode;
+- current operation context and safe consequence metadata.
+
+Rules simulations reuse the same contract builder but do not dispatch adapters, scanner work, NATS commands, PM2 operations, shell commands, or restore application.
+
+The typed policy/template system remains authoritative. The browser does not provide free-form Rego.
+
+## Approvals and temporary access
+
+Independent approvals and temporary access continue to use the existing durable continuation architecture.
+
+App removal approvals bind to:
+
+- initiating actor;
+- semantic action;
+- `resource_type = app`;
+- canonical app ID;
+- deterministic target/contract revision;
+- requester authorization version;
+- policy revision;
+- one-time request fingerprint;
+- expiration.
+
+Temporary app-install access binds to:
+
+- human identity;
+- canonical app ID;
+- exact semantic action;
+- exact device;
+- required capability;
+- app contract revision;
+- policy revision;
+- expiration.
+
+Cross-app, cross-device, stale-policy, stale-contract, expired, and already-consumed continuations do not match.
+
+## Device placement
+
+The registry declares placement requirements; it does not schedule arbitrary workloads.
+
+Supported metadata is bounded to safe concepts such as:
+
+- Server Host only;
+- required verified device capabilities;
+- backup/restore target capabilities.
+
+For runtime-facing app operations, the backend requires authorized **and observed/verified** effective device capabilities. Advertised capabilities alone are not sufficient. Stale role/capability truth remains fail closed.
+
+PhotoPrism remains Server Host only. The integration does not create a Kubernetes-style scheduler and does not permit manifests to carry executable paths, PM2 commands, shell commands, or remote hosts.
+
+Credential metadata management is intentionally not coupled to runtime placement because it does not execute against the app process.
+
+## Backup & Recovery
+
+The generic app recovery contract can project:
+
+- backup support;
+- latest backup;
+- latest verified backup;
+- backup-target readiness;
+- restore-preview support;
+- restore-apply support;
+- protected-user-data exclusions;
+- credential-rebinding expectation;
+- recovery readiness and blockers;
+- sanitized evidence references.
+
+Restore application remains disabled wherever the adapter currently disables it. The governance integration does not activate destructive restore behavior.
+
+Recovery UI consumes summaries and references, not raw backup payloads.
+
+## App credential lifecycle
+
+App credential handling is a backend-owned metadata contract, not a browser secret manager.
+
+The registry can declare bounded credential purposes. SQLite stores only safe metadata such as:
+
+- credential ID/purpose;
+- configured/missing/invalid/needs-rotation state;
+- management mode;
+- last verified time.
+
+The current integration intentionally does **not** store credential values. No password, API key, private key, database URL, OAuth token, restic secret, NATS credential, or equivalent secret is accepted by the credential metadata API or projected to the browser.
+
+Secret-value storage remains deferred until an approved backend secret primitive is integrated. Recovery may indicate that credential rebinding is required, but restore never exposes secret material.
+
+## Security evidence relationship
+
+Security App Check remains adapter-driven. Governance adds relationship metadata rather than scanner duplication.
+
+Where a governed App Check is started, the command/evidence path may carry only sanitized references:
+
+- app ID;
+- semantic action;
+- operation/run ID;
+- authorization decision ID;
+- policy revision;
+- app contract revision;
+- target device ID where applicable.
+
+Scanner target scope remains adapter-owned. Governance never broadens PhotoPrism media/user-data scan scope.
+
+## Audit and evidence chain
+
+The existing durable IDs and SQLite evidence provide the relationship chain:
+
+```text
+human actor
+  -> Rules authorization decision
+  -> approval / temporary access / step-up when applicable
+  -> semantic app action
+  -> operation or command ID
+  -> worker / adapter result
+  -> Security / backup / Recovery evidence
+  -> final app lifecycle projection
+```
+
+No graph database is introduced. UI/API projections expose only sanitized IDs and summaries.
+
+## Frontend projection and state ownership
+
+The browser continues to use:
+
+- TanStack Query for server state;
+- Dexie only for safe read snapshots;
+- Zustand for UI state;
+- XState for established workflows;
+- no offline mutation queue.
+
+Apps stays simple in Personal Mode. Enterprise Mode adds concise Access & Safety summaries under Manage rather than an enterprise matrix on every card.
+
+Identity & Access can show registered app-resource authority using the existing roles surface. Rules lists canonical app actions alongside existing protected actions. Recovery shows per-app recoverability and blockers using existing Recovery patterns.
+
+Mutation invalidation is scoped to the affected app and the cross-feature projections that actually changed. The integration does not add an ad-hoc browser event bus.
+
+## Future app onboarding
+
+A future app integrates with Pocket Lab by adding bounded declarative capabilities and explicit backend adapters. It must not create its own authorization, device-placement, recovery, credential, or policy engine.
+
+Capability absence is a first-class state. A future adapter is not assumed to support media, PROot, credentials, backup, restore preview, Security App Check, update readiness, Server Host placement, or web health semantics.
+
+## Compatibility map
+
+| Existing contract | Canonical governed meaning | Compatibility rule |
+| --- | --- | --- |
+| `catalog.install` | `app.install` | Legacy identifier remains registered but uses the same role/exception boundary |
+| `backup.create` | `app.backup.create` | Existing generic Recovery action remains; app-specific routes use the app semantic action |
+| `restore.preview` | `app.restore.preview` | Existing generic Recovery action remains; app-specific preview is app-scoped |
+| PhotoPrism media/storage routes | adapter specialization | Retained behind explicit PhotoPrism checks |
+| PhotoPrism Server Host placement | app placement declaration | Preserved; no new placement is implied |
+
+## Qualification boundary
+
+Source implementation completeness and executable qualification are intentionally separate.
+
+This branch defines backend, OPA, frontend, Storybook, Playwright, and focused Taskfile coverage for the governed app-resource model. Those checks are **not** evidence of PASS until they are executed in a later qualification session. Server Phone runtime behavior, CI status, performance, accessibility, and release readiness must likewise be qualified separately.

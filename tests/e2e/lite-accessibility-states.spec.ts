@@ -49,6 +49,29 @@ for (const [screenId, scenario, openerName, surfaceSelector] of MANAGE_CASES) {
   });
 }
 
+const APP_GOVERNANCE_MANAGE_CASES = [
+  ['app-governance-read-only', /Read-only access/i],
+  ['app-governance-approval-required', /needs approval/i],
+  ['app-governance-blocked', /blocked by Rules/i],
+  ['app-governance-missing-credential', /credential is missing/i],
+  ['app-governance-recovery-blocker', /storage device is unavailable/i],
+] as const;
+
+for (const [scenario, expected] of APP_GOVERNANCE_MANAGE_CASES) {
+  test(`Apps governed ${scenario} Manage state stays accessible`, async ({ page }) => {
+    await installScenario(page, scenario);
+    await page.goto('/?screen=catalog');
+    await waitForLiteScreenToSettle(page, 'catalog');
+    const opener = page.getByRole('button', { name: /^Manage$/i }).first();
+    await expect(opener).toBeVisible();
+    await opener.click();
+    const dialog = page.getByRole('dialog', { name: /Manage PhotoPrism/i });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText(expected);
+    await expectNoBlockingAxeViolations(page, '[role="dialog"]');
+  });
+}
+
 const ATTENTION_CASES = [
   ['home', 'lifecycle-attention'],
   ['security', 'security-urgent'],
