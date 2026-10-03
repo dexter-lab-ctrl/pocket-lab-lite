@@ -4,6 +4,8 @@ import json
 import os
 import re
 import urllib.request
+import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -261,12 +263,34 @@ class PhotoPrismAdapter:
 
             command = lite_photoprism_lifecycle.install_command(reason=reason)
             return {"kind": "install_app", "command": command, "summary": "PhotoPrism install started."}
-        if action_id in {"check_app", "repair_app"}:
+        if action_id == "check_app":
+            from . import lite_security
+
+            run_id = f"security-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
+            return {
+                "kind": "security_app_check",
+                "subject": lite_security.policy.COMMAND_SUBJECT,
+                "command": {
+                    "run_id": run_id,
+                    "command_id": run_id,
+                    "scope": "local",
+                    "profile": "app",
+                    "app_id": self.app_id,
+                    "reason": reason or "manual app check",
+                    "requested_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+                },
+                "summary": "Checking PhotoPrism safety.",
+            }
+        if action_id == "repair_app":
             from . import lite_app_operations
 
             command = lite_app_operations.command_for_operation(self.app_id, action_id, reason=reason)
-            summary = "Checking PhotoPrism safety." if action_id == "check_app" else "Repairing PhotoPrism safely."
-            return {"kind": action_id, "command": command, "summary": summary}
+            return {
+                "kind": "app_operation",
+                "command": command,
+                "subject": lite_app_operations.subject_for_action(action_id),
+                "summary": "Repairing PhotoPrism safely.",
+            }
         if action_id == "update_app":
             from . import lite_app_update
 
