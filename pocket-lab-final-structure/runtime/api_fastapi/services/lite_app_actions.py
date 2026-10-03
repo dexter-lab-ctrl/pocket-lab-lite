@@ -492,6 +492,7 @@ def _apply_import_photos_truth(actions: dict[str, Any], media: Any) -> None:
 def _ensure_action_contract(
     actions: dict[str, Any],
     *,
+    app_id: str = "photoprism",
     catalog: Any,
     media: Any,
     installed: bool,
@@ -508,7 +509,7 @@ def _ensure_action_contract(
 
     for action_id in ACTION_ORDER:
         if action_id not in actions:
-            actions[action_id] = _normalize_action(action_id, {})
+            actions[action_id] = _normalize_action(action_id, {}, app_id=app_id)
 
     for action_id in ("open", "open_full_screen", "install_to_phone"):
         action = actions[action_id]
@@ -628,7 +629,7 @@ def _details_payload(
     return details
 
 
-def _normalize_action(action_id: str, raw_action: Any) -> dict[str, Any]:
+def _normalize_action(action_id: str, raw_action: Any, *, app_id: str = "photoprism") -> dict[str, Any]:
     action = raw_action if isinstance(raw_action, dict) else {}
     definition = ACTION_DEFINITIONS.get(action_id, {})
     label = _safe_text(action.get("label") or definition.get("label") or action_id.replace("_", " ").title(), "App action")
@@ -649,7 +650,7 @@ def _normalize_action(action_id: str, raw_action: Any) -> dict[str, Any]:
     run_count = _run_count(action, result)
     normalized.update({
         "id": action_id,
-        "app_id": "photoprism",
+        "app_id": lite_app_registry.normalize_app_id(app_id),
         "label": label,
         "category": category,
         "category_label": ACTION_CATEGORY_LABELS.get(category, "App setup"),
@@ -741,7 +742,7 @@ def app_actions(app_id: str) -> dict[str, Any]:
     actions: dict[str, Any] = {}
     for action_id, action in raw_actions.items():
         if action_id in lite_app_registry.registered_action_ids(app_id):
-            actions[action_id] = _normalize_action(action_id, action)
+            actions[action_id] = _normalize_action(action_id, action, app_id=app_id)
     live_media = profile.get("media") or (
         lite_photoprism_media.media_status(app_id)
         if lite_app_registry.supports(app_id, "media_sources")
@@ -778,7 +779,7 @@ def app_actions(app_id: str) -> dict[str, Any]:
         or profile.get("installed")
         or str(profile.get("install_state") or "").startswith("installed")
     )
-    _ensure_action_contract(actions, catalog=catalog, media=media, installed=installed)
+    _ensure_action_contract(actions, app_id=app_id, catalog=catalog, media=media, installed=installed)
     definition = lite_app_registry.app_definition(app_id)
     for action in actions.values():
         if isinstance(action, dict):
