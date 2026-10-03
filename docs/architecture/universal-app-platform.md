@@ -110,18 +110,20 @@ A new app must not be enabled merely by adding display metadata. The registry en
 
 ## Validation
 
-The branch includes targeted registry tests for:
+The branch defines repository-owned source coverage for:
 
-- schema/version projection;
-- unsafe IDs;
-- duplicate IDs;
-- duplicate/invalid routes;
-- secret/shell absence from public metadata;
-- explicit PhotoPrism adapter binding;
-- registry-owned action contracts;
-- unknown-app fail-closed behavior.
+- registry schema/version, unsafe IDs, duplicate IDs/routes, secret/shell absence, adapter binding and unknown-app fail-closed behavior;
+- canonical semantic-action compatibility and app-resource contract derivation;
+- Personal Owner and Enterprise Owner/Admin/Operator/Auditor/Viewer authority;
+- verified placement and capability mismatch handling;
+- exact app approval and temporary-access binding, expiry, stale policy/contract revision and replay rejection;
+- credential metadata redaction and identifier validation;
+- OPA role, approval, temporary-access, resource-mismatch and placement semantics;
+- frontend capability/access/recovery projection and focused invalidation;
+- Storybook governance states and mocked Playwright cross-tab/multi-app isolation already owned by the Universal App Platform test surface;
+- source guards for frontend execution boundaries, secret projection, executable manifest fields and generic-service app hardcoding.
 
-Implementation completeness is distinct from qualification. Repository validation and runtime qualification remain required before merge, but are intentionally not claimed by this document.
+Implementation completeness is distinct from qualification. These checks are **defined but not run in this implementation session**. Repository validation and runtime qualification remain required before merge and are intentionally not claimed by this document.
 
 
 ## Governed app resource model
