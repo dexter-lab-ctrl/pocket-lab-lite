@@ -261,6 +261,22 @@ class PhotoPrismAdapter:
 
             command = lite_photoprism_lifecycle.install_command(reason=reason)
             return {"kind": "install_app", "command": command, "summary": "PhotoPrism install started."}
+        if action_id in {"check_app", "repair_app"}:
+            from . import lite_app_operations
+
+            command = lite_app_operations.command_for_operation(self.app_id, action_id, reason=reason)
+            summary = "Checking PhotoPrism safety." if action_id == "check_app" else "Repairing PhotoPrism safely."
+            return {"kind": action_id, "command": command, "summary": summary}
+        if action_id == "update_app":
+            from . import lite_app_update
+
+            command = lite_app_update.update_command(self.app_id, reason=reason)
+            return {
+                "kind": "update_check",
+                "command": command,
+                "subject": lite_app_update.APP_UPDATE_CHECK_SUBJECT,
+                "summary": "Checking PhotoPrism update readiness.",
+            }
         return None
 
 
