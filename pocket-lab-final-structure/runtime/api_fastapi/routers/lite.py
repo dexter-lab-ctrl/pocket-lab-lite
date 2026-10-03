@@ -1931,7 +1931,7 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
             "backup_id": command["backup_id"],
             "preview_id": command["preview_id"],
             "pending_restore_preview": pending,
-            "summary": "Preparing PhotoPrism restore preview.",
+            "summary": f"Preparing {lite_app_registry.app_definition(command.get('app_id') or app_id).name} restore preview.",
             "progress": {"phase": "queued", "step": "Restore preview queued.", "bounded": True},
             "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
         })
@@ -2933,7 +2933,7 @@ async def check_lite_security(
             "scan_profile": profile,
             "lifecycle_pending": lifecycle_pending,
             "compatibility_pending": compatibility_pending,
-            **({"app_id": app_id, "app_label": "PhotoPrism"} if app_id else {}),
+            **({"app_id": app_id, "app_label": lite_app_registry.app_definition(app_id).name} if app_id else {}),
         }
     )
     _record_security_submission_timing(
