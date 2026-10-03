@@ -311,7 +311,26 @@ def catalog_payload(request: Request | None = None) -> dict[str, Any]:
         payload = adapter.catalog_payload(state, access)
         if not isinstance(payload, dict):
             continue
-        payload.setdefault("platform_contract", lite_app_registry.app_definition(app_id).public_contract())
+        contract = lite_app_registry.app_definition(app_id).public_contract()
+        supported_here = lite_app_registry.platform_supported(app_id)
+        contract["current_platform"] = lite_app_registry.current_platform_id()
+        contract["supported_here"] = supported_here
+        payload.setdefault("platform_contract", contract)
+        if not supported_here:
+            payload["status"] = "unavailable"
+            payload["install_state"] = "unavailable"
+            payload["installed"] = False
+            actions = payload.setdefault("actions", {})
+            for action_id in ("install", "open", "retry", "remove"):
+                actions[action_id] = False
+            access_state = payload.setdefault("access", {})
+            access_state["route_ready"] = False
+            access_state["open_url"] = None
+            access_state["message"] = "This app is not available on this device platform."
+            runtime = payload.setdefault("runtime", {})
+            runtime["health"] = "unavailable"
+            runtime["running"] = False
+            runtime["reachable"] = False
         apps.append(payload)
     return {
         "status": "healthy",
