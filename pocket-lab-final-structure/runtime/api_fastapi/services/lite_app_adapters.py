@@ -30,6 +30,8 @@ class AppAdapter(Protocol):
 
     def security_profile(self) -> dict[str, Any]: ...
 
+    def security_scan_contract(self) -> dict[str, Any]: ...
+
     def backup_profile(self) -> dict[str, Any]: ...
 
     def backup_policy(self) -> dict[str, Any]: ...
@@ -96,6 +98,7 @@ class PhotoPrismAdapter:
         "lifecycle",
         "profiles",
         "security_profile",
+        "security_scan",
         "backup_profile",
         "update_readiness",
     })
@@ -192,6 +195,42 @@ class PhotoPrismAdapter:
         from . import lite_app_profiles
 
         return lite_app_profiles.photoprism_security_profile()
+
+    def security_scan_contract(self) -> dict[str, Any]:
+        return {
+            "app_id": self.app_id,
+            "app_label": self.definition.name,
+            "route": self.definition.route,
+            "health_path": f"{self.definition.route}api/v1/status",
+            "expected_health": {"status": "operational"},
+            "process_name": self.definition.process,
+            "proot_app_path": "opt/photoprism",
+            "proot_binary_path": "usr/local/bin/photoprism",
+            "config_relative": ".pocket_lab/lite/apps/photoprism/config",
+            "backup_relatives": [
+                "state/lite/apps/photoprism/backups",
+                ".pocket_lab/lite/apps/photoprism/backups",
+            ],
+            "extra_excluded_dirs": [
+                ".pocket_lab/lite/apps/photoprism/originals",
+                ".pocket_lab/lite/apps/photoprism/import",
+                ".pocket_lab/lite/apps/photoprism/storage/cache",
+                ".pocket_lab/lite/apps/photoprism/storage/cache/media",
+                ".pocket_lab/lite/apps/photoprism/storage/cache/thumbnails",
+                ".pocket_lab/lite/apps/photoprism/storage/sidecar",
+                ".pocket_lab/lite/apps/photoprism/logs",
+                ".pocket_lab/lite/apps/photoprism/storage/index.db",
+            ],
+            "excluded_groups": [
+                "Photo library/media",
+                "PhotoPrism originals/import folder",
+                "PhotoPrism thumbnails, cache, sidecars, and database",
+            ],
+            "skipped_targets": [
+                "PhotoPrism media and originals",
+                "PhotoPrism database",
+            ],
+        }
 
     def backup_profile(self) -> dict[str, Any]:
         from . import lite_app_profiles
@@ -359,6 +398,7 @@ def validate_adapter_bindings() -> None:
         "catalog": "catalog_payload",
         "lifecycle": "lifecycle_profile",
         "security_profile": "security_profile",
+        "security_scan": "security_scan_contract",
         "backup_profile": "backup_profile",
         "backup": "backup_policy",
         "update_readiness": "update_status",
