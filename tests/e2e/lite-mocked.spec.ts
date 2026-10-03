@@ -785,4 +785,106 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await page.keyboard.press('Escape');
     await expect(manage).toBeFocused();
   });
+
+  test('Apps projects governed access states consistently on desktop and mobile Manage', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mocked-desktop', 'Governed Manage state matrix runs once in Chromium.');
+    const cases = [
+      ['app-governance-full-access', /You can manage this app/i],
+      ['app-governance-read-only', /Read-only access/i],
+      ['app-governance-approval-required', /needs approval/i],
+      ['app-governance-temporary-allowed', /Temporary access until/i],
+      ['app-governance-blocked', /blocked by Rules/i],
+      ['app-governance-missing-credential', /credential is missing/i],
+      ['app-governance-recovery-blocker', /storage device is unavailable/i],
+    ] as const;
+
+    for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 720 }]) {
+      await page.setViewportSize(viewport);
+      for (const [scenario, expected] of cases) {
+        await installScenario(page, scenario);
+        await page.goto('/?screen=catalog');
+        const screen = page.locator('[data-lite-screen-id="catalog"]');
+        await expect(screen).toBeVisible();
+        await screen.getByRole('button', { name: 'Manage', exact: true }).first().click();
+        const dialog = page.getByRole('dialog', { name: /Manage PhotoPrism/i });
+        await expect(dialog).toBeVisible();
+        await expect(dialog).toContainText(expected);
+        expect(await dialog.evaluate((element) => {
+          const rect = element.getBoundingClientRect();
+          return rect.left >= 0 && rect.right <= window.innerWidth + 1;
+        })).toBe(true);
+        await page.keyboard.press('Escape');
+      }
+    }
+  });
+
+  test('governed multi-app projection isolates synthetic app authority and controls', async ({ page }) => {
+    await installScenario(page, 'catalog-multi-app');
+    await page.goto('/?screen=catalog');
+    const screen = page.locator('[data-lite-screen-id="catalog"]');
+    const exampleCard = screen.locator('.lite-catalog-app-card').filter({ hasText: 'Example App' });
+    await expect(exampleCard).toBeVisible();
+    await exampleCard.getByRole('button', { name: 'Manage', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Manage Example App' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).not.toContainText(/Connect photos|Import photos|Back up app|Preview restore|Check app|Repair app|Photo backup/i);
+
+    const resource = await page.evaluate(async () => {
+      const response = await fetch('/api/lite/apps/example-app/resource');
+      return response.json();
+    }) as { app_id: string; authority?: { actions?: Array<{ action_id: string }> } };
+    expect(resource.app_id).toBe('example-app');
+    expect((resource.authority?.actions || []).map((item) => item.action_id)).toEqual(['app.open']);
+  });
+
+  test('Identity app-resource authority and Apps Manage use the shared Enterprise projection', async ({ page }) => {
+    await installScenario(page, 'identity-enterprise-owner');
+    await page.goto('/?screen=identity');
+    const identity = page.locator('[data-lite-screen-id="identity"]');
+    await expect(identity.getByRole('heading', { name: 'Identity & Access governance', exact: true })).toBeVisible();
+    await identity.getByRole('button', { name: 'Roles & access', exact: true }).click();
+    await expect(identity).toContainText('App resources');
+    await expect(identity).toContainText('PhotoPrism');
+    await expect(identity).toContainText(/You can manage this app|Shared authority/i);
+
+    await page.evaluate(() => window.localStorage.setItem('POCKETLAB_MOCK_SCENARIO', 'app-governance-full-access'));
+    await page.goto('/?screen=catalog');
+    const card = page.locator('[data-lite-screen-id="catalog"] .lite-catalog-app-card').filter({ hasText: 'PhotoPrism' }).first();
+    await card.getByRole('button', { name: 'Manage', exact: true }).click();
+    await expect(page.getByRole('dialog', { name: /Manage PhotoPrism/i })).toContainText('You can manage this app');
+  });
+
+  test('Rules app simulation stays what-if only and app recovery blocker projects in Recovery', async ({ page }) => {
+    await installScenario(page, 'identity-enterprise-owner');
+    const executedAppMutations: string[] = [];
+    page.on('request', (request) => {
+      if (request.method() !== 'GET' && /\/api\/lite\/apps\/[^/]+\/(actions|backup|restore|credentials)/.test(request.url())) {
+        executedAppMutations.push(request.url());
+      }
+    });
+
+    await page.goto('/?screen=rules');
+    const rules = page.locator('[data-lite-screen-id="rules"]');
+    await rules.getByRole('button', { name: 'Test a change', exact: true }).click();
+    await expect(rules.getByText('This never executes the real action', { exact: true })).toBeVisible();
+    const protectedAction = rules.getByLabel('Protected action');
+    const options = await protectedAction.locator('option').allTextContents();
+    expect(options.some((label) => /Install app resource|app\.install/i.test(label))).toBe(true);
+    if (await protectedAction.locator('option[value="app.install"]').count()) {
+      await protectedAction.selectOption('app.install');
+      await rules.getByLabel('Target reference').fill('photoprism');
+      await rules.getByRole('button', { name: 'Run simulation', exact: true }).click();
+      await expect(rules).toContainText(/Allowed in this simulation|Blocked in this simulation|Passkey confirmation would be required/i);
+    }
+    expect(executedAppMutations).toEqual([]);
+
+    await page.evaluate(() => window.localStorage.setItem('POCKETLAB_MOCK_SCENARIO', 'app-governance-recovery-blocker'));
+    await page.goto('/?screen=recovery');
+    const recovery = page.locator('[data-lite-screen-id="recovery"]');
+    await recovery.getByRole('button', { name: 'Manage backups and recovery' }).click();
+    const sheet = page.getByRole('dialog', { name: 'Manage backups and recovery' });
+    await expect(sheet).toContainText('Required storage device is unavailable.');
+    await expect(sheet).toContainText('Protected user data is intentionally excluded.');
+  });
+
 });

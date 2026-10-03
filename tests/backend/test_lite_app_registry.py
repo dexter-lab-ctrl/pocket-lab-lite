@@ -33,6 +33,13 @@ def _example(**overrides):
                 "risk": "low",
             }
         },
+        "placement": {
+            "kind": "server_host",
+            "server_host_only": True,
+            "required_device_capabilities": ["app_host", "compute"],
+            "backup_target_capabilities": ["backup_target", "restore_target"],
+        },
+        "credentials": (),
         "presentation": {},
     }
     values.update(overrides)
@@ -241,3 +248,46 @@ def test_synthetic_second_app_proves_multi_app_registry_without_production_enabl
 def test_unknown_app_fails_closed():
     with pytest.raises(Exception):
         lite_app_registry.app_definition("unknown-app")
+
+
+def test_registry_credentials_require_explicit_capability_and_remain_declarative():
+    with pytest.raises(RuntimeError, match="credentials capability"):
+        lite_app_registry.validate_test_definitions(
+            (
+                _example(
+                    credentials=(
+                        {
+                            "id": "app_sign_in",
+                            "label": "App sign-in",
+                            "purpose": "interactive_app_access",
+                            "required": True,
+                            "management": "external_or_manual",
+                        },
+                    ),
+                ),
+            )
+        )
+
+    credential_app = _example(
+        capabilities=frozenset({"open", "credentials"}),
+        credentials=(
+            {
+                "id": "app_sign_in",
+                "label": "App sign-in",
+                "purpose": "interactive_app_access",
+                "required": False,
+                "management": "external_or_manual",
+            },
+        ),
+    )
+    registry = lite_app_registry.validate_test_definitions((credential_app,))
+    assert registry["example-app"].credentials[0]["id"] == "app_sign_in"
+    rendered = registry["example-app"].public_contract()
+    assert rendered["credentials"] == [{
+        "id": "app_sign_in",
+        "label": "App sign-in",
+        "purpose": "interactive_app_access",
+        "required": False,
+        "management": "external_or_manual",
+    }]
+    assert "value" not in repr(rendered["credentials"]).lower()

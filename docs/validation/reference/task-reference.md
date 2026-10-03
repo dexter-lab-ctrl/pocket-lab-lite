@@ -93,6 +93,14 @@ assurance suites.
 | --- | --- | --- | --- |
 | `lite:recovery:database:offline-promote` | `recover-main-database.py` | stopped Server Phone runtime; one consumed recovery receipt | stages only target-main migrations, preserves rollback/journal evidence, and atomically promotes one verified compatible backup |
 
+## Focused Universal App Platform governance check
+
+| Task | Wrapper | Environment | Side effect |
+| --- | --- | --- | --- |
+| `lite:test:app-governance` | focused pytest contracts + Vitest app-resource projection | DEV PC/CI | source/contract validation only; does not contact NATS, PM2, Tailscale, Server Phone, or execute app adapters |
+
+This task covers the registry/resource contract, exact app approval/temporary-access binding, credential-metadata redaction, and focused frontend projection/invalidation behavior. Rego, Storybook, Playwright, full Lite gates, runtime qualification, and Server Phone validation remain separate gates.
+
 ## Return semantics
 
 The assurance CLI preserves distinct terminal meanings: success returns `0`, a
