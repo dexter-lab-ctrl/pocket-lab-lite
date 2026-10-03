@@ -42,6 +42,22 @@ ACTION_DEFINITIONS: dict[str, dict[str, Any]] = {
 }
 
 
+def _action_definition_for(app_id: str, action_id: str) -> dict[str, Any]:
+    definition = lite_app_registry.action_definition(app_id, action_id)
+    if not isinstance(definition, dict):
+        return {}
+    return {
+        **dict(definition),
+        "execution_owner": (
+            "browser_navigation"
+            if action_id in {"open", "open_full_screen", "install_to_phone"}
+            else "fastapi"
+            if action_id == "connect_photos"
+            else "backend_worker"
+        ),
+    }
+
+
 
 ACTION_DETAIL_DEFINITIONS: dict[str, dict[str, Any]] = {
     "open": {
@@ -444,7 +460,7 @@ def _merge_canonical_media(live_media: Any, saved_media: Any) -> dict[str, Any]:
         return merged
     return {**saved, **live}
 
-def _apply_import_photos_truth(actions: dict[str, Any], media: Any, *, app_id: str = "photoprism") -> None:
+def _apply_import_photos_truth(actions: dict[str, Any], media: Any, *, app_id: str) -> None:
     """Keep current import readiness separate from historical completion."""
     action = actions.get("import_photos")
     if not isinstance(action, dict) or not isinstance(media, dict):
@@ -493,7 +509,7 @@ def _apply_import_photos_truth(actions: dict[str, Any], media: Any, *, app_id: s
 def _ensure_action_contract(
     actions: dict[str, Any],
     *,
-    app_id: str = "photoprism",
+    app_id: str,
     catalog: Any,
     media: Any,
     installed: bool,
@@ -566,7 +582,7 @@ def _details_payload(
     result: dict[str, Any],
     disabled_reason: Any,
 ) -> dict[str, Any]:
-    definition = ACTION_DEFINITIONS.get(action_id, {})
+    definition = _action_definition_for(app_id, action_id)
     operation_details = action.get("details") if isinstance(action.get("details"), dict) else {}
     detail_definition = operation_details or ACTION_DETAIL_DEFINITIONS.get(action_id, {})
     if app_id != "photoprism" and detail_definition:
@@ -649,9 +665,9 @@ def _details_payload(
     return details
 
 
-def _normalize_action(action_id: str, raw_action: Any, *, app_id: str = "photoprism") -> dict[str, Any]:
+def _normalize_action(action_id: str, raw_action: Any, *, app_id: str) -> dict[str, Any]:
     action = raw_action if isinstance(raw_action, dict) else {}
-    definition = ACTION_DEFINITIONS.get(action_id, {})
+    definition = _action_definition_for(app_id, action_id)
     label = _safe_text(action.get("label") or definition.get("label") or action_id.replace("_", " ").title(), "App action")
     enabled = bool(action.get("enabled", False))
     status = _normalized_status(action.get("status"), enabled=enabled)
