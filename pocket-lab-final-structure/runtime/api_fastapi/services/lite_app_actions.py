@@ -508,11 +508,16 @@ def _ensure_action_contract(
     access = catalog_map.get("access") if isinstance(catalog_map.get("access"), dict) else {}
     route_ready = bool(access.get("route_ready") and access.get("open_url"))
 
+    registered_actions = lite_app_registry.registered_action_ids(app_id)
     for action_id in ACTION_ORDER:
+        if action_id not in registered_actions:
+            continue
         if action_id not in actions:
             actions[action_id] = _normalize_action(action_id, {}, app_id=app_id)
 
     for action_id in ("open", "open_full_screen", "install_to_phone"):
+        if action_id not in actions:
+            continue
         action = actions[action_id]
         # Browser navigation follows the prepared route/access contract. The
         # saved action projection can lag the live catalog by one refresh and
@@ -553,6 +558,7 @@ def _details_payload(
     action_id: str,
     action: dict[str, Any],
     *,
+    app_id: str,
     label: str,
     status: str,
     enabled: bool,
@@ -563,6 +569,19 @@ def _details_payload(
     definition = ACTION_DEFINITIONS.get(action_id, {})
     operation_details = action.get("details") if isinstance(action.get("details"), dict) else {}
     detail_definition = operation_details or ACTION_DETAIL_DEFINITIONS.get(action_id, {})
+    if app_id != "photoprism" and detail_definition:
+        app_name = lite_app_registry.app_definition(app_id).name
+
+        def replace_app_name(value: Any) -> Any:
+            if isinstance(value, str):
+                return value.replace("PhotoPrism", app_name)
+            if isinstance(value, list):
+                return [replace_app_name(item) for item in value]
+            if isinstance(value, dict):
+                return {key: replace_app_name(item) for key, item in value.items()}
+            return value
+
+        detail_definition = replace_app_name(detail_definition)
     execution_owner = action.get("execution_owner") or definition.get("execution_owner") or "backend_worker"
     result_summary = result.get("summary") if isinstance(result, dict) else None
     disabled_summary = _safe_text(disabled_reason, "") if disabled_reason and not enabled else ""
@@ -670,7 +689,7 @@ def _normalize_action(action_id: str, raw_action: Any, *, app_id: str = "photopr
         "first_ran_at": first_ran_at,
         "last_ran_at": last_ran_at,
         "run_count": run_count,
-        "details": _details_payload(action_id, action, label=label, status=status, enabled=enabled, summary=summary, result=result, disabled_reason=disabled_reason),
+        "details": _details_payload(action_id, action, app_id=app_id, label=label, status=status, enabled=enabled, summary=summary, result=result, disabled_reason=disabled_reason),
         "troubleshooting": troubleshooting,
     })
     if not result:
