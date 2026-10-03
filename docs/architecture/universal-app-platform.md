@@ -91,7 +91,7 @@ Forbidden patterns include:
 - frontend NATS access
 - frontend PM2 or Caddy mutation
 
-Security App Check and backup implementations continue to define their own safe target scope. PhotoPrism user media remains excluded from automatic application scanning and default application backup.
+Security App Check and backup implementations continue to define their own safe target scope. App Check resolves the selected app through its adapter-owned scan contract; route health, app/binary/config targets, backup metadata, action-state evidence, target IDs, and evidence names are derived from that validated contract rather than hardcoded PhotoPrism worker targets. Health probing remains loopback-only and under the app's owned same-origin route. PhotoPrism user media remains excluded from automatic application scanning and default application backup.
 
 ## Adding a future application
 
