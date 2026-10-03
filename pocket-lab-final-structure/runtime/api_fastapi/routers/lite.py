@@ -2951,6 +2951,16 @@ async def check_lite_security(
             headers={"Cache-Control": "no-store", "Retry-After": "30"},
         )
     run_id = lite_security.new_run_id()
+    app_governance_contract = None
+    app_governance_decision = None
+    if app_id:
+        app_governance_contract, app_governance_decision = await _authorize_app_resource(
+            auth_context=auth_context,
+            app_id=app_id,
+            action_id="app.security_check",
+            operation_id=run_id,
+            require_placement=True,
+        )
     reason = payload.reason or (
         "manual app check"
         if profile == lite_security.policy.SCAN_PROFILE_APP
@@ -2972,6 +2982,11 @@ async def check_lite_security(
     except WorkloadAdmissionError as exc:
         await _raise_admission_http_error(exc, "security_scan")
     command = prepared["command"]
+    if app_governance_contract is not None:
+        command["governance"] = lite_app_governance.sanitized_evidence_link(
+            app_governance_contract,
+            app_governance_decision,
+        )
     reservation = prepared["reservation"]
     reservation_timing.update({
         f"stage_{key}": value
@@ -3086,6 +3101,7 @@ async def check_lite_security(
             "lifecycle_pending": lifecycle_pending,
             "compatibility_pending": compatibility_pending,
             **({"app_id": app_id, "app_label": lite_app_registry.app_definition(app_id).name} if app_id else {}),
+            **({"authorization": _app_authorization_summary(app_governance_contract, app_governance_decision)} if app_governance_contract else {}),
         }
     )
     _record_security_submission_timing(
@@ -4637,19 +4653,35 @@ def backup_lite_app_to_target(app_id: str, payload: LiteAppActionRequest, reques
 @router.get("/recovery/apps")
 def get_lite_recovery_apps(request: Request) -> dict[str, Any]:
     deps.require_auth(request)
-    return lite_app_profiles.app_backup_profiles()
+    payload = lite_app_profiles.app_backup_profiles()
+    apps = payload.get("apps") if isinstance(payload, dict) and isinstance(payload.get("apps"), list) else []
+    if isinstance(payload, dict):
+        payload["apps"] = [
+            {**item, "recovery": lite_app_governance.recovery_projection(item.get("app_id"))}
+            for item in apps
+            if isinstance(item, dict) and item.get("app_id")
+        ]
+    return payload
 
 
 @router.get("/recovery/apps/{app_id}")
 def get_lite_recovery_app(app_id: str, request: Request) -> dict[str, Any]:
     deps.require_auth(request)
-    return lite_app_profiles.app_backup_profile(app_id)
+    profile = lite_app_profiles.app_backup_profile(app_id)
+    return {**profile, "recovery": lite_app_governance.recovery_projection(app_id)}
 
 
 @router.post("/recovery/apps/{app_id}/backup", status_code=202)
 async def backup_lite_app(app_id: str, payload: LiteAppBackupRequest, request: Request) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
+    auth_context = deps.require_auth(request, write=True)
     command = lite_app_backup.app_backup_command(app_id, mode=payload.mode, reason=payload.reason)
+    contract, decision = await _authorize_app_resource(
+        auth_context=auth_context,
+        app_id=app_id,
+        action_id="app.backup.create",
+        operation_id=str(command.get("command_id") or command.get("backup_id") or uuid.uuid4().hex),
+    )
+    command["governance"] = lite_app_governance.sanitized_evidence_link(contract, decision)
     try:
         submitted = await submit_domain_command(
             lite_app_backup.APP_BACKUP_CREATE_SUBJECT,
@@ -4676,14 +4708,22 @@ async def backup_lite_app(app_id: str, payload: LiteAppBackupRequest, request: R
         "mode": command["app_backup_mode"],
         "pending_backup": pending,
         "summary": f"{command.get('app_label') or command['app_id']} app backup queued. Adapter-approved safe app records are included; protected user data remains excluded by default.",
+        "authorization": _app_authorization_summary(contract, decision),
     })
     return submitted
 
 
 @router.post("/recovery/apps/{app_id}/restore/preview", status_code=202)
 async def preview_lite_app_restore(app_id: str, payload: LiteAppRestorePreviewRequest, request: Request) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
+    auth_context = deps.require_auth(request, write=True)
     command = lite_app_backup.app_restore_preview_command(app_id, backup_id=payload.backup_id or "latest", reason=payload.reason)
+    contract, decision = await _authorize_app_resource(
+        auth_context=auth_context,
+        app_id=app_id,
+        action_id="app.restore.preview",
+        operation_id=str(command.get("command_id") or command.get("preview_id") or uuid.uuid4().hex),
+    )
+    command["governance"] = lite_app_governance.sanitized_evidence_link(contract, decision)
     submitted = await submit_domain_command(
         lite_app_backup.APP_RESTORE_PREVIEW_SUBJECT,
         "lite.app.restore.preview_queued",
@@ -4701,6 +4741,7 @@ async def preview_lite_app_restore(app_id: str, payload: LiteAppRestorePreviewRe
         "summary": f"Preparing {command.get('app_label') or app_id} restore preview.",
         "progress": {"phase": "queued", "step": "Restore preview queued.", "bounded": True},
         "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
+        "authorization": _app_authorization_summary(contract, decision),
     })
     return submitted
 
