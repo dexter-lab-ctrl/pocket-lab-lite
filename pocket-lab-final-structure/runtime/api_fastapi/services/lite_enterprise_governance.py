@@ -14,7 +14,7 @@ from typing import Any
 from .. import deps
 from ..db.connection import connection
 from ..db.migrations import apply_migrations
-from . import lite_enterprise_identity, lite_policy_lifecycle
+from . import lite_app_governance, lite_enterprise_identity, lite_policy_lifecycle
 
 
 POLICY_TEMPLATE_ID = "enterprise_governance"
@@ -60,7 +60,18 @@ ACTION_CATALOG = (
     ("device.repair", "Repair device agent", "Request a safe agent repair on an enrolled device."),
     ("device.capabilities.read", "Review device capabilities", "Review authorized, observed and verified device capabilities."),
     ("device.remove", "Remove devices", "Retire a confirmed non-server device from Pocket Lab."),
-    ("catalog.install", "Install apps", "Install an approved app through the normal server-owned execution path."),
+    ("catalog.install", "Install apps (compatibility)", "Legacy install identifier mapped to canonical app.install governance."),
+    ("app.open", "Open apps", "Open a registered app through its safe same-origin route."),
+    ("app.install", "Install app resource", "Install a registered app through server-owned execution."),
+    ("app.security_check", "Run App Check", "Run the adapter-bounded Security App Check for a registered app."),
+    ("app.repair", "Repair app resource", "Request bounded adapter-owned app repair."),
+    ("app.backup.create", "Back up app", "Create an app configuration backup with protected user data exclusions."),
+    ("app.backup.to_storage", "Back up app to storage", "Use an authorized verified storage target when supported."),
+    ("app.restore.preview", "Preview app restore", "Preview app recovery without applying changes."),
+    ("app.update.check", "Check app update readiness", "Evaluate update readiness without applying an update."),
+    ("app.remove", "Remove app", "Request confirmed app removal when the adapter supports it."),
+    ("app.credentials.read_status", "Review app credential status", "Read secret-free app credential status metadata."),
+    ("app.credentials.manage", "Manage app credential status", "Manage backend-owned credential metadata without exposing secret values."),
     ("rules.draft", "Draft Rules", "Create a typed immutable Rules candidate for review."),
     ("rules.activate", "Activate Rules", "Activate a validated Rules revision through the supervisor-owned lifecycle."),
     ("rules.rollback", "Restore known-good Rules", "Request restoration of the proved known-good Rules revision."),
@@ -158,6 +169,8 @@ def _topology() -> dict[str, int]:
 
 
 def _mode_for(action: str, role: str, params: dict[str, int]) -> str:
+    if action.startswith("app."):
+        return lite_app_governance.role_mode(role, action, enterprise_enabled=True)
     if role == "Owner":
         if action in {"rules.activate", "rules.rollback", "enterprise.mode.change"}:
             return "step_up"
@@ -250,6 +263,7 @@ def access_projection(auth_context: dict[str, Any]) -> dict[str, Any]:
         "capabilities": _capabilities(role, params),
         "policy_parameters": params,
         "action_matrix": matrix,
+        "app_resources": lite_app_governance.authority_projection(context).get("resources", []),
         "topology": topology,
         "updated_at": _now(),
         "summary": "Owner has complete supported Pocket Lab authority without peer approval." if role == "Owner" else "Your server-resolved role and current Safety Rules determine what you can do.",

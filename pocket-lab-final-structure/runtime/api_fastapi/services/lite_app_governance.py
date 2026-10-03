@@ -13,6 +13,7 @@ from typing import Any
 
 from fastapi import HTTPException
 
+from .. import deps
 from . import lite_app_registry, lite_enterprise_identity
 
 
@@ -339,11 +340,18 @@ def _role_mode(role: str, action: str, *, enterprise_enabled: bool) -> str:
     return "deny"
 
 
+def role_mode(role: str, action: str, *, enterprise_enabled: bool) -> str:
+    return _role_mode(str(role or ""), semantic_action(action), enterprise_enabled=enterprise_enabled)
+
+
 def authority_projection(auth_context: dict[str, Any], *, app_id: Any | None = None) -> dict[str, Any]:
     context = lite_enterprise_identity.enrich_auth_context(auth_context)
     authorization = context.get("authorization") or {}
     role = str(authorization.get("role") or "")
     enterprise_enabled = bool(authorization.get("enterprise_enabled"))
+    if deps.is_qualification_owner_context(context):
+        role = "Owner"
+        enterprise_enabled = False
     if not role:
         raise HTTPException(status_code=403, detail={"status": "authority_unproved", "summary": "App authority could not be proved."})
     definitions = [lite_app_registry.app_definition(app_id)] if app_id is not None else [lite_app_registry.app_definition(item) for item in lite_app_registry.app_ids()]
@@ -383,7 +391,7 @@ def authority_projection(auth_context: dict[str, Any], *, app_id: Any | None = N
         "mode": "enterprise" if enterprise_enabled else "personal",
         "current_role": role,
         "resources": apps,
-        "updated_at": __import__("api_fastapi.deps", fromlist=["now_utc_iso"]).now_utc_iso(),
+        "updated_at": deps.now_utc_iso(),
     }
 
 
