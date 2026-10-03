@@ -2,7 +2,7 @@ package pocketlab.authz
 
 import rego.v1
 
-test_catalog_install_legacy_alias_keeps_owner_authority_boundary if {
+test_catalog_install_legacy_alias_keeps_enterprise_owner_boundary if {
 	result := decision with input as {
 		"actor": {"type": "human", "id": "human-owner", "role": "Owner", "enterprise_enabled": true, "owner_authority": true},
 		"session": {"authenticated": true, "auth_method": "passkey"},

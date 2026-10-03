@@ -20,7 +20,7 @@ describe('Universal app governance projection', () => {
         summary: 'Access follows current Safety Rules.',
         actions: [
           { action_id: 'app.open', label: 'Open app', mode: 'allow', allowed: true, required_capability: 'open' },
-          { action_id: 'app.install', label: 'Install app', mode: 'temporary_active', allowed: true, requires_temporary_access: false, temporary_access_supported: true, temporary_access_active: true, temporary_access_expires_at: '2026-10-04T00:15:00Z', required_capability: 'install' },
+          { action_id: 'app.install', label: 'Install app', mode: 'temporary_access', allowed: false, requires_temporary_access: true, temporary_access_supported: true, required_capability: 'install' },
         ],
       },
       credentials: {
@@ -52,10 +52,8 @@ describe('Universal app governance projection', () => {
 
     expect(view.app_id).toBe('example-app');
     expect(view.authority.actions.find((item) => item.action_id === 'app.install')).toMatchObject({
-      allowed: true,
-      requires_temporary_access: false,
-      temporary_access_active: true,
-      temporary_access_expires_at: '2026-10-04T00:15:00Z',
+      allowed: false,
+      requires_temporary_access: true,
     });
     expect(view.credential_status.items[0]).not.toHaveProperty('password');
     expect(view.credential_status.items[0]).not.toHaveProperty('token');
