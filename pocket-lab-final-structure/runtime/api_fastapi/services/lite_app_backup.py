@@ -59,10 +59,28 @@ def _validate_app_id(app_id: Any) -> str:
             status_code=404,
             detail={
                 "status": "unsupported_app",
-                "summary": "PhotoPrism is the first app with App Catalog backup and restore preview.",
+                "summary": "This app does not have an App Catalog backup adapter.",
             },
         )
     return normalized
+
+
+def _backup_policy(app_id: Any) -> dict[str, Any]:
+    app = _validate_app_id(app_id)
+    adapter = lite_app_adapters.adapter_for(app)
+    policy = adapter.backup_policy()
+    if not isinstance(policy, dict):
+        raise RuntimeError(f"App backup policy is unavailable for {app!r}")
+    return {
+        "default_mode": str(policy.get("default_mode") or "config_only"),
+        "included_sets": list(policy.get("included_sets") or []),
+        "excluded_sets": list(policy.get("excluded_sets") or []),
+        "media_included_by_default": bool(policy.get("media_included_by_default", False)),
+        "restore_preview_supported": bool(policy.get("restore_preview_supported", True)),
+        "restore_apply_supported": bool(policy.get("restore_apply_supported", False)),
+        "profile_summary": _safe_text(policy.get("profile_summary"), f"{APP_LABELS[app]} app settings and safe records are included."),
+        "backup_summary": _safe_text(policy.get("backup_summary"), f"{APP_LABELS[app]} app backup saved."),
+    }
 
 
 def _safe_text(value: Any, fallback: str = "Available") -> str:
@@ -131,25 +149,28 @@ def _write_state(update: dict[str, Any]) -> dict[str, Any]:
 
 
 def _public_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
-    app = manifest.get("app_backup") if isinstance(manifest.get("app_backup"), dict) else {}
+    app_meta = manifest.get("app_backup") if isinstance(manifest.get("app_backup"), dict) else {}
+    app_id = _validate_app_id(app_meta.get("app_id") or "photoprism")
+    label = APP_LABELS[app_id]
+    policy = _backup_policy(app_id)
     return {
-        "app_id": app.get("app_id") or "photoprism",
-        "app_label": app.get("app_label") or "PhotoPrism",
+        "app_id": app_id,
+        "app_label": _safe_text(app_meta.get("app_label"), label),
         "backup_id": manifest.get("backup_id"),
         "created_at": manifest.get("created_at"),
         "status": "verified" if manifest.get("verification_status") == "verified" else "saved",
-        "mode": app.get("mode") or "config_only",
+        "mode": app_meta.get("mode") or policy["default_mode"],
         "snapshot_id": manifest.get("snapshot_id"),
         "manifest_checksum": manifest.get("manifest_checksum"),
         "verification_status": manifest.get("verification_status", "not_verified"),
         "verified_at": manifest.get("verified_at"),
-        "included_sets": app.get("included_sets") or APP_BACKUP_INCLUDES,
-        "excluded_sets": app.get("excluded_sets") or APP_BACKUP_EXCLUDES,
-        "media_included": bool(app.get("media_included")),
+        "included_sets": app_meta.get("included_sets") or policy["included_sets"],
+        "excluded_sets": app_meta.get("excluded_sets") or policy["excluded_sets"],
+        "media_included": bool(app_meta.get("media_included")),
         "secrets_hidden": True,
         "raw_paths_hidden": True,
-        "evidence_ref": f"apps/photoprism/backups/{_safe_ref(manifest.get('backup_id'), 'latest')}.json",
-        "summary": _safe_text(manifest.get("summary"), "PhotoPrism app backup saved."),
+        "evidence_ref": f"apps/{app_id}/backups/{_safe_ref(manifest.get('backup_id'), 'latest')}.json",
+        "summary": _safe_text(manifest.get("summary"), policy["backup_summary"]),
     }
 
 
@@ -211,29 +232,32 @@ def _restore_preview_disabled_reason(app_id: str, verified: bool) -> str | None:
         return "No verified app backup yet"
     return None
 
-def backup_profile() -> dict[str, Any]:
+def backup_profile(app_id: str = "photoprism") -> dict[str, Any]:
+    app = _validate_app_id(app_id)
+    policy = _backup_policy(app)
     return {
-        "app_id": "photoprism",
-        "app_label": "PhotoPrism",
+        "app_id": app,
+        "app_label": APP_LABELS[app],
         "backup_supported": True,
-        "restore_preview_supported": True,
-        "restore_apply_supported": False,
-        "default_mode": "config_only",
-        "media_included_by_default": False,
-        "includes": list(APP_BACKUP_INCLUDES),
-        "excludes": list(APP_BACKUP_EXCLUDES),
+        "restore_preview_supported": policy["restore_preview_supported"],
+        "restore_apply_supported": policy["restore_apply_supported"],
+        "default_mode": policy["default_mode"],
+        "media_included_by_default": policy["media_included_by_default"],
+        "includes": list(policy["included_sets"]),
+        "excludes": list(policy["excluded_sets"]),
     }
 
 
 def app_backup_command(app_id: str, *, mode: str = "config_only", reason: str | None = None) -> dict[str, Any]:
     app = _validate_app_id(app_id)
-    selected_mode = str(mode or "config_only").strip().lower()
-    if selected_mode != "config_only":
+    policy = _backup_policy(app)
+    selected_mode = str(mode or policy["default_mode"]).strip().lower()
+    if selected_mode != policy["default_mode"]:
         raise HTTPException(
             status_code=422,
             detail={
                 "status": "unsupported_mode",
-                "summary": "App Catalog backups are config-only in this phase. Media is preserved by PhotoPrism and excluded by default.",
+                "summary": f"App Catalog backups for {APP_LABELS[app]} support {policy['default_mode']} in this implementation. Protected user data remains excluded by default.",
             },
         )
     timestamp = _now().replace(":", "").replace(".", "-")
@@ -249,8 +273,8 @@ def app_backup_command(app_id: str, *, mode: str = "config_only", reason: str | 
         "reason": _safe_text(reason, "manual app backup"),
         "requested_by": "lite-api",
         "dry_run": False,
-        "profile": backup_profile(),
-        "profile_summary": "PhotoPrism settings, mappings, route records, and safe app records are included. Media is excluded by default.",
+        "profile": backup_profile(app),
+        "profile_summary": policy["profile_summary"],
     }
 
 
@@ -268,7 +292,7 @@ def app_restore_preview_command(app_id: str, *, backup_id: str | None = None, re
     selected = backup_id or "latest"
     resolved = _resolve_app_backup_id(app, selected, verified_only=True)
     if not resolved:
-        raise HTTPException(status_code=409, detail={"status": "no_verified_app_backup", "summary": "No verified app backup yet. Back up PhotoPrism first.", "disabled_reason": "No verified app backup yet"})
+        raise HTTPException(status_code=409, detail={"status": "no_verified_app_backup", "summary": f"No verified app backup yet. Back up {APP_LABELS[app]} first.", "disabled_reason": "No verified app backup yet"})
     command_id = f"app-restore-preview-{app}-{uuid.uuid4().hex[:16]}"
     return {
         "command_id": command_id,
@@ -284,26 +308,29 @@ def app_restore_preview_command(app_id: str, *, backup_id: str | None = None, re
 
 
 def record_backup_request(command: dict[str, Any]) -> dict[str, Any]:
+    app = _validate_app_id(command.get("app_id") or "photoprism")
+    policy = _backup_policy(app)
     pending = lite_backup.record_backup_request(command)
     pending.update({
-        "app_id": command.get("app_id") or "photoprism",
+        "app_id": app,
         "action_id": "backup_app",
-        "mode": command.get("app_backup_mode") or "config_only",
-        "summary": "Backing up PhotoPrism app settings.",
+        "mode": command.get("app_backup_mode") or policy["default_mode"],
+        "summary": f"Backing up {APP_LABELS[app]} app settings.",
     })
     _write_state({"pending_backup": pending})
     return pending
 
 
 def record_restore_preview_request(command: dict[str, Any]) -> dict[str, Any]:
+    app = _validate_app_id(command.get("app_id") or "photoprism")
     pending = {
         "preview_id": command.get("preview_id") or command.get("command_id"),
         "backup_id": command.get("backup_id"),
-        "app_id": command.get("app_id") or "photoprism",
+        "app_id": app,
         "action_id": "preview_restore",
         "status": "queued",
         "requested_at": _now(),
-        "summary": "Preparing PhotoPrism restore preview.",
+        "summary": f"Preparing {APP_LABELS[app]} restore preview.",
     }
     _write_state({"pending_restore_preview": pending})
     return pending
@@ -316,29 +343,32 @@ def _decorate_manifest(command: dict[str, Any]) -> dict[str, Any]:
         raise RuntimeError("App backup manifest was not found after backup creation.")
     location_id = str(manifest.get("location_id") or "default-private")
     location_layout = lite_backup_locations.layout_for_location(location_id)
-    mode = str(command.get("app_backup_mode") or "config_only")
+    app_id = _validate_app_id(command.get("app_id") or "photoprism")
+    label = APP_LABELS[app_id]
+    policy = _backup_policy(app_id)
+    mode = str(command.get("app_backup_mode") or policy["default_mode"])
     app_metadata = {
-        "app_id": command.get("app_id") or "photoprism",
-        "app_label": command.get("app_label") or "PhotoPrism",
+        "app_id": app_id,
+        "app_label": _safe_text(command.get("app_label"), label),
         "mode": mode,
         "backup_supported": True,
-        "restore_preview_supported": True,
-        "restore_apply_supported": False,
+        "restore_preview_supported": policy["restore_preview_supported"],
+        "restore_apply_supported": policy["restore_apply_supported"],
         "media_included": mode == "full_with_media",
-        "media_included_by_default": False,
-        "included_sets": list(APP_BACKUP_INCLUDES),
-        "excluded_sets": list(APP_BACKUP_EXCLUDES),
+        "media_included_by_default": policy["media_included_by_default"],
+        "included_sets": list(policy["included_sets"]),
+        "excluded_sets": list(policy["excluded_sets"]),
         "secrets_hidden": True,
         "raw_paths_hidden": True,
         "raw_logs_hidden": True,
-        "evidence_ref": f"apps/photoprism/backups/{_safe_ref(backup_id, 'latest')}.json",
+        "evidence_ref": f"apps/{app_id}/backups/{_safe_ref(backup_id, 'latest')}.json",
     }
     manifest = dict(manifest)
     manifest["app_backup"] = app_metadata
-    manifest["included_app_state"] = list(APP_BACKUP_INCLUDES)
-    manifest["excluded_app_state"] = list(APP_BACKUP_EXCLUDES)
-    manifest["restore_apply_supported"] = False
-    manifest["summary"] = "PhotoPrism app backup saved. Settings, mappings, route records, and safe app records are protected; media remains excluded by default."
+    manifest["included_app_state"] = list(policy["included_sets"])
+    manifest["excluded_app_state"] = list(policy["excluded_sets"])
+    manifest["restore_apply_supported"] = policy["restore_apply_supported"]
+    manifest["summary"] = policy["backup_summary"]
     refs = list(manifest.get("evidence_references") or [])
     for ref in (
         "pocketlab.events.lite.app.backup.started",
@@ -353,8 +383,8 @@ def _decorate_manifest(command: dict[str, Any]) -> dict[str, Any]:
     receipt = lite_backup_manifest.read_receipt(backup_id, location_id=location_id, layout=location_layout) or {"backup_id": backup_id}
     receipt.update({
         "backup_id": backup_id,
-        "app_id": "photoprism",
-        "app_label": "PhotoPrism",
+        "app_id": app_id,
+        "app_label": label,
         "action_id": "backup_app",
         "status": receipt.get("status") or "succeeded",
         "summary": "App backup saved",
@@ -366,7 +396,7 @@ def _decorate_manifest(command: dict[str, Any]) -> dict[str, Any]:
         "included_sets": app_metadata["included_sets"],
         "excluded_sensitive_items": manifest.get("excluded_sensitive_items", []),
         "app_backup": app_metadata,
-        "restore_apply_supported": False,
+        "restore_apply_supported": policy["restore_apply_supported"],
     })
     lite_backup_manifest.write_receipt(backup_id, receipt, location_id=location_id, layout=location_layout)
     return manifest
@@ -375,6 +405,7 @@ def _decorate_manifest(command: dict[str, Any]) -> dict[str, Any]:
 def create_app_backup(command: dict[str, Any]) -> dict[str, Any]:
     app = _validate_app_id(command.get("app_id") or "photoprism")
     backup_id = str(command.get("backup_id") or command.get("command_id") or "")
+    policy = _backup_policy(app)
     _write_state({
         "pending_backup": {
             "backup_id": backup_id,
@@ -382,7 +413,7 @@ def create_app_backup(command: dict[str, Any]) -> dict[str, Any]:
             "action_id": "backup_app",
             "status": "running",
             "started_at": _now(),
-            "summary": "Backing up PhotoPrism app settings.",
+            "summary": f"Backing up {APP_LABELS[app]} app settings.",
         }
     })
     result = lite_backup.create_backup(command)
@@ -413,8 +444,8 @@ def create_app_backup(command: dict[str, Any]) -> dict[str, Any]:
         "latest_backup": public,
         "verification": verification,
         "media_included": bool(public.get("media_included")),
-        "included_sets": public.get("included_sets") or APP_BACKUP_INCLUDES,
-        "excluded_sets": public.get("excluded_sets") or APP_BACKUP_EXCLUDES,
+        "included_sets": public.get("included_sets") or policy["included_sets"],
+        "excluded_sets": public.get("excluded_sets") or policy["excluded_sets"],
         "secrets_hidden": True,
         "raw_paths_hidden": True,
         "summary": "App backup saved" if public.get("verification_status") == "verified" else "Backup saved but verification needs review",
@@ -466,7 +497,7 @@ def app_backup_status(app_id: str) -> dict[str, Any]:
         "app_id": app,
         "app_label": APP_LABELS[app],
         "summary": "App backup ready." if latest else "App backup ready. No backup has been saved yet.",
-        "profile": backup_profile(),
+        "profile": backup_profile(app),
         "backup_supported": True,
         "restore_preview_supported": True,
         "restore_apply_supported": False,
@@ -494,7 +525,7 @@ def app_backup_status(app_id: str) -> dict[str, Any]:
             "backup_app": {
                 "enabled": True,
                 "label": "Back up app",
-                "summary": "Save PhotoPrism settings, mappings, route records, and safe app records.",
+                "summary": _backup_policy(app)["profile_summary"],
             },
             "preview_restore": {
                 "enabled": restore_preview_enabled,
@@ -527,15 +558,17 @@ def create_app_restore_preview(command: dict[str, Any]) -> dict[str, Any]:
     preview_id = str(command.get("preview_id") or command.get("command_id") or f"app-restore-preview-{app}-{uuid.uuid4().hex[:12]}")
     created_at = _now()
     app_meta = manifest.get("app_backup") if isinstance(manifest.get("app_backup"), dict) else {}
+    label = APP_LABELS[app]
+    policy = _backup_policy(app)
     would_restore = [
-        {"id": "app_config", "label": "PhotoPrism settings", "action": "would_restore", "destructive": False},
-        {"id": "storage_mappings", "label": "Approved photo mappings", "action": "would_restore", "destructive": False},
+        {"id": "app_config", "label": f"{label} settings", "action": "would_restore", "destructive": False},
+        {"id": "storage_mappings", "label": "Approved storage mappings", "action": "would_restore", "destructive": False},
         {"id": "route_registry", "label": "Same-origin app route record", "action": "would_restore", "destructive": False},
         {"id": "safe_evidence_refs", "label": "Safe app evidence references", "action": "would_restore", "destructive": False},
     ]
     would_preserve = [
-        {"id": "original_media", "label": "Original photos and videos", "reason": "Media is excluded from app config backup by default."},
-        {"id": "generated_cache", "label": "Generated cache and thumbnails", "reason": "PhotoPrism can rebuild generated data."},
+        {"id": "protected_user_data", "label": "Protected user data", "reason": "User data is excluded from app config backup by default."},
+        {"id": "generated_cache", "label": "Generated cache", "reason": f"{label} can rebuild generated data when supported."},
         {"id": "raw_secrets", "label": "Raw secrets", "reason": "Secret values are not exposed or restored from this preview."},
     ]
     preview = {
@@ -556,10 +589,10 @@ def create_app_restore_preview(command: dict[str, Any]) -> dict[str, Any]:
         "changes": would_restore,
         "warnings": [
             "Preview only: app restore apply is disabled in this phase.",
-            "Original media files are preserved and not included by default.",
+            "Protected user data is preserved and not included by default.",
             "Raw secrets, logs, private paths, and repository internals are hidden.",
         ],
-        "evidence_ref": f"apps/photoprism/restore-previews/{_safe_ref(preview_id, 'latest')}.json",
+        "evidence_ref": f"apps/{app}/restore-previews/{_safe_ref(preview_id, 'latest')}.json",
         "backup_manifest_checksum": manifest.get("manifest_checksum"),
         "secrets_hidden": True,
         "raw_paths_hidden": True,
@@ -655,9 +688,9 @@ def app_backup_receipt(app_id: str, backup_id: str = "latest") -> dict[str, Any]
         "proof_counts": counts,
         "proof_status": "passed" if verified else "review",
         "safety_badges": ["Backend worker executed", "Secrets hidden", "Raw paths hidden", "Restore preview only"],
-        "what_changed": ["PhotoPrism app settings, mappings, route records, and safe app records were backed up."],
-        "what_did_not_happen": ["Original photos were not included by default.", "Raw secrets were not exposed.", "No frontend shell commands ran.", "No destructive restore was enabled."],
-        "details_owner": {"name": "PhotoPrism", "reason": "PhotoPrism owns indexing, thumbnails, metadata, and media warnings."},
+        "what_changed": [f"{APP_LABELS[app]} app settings and adapter-approved safe records were backed up."],
+        "what_did_not_happen": ["Protected user data was not included by default.", "Raw secrets were not exposed.", "No frontend shell commands ran.", "No destructive restore was enabled."],
+        "details_owner": {"name": APP_LABELS[app], "reason": "The app adapter owns app-specific backup scope and recovery details."},
         "redaction": {"status": "passed", "secrets_hidden": True, "raw_logs_hidden": True, "raw_paths_hidden": True, "media_file_names_hidden": True, "secret_values_saved": False},
         "technical_details": {
             "backup_mode": public.get("mode"),
