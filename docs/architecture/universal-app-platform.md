@@ -334,3 +334,33 @@ Capability absence is a first-class state. A future adapter is not assumed to su
 Source implementation completeness and executable qualification are intentionally separate.
 
 This branch defines backend, OPA, frontend, Storybook, Playwright, and focused Taskfile coverage for the governed app-resource model. Those checks are **not** evidence of PASS until they are executed in a later qualification session. Server Phone runtime behavior, CI status, performance, accessibility, and release readiness must likewise be qualified separately.
+
+
+## Source coupling classification
+
+The source-only adversarial review classifies the remaining app couplings as follows:
+
+| Coupling | Classification | Rationale |
+| --- | --- | --- |
+| `lite_app_governance.py`, registry-derived policy targets, Identity/Rules projections | generic platform integration | App identity/capability/authority comes from the registry and existing governance stack. |
+| PhotoPrism media import, storage preview, scanner exclusions, installer/runtime health probes | legitimate app-adapter specialization | These behaviors are specific to PhotoPrism and stay behind the adapter/service boundary. |
+| `lite_app_operations.py` PhotoPrism repair internals and legacy catalog runtime state | compatibility seam | Mature pre-platform implementation remains adapter-owned; generic governance does not pretend these are portable implementations. |
+| `catalog.install`, `backup.create`, `restore.preview` | compatibility seam | Existing identifiers remain supported but canonicalize to semantic app actions before governed execution where app-scoped. |
+| app approvals, temporary access, placement, credential metadata, Recovery and Security evidence links | governance integration | Reuses existing Identity/OPA/continuation/device/evidence systems rather than creating parallel frameworks. |
+| synthetic `example-app`, governed MSW scenarios, Storybook and Playwright fixtures | test/docs fixture | Proves capability isolation and generic presentation without becoming a production app. |
+| raw secret-value storage | intentionally deferred | No approved app secret-value store is introduced; metadata only is stored. |
+| restore apply where an adapter currently disables it | intentionally deferred | Metadata cannot activate destructive restore behavior. |
+| missing cross-feature integration found by final source review | none known | Source review closed the identified legacy install, Recovery app-write, Security App Check, continuation, placement, invalidation, and durable evidence seams. Executable qualification is still required. |
+
+### Credential backup policy
+
+The credential contract is deliberately explicit:
+
+- app-specific backup: **neither credential values nor credential metadata**;
+- Pocket Lab workspace/database backup: **credential metadata only** where that database is included;
+- secret material: **not stored by this feature**;
+- restore: may report that manual credential rebinding is required, but never projects secret material.
+
+### Evidence persistence
+
+Existing operation records retain only a whitelisted governance relationship: app ID, semantic action, operation ID, authorization decision ID, policy revision, app contract revision, target device where applicable, and a bounded initiating-actor reference. Install, repair, update-readiness, app backup/restore-preview, and Security App Check reuse their existing durable state/evidence stores. No graph database or duplicate audit engine is added.

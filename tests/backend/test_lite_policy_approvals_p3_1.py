@@ -132,7 +132,7 @@ def test_admin_request_requires_independent_step_up_and_is_single_use(approvals_
     assert no_step_up.value.reason_code == "approval_step_up_required"
 
     owner_auth["session"]["assurance"] = [{
-        "purpose": approvals.APPROVAL_PURPOSE,
+        "purpose": approvals.APPROVAL_PURPOSES["device.remove"],
         "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat().replace("+00:00", "Z"),
     }]
     approved = approvals.transition(auth_context=owner_auth, approval_id=approval_id, action="approve")
@@ -242,7 +242,7 @@ def test_concurrent_consumption_is_single_use(approvals_runtime):
     _insert_approval_required_decision(actor_id=admin_id, decision_id="decision-race", target_id="node-race")
     approval_id = approvals.create_from_decision(decision_id="decision-race", initiating_role="Admin")["approval"]["approval_id"]
     owner_auth["session"]["assurance"] = [{
-        "purpose": approvals.APPROVAL_PURPOSE,
+        "purpose": approvals.APPROVAL_PURPOSES["device.remove"],
         "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat().replace("+00:00", "Z"),
     }]
     approvals.transition(auth_context=owner_auth, approval_id=approval_id, action="approve")
