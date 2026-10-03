@@ -3263,6 +3263,8 @@ export function selectAppResourceView(payload = {}) {
     requires_approval: Boolean(item?.requires_approval),
     requires_temporary_access: Boolean(item?.requires_temporary_access),
     temporary_access_supported: Boolean(item?.temporary_access_supported),
+    temporary_access_active: Boolean(item?.temporary_access_active),
+    temporary_access_expires_at: safeString(item?.temporary_access_expires_at || ''),
     requires_step_up: Boolean(item?.requires_step_up),
     required_capability: safeString(item?.required_capability || ''),
   }));

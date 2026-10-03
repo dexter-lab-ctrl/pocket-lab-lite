@@ -236,6 +236,7 @@ def resource_contract(
     operation_id: Any = None,
     fleet_payload: dict[str, Any] | None = None,
     require_placement: bool | None = None,
+    enforce_placement: bool = False,
 ) -> dict[str, Any]:
     definition = lite_app_registry.app_definition(app_id)
     semantic = semantic_action(action_id)
@@ -259,7 +260,7 @@ def resource_contract(
         target_device_id=target_device_id,
         fleet_payload=fleet_payload,
     )
-    if placement_required and (not platform_supported or not placement["ready"]):
+    if enforce_placement and placement_required and (not platform_supported or not placement["ready"]):
         raise HTTPException(
             status_code=409,
             detail={
@@ -321,6 +322,7 @@ def policy_target(contract: dict[str, Any]) -> dict[str, Any]:
         "registry_schema_version": contract["registry_schema_version"],
         "contract_revision": contract["contract_revision"],
         "request_fingerprint": contract["request_fingerprint"],
+        "operation_id": contract["operation_id"],
         "risk": contract["risk"],
         "consequence": contract["consequence"],
     }
@@ -367,10 +369,14 @@ def authority_projection(auth_context: dict[str, Any], *, app_id: Any | None = N
         enterprise_enabled = False
     if not role:
         raise HTTPException(status_code=403, detail={"status": "authority_unproved", "summary": "App authority could not be proved."})
+
+    actor = context.get("actor") if isinstance(context.get("actor"), dict) else {}
+    actor_id = str(actor.get("identity_id") or "").strip()
     definitions = [lite_app_registry.app_definition(app_id)] if app_id is not None else [lite_app_registry.app_definition(item) for item in lite_app_registry.app_ids()]
     apps: list[dict[str, Any]] = []
     for definition in definitions:
         actions = []
+        active_temporary_access: dict[str, Any] | None = None
         semantic_ids = sorted({
             REGISTRY_ACTION_TO_SEMANTIC[action]
             for action in definition.actions
@@ -381,17 +387,56 @@ def authority_projection(auth_context: dict[str, Any], *, app_id: Any | None = N
             if capability not in definition.capabilities:
                 continue
             mode = _role_mode(role, semantic, enterprise_enabled=enterprise_enabled)
+            temporary_access = None
+            if (
+                enterprise_enabled
+                and role == "Operator"
+                and actor_id
+                and semantic in TEMPORARY_EXCEPTION_ACTIONS
+            ):
+                try:
+                    from . import lite_policy_approvals
+
+                    contract = resource_contract(
+                        definition.id,
+                        semantic,
+                        require_placement=None,
+                        enforce_placement=False,
+                    )
+                    temporary_access = lite_policy_approvals.active_exception_details(
+                        human_id=actor_id,
+                        action_id=semantic,
+                        app_id=definition.id,
+                        device_id=str(contract.get("target_device_id") or ""),
+                        required_capability=capability,
+                        target_revision=str(contract["contract_revision"]),
+                    )
+                except Exception:
+                    temporary_access = None
+            temporary_active = bool(temporary_access)
+            if temporary_active:
+                active_temporary_access = temporary_access
             actions.append({
                 "action_id": semantic,
                 "label": ACTION_LABELS[semantic],
-                "mode": mode,
-                "allowed": mode == "allow",
+                "mode": "temporary_active" if temporary_active else mode,
+                "allowed": mode == "allow" or temporary_active,
                 "requires_approval": mode == "approval",
-                "requires_temporary_access": mode == "temporary_access",
+                "requires_temporary_access": mode == "temporary_access" and not temporary_active,
                 "temporary_access_supported": semantic in TEMPORARY_EXCEPTION_ACTIONS,
+                "temporary_access_active": temporary_active,
+                "temporary_access_expires_at": (temporary_access or {}).get("expires_at"),
                 "requires_step_up": False,
                 "required_capability": capability,
             })
+        if active_temporary_access:
+            summary = f"Temporary access is active until {active_temporary_access.get('expires_at') or 'its configured expiry'}."
+        elif role in {"Owner", "Admin"}:
+            summary = "You can manage this app."
+        elif role in {"Auditor", "Viewer"}:
+            summary = "Read-only access."
+        else:
+            summary = "Access follows current Safety Rules."
         apps.append({
             "resource_type": "app",
             "app_id": definition.id,
@@ -399,7 +444,8 @@ def authority_projection(auth_context: dict[str, Any], *, app_id: Any | None = N
             "role": role,
             "mode": "enterprise" if enterprise_enabled else "personal",
             "actions": actions,
-            "summary": "You can manage this app." if role in {"Owner", "Admin"} else ("Read-only access." if role in {"Auditor", "Viewer"} else "Access follows current Safety Rules."),
+            "summary": summary,
+            "temporary_access": active_temporary_access,
         })
     return {
         "mode": "enterprise" if enterprise_enabled else "personal",
@@ -407,7 +453,6 @@ def authority_projection(auth_context: dict[str, Any], *, app_id: Any | None = N
         "resources": apps,
         "updated_at": deps.now_utc_iso(),
     }
-
 
 def recovery_projection(app_id: Any) -> dict[str, Any]:
     from . import lite_app_backup, lite_app_credentials
@@ -435,7 +480,11 @@ def recovery_projection(app_id: Any) -> dict[str, Any]:
         "restore_preview_supported": bool(backup.get("restore_preview_supported")),
         "restore_apply_supported": bool(backup.get("restore_apply_supported")),
         "protected_user_data_excluded": not bool(profile.get("media_included", False)),
-        "credential_rebinding_required": any(item.get("management") == "external_or_manual" for item in credentials.get("credentials") or []),
+        "credential_rebinding_required": any(
+            item.get("management") == "external_or_manual"
+            and (item.get("required") is True or item.get("status") in {"configured", "needs_rotation", "invalid"})
+            for item in credentials.get("credentials") or []
+        ),
         "recovery_ready": not blockers,
         "recovery_blockers": blockers,
         "evidence_refs": [
@@ -458,5 +507,6 @@ def sanitized_evidence_link(contract: dict[str, Any], decision: dict[str, Any] |
         "policy_revision": decision.get("policy_revision"),
         "contract_revision": contract["contract_revision"],
         "target_device_id": contract.get("target_device_id") or None,
+        "initiating_actor": contract.get("requested_actor"),
         "sanitized": True,
     }

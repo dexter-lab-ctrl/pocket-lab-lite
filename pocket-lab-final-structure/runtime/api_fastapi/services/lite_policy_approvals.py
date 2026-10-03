@@ -465,6 +465,39 @@ def matching_exception(
     return str(row["exception_id"]) if row else None
 
 
+def active_exception_details(
+    *,
+    human_id: str,
+    action_id: str,
+    app_id: str,
+    device_id: str,
+    required_capability: str,
+    target_revision: str,
+) -> dict[str, Any] | None:
+    """Return the sanitized exact active exception for one current app contract."""
+    try:
+        policy_revision = _active_revision()
+    except ApprovalError:
+        return None
+    exception_id = matching_exception(
+        human_id=human_id,
+        action_id=action_id,
+        app_id=app_id,
+        device_id=device_id,
+        required_capability=required_capability,
+        target_revision=target_revision,
+        policy_revision=policy_revision,
+    )
+    if not exception_id:
+        return None
+    with connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM policy_temporary_exceptions WHERE exception_id=? AND status='active' AND expires_at>?",
+            (exception_id, _iso()),
+        ).fetchone()
+    return _public_exception(row) if row else None
+
+
 def _active_revision() -> str:
     from . import lite_policy_opa
     with connection() as conn:
@@ -504,6 +537,7 @@ def create_exception(
         safe_action,
         target_device_id=safe_device,
         require_placement=True,
+        enforce_placement=True,
     )
     revision, now = _active_revision(), _now()
     with connection() as conn:

@@ -257,7 +257,13 @@ async def _authorize_app_resource(
         target_device_id=target_device_id,
         operation_id=operation_id,
         require_placement=require_placement,
+        enforce_placement=True,
     )
+    actor = auth_context.get("actor") if isinstance(auth_context.get("actor"), dict) else {}
+    contract["requested_actor"] = {
+        "type": str(actor.get("type") or "")[:32],
+        "id": str(actor.get("identity_id") or actor.get("id") or "")[:120],
+    }
     if not contract.get("governed"):
         return contract, None
     decision = await _enforce_lite_policy(
