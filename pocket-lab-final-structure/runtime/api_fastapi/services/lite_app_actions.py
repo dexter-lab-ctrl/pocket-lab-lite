@@ -181,6 +181,15 @@ def _validate_app_id(app_id: Any) -> str:
             status_code=409,
             detail={"status": "unsupported_app", "summary": "This registered app has no action adapter."},
         )
+    if not lite_app_registry.platform_supported(definition.id):
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "unsupported_platform",
+                "summary": "This app is not available on this device platform.",
+                "platform": lite_app_registry.current_platform_id(),
+            },
+        )
     return definition.id
 
 
