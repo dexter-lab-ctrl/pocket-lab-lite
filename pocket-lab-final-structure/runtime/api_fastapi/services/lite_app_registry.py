@@ -1,14 +1,35 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
+import platform
 import re
+import sys
 from typing import Any, Mapping
 
 from fastapi import HTTPException
 
 APP_PLATFORM_SCHEMA_VERSION = 1
 _APP_ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+_BINDING_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+_UPSTREAM_RE = re.compile(r"^(?:127\.0\.0\.1|localhost):([1-9][0-9]{0,4})$")
+_CAPABILITY_RE = re.compile(r"^[a-z0-9]+(?:_[a-z0-9]+)*$")
 _RESERVED_ROUTE_PREFIXES = ("/api/", "/assets/", "/auth/", "/lite/")
+_ACTION_CAPABILITIES = {
+    "open": "open",
+    "open_full_screen": "open",
+    "install_to_phone": "open",
+    "connect_photos": "media_sources",
+    "import_photos": "media_import",
+    "check_app": "security_check",
+    "backup_app": "backup",
+    "preview_restore": "restore_preview",
+    "backup_to_storage": "backup_to_storage",
+    "install_app": "install",
+    "update_app": "update_readiness",
+    "repair_app": "repair",
+    "remove_app": "remove",
+}
 
 
 @dataclass(frozen=True)
@@ -108,11 +129,30 @@ def _validate_definition(definition: AppDefinition) -> None:
         raise RuntimeError(f"App {definition.id!r} uses a reserved route")
     if not definition.adapter or not definition.process or not definition.upstream:
         raise RuntimeError(f"App {definition.id!r} is missing a required backend binding")
+    if not _BINDING_ID_RE.fullmatch(definition.adapter):
+        raise RuntimeError(f"App {definition.id!r} has invalid adapter binding")
+    if not _BINDING_ID_RE.fullmatch(definition.process):
+        raise RuntimeError(f"App {definition.id!r} has invalid process binding")
+    upstream_match = _UPSTREAM_RE.fullmatch(definition.upstream)
+    if not upstream_match or not 1 <= int(upstream_match.group(1)) <= 65535:
+        raise RuntimeError(f"App {definition.id!r} upstream must be loopback host:port")
     if not definition.platforms:
         raise RuntimeError(f"App {definition.id!r} must declare at least one supported platform")
-    for action_id in definition.actions:
+    if any(not _APP_ID_RE.fullmatch(platform_id) for platform_id in definition.platforms):
+        raise RuntimeError(f"App {definition.id!r} has an invalid platform id")
+    for capability in definition.capabilities:
+        if not _CAPABILITY_RE.fullmatch(capability):
+            raise RuntimeError(f"App {definition.id!r} has invalid capability {capability!r}")
+    for action_id, action in definition.actions.items():
         if not _APP_ID_RE.fullmatch(action_id.replace("_", "-")):
             raise RuntimeError(f"App {definition.id!r} has invalid action id {action_id!r}")
+        if not isinstance(action, Mapping):
+            raise RuntimeError(f"App {definition.id!r} action {action_id!r} must be declarative metadata")
+        required_capability = _ACTION_CAPABILITIES.get(action_id)
+        if required_capability and required_capability not in definition.capabilities:
+            raise RuntimeError(
+                f"App {definition.id!r} action {action_id!r} requires capability {required_capability!r}"
+            )
 
 
 def _build_registry(definitions: tuple[AppDefinition, ...]) -> dict[str, AppDefinition]:
@@ -162,6 +202,22 @@ def maybe_app_definition(app_id: Any) -> AppDefinition | None:
 def supports(app_id: Any, capability: str) -> bool:
     definition = maybe_app_definition(app_id)
     return bool(definition and capability in definition.capabilities)
+
+
+def current_platform_id() -> str:
+    prefix = str(os.environ.get("PREFIX") or "").lower()
+    machine = platform.machine().lower()
+    if "com.termux" in prefix or sys.platform == "android":
+        return "android-termux-arm64" if machine in {"aarch64", "arm64"} else "android-termux-unsupported"
+    if sys.platform.startswith("linux"):
+        return "ubuntu-dev"
+    return "unsupported"
+
+
+def platform_supported(app_id: Any, platform_id: str | None = None) -> bool:
+    definition = app_definition(app_id)
+    selected = str(platform_id or current_platform_id()).strip().lower()
+    return selected in definition.platforms
 
 
 def registered_action_ids(app_id: Any) -> frozenset[str]:
