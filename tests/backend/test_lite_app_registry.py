@@ -86,6 +86,47 @@ def test_registry_rejects_route_escape():
         )
 
 
+@pytest.mark.parametrize(
+    "upstream",
+    [
+        "https://example.invalid:443",
+        "0.0.0.0:2999",
+        "192.168.1.10:2999",
+        "127.0.0.1:0",
+        "127.0.0.1:70000",
+        "127.0.0.1:2999/path",
+    ],
+)
+def test_registry_rejects_non_loopback_or_invalid_upstream_bindings(upstream):
+    with pytest.raises(RuntimeError, match="loopback"):
+        lite_app_registry.validate_test_definitions((_example(upstream=upstream),))
+
+
+def test_registry_rejects_action_without_required_capability():
+    with pytest.raises(RuntimeError, match="requires capability"):
+        lite_app_registry.validate_test_definitions(
+            (
+                _example(
+                    capabilities=frozenset({"open"}),
+                    actions={
+                        "backup_app": {
+                            "label": "Back up app",
+                            "category": "recovery",
+                            "summary": "Synthetic backup action.",
+                            "risk": "low",
+                        }
+                    },
+                ),
+            )
+        )
+
+
+def test_platform_support_is_explicit_and_fail_closed():
+    assert lite_app_registry.platform_supported("photoprism", "android-termux-arm64") is True
+    assert lite_app_registry.platform_supported("photoprism", "ubuntu-dev") is True
+    assert lite_app_registry.platform_supported("photoprism", "unsupported") is False
+
+
 def test_registry_does_not_store_shell_commands_or_secrets():
     rendered = repr(lite_app_registry.public_registry()).lower()
 
@@ -120,10 +161,17 @@ def test_photoprism_adapter_owns_end_to_end_projection_and_special_action_hooks(
         "catalog_payload",
         "lifecycle_profile",
         "security_profile",
+        "security_scan_contract",
         "backup_profile",
+        "backup_policy",
+        "update_status",
+        "update_receipt",
+        "update_apply_disabled",
         "media_status",
         "media_import_blocked",
         "prepare_special_action",
+        "record_special_action_queued",
+        "discard_special_action_queued",
     ):
         assert callable(getattr(adapter, method_name, None)), method_name
 
@@ -131,6 +179,33 @@ def test_photoprism_adapter_owns_end_to_end_projection_and_special_action_hooks(
     assert lite_app_adapters.supports_service("photoprism", "lifecycle") is True
     assert lite_app_adapters.supports_service("photoprism", "security_profile") is True
     assert lite_app_adapters.supports_service("photoprism", "backup_profile") is True
+    assert lite_app_adapters.supports_service("photoprism", "security_scan") is True
+    assert lite_app_adapters.supports_service("photoprism", "update_readiness") is True
+
+
+def test_photoprism_security_scan_contract_is_bounded_and_relative():
+    contract = lite_app_adapters.adapter_for("photoprism").security_scan_contract()
+
+    assert contract["app_id"] == "photoprism"
+    assert contract["route"] == "/apps/photoprism/"
+    assert contract["process_name"] == "pocketlab-app-photoprism"
+    for key in ("proot_app_path", "proot_binary_path", "config_relative"):
+        value = str(contract[key])
+        assert not value.startswith("/")
+        assert ".." not in value.split("/")
+    rendered = repr(contract).lower()
+    assert "originals" in rendered
+    assert "import" in rendered
+    assert "thumbnail" in rendered
+
+
+def test_photoprism_backup_policy_keeps_user_media_out_by_default():
+    policy = lite_app_adapters.adapter_for("photoprism").backup_policy()
+
+    assert policy["media_included_by_default"] is False
+    assert policy["restore_apply_supported"] is False
+    assert "original_media" in policy["excluded_sets"]
+    assert "raw_secrets" in policy["excluded_sets"]
 
 
 def test_action_contract_is_registry_owned():
