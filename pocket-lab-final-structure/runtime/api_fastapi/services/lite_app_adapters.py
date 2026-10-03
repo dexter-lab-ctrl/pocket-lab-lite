@@ -22,6 +22,14 @@ class AppAdapter(Protocol):
 
     def hydrate_live_state(self, app: dict[str, Any]) -> None: ...
 
+    def catalog_payload(self, state: dict[str, Any], access: dict[str, Any]) -> dict[str, Any]: ...
+
+    def lifecycle_profile(self, stage_timings: dict[str, float] | None = None) -> dict[str, Any]: ...
+
+    def security_profile(self) -> dict[str, Any]: ...
+
+    def backup_profile(self) -> dict[str, Any]: ...
+
 
 def _url_json_healthy(url: str, *, timeout: float = 1.5) -> bool:
     try:
@@ -60,11 +68,14 @@ class PhotoPrismAdapter:
     app_id = "photoprism"
     services = frozenset({
         "actions",
+        "catalog",
         "backup",
         "backup_to_storage",
         "install",
         "lifecycle",
         "profiles",
+        "security_profile",
+        "backup_profile",
         "update_readiness",
     })
 
@@ -143,6 +154,29 @@ class PhotoPrismAdapter:
         embed_origin = self.embed_origin() if route_ready else None
         self.hydrate_with_readiness(app, route_ready=route_ready, embed_origin=embed_origin)
 
+    def catalog_payload(self, state: dict[str, Any], access: dict[str, Any]) -> dict[str, Any]:
+        from . import lite_catalog
+
+        app = lite_catalog._get_app_state(state)
+        payload = lite_catalog._app_payload(app, access)
+        payload["platform_contract"] = self.definition.public_contract()
+        return payload
+
+    def lifecycle_profile(self, stage_timings: dict[str, float] | None = None) -> dict[str, Any]:
+        from . import lite_app_lifecycle
+
+        return lite_app_lifecycle.photoprism_lifecycle_profile(stage_timings)
+
+    def security_profile(self) -> dict[str, Any]:
+        from . import lite_app_profiles
+
+        return lite_app_profiles.photoprism_security_profile()
+
+    def backup_profile(self) -> dict[str, Any]:
+        from . import lite_app_profiles
+
+        return lite_app_profiles.photoprism_backup_profile()
+
 
 _ADAPTERS: dict[str, AppAdapter] = {
     "photoprism": PhotoPrismAdapter(),
@@ -174,10 +208,19 @@ def app_ids_for_service(service: str) -> tuple[str, ...]:
 
 
 def validate_adapter_bindings() -> None:
+    service_methods = {
+        "catalog": "catalog_payload",
+        "lifecycle": "lifecycle_profile",
+        "security_profile": "security_profile",
+        "backup_profile": "backup_profile",
+    }
     for app_id in lite_app_registry.app_ids():
         adapter = adapter_for(app_id)
         if not adapter.services:
             raise RuntimeError(f"App adapter {app_id!r} must explicitly declare implemented services")
+        for service, method_name in service_methods.items():
+            if service in adapter.services and not callable(getattr(adapter, method_name, None)):
+                raise RuntimeError(f"App adapter {app_id!r} declares {service!r} without {method_name}()")
 
 
 validate_adapter_bindings()
