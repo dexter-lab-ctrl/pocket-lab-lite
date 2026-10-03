@@ -255,6 +255,12 @@ def _safe_adapter_scan_contract(app_id: str) -> dict[str, Any]:
         raise RuntimeError(f"Security scan route mismatch for {app_id!r}")
     if contract.get("process_name") != definition.process:
         raise RuntimeError(f"Security scan process mismatch for {app_id!r}")
+    health_path = str(contract.get("health_path") or "")
+    if not health_path.startswith(definition.route) or "://" in health_path or ".." in Path(health_path).parts:
+        raise RuntimeError(f"Unsafe security scan health path for {app_id!r}")
+    expected_health = contract.get("expected_health")
+    if expected_health is not None and not isinstance(expected_health, dict):
+        raise RuntimeError(f"Invalid expected health contract for {app_id!r}")
     for key in ("proot_app_path", "proot_binary_path", "config_relative"):
         value = str(contract.get(key) or "")
         candidate = Path(value)
