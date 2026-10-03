@@ -7966,7 +7966,7 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         key: governance_input.get(key)
         for key in (
             "app_id", "semantic_action", "operation_id", "authorization_decision_id",
-            "policy_revision", "contract_revision", "target_device_id", "sanitized",
+            "policy_revision", "contract_revision", "target_device_id", "initiating_actor", "sanitized",
         )
         if governance_input.get(key) not in (None, "")
     }

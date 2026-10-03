@@ -89,7 +89,8 @@ def _input(auth: dict[str, Any], action_id: str, target_id: str, synthetic: dict
             contract = lite_app_governance.resource_contract(
                 target_id,
                 action_id,
-                require_placement=False,
+                require_placement=None,
+                enforce_placement=False,
                 operation_id="policy-simulation",
             )
         except Exception as exc:
