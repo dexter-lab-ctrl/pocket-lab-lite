@@ -30,6 +30,17 @@ class AppAdapter(Protocol):
 
     def backup_profile(self) -> dict[str, Any]: ...
 
+    def media_status(self) -> dict[str, Any]: ...
+
+    def media_import_blocked(self) -> bool: ...
+
+    def prepare_special_action(
+        self,
+        action_id: str,
+        payload: dict[str, Any],
+        reason: str | None,
+    ) -> dict[str, Any] | None: ...
+
 
 def _url_json_healthy(url: str, *, timeout: float = 1.5) -> bool:
     try:
@@ -177,6 +188,53 @@ class PhotoPrismAdapter:
 
         return lite_app_profiles.photoprism_backup_profile()
 
+    def media_status(self) -> dict[str, Any]:
+        from . import lite_photoprism_media
+
+        return lite_photoprism_media.media_status(self.app_id)
+
+    def media_import_blocked(self) -> bool:
+        from . import lite_photoprism_media
+
+        return bool(lite_photoprism_media.live_phone_import_blocked())
+
+    def prepare_special_action(
+        self,
+        action_id: str,
+        payload: dict[str, Any],
+        reason: str | None,
+    ) -> dict[str, Any] | None:
+        if action_id == "remove_app":
+            from . import lite_photoprism_lifecycle
+
+            response = lite_photoprism_lifecycle.remove_not_implemented(payload)
+            return {
+                "kind": "remove_not_implemented",
+                "response": response,
+                "summary": response.get("summary"),
+            }
+        if action_id == "connect_photos":
+            return {
+                "kind": "guidance",
+                "status": "ready",
+                "accepted": False,
+                "app_id": self.app_id,
+                "action_id": action_id,
+                "label": "Connect photos",
+                "summary": "Use the media folder buttons to connect phone photos safely.",
+            }
+        if action_id == "import_photos":
+            from . import lite_photoprism_media
+
+            command = lite_photoprism_media.media_command(action_id, reason=reason)
+            return {"kind": "media", "command": command, "summary": "Photo import queued."}
+        if action_id == "install_app":
+            from . import lite_photoprism_lifecycle
+
+            command = lite_photoprism_lifecycle.install_command(reason=reason)
+            return {"kind": "install_app", "command": command, "summary": "PhotoPrism install started."}
+        return None
+
 
 _ADAPTERS: dict[str, AppAdapter] = {
     "photoprism": PhotoPrismAdapter(),
@@ -213,6 +271,7 @@ def validate_adapter_bindings() -> None:
         "lifecycle": "lifecycle_profile",
         "security_profile": "security_profile",
         "backup_profile": "backup_profile",
+        "actions": "prepare_special_action",
     }
     for app_id in lite_app_registry.app_ids():
         adapter = adapter_for(app_id)
