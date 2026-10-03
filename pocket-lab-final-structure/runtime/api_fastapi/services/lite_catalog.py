@@ -11,7 +11,7 @@ from fastapi import HTTPException, Request
 
 from .. import deps
 from .fleet_registry import normalize_node_id
-from . import lite_app_registry, lite_app_runtime
+from . import lite_app_adapters, lite_app_registry, lite_app_runtime
 
 COMMAND_SUBJECT = "pocketlab.commands.lite.catalog.install"
 PHOTOPRISM_DEFINITION = lite_app_registry.app_definition("photoprism")
@@ -302,14 +302,29 @@ def _app_payload(app: dict[str, Any], access: dict[str, Any]) -> dict[str, Any]:
 
 def catalog_payload(request: Request | None = None) -> dict[str, Any]:
     state = _read_state()
-    app = _get_app_state(state)
     access = access_status(request)
-    payload = _app_payload(app, access)
-    return {"status": "healthy", "access": access, "apps": [payload], "items": [payload], "count": 1, "updated_at": state.get("updated_at") or _now()}
+    apps: list[dict[str, Any]] = []
+    for app_id in lite_app_registry.app_ids():
+        adapter = lite_app_adapters.adapter_for(app_id)
+        if not lite_app_adapters.supports_service(app_id, "catalog"):
+            continue
+        payload = adapter.catalog_payload(state, access)
+        if not isinstance(payload, dict):
+            continue
+        payload.setdefault("platform_contract", lite_app_registry.app_definition(app_id).public_contract())
+        apps.append(payload)
+    return {
+        "status": "healthy",
+        "access": access,
+        "apps": apps,
+        "items": apps,
+        "count": len(apps),
+        "updated_at": state.get("updated_at") or _now(),
+    }
 
 
 def catalog_apps_count() -> int:
-    return 1
+    return len(tuple(app_id for app_id in lite_app_registry.app_ids() if lite_app_adapters.supports_service(app_id, "catalog")))
 
 
 def _operation_id() -> str:
