@@ -142,6 +142,13 @@ export default function RecoveryScreen() {
     pollingMode: 'slow',
     staleTime: 45_000,
   });
+  const {
+    data: appRecoveryProfiles,
+  } = useLiteResource(liteApi.recoveryApps, [], {
+    enabled: detailsNeeded,
+    pollingMode: 'relaxed',
+    staleTime: 30_000,
+  });
 
 
   const data = summaryData || {};
@@ -256,11 +263,13 @@ export default function RecoveryScreen() {
   const busy = recoveryActions.busyKey || (recoveryFlow.isBusy ? flowBusyKey : '');
   const actionError = recoveryActions.errorMessage || recoveryFlow.error || null;
 
-  const appBackups = Array.isArray(details?.app_backups)
-    ? details.app_backups
-    : Array.isArray(details?.app_backup_profiles?.apps)
-      ? details.app_backup_profiles.apps
-      : [];
+  const appBackups = Array.isArray(appRecoveryProfiles?.apps)
+    ? appRecoveryProfiles.apps
+    : Array.isArray(details?.app_backups)
+      ? details.app_backups
+      : Array.isArray(details?.app_backup_profiles?.apps)
+        ? details.app_backup_profiles.apps
+        : [];
   const lifecycleProfiles = Array.isArray(details?.app_lifecycle_profiles?.apps) ? details.app_lifecycle_profiles.apps : [];
   const lifecycleByApp = new Map(lifecycleProfiles.map((item) => [item.app_id, item]));
   const backupTargets = Array.isArray(details?.backup_targets) ? details.backup_targets : [];

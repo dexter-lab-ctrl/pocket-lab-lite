@@ -266,9 +266,23 @@ export default function LiteIdentityEnterprise({ enterprise, access: initialAcce
           <GlassCard className="lite-governance-card">
             <div className="lite-governance-card-head"><h3>Effective capability matrix</h3><LiteHelp helpKey="rules.protection" /></div>
             <div className="lite-governance-matrix">
-              {(accessData.action_matrix || []).map((row) => <div className="lite-governance-matrix-row" key={row.action_id}><div><strong>{row.label}</strong><div className="lite-governance-muted">{row.summary}</div></div>{ROLE_ORDER.map((role) => <div key={role} className="lite-governance-matrix-cell"><strong>{role}</strong><br />{row.roles?.[role] === 'allow' ? 'Direct' : row.roles?.[role] === 'approval' ? 'Review' : row.roles?.[role] === 'step_up' ? 'Passkey' : 'Blocked'}</div>)}</div>)}
+              {(accessData.action_matrix || []).map((row) => <div className="lite-governance-matrix-row" key={row.action_id}><div><strong>{row.label}</strong><div className="lite-governance-muted">{row.summary}</div></div>{ROLE_ORDER.map((role) => <div key={role} className="lite-governance-matrix-cell"><strong>{role}</strong><br />{row.roles?.[role] === 'allow' ? 'Direct' : row.roles?.[role] === 'approval' ? 'Review' : row.roles?.[role] === 'step_up' ? 'Passkey' : row.roles?.[role] === 'temporary_access' ? 'Temporary' : 'Blocked'}</div>)}</div>)}
             </div>
           </GlassCard>
+          {(accessData.app_resources || []).length ? (
+            <GlassCard className="lite-governance-card">
+              <div className="lite-governance-card-head"><h3>App resources</h3><StatusBadge status="healthy">Registry owned</StatusBadge></div>
+              <p>Registered apps use the same workspace roles and Safety Rules. Pocket Lab derives each app capability on the server.</p>
+              <div className="lite-governance-role-grid">
+                {(accessData.app_resources || []).map((resource) => {
+                  const allowed = (resource.actions || []).filter((action) => action.allowed).length;
+                  const review = (resource.actions || []).filter((action) => action.requires_approval).length;
+                  const temporary = (resource.actions || []).filter((action) => action.temporary_access_supported).length;
+                  return <div key={resource.app_id} className="lite-governance-role-card"><div className="lite-governance-card-head"><strong>{resource.app_label || resource.app_id}</strong><StatusBadge status={review ? 'review' : allowed ? 'healthy' : 'neutral'}>{resource.role || currentRole}</StatusBadge></div><p>{resource.summary || 'Access follows current Safety Rules.'}</p><div className="lite-governance-muted">{allowed} direct · {review} review · {temporary} temporary-access capable</div></div>;
+                })}
+              </div>
+            </GlassCard>
+          ) : null}
         </div>
       ) : null}
 

@@ -237,16 +237,26 @@ export default function RecoveryManageSheetLazy({
               <div className="lite-recovery-manage-app-list">
                 {appBackups.map((app) => {
                   const lifecycle = lifecycleByApp.get(app.app_id) || app.lifecycle || {};
+                  const recovery = app.recovery || {};
+                  const blockers = Array.isArray(recovery.recovery_blockers) ? recovery.recovery_blockers : [];
+                  const backupSupported = recovery.backup_supported !== false;
                   return (
                     <article key={app.app_id || app.name}>
                       <div>
-                        <strong>{app.name || 'Self-hosted app'}</strong>
-                        <span>{lifecycle?.backup?.summary || app.summary || 'App backup profile is ready.'}</span>
+                        <div className="lite-recovery-manage-action-title">
+                          <strong>{app.name || 'Self-hosted app'}</strong>
+                          {Object.keys(recovery).length ? <StatusBadge status={recovery.recovery_ready ? 'healthy' : 'review'}>{recovery.recovery_ready ? 'Recovery ready' : 'Needs attention'}</StatusBadge> : null}
+                        </div>
+                        <span>{blockers[0] || recovery.summary || lifecycle?.backup?.summary || app.summary || 'App backup profile is ready.'}</span>
+                        {recovery.protected_user_data_excluded ? <small>Protected user data is intentionally excluded.</small> : null}
+                        {recovery.credential_rebinding_required ? <small>App sign-in may need to be reconnected after restore.</small> : null}
                       </div>
                       <div>
-                        <LiteButton onClick={() => onBackUpApp(app)} disabled={Boolean(busy)}>
-                          {busy === `app-backup:${app.app_id}` ? 'Starting…' : 'Back up'}
-                        </LiteButton>
+                        {backupSupported ? (
+                          <LiteButton onClick={() => onBackUpApp(app)} disabled={Boolean(busy)}>
+                            {busy === `app-backup:${app.app_id}` ? 'Starting…' : 'Back up'}
+                          </LiteButton>
+                        ) : <StatusBadge status="neutral">Backup unsupported</StatusBadge>}
                       </div>
                     </article>
                   );
