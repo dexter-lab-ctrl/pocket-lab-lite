@@ -20,6 +20,76 @@ class AppAdapter(Protocol):
 
     def embed_origin(self) -> str | None: ...
 
+    def hydrate_live_state(self, app: dict[str, Any]) -> None: ...
+
+
+def _url_json_healthy(url: str, *, timeout: float = 1.5) -> bool:
+    try:
+        request = urllib.request.Request(url, method="GET")
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            status = int(getattr(response, "status", response.getcode()))
+            if status < 200 or status >= 400:
+                return False
+            body = response.read(1024)
+            payload = json.loads(body.decode("utf-8", errors="replace"))
+            return payload.get("status") in {"operational", "healthy", "ok"}
+    except Exception:
+        return False
+
+
+def _url_reachable(url: str, *, timeout: float = 1.5) -> bool:
+    try:
+        request = urllib.request.Request(url, method="HEAD")
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            status = int(getattr(response, "status", response.getcode()))
+            return 200 <= status < 400
+    except Exception:
+        return False
+
+
+def _caddyfile_text() -> str:
+    default = "~/pocket-lab-lite/caddy/Caddyfile"
+    caddyfile = Path(os.environ.get("POCKETLAB_CADDYFILE") or os.environ.get("CADDYFILE") or default).expanduser()
+    try:
+        return caddyfile.read_text(encoding="utf-8", errors="replace")
+    except Exception:
+        return ""
+
+
+class PhotoPrismAdapter:
+    app_id = "photoprism"
+    services = frozenset({
+        "actions",
+        "backup",
+        "backup_to_storage",
+        "install",
+        "lifecycle",
+        "profiles",
+        "update_readiness",
+    })
+
+    @property
+    def definition(self) -> lite_app_registry.AppDefinition:
+        return lite_app_registry.app_definition(self.app_id)
+
+    def route_ready(self) -> bool:
+        route = self.definition.route.rstrip("/")
+        status_url = f"http://127.0.0.1:8443{route}/api/v1/status"
+        root_url = f"http://127.0.0.1:8443{self.definition.route}"
+        return _url_json_healthy(status_url) or _url_reachable(root_url)
+
+    def embed_origin(self) -> str | None:
+        content = _caddyfile_text()
+        if not content or f"handle {self.definition.route}*" not in content:
+            return None
+        if "header_down -X-Frame-Options" not in content or "header_down -Content-Security-Policy" not in content:
+            return None
+        match = re.search(
+            r'Content-Security-Policy\s+"frame-ancestors\s+\'self\'\s+(https://[A-Za-z0-9.-]+\.ts\.net)"',
+            content,
+        )
+        return match.group(1) if match else None
+
     def hydrate_with_readiness(
         self,
         app: dict[str, Any],
