@@ -2115,13 +2115,16 @@ function CatalogManagePortal({
   const appRecovery = appResource?.recovery || {};
   const enterpriseAccess = appAuthority.mode === 'enterprise';
   const approvalRequired = (appAuthority.actions || []).some((item) => item?.requires_approval);
+  const temporaryAccessRequired = (appAuthority.actions || []).some((item) => item?.requires_temporary_access);
   const blockedByRules = (appAuthority.actions || []).length > 0
     && !(appAuthority.actions || []).some((item) => item?.allowed || item?.requires_approval || item?.temporary_access_supported);
   const accessSummary = blockedByRules
     ? 'Access is blocked by Rules.'
     : approvalRequired
       ? 'Some app changes need approval.'
-      : appAuthority.summary || 'App access follows current Safety Rules.';
+      : temporaryAccessRequired
+        ? 'Some app changes need temporary access.'
+        : appAuthority.summary || 'App access follows current Safety Rules.';
   const showAccessSafety = enterpriseAccess
     || credentialStatus.missing
     || credentialStatus.needs_rotation

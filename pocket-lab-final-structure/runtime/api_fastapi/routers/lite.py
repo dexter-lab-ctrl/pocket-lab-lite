@@ -249,7 +249,7 @@ async def _authorize_app_resource(
     action_id: str,
     target_device_id: str | None = None,
     operation_id: str | None = None,
-    require_placement: bool = True,
+    require_placement: bool | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any] | None]:
     contract = lite_app_governance.resource_contract(
         app_id,
@@ -1771,7 +1771,7 @@ async def update_lite_app_credentials(app_id: str, payload: LiteAppCredentialMet
         app_id=app_id,
         action_id="app.credentials.manage",
         operation_id="app-credential-" + uuid.uuid4().hex,
-        require_placement=True,
+        require_placement=False,
     )
     result = lite_app_credentials.update_metadata(
         contract["app_id"],
