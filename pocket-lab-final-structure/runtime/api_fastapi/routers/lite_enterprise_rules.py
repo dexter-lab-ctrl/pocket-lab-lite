@@ -37,6 +37,7 @@ class ApprovalTransitionRequest(BaseModel):
 
 class TemporaryExceptionRequest(BaseModel):
     app_id: str = Field(min_length=1, max_length=160)
+    action_id: str = Field(default="app.install", min_length=1, max_length=120)
     device_id: str = Field(min_length=1, max_length=160)
     human_id: str = Field(min_length=1, max_length=120)
     reason: str = Field(min_length=1, max_length=240)
@@ -209,7 +210,7 @@ def exceptions(request: Request, response: Response) -> dict[str, Any]:
 
 @router.post("/exceptions", status_code=201)
 def create_exception(payload: TemporaryExceptionRequest, request: Request, response: Response) -> dict[str, Any]:
-    return _call(response, lambda: lite_policy_approvals.create_exception(auth_context=deps.require_auth(request, write=True), app_id=payload.app_id, device_id=payload.device_id, human_id=payload.human_id, reason=payload.reason, duration_minutes=payload.duration_minutes))
+    return _call(response, lambda: lite_policy_approvals.create_exception(auth_context=deps.require_auth(request, write=True), app_id=payload.app_id, action_id=payload.action_id, device_id=payload.device_id, human_id=payload.human_id, reason=payload.reason, duration_minutes=payload.duration_minutes))
 
 
 @router.post("/exceptions/{exception_id}/revoke")
