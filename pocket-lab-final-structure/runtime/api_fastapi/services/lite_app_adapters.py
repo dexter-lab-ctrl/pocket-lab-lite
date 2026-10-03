@@ -329,15 +329,32 @@ class PhotoPrismAdapter:
                 "summary": "Photo import queued.",
             }
         if action_id == "install_app":
-            from . import lite_catalog, lite_photoprism_lifecycle
+            from . import lite_catalog
 
-            command = lite_photoprism_lifecycle.install_command(reason=reason)
+            params = dict(payload.get("params") or {}) if isinstance(payload.get("params"), dict) else {}
+            if payload.get("version"):
+                params["version"] = payload.get("version")
+            if reason:
+                params.setdefault("reason", reason)
+            command = lite_catalog.install_command(
+                self.app_id,
+                payload.get("target_node_id") or payload.get("target_device_id"),
+                requested_by=payload.get("requested_by") or "lite-api",
+                dry_run=bool(payload.get("dry_run")),
+                params=params,
+            )
+            if command.get("already_installed"):
+                return {
+                    "kind": "already_installed",
+                    "response": lite_catalog.already_installed_response(command),
+                    "summary": f"{self.definition.name} is already ready.",
+                }
             return {
                 "kind": "install_app",
                 "command": command,
                 "subject": lite_catalog.COMMAND_SUBJECT,
                 "event": "lite.catalog.install.requested",
-                "summary": "PhotoPrism install started.",
+                "summary": f"{self.definition.name} install started.",
             }
         if action_id == "check_app":
             from . import lite_security
