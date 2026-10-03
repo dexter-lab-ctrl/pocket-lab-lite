@@ -34,6 +34,12 @@ class AppAdapter(Protocol):
 
     def backup_policy(self) -> dict[str, Any]: ...
 
+    def update_status(self) -> dict[str, Any]: ...
+
+    def update_receipt(self, operation_id: str) -> dict[str, Any] | None: ...
+
+    def update_apply_disabled(self) -> dict[str, Any]: ...
+
     def media_status(self) -> dict[str, Any]: ...
 
     def media_import_blocked(self) -> bool: ...
@@ -218,6 +224,21 @@ class PhotoPrismAdapter:
             "backup_summary": "PhotoPrism app backup saved. Settings, mappings, route records, and safe app records are protected; media remains excluded by default.",
         }
 
+    def update_status(self) -> dict[str, Any]:
+        from . import lite_app_update
+
+        return lite_app_update.update_status(self.app_id)
+
+    def update_receipt(self, operation_id: str) -> dict[str, Any] | None:
+        from . import lite_app_update
+
+        return lite_app_update.update_receipt(self.app_id, operation_id)
+
+    def update_apply_disabled(self) -> dict[str, Any]:
+        from . import lite_app_update
+
+        return lite_app_update.apply_update_disabled(self.app_id)
+
     def media_status(self) -> dict[str, Any]:
         from . import lite_photoprism_media
 
@@ -340,6 +361,7 @@ def validate_adapter_bindings() -> None:
         "security_profile": "security_profile",
         "backup_profile": "backup_profile",
         "backup": "backup_policy",
+        "update_readiness": "update_status",
         "actions": "prepare_special_action",
     }
     for app_id in lite_app_registry.app_ids():
