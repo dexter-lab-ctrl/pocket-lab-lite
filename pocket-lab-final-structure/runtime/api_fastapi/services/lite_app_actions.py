@@ -909,43 +909,21 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
         command = lite_app_backup.app_restore_preview_command(app_id, backup_id=payload.get("backup_id") or "latest", reason=reason)
         return {"kind": "restore_preview", "command": command, "summary": f"{lite_app_registry.app_definition(app_id).name} restore preview queued."}
 
-    if action == "check_app":
-        run_id = f"security-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
-        return {
-            "kind": "security_app_check",
-            "subject": lite_security.policy.COMMAND_SUBJECT,
-            "command": {
-                "run_id": run_id,
-                "command_id": run_id,
-                "scope": "local",
-                "profile": "app",
-                "app_id": app_id,
-                "reason": reason or "manual app check",
-                "requested_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-            },
-            "summary": f"Checking {lite_app_registry.app_definition(app_id).name} safety.",
-        }
-
-    if action == "repair_app":
-        command = lite_app_operations.command_for_operation(app_id, action, reason=reason)
-        return {
-            "kind": "app_operation",
-            "command": command,
-            "subject": lite_app_operations.subject_for_action(action),
-            "summary": f"Repairing {lite_app_registry.app_definition(app_id).name} safely.",
-        }
-
-    if action in {"import_photos", "install_app"}:
+    if action in {"check_app", "repair_app", "import_photos", "install_app", "update_app"}:
         prepared = adapter.prepare_special_action(action, payload, reason)
         if prepared is None:
-            raise HTTPException(status_code=501, detail={"status": "not_implemented", "app_id": app_id, "action_id": action, "summary": "This app has no handler for this action."})
+            raise HTTPException(
+                status_code=501,
+                detail={
+                    "status": "not_implemented",
+                    "app_id": app_id,
+                    "action_id": action,
+                    "summary": "This app has no adapter handler for this action.",
+                },
+            )
         if action == "import_photos" and not prepared.get("summary"):
             prepared["summary"] = action_profile.get("summary") or f"{action_profile.get('label')} queued."
         return prepared
-
-    if action == "update_app":
-        command = lite_app_update.update_command(app_id, reason=reason)
-        return {"kind": "update_check", "command": command, "subject": lite_app_update.APP_UPDATE_CHECK_SUBJECT, "summary": f"Checking {lite_app_registry.app_definition(app_id).name} update readiness."}
 
     raise HTTPException(
         status_code=501,
