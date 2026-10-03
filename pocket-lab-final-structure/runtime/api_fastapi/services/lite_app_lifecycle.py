@@ -1134,13 +1134,17 @@ def photoprism_lifecycle_profile(stage_timings: dict[str, float] | None = None) 
 
 
 def app_lifecycle_profile(app_id: str) -> dict[str, Any]:
-    _validate_app_id(app_id)
-    return photoprism_lifecycle_profile()
+    normalized = _validate_app_id(app_id)
+    adapter = lite_app_adapters.adapter_for(normalized)
+    return adapter.lifecycle_profile()
 
 
 def app_lifecycle_profiles() -> dict[str, Any]:
     stage_timings: dict[str, float] = {}
-    profiles = [photoprism_lifecycle_profile(stage_timings)]
+    profiles = [
+        lite_app_adapters.adapter_for(app_id).lifecycle_profile(stage_timings)
+        for app_id in SUPPORTED_APP_IDS
+    ]
     ready = sum(1 for item in profiles if item.get("status") == "ready")
     attention = sum(1 for item in profiles if item.get("attention"))
     return {
@@ -1159,24 +1163,32 @@ def app_lifecycle_profiles() -> dict[str, Any]:
 def hydrate_catalog_lifecycle(payload: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(payload, dict):
         return payload
-    profile = photoprism_lifecycle_profile()
+    profiles = {
+        app_id: lite_app_adapters.adapter_for(app_id).lifecycle_profile()
+        for app_id in SUPPORTED_APP_IDS
+    }
     for key in ("apps", "items"):
         apps = payload.get(key)
         if not isinstance(apps, list):
             continue
         for app in apps:
-            if isinstance(app, dict) and str(app.get("id") or "").lower() == "photoprism":
-                app["lifecycle"] = profile
-                app["lifecycle_summary"] = {
-                    "status": profile["status"],
-                    "summary": profile["summary"],
-                    "host": profile["host_device"].get("label"),
-                    "storage": profile["storage"].get("summary"),
-                    "security": profile["security"].get("summary"),
-                    "backup": profile["backup"].get("summary"),
-                    "media": profile.get("media", {}).get("summary"),
-                    "update": (profile.get("update") or {}).get("readiness", {}).get("summary") if isinstance((profile.get("update") or {}).get("readiness"), dict) else None,
-                    "last_indexed_at": profile.get("media", {}).get("last_indexed_at"),
-                    "attention_count": len(profile.get("attention") or []),
-                }
+            if not isinstance(app, dict):
+                continue
+            app_id = str(app.get("id") or "").strip().lower()
+            profile = profiles.get(app_id)
+            if not isinstance(profile, dict):
+                continue
+            app["lifecycle"] = profile
+            app["lifecycle_summary"] = {
+                "status": profile.get("status"),
+                "summary": profile.get("summary"),
+                "host": (profile.get("host_device") or {}).get("label") if isinstance(profile.get("host_device"), dict) else None,
+                "storage": (profile.get("storage") or {}).get("summary") if isinstance(profile.get("storage"), dict) else None,
+                "security": (profile.get("security") or {}).get("summary") if isinstance(profile.get("security"), dict) else None,
+                "backup": (profile.get("backup") or {}).get("summary") if isinstance(profile.get("backup"), dict) else None,
+                "media": (profile.get("media") or {}).get("summary") if isinstance(profile.get("media"), dict) else None,
+                "update": (profile.get("update") or {}).get("readiness", {}).get("summary") if isinstance((profile.get("update") or {}).get("readiness"), dict) else None,
+                "last_indexed_at": (profile.get("media") or {}).get("last_indexed_at") if isinstance(profile.get("media"), dict) else None,
+                "attention_count": len(profile.get("attention") or []),
+            }
     return payload
