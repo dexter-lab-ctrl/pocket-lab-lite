@@ -99,7 +99,7 @@ assurance suites.
 | --- | --- | --- | --- |
 | `lite:test:app-governance` | focused pytest contracts + Vitest app-resource projection | DEV PC/CI | source/contract validation only; does not contact NATS, PM2, Tailscale, Server Phone, or execute app adapters |
 
-This task covers the registry/resource contract, exact app approval/temporary-access binding, credential-metadata redaction, and focused frontend projection/invalidation behavior. Rego, Storybook, Playwright, full Lite gates, runtime qualification, and Server Phone validation remain separate gates.
+This task covers the registry/resource contract, canonical action compatibility, role projection, verified placement, exact app approval/temporary-access binding, credential-metadata redaction, source-boundary guards, and focused frontend projection/invalidation behavior. Rego, Storybook, Playwright, full Lite gates, runtime qualification, and Server Phone validation remain separate gates.
 
 ## Return semantics
 
