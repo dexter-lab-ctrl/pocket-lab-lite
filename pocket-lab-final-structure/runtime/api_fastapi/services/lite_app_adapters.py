@@ -53,6 +53,10 @@ class AppAdapter(Protocol):
         reason: str | None,
     ) -> dict[str, Any] | None: ...
 
+    def record_special_action_queued(self, kind: str, command: dict[str, Any]) -> dict[str, Any] | None: ...
+
+    def discard_special_action_queued(self, kind: str, command: dict[str, Any]) -> None: ...
+
 
 def _url_json_healthy(url: str, *, timeout: float = 1.5) -> bool:
     try:
@@ -317,12 +321,24 @@ class PhotoPrismAdapter:
             from . import lite_photoprism_media
 
             command = lite_photoprism_media.media_command(action_id, reason=reason)
-            return {"kind": "media", "command": command, "summary": "Photo import queued."}
+            return {
+                "kind": "media",
+                "command": command,
+                "subject": lite_photoprism_media.MEDIA_COMMAND_SUBJECT,
+                "event": "lite.app.media.queued",
+                "summary": "Photo import queued.",
+            }
         if action_id == "install_app":
-            from . import lite_photoprism_lifecycle
+            from . import lite_catalog, lite_photoprism_lifecycle
 
             command = lite_photoprism_lifecycle.install_command(reason=reason)
-            return {"kind": "install_app", "command": command, "summary": "PhotoPrism install started."}
+            return {
+                "kind": "install_app",
+                "command": command,
+                "subject": lite_catalog.COMMAND_SUBJECT,
+                "event": "lite.catalog.install.requested",
+                "summary": "PhotoPrism install started.",
+            }
         if action_id == "check_app":
             from . import lite_security
 
@@ -339,6 +355,7 @@ class PhotoPrismAdapter:
                     "reason": reason or "manual app check",
                     "requested_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
                 },
+                "event": "lite.security.app_check.requested",
                 "summary": "Checking PhotoPrism safety.",
             }
         if action_id == "repair_app":
@@ -349,6 +366,7 @@ class PhotoPrismAdapter:
                 "kind": "app_operation",
                 "command": command,
                 "subject": lite_app_operations.subject_for_action(action_id),
+                "event": "lite.app.operation.queued",
                 "summary": "Repairing PhotoPrism safely.",
             }
         if action_id == "update_app":
@@ -359,9 +377,59 @@ class PhotoPrismAdapter:
                 "kind": "update_check",
                 "command": command,
                 "subject": lite_app_update.APP_UPDATE_CHECK_SUBJECT,
+                "event": "lite.app.update.check_queued",
                 "summary": "Checking PhotoPrism update readiness.",
             }
         return None
+
+    def record_special_action_queued(self, kind: str, command: dict[str, Any]) -> dict[str, Any] | None:
+        if kind == "install_app":
+            from . import lite_catalog
+
+            return lite_catalog.record_install_queued(command)
+        if kind == "media":
+            from . import lite_photoprism_media
+
+            return lite_photoprism_media.record_operation(command, status="queued")
+        if kind == "security_app_check":
+            from . import lite_security
+
+            lite_security.record_queued_run(command)
+            return {"run_id": command.get("run_id"), "status": "queued"}
+        if kind == "app_operation":
+            from . import lite_app_operations
+
+            return lite_app_operations.record_queued_operation(command)
+        if kind == "update_check":
+            from . import lite_app_update
+
+            return lite_app_update.record_update_request(command)
+        return None
+
+    def discard_special_action_queued(self, kind: str, command: dict[str, Any]) -> None:
+        if kind == "install_app":
+            from . import lite_catalog
+
+            lite_catalog.discard_operation(str(command.get("operation_id") or ""))
+            return
+        if kind == "security_app_check":
+            from . import lite_security
+
+            lite_security.discard_queued_run(command.get("run_id") or command.get("command_id"))
+            return
+        if kind == "app_operation":
+            from . import lite_app_operations
+
+            lite_app_operations.mark_operation_failed(command, "App action could not be queued safely.")
+            return
+        if kind == "update_check":
+            from . import lite_app_update
+
+            state = lite_app_update._read_state()
+            pending = state.get("pending_update_check")
+            if isinstance(pending, dict) and pending.get("command_id") == command.get("command_id"):
+                state["pending_update_check"] = None
+                lite_app_update._write_state(state)
 
 
 _ADAPTERS: dict[str, AppAdapter] = {
@@ -411,6 +479,10 @@ def validate_adapter_bindings() -> None:
         for service, method_name in service_methods.items():
             if service in adapter.services and not callable(getattr(adapter, method_name, None)):
                 raise RuntimeError(f"App adapter {app_id!r} declares {service!r} without {method_name}()")
+        if "actions" in adapter.services:
+            for method_name in ("record_special_action_queued", "discard_special_action_queued"):
+                if not callable(getattr(adapter, method_name, None)):
+                    raise RuntimeError(f"App adapter {app_id!r} action service requires {method_name}()")
 
 
 validate_adapter_bindings()
