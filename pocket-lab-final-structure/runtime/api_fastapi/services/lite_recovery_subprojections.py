@@ -10,7 +10,7 @@ import time
 from typing import Any, Callable
 
 from .. import deps
-from . import lite_app_backup_targets, lite_database_recovery, lite_security_maintenance, lite_status
+from . import lite_app_backup_targets, lite_app_governance, lite_app_registry, lite_database_recovery, lite_security_maintenance, lite_status
 
 _LOGGER = logging.getLogger(__name__)
 _LOCK = threading.RLock()
@@ -225,11 +225,13 @@ def backup_targets() -> dict[str, Any]:
 
 
 def app_backup_targets(app_id: str = "photoprism") -> dict[str, Any]:
+    definition = lite_app_registry.app_definition(app_id)
     payload = backup_targets()
     return {
         **payload,
-        "app_id": str(app_id or "photoprism"),
-        "name": "PhotoPrism",
+        "app_id": definition.id,
+        "name": definition.name,
+        "recovery": lite_app_governance.recovery_projection(definition.id),
     }
 
 

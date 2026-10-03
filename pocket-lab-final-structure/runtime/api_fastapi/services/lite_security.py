@@ -7961,6 +7961,15 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
 
 def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     app_id = _scan_app_id(command) or "photoprism"
+    governance_input = command.get("governance") if isinstance(command.get("governance"), dict) else {}
+    governance = {
+        key: governance_input.get(key)
+        for key in (
+            "app_id", "semantic_action", "operation_id", "authorization_decision_id",
+            "policy_revision", "contract_revision", "target_device_id", "sanitized",
+        )
+        if governance_input.get(key) not in (None, "")
+    }
     target_contract = policy.app_check_target(app_id)
     app_label = _app_label(app_id) or str(target_contract.get("app_label") or lite_app_registry.app_definition(app_id).name)
     prefix = app_id.replace("-", "_")
@@ -7988,6 +7997,7 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         "app_label": app_label,
         "tools": ["trivy", "app-posture"],
         "target_statuses": target_statuses,
+        "governance": governance,
     })
     run["coverage_summary"] = build_coverage_summary(
         plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs
@@ -8333,6 +8343,7 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             "scan_profile": state.get("scan_profile"),
             "app_id": app_id,
             "app_label": app_label,
+            "governance": governance,
             "evidence_refs": evidence_refs,
         },
     )
