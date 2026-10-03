@@ -1764,7 +1764,7 @@ async def start_lite_app_backup(app_id: str, payload: LiteAppBackupRequest, requ
     submitted.update({
         "accepted": True,
         "status": submitted.get("status") or "queued",
-        "app_id": "photoprism",
+        "app_id": command["app_id"],
         "action_id": "backup_app",
         "backup_id": command["backup_id"],
         "mode": command["app_backup_mode"],
@@ -1816,12 +1816,12 @@ async def start_lite_app_restore_preview(app_id: str, payload: LiteAppRestorePre
     submitted.update({
         "accepted": True,
         "status": submitted.get("status") or "queued",
-        "app_id": "photoprism",
+        "app_id": command["app_id"],
         "action_id": "preview_restore",
         "backup_id": command["backup_id"],
         "preview_id": command["preview_id"],
         "pending_restore_preview": pending,
-        "summary": action.get("summary") or f"Preparing {command.get('app_label') or app_id} restore preview.",
+        "summary": f"Preparing {command.get('app_label') or app_id} restore preview.",
         "progress": {"phase": "queued", "step": "Restore preview queued.", "bounded": True},
         "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
     })
@@ -4514,7 +4514,7 @@ async def backup_lite_app(app_id: str, payload: LiteAppBackupRequest, request: R
         "backup_id": command["backup_id"],
         "mode": command["app_backup_mode"],
         "pending_backup": pending,
-        "summary": "PhotoPrism app backup queued. Config and app metadata are included; media remains excluded unless a supported media backup mode is enabled.",
+        "summary": f"{command.get('app_label') or command['app_id']} app backup queued. Adapter-approved safe app records are included; protected user data remains excluded by default.",
     })
     return submitted
 
@@ -4532,12 +4532,12 @@ async def preview_lite_app_restore(app_id: str, payload: LiteAppRestorePreviewRe
     submitted.update({
         "accepted": True,
         "status": submitted.get("status") or "queued",
-        "app_id": "photoprism",
+        "app_id": command["app_id"],
         "action_id": "preview_restore",
         "backup_id": command["backup_id"],
         "preview_id": command["preview_id"],
         "pending_restore_preview": pending,
-        "summary": "Preparing PhotoPrism restore preview.",
+        "summary": f"Preparing {command.get('app_label') or app_id} restore preview.",
         "progress": {"phase": "queued", "step": "Restore preview queued.", "bounded": True},
         "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
     })
