@@ -1087,7 +1087,7 @@ class LiteAppCredentialMetadataRequest(BaseModel):
 
     credential_id: str = Field(min_length=1, max_length=64)
     status: Literal["configured", "missing", "needs_rotation", "invalid", "external_manual", "not_required"]
-    management: Literal["pocket_lab_metadata", "external_or_manual"] = "external_or_manual"
+    management: Literal["external_or_manual"] = "external_or_manual"
     last_verified_at: str | None = Field(default=None, max_length=40)
 
 
@@ -2452,13 +2452,14 @@ async def install_lite_catalog_item(payload: LiteCatalogInstallRequest, request:
 @router.post("/catalog/remove", status_code=501)
 def remove_lite_catalog_item(payload: LiteCatalogRemoveRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
+    definition = lite_app_registry.app_definition(payload.app_id)
     # The uploaded source does not currently prove a remove_blueprint/remove_app typed operation.
     # Keep the endpoint explicit and friendly instead of pretending removal is implemented.
     return {
         "status": "not_implemented",
         "accepted": False,
         "summary": "Remove is not enabled yet because the lite operation contract has not been added.",
-        "app_id": payload.app_id,
+        "app_id": definition.id,
         "next_step": "Add and validate a remove_blueprint typed operation before enabling this action.",
     }
 

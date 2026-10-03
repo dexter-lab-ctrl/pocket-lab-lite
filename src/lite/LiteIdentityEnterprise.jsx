@@ -4,6 +4,7 @@ import { Activity, ShieldCheck, UserPlus, UsersRound } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { clearLiteIdentityCsrf, liteApi } from '../lib/liteApi.js';
 import { liteEnterpriseApi } from '../lib/liteEnterpriseApi.js';
+import { invalidateLiteAppResourceQueries } from '../lib/liteQueryClient.js';
 import { createLitePasskey, getLitePasskey } from '../lib/liteWebAuthn.js';
 import { getLiteReasonPresentation } from '../lib/identityRulesPresentation.js';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
@@ -95,6 +96,7 @@ export default function LiteIdentityEnterprise({ enterprise, access: initialAcce
       const jobs = [access.refresh?.(), onIdentityRefresh?.()];
       if (refreshPeople) jobs.push(people.refresh?.());
       await Promise.all(jobs.filter(Boolean));
+      await invalidateLiteAppResourceQueries();
       setNotice({ title: 'Access updated', message: result?.summary || successMessage });
       pushToast({
         id: `identity-governance:${name}`,

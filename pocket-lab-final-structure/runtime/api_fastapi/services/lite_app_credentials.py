@@ -18,7 +18,7 @@ from . import lite_app_registry
 
 _CREDENTIAL_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 STATUSES = frozenset({"configured", "missing", "needs_rotation", "invalid", "external_manual", "not_required"})
-MANAGEMENT = frozenset({"pocket_lab_metadata", "external_or_manual"})
+MANAGEMENT = frozenset({"external_or_manual"})
 
 
 def _definition(app_id: Any):

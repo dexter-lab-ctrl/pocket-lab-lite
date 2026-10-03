@@ -1633,6 +1633,14 @@ export function getLiteDeviceMutationInvalidations(actionId = '', result = {}) {
     || ['add_device', 'remove_device', 'restart_agent', 'update_device_model'].includes(normalized)
   );
   if (statusChanged) keys.push(['lite', 'status']);
+  const placementChanged = Boolean(
+    result?.capabilities_changed
+    || result?.device_capabilities_changed
+    || result?.role_changed
+    || result?.device_role_changed
+    || ['device_role_change', 'change_device_role', 'update_device_role'].includes(normalized)
+  );
+  if (placementChanged) keys.push(['lite', 'app']);
   return keys;
 }
 
@@ -3295,6 +3303,9 @@ export function selectAppResourceView(payload = {}) {
       credential_rebinding_required: Boolean(recovery.credential_rebinding_required),
       recovery_ready: Boolean(recovery.recovery_ready),
       recovery_blockers: (Array.isArray(recovery.recovery_blockers) ? recovery.recovery_blockers : []).slice(0, 6).map((item) => safeString(item)).filter(Boolean),
+      credential_backup_policy: isObject(recovery.credential_backup_policy)
+        ? copySafeKeys(recovery.credential_backup_policy, ['app_backup', 'workspace_database', 'secret_material'])
+        : null,
       summary: safeString(recovery.summary || ''),
     },
     credential_status: {
