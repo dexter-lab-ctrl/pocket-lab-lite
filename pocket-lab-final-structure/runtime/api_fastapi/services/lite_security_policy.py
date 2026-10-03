@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from . import lite_app_adapters, lite_app_registry
+
 
 COMMAND_SUBJECT = "pocketlab.commands.lite.security.scan"
 
@@ -241,17 +243,37 @@ APP_EXTRA_EXCLUDED_DIRS = [
     "rootfs/var/tmp",
 ]
 
+def _safe_adapter_scan_contract(app_id: str) -> dict[str, Any]:
+    definition = lite_app_registry.app_definition(app_id)
+    adapter = lite_app_adapters.adapter_for(app_id)
+    contract = adapter.security_scan_contract()
+    if not isinstance(contract, dict):
+        raise RuntimeError(f"Security scan contract is unavailable for {app_id!r}")
+    if contract.get("app_id") != app_id:
+        raise RuntimeError(f"Security scan contract identity mismatch for {app_id!r}")
+    if contract.get("route") != definition.route:
+        raise RuntimeError(f"Security scan route mismatch for {app_id!r}")
+    if contract.get("process_name") != definition.process:
+        raise RuntimeError(f"Security scan process mismatch for {app_id!r}")
+    for key in ("proot_app_path", "proot_binary_path", "config_relative"):
+        value = str(contract.get(key) or "")
+        candidate = Path(value)
+        if not value or candidate.is_absolute() or ".." in candidate.parts:
+            raise RuntimeError(f"Unsafe security scan path {key!r} for {app_id!r}")
+    for value in [
+        *(contract.get("backup_relatives") or []),
+        *(contract.get("extra_excluded_dirs") or []),
+    ]:
+        candidate = Path(str(value or ""))
+        if not str(value or "") or candidate.is_absolute() or ".." in candidate.parts:
+            raise RuntimeError(f"Unsafe security scan relative path for {app_id!r}")
+    return dict(contract)
+
+
 SUPPORTED_APP_CHECK_TARGETS = {
-    "photoprism": {
-        "app_id": "photoprism",
-        "app_label": "PhotoPrism",
-        "route": "/apps/photoprism/",
-        "health_path": "/apps/photoprism/api/v1/status",
-        "expected_health": {"status": "operational"},
-        "process_name": "pocketlab-app-photoprism",
-        "proot_app_path": "opt/photoprism",
-        "proot_binary_path": "usr/local/bin/photoprism",
-    }
+    app_id: _safe_adapter_scan_contract(app_id)
+    for app_id in lite_app_adapters.app_ids_for_service("security_scan")
+    if lite_app_registry.supports(app_id, "security_check")
 }
 
 SENSITIVE_KEY_RE = re.compile(
@@ -398,9 +420,15 @@ def full_scan_excludes() -> dict[str, Any]:
     }
 
 
-def app_scan_excludes() -> dict[str, Any]:
+def app_scan_excludes(app_id: Any = None) -> dict[str, Any]:
+    selected = normalize_app_id(app_id or "photoprism")
+    target = app_check_target(selected)
     return {
-        "skip_dirs": sorted(set([*EXCLUDED_DIRS, *APP_EXTRA_EXCLUDED_DIRS])),
+        "skip_dirs": sorted(set([
+            *EXCLUDED_DIRS,
+            *APP_EXTRA_EXCLUDED_DIRS,
+            *(target.get("extra_excluded_dirs") or []),
+        ])),
         "skip_files": sorted(
             set(
                 [
@@ -411,8 +439,14 @@ def app_scan_excludes() -> dict[str, Any]:
                 ]
             )
         ),
-        "excluded_groups": list(APP_EXCLUDED_GROUPS),
-        "skipped_targets": list(APP_SKIPPED_TARGETS),
+        "excluded_groups": list(dict.fromkeys([
+            *APP_EXCLUDED_GROUPS,
+            *(target.get("excluded_groups") or []),
+        ])),
+        "skipped_targets": list(dict.fromkeys([
+            *APP_SKIPPED_TARGETS,
+            *(target.get("skipped_targets") or []),
+        ])),
     }
 
 
@@ -651,82 +685,82 @@ def app_check_target(app_id: Any = None) -> dict[str, Any]:
 
 
 def build_app_scan_plan(app_id: Any = None, root: Path | None = None) -> dict[str, Any]:
-    target = app_check_target(app_id)
+    normalized = normalize_app_id(app_id)
+    target = app_check_target(normalized)
+    label = str(target["app_label"])
     base = (root or repo_root()).resolve()
     rootfs = discover_proot_ubuntu_rootfs(base)
-    photoprism_config = photoprism_config_dir()
-    backup_candidates = backup_metadata_candidates(base)
-    backup_present = any(candidate.exists() for candidate in backup_candidates)
     app_path = rootfs / str(target["proot_app_path"]) if rootfs else None
     app_binary = rootfs / str(target["proot_binary_path"]) if rootfs else None
-    excludes = app_scan_excludes()
+    config_path = _termux_home() / str(target["config_relative"])
+    backup_candidates = backup_metadata_candidates(base)
+    for relative in target.get("backup_relatives") or []:
+        rel = Path(str(relative))
+        backup_candidates.extend([base / rel, _termux_home() / rel])
+    backup_present = any(candidate.exists() for candidate in backup_candidates)
+    excludes = app_scan_excludes(normalized)
+    prefix = normalized.replace("-", "_")
     source_targets = [
         {
-            "target_id": "photoprism_route",
-            "label": "PhotoPrism route",
-            "relative": str(target.get("route") or "/apps/photoprism/"),
+            "target_id": f"{prefix}_route",
+            "label": f"{label} route",
+            "relative": str(target["route"]),
             "present": True,
             "kind": "same_origin_route",
         },
         {
-            "target_id": "photoprism_app_files",
-            "label": "PhotoPrism app files",
-            "relative": "/opt/photoprism",
+            "target_id": f"{prefix}_app_files",
+            "label": f"{label} app files",
+            "relative": f"/{target['proot_app_path']}",
             "present": bool(app_path and app_path.exists()),
             "kind": "proot_app_path",
             "optional": True,
         },
         {
-            "target_id": "photoprism_app_binary",
-            "label": "PhotoPrism app binary",
-            "relative": "/usr/local/bin/photoprism",
+            "target_id": f"{prefix}_app_binary",
+            "label": f"{label} app binary",
+            "relative": f"/{target['proot_binary_path']}",
             "present": bool(app_binary and app_binary.exists()),
             "kind": "proot_app_binary",
             "optional": True,
         },
         {
-            "target_id": "photoprism_settings",
-            "label": "PhotoPrism settings",
-            "relative": "~/.pocket_lab/lite/apps/photoprism/config",
-            "present": photoprism_config.exists(),
+            "target_id": f"{prefix}_settings",
+            "label": f"{label} settings",
+            "relative": f"~/{target['config_relative']}",
+            "present": config_path.exists(),
             "kind": "app_config",
             "optional": True,
         },
     ]
     selected_targets = [
-        {"target_id": "photoprism_route", "label": "PhotoPrism route", "present": True, "kind": "route_posture"},
-        {"target_id": "photoprism_app_files", "label": "PhotoPrism app files", "present": bool(app_path and app_path.exists()), "kind": "selected_app_files", "optional": True},
-        {"target_id": "photoprism_settings", "label": "PhotoPrism settings", "present": photoprism_config.exists(), "kind": "app_config", "optional": True},
-        {"target_id": "photoprism_backup_metadata", "label": "PhotoPrism backup metadata", "present": backup_present, "kind": "metadata", "optional": True},
-        {"target_id": "photoprism_action_state", "label": "PhotoPrism action state", "present": True, "kind": "app_action_state"},
+        {"target_id": f"{prefix}_route", "label": f"{label} route", "present": True, "kind": "route_posture"},
+        {"target_id": f"{prefix}_app_files", "label": f"{label} app files", "present": bool(app_path and app_path.exists()), "kind": "selected_app_files", "optional": True},
+        {"target_id": f"{prefix}_settings", "label": f"{label} settings", "present": config_path.exists(), "kind": "app_config", "optional": True},
+        {"target_id": f"{prefix}_backup_metadata", "label": f"{label} backup metadata", "present": backup_present, "kind": "metadata", "optional": True},
+        {"target_id": f"{prefix}_action_state", "label": f"{label} action state", "present": True, "kind": "app_action_state"},
+    ]
+    checked_targets = [
+        f"{label} route",
+        f"{label} app files",
+        f"{label} settings",
+        f"{label} backup metadata",
+        f"{label} action state",
     ]
     return {
         "profile": SCAN_PROFILE_APP,
-        "app_id": target["app_id"],
-        "app_label": target["app_label"],
-        "scan_root_label": f"{target['app_label']} app target",
-        "target_groups": [
-            "PhotoPrism route posture",
-            "PhotoPrism selected app files",
-            "PhotoPrism settings",
-            "PhotoPrism backup metadata",
-            "PhotoPrism action state",
-        ],
+        "app_id": normalized,
+        "app_label": label,
+        "scan_root_label": f"{label} app target",
+        "target_groups": checked_targets,
         "source_targets": source_targets,
         "selected_targets": selected_targets,
-        "checked_targets": [
-            "PhotoPrism route",
-            "PhotoPrism app files",
-            "PhotoPrism settings",
-            "PhotoPrism backup metadata",
-            "PhotoPrism action state",
-        ],
+        "checked_targets": checked_targets,
         "skipped_targets": excludes["skipped_targets"],
         "excluded_groups": excludes["excluded_groups"],
         "skip_dirs": excludes["skip_dirs"],
         "skip_files": excludes["skip_files"],
     }
-
 
 def build_scan_plan(profile: Any = None, root: Path | None = None, app_id: Any = None) -> dict[str, Any]:
     normalized = normalize_scan_profile(profile)
