@@ -30,6 +30,8 @@ class AppAdapter(Protocol):
 
     def backup_profile(self) -> dict[str, Any]: ...
 
+    def backup_policy(self) -> dict[str, Any]: ...
+
     def media_status(self) -> dict[str, Any]: ...
 
     def media_import_blocked(self) -> bool: ...
@@ -188,6 +190,32 @@ class PhotoPrismAdapter:
 
         return lite_app_profiles.photoprism_backup_profile()
 
+    def backup_policy(self) -> dict[str, Any]:
+        return {
+            "default_mode": "config_only",
+            "included_sets": [
+                "app_config",
+                "photoprism_safe_configuration",
+                "photoprism_metadata_database",
+                "app_metadata",
+                "storage_mappings",
+                "route_registry",
+                "safe_evidence_refs",
+            ],
+            "excluded_sets": [
+                "android_shared_storage",
+                "original_media",
+                "import_folder_media",
+                "generated_cache",
+                "raw_secrets",
+            ],
+            "media_included_by_default": False,
+            "restore_preview_supported": True,
+            "restore_apply_supported": False,
+            "profile_summary": "PhotoPrism settings, mappings, route records, and safe app records are included. Media is excluded by default.",
+            "backup_summary": "PhotoPrism app backup saved. Settings, mappings, route records, and safe app records are protected; media remains excluded by default.",
+        }
+
     def media_status(self) -> dict[str, Any]:
         from . import lite_photoprism_media
 
@@ -271,6 +299,7 @@ def validate_adapter_bindings() -> None:
         "lifecycle": "lifecycle_profile",
         "security_profile": "security_profile",
         "backup_profile": "backup_profile",
+        "backup": "backup_policy",
         "actions": "prepare_special_action",
     }
     for app_id in lite_app_registry.app_ids():
