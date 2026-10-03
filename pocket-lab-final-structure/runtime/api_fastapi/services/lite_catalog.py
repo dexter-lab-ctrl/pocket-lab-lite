@@ -11,7 +11,7 @@ from fastapi import HTTPException, Request
 
 from .. import deps
 from .fleet_registry import normalize_node_id
-from . import lite_app_adapters, lite_app_registry, lite_app_runtime
+from . import lite_app_adapters, lite_app_governance, lite_app_registry, lite_app_runtime
 
 COMMAND_SUBJECT = "pocketlab.commands.lite.catalog.install"
 PHOTOPRISM_DEFINITION = lite_app_registry.app_definition("photoprism")
@@ -390,7 +390,7 @@ def already_installed_response(command: dict[str, Any]) -> dict[str, Any]:
 def record_install_queued(command: dict[str, Any]) -> None:
     state = _read_state()
     app = _get_app_state(state)
-    op = {"operation_id": command["operation_id"], "command_id": command["command_id"], "status": "queued", "updated_at": _now(), "message": "PhotoPrism install started."}
+    op = {"operation_id": command["operation_id"], "command_id": command["command_id"], "status": "queued", "updated_at": _now(), "message": "PhotoPrism install started.", "governance": lite_app_governance.sanitize_governance_reference(command.get("governance"))}
     app.update({"install_state": "installing", "status": "installing", "last_operation": op, "progress": {"step": "Install request accepted", "current": 1, "total": INSTALL_STEPS_TOTAL, "message": "Preparing PhotoPrism install on the Server Host."}, "updated_at": _now()})
     state["operations"][command["operation_id"]] = op
     _write_state(state)
@@ -459,7 +459,7 @@ def _success(command: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
     evidence_refs = result.get("evidence_refs") if isinstance(result.get("evidence_refs"), list) else [f"catalog/evidence/{operation_id}/summary.json"]
     state = _read_state()
     app = _get_app_state(state)
-    last_operation = {"operation_id": operation_id, "command_id": operation_id, "status": "succeeded", "updated_at": _now(), "message": "PhotoPrism is ready."}
+    last_operation = {"operation_id": operation_id, "command_id": operation_id, "status": "succeeded", "updated_at": _now(), "message": "PhotoPrism is ready.", "governance": lite_app_governance.sanitize_governance_reference(command.get("governance"))}
     app.update({"install_state": "installed", "status": "ready", "runtime": {"route": PHOTOPRISM_ROUTE, "url": PHOTOPRISM_ROUTE, "health": "healthy", "version": version, "process": PHOTOPRISM_PROCESS}, "route": route, "access": {"route_ready": True, "open_url": PHOTOPRISM_ROUTE, "message": "PhotoPrism is ready over secure access."}, "last_operation": last_operation, "progress": {"step": "PhotoPrism ready", "current": INSTALL_STEPS_TOTAL, "total": INSTALL_STEPS_TOTAL, "message": "PhotoPrism passed local health checks."}, "evidence_refs": evidence_refs, "updated_at": _now()})
     state.setdefault("operations", {})[operation_id] = last_operation
     _write_state(state)
@@ -471,7 +471,7 @@ def _failure(command: dict[str, Any], message: str, *, install_state: str = "nee
     safe_message = _safe_message(message, "PhotoPrism install needs attention.")
     state = _read_state()
     app = _get_app_state(state)
-    last_operation = {"operation_id": operation_id, "command_id": operation_id, "status": "failed", "updated_at": _now(), "message": safe_message}
+    last_operation = {"operation_id": operation_id, "command_id": operation_id, "status": "failed", "updated_at": _now(), "message": safe_message, "governance": lite_app_governance.sanitize_governance_reference(command.get("governance"))}
     app.update({"install_state": install_state, "status": "needs_attention", "runtime": {"route": PHOTOPRISM_ROUTE, "url": None, "health": "unhealthy", "version": None, "process": PHOTOPRISM_PROCESS}, "route": {"path": PHOTOPRISM_ROUTE, "upstream": PHOTOPRISM_UPSTREAM, "enabled": False, "health": "unhealthy"}, "last_operation": last_operation, "progress": {"step": "Install needs attention", "current": INSTALL_STEPS_TOTAL, "total": INSTALL_STEPS_TOTAL, "message": safe_message}, "updated_at": _now()})
     state.setdefault("operations", {})[operation_id] = last_operation
     _write_state(state)

@@ -9,7 +9,7 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_adapters, lite_app_backup_targets, lite_app_registry, lite_backup, lite_backup_locations, lite_backup_manifest
+from . import lite_app_adapters, lite_app_backup_targets, lite_app_governance, lite_app_registry, lite_backup, lite_backup_locations, lite_backup_manifest
 from .lite_backup_policy import backup_layout
 
 SUPPORTED_APP_IDS = frozenset(app_id for app_id in lite_app_adapters.app_ids_for_service("backup") if lite_app_registry.supports(app_id, "backup"))
@@ -170,6 +170,12 @@ def _public_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
         "secrets_hidden": True,
         "raw_paths_hidden": True,
         "evidence_ref": f"apps/{app_id}/backups/{_safe_ref(manifest.get('backup_id'), 'latest')}.json",
+        "governance": lite_app_governance.sanitize_governance_reference(app_meta.get("governance")),
+        "credential_backup_policy": app_meta.get("credential_backup_policy") or {
+            "app_backup": "neither",
+            "workspace_database": "metadata_only",
+            "secret_material": "not_stored",
+        },
         "summary": _safe_text(manifest.get("summary"), policy["backup_summary"]),
     }
 
@@ -316,6 +322,7 @@ def record_backup_request(command: dict[str, Any]) -> dict[str, Any]:
         "action_id": "backup_app",
         "mode": command.get("app_backup_mode") or policy["default_mode"],
         "summary": f"Backing up {APP_LABELS[app]} app settings.",
+        "governance": lite_app_governance.sanitize_governance_reference(command.get("governance")),
     })
     _write_state({"pending_backup": pending})
     return pending
@@ -331,6 +338,7 @@ def record_restore_preview_request(command: dict[str, Any]) -> dict[str, Any]:
         "status": "queued",
         "requested_at": _now(),
         "summary": f"Preparing {APP_LABELS[app]} restore preview.",
+        "governance": lite_app_governance.sanitize_governance_reference(command.get("governance")),
     }
     _write_state({"pending_restore_preview": pending})
     return pending
@@ -362,6 +370,12 @@ def _decorate_manifest(command: dict[str, Any]) -> dict[str, Any]:
         "raw_paths_hidden": True,
         "raw_logs_hidden": True,
         "evidence_ref": f"apps/{app_id}/backups/{_safe_ref(backup_id, 'latest')}.json",
+        "governance": lite_app_governance.sanitize_governance_reference(command.get("governance")),
+        "credential_backup_policy": {
+            "app_backup": "neither",
+            "workspace_database": "metadata_only",
+            "secret_material": "not_stored",
+        },
     }
     manifest = dict(manifest)
     manifest["app_backup"] = app_metadata
@@ -396,6 +410,7 @@ def _decorate_manifest(command: dict[str, Any]) -> dict[str, Any]:
         "included_sets": app_metadata["included_sets"],
         "excluded_sensitive_items": manifest.get("excluded_sensitive_items", []),
         "app_backup": app_metadata,
+        "governance": app_metadata["governance"],
         "restore_apply_supported": policy["restore_apply_supported"],
     })
     lite_backup_manifest.write_receipt(backup_id, receipt, location_id=location_id, layout=location_layout)

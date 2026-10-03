@@ -103,6 +103,17 @@ export function getLiteAppActionInvalidations(appId = 'photoprism', actionId = '
 }
 
 
+export function getLiteAppCredentialInvalidations(appId = '') {
+  const normalizedAppId = String(appId || '').trim().toLowerCase();
+  return uniqueQueryKeys([
+    liteQueryKeys.appResource(normalizedAppId),
+    liteQueryKeys.appCredentials(normalizedAppId),
+    liteQueryKeys.appRecovery(normalizedAppId),
+    liteQueryKeys.recoveryDetails(),
+  ]);
+}
+
+
 export function getLiteDeviceActionInvalidations(actionId = '', result = {}) {
   return uniqueQueryKeys(getLiteDeviceMutationInvalidations(actionId, result));
 }

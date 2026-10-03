@@ -4,6 +4,7 @@ import { Activity, FileCheck2, FileSearch, FlaskConical, HeartPulse, History, Sh
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { liteEnterpriseApi } from '../lib/liteEnterpriseApi.js';
+import { invalidateLiteAppResourceQueries } from '../lib/liteQueryClient.js';
 import { getLitePasskey } from '../lib/liteWebAuthn.js';
 import {
   getApprovalPresentation,
@@ -200,12 +201,18 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
 
   async function activateRevision(revisionId) {
     const result = await execute(`policy:activate:${revisionId}`, () => ownerStepUp('policy.rules.activate', () => liteEnterpriseApi.activateRuleRevision(revisionId)), 'Rules activation requested.', [health.refresh, revisions.refresh]);
-    if (result?.operation) setActivation(result.operation);
+    if (result?.operation) {
+      setActivation(result.operation);
+      await invalidateLiteAppResourceQueries();
+    }
   }
 
   async function rollbackRules() {
     const result = await execute('policy:rollback', () => ownerStepUp('policy.rules.rollback', () => liteEnterpriseApi.rollbackRules()), 'Known-good Rules restoration requested.', [health.refresh, revisions.refresh]);
-    if (result?.operation) setActivation(result.operation);
+    if (result?.operation) {
+      setActivation(result.operation);
+      await invalidateLiteAppResourceQueries();
+    }
   }
 
   async function refreshActivation() {
@@ -217,7 +224,10 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
   async function resolveUncertainActivation() {
     if (!activation?.operation_id) return;
     const result = await execute('policy:resolve', () => ownerStepUp('policy.rules.activate', () => liteEnterpriseApi.resolveRuleActivation(activation.operation_id)), 'Recovered Rules state proved and recorded.', [health.refresh, revisions.refresh, access.refresh, templates.refresh]);
-    if (result?.operation) setActivation(result.operation);
+    if (result?.operation) {
+      setActivation(result.operation);
+      await invalidateLiteAppResourceQueries();
+    }
   }
 
   async function runSimulation(event) {
@@ -255,12 +265,14 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
 
   async function createException(event) {
     event.preventDefault();
-    await execute('exception:create', () => liteEnterpriseApi.createException({ ...exceptionDraft, duration_minutes: Number(exceptionDraft.duration_minutes) }), 'Temporary access is active for the exact scope and expiry shown.', [exceptions.refresh]);
+    const result = await execute('exception:create', () => liteEnterpriseApi.createException({ ...exceptionDraft, duration_minutes: Number(exceptionDraft.duration_minutes) }), 'Temporary access is active for the exact scope and expiry shown.', [exceptions.refresh]);
+    if (result) await invalidateLiteAppResourceQueries();
     setExceptionDraft((value) => ({ ...value, reason: '' }));
   }
 
   async function revokeException(exceptionId) {
-    await execute(`exception:${exceptionId}:revoke`, () => liteEnterpriseApi.revokeException(exceptionId), 'Temporary access revoked.', [exceptions.refresh]);
+    const result = await execute(`exception:${exceptionId}:revoke`, () => liteEnterpriseApi.revokeException(exceptionId), 'Temporary access revoked.', [exceptions.refresh]);
+    if (result) await invalidateLiteAppResourceQueries();
   }
 
   const policyParameters = templates.data?.effective_parameters || accessData.policy_parameters || {};

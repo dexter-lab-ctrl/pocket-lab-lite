@@ -133,3 +133,13 @@ export function createLiteQueryClient() {
 }
 
 export const liteQueryClient = createLiteQueryClient();
+
+
+export function invalidateLiteAppResourceQueries() {
+  return liteQueryClient.invalidateQueries({
+    predicate: (query) => {
+      const key = Array.isArray(query?.queryKey) ? query.queryKey : [];
+      return key[0] === 'lite' && key[1] === 'app' && key[3] === 'resource';
+    },
+  });
+}

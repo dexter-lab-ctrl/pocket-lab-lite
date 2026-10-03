@@ -485,6 +485,11 @@ def recovery_projection(app_id: Any) -> dict[str, Any]:
             and (item.get("required") is True or item.get("status") in {"configured", "needs_rotation", "invalid"})
             for item in credentials.get("credentials") or []
         ),
+        "credential_backup_policy": {
+            "app_backup": "neither",
+            "workspace_database": "metadata_only",
+            "secret_material": "not_stored",
+        },
         "recovery_ready": not blockers,
         "recovery_blockers": blockers,
         "evidence_refs": [
@@ -495,6 +500,26 @@ def recovery_projection(app_id: Any) -> dict[str, Any]:
         ][:4],
         "summary": "App recovery is ready." if not blockers else blockers[0],
     }
+
+
+def sanitize_governance_reference(value: Any) -> dict[str, Any]:
+    """Whitelist one secret-free authorization/evidence relationship for persistence."""
+    raw = value if isinstance(value, dict) else {}
+    clean: dict[str, Any] = {}
+    for key in (
+        "app_id", "semantic_action", "operation_id", "authorization_decision_id",
+        "policy_revision", "contract_revision", "target_device_id",
+    ):
+        text = str(raw.get(key) or "").strip()
+        if text and len(text) <= 160 and all(ch.isalnum() or ch in "._:-" for ch in text):
+            clean[key] = text
+    actor = raw.get("initiating_actor") if isinstance(raw.get("initiating_actor"), dict) else {}
+    actor_type = str(actor.get("type") or "").strip()
+    actor_id = str(actor.get("id") or "").strip()
+    if actor_type and actor_id:
+        clean["initiating_actor"] = {"type": actor_type[:32], "id": actor_id[:120]}
+    clean["sanitized"] = True
+    return clean
 
 
 def sanitized_evidence_link(contract: dict[str, Any], decision: dict[str, Any] | None) -> dict[str, Any]:
