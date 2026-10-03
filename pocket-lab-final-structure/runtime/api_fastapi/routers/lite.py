@@ -1821,7 +1821,7 @@ async def start_lite_app_restore_preview(app_id: str, payload: LiteAppRestorePre
         "backup_id": command["backup_id"],
         "preview_id": command["preview_id"],
         "pending_restore_preview": pending,
-        "summary": "Preparing PhotoPrism restore preview.",
+        "summary": action.get("summary") or f"Preparing {command.get('app_label') or app_id} restore preview.",
         "progress": {"phase": "queued", "step": "Restore preview queued.", "bounded": True},
         "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
     })
@@ -1847,6 +1847,8 @@ def start_lite_app_backup_to_storage_device(app_id: str, payload: LiteAppActionR
 async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActionRequest, request: Request) -> dict[str, Any]:
     auth_context = deps.require_auth(request, write=True)
     action = lite_app_actions.prepare_action(app_id, action_id, payload=_lite_payload_dict(payload))
+    app_id = lite_app_registry.app_definition(app_id).id
+    adapter = lite_app_adapters.adapter_for(app_id)
     kind = action.get("kind")
 
     if kind in {"url", "guidance"}:
@@ -1880,7 +1882,7 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
             "backup_id": command["backup_id"],
             "mode": command["app_backup_mode"],
             "pending_backup": pending,
-            "summary": "Backing up PhotoPrism app settings.",
+            "summary": action.get("summary") or f"Backing up {command.get('app_label') or app_id} app settings.",
             "progress": {"phase": "queued", "step": "Backup queued.", "bounded": True},
             "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
         })
@@ -1909,7 +1911,7 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
         submitted.update({
             "accepted": True,
             "status": submitted.get("status") or "queued",
-            "app_id": "photoprism",
+            "app_id": command.get("app_id") or app_id,
             "action_id": "preview_restore",
             "backup_id": command["backup_id"],
             "preview_id": command["preview_id"],
@@ -1922,31 +1924,31 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
 
     if kind == "update_check":
         command = action["command"]
-        subject = action.get("subject") or lite_app_update.APP_UPDATE_CHECK_SUBJECT
+        subject = action.get("subject")
+        event = action.get("event") or "lite.app.update.check_queued"
+        if not subject:
+            raise HTTPException(status_code=500, detail={"status": "invalid_adapter_contract", "summary": "Update handler did not provide a command subject."})
         await ensure_worker_execution_ready()
-        pending = lite_app_update.record_update_request(command)
+        pending = adapter.record_special_action_queued(kind, command) or {}
         try:
             submitted = await submit_domain_command(
                 subject,
-                "lite.app.update.check_queued",
+                event,
                 command,
                 trace_id=command.get("command_id"),
             )
         except Exception:
-            state = lite_app_update._read_state()
-            if isinstance(state.get("pending_update_check"), dict) and state["pending_update_check"].get("command_id") == command.get("command_id"):
-                state["pending_update_check"] = None
-                lite_app_update._write_state(state)
+            adapter.discard_special_action_queued(kind, command)
             raise
         submitted.update({
             "accepted": True,
             "status": submitted.get("status") or "queued",
-            "app_id": "photoprism",
+            "app_id": command.get("app_id") or app_id,
             "action_id": "update_app",
             "operation_id": command["operation_id"],
             "command_id": command["command_id"],
             "pending_update_check": pending,
-            "summary": "Checking PhotoPrism update readiness.",
+            "summary": action.get("summary") or "Checking app update readiness.",
             "progress": pending.get("progress") or {"phase": "queued", "step": "Update check queued.", "bounded": True},
             "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
         })
@@ -1954,26 +1956,30 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
 
     if kind == "security_app_check":
         command = action["command"]
+        subject = action.get("subject")
+        event = action.get("event") or "lite.security.app_check.requested"
+        if not subject:
+            raise HTTPException(status_code=500, detail={"status": "invalid_adapter_contract", "summary": "App Check handler did not provide a command subject."})
         await ensure_worker_execution_ready()
-        lite_security.record_queued_run(command)
+        adapter.record_special_action_queued(kind, command)
         try:
             submitted = await submit_domain_command(
-                lite_security.policy.COMMAND_SUBJECT,
-                "lite.security.app_check.requested",
+                subject,
+                event,
                 command,
                 trace_id=command.get("command_id"),
             )
         except Exception:
-            lite_security.discard_queued_run(command.get("run_id") or command.get("command_id"))
+            adapter.discard_special_action_queued(kind, command)
             raise
         submitted.update({
             "accepted": True,
             "status": submitted.get("status") or "queued",
-            "app_id": "photoprism",
+            "app_id": command.get("app_id") or app_id,
             "action_id": "check_app",
             "run_id": command.get("run_id"),
             "scan_profile": lite_security.policy.SCAN_PROFILE_APP,
-            "summary": "Checking PhotoPrism safety.",
+            "summary": action.get("summary") or "Checking app safety.",
             "progress": {"phase": "queued", "step": "App Check queued.", "bounded": True},
             "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend App Check record pending."},
         })
@@ -1981,55 +1987,60 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
 
     if kind == "media":
         command = action["command"]
+        subject = action.get("subject")
+        event = action.get("event") or "lite.app.media.queued"
+        if not subject:
+            raise HTTPException(status_code=500, detail={"status": "invalid_adapter_contract", "summary": "Media handler did not provide a command subject."})
+        operation = adapter.record_special_action_queued(kind, command) or {}
         try:
-            submitted = await submit_domain_command(
-                lite_photoprism_media.MEDIA_COMMAND_SUBJECT,
-                "lite.app.media.queued",
-                command,
-            )
+            submitted = await submit_domain_command(subject, event, command)
         except HTTPException:
+            adapter.discard_special_action_queued(kind, command)
             raise
         except Exception as exc:
+            adapter.discard_special_action_queued(kind, command)
             raise HTTPException(
                 status_code=503,
                 detail={
                     "status": "media_action_queue_unavailable",
-                    "summary": "PhotoPrism media action could not be queued because the local command bus is not reachable.",
+                    "summary": "App media action could not be queued because the local command bus is not reachable.",
                     "detail": str(exc),
                 },
             ) from exc
-        operation = lite_photoprism_media.record_operation(command, status="queued")
         submitted.update({
             "accepted": True,
             "status": submitted.get("status") or "queued",
-            "app_id": "photoprism",
+            "app_id": command.get("app_id") or app_id,
             "action_id": command["action_id"],
             "media_operation": operation,
-            "summary": action.get("summary") or operation.get("summary") or "PhotoPrism media action queued.",
-            "progress": operation.get("progress") or {"phase": "queued", "step": "Import photos queued.", "bounded": True},
+            "summary": action.get("summary") or operation.get("summary") or "App media action queued.",
+            "progress": operation.get("progress") or {"phase": "queued", "step": "Media action queued.", "bounded": True},
             "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend media record pending."},
         })
         return submitted
 
     if kind == "app_operation":
         command = action["command"]
-        subject = action.get("subject") or lite_app_operations.subject_for_action(command.get("action_id"))
+        subject = action.get("subject")
+        event = action.get("event") or "lite.app.operation.queued"
+        if not subject:
+            raise HTTPException(status_code=500, detail={"status": "invalid_adapter_contract", "summary": "App operation handler did not provide a command subject."})
         await ensure_worker_execution_ready()
-        operation = lite_app_operations.record_queued_operation(command)
+        operation = adapter.record_special_action_queued(kind, command) or {}
         try:
             submitted = await submit_domain_command(
                 subject,
-                "lite.app.operation.queued",
+                event,
                 command,
                 trace_id=command.get("command_id"),
             )
-        except Exception as exc:
-            lite_app_operations.mark_operation_failed(command, "App action could not be queued safely.")
+        except Exception:
+            adapter.discard_special_action_queued(kind, command)
             raise
         submitted.update({
             "accepted": True,
             "status": submitted.get("status") or "queued",
-            "app_id": "photoprism",
+            "app_id": command.get("app_id") or app_id,
             "action_id": command["action_id"],
             "operation": operation,
             "summary": action.get("summary") or operation.get("summary") or "App action queued.",
@@ -2042,7 +2053,7 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
         response = action.get("response") if isinstance(action.get("response"), dict) else {}
         response.setdefault("accepted", True)
         response.setdefault("status", "skipped")
-        response.setdefault("app_id", "photoprism")
+        response.setdefault("app_id", app_id)
         response.setdefault("action_id", "index_photos")
         response.setdefault("fast_forwarded", True)
         return response
@@ -2082,24 +2093,28 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
             correlation_id=str(command.get("operation_id") or uuid.uuid4().hex),
         )
         await ensure_worker_execution_ready()
-        lite_catalog.record_install_queued(command)
+        adapter.record_special_action_queued(kind, command)
         try:
+            subject = action.get("subject")
+            event = action.get("event") or "lite.catalog.install.requested"
+            if not subject:
+                raise HTTPException(status_code=500, detail={"status": "invalid_adapter_contract", "summary": "Install handler did not provide a command subject."})
             queued = await submit_domain_command(
-                lite_catalog.COMMAND_SUBJECT,
-                "lite.catalog.install.requested",
+                subject,
+                event,
                 command,
                 trace_id=command["operation_id"],
             )
         except Exception:
-            lite_catalog.discard_operation(command["operation_id"])
+            adapter.discard_special_action_queued(kind, command)
             raise
         queued.update({
             "accepted": True,
             "status": "queued",
-            "app_id": "photoprism",
+            "app_id": command.get("app_id") or app_id,
             "action_id": "install_app",
             "operation_id": command["operation_id"],
-            "summary": "PhotoPrism install started.",
+            "summary": action.get("summary") or "App install started.",
             "progress": {"phase": "queued", "step": "Install queued.", "bounded": True},
             "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend install record pending."},
             "authorization": {
