@@ -18,7 +18,7 @@ from .. import deps
 from ..db.connection import database_path
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_registry, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_backup_locations, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_photo_backup, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_core_projections, lite_phase3b_projections, lite_phase3c_projections, lite_identity_auth, lite_policy_opa, lite_policy_approvals, lite_device_roles
+from ..services import fleet_registry, lite_app_actions, lite_app_adapters, lite_app_registry, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_backup_locations, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_photo_backup, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_core_projections, lite_phase3b_projections, lite_phase3c_projections, lite_identity_auth, lite_policy_opa, lite_policy_approvals, lite_device_roles
 from ..services.lite_control_plane_store import (
     CONTROL_PLANE,
     DeviceAwarenessError,
@@ -1582,6 +1582,22 @@ def get_lite_app_lifecycle_profile(app_id: str, request: Request) -> Response:
     return _control_plane_prepared_response(request, selected, view_model=view_model)
 
 
+def _require_app_service(app_id: str, service: str) -> str:
+    try:
+        definition = lite_app_registry.app_definition(app_id)
+    except HTTPException as exc:
+        raise HTTPException(
+            status_code=404,
+            detail={"status": "not_found", "summary": "This app is not registered in Pocket Lab Lite."},
+        ) from exc
+    if not lite_app_adapters.supports_service(definition.id, service):
+        raise HTTPException(
+            status_code=409,
+            detail={"status": "not_supported", "summary": f"This app does not support {service.replace('_', ' ')}."},
+        )
+    return definition.id
+
+
 def _require_supported_app_id(app_id: str) -> str:
     try:
         definition = lite_app_registry.app_definition(app_id)
@@ -1670,13 +1686,14 @@ def _saved_app_subprojection(app_id: str, name: str) -> dict[str, Any] | None:
 @router.get("/apps/{app_id}/update")
 def get_lite_app_update_status(app_id: str, request: Request) -> Response:
     deps.require_auth(request)
-    app_id = _require_supported_app_id(app_id)
+    app_id = _require_app_service(app_id, "update_readiness")
+    adapter = lite_app_adapters.adapter_for(app_id)
     view_model = "app-update-prepared-e3-v1"
     try:
         prepared = CONTROL_PLANE.prepared_only_read(
             domain="apps", key=f"update:{app_id}",
             snapshot_builder=lambda: _saved_app_subprojection(app_id, "update"),
-            builder=lambda: lite_app_update.update_status(app_id),
+            builder=adapter.update_status,
             projector=lambda payload: CONTROL_PLANE.update_app_subprojection(app_id, "update", payload),
             stale_after_ms=30_000, max_stale_ms=180_000,
             deadline_seconds=6.0, priority=45, work_class="io",
@@ -1689,7 +1706,8 @@ def get_lite_app_update_status(app_id: str, request: Request) -> Response:
 @router.get("/apps/{app_id}/update/receipts/{operation_id}")
 def get_lite_app_update_receipt(app_id: str, operation_id: str, request: Request) -> dict[str, Any]:
     deps.require_auth(request)
-    receipt = lite_app_update.update_receipt(app_id, operation_id)
+    app_id = _require_app_service(app_id, "update_readiness")
+    receipt = lite_app_adapters.adapter_for(app_id).update_receipt(operation_id)
     if not receipt:
         raise HTTPException(status_code=404, detail={"status": "not_found", "summary": "Update readiness receipt was not found."})
     return receipt
@@ -1698,7 +1716,8 @@ def get_lite_app_update_receipt(app_id: str, operation_id: str, request: Request
 @router.post("/apps/{app_id}/update/apply", status_code=409)
 def apply_lite_app_update(app_id: str, payload: LiteAppUpdateRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
-    return lite_app_update.apply_update_disabled(app_id)
+    app_id = _require_app_service(app_id, "update_readiness")
+    return lite_app_adapters.adapter_for(app_id).update_apply_disabled()
 
 
 @router.get("/apps/{app_id}/backup")
@@ -1750,7 +1769,7 @@ async def start_lite_app_backup(app_id: str, payload: LiteAppBackupRequest, requ
         "backup_id": command["backup_id"],
         "mode": command["app_backup_mode"],
         "pending_backup": pending,
-        "summary": "Backing up PhotoPrism app settings.",
+        "summary": f"Backing up {command.get('app_label') or command['app_id']} app settings.",
         "progress": {"phase": "queued", "step": "Backup queued.", "bounded": True},
         "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
     })
@@ -1856,7 +1875,7 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
         submitted.update({
             "accepted": True,
             "status": submitted.get("status") or "queued",
-            "app_id": "photoprism",
+            "app_id": command["app_id"],
             "action_id": "backup_app",
             "backup_id": command["backup_id"],
             "mode": command["app_backup_mode"],
@@ -4440,7 +4459,7 @@ async def backup_lite_app(app_id: str, payload: LiteAppBackupRequest, request: R
     submitted.update({
         "accepted": True,
         "status": submitted.get("status") or "queued",
-        "app_id": "photoprism",
+        "app_id": command["app_id"],
         "backup_id": command["backup_id"],
         "mode": command["app_backup_mode"],
         "pending_backup": pending,
