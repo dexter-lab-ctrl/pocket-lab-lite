@@ -19,6 +19,21 @@ async function openManage(canvasElement) {
 }
 
 export const CatalogReady = createLiteStory('catalog', 'catalog-ready');
+
+export const MultiAppCapabilityIsolation = {
+  ...createLiteStory('catalog', 'catalog-multi-app', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await expectApps(canvasElement);
+    await expect(await canvas.findByText('Example App')).toBeInTheDocument();
+    await expect(await canvas.findByText('PhotoPrism')).toBeInTheDocument();
+    const manageButtons = await canvas.findAllByRole('button', { name: 'Manage' });
+    await userEvent.click(manageButtons[0]);
+    const body = within(canvasElement.ownerDocument.body);
+    const dialog = await body.findByRole('dialog', { name: 'Manage Example App' });
+    await expect(dialog).toBeInTheDocument();
+    await expect(within(dialog).queryByText(/Connect photos|Import photos|Back up app|Check app|Repair/i)).not.toBeInTheDocument();
+  },
+};
 export const AppInstalledRunning = {
   ...createLiteStory('catalog', 'healthy'),
   play: async ({ canvasElement }) => {
