@@ -1595,6 +1595,15 @@ def _require_app_service(app_id: str, service: str) -> str:
             status_code=409,
             detail={"status": "not_supported", "summary": f"This app does not support {service.replace('_', ' ')}."},
         )
+    if not lite_app_registry.platform_supported(definition.id):
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "unsupported_platform",
+                "summary": "This app is not available on this device platform.",
+                "platform": lite_app_registry.current_platform_id(),
+            },
+        )
     return definition.id
 
 
