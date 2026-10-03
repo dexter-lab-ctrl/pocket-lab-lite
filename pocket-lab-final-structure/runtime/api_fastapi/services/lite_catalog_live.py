@@ -38,9 +38,10 @@ def hydrate_catalog(payload: dict[str, Any]) -> dict[str, Any]:
             app.setdefault("platform_contract", definition.public_contract())
             adapter = lite_app_adapters.adapter_for(definition.id)
             if definition.id == "photoprism" and isinstance(adapter, lite_app_adapters.PhotoPrismAdapter):
-                route_ready = _photoprism_route_ready()
-                embed_origin = _photoprism_embed_origin_from_caddyfile() if route_ready else None
-                adapter.hydrate_with_readiness(app, route_ready=route_ready, embed_origin=embed_origin)
+                if adapter.should_probe_live_state(app):
+                    route_ready = _photoprism_route_ready()
+                    embed_origin = _photoprism_embed_origin_from_caddyfile() if route_ready else None
+                    adapter.hydrate_with_readiness(app, route_ready=route_ready, embed_origin=embed_origin)
             else:
                 adapter.hydrate_live_state(app)
     return hydrated
