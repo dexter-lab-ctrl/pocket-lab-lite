@@ -6,9 +6,9 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import fleet_registry, lite_device_capabilities
+from . import fleet_registry, lite_app_adapters, lite_app_registry, lite_device_capabilities
 
-SUPPORTED_APP_IDS = {"photoprism"}
+SUPPORTED_APP_IDS = frozenset(app_id for app_id in lite_app_adapters.app_ids_for_service("backup_to_storage") if lite_app_registry.supports(app_id, "backup_to_storage"))
 BACKUP_TO_STORAGE_SUBJECT = "pocketlab.commands.lite.app.backup.transfer"
 _MIN_FREE_GB = 1.0
 _SECRET_MARKERS = (
@@ -170,13 +170,14 @@ def backup_targets(*, fleet_payload: dict[str, Any] | None = None) -> dict[str, 
 
 
 def app_backup_targets(app_id: str) -> dict[str, Any]:
-    _validate_app_id(app_id)
+    app_id = _validate_app_id(app_id)
+    definition = lite_app_registry.app_definition(app_id)
     payload = backup_targets()
     return {
         **payload,
-        "app_id": "photoprism",
-        "name": "PhotoPrism",
-        "summary": "PhotoPrism backup targets are available." if payload.get("ready_count") else "No backup target yet. Join a storage device to save app backups elsewhere.",
+        "app_id": app_id,
+        "name": definition.name,
+        "summary": f"{definition.name} backup targets are available." if payload.get("ready_count") else "No backup target yet. Join a storage device to save app backups elsewhere.",
     }
 
 

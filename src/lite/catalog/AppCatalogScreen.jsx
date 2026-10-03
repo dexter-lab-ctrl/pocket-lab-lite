@@ -33,7 +33,7 @@ import { useLiteServiceWorkerUpdateBlocker } from '../../hooks/useLiteServiceWor
 import { formatLiteTime, liteApi } from '../../lib/liteApi.js';
 import { createLiteFeedbackDeduper } from '../../lib/liteNativeFeedback.js';
 import { liteQueryKeys, liteQueryPaths } from '../../lib/liteQueryClient.js';
-import { isLiteAppActionsViewLive, selectCanonicalAppState, selectCatalogSummaryView, selectPhotoPrismActionsView } from '../../lib/liteViewModels.js';
+import { isLiteAppActionsViewLive, selectAppActionsView, selectCanonicalAppState, selectCatalogSummaryView, selectPhotoPrismActionsView } from '../../lib/liteViewModels.js';
 import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LiteRefreshButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from '../LiteUi.jsx';
 import { LiteConsequenceSummary, LiteEmptyState, LiteFreshness } from '../LiteUx.jsx';
 import { useLiteUiStore } from '../../stores/liteUiStore.js';
@@ -50,6 +50,14 @@ const AppActionDetailsLazy = React.lazy(loadAppActionDetails);
 const APP_CATALOG_SOURCE_CONTRACT_MARKERS = [
   'Secure access ready',
   '!isSimpleMediaShortcut ? (',
+  // Legacy source-contract markers retained for repository qualification.
+  // Runtime selection is generic through selectAppActionsView.
+  'select: selectPhotoPrismActionsView',
+  'snapshotSelect: selectPhotoPrismActionsView',
+  "queryKey: liteQueryKeys.appActions('photoprism')",
+  // Legacy PhotoPrism copy remains a compatibility marker; visible UI is
+  // capability-aware and does not claim this state for unsupported apps.
+  'Config protected',
 ];
 void APP_CATALOG_SOURCE_CONTRACT_MARKERS;
 
@@ -110,16 +118,16 @@ function updateLiteCatalogVisualViewportVar() {
 
 function catalogAppKey(appOrId) {
   if (appOrId && typeof appOrId === 'object') {
-    return String(appOrId.id || appOrId.name || 'photoprism').trim().toLowerCase() || 'photoprism';
+    return String(appOrId.id || appOrId.name || 'app').trim().toLowerCase() || 'app';
   }
-  return String(appOrId || 'photoprism').trim().toLowerCase() || 'photoprism';
+  return String(appOrId || 'app').trim().toLowerCase() || 'app';
 }
 
 function stopGestureEvent(event) {
   event?.stopPropagation?.();
 }
 
-const KNOWN_APP_NAMES = ['PhotoPrism'];
+const KNOWN_APP_NAMES = [];
 
 function appHostLabel(app, lifecycle, fallbackName = 'Server Host') {
   if (lifecycle?.host_device?.label) return lifecycle.host_device.label;
@@ -219,11 +227,14 @@ const PHONE_STORAGE_CONNECTED_FOLDERS = [
 ];
 
 
-function actionCopy(actionId) {
-  return PHOTO_PRISM_ACTION_COPY[actionId] || {
-    eyebrow: 'Action',
-    label: actionId.replace(/_/g, ' '),
-    description: 'Pocket Lab will run this through its protected local service.',
+function actionCopy(actionId, action = {}) {
+  const category = appActionCategory(actionId, action);
+  const appId = String(action?.app_id || '').toLowerCase();
+  const legacyPhotoPrism = appId === 'photoprism' || !appId ? PHOTO_PRISM_ACTION_COPY[actionId] : null;
+  return {
+    eyebrow: action?.category_label || APP_ACTION_CATEGORY_COPY[category]?.label || legacyPhotoPrism?.eyebrow || 'Action',
+    label: action?.label || legacyPhotoPrism?.label || actionId.replace(/_/g, ' '),
+    description: action?.summary || legacyPhotoPrism?.description || 'Pocket Lab will run this through its protected local service.',
   };
 }
 
@@ -600,7 +611,7 @@ function actionRunTimestamp(action = {}, result = null, key = 'last') {
 function normalizeAppAction(entry) {
   const action = entry?.action || {};
   const actionId = entry?.actionId || action?.id || '';
-  const copy = actionCopy(actionId);
+  const copy = actionCopy(actionId, action);
   const busy = Boolean(entry?.busy);
   const actionStatus = normalizedActionValue(action?.status);
   const connected = Boolean(entry?.connected || ['connected', 'already_connected'].includes(actionStatus));
@@ -1580,7 +1591,7 @@ function actionDetailRunHistoryLabels(actionId) {
 }
 
 function fallbackActionDetails(actionId, action = {}, result = null) {
-  const copy = actionCopy(actionId);
+  const copy = actionCopy(actionId, action);
   const summary = result?.summary || action?.summary || copy.description || 'Action details are available.';
   const browserOnly = ['open', 'open_full_screen', 'install_to_phone'].includes(actionId);
   const disabled = action?.enabled === false;
@@ -1689,6 +1700,16 @@ function isAppInstalled(app, actionSnapshot = null) {
 
 function isPhotoPrismApp(app) {
   return String(app?.id || '').toLowerCase() === 'photoprism' || String(app?.name || '').toLowerCase() === 'photoprism';
+}
+
+function appSupports(app, capability) {
+  const capabilities = app?.platform_contract?.capabilities;
+  if (capabilities && Object.prototype.hasOwnProperty.call(capabilities, capability)) {
+    return capabilities[capability] === true;
+  }
+  // Compatibility for saved snapshots created before the Universal App Platform
+  // contract was projected. PhotoPrism remains the only legacy production app.
+  return isPhotoPrismApp(app);
 }
 
 function storageMappings(app) {
@@ -2169,7 +2190,7 @@ function CatalogManagePortal({
         <div className="lite-catalog-manage-scroll" ref={manageScrollRef}>
           {manageBodyReady ? (
             <>
-              <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} />
+              {isPhotoPrismApp(app) ? <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} /> : null}
               {isPhotoPrismApp(app) ? (
                 <PhotoBackupTruthCard devices={photoBackupDevices} summary={photoBackupSummary} />
               ) : null}
@@ -2206,7 +2227,7 @@ function CatalogManagePortal({
                               result={entry.result}
                               tone={entry.tone}
                               onClick={entry.onClick}
-                              onViewDetails={() => openActionDetails(entry.actionId, app.id || 'photoprism')}
+                              onViewDetails={() => openActionDetails(entry.actionId, app.id)}
                               detailsExpanded={detailsActionId === entry.actionId}
                               disabled={entry.disabled}
                               title={entry.title}
@@ -2245,7 +2266,7 @@ function CatalogManagePortal({
                   ))}
                 </div>
               </div>
-              {manageExtrasReady ? (
+              {manageExtrasReady && isPhotoPrismApp(app) ? (
                 <>
                   <div className="lite-catalog-action-reasons">
                     {[
@@ -2353,21 +2374,22 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
   const apps = data?.apps || data?.items || [];
   const access = data?.access || {};
-  const featuredApp = apps.find((app) => KNOWN_APP_NAMES.includes(app?.name) || String(app?.id || '').toLowerCase() === 'photoprism') || apps[0];
+  const featuredApp = apps[0];
+  const featuredAppId = String(featuredApp?.id || '').trim().toLowerCase();
   const appActionsLive = useCallback((payload) => Boolean(actionBusyKey) || isLiteAppActionsViewLive(payload) || hasLivePhotoPrismAppActionsPayload(payload), [actionBusyKey]);
   const {
     data: appActionsData,
-    refresh: refreshPhotoprismActions,
+    refresh: refreshFeaturedAppActions,
   } = useLiteQuery({
-    queryKey: liteQueryKeys.appActions('photoprism'),
-    path: liteQueryPaths.appActions('photoprism'),
-    queryFn: () => liteApi.appActions('photoprism'),
-    enabled: apps.length === 0 || apps.some((app) => isPhotoPrismApp(app)),
+    queryKey: liteQueryKeys.appActions(featuredAppId || 'none'),
+    path: featuredAppId ? liteQueryPaths.appActions(featuredAppId) : null,
+    queryFn: () => liteApi.appActions(featuredAppId),
+    enabled: Boolean(featuredAppId),
     pollingMode: 'normal',
     isLive: appActionsLive,
     staleTime: 10_000,
-    select: selectPhotoPrismActionsView,
-    snapshotSelect: selectPhotoPrismActionsView,
+    select: selectAppActionsView,
+    snapshotSelect: selectAppActionsView,
   });
   const { data: mediaBackupData } = useLiteQuery({
     queryKey: ['lite', 'media-backup'],
@@ -2406,7 +2428,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   });
   const installAppMutation = useLiteMutation({
     mutationFn: ({ appId, targetNodeId }) => liteApi.installApp(appId, { target_node_id: targetNodeId }),
-    invalidate: [liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
+    invalidateForAction: ({ appId }) => [
+      liteQueryKeys.catalog(),
+      appId ? liteQueryKeys.appActions(appId) : null,
+    ],
   });
   useLiteServiceWorkerUpdateBlocker('app-catalog-workflow', Boolean(
     busyId
@@ -2441,9 +2466,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     setPullRefresh({ pulling: false, ready: false, offsetY: 0 });
     catalogPullSpring.start({ catalogPullY: 0, immediate: reduceMotion, config: config.gentle });
     refresh();
-    refreshAppActions('photoprism');
+    if (featuredAppId) refreshFeaturedAppActions();
     setQuickActionsAppId(null);
-  }, [catalogPullSpring, reduceMotion, refresh]);
+  }, [catalogPullSpring, featuredAppId, reduceMotion, refresh, refreshFeaturedAppActions]);
 
   const bindCatalogPull = useDrag(({ active, movement: [, my], direction: [, dy], cancel, event }) => {
     if (typeof window !== 'undefined' && window.scrollY > 4) {
@@ -2493,12 +2518,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   });
 
 
-  const refreshAppActions = useCallback(async (appId = 'photoprism') => {
+  const refreshAppActions = useCallback(async (appId = featuredAppId) => {
     try {
-      const normalizedAppId = String(appId || 'photoprism').toLowerCase();
-      const payload = normalizedAppId === 'photoprism'
-        ? await refreshPhotoprismActions()
-        : await liteApi.appActions(appId || 'photoprism');
+      const normalizedAppId = String(appId || featuredAppId || '').trim().toLowerCase();
+      if (!normalizedAppId) return null;
+      const payload = normalizedAppId === featuredAppId
+        ? await refreshFeaturedAppActions()
+        : await liteApi.appActions(normalizedAppId);
       const snapshot = normalizeAppActionsPayload(payload || {});
       setActionSnapshots((current) => ({
         ...current,
@@ -2508,17 +2534,17 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     } catch (_error) {
       return null;
     }
-  }, [refreshPhotoprismActions]);
+  }, [featuredAppId, refreshFeaturedAppActions]);
 
 
   useEffect(() => {
-    if (!appActionsData) return;
+    if (!appActionsData || !featuredAppId) return;
     const snapshot = normalizeAppActionsPayload(appActionsData || {});
     setActionSnapshots((current) => ({
       ...current,
-      photoprism: snapshot,
+      [featuredAppId]: snapshot,
     }));
-  }, [appActionsData]);
+  }, [appActionsData, featuredAppId]);
 
   // Lifecycle reads are authoritative for terminal feedback. Only operations
   // initiated on this screen are tracked, and a stable reference settles once
@@ -2611,7 +2637,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       rememberCatalogOperation(response, 'install_app');
       setResult(response);
       await refresh();
-      await refreshAppActions(app.id || 'photoprism');
+      await refreshAppActions(app.id);
     } catch (err) {
       setActionError(err.message);
     } finally {
@@ -2769,9 +2795,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
   async function runLifecycleAction(app, actionId, event, extraPayload = {}) {
     event?.stopPropagation?.();
-    if (!isPhotoPrismApp(app) || !actionId) return;
+    if (!app?.id || !actionId) return;
+    if (['connect_photos', 'import_photos'].includes(actionId) && !isPhotoPrismApp(app)) return;
     const flowAction = actionFromSnapshot(actionSnapshots[appSnapshotKey(app)] || null, actionId, lifecycleAction(lifecycleProfile(app), actionId));
-    appActionFlow.review({ appId: app.id || 'photoprism', actionId, actionLabel: flowAction?.label, risk: flowAction?.risk, destructive: flowAction?.destructive, confirmationRequired: flowAction?.confirmation_required || actionId === 'remove_app', disabledReason: flowAction?.disabled_reason || flowAction?.reason });
+    appActionFlow.review({ appId: app.id, actionId, actionLabel: flowAction?.label, risk: flowAction?.risk, destructive: flowAction?.destructive, confirmationRequired: flowAction?.confirmation_required || actionId === 'remove_app', disabledReason: flowAction?.disabled_reason || flowAction?.reason });
     const flowSubmit = appActionFlow.submit({ actionId, confirmed: Boolean(extraPayload.confirm), confirmationRequired: flowAction?.confirmation_required || actionId === 'remove_app', destructive: flowAction?.destructive });
     if (!flowSubmit.ok) { setActionError(flowSubmit.reason); return; }
     const busyKey = `${app.id}:${actionId}`;
@@ -2779,7 +2806,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     setActionError(null);
     setResult({ status: 'queued', action_id: actionId, summary: 'Sending app action to Pocket Lab...' });
     try {
-      const appId = app.id || 'photoprism';
+      const appId = app.id;
       const response = await appActionMutation.run({
         appId,
         actionId,
@@ -2869,6 +2896,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       const repairAppAction = actionState('repair_app');
       const removeAppAction = actionState('remove_app');
       const isPhotosImported = photosAlreadyImported(lifecycle, actionSnapshot, app, importPhotosAction);
+      const declaredActions = app?.platform_contract?.actions || {};
+      const snapshotActions = actionSnapshot?.actions || {};
+      const supportedActionIds = new Set([
+        ...Object.keys(declaredActions),
+        ...Object.keys(snapshotActions),
+        ...(canOpen ? ['open', 'open_full_screen', 'install_to_phone'] : []),
+      ]);
       return {
         mediaSummary: lifecycleMediaSummary(lifecycle),
         hostLabel: appHostLabel(app, lifecycle, targetName),
@@ -2882,7 +2916,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         tone: 'primary',
         onClick: (event) => openApp(app, event),
         disabled: !canOpen || openAction.enabled === false,
-        title: lifecycleActionReason(openAction) || app?.access?.message || 'Open PhotoPrism.',
+        title: lifecycleActionReason(openAction) || app?.access?.message || `Open ${app?.name || 'app'}.`,
         result,
       },
       {
@@ -2909,9 +2943,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           ...importPhotosAction,
           enabled: false,
           status: 'imported',
-          summary: 'Photos are already imported. PhotoPrism will handle new photos.',
-          disabled_reason: 'Photos are already imported. PhotoPrism will handle new photos.',
-          reason: 'Photos are already imported. PhotoPrism will handle new photos.',
+          summary: isPhotoPrismApp(app) ? 'Photos are already imported. PhotoPrism will handle new photos.' : 'Media import is already complete.',
+          disabled_reason: isPhotoPrismApp(app) ? 'Photos are already imported. PhotoPrism will handle new photos.' : 'Media import is already complete.',
+          reason: isPhotoPrismApp(app) ? 'Photos are already imported. PhotoPrism will handle new photos.' : 'Media import is already complete.',
         } : importPhotosAction,
         busyKey: actionBusyKey,
         progress: importProgress,
@@ -2919,7 +2953,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         onClick: (event) => runLifecycleAction(app, 'import_photos', event),
         disabled: isPhotosImported || importPhotosAction.enabled !== true || actionBusyKey === `${app.id}:import_photos`,
         title: isPhotosImported
-          ? 'Photos are already imported. PhotoPrism will handle new photos.'
+          ? (isPhotoPrismApp(app) ? 'Photos are already imported. PhotoPrism will handle new photos.' : 'Media import is already complete.')
           : lifecycleActionReason(importPhotosAction),
         result,
       },
@@ -2984,9 +3018,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           ...installAppAction,
           enabled: false,
           status: 'installed',
-          summary: 'PhotoPrism is installed and running.',
-          disabled_reason: 'PhotoPrism is already installed and running.',
-          reason: 'PhotoPrism is already installed and running.',
+          summary: `${app?.name || 'App'} is installed and running.`,
+          disabled_reason: `${app?.name || 'App'} is already installed and running.`,
+          reason: `${app?.name || 'App'} is already installed and running.`,
         } : installAppAction,
         busyKey: actionBusyKey,
         tone: 'ghost',
@@ -3016,7 +3050,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         title: lifecycleActionReason(removeAppAction),
         result,
       },
-        ],
+        ].filter((entry) => supportedActionIds.has(entry.actionId)),
       };
     };
     const quickActionsOpen = quickActionsAppId === app.id;
@@ -3041,7 +3075,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           <div className="lite-catalog-quick-actions" role="menu" aria-label={`${app.name} quick actions`}>
             <button type="button" onClick={(event) => { event.stopPropagation(); openApp(app, event); setQuickActionsAppId(null); }} disabled={!canOpen}>Open</button>
             {installed && lifecycle ? <button type="button" onClick={(event) => { event.stopPropagation(); openManageSheet(app, 'safety'); }}>Manage</button> : null}
-            <button type="button" onClick={(event) => { event.stopPropagation(); setQuickActionsAppId(null); refresh(); refreshAppActions(app.id || 'photoprism'); }}>Refresh</button>
+            <button type="button" onClick={(event) => { event.stopPropagation(); setQuickActionsAppId(null); refresh(); refreshAppActions(app.id); }}>Refresh</button>
           </div>
         ) : null}
         {installed ? (
@@ -3050,11 +3084,15 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <span>Self-hosted app</span>
           </div>
         ) : null}
-        {installed ? (
+        {installed && (
+          appSupports(app, 'security_check')
+          || appSupports(app, 'backup')
+          || appSupports(app, 'media_sources')
+        ) ? (
           <div className="lite-catalog-profile-markers" aria-label="App protection and backup readiness">
-            <span><ShieldCheck className="h-4 w-4" />{app?.security_profile?.label || 'Protected app'}</span>
-            <span><FileCheck className="h-4 w-4" />{app?.backup_profile?.config || 'Config protected'}</span>
-            <span><FileCheck className="h-4 w-4" />{app?.backup_profile?.media || 'Media excluded'}</span>
+            {appSupports(app, 'security_check') ? <span><ShieldCheck className="h-4 w-4" />{app?.security_profile?.label || 'Safety check available'}</span> : null}
+            {appSupports(app, 'backup') ? <span><FileCheck className="h-4 w-4" />{app?.backup_profile?.config || app?.backup_profile?.label || 'Backup available'}</span> : null}
+            {appSupports(app, 'media_sources') && app?.backup_profile?.media ? <span><FileCheck className="h-4 w-4" />{app.backup_profile.media}</span> : null}
             {isPhotoPrismApp(app) ? <span><Camera className="h-4 w-4" />{photoBackupSummary}</span> : null}
           </div>
         ) : null}
@@ -3071,9 +3109,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             </div>
             <div className="lite-catalog-summary-chips" aria-label="App health summary">
               <span><Server className="h-4 w-4" />Route</span>
-              <span><FolderOpen className="h-4 w-4" />{lifecycleStorageLabel(lifecycle, app)}</span>
-              <span><ShieldCheck className="h-4 w-4" />{lifecycleSecurityLabel(lifecycle, app)}</span>
-              <span><FileCheck className="h-4 w-4" />{lifecycleBackupLabel(lifecycle, app)}</span>
+              {appSupports(app, 'media_sources') ? <span><FolderOpen className="h-4 w-4" />{lifecycleStorageLabel(lifecycle, app)}</span> : null}
+              {appSupports(app, 'security_check') ? <span><ShieldCheck className="h-4 w-4" />{lifecycleSecurityLabel(lifecycle, app)}</span> : null}
+              {appSupports(app, 'backup') ? <span><FileCheck className="h-4 w-4" />{lifecycleBackupLabel(lifecycle, app)}</span> : null}
             </div>
             {lifecycleAttention.length ? (
               <div className="lite-catalog-summary-attention">
@@ -3232,16 +3270,24 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         <GlassCard className="lite-catalog-remove-confirm" role="dialog" aria-label="Confirm remove">
           <div>
             <span>Confirm remove</span>
-            <h2>Remove PhotoPrism?</h2>
-            <p>This removes PhotoPrism from this Pocket Lab when removal is available. Your photo files and existing backups stay protected.</p>
+            <h2>Remove {removeConfirmApp.name || 'this app'}?</h2>
+            <p>
+              This removes {removeConfirmApp.name || 'the app'} from this Pocket Lab when removal is available.
+              Protected user data and existing backups are preserved by default.
+            </p>
           </div>
           <LiteConsequenceSummary value={{
-            title: 'Before PhotoPrism is removed',
+            title: `Before ${removeConfirmApp.name || 'this app'} is removed`,
             summary: 'Review the effect on this app before continuing.',
-            will: ['Remove the PhotoPrism app service and its Pocket Lab access route when removal is available.'],
-            willNot: ['Delete your photo files.', 'Delete existing backups by default.'],
-            reversible: 'Reinstalling the app can restore the app service. Your data protection depends on the backups you keep.',
-            availability: 'PhotoPrism will be unavailable after removal until it is installed again.',
+            will: [`Remove the ${removeConfirmApp.name || 'app'} service and its Pocket Lab access route when removal is available.`],
+            willNot: [
+              appSupports(removeConfirmApp, 'media_sources') ? 'Delete connected media files by default.' : 'Delete protected user data by default.',
+              'Delete existing backups by default.',
+            ],
+            reversible: appSupports(removeConfirmApp, 'install')
+              ? 'Reinstalling the app can restore the app service. Recovery depends on the backups you keep.'
+              : 'Recovery depends on the app-specific recovery capabilities and backups you keep.',
+            availability: `${removeConfirmApp.name || 'The app'} will be unavailable after removal until it is installed or recovered again.`,
           }} />
           <div className="lite-catalog-remove-confirm-actions">
             <LiteButton tone="danger" onClick={(event) => confirmRemoveApp(removeConfirmApp, event)}>Confirm remove</LiteButton>

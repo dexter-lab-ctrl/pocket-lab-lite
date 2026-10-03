@@ -12,10 +12,10 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_backup, lite_catalog, lite_catalog_live, lite_security
+from . import lite_app_adapters, lite_app_backup, lite_app_registry, lite_catalog, lite_catalog_live, lite_security
 
-SUPPORTED_APP_IDS = {"photoprism"}
-APP_LABELS = {"photoprism": "PhotoPrism"}
+SUPPORTED_APP_IDS = frozenset(app_id for app_id in lite_app_adapters.app_ids_for_service("update_readiness") if lite_app_registry.supports(app_id, "update_readiness"))
+APP_LABELS = {app_id: lite_app_registry.app_definition(app_id).name for app_id in SUPPORTED_APP_IDS}
 APP_UPDATE_CHECK_SUBJECT = "pocketlab.commands.lite.app.update.check"
 PHOTOPRISM_STATUS_URL = "http://127.0.0.1:8443/apps/photoprism/api/v1/status"
 STALE_SECONDS = 20 * 60

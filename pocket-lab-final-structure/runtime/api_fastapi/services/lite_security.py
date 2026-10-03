@@ -32,6 +32,7 @@ from .workload_admission import WORKLOADS, WORKLOAD_ADMISSION
 from . import lite_security_policy as policy
 from .process_runtime import PROCESS_RUNTIME
 from . import lite_security_generation
+from . import lite_app_registry
 from . import lite_security_optimization as optimization
 
 
@@ -7100,6 +7101,10 @@ def _app_execution_timeline_for_phase(run: dict[str, Any], phase: str) -> list[d
     except ValueError:
         current_index = 0
 
+    app_id = str(run.get("app_id") or "").strip().lower()
+    app_label = str(run.get("app_label") or "App")
+    prefix = app_id.replace("-", "_") or "app"
+
     def status_for(step_phase: str, target_id: str | None = None) -> str:
         if phase == step_phase:
             return "running"
@@ -7115,13 +7120,42 @@ def _app_execution_timeline_for_phase(run: dict[str, Any], phase: str) -> list[d
     return [
         _timeline_step("request_accepted", "Request accepted", "FastAPI accepted the explicit App Check request.", "completed" if current_index >= 0 else "pending"),
         _timeline_step("worker_picked_up", "Worker picked it up", "The backend worker started the app check.", "completed" if current_index >= 1 or phase in terminal_phases else "pending"),
-        _timeline_step("app_route", "App route checked", "PhotoPrism same-origin route health was checked without exposing route internals.", status_for("route_running", "photoprism_route")),
-        _timeline_step("app_files", "App files checked", "Selected PhotoPrism app files were checked with media folders skipped.", status_for("app_files_running", "photoprism_app_files")),
-        _timeline_step("app_settings", "App settings checked", "PhotoPrism settings were checked with runtime secrets protected.", status_for("settings_running", "photoprism_settings")),
-        _timeline_step("app_backup_metadata", "App backup metadata checked", "PhotoPrism backup metadata was summarized without scanning payloads.", status_for("backup_metadata_running", "photoprism_backup_metadata")),
-        _timeline_step("app_action_state", "App action state checked", "PhotoPrism safe action readiness was summarized without loading backend-only evidence.", status_for("action_state_running", "photoprism_action_state")),
+        _timeline_step("app_route", "App route checked", f"{app_label} same-origin route health was checked without exposing route internals.", status_for("route_running", f"{prefix}_route")),
+        _timeline_step("app_files", "App files checked", f"Selected {app_label} app files were checked with protected user-data exclusions.", status_for("app_files_running", f"{prefix}_app_files")),
+        _timeline_step("app_settings", "App settings checked", f"{app_label} settings were checked with runtime secrets protected.", status_for("settings_running", f"{prefix}_settings")),
+        _timeline_step("app_backup_metadata", "App backup metadata checked", f"{app_label} backup metadata was summarized without scanning payloads.", status_for("backup_metadata_running", f"{prefix}_backup_metadata")),
+        _timeline_step("app_action_state", "App action state checked", f"{app_label} safe action readiness was summarized without loading backend-only evidence.", status_for("action_state_running", f"{prefix}_action_state")),
         _timeline_step("evidence_saved", "Evidence saved", "Sanitized app target evidence and coverage summary were saved.", evidence_status),
     ]
+
+def _app_route_health(app_id: str) -> dict[str, Any]:
+    try:
+        target = policy.app_check_target(app_id)
+    except ValueError:
+        return {"status": "missing", "route_ready": False, "summary": "App Check target is not registered."}
+    health_path = str(target.get("health_path") or "")
+    expected = target.get("expected_health") if isinstance(target.get("expected_health"), dict) else {}
+    app_label = str(target.get("app_label") or "App")
+    if not health_path.startswith(f"/apps/{app_id}/"):
+        return {"status": "partial", "route_ready": False, "summary": "App health route contract needs review."}
+    url = f"http://127.0.0.1:8443{health_path}"
+    request = urllib.request.Request(url, headers={"Accept": "application/json"})
+    try:
+        with urllib.request.urlopen(request, timeout=3) as response:  # nosec B310 - validated loopback-only app health route
+            status_code = int(getattr(response, "status", 0) or 0)
+            payload = _load_json_text(response.read(2048).decode("utf-8", errors="replace"))
+            matches = isinstance(payload, dict) and all(payload.get(key) == value for key, value in expected.items())
+            return {
+                "status": "checked" if 200 <= status_code < 300 else "partial",
+                "route_ready": bool(matches),
+                "summary": f"{app_label} route metadata is operational." if matches else f"{app_label} route metadata needs review.",
+            }
+    except (urllib.error.URLError, TimeoutError, OSError):
+        return {
+            "status": "partial",
+            "route_ready": False,
+            "summary": f"{app_label} route metadata was not reachable quickly.",
+        }
 
 
 def _app_route_posture(app_id: str) -> dict[str, Any]:
@@ -7129,44 +7163,66 @@ def _app_route_posture(app_id: str) -> dict[str, Any]:
         target = policy.app_check_target(app_id)
     except ValueError:
         return {"status": "missing", "summary": "App Check target is not registered."}
-    route = str(target.get("route") or "/apps/photoprism/")
-    health_path = str(target.get("health_path") or "/apps/photoprism/api/v1/status")
-    health = _photoprism_route_health() if app_id == "photoprism" else {"status": "missing", "route_ready": False}
+    route = str(target.get("route") or "")
+    health_path = str(target.get("health_path") or "")
+    health = _app_route_health(app_id)
     route_ready = bool(health.get("route_ready"))
+    app_label = str(target.get("app_label") or "App")
     return policy.redact_value({
         "app_id": target.get("app_id"),
-        "app_label": target.get("app_label"),
+        "app_label": app_label,
         "status": "checked" if route_ready else "partial",
         "route_label": route,
         "health_endpoint_label": health_path,
         "expected_health": target.get("expected_health"),
         "route_ready": route_ready,
         "execution_owner": "backend worker and app runtime",
-        "summary": "PhotoPrism route is operational." if route_ready else "PhotoPrism route needs review or was not reachable quickly.",
+        "summary": f"{app_label} route is operational." if route_ready else f"{app_label} route needs review or was not reachable quickly.",
     })
 
 
-def _photoprism_action_state_summary() -> dict[str, Any]:
-    actions = ["check_app", "repair_app", "backup_app", "preview_restore", "update_app"]
+def _app_action_state_summary(app_id: str) -> dict[str, Any]:
+    target = policy.app_check_target(app_id)
+    app_label = str(target.get("app_label") or "App")
+    actions = sorted(lite_app_registry.registered_action_ids(app_id))
     return policy.redact_value({
         "status": "checked",
-        "app_id": "photoprism",
-        "app_label": "PhotoPrism",
+        "app_id": app_id,
+        "app_label": app_label,
         "checked_actions": actions,
-        "summary": "PhotoPrism action readiness was summarized without loading raw evidence.",
-        "what_did_not_happen": ["No app settings were changed.", "No photo files were scanned.", "No backend-only evidence was loaded into the UI."],
+        "summary": f"{app_label} action readiness was summarized without loading raw evidence.",
+        "what_did_not_happen": [
+            "No app settings were changed.",
+            "Protected user-data files were not scanned outside the adapter-owned target contract.",
+            "No backend-only evidence was loaded into the UI.",
+        ],
     })
 
 
-def _photoprism_backup_metadata_summary(root: Path) -> dict[str, Any]:
-    summary = _backup_metadata_summary(root)
+def _app_backup_metadata_summary(root: Path, app_id: str) -> dict[str, Any]:
+    target = policy.app_check_target(app_id)
+    app_label = str(target.get("app_label") or "App")
+    candidates: list[Path] = []
+    for relative in target.get("backup_relatives") or []:
+        rel = Path(str(relative))
+        candidates.extend([root / rel, Path.home() / rel])
+    present: list[Path] = []
+    for candidate in candidates:
+        try:
+            if candidate.exists():
+                present.append(candidate)
+        except OSError:
+            continue
     return policy.redact_value({
-        **summary,
-        "app_id": "photoprism",
-        "app_label": "PhotoPrism",
-        "skipped": ["backup payloads", "restic repository contents", "restore checkpoints", "PhotoPrism database files"],
+        "status": "checked" if present else "missing",
+        "app_id": app_id,
+        "app_label": app_label,
+        "checked_candidates": len(candidates),
+        "present_count": len(present),
+        "summary": f"{app_label} backup metadata summary is available." if present else f"{app_label} backup metadata was not found on this device.",
+        "present_labels": [str(item).replace(str(Path.home()), "~") for item in present[:6]],
+        "skipped": ["backup payloads", "restic repository contents", "restore checkpoints", "protected user data"],
     })
-
 
 def _overall_budget_exhausted(started: float, profile: str) -> bool:
     key = "full_overall" if profile == policy.SCAN_PROFILE_FULL else "app_overall" if profile == policy.SCAN_PROFILE_APP else "overall"
@@ -7453,16 +7509,36 @@ def _first_existing(paths: list[Path]) -> Path | None:
     return None
 
 
-def _photoprism_proot_targets(rootfs: Path | None) -> list[tuple[Path, str, bool, str, str, str]]:
+def _app_proot_targets(rootfs: Path | None, app_id: str) -> list[tuple[Path, str, bool, str, str, str]]:
     if not rootfs:
         return []
-    app_path = rootfs / "opt/photoprism"
-    binary_path = rootfs / "usr/local/bin/photoprism"
-    targets = [(app_path, "vuln,misconfig", False, "target-photoprism-trivy.json", "PhotoPrism app files", "photoprism_app_files")]
+    target = policy.app_check_target(app_id)
+    app_label = str(target.get("app_label") or "App")
+    prefix = app_id.replace("-", "_")
+    app_path = rootfs / str(target["proot_app_path"])
+    binary_path = rootfs / str(target["proot_binary_path"])
+    targets = [
+        (
+            app_path,
+            "vuln,misconfig",
+            False,
+            f"target-{prefix}-trivy.json",
+            f"{app_label} app files",
+            f"{prefix}_app_files",
+        )
+    ]
     if binary_path.exists():
-        targets.append((binary_path, "vuln,misconfig", False, "target-photoprism-binary-trivy.json", "PhotoPrism app binary", "photoprism_app_binary"))
+        targets.append(
+            (
+                binary_path,
+                "vuln,misconfig",
+                False,
+                f"target-{prefix}-binary-trivy.json",
+                f"{app_label} app binary",
+                f"{prefix}_app_binary",
+            )
+        )
     return targets
-
 
 def _backup_metadata_summary(root: Path) -> dict[str, Any]:
     candidates = policy.backup_metadata_candidates(root)
@@ -7885,7 +7961,15 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
 
 def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     app_id = _scan_app_id(command) or "photoprism"
-    app_label = _app_label(app_id) or "PhotoPrism"
+    target_contract = policy.app_check_target(app_id)
+    app_label = _app_label(app_id) or str(target_contract.get("app_label") or lite_app_registry.app_definition(app_id).name)
+    prefix = app_id.replace("-", "_")
+    route_target_id = f"{prefix}_route"
+    files_target_id = f"{prefix}_app_files"
+    settings_target_id = f"{prefix}_settings"
+    backup_target_id = f"{prefix}_backup_metadata"
+    action_target_id = f"{prefix}_action_state"
+
     run = mark_running({**command, "profile": policy.SCAN_PROFILE_APP, "app_id": app_id})
     run_id = str(run["run_id"])
     started = time.monotonic()
@@ -7897,18 +7981,47 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     target_statuses: list[dict[str, Any]] = []
     evidence_refs: list[str] = []
     partial = False
-    posture: dict[str, Any] | None = None
-    run.update({"scan_profile": policy.SCAN_PROFILE_APP, "app_id": app_id, "app_label": app_label, "tools": ["trivy", "app-posture"], "target_statuses": target_statuses})
-    run["coverage_summary"] = build_coverage_summary(plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs)
+
+    run.update({
+        "scan_profile": policy.SCAN_PROFILE_APP,
+        "app_id": app_id,
+        "app_label": app_label,
+        "tools": ["trivy", "app-posture"],
+        "target_statuses": target_statuses,
+    })
+    run["coverage_summary"] = build_coverage_summary(
+        plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs
+    )
 
     route_posture = _app_route_posture(app_id)
-    route_ref = _write_target_json(run_id, "target-photoprism-route-posture.json", route_posture)
+    route_ref = _write_target_json(run_id, f"target-{prefix}-route-posture.json", route_posture)
     route_status = str(route_posture.get("status") or "partial")
-    target_statuses.append(_full_target_status("photoprism_route", "PhotoPrism route", "posture", "checked" if route_status == "checked" else "partial", evidence_ref=route_ref, summary=str(route_posture.get("summary") or "PhotoPrism route checked.")))
+    route_label = f"{app_label} route"
+    target_statuses.append(
+        _full_target_status(
+            route_target_id,
+            route_label,
+            "posture",
+            "checked" if route_status == "checked" else "partial",
+            evidence_ref=route_ref,
+            summary=str(route_posture.get("summary") or f"{route_label} checked."),
+        )
+    )
     evidence_refs.append(route_ref)
-    tool_results["photoprism_route"] = {"status": "completed" if route_status == "checked" else "partial", "available": True, "label": "PhotoPrism route", "finding_count": 0}
+    tool_results[route_target_id] = {
+        "status": "completed" if route_status == "checked" else "partial",
+        "available": True,
+        "label": route_label,
+        "finding_count": 0,
+    }
     partial = partial or route_status != "checked"
-    run.update({"tool_results": tool_results, "target_statuses": target_statuses, "coverage_summary": build_coverage_summary(plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs)})
+    run.update({
+        "tool_results": tool_results,
+        "target_statuses": target_statuses,
+        "coverage_summary": build_coverage_summary(
+            plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs
+        ),
+    })
     run["execution_timeline"] = execution_timeline_for_phase(run, "app_files_running")
     _write_intermediate_running_state(run, findings, evidence_refs)
 
@@ -7916,22 +8029,46 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     trivy_intelligence = _prepare_trivy_intelligence(trivy, root)
     tool_results["scanner_intelligence"] = trivy_intelligence
     rootfs = policy.discover_proot_ubuntu_rootfs(root)
-    app_targets = _photoprism_proot_targets(rootfs)
+    app_targets = _app_proot_targets(rootfs, app_id)
     app_seen = False
     app_partial = False
     app_finding_count = 0
     app_file_cache_context: dict[str, Any] | None = None
     app_file_findings: list[dict[str, Any]] = []
+
     for target_path, scanners, secret_mode, evidence_name, label, app_target_id in app_targets:
         if _overall_budget_exhausted(started, policy.SCAN_PROFILE_APP):
-            status = _full_target_status("photoprism_app_files", label, "trivy", "timed_out", summary="App Check reached its overall budget before this app-file target completed.")
-            target_statuses.append(status)
+            target_statuses.append(
+                _full_target_status(
+                    app_target_id,
+                    label,
+                    "trivy",
+                    "timed_out",
+                    summary="App Check reached its overall budget before this app-file target completed.",
+                )
+            )
             app_partial = True
             continue
-        if target_path.exists():
-            app_seen = True
-        new_findings, status, cache_context = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=target_path, target_id=app_target_id, target_label=label, scanners=scanners, profile=policy.SCAN_PROFILE_APP, secret_mode=secret_mode, evidence_name=evidence_name, use_cache=True, intelligence=trivy_intelligence)
-        if app_target_id == "photoprism_app_files":
+        try:
+            if target_path.exists():
+                app_seen = True
+        except OSError:
+            pass
+        new_findings, status, cache_context = _run_trivy_target_job(
+            trivy=trivy,
+            run_id=run_id,
+            root=root,
+            target_path=target_path,
+            target_id=app_target_id,
+            target_label=label,
+            scanners=scanners,
+            profile=policy.SCAN_PROFILE_APP,
+            secret_mode=secret_mode,
+            evidence_name=evidence_name,
+            use_cache=True,
+            intelligence=trivy_intelligence,
+        )
+        if app_target_id == files_target_id:
             app_file_cache_context = cache_context
             app_file_findings = new_findings
         findings.extend(new_findings)
@@ -7940,25 +8077,45 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         if status.get("evidence_ref"):
             evidence_refs.append(str(status["evidence_ref"]))
         app_partial = app_partial or str(status.get("status")) in {"partial", "timed_out", "failed", "review"}
+
     if not app_targets:
-        target_statuses.append(_full_target_status("photoprism_app_files", "PhotoPrism app files", "trivy", "missing", summary="Selected PhotoPrism app files were not present."))
+        target_statuses.append(
+            _full_target_status(
+                files_target_id,
+                f"{app_label} app files",
+                "trivy",
+                "missing",
+                summary=f"Selected {app_label} app files were not present.",
+            )
+        )
     else:
-        sbom_target = _first_existing([rootfs / "opt/photoprism"] if rootfs else [])
+        sbom_target = _first_existing(
+            [rootfs / str(target_contract["proot_app_path"])] if rootfs else []
+        )
         if sbom_target:
             cached_app_entry = (app_file_cache_context or {}).get("entry")
             sbom_status = (
                 _write_cached_target_sbom(
                     run_id,
                     cached_app_entry,
-                    "photoprism_app_files",
-                    "PhotoPrism",
+                    files_target_id,
+                    app_label,
                     policy.SCAN_PROFILE_APP,
                 )
                 if cached_app_entry
                 else None
             )
             if sbom_status is None:
-                sbom_status = _write_target_sbom(trivy, run_id, root, sbom_target, "photoprism_app_files", "PhotoPrism", policy.SCAN_PROFILE_APP, trivy_intelligence)
+                sbom_status = _write_target_sbom(
+                    trivy,
+                    run_id,
+                    root,
+                    sbom_target,
+                    files_target_id,
+                    app_label,
+                    policy.SCAN_PROFILE_APP,
+                    trivy_intelligence,
+                )
             if (
                 app_file_cache_context
                 and app_file_cache_context.get("identity")
@@ -7966,14 +8123,14 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
                 and sbom_status.get("status") == "checked"
             ):
                 sbom_payload = evidence.read_json(
-                    evidence.evidence_dir(run_id) / "target-photoprism_app_files-sbom.cdx.json",
+                    evidence.evidence_dir(run_id) / f"target-{files_target_id}-sbom.cdx.json",
                     {},
                 )
                 if isinstance(sbom_payload, dict) and sbom_payload:
                     _write_security_target_cache(
                         identity=app_file_cache_context["identity"],
-                        target_id="photoprism_app_files",
-                        target_label="PhotoPrism app files",
+                        target_id=files_target_id,
+                        target_label=f"{app_label} app files",
                         scanners="vuln,misconfig",
                         findings=app_file_findings,
                         sbom=sbom_payload,
@@ -7985,40 +8142,110 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             if sbom_status.get("evidence_ref"):
                 evidence_refs.append(str(sbom_status["evidence_ref"]))
             app_partial = app_partial or str(sbom_status.get("status")) in {"partial", "timed_out", "failed", "review"}
-    tool_results["photoprism_app_files"] = {"status": "partial" if app_partial else "completed" if app_seen else "missing", "available": app_seen, "label": "PhotoPrism app files", "finding_count": app_finding_count}
+
+    tool_results[files_target_id] = {
+        "status": "partial" if app_partial else "completed" if app_seen else "missing",
+        "available": app_seen,
+        "label": f"{app_label} app files",
+        "finding_count": app_finding_count,
+    }
     partial = partial or app_partial
-    run.update({"tool_results": tool_results, "target_statuses": target_statuses, "coverage_summary": build_coverage_summary(plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs)})
+    run.update({
+        "tool_results": tool_results,
+        "target_statuses": target_statuses,
+        "coverage_summary": build_coverage_summary(
+            plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs
+        ),
+    })
     run["execution_timeline"] = execution_timeline_for_phase(run, "settings_running")
     _write_intermediate_running_state(run, findings, evidence_refs)
 
-    config_path = policy.photoprism_config_dir()
-    config_findings, config_status, _ = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=config_path, target_id="photoprism_settings", target_label="PhotoPrism settings", scanners="secret", profile=policy.SCAN_PROFILE_APP, secret_mode=True, evidence_name="target-photoprism-config-secret.json", use_cache=True, intelligence=trivy_intelligence)
+    config_path = Path.home() / str(target_contract["config_relative"])
+    config_findings, config_status, _ = _run_trivy_target_job(
+        trivy=trivy,
+        run_id=run_id,
+        root=root,
+        target_path=config_path,
+        target_id=settings_target_id,
+        target_label=f"{app_label} settings",
+        scanners="secret",
+        profile=policy.SCAN_PROFILE_APP,
+        secret_mode=True,
+        evidence_name=f"target-{prefix}-config-secret.json",
+        use_cache=True,
+        intelligence=trivy_intelligence,
+    )
     findings.extend(config_findings)
     target_statuses.append(config_status)
     if config_status.get("evidence_ref"):
         evidence_refs.append(str(config_status["evidence_ref"]))
     config_partial = str(config_status.get("status")) in {"partial", "timed_out", "failed", "review"}
-    tool_results["photoprism_settings"] = {"status": "partial" if config_partial else "completed" if str(config_status.get("status")) == "checked" else str(config_status.get("status") or "missing"), "available": str(config_status.get("status")) != "missing", "label": "PhotoPrism settings", "finding_count": len(config_findings)}
+    tool_results[settings_target_id] = {
+        "status": "partial" if config_partial else "completed" if str(config_status.get("status")) == "checked" else str(config_status.get("status") or "missing"),
+        "available": str(config_status.get("status")) != "missing",
+        "label": f"{app_label} settings",
+        "finding_count": len(config_findings),
+    }
     partial = partial or config_partial
-    run.update({"tool_results": tool_results, "target_statuses": target_statuses, "coverage_summary": build_coverage_summary(plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs)})
+    run.update({
+        "tool_results": tool_results,
+        "target_statuses": target_statuses,
+        "coverage_summary": build_coverage_summary(
+            plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs
+        ),
+    })
     run["execution_timeline"] = execution_timeline_for_phase(run, "backup_metadata_running")
     _write_intermediate_running_state(run, findings, evidence_refs)
 
-    backup_summary = _photoprism_backup_metadata_summary(root)
-    backup_ref = _write_target_json(run_id, "target-photoprism-backup-metadata.json", backup_summary)
+    backup_summary = _app_backup_metadata_summary(root, app_id)
+    backup_ref = _write_target_json(run_id, f"target-{prefix}-backup-metadata.json", backup_summary)
     backup_status = str(backup_summary.get("status") or "missing")
-    target_statuses.append(_full_target_status("photoprism_backup_metadata", "PhotoPrism backup metadata", "custom", "checked" if backup_status == "checked" else "missing", evidence_ref=backup_ref, summary=str(backup_summary.get("summary") or "PhotoPrism backup metadata checked.")))
+    target_statuses.append(
+        _full_target_status(
+            backup_target_id,
+            f"{app_label} backup metadata",
+            "custom",
+            "checked" if backup_status == "checked" else "missing",
+            evidence_ref=backup_ref,
+            summary=str(backup_summary.get("summary") or f"{app_label} backup metadata checked."),
+        )
+    )
     evidence_refs.append(backup_ref)
-    tool_results["photoprism_backup_metadata"] = {"status": "completed" if backup_status == "checked" else "missing", "available": backup_status == "checked", "label": "PhotoPrism backup metadata", "finding_count": 0}
-    run.update({"tool_results": tool_results, "target_statuses": target_statuses, "coverage_summary": build_coverage_summary(plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs)})
+    tool_results[backup_target_id] = {
+        "status": "completed" if backup_status == "checked" else "missing",
+        "available": backup_status == "checked",
+        "label": f"{app_label} backup metadata",
+        "finding_count": 0,
+    }
+    run.update({
+        "tool_results": tool_results,
+        "target_statuses": target_statuses,
+        "coverage_summary": build_coverage_summary(
+            plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs
+        ),
+    })
     run["execution_timeline"] = execution_timeline_for_phase(run, "action_state_running")
     _write_intermediate_running_state(run, findings, evidence_refs)
 
-    action_summary = _photoprism_action_state_summary()
-    action_ref = _write_target_json(run_id, "target-photoprism-action-state.json", action_summary)
-    target_statuses.append(_full_target_status("photoprism_action_state", "PhotoPrism action state", "custom", "checked", evidence_ref=action_ref, summary="PhotoPrism safe action state was summarized."))
+    action_summary = _app_action_state_summary(app_id)
+    action_ref = _write_target_json(run_id, f"target-{prefix}-action-state.json", action_summary)
+    target_statuses.append(
+        _full_target_status(
+            action_target_id,
+            f"{app_label} action state",
+            "custom",
+            "checked",
+            evidence_ref=action_ref,
+            summary=f"{app_label} safe action state was summarized.",
+        )
+    )
     evidence_refs.append(action_ref)
-    tool_results["photoprism_action_state"] = {"status": "completed", "available": True, "label": "PhotoPrism action state", "finding_count": 0}
+    tool_results[action_target_id] = {
+        "status": "completed",
+        "available": True,
+        "label": f"{app_label} action state",
+        "finding_count": 0,
+    }
     tool_results["resource_budget"] = {
         "status": "completed",
         "available": True,
@@ -8027,17 +8254,40 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         "finish": optimization.resource_snapshot(),
         "process_runtime": PROCESS_RUNTIME.snapshot(),
     }
-    run.update({"tool_results": tool_results, "target_statuses": target_statuses, "coverage_summary": build_coverage_summary(plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs)})
+    run.update({
+        "tool_results": tool_results,
+        "target_statuses": target_statuses,
+        "coverage_summary": build_coverage_summary(
+            plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs
+        ),
+    })
     run["execution_timeline"] = execution_timeline_for_phase(run, "evidence_saving")
     _write_intermediate_running_state(run, findings, evidence_refs)
 
-    evidence_refs.append(evidence.write_evidence(run_id, "trivy-normalized.json", {"tool": "trivy", "profile": policy.SCAN_PROFILE_APP, "app_id": app_id, "findings": [f for f in findings if f.get("source") == "trivy"]}))
-    run["coverage_summary"] = build_coverage_summary(plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs)
+    evidence_refs.append(
+        evidence.write_evidence(
+            run_id,
+            "trivy-normalized.json",
+            {
+                "tool": "trivy",
+                "profile": policy.SCAN_PROFILE_APP,
+                "app_id": app_id,
+                "findings": [finding for finding in findings if finding.get("source") == "trivy"],
+            },
+        )
+    )
+    run["coverage_summary"] = build_coverage_summary(
+        plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs
+    )
     coverage_ref = evidence.write_evidence(run_id, "coverage-summary.json", run["coverage_summary"])
     if coverage_ref not in evidence_refs:
         evidence_refs.append(coverage_ref)
+
     counts = count_findings(findings)
-    target_review = any(str(item.get("status")) in {"partial", "timed_out", "failed", "review"} for item in target_statuses)
+    target_review = any(
+        str(item.get("status")) in {"partial", "timed_out", "failed", "review"}
+        for item in target_statuses
+    )
     partial = partial or target_review
     final_status = "degraded" if partial else "succeeded"
     copy = _profile_copy(policy.SCAN_PROFILE_APP)
@@ -8048,7 +8298,9 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         "partial_results": partial,
         "tool_results": tool_results,
         "target_statuses": target_statuses,
-        "coverage_summary": build_coverage_summary(plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs),
+        "coverage_summary": build_coverage_summary(
+            plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs
+        ),
         "critical_count": counts.get("critical", 0),
         "high_count": counts.get("high", 0),
         "medium_count": counts.get("medium", 0),
@@ -8056,9 +8308,34 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         "info_count": counts.get("info", 0),
         "evidence_refs": evidence_refs,
     })
-    run["execution_timeline"] = execution_timeline_for_phase(run, "degraded" if partial else "completed")
-    state = build_state(run, findings, evidence_refs, status_override="degraded" if partial else None, summary_override=copy["partial"] if partial else None)
-    summary_ref = evidence.write_evidence(run_id, "summary.json", {"run": run, "score": state.get("score"), "status": state.get("status"), "summary": state.get("summary"), "counts": counts, "findings": findings, "component_posture": state.get("component_posture"), "coverage_summary": state.get("coverage_summary"), "scan_profile": state.get("scan_profile"), "app_id": app_id, "app_label": app_label, "evidence_refs": evidence_refs})
+    run["execution_timeline"] = execution_timeline_for_phase(
+        run, "degraded" if partial else "completed"
+    )
+    state = build_state(
+        run,
+        findings,
+        evidence_refs,
+        status_override="degraded" if partial else None,
+        summary_override=copy["partial"] if partial else None,
+    )
+    summary_ref = evidence.write_evidence(
+        run_id,
+        "summary.json",
+        {
+            "run": run,
+            "score": state.get("score"),
+            "status": state.get("status"),
+            "summary": state.get("summary"),
+            "counts": counts,
+            "findings": findings,
+            "component_posture": state.get("component_posture"),
+            "coverage_summary": state.get("coverage_summary"),
+            "scan_profile": state.get("scan_profile"),
+            "app_id": app_id,
+            "app_label": app_label,
+            "evidence_refs": evidence_refs,
+        },
+    )
     if summary_ref not in evidence_refs:
         evidence_refs.insert(0, summary_ref)
     run["evidence_refs"] = evidence_refs
@@ -8066,7 +8343,6 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     return _finalize_security_scan_result(
         run=run, state=state, findings=findings, evidence_refs=evidence_refs
     )
-
 
 def run_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     initialize_security_sqlite_runtime(reconcile=False)

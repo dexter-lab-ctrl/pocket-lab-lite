@@ -8,24 +8,14 @@ from datetime import datetime, timezone
 
 from fastapi import HTTPException
 
-from . import lite_app_backup, lite_app_backup_targets, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_app_update, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media, lite_security
+from . import lite_app_adapters, lite_app_backup, lite_app_backup_targets, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_app_registry, lite_app_update, lite_catalog, lite_catalog_live, lite_security
 
-SUPPORTED_APP_IDS = {"photoprism"}
-SUPPORTED_ACTIONS = {
-    "open",
-    "open_full_screen",
-    "install_to_phone",
-    "connect_photos",
-    "check_app",
-    "backup_app",
-    "preview_restore",
-    "import_photos",
-    "backup_to_storage",
-    "install_app",
-    "update_app",
-    "repair_app",
-    "remove_app",
-}
+SUPPORTED_APP_IDS = frozenset(lite_app_adapters.app_ids_for_service("actions"))
+SUPPORTED_ACTIONS = frozenset(
+    action_id
+    for app_id in lite_app_registry.app_ids()
+    for action_id in lite_app_registry.registered_action_ids(app_id)
+)
 
 ACTION_CATEGORY_LABELS = {
     "access": "Open",
@@ -37,98 +27,36 @@ ACTION_CATEGORY_LABELS = {
 }
 
 ACTION_DEFINITIONS: dict[str, dict[str, Any]] = {
-    "open": {
-        "label": "Open",
-        "category": "access",
-        "summary": "Open PhotoPrism through Pocket Lab.",
-        "risk": "low",
-        "execution_owner": "browser_navigation",
-    },
-    "open_full_screen": {
-        "label": "Open full screen",
-        "category": "access",
-        "summary": "Open PhotoPrism in a full browser tab.",
-        "risk": "low",
-        "execution_owner": "browser_navigation",
-    },
-    "install_to_phone": {
-        "label": "Install to phone",
-        "category": "access",
-        "summary": "Install the PhotoPrism web app shortcut on this phone.",
-        "risk": "low",
-        "execution_owner": "browser_navigation",
-    },
-    "connect_photos": {
-        "label": "Connect photos",
-        "category": "media",
-        "summary": "Choose where PhotoPrism should look for pictures.",
-        "risk": "low",
-        "execution_owner": "fastapi",
-    },
-    "import_photos": {
-        "label": "Import photos",
-        "category": "media",
-        "summary": "Bring connected photos into PhotoPrism. PhotoPrism handles indexing and media details.",
-        "risk": "low",
-        "execution_owner": "backend_worker",
-    },
-    "check_app": {
-        "label": "Check app",
-        "category": "safety",
-        "summary": "Check PhotoPrism route, app files, settings, backup metadata, and action state. Skips photos and media.",
-        "risk": "low",
-        "execution_owner": "backend_worker",
-    },
-    "backup_app": {
-        "label": "Back up app",
-        "category": "recovery",
-        "summary": "Save settings, mappings, route records, and safe app records. Media is excluded by default.",
-        "risk": "low",
-        "execution_owner": "backend_worker",
-    },
-    "preview_restore": {
-        "label": "Preview restore",
-        "category": "recovery",
-        "summary": "Review what would be restored before making changes.",
-        "risk": "review",
-        "execution_owner": "backend_worker",
-    },
-    "backup_to_storage": {
-        "label": "Back up to storage device",
-        "category": "recovery",
-        "summary": "Join a storage device to save app backups elsewhere.",
-        "risk": "low",
-        "execution_owner": "backend_worker",
-    },
-    "repair_app": {
-        "label": "Repair",
-        "category": "recovery",
-        "summary": "Fix route, health, and storage setup safely.",
-        "risk": "review",
-        "execution_owner": "backend_worker",
-    },
-    "install_app": {
-        "label": "Install",
-        "category": "setup",
-        "summary": "Set up PhotoPrism through the backend worker.",
-        "risk": "review",
-        "execution_owner": "backend_worker",
-    },
-    "update_app": {
-        "label": "Update",
-        "category": "setup",
-        "summary": "Check whether this app is ready for a safe update. No update is applied.",
-        "risk": "review",
-        "execution_owner": "backend_worker",
-    },
-    "remove_app": {
-        "label": "Remove app",
-        "category": "danger",
-        "summary": "Remove PhotoPrism only after explicit confirmation. Media, backups, and backend records are preserved by default.",
-        "risk": "destructive",
-        "execution_owner": "backend_worker",
-    },
+    action_id: {
+        **dict(definition),
+        "execution_owner": (
+            "browser_navigation"
+            if action_id in {"open", "open_full_screen", "install_to_phone"}
+            else "fastapi"
+            if action_id == "connect_photos"
+            else "backend_worker"
+        ),
+    }
+    for app_id in lite_app_registry.app_ids()
+    for action_id, definition in lite_app_registry.app_definition(app_id).actions.items()
 }
+
+
+def _action_definition_for(app_id: str, action_id: str) -> dict[str, Any]:
+    definition = lite_app_registry.action_definition(app_id, action_id)
+    if not isinstance(definition, dict):
+        return {}
+    return {
+        **dict(definition),
+        "execution_owner": (
+            "browser_navigation"
+            if action_id in {"open", "open_full_screen", "install_to_phone"}
+            else "fastapi"
+            if action_id == "connect_photos"
+            else "backend_worker"
+        ),
+    }
+
 
 
 ACTION_DETAIL_DEFINITIONS: dict[str, dict[str, Any]] = {
@@ -241,27 +169,41 @@ TERMINAL_STATUS_VALUES = {"succeeded", "success", "done", "completed", "review",
 
 
 def _validate_app_id(app_id: Any) -> str:
-    normalized = str(app_id or "").strip().lower().replace("_", "-")
-    if normalized not in SUPPORTED_APP_IDS:
+    try:
+        definition = lite_app_registry.app_definition(app_id)
+    except HTTPException as exc:
         raise HTTPException(
             status_code=404,
+            detail={"status": "unsupported_app", "summary": "This app is not registered in Pocket Lab Lite."},
+        ) from exc
+    if definition.id not in SUPPORTED_APP_IDS:
+        raise HTTPException(
+            status_code=409,
+            detail={"status": "unsupported_app", "summary": "This registered app has no action adapter."},
+        )
+    if not lite_app_registry.platform_supported(definition.id):
+        raise HTTPException(
+            status_code=409,
             detail={
-                "status": "unsupported_app",
-                "summary": "PhotoPrism is the first app with a Lite Action Center.",
+                "status": "unsupported_platform",
+                "summary": "This app is not available on this device platform.",
+                "platform": lite_app_registry.current_platform_id(),
             },
         )
-    return normalized
+    return definition.id
 
 
-def validate_action_id(action_id: Any) -> str:
+def validate_action_id(action_id: Any, *, app_id: str | None = None) -> str:
     normalized = str(action_id or "").strip().lower().replace("-", "_")
-    if normalized not in SUPPORTED_ACTIONS:
+    supported = (
+        lite_app_registry.registered_action_ids(app_id)
+        if app_id
+        else SUPPORTED_ACTIONS
+    )
+    if normalized not in supported:
         raise HTTPException(
             status_code=404,
-            detail={
-                "status": "unsupported_action",
-                "summary": "Choose a supported PhotoPrism action.",
-            },
+            detail={"status": "unsupported_action", "summary": "This action is not supported for the selected app."},
         )
     return normalized
 
@@ -527,7 +469,7 @@ def _merge_canonical_media(live_media: Any, saved_media: Any) -> dict[str, Any]:
         return merged
     return {**saved, **live}
 
-def _apply_import_photos_truth(actions: dict[str, Any], media: Any) -> None:
+def _apply_import_photos_truth(actions: dict[str, Any], media: Any, *, app_id: str) -> None:
     """Keep current import readiness separate from historical completion."""
     action = actions.get("import_photos")
     if not isinstance(action, dict) or not isinstance(media, dict):
@@ -543,7 +485,8 @@ def _apply_import_photos_truth(actions: dict[str, Any], media: Any) -> None:
             "reason": "Import photos is already running.",
         })
         return
-    if lite_photoprism_media.live_phone_import_blocked():
+    adapter = lite_app_adapters.adapter_for(app_id)
+    if adapter.media_import_blocked():
         action.update({
             "enabled": False,
             "status": "not_ready",
@@ -575,6 +518,7 @@ def _apply_import_photos_truth(actions: dict[str, Any], media: Any) -> None:
 def _ensure_action_contract(
     actions: dict[str, Any],
     *,
+    app_id: str,
     catalog: Any,
     media: Any,
     installed: bool,
@@ -589,11 +533,16 @@ def _ensure_action_contract(
     access = catalog_map.get("access") if isinstance(catalog_map.get("access"), dict) else {}
     route_ready = bool(access.get("route_ready") and access.get("open_url"))
 
+    registered_actions = lite_app_registry.registered_action_ids(app_id)
     for action_id in ACTION_ORDER:
+        if action_id not in registered_actions:
+            continue
         if action_id not in actions:
-            actions[action_id] = _normalize_action(action_id, {})
+            actions[action_id] = _normalize_action(action_id, {}, app_id=app_id)
 
     for action_id in ("open", "open_full_screen", "install_to_phone"):
+        if action_id not in actions:
+            continue
         action = actions[action_id]
         # Browser navigation follows the prepared route/access contract. The
         # saved action projection can lag the live catalog by one refresh and
@@ -627,13 +576,14 @@ def _ensure_action_contract(
             install["reason"] = install["disabled_reason"]
 
     _apply_connect_photos_truth(actions, media)
-    _apply_import_photos_truth(actions, media)
+    _apply_import_photos_truth(actions, media, app_id=app_id)
 
 
 def _details_payload(
     action_id: str,
     action: dict[str, Any],
     *,
+    app_id: str,
     label: str,
     status: str,
     enabled: bool,
@@ -641,9 +591,22 @@ def _details_payload(
     result: dict[str, Any],
     disabled_reason: Any,
 ) -> dict[str, Any]:
-    definition = ACTION_DEFINITIONS.get(action_id, {})
+    definition = _action_definition_for(app_id, action_id)
     operation_details = action.get("details") if isinstance(action.get("details"), dict) else {}
     detail_definition = operation_details or ACTION_DETAIL_DEFINITIONS.get(action_id, {})
+    if app_id != "photoprism" and detail_definition:
+        app_name = lite_app_registry.app_definition(app_id).name
+
+        def replace_app_name(value: Any) -> Any:
+            if isinstance(value, str):
+                return value.replace("PhotoPrism", app_name)
+            if isinstance(value, list):
+                return [replace_app_name(item) for item in value]
+            if isinstance(value, dict):
+                return {key: replace_app_name(item) for key, item in value.items()}
+            return value
+
+        detail_definition = replace_app_name(detail_definition)
     execution_owner = action.get("execution_owner") or definition.get("execution_owner") or "backend_worker"
     result_summary = result.get("summary") if isinstance(result, dict) else None
     disabled_summary = _safe_text(disabled_reason, "") if disabled_reason and not enabled else ""
@@ -711,9 +674,9 @@ def _details_payload(
     return details
 
 
-def _normalize_action(action_id: str, raw_action: Any) -> dict[str, Any]:
+def _normalize_action(action_id: str, raw_action: Any, *, app_id: str) -> dict[str, Any]:
     action = raw_action if isinstance(raw_action, dict) else {}
-    definition = ACTION_DEFINITIONS.get(action_id, {})
+    definition = _action_definition_for(app_id, action_id)
     label = _safe_text(action.get("label") or definition.get("label") or action_id.replace("_", " ").title(), "App action")
     enabled = bool(action.get("enabled", False))
     status = _normalized_status(action.get("status"), enabled=enabled)
@@ -732,7 +695,7 @@ def _normalize_action(action_id: str, raw_action: Any) -> dict[str, Any]:
     run_count = _run_count(action, result)
     normalized.update({
         "id": action_id,
-        "app_id": "photoprism",
+        "app_id": lite_app_registry.normalize_app_id(app_id),
         "label": label,
         "category": category,
         "category_label": ACTION_CATEGORY_LABELS.get(category, "App setup"),
@@ -751,7 +714,7 @@ def _normalize_action(action_id: str, raw_action: Any) -> dict[str, Any]:
         "first_ran_at": first_ran_at,
         "last_ran_at": last_ran_at,
         "run_count": run_count,
-        "details": _details_payload(action_id, action, label=label, status=status, enabled=enabled, summary=summary, result=result, disabled_reason=disabled_reason),
+        "details": _details_payload(action_id, action, app_id=app_id, label=label, status=status, enabled=enabled, summary=summary, result=result, disabled_reason=disabled_reason),
         "troubleshooting": troubleshooting,
     })
     if not result:
@@ -818,19 +781,24 @@ def _live_catalog_app(app_id: str) -> dict[str, Any]:
 
 
 def app_actions(app_id: str) -> dict[str, Any]:
-    _validate_app_id(app_id)
-    profile = lite_app_lifecycle.app_lifecycle_profile("photoprism")
+    app_id = _validate_app_id(app_id)
+    profile = lite_app_lifecycle.app_lifecycle_profile(app_id)
     raw_actions = profile.get("actions") if isinstance(profile.get("actions"), dict) else {}
     actions: dict[str, Any] = {}
     for action_id, action in raw_actions.items():
-        if action_id in SUPPORTED_ACTIONS:
-            actions[action_id] = _normalize_action(action_id, action)
-    live_media = profile.get("media") or lite_photoprism_media.media_status("photoprism")
+        if action_id in lite_app_registry.registered_action_ids(app_id):
+            actions[action_id] = _normalize_action(action_id, action, app_id=app_id)
+    adapter = lite_app_adapters.adapter_for(app_id)
+    live_media = profile.get("media") or (
+        adapter.media_status()
+        if lite_app_registry.supports(app_id, "media_sources")
+        else {}
+    )
     saved_media: dict[str, Any] = {}
     try:
         from .lite_control_plane_store import CONTROL_PLANE
 
-        saved = CONTROL_PLANE.app_current_subprojections("photoprism", max_age_seconds=None)
+        saved = CONTROL_PLANE.app_current_subprojections(app_id, max_age_seconds=None)
         if isinstance(saved, dict) and isinstance(saved.get("media"), dict):
             saved_media = saved["media"]
     except Exception as exc:  # prepared-state enrichment must never break action reads
@@ -857,12 +825,16 @@ def app_actions(app_id: str) -> dict[str, Any]:
         or profile.get("installed")
         or str(profile.get("install_state") or "").startswith("installed")
     )
-    _ensure_action_contract(actions, catalog=catalog, media=media, installed=installed)
+    _ensure_action_contract(actions, app_id=app_id, catalog=catalog, media=media, installed=installed)
+    definition = lite_app_registry.app_definition(app_id)
+    for action in actions.values():
+        if isinstance(action, dict):
+            action["app_id"] = app_id
     return {
         "status": "healthy",
-        "app_id": "photoprism",
-        "name": "PhotoPrism",
-        "summary": "PhotoPrism Action Center is available.",
+        "app_id": app_id,
+        "name": definition.name,
+        "summary": f"{definition.name} Action Center is available.",
         "actions": actions,
         "items": actions,
         "action_list": list(actions.values()),
@@ -877,24 +849,27 @@ def app_actions(app_id: str) -> dict[str, Any]:
 
 
 def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | None = None, reason: str | None = None) -> dict[str, Any]:
-    _validate_app_id(app_id)
-    action = validate_action_id(action_id)
+    app_id = _validate_app_id(app_id)
+    action = validate_action_id(action_id, app_id=app_id)
     payload = payload or {}
     reason = payload.get("reason") if reason is None else reason
-    profile = lite_app_lifecycle.app_lifecycle_profile("photoprism")
+    profile = lite_app_lifecycle.app_lifecycle_profile(app_id)
     action_profile = (profile.get("actions") or {}).get(action)
     if not isinstance(action_profile, dict):
-        raise HTTPException(status_code=404, detail={"status": "unsupported_action", "summary": "Choose a supported PhotoPrism action."})
+        raise HTTPException(status_code=404, detail={"status": "unsupported_action", "summary": "This action is not supported for the selected app."})
 
     # Destructive and target-specific actions validate their own preconditions so
     # callers get precise, safe reasons such as confirmation_required or target_not_ready.
+    adapter = lite_app_adapters.adapter_for(app_id)
     if action == "remove_app":
-        response = lite_photoprism_lifecycle.remove_not_implemented(payload)
-        return {"kind": "remove_not_implemented", "response": response, "summary": response.get("summary")}
+        prepared = adapter.prepare_special_action(action, payload, reason)
+        if prepared is None:
+            raise HTTPException(status_code=501, detail={"status": "not_implemented", "app_id": app_id, "action_id": action, "summary": "This app has no remove handler."})
+        return prepared
 
     if action == "backup_to_storage":
         response = lite_app_backup.backup_to_storage_readiness(
-            "photoprism",
+            app_id,
             payload.get("target_device_id"),
             reason=reason,
         )
@@ -907,7 +882,7 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
             detail={
                 "status": "disabled",
                 "accepted": False,
-                "app_id": "photoprism",
+                "app_id": app_id,
                 "action_id": action,
                 "summary": disabled_reason,
                 "disabled_reason": disabled_reason,
@@ -921,75 +896,49 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
             "kind": "url",
             "status": "ready",
             "accepted": False,
-            "app_id": "photoprism",
+            "app_id": app_id,
             "action_id": action,
             "label": action_profile.get("label"),
-            "url": action_profile.get("url") or "/apps/photoprism/",
-            "summary": "Open PhotoPrism through Pocket Lab.",
+            "url": action_profile.get("url") or lite_app_registry.app_definition(app_id).route,
+            "summary": f"Open {lite_app_registry.app_definition(app_id).name} through Pocket Lab.",
         }
 
     if action == "connect_photos":
-        return {
-            "kind": "guidance",
-            "status": "ready",
-            "accepted": False,
-            "app_id": "photoprism",
-            "action_id": action,
-            "label": action_profile.get("label"),
-            "summary": "Use the media folder buttons to connect phone photos safely.",
-        }
+        prepared = adapter.prepare_special_action(action, payload, reason)
+        if prepared is None:
+            raise HTTPException(status_code=501, detail={"status": "not_implemented", "app_id": app_id, "action_id": action, "summary": "This app has no media connection handler."})
+        prepared.setdefault("label", action_profile.get("label"))
+        return prepared
 
     if action == "backup_app":
-        command = lite_app_backup.app_backup_command("photoprism", mode="config_only", reason=reason)
-        return {"kind": "backup", "command": command, "summary": "PhotoPrism app backup queued."}
+        command = lite_app_backup.app_backup_command(app_id, mode="config_only", reason=reason)
+        return {"kind": "backup", "command": command, "summary": f"{lite_app_registry.app_definition(app_id).name} app backup queued."}
 
     if action == "preview_restore":
-        command = lite_app_backup.app_restore_preview_command("photoprism", backup_id=payload.get("backup_id") or "latest", reason=reason)
-        return {"kind": "restore_preview", "command": command, "summary": "PhotoPrism restore preview queued."}
+        command = lite_app_backup.app_restore_preview_command(app_id, backup_id=payload.get("backup_id") or "latest", reason=reason)
+        return {"kind": "restore_preview", "command": command, "summary": f"{lite_app_registry.app_definition(app_id).name} restore preview queued."}
 
-    if action == "check_app":
-        run_id = f"security-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
-        return {
-            "kind": "security_app_check",
-            "subject": lite_security.policy.COMMAND_SUBJECT,
-            "command": {
-                "run_id": run_id,
-                "command_id": run_id,
-                "scope": "local",
-                "profile": "app",
-                "app_id": "photoprism",
-                "reason": reason or "manual app check",
-                "requested_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-            },
-            "summary": "Checking PhotoPrism safety.",
-        }
-
-    if action == "repair_app":
-        command = lite_app_operations.command_for_operation("photoprism", action, reason=reason)
-        return {
-            "kind": "app_operation",
-            "command": command,
-            "subject": lite_app_operations.subject_for_action(action),
-            "summary": "Repairing PhotoPrism safely.",
-        }
-
-    if action == "import_photos":
-        command = lite_photoprism_media.media_command(action, reason=reason)
-        return {"kind": "media", "command": command, "summary": action_profile.get("summary") or f"{action_profile.get('label')} queued."}
-
-    if action == "install_app":
-        command = lite_photoprism_lifecycle.install_command(reason=reason)
-        return {"kind": "install_app", "command": command, "summary": "PhotoPrism install started."}
-
-    if action == "update_app":
-        command = lite_app_update.update_command("photoprism", reason=reason)
-        return {"kind": "update_check", "command": command, "subject": lite_app_update.APP_UPDATE_CHECK_SUBJECT, "summary": "Checking PhotoPrism update readiness."}
+    if action in {"check_app", "repair_app", "import_photos", "install_app", "update_app"}:
+        prepared = adapter.prepare_special_action(action, payload, reason)
+        if prepared is None:
+            raise HTTPException(
+                status_code=501,
+                detail={
+                    "status": "not_implemented",
+                    "app_id": app_id,
+                    "action_id": action,
+                    "summary": "This app has no adapter handler for this action.",
+                },
+            )
+        if action == "import_photos" and not prepared.get("summary"):
+            prepared["summary"] = action_profile.get("summary") or f"{action_profile.get('label')} queued."
+        return prepared
 
     raise HTTPException(
         status_code=501,
         detail={
             "status": "not_implemented",
-            "app_id": "photoprism",
+            "app_id": app_id,
             "action_id": action,
             "summary": "This app action is not implemented yet.",
         },

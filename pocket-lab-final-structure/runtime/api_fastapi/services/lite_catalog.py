@@ -11,13 +11,14 @@ from fastapi import HTTPException, Request
 
 from .. import deps
 from .fleet_registry import normalize_node_id
-from . import lite_app_runtime
+from . import lite_app_adapters, lite_app_registry, lite_app_runtime
 
 COMMAND_SUBJECT = "pocketlab.commands.lite.catalog.install"
-PHOTOPRISM_APP_ID = "photoprism"
-PHOTOPRISM_ROUTE = "/apps/photoprism/"
-PHOTOPRISM_UPSTREAM = "127.0.0.1:2342"
-PHOTOPRISM_PROCESS = "pocketlab-app-photoprism"
+PHOTOPRISM_DEFINITION = lite_app_registry.app_definition("photoprism")
+PHOTOPRISM_APP_ID = PHOTOPRISM_DEFINITION.id
+PHOTOPRISM_ROUTE = PHOTOPRISM_DEFINITION.route
+PHOTOPRISM_UPSTREAM = PHOTOPRISM_DEFINITION.upstream
+PHOTOPRISM_PROCESS = PHOTOPRISM_DEFINITION.process
 INSTALL_STEPS_TOTAL = 7
 RUNNING_OPERATION_STATUSES = {"queued", "running", "installing", "preparing"}
 
@@ -301,14 +302,48 @@ def _app_payload(app: dict[str, Any], access: dict[str, Any]) -> dict[str, Any]:
 
 def catalog_payload(request: Request | None = None) -> dict[str, Any]:
     state = _read_state()
-    app = _get_app_state(state)
     access = access_status(request)
-    payload = _app_payload(app, access)
-    return {"status": "healthy", "access": access, "apps": [payload], "items": [payload], "count": 1, "updated_at": state.get("updated_at") or _now()}
+    apps: list[dict[str, Any]] = []
+    for app_id in lite_app_registry.app_ids():
+        adapter = lite_app_adapters.adapter_for(app_id)
+        if not lite_app_adapters.supports_service(app_id, "catalog"):
+            continue
+        payload = adapter.catalog_payload(state, access)
+        if not isinstance(payload, dict):
+            continue
+        contract = lite_app_registry.app_definition(app_id).public_contract()
+        supported_here = lite_app_registry.platform_supported(app_id)
+        contract["current_platform"] = lite_app_registry.current_platform_id()
+        contract["supported_here"] = supported_here
+        payload.setdefault("platform_contract", contract)
+        if not supported_here:
+            payload["status"] = "unavailable"
+            payload["install_state"] = "unavailable"
+            payload["installed"] = False
+            actions = payload.setdefault("actions", {})
+            for action_id in ("install", "open", "retry", "remove"):
+                actions[action_id] = False
+            access_state = payload.setdefault("access", {})
+            access_state["route_ready"] = False
+            access_state["open_url"] = None
+            access_state["message"] = "This app is not available on this device platform."
+            runtime = payload.setdefault("runtime", {})
+            runtime["health"] = "unavailable"
+            runtime["running"] = False
+            runtime["reachable"] = False
+        apps.append(payload)
+    return {
+        "status": "healthy",
+        "access": access,
+        "apps": apps,
+        "items": apps,
+        "count": len(apps),
+        "updated_at": state.get("updated_at") or _now(),
+    }
 
 
 def catalog_apps_count() -> int:
-    return 1
+    return len(tuple(app_id for app_id in lite_app_registry.app_ids() if lite_app_adapters.supports_service(app_id, "catalog")))
 
 
 def _operation_id() -> str:
@@ -316,9 +351,15 @@ def _operation_id() -> str:
 
 
 def validate_install_request(app_id: str, target_node_id: str | None = None) -> dict[str, Any]:
-    normalized_app = str(app_id or "").strip().lower()
+    try:
+        definition = lite_app_registry.app_definition(app_id)
+    except HTTPException as exc:
+        raise HTTPException(status_code=400, detail="PhotoPrism is the first app available in the Lite catalog.") from exc
+    normalized_app = definition.id
+    if not lite_app_registry.supports(normalized_app, "install"):
+        raise HTTPException(status_code=409, detail="This app does not support installation.")
     if normalized_app != PHOTOPRISM_APP_ID:
-        raise HTTPException(status_code=400, detail="PhotoPrism is the first supported Lite app.")
+        raise HTTPException(status_code=409, detail="This registered app has no install adapter yet.")
     target = normalize_node_id(target_node_id or _server_node_id())
     server_id = _server_node_id()
     if target != server_id:

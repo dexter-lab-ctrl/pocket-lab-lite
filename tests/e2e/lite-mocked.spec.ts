@@ -100,6 +100,26 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(dialog.getByRole('button', { name: 'Open full screen', exact: true })).toBeEnabled();
   });
 
+  test('Apps isolates a synthetic app to its declared capabilities', async ({ page }) => {
+    await installScenario(page, 'catalog-multi-app');
+    await page.goto('/?screen=catalog');
+
+    const screen = page.locator('[data-lite-screen-id="catalog"]');
+    const exampleCard = screen.locator('.lite-catalog-app-card').filter({ hasText: 'Example App' });
+    const photoPrismCard = screen.locator('.lite-catalog-app-card').filter({ hasText: 'PhotoPrism' });
+
+    await expect(exampleCard).toBeVisible();
+    await expect(photoPrismCard).toBeVisible();
+    await expect(exampleCard).not.toContainText(/Protected app|Config protected|Media excluded/i);
+
+    await exampleCard.getByRole('button', { name: 'Manage', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Manage Example App' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Open full screen', exact: true })).toBeEnabled();
+    await expect(dialog).not.toContainText(/Connect photos|Import photos|Back up app|Preview restore|Repair|Check app/i);
+    await expect(dialog).not.toContainText(/Media folders|Photo backup/i);
+  });
+
   test('Home keeps secondary workspace detail in the explicit accessible sheet', async ({ page }) => {
     await page.goto('/?screen=home');
     const home = page.locator('[data-lite-screen-id="home"]');
