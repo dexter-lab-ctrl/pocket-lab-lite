@@ -964,7 +964,10 @@ class QualificationRun:
             payload={"collections": ["camera", "pictures", "videos"]},
         )
         if status != 202 or not payload.get("backup_id"):
-            raise QualificationError("candidate photo backup admission was rejected")
+            reason = payload.get("reason_code") or payload.get("error") or payload.get("status") or payload.get("message") or payload.get("detail") or "unreported"
+            if isinstance(reason, dict):
+                reason = reason.get("reason_code") or reason.get("error") or reason.get("message") or "structured_error"
+            raise QualificationError(f"candidate photo backup admission was rejected: status={status} reason={str(reason)[:160]}")
         backup_id = str(payload["backup_id"])
         return backup_id, self._wait_backup(backup_id)
 
