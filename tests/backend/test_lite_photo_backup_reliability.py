@@ -195,3 +195,52 @@ def test_p0_worker_capacity_reason_is_independent_of_route():
     assert backup._capacity_diagnostic({"status": "ready", "read_only": True}) == "destination_read_only"
     assert backup._capacity_diagnostic({"status": "ready", "hard_upload_budget_bytes": 10,
                                         "safe_upload_budget_bytes": 0}) == "storage_below_planning_reserve"
+
+
+def test_p0_missing_or_old_fleet_heartbeat_fails_closed(monkeypatch):
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photo_backup as backup
+    assert backup._source_fresh({"connection": "online"}) is False
+    monkeypatch.setattr(backup, "_epoch", lambda: 1000.0)
+    assert backup._source_fresh({"last_seen_epoch": 995}) is True
+    assert backup._source_fresh({"last_seen_epoch": 700}) is False
+    assert backup._source_fresh({"last_seen_epoch": 1018}) is False
+
+
+def test_p0_destination_identity_binding_requires_explicit_repair(monkeypatch, tmp_path):
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photo_backup as backup
+    from types import SimpleNamespace
+    root = tmp_path / "originals"
+    root.mkdir()
+    state = tmp_path / "state"
+    state.mkdir()
+    monkeypatch.setattr(backup.deps, "settings", lambda: SimpleNamespace(state_dir=state))
+    result = backup._destination_identity(root, __import__("os").statvfs(root))
+    assert result is None
+    identity_file = state / "lite_photo_backup_destination_identity.json"
+    record = backup._read_json(identity_file, {})
+    assert record["schema_version"] == 1
+    assert record["destination_id"] == backup.lite_photo_backup_destinations.CURRENT_DESTINATION_ID
+    record["fingerprint"] = "0" * 64
+    backup._write_json(identity_file, record)
+    assert backup._destination_identity(root, __import__("os").statvfs(root)) == "destination_identity_mismatch"
+    assert backup._read_json(identity_file, {})["fingerprint"] == "0" * 64
+
+
+def test_p0_specific_capacity_reason_and_public_credential_revocation():
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photo_backup as backup
+    assert backup._capacity_diagnostic({
+        "status": "unavailable", "identity_mismatch": True
+    }) == "destination_identity_mismatch"
+    assert backup._public_job({
+        "backup_id": "photo-example", "status": "cancelled",
+        "credential_revoke_status_internal": "pending",
+        "credential_ref_internal": "secret-ref",
+    })["credential_revoke_status"] == "pending"
+    assert "credential_ref_internal" not in backup._public_job({
+        "credential_ref_internal": "secret-ref"})
