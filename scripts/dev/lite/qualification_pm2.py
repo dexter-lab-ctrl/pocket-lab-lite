@@ -61,6 +61,8 @@ def _write_error(error_type: str, detail: str = "") -> None:
         "unsupported_command": "unsupported_command",
         "missing_command": "missing_command",
         "process_not_found": "process_not_found",
+        "pm2 log permission denied": "pm2_log_permission_denied",
+        "pm2 child spawn permission denied": "pm2_child_spawn_permission_denied",
     }.get(detail_text, "shim_exception")
     temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
     temporary.write_text(json.dumps({"error_type": str(error_type)[:80], "reason_code": reason, "sanitized": True}) + "\n", encoding="utf-8")
@@ -75,19 +77,26 @@ def _start_record(record: dict[str, object]) -> dict[str, object]:
     log_dir = Path(os.environ.get("POCKETLAB_QUALIFICATION_LOG_DIR", str(_home() / "logs")))
     log_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
     log_path = log_dir / f"{str(record.get('name') or 'agent')}.log"
-    log = open(log_path, "ab", buffering=0)
+    try:
+        log = open(log_path, "ab", buffering=0)
+    except PermissionError as exc:
+        raise RuntimeError("pm2 log permission denied") from exc
     child_env = dict(os.environ)
     child_env["POCKETLAB_SERVICE_VERSION"] = str(record.get("version") or "")
     child_env["POCKETLAB_QUALIFICATION_PM2_SHIM"] = "1"
-    process = subprocess.Popen(
-        argv,
-        stdin=subprocess.DEVNULL,
-        stdout=log,
-        stderr=subprocess.STDOUT,
-        env=child_env,
-        close_fds=True,
-        start_new_session=True,
-    )
+    try:
+        process = subprocess.Popen(
+            argv,
+            stdin=subprocess.DEVNULL,
+            stdout=log,
+            stderr=subprocess.STDOUT,
+            env=child_env,
+            close_fds=True,
+            start_new_session=True,
+        )
+    except PermissionError as exc:
+        log.close()
+        raise RuntimeError("pm2 child spawn permission denied") from exc
     log.close()
     record = dict(record)
     record["pid"] = process.pid
