@@ -47,6 +47,7 @@ TERMINAL_STATUSES = frozenset({
     "destination_unavailable",
 })
 MAX_REMOTE_LISTING_BYTES = 32 * 1024 * 1024
+MAX_INVENTORY_ITEMS = 250_000
 
 
 def _now() -> str:
@@ -585,6 +586,8 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                         )
                     except ValueError:
                         continue
+                    if len(items) >= MAX_INVENTORY_ITEMS:
+                        raise RuntimeError("source_inventory_limit_reached")
                     items.append({
                         "collection": collection,
                         "path": path,
@@ -702,6 +705,8 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 .lstrip("/")
             )
             if key:
+                if len(listing) >= MAX_INVENTORY_ITEMS:
+                    raise RuntimeError("remote_inventory_limit_reached")
                 listing[key] = {
                     "size": int(
                         item.get("Size") or 0
