@@ -441,7 +441,10 @@ class QualificationRun:
     def __init__(self, *, repo: Path, candidate_sha: str, python: str, nats_binary: str | None, evidence_dir: Path | None):
         self.repo = repo
         self.candidate_sha = _candidate_sha(repo, candidate_sha)
-        self.python = str(Path(python).resolve())
+        # Preserve the venv launcher itself.  Resolving its symlink can move
+        # the child onto the system interpreter and silently drop FastAPI,
+        # nats-py, and cryptography from the qualification environment.
+        self.python = str(Path(python).absolute())
         self.nats_binary = nats_binary
         if not Path(self.python).is_file():
             raise QualificationError("qualification Python interpreter is unavailable")
