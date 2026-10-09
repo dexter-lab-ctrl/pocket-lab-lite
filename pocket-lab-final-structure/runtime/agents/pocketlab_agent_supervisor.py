@@ -144,7 +144,20 @@ def _prepare_versioned_python_exec(process_name: str, version: str) -> str:
         link.unlink()
     except FileNotFoundError:
         pass
-    link.symlink_to(python3)
+    # A symlink placed outside a venv no longer lets CPython discover that
+    # venv's pyvenv.cfg. Use a tiny private launcher so restarted agents keep
+    # the supervisor's exact interpreter and installed dependency set. The
+    # fallback remains a direct symlink for runtimes without an interpreter
+    # path (for example a constrained legacy launcher).
+    if sys.executable and Path(sys.executable).exists():
+        link.write_text(
+            "#!/bin/sh\n"
+            f"exec {shlex.quote(sys.executable)} \"$@\"\n",
+            encoding="utf-8",
+        )
+        link.chmod(0o700)
+    else:
+        link.symlink_to(python3)
     return str(link)
 
 
