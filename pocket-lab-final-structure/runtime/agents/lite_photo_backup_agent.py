@@ -719,6 +719,8 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                         not in MEDIA_EXTENSIONS
                     ):
                         continue
+                    if path.is_symlink():
+                        continue
                     try:
                         stat = path.stat()
                     except OSError:
@@ -1037,6 +1039,13 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
             pass
         return None
 
+    def _cleanup_staging(self, rclone: str, config_path: Path,
+                         destination_prefix: str, remote_relative: str) -> None:
+        # Individual staging object only, not a recursive purge.
+        path = f"photoprism:{destination_prefix}/{remote_relative}.pocketlab-upload"
+        self._run([rclone, "deletefile", path, "--config", str(config_path),
+                   "--retries", "1"], timeout=45)
+
     def _transfer_one(
         self,
         rclone: str,
@@ -1052,6 +1061,9 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
         temporary = (
             final + ".pocketlab-upload"
         )
+        # Clean up only this exact deterministic staging object on retry.
+        # Never delete the final destination or any other namespace.
+        self._cleanup_staging(rclone, config_path, destination_prefix, remote_relative)
         copied = self._run(
             [
                 rclone,
