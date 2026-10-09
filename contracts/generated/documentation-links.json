@@ -1337,6 +1337,10 @@
         "title": "pocketlab.events.fleet.node_capabilities",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-node-capabilities"
       },
+      "event:pocketlab.events.fleet.node_command_progress": {
+        "title": "pocketlab.events.fleet.node_command_progress",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-node-command-progress"
+      },
       "event:pocketlab.events.fleet.node_command_queued": {
         "title": "pocketlab.events.fleet.node_command_queued",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-node-command-queued"
@@ -2001,6 +2005,14 @@
         "title": "connection_failed",
         "url": "../../docs/generated/development/reason-codes.md#connection-failed"
       },
+      "reason:credential_expired": {
+        "title": "credential_expired",
+        "url": "../../docs/generated/development/reason-codes.md#credential-expired"
+      },
+      "reason:credential_identity_mismatch": {
+        "title": "credential_identity_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#credential-identity-mismatch"
+      },
       "reason:csrf_required": {
         "title": "csrf_required",
         "url": "../../docs/generated/development/reason-codes.md#csrf-required"
@@ -2008,6 +2020,22 @@
       "reason:deferred_resource_pressure": {
         "title": "deferred_resource_pressure",
         "url": "../../docs/generated/development/reason-codes.md#deferred-resource-pressure"
+      },
+      "reason:destination_identity_mismatch": {
+        "title": "destination_identity_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#destination-identity-mismatch"
+      },
+      "reason:destination_mount_missing": {
+        "title": "destination_mount_missing",
+        "url": "../../docs/generated/development/reason-codes.md#destination-mount-missing"
+      },
+      "reason:destination_read_only": {
+        "title": "destination_read_only",
+        "url": "../../docs/generated/development/reason-codes.md#destination-read-only"
+      },
+      "reason:destination_storage_unavailable": {
+        "title": "destination_storage_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#destination-storage-unavailable"
       },
       "reason:device_capability_not_advertised": {
         "title": "device_capability_not_advertised",
@@ -2761,6 +2789,10 @@
         "title": "storage_pressure",
         "url": "../../docs/generated/development/reason-codes.md#storage-pressure"
       },
+      "reason:storage_reservation_conflict": {
+        "title": "storage_reservation_conflict",
+        "url": "../../docs/generated/development/reason-codes.md#storage-reservation-conflict"
+      },
       "reason:storage_unavailable": {
         "title": "storage_unavailable",
         "url": "../../docs/generated/development/reason-codes.md#storage-unavailable"
@@ -3353,7 +3385,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "ece11135d2010eaba822a8c01cc4f6fd17232aac40773745a63686a27ee53dec",
+    "aggregate_fingerprint": "22d0ad40dcf5760873b3570ac38dc4060e6074b62f8eb55e1cdde97c2771d4fc",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3364,7 +3396,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/generated/lite-openapi.json": "324a72a7a5b784ff42518e96913f9a96fd4f8f59e84e3095c23259652cf51769",
-      "contracts/metadata/documentation-platform.json": "beb223fca558ca6150f7c35927953294652eb4ce69e4d565e3c460e314158de6",
+      "contracts/metadata/documentation-platform.json": "cc6de54241fb6ec07c591349fbb0e1e26204637c8792b73b79a2819ed63e9d67",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",

@@ -761,7 +761,7 @@
         "scripts/dev/lite/run-playwright-mocked.sh",
         "scripts/dev/lite/run-ui-performance-qualified.py",
         "scripts/test/parity/promote_runtime_verification.py",
-        "tasks/Taskfile.parity.yml"
+        "tasks/Taskfile.lite.yml"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -5008,7 +5008,8 @@
     {
       "affected_components": [
         "FastAPI",
-        "bootstrap/runtime"
+        "bootstrap/runtime",
+        "repository tooling"
       ],
       "affects_release": true,
       "affects_runtime": true,
@@ -5026,7 +5027,8 @@
       "secret": true,
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -5287,7 +5289,8 @@
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh",
         "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -5360,9 +5363,10 @@
       "source": [
         "pocket-lab-final-structure/runtime/core/control_plane_core.py",
         "pocket-lab-final-structure/runtime/tests/test_observability_status.py",
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
         "tests/backend/test_lite_harness.py",
         "tests/backend/test_lite_identity_rules_authorization.py",
-        "tests/pocket_lab_test_utils.py"
+        "tests/backend/test_lite_photo_backup_candidate_qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -5549,7 +5553,8 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/pocket_lab_fastapi_server.py",
-        "pocket-lab-final-structure/runtime/core/control_plane_core.py"
+        "pocket-lab-final-structure/runtime/core/control_plane_core.py",
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -5598,7 +5603,8 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/pocket_lab_fastapi_server.py",
         "pocket-lab-final-structure/runtime/core/control_plane_core.py",
-        "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py"
+        "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py",
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -5977,8 +5983,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog_live.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py",
-        "scripts/docs/runtime/termux_runtime_probe.sh",
-        "tests/backend/conftest.py"
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
+        "scripts/docs/runtime/termux_runtime_probe.sh"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -7936,7 +7942,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "scripts/dev/lite/recover-main-database.py",
-        "scripts/dev/lite/start-qualification.sh"
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -9602,7 +9608,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "scripts/dev/lite/run-ui-performance-qualified.py",
         "scripts/dev/lite/start-qualification.sh",
-        "tests/backend/test_lite_harness.py"
+        "tests/backend/test_lite_harness.py",
+        "tests/backend/test_lite_photo_backup_candidate_qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -9652,7 +9659,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "scripts/dev/lite/run-ui-performance-qualified.py",
         "scripts/dev/lite/start-qualification.sh",
-        "tests/backend/test_lite_harness.py"
+        "tests/backend/test_lite_harness.py",
+        "tests/backend/test_lite_photo_backup_candidate_qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -9679,7 +9687,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "scripts/dev/lite/run-ui-performance-qualified.py",
         "scripts/dev/lite/start-qualification.sh",
-        "tests/backend/test_lite_harness.py"
+        "tests/backend/test_lite_harness.py",
+        "tests/backend/test_lite_photo_backup_candidate_qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -9706,7 +9715,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "scripts/dev/lite/run-ui-performance-qualified.py",
         "scripts/dev/lite/start-qualification.sh",
-        "tests/backend/test_lite_harness.py"
+        "tests/backend/test_lite_harness.py",
+        "tests/backend/test_lite_photo_backup_candidate_qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -9776,6 +9786,7 @@
       "secret": false,
       "source": [
         "playwright.config.ts",
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
         "scripts/dev/lite/run-ui-performance-qualified.py",
         "tests/backend/test_lite_ui_performance_runner.py"
       ],
@@ -9876,7 +9887,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py",
         "scripts/dev/lite/recover-main-database.py",
-        "scripts/dev/lite/run-ui-performance-qualified.py"
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -9906,7 +9917,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "scripts/dev/lite/recover-main-database.py",
-        "scripts/dev/lite/run-ui-performance-qualified.py"
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -9982,10 +9993,10 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "scripts/dev/lite/harness.py",
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
         "scripts/dev/lite/run-ui-performance-qualified.py",
         "scripts/dev/lite/start-qualification.sh",
-        "scripts/docs/check_security_assurance_playbooks.py",
-        "tests/backend/test_lite_harness.py"
+        "scripts/docs/check_security_assurance_playbooks.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -10059,6 +10070,7 @@
       "secret": false,
       "source": [
         "scripts/dev/lite/harness.py",
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
         "scripts/dev/lite/run-ui-performance-qualified.py",
         "scripts/dev/lite/security_assurance.py",
         "tests/backend/test_lite_ui_performance_runner.py"
@@ -12828,6 +12840,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py",
         "scripts/dev/check-lite-runtime-resilience-server-phone.sh",
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
         "tests/backend/test_lite_api.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -13420,6 +13433,7 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
         "tests/backend/conftest.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -17061,7 +17075,8 @@
     {
       "affected_components": [
         "FastAPI",
-        "bootstrap/runtime"
+        "bootstrap/runtime",
+        "repository tooling"
       ],
       "affects_release": true,
       "affects_runtime": true,
@@ -17081,7 +17096,8 @@
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/bootstrap.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -17275,7 +17291,9 @@
       "secret": true,
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
         "scripts/dev/lite/start-qualification.sh",
+        "tests/backend/test_lite_photo_backup_candidate_qualification.py",
         "tests/backend/test_lite_security_assurance_portability.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -17357,7 +17375,8 @@
     },
     {
       "affected_components": [
-        "FastAPI"
+        "FastAPI",
+        "repository tooling"
       ],
       "affects_release": true,
       "affects_runtime": true,
@@ -17374,7 +17393,8 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py",
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -17429,7 +17449,8 @@
     {
       "affected_components": [
         "FastAPI",
-        "bootstrap/runtime"
+        "bootstrap/runtime",
+        "repository tooling"
       ],
       "affects_release": true,
       "affects_runtime": true,
@@ -17447,7 +17468,8 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py",
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -17529,7 +17551,8 @@
     },
     {
       "affected_components": [
-        "FastAPI"
+        "FastAPI",
+        "repository tooling"
       ],
       "affects_release": true,
       "affects_runtime": true,
@@ -17546,13 +17569,15 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py",
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
     {
       "affected_components": [
-        "FastAPI"
+        "FastAPI",
+        "repository tooling"
       ],
       "affects_release": true,
       "affects_runtime": true,
@@ -17569,7 +17594,8 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py",
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -17651,8 +17677,8 @@
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py",
         "pocket-lab-final-structure/runtime/tests/test_nats_required.py",
-        "scripts/dev/run-fastapi-dev.sh",
-        "scripts/dev/run-worker-dev.sh"
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
+        "scripts/dev/run-fastapi-dev.sh"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -17678,6 +17704,29 @@
       "source": [
         "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_NATS_TLS_",
+      "owner": "repository tooling",
+      "purpose": "NATS/JetStream connection or runtime configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -17778,7 +17827,8 @@
       "source": [
         "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
         "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py",
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -17844,7 +17894,8 @@
     },
     {
       "affected_components": [
-        "FastAPI"
+        "FastAPI",
+        "repository tooling"
       ],
       "affects_release": true,
       "affects_runtime": true,
@@ -17861,7 +17912,8 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py",
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -18018,7 +18070,7 @@
         "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
         "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
-        "tests/backend/test_lite_api.py"
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -18048,7 +18100,7 @@
         "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
         "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
-        "tests/backend/test_lite_device_system_profile.py"
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -20376,6 +20428,29 @@
       ],
       "affects_release": false,
       "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_QUALIFICATION_CANDIDATE_SHA",
+      "owner": "repository tooling",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": true,
       "default": "redacted/not inferred",
       "name": "POCKETLAB_QUALIFICATION_NATS_CREDENTIALS_FILE",
       "owner": "repository tooling",
@@ -20389,6 +20464,7 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": true,
       "source": [
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
         "scripts/dev/lite/start-qualification.sh"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -20425,6 +20501,29 @@
     },
     {
       "affected_components": [
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_QUALIFICATION_RUN_ID",
+      "owner": "repository tooling",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
         "bootstrap/runtime",
         "repository tooling"
       ],
@@ -20444,6 +20543,7 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
         "scripts/dev/lite/start-qualification.sh",
         "scripts/dev/lite/task_runtime.py",
         "tests/backend/test_lite_security_assurance_portability.py"
@@ -20645,6 +20745,7 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
         "tests/backend/conftest.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"

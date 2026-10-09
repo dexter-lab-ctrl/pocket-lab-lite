@@ -5079,6 +5079,169 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest tests/backend/test_lite_photo_backup_agent.py"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:photo-backup:agent",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "tests/backend/test_lite_photo_backup_agent.py"
+      ],
+      "name": "lite:photo-backup:agent",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run Photo Backup Android/Termux agent unit tests",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Recovery-diagnostics loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest tests/backend/test_lite_photo_backup.py tests/backend/test_lite_photo_backup_reliability.py"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:photo-backup:backend",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "tests/backend/test_lite_photo_backup.py",
+        "tests/backend/test_lite_photo_backup_reliability.py"
+      ],
+      "name": "lite:photo-backup:backend",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run Photo Backup service and reliability backend tests",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Recovery-diagnostics loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/run-photo-backup-candidate-qualification.py {{if .CANDIDATE_SHA}}--candidate-sha \"{{.CANDIDATE_SHA}}\"{{end}}"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:photo-backup:candidate",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
+      ],
+      "name": "lite:photo-backup:candidate",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run exact-SHA Photo Backup P0/P1 qualification in a disposable DEV-PC worktree",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Recovery-diagnostics loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-photo-backup.spec.ts"
+      ],
+      "dependencies": [],
+      "environment": [
+        "LITE_E2E_MODE"
+      ],
+      "example_invocation": "task lite:photo-backup:mocked",
+      "expected_runtime_class": "heavy-dev",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "tests/e2e/lite-photo-backup.spec.ts"
+      ],
+      "name": "lite:photo-backup:mocked",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run mocked Photo Backup E2E workflows",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": true,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": true,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Recovery-diagnostics loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
         "node scripts/dev/lite/resolve-browser.mjs --write-evidence \"{{.VALIDATION_DIR}}/browser.json\""
       ],
       "dependencies": [],

@@ -4680,7 +4680,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 489,
+  "page_count": 490,
   "page_types": [
     "overview",
     "guide",
@@ -16365,6 +16365,30 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "operations/photo-backup-enterprise-reliability.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "recovery",
+      "generated": false,
+      "id": "page:operations/photo-backup-enterprise-reliability",
+      "intents": [
+        "operate",
+        "diagnose"
+      ],
+      "page_type": "reference",
+      "path": "operations/photo-backup-enterprise-reliability.md",
+      "primary_audience": "operator",
+      "primary_navigation_owner": "operate",
+      "related_pages": [],
+      "source_or_generator": "operations/photo-backup-enterprise-reliability.md",
+      "title": "Photo Backup reliability workstream (unvalidated)",
+      "url": "/operations/photo-backup-enterprise-reliability/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "operations/photo-backup-photoprism-webdav.md"
       ],
       "confidence": "source-derived",
@@ -17592,7 +17616,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "128a7455b525fa029be85bc240f10de88102f3beb90619983ced16e992206e0a",
+  "source_fingerprint": "79a0c5a42d3c1f4debf52a752c605f49b7f1a0eb70837a7a9a59ca86ab4deaa8",
   "top_level": [
     "start-here",
     "use",

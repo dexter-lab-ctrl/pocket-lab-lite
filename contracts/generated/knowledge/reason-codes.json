@@ -664,6 +664,54 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The one-time Photo Backup credential is expired or no longer usable.",
+      "domain": "apps",
+      "event_mapping": [],
+      "http_status": 410,
+      "id": "reason:credential_expired",
+      "name": "credential_expired",
+      "projection_mapping": [
+        "photo_backup_readiness"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Photo Backup credential expired"
+      ],
+      "user_interpretation": "Start the photo backup again to obtain a fresh protected credential."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A Photo Backup credential does not match the requesting device or backup job.",
+      "domain": "apps",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:credential_identity_mismatch",
+      "name": "credential_identity_mismatch",
+      "projection_mapping": [
+        "photo_backup_readiness"
+      ],
+      "retryable": false,
+      "severity": "high",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Photo Backup credential identity mismatch"
+      ],
+      "user_interpretation": "This photo backup credential cannot be used by the requesting device."
+    },
+    {
+      "confidence": "source-derived",
       "description": "A human-session write was rejected because its CSRF proof was missing or invalid.",
       "domain": "identity",
       "event_mapping": [],
@@ -701,6 +749,102 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "This safety target can resume in a later Full check."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The protected PhotoPrism destination no longer matches its enrolled filesystem identity.",
+      "domain": "apps",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:destination_identity_mismatch",
+      "name": "destination_identity_mismatch",
+      "projection_mapping": [
+        "photo_backup_readiness"
+      ],
+      "retryable": false,
+      "severity": "high",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Photo Backup destination identity mismatch"
+      ],
+      "user_interpretation": "Verify the protected PhotoPrism storage before continuing; do not force a backup."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The protected PhotoPrism originals storage mount is missing or is not a directory.",
+      "domain": "apps",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:destination_mount_missing",
+      "name": "destination_mount_missing",
+      "projection_mapping": [
+        "photo_backup_readiness"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Photo Backup destination mount missing"
+      ],
+      "user_interpretation": "Restore the PhotoPrism originals storage mount before starting a backup."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The protected PhotoPrism destination is visible but cannot accept writes.",
+      "domain": "apps",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:destination_read_only",
+      "name": "destination_read_only",
+      "projection_mapping": [
+        "photo_backup_readiness"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Photo Backup destination read-only"
+      ],
+      "user_interpretation": "Make the protected PhotoPrism destination writable before starting a backup."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The protected PhotoPrism destination filesystem cannot be inspected safely.",
+      "domain": "apps",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:destination_storage_unavailable",
+      "name": "destination_storage_unavailable",
+      "projection_mapping": [
+        "photo_backup_readiness"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Photo Backup destination unavailable"
+      ],
+      "user_interpretation": "Check the protected PhotoPrism storage mount and permissions before retrying."
     },
     {
       "confidence": "source-derived",
@@ -4548,6 +4692,30 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Another Photo Backup job currently holds the protected destination reservation.",
+      "domain": "apps",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:storage_reservation_conflict",
+      "name": "storage_reservation_conflict",
+      "projection_mapping": [
+        "photo_backup_readiness"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Photo Backup destination busy"
+      ],
+      "user_interpretation": "Wait for the active photo backup to finish before starting another one."
+    },
+    {
+      "confidence": "source-derived",
       "description": "A registered backup location cannot currently be reached or inspected safely.",
       "domain": "recovery",
       "event_mapping": [
@@ -5341,6 +5509,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5c014a4c5563838ac674dd41d16975a1c93ca0993b41619c15187d787d7c19e3"
+    "source_fingerprint": "c8d20845857a277ddd3086fc223c8e751a9e77ba6ff7b4a130b06a976ab6eb1e"
   }
 }

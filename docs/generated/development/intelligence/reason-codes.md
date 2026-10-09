@@ -52,8 +52,14 @@ confidence: generated
 | configured_target_budget | security | warning | yes | The configured atomic-target budget was reached after durable checkpoint work. | Correct the prerequisite and retry through the owning backend workflow. |
 | confirmation_required | devices | warning | yes | A potentially destructive device or recovery action requires explicit confirmation before it can continue. | Correct the prerequisite and retry through the owning backend workflow. |
 | connection_failed | validation | warning | yes | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | Correct the prerequisite and retry through the owning backend workflow. |
+| credential_expired | apps | warning | yes | The one-time Photo Backup credential is expired or no longer usable. | Correct the prerequisite and retry through the owning backend workflow. |
+| credential_identity_mismatch | apps | high | no | A Photo Backup credential does not match the requesting device or backup job. | Review the owning evidence and operator guidance before another action. |
 | csrf_required | identity | warning | yes | A human-session write was rejected because its CSRF proof was missing or invalid. | Correct the prerequisite and retry through the owning backend workflow. |
 | deferred_resource_pressure | security | warning | yes | A heavy Security target was not omitted; it was deferred after a durable checkpoint by a backend resource decision. | Correct the prerequisite and retry through the owning backend workflow. |
+| destination_identity_mismatch | apps | high | no | The protected PhotoPrism destination no longer matches its enrolled filesystem identity. | Review the owning evidence and operator guidance before another action. |
+| destination_mount_missing | apps | warning | yes | The protected PhotoPrism originals storage mount is missing or is not a directory. | Correct the prerequisite and retry through the owning backend workflow. |
+| destination_read_only | apps | warning | yes | The protected PhotoPrism destination is visible but cannot accept writes. | Correct the prerequisite and retry through the owning backend workflow. |
+| destination_storage_unavailable | apps | warning | yes | The protected PhotoPrism destination filesystem cannot be inspected safely. | Correct the prerequisite and retry through the owning backend workflow. |
 | device_capability_not_advertised | devices | warning | yes | The device has not advertised the capability required by its governed role assignment. | Correct the prerequisite and retry through the owning backend workflow. |
 | device_capability_not_authorized | devices | warning | no | The server policy does not authorize the device capability for its current governed role assignment. | Review the owning evidence and operator guidance before another action. |
 | device_capability_stale | devices | warning | yes | The device capability evidence is older than the governed freshness window. | Correct the prerequisite and retry through the owning backend workflow. |
@@ -242,6 +248,7 @@ confidence: generated
 | shutdown_during_mailbox_backpressure | projections | warning | yes | Shutdown occurred while the bounded mailbox was under pressure. | Correct the prerequisite and retry through the owning backend workflow. |
 | source_inventory_failed | validation | warning | yes | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | Correct the prerequisite and retry through the owning backend workflow. |
 | storage_pressure | security | warning | yes | Private free storage was below the backend scan threshold. | Correct the prerequisite and retry through the owning backend workflow. |
+| storage_reservation_conflict | apps | warning | yes | Another Photo Backup job currently holds the protected destination reservation. | Correct the prerequisite and retry through the owning backend workflow. |
 | storage_unavailable | recovery | warning | yes | A registered backup location cannot currently be reached or inspected safely. | Correct the prerequisite and retry through the owning backend workflow. |
 | submit_failed | system | warning | yes | The work request could not be admitted. | Correct the prerequisite and retry through the owning backend workflow. |
 | target_not_allowed | validation | warning | no | The requested target is outside the approved scope. | Review the owning evidence and operator guidance before another action. |

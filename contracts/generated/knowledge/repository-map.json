@@ -244,6 +244,7 @@
         "subject:pocketlab.events.fleet.invite_started",
         "subject:pocketlab.events.fleet.node_",
         "subject:pocketlab.events.fleet.node_capabilities",
+        "subject:pocketlab.events.fleet.node_command_progress",
         "subject:pocketlab.events.fleet.node_command_queued",
         "subject:pocketlab.events.fleet.node_command_result",
         "subject:pocketlab.events.fleet.node_health",
@@ -827,8 +828,14 @@
         "reason:configured_target_budget",
         "reason:confirmation_required",
         "reason:connection_failed",
+        "reason:credential_expired",
+        "reason:credential_identity_mismatch",
         "reason:csrf_required",
         "reason:deferred_resource_pressure",
+        "reason:destination_identity_mismatch",
+        "reason:destination_mount_missing",
+        "reason:destination_read_only",
+        "reason:destination_storage_unavailable",
         "reason:device_capability_not_advertised",
         "reason:device_capability_not_authorized",
         "reason:device_capability_stale",
@@ -1017,6 +1024,7 @@
         "reason:shutdown_during_mailbox_backpressure",
         "reason:source_inventory_failed",
         "reason:storage_pressure",
+        "reason:storage_reservation_conflict",
         "reason:storage_unavailable",
         "reason:submit_failed",
         "reason:target_not_allowed",
@@ -1173,8 +1181,14 @@
         "reason:configured_target_budget",
         "reason:confirmation_required",
         "reason:connection_failed",
+        "reason:credential_expired",
+        "reason:credential_identity_mismatch",
         "reason:csrf_required",
         "reason:deferred_resource_pressure",
+        "reason:destination_identity_mismatch",
+        "reason:destination_mount_missing",
+        "reason:destination_read_only",
+        "reason:destination_storage_unavailable",
         "reason:device_capability_not_advertised",
         "reason:device_capability_not_authorized",
         "reason:device_capability_stale",
@@ -1363,6 +1377,7 @@
         "reason:shutdown_during_mailbox_backpressure",
         "reason:source_inventory_failed",
         "reason:storage_pressure",
+        "reason:storage_reservation_conflict",
         "reason:storage_unavailable",
         "reason:submit_failed",
         "reason:target_not_allowed",
@@ -1617,6 +1632,7 @@
         "subject:pocketlab.commands.node.all",
         "subject:pocketlab.commands.node.{self.node_id}",
         "subject:pocketlab.events.fleet.node_capabilities",
+        "subject:pocketlab.events.fleet.node_command_progress",
         "subject:pocketlab.events.fleet.node_command_result",
         "subject:pocketlab.events.fleet.node_health",
         "subject:pocketlab.events.fleet.node_heartbeat",
@@ -3287,6 +3303,18 @@
     },
     {
       "entities": [
+        "test:tests/backend/test_lite_photo_backup_candidate_qualification.py"
+      ],
+      "source": "tests/backend/test_lite_photo_backup_candidate_qualification.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_photo_backup_reliability.py"
+      ],
+      "source": "tests/backend/test_lite_photo_backup_reliability.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_lite_photoprism_backup.py"
       ],
       "source": "tests/backend/test_lite_photoprism_backup.py"
@@ -4318,6 +4346,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5c014a4c5563838ac674dd41d16975a1c93ca0993b41619c15187d787d7c19e3"
+    "source_fingerprint": "c8d20845857a277ddd3086fc223c8e751a9e77ba6ff7b4a130b06a976ab6eb1e"
   }
 }

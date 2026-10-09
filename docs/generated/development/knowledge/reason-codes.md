@@ -47,8 +47,14 @@ generator_version: 3
 | `configured_target_budget` | security | The configured atomic-target budget was reached after durable checkpoint work. | warning | yes | no | The remaining safety targets can resume in a later Full check. |
 | `confirmation_required` | devices | A potentially destructive device or recovery action requires explicit confirmation before it can continue. | warning | yes | no | Confirm this action before continuing. |
 | `connection_failed` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | warning | yes | no | Runtime Security Assurance could not continue safely. |
+| `credential_expired` | apps | The one-time Photo Backup credential is expired or no longer usable. | warning | yes | no | Start the photo backup again to obtain a fresh protected credential. |
+| `credential_identity_mismatch` | apps | A Photo Backup credential does not match the requesting device or backup job. | high | no | yes | This photo backup credential cannot be used by the requesting device. |
 | `csrf_required` | identity | A human-session write was rejected because its CSRF proof was missing or invalid. | warning | yes | no | Refresh the page and try again. |
 | `deferred_resource_pressure` | security | A heavy Security target was not omitted; it was deferred after a durable checkpoint by a backend resource decision. | warning | yes | no | This safety target can resume in a later Full check. |
+| `destination_identity_mismatch` | apps | The protected PhotoPrism destination no longer matches its enrolled filesystem identity. | high | no | yes | Verify the protected PhotoPrism storage before continuing; do not force a backup. |
+| `destination_mount_missing` | apps | The protected PhotoPrism originals storage mount is missing or is not a directory. | warning | yes | no | Restore the PhotoPrism originals storage mount before starting a backup. |
+| `destination_read_only` | apps | The protected PhotoPrism destination is visible but cannot accept writes. | warning | yes | no | Make the protected PhotoPrism destination writable before starting a backup. |
+| `destination_storage_unavailable` | apps | The protected PhotoPrism destination filesystem cannot be inspected safely. | warning | yes | no | Check the protected PhotoPrism storage mount and permissions before retrying. |
 | `device_capability_not_advertised` | devices | The device has not advertised the capability required by its governed role assignment. | warning | yes | no | The device has not advertised this capability. |
 | `device_capability_not_authorized` | devices | The server policy does not authorize the device capability for its current governed role assignment. | warning | no | yes | This capability is not authorized for the device's current roles. |
 | `device_capability_stale` | devices | The device capability evidence is older than the governed freshness window. | warning | yes | no | Wait for a fresh device heartbeat before relying on this capability. |
@@ -237,6 +243,7 @@ generator_version: 3
 | `shutdown_during_mailbox_backpressure` | projections | Shutdown occurred while the bounded mailbox was under pressure. | warning | yes | no | Shutdown occurred while the bounded mailbox was under pressure. |
 | `source_inventory_failed` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | warning | yes | no | Runtime Security Assurance could not continue safely. |
 | `storage_pressure` | security | Private free storage was below the backend scan threshold. | warning | yes | no | The remaining safety targets were deferred because private storage is constrained. |
+| `storage_reservation_conflict` | apps | Another Photo Backup job currently holds the protected destination reservation. | warning | yes | no | Wait for the active photo backup to finish before starting another one. |
 | `storage_unavailable` | recovery | A registered backup location cannot currently be reached or inspected safely. | warning | yes | no | Reconnect this storage or choose another backup location before continuing. |
 | `submit_failed` | system | The work request could not be admitted. | warning | yes | no | The work request could not be admitted. |
 | `target_not_allowed` | validation | The requested target is outside the approved scope. | warning | no | yes | The requested target is outside the approved scope. |

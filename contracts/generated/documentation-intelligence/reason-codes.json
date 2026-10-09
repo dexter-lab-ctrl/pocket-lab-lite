@@ -397,6 +397,30 @@
       "user_message": "Runtime Security Assurance could not continue safely."
     },
     {
+      "code": "credential_expired",
+      "domain": "apps",
+      "http_status": 410,
+      "meaning": "The one-time Photo Backup credential is expired or no longer usable.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Start the photo backup again to obtain a fresh protected credential."
+    },
+    {
+      "code": "credential_identity_mismatch",
+      "domain": "apps",
+      "http_status": 403,
+      "meaning": "A Photo Backup credential does not match the requesting device or backup job.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "high",
+      "terminal": true,
+      "user_message": "This photo backup credential cannot be used by the requesting device."
+    },
+    {
       "code": "csrf_required",
       "domain": "identity",
       "http_status": 403,
@@ -419,6 +443,54 @@
       "severity": "warning",
       "terminal": false,
       "user_message": "This safety target can resume in a later Full check."
+    },
+    {
+      "code": "destination_identity_mismatch",
+      "domain": "apps",
+      "http_status": 409,
+      "meaning": "The protected PhotoPrism destination no longer matches its enrolled filesystem identity.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "high",
+      "terminal": true,
+      "user_message": "Verify the protected PhotoPrism storage before continuing; do not force a backup."
+    },
+    {
+      "code": "destination_mount_missing",
+      "domain": "apps",
+      "http_status": 409,
+      "meaning": "The protected PhotoPrism originals storage mount is missing or is not a directory.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Restore the PhotoPrism originals storage mount before starting a backup."
+    },
+    {
+      "code": "destination_read_only",
+      "domain": "apps",
+      "http_status": 409,
+      "meaning": "The protected PhotoPrism destination is visible but cannot accept writes.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Make the protected PhotoPrism destination writable before starting a backup."
+    },
+    {
+      "code": "destination_storage_unavailable",
+      "domain": "apps",
+      "http_status": 503,
+      "meaning": "The protected PhotoPrism destination filesystem cannot be inspected safely.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Check the protected PhotoPrism storage mount and permissions before retrying."
     },
     {
       "code": "device_capability_not_advertised",
@@ -2681,6 +2753,18 @@
       "user_message": "The remaining safety targets were deferred because private storage is constrained."
     },
     {
+      "code": "storage_reservation_conflict",
+      "domain": "apps",
+      "http_status": 409,
+      "meaning": "Another Photo Backup job currently holds the protected destination reservation.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Wait for the active photo backup to finish before starting another one."
+    },
+    {
       "code": "storage_unavailable",
       "domain": "recovery",
       "http_status": 409,
@@ -3150,5 +3234,5 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "cf7f6a57b0821d93fe4e6ae596d692dcdf307d2f2e4aa5d0b0911351155ec757"
+  "source_fingerprint": "1f1dc2ac49b4c6d5e08460de96afa3c5af15b301a3ed5cf70e0be0a0a6dd02a0"
 }

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "7cf760ca2a5e35cf2c57bce85cabd5896c563e97ddfa635e654a3913a476d676",
+    "aggregate_fingerprint": "eabfbfb12504f5a72c4ecf48aea2add9b9f8fecee49b78910133bb0426a26e15",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -10,7 +10,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/metadata/documentation-platform.json": "beb223fca558ca6150f7c35927953294652eb4ce69e4d565e3c460e314158de6",
+      "contracts/metadata/documentation-platform.json": "cc6de54241fb6ec07c591349fbb0e1e26204637c8792b73b79a2819ed63e9d67",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
       "pocket-lab-final-structure/runtime/api_fastapi/db/__init__.py": "526884a92d46e87f3a6c5ece60852976c4bf968476cf5e37767a345540fea946",
@@ -99,7 +99,8 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_lifecycle_diagnostics.py": "6ca0ea3cdac825a7b91f517fef90e77dca515e96e7ab96006421131d24237c7c",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_phase3b_projections.py": "0ca0448ae5ead1f92e3dbeefb23c8293e91de6885b2cbbb119be500c968b6267",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_phase3c_projections.py": "cab9a59573ab61e16ae4af62176ee7ddf24416104eb0bd78ee37d6a45a0b39c2",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py": "c5b2f5e30cd0820596c1dcf9b30f86e334016c168d0b23f256f5f541266f027d",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py": "1f6a14609018acb47beb86d16bc06b668503e9f5b65238ad647e8efecfd4ca08",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup_destinations.py": "25c5d6a8a5b1a28aad46db0a45c7bee23f091e0a724129dddd54cc6b73488c20",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_backup.py": "c66e1ebc3bcd8cedc9e95fbe0b005481bcb2c616533bca55f23a3d887f5b82f6",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_lifecycle.py": "dffed3d8cbbd745ad27f9681037bce477e38b5fe59da8197fca8b3cd64ba5853",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_media.py": "15c6be2a53d5e587530cd6c18d5a4baacfa07164741af8bd2e972f04228df9b9",
@@ -176,7 +177,13 @@
       "cold_start_validation",
       "confirmation_required",
       "connection_failed",
+      "credential_expired",
+      "credential_identity_mismatch",
       "csrf_required",
+      "destination_identity_mismatch",
+      "destination_mount_missing",
+      "destination_read_only",
+      "destination_storage_unavailable",
       "device_role_change_blocked_by_dependency",
       "device_role_change_device_offline",
       "device_role_change_failed",
@@ -321,6 +328,7 @@
       "shutdown",
       "shutdown_during_mailbox_backpressure",
       "source_inventory_failed",
+      "storage_reservation_conflict",
       "storage_unavailable",
       "submit_failed",
       "target_not_allowed",
@@ -856,6 +864,44 @@
       },
       {
         "audit_severity": "warning",
+        "code": "credential_expired",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 410,
+        "meaning": "The one-time Photo Backup credential is expired or no longer usable.",
+        "projection_mapping": [
+          "photo_backup_readiness"
+        ],
+        "retryable": true,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": false,
+        "ui_mapping": [
+          "Photo Backup credential expired"
+        ],
+        "user_message": "Start the photo backup again to obtain a fresh protected credential."
+      },
+      {
+        "audit_severity": "high",
+        "code": "credential_identity_mismatch",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 403,
+        "meaning": "A Photo Backup credential does not match the requesting device or backup job.",
+        "projection_mapping": [
+          "photo_backup_readiness"
+        ],
+        "retryable": false,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": true,
+        "ui_mapping": [
+          "Photo Backup credential identity mismatch"
+        ],
+        "user_message": "This photo backup credential cannot be used by the requesting device."
+      },
+      {
+        "audit_severity": "warning",
         "code": "csrf_required",
         "deprecated_aliases": [],
         "domain": "identity",
@@ -883,6 +929,82 @@
         "terminal": false,
         "ui_mapping": [],
         "user_message": "This safety target can resume in a later Full check."
+      },
+      {
+        "audit_severity": "high",
+        "code": "destination_identity_mismatch",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 409,
+        "meaning": "The protected PhotoPrism destination no longer matches its enrolled filesystem identity.",
+        "projection_mapping": [
+          "photo_backup_readiness"
+        ],
+        "retryable": false,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": true,
+        "ui_mapping": [
+          "Photo Backup destination identity mismatch"
+        ],
+        "user_message": "Verify the protected PhotoPrism storage before continuing; do not force a backup."
+      },
+      {
+        "audit_severity": "warning",
+        "code": "destination_mount_missing",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 409,
+        "meaning": "The protected PhotoPrism originals storage mount is missing or is not a directory.",
+        "projection_mapping": [
+          "photo_backup_readiness"
+        ],
+        "retryable": true,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": false,
+        "ui_mapping": [
+          "Photo Backup destination mount missing"
+        ],
+        "user_message": "Restore the PhotoPrism originals storage mount before starting a backup."
+      },
+      {
+        "audit_severity": "warning",
+        "code": "destination_read_only",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 409,
+        "meaning": "The protected PhotoPrism destination is visible but cannot accept writes.",
+        "projection_mapping": [
+          "photo_backup_readiness"
+        ],
+        "retryable": true,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": false,
+        "ui_mapping": [
+          "Photo Backup destination read-only"
+        ],
+        "user_message": "Make the protected PhotoPrism destination writable before starting a backup."
+      },
+      {
+        "audit_severity": "warning",
+        "code": "destination_storage_unavailable",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 503,
+        "meaning": "The protected PhotoPrism destination filesystem cannot be inspected safely.",
+        "projection_mapping": [
+          "photo_backup_readiness"
+        ],
+        "retryable": true,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": false,
+        "ui_mapping": [
+          "Photo Backup destination unavailable"
+        ],
+        "user_message": "Check the protected PhotoPrism storage mount and permissions before retrying."
       },
       {
         "audit_severity": "warning",
@@ -3787,6 +3909,25 @@
         "terminal": false,
         "ui_mapping": [],
         "user_message": "The remaining safety targets were deferred because private storage is constrained."
+      },
+      {
+        "audit_severity": "warning",
+        "code": "storage_reservation_conflict",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 409,
+        "meaning": "Another Photo Backup job currently holds the protected destination reservation.",
+        "projection_mapping": [
+          "photo_backup_readiness"
+        ],
+        "retryable": true,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": false,
+        "ui_mapping": [
+          "Photo Backup destination busy"
+        ],
+        "user_message": "Wait for the active photo backup to finish before starting another one."
       },
       {
         "audit_severity": "warning",

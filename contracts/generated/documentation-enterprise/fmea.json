@@ -49,10 +49,10 @@
         "checkpoint_ineligible",
         "configured_target_budget",
         "confirmation_required",
+        "credential_expired",
+        "credential_identity_mismatch",
         "deferred_resource_pressure",
-        "device_capability_not_advertised",
-        "device_capability_not_authorized",
-        "device_capability_stale"
+        "destination_identity_mismatch"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -175,10 +175,10 @@
         "checkpoint_ineligible",
         "configured_target_budget",
         "confirmation_required",
+        "credential_expired",
+        "credential_identity_mismatch",
         "deferred_resource_pressure",
-        "device_capability_not_advertised",
-        "device_capability_not_authorized",
-        "device_capability_stale"
+        "destination_identity_mismatch"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -354,10 +354,10 @@
         "checkpoint_ineligible",
         "configured_target_budget",
         "confirmation_required",
+        "credential_expired",
+        "credential_identity_mismatch",
         "deferred_resource_pressure",
-        "device_capability_not_advertised",
-        "device_capability_not_authorized",
-        "device_capability_stale"
+        "destination_identity_mismatch"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -506,10 +506,10 @@
         "checkpoint_ineligible",
         "configured_target_budget",
         "confirmation_required",
+        "credential_expired",
+        "credential_identity_mismatch",
         "deferred_resource_pressure",
-        "device_capability_not_advertised",
-        "device_capability_not_authorized",
-        "device_capability_stale"
+        "destination_identity_mismatch"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -633,10 +633,10 @@
         "checkpoint_ineligible",
         "configured_target_budget",
         "confirmation_required",
+        "credential_expired",
+        "credential_identity_mismatch",
         "deferred_resource_pressure",
-        "device_capability_not_advertised",
-        "device_capability_not_authorized",
-        "device_capability_stale"
+        "destination_identity_mismatch"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -775,10 +775,10 @@
         "checkpoint_ineligible",
         "configured_target_budget",
         "confirmation_required",
+        "credential_expired",
+        "credential_identity_mismatch",
         "deferred_resource_pressure",
-        "device_capability_not_advertised",
-        "device_capability_not_authorized",
-        "device_capability_stale"
+        "destination_identity_mismatch"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -962,10 +962,10 @@
         "checkpoint_ineligible",
         "configured_target_budget",
         "confirmation_required",
+        "credential_expired",
+        "credential_identity_mismatch",
         "deferred_resource_pressure",
-        "device_capability_not_advertised",
-        "device_capability_not_authorized",
-        "device_capability_stale"
+        "destination_identity_mismatch"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
