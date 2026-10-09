@@ -1213,7 +1213,19 @@ class QualificationRun:
             backup_id, job = self._start_backup()
             fixture_status, fixture = self._fixture_request("GET", "/__qualification__/summary", control=True)
             if fixture_status != 200 or int(fixture.get("files") or 0) <= 0 or str(job.get("status") or "") not in {"completed", "partial_storage_limit"}:
-                raise QualificationError("synthetic WebDAV transfer did not complete with isolated objects")
+                raise QualificationError(
+                    "synthetic WebDAV transfer did not complete with isolated objects: "
+                    + json.dumps({
+                        "job_status": str(job.get("status") or "")[:48],
+                        "job_reason_code": str(job.get("reason_code") or "")[:80],
+                        "job_items_total": int(job.get("items_total") or 0),
+                        "job_items_transferred": int(job.get("items_transferred") or 0),
+                        "job_integrity_mode": str(job.get("integrity_mode") or "")[:32],
+                        "fixture_status": fixture_status,
+                        "fixture_files": int(fixture.get("files") or 0),
+                        "fixture_directories": int(fixture.get("directories") or 0),
+                    }, separators=(",", ":"))
+                )
             self.results["synthetic_webdav_transfer"] = {"status": "PASS", "terminal_status": job.get("status"), "remote_files_observed": int(fixture.get("files") or 0), "remote_integrity": job.get("integrity_mode") or "size_only"}
             self.results["credential_revocation"] = {"status": "PASS", "public_revoke_state": job.get("credential_revoke_status") or "revoked_or_not_projected"}
             old_pid, _ = self._kill_owned_agent()
