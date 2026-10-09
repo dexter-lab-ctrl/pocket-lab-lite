@@ -133,50 +133,44 @@ def collect_photo_backup_capabilities() -> dict[str, Any]:
 
 
 def repair_rclone() -> dict[str, Any]:
-    if shutil.which("rclone"):
-        return {
-            "status": "ready",
-            "summary": "Photo backup tools are ready.",
-            **collect_photo_backup_capabilities(),
-        }
+    """Run only the predefined Termux package repair; never expose installer logs."""
+    existing = collect_photo_backup_capabilities()
+    if existing["rclone_available"]:
+        return {"status": "already_installed", "reason_code": None,
+                "summary": "Photo backup tools are already installed.",
+                **existing}
     pkg = shutil.which("pkg")
     if not pkg:
-        return {
-            "status": "failed",
-            "summary": (
-                "Photo backup tools could not be "
-                "repaired automatically."
-            ),
-            "rclone_available": False,
-            "sanitized": True,
-        }
+        return {"status": "unsupported_platform",
+                "reason_code": "rclone_install_failed",
+                "summary": "Automatic repair requires the Termux package manager.",
+                "rclone_available": False, "sanitized": True}
+    reason = None
     try:
-        subprocess.run(
+        result = subprocess.run(
             [pkg, "install", "-y", "rclone"],
-            check=False,
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            check=False, stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
             timeout=300,
         )
-    except Exception:
-        pass
+        if result.returncode != 0:
+            reason = "rclone_install_failed"
+    except subprocess.TimeoutExpired:
+        reason = "rclone_install_timeout"
+    except (OSError, subprocess.SubprocessError):
+        reason = "rclone_install_failed"
     caps = collect_photo_backup_capabilities()
+    if reason is None and not caps["rclone_available"]:
+        reason = "rclone_verification_failed"
+    if reason is None and caps["rclone_version"] in ("Available", "Unavailable"):
+        reason = "rclone_verification_failed"
     return {
-        "status": (
-            "ready"
-            if caps["rclone_available"]
-            else "failed"
-        ),
-        "summary": (
-            "Photo backup tools are ready."
-            if caps["rclone_available"]
-            else (
-                "Photo backup tools could not be "
-                "repaired automatically."
-            )
-        ),
         **caps,
+        "status": "completed" if reason is None else "failed",
+        "reason_code": reason,
+        "summary": ("Photo backup tools are ready." if reason is None
+                    else "Photo backup tool repair did not complete. Retry when the device and package repository are available."),
+        "sanitized": True,
     }
 
 
