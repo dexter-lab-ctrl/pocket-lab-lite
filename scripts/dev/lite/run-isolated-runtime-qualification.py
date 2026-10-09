@@ -967,7 +967,26 @@ class QualificationRun:
             reason = payload.get("reason_code") or payload.get("error") or payload.get("status") or payload.get("message") or payload.get("detail") or "unreported"
             if isinstance(reason, dict):
                 reason = reason.get("reason_code") or reason.get("error") or reason.get("message") or "structured_error"
-            raise QualificationError(f"candidate photo backup admission was rejected: status={status} reason={str(reason)[:160]}")
+            projection = "unavailable"
+            try:
+                agent_status, agent_payload = self._api_request(f"/api/fleet/agents/{self.node_id}")
+                agent = agent_payload.get("agent") if isinstance(agent_payload.get("agent"), dict) else {}
+                projection = json.dumps({
+                    "http_status": agent_status,
+                    "status": str(agent.get("status") or "")[:32],
+                    "agent_status": str(agent.get("agent_status") or "")[:32],
+                    "last_seen": bool(agent.get("last_seen_at")),
+                    "last_capabilities": bool(agent.get("last_capabilities_at")),
+                    "capabilities": sorted(str(item)[:64] for item in (agent.get("advertised_capabilities") or []) if item)[:32],
+                    "role": str(agent.get("role") or "")[:32],
+                    "device_role_status": str(agent.get("device_role_status") or "")[:32],
+                    "identity_status": str(agent.get("identity_status") or "")[:32],
+                }, separators=(",", ":"))
+            except Exception as exc:
+                projection = type(exc).__name__
+            raise QualificationError(
+                f"candidate photo backup admission was rejected: status={status} reason={str(reason)[:160]} projection={projection}"
+            )
         backup_id = str(payload["backup_id"])
         return backup_id, self._wait_backup(backup_id)
 
