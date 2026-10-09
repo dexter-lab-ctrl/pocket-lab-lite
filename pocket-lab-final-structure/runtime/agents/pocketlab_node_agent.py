@@ -998,8 +998,10 @@ class PocketLabNodeAgent:
                     "accepted": True,
                     "rclone_available": bool(self.photo_backup.get("rclone_available")),
                     "photo_storage_access": bool(self.photo_backup.get("photo_storage_access")),
+                    "reason_code": repair.get("reason_code"),
+                    "repair_status": repair.get("status"),
                 }
-                status = "completed" if bool(self.photo_backup.get("rclone_available")) else "failed"
+                status = "completed" if repair.get("status") in {"completed", "already_installed"} else "failed"
             elif command_name in {"apply_blueprint", "node.apply_blueprint"}:
                 result = {
                     "message": "Blueprint execution is acknowledged; install a node executor to enable remote apply.",
