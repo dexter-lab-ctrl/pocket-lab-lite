@@ -380,3 +380,61 @@ def test_p2_staging_cleanup_is_scoped_to_single_file(monkeypatch, tmp_path):
     assert calls[0][1] == "deletefile"
     assert calls[0][2] == "photoprism:PocketLab/Devices/secondary/DCIM/a.jpg.pocketlab-upload"
     assert "purge" not in calls[0] and "delete" not in calls[0]
+
+
+def test_p4_versioned_destination_contract_rejects_unknown_or_disabled():
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photo_backup_destinations as d
+    import pytest
+    capacity = {"status": "ready", "safe_upload_budget_bytes": 4096}
+    options = d.destinations(capacity, operational=True)
+    assert options[0]["schema_version"] == d.SCHEMA_VERSION == 2
+    assert options[0]["eligible"] is True
+    assert options[0]["credential_strategy"] == "scoped_photoprism_app_password"
+    assert all(not item["supported"] and not item["eligible"] for item in options[1:])
+    for invalid in ("../photoprism", "server-removable", "managed-nas", "encrypted-object-store", ""):
+        with pytest.raises(ValueError, match="unsupported_destination"):
+            d.adapter(invalid)
+    with pytest.raises(ValueError, match="unsupported_destination"):
+        d.require_eligible("enrolled-storage-node", capacity, operational=True)
+
+
+def test_p4_placement_contract_cannot_accept_paths_or_invalid_identity():
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photo_backup_destinations as d
+    import pytest
+    p = d.placement(d.CURRENT_DESTINATION_ID, "secondary", "photo-" + "a" * 20, "f" * 64)
+    assert p["prefix"] == "PocketLab/Devices/secondary"
+    assert p["destination_id"] == d.CURRENT_DESTINATION_ID
+    for node in ("../../victim", "other/path", "bad?name", ""):
+        with pytest.raises(ValueError, match="invalid_node_id"):
+            d.placement(d.CURRENT_DESTINATION_ID, node, "photo-" + "a" * 20, "f" * 64)
+    with pytest.raises(ValueError, match="destination_identity_unavailable"):
+        d.placement(d.CURRENT_DESTINATION_ID, "secondary", "photo-" + "a" * 20, "wrong")
+
+
+def test_p4_immutable_placement_survives_retry_and_blocks_volume_change(monkeypatch):
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photo_backup as backup
+    import pytest
+    snapshot = {"schema_version": 1, "jobs": {
+        "photo-" + "a" * 20: {"backup_id": "photo-" + "a" * 20,
+                             "node_id": "secondary",
+                             "destination_id": "server-photoprism-originals"}},
+        "latest_by_node": {"secondary": "photo-" + "a" * 20},
+        "placements": {}}
+    monkeypatch.setattr(backup, "_state", lambda: snapshot)
+    monkeypatch.setattr(backup, "_save_state", lambda _payload: None)
+    monkeypatch.setattr(backup, "_current_volume_fingerprint", lambda: "f" * 64)
+    ident = "photo-" + "a" * 20
+    first = backup._ensure_placement(ident, "secondary")
+    assert first == backup._ensure_placement(ident, "secondary")
+    assert backup._verified_placement(ident, "secondary") == first
+    monkeypatch.setattr(backup, "_current_volume_fingerprint", lambda: "0" * 64)
+    with pytest.raises(ValueError, match="destination_identity_mismatch"):
+        backup._verified_placement(ident, "secondary")
+    with pytest.raises(ValueError, match="placement_identity_mismatch"):
+        backup._verified_placement(ident, "another-node")
