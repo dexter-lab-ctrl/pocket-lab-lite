@@ -107,3 +107,51 @@ admission lock; this change does not introduce a multi-process quota scheduler.
 No tests, builds, CI inspection or live device qualification were performed.
 Full runtime correctness and the exact device-volume behavior remain
 **unvalidated**.
+
+
+## P1 — Termux rclone repair lifecycle (source implementation; unvalidated)
+
+Photo backup tool repair remains a backend-authorized `media.backup.tools.repair`
+command delivered over NATS/JetStream to the enrolled node agent. Only the
+agent invokes the fixed `pkg install -y rclone` argument vector, and only
+when the node identifies as Termux through its package manager and
+`PREFIX`. It never runs a user-provided command, emits installer stdout or
+stderr, or places credentials in a browser.
+
+The agent holds an exclusive nonblocking private `flock` during repair:
+a duplicate returns `already_running` instead of launching another package
+manager. A 300-second bounded command classifies installer timeout and exit
+failures. Successful process exit alone is insufficient; the agent checks
+that rclone is available and returns a verified `rclone ...` version string.
+
+The private atomically-replaced mode-0600 checkpoint records only
+`schema_version`, `status`, an enumerated `reason_code`,
+a sanitized command identifier and timestamps. Transitions:
+`installing -> verifying -> completed`, or `failed`; attempts on
+unsupported platforms return `unsupported_platform`.
+If the agent is restarted during an active phase and later obtains the
+exclusive lock, it reconciles that abandoned phase to `interrupted`
+before attempting repair again. The checkpoint is diagnostic history:
+the current rclone binary availability is probed independently.
+
+Progress phases are published through sanitized
+`fleet.node_command_progress` events; final command outcome continues
+through `fleet.node_command_result`, followed by refreshed agent
+capabilities. The Devices panel projects the most recent reported tool
+repair state, polls more frequently while reported active, and disables
+duplicate repair controls. Offline/dropped progress events must not be
+interpreted as evidence of success.
+
+### P1 restrictions and qualification
+
+No arbitrary command arguments, remote scripts, apt/curl piping, raw
+exception details, credential output, or browser-side shell execution.
+Fixed installations can change package-manager state only on the secondary
+Termux device through the existing agent execution boundary.
+
+Tests were **added but not executed**, including fixed installer command,
+post-install verification failure, interrupted checkpoint reconciliation,
+and sanitized repair-state projection. Android/Termux package-repository
+failure, PM2 recovery, event delivery, actual install, NATS disconnect,
+and restart behavior remain **unvalidated**. GitHub Actions were not
+inspected or monitored, and the PR remains draft.
