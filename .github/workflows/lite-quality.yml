@@ -52,6 +52,14 @@ jobs:
           printf '%s  %s\n' '6cbac67107e69c9e5a352d6f1555027f9da6a6b3fa81cceafefa9598b4451512' "$RUNNER_TEMP/pocketlab-nats/$nats_archive" | sha256sum --check --status
           tar -xzf "$RUNNER_TEMP/pocketlab-nats/$nats_archive" -C "$RUNNER_TEMP/pocketlab-nats"
           echo "$RUNNER_TEMP/pocketlab-nats/nats-server-v${nats_version}-linux-amd64" >> "$GITHUB_PATH"
+      - name: Install and verify pinned isolated OPA policy evaluator
+        run: |
+          opa_version='1.19.0'
+          opa_path="$RUNNER_TEMP/opa"
+          curl --fail --silent --show-error --location "https://github.com/open-policy-agent/opa/releases/download/v${opa_version}/opa_linux_amd64" --output "$opa_path"
+          printf '%s  %s\n' '4ae5eeec241c9f5df7c5f566fe96e26336ce186f8c773c46ffdf10b48189a520' "$opa_path" | sha256sum --check --status
+          chmod 0755 "$opa_path"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
       - name: Run full isolated candidate qualification
         run: task lite:photo-backup:candidate:full CANDIDATE_SHA="$CANDIDATE_SHA"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

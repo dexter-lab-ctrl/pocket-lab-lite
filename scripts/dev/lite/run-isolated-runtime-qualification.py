@@ -353,6 +353,66 @@ class DisposableNats:
         return self.process.stop() if self.process is not None else True
 
 
+class DisposableOpa:
+    """Run the candidate's repository-owned policy on an isolated loopback port."""
+
+    def __init__(self, *, paths: RunPaths, run_id: str, policy_source: Path, binary: str | None = None):
+        self.paths = paths
+        self.run_id = run_id
+        self.binary = binary or shutil.which("opa")
+        self.port = _port()
+        self.policy_source = policy_source
+        self.policy_root = paths.root / "opa" / "active"
+        self.policy_path = self.policy_root / "pocketlab.rego"
+        self.revision_path = self.policy_root / "revision.txt"
+        self.process: OwnedProcess | None = None
+
+    @property
+    def env(self) -> dict[str, str]:
+        return {
+            "POCKETLAB_OPA_URL": f"http://127.0.0.1:{self.port}",
+            "POCKETLAB_OPA_ACTIVE_POLICY_DIR": str(self.policy_root),
+            "POCKETLAB_OPA_BIN": self.binary or "",
+        }
+
+    def _prepare_policy(self) -> None:
+        if not self.binary:
+            raise QualificationError("opa is unavailable; no production policy endpoint fallback is permitted")
+        if not self.policy_source.is_file() or self.policy_source.is_symlink():
+            raise QualificationError("candidate policy source is missing or unsafe")
+        self.policy_root.mkdir(mode=0o700, parents=True, exist_ok=True)
+        shutil.copy2(self.policy_source, self.policy_path)
+        self.policy_path.chmod(0o600)
+        revision = hashlib.sha256(self.policy_path.read_bytes()).hexdigest()[:24]
+        _write_private(self.revision_path, revision + "\n")
+
+    def start(self, *, base_env: dict[str, str]) -> None:
+        self._prepare_policy()
+        child_env = {**base_env, "POCKETLAB_QUALIFICATION_RUN_ID": self.run_id}
+        self.process = OwnedProcess.launch(
+            [self.binary or "opa", "run", "--server", "--addr", f"127.0.0.1:{self.port}", str(self.policy_path)],
+            env=child_env,
+            cwd=self.paths.root,
+            run_id=self.run_id,
+            log=self.paths.logs / "opa.log",
+        )
+        deadline = time.monotonic() + 12
+        while time.monotonic() < deadline:
+            if self.process.process.poll() is not None:
+                raise QualificationError("isolated OPA exited during startup")
+            try:
+                request = urllib.request.Request(f"http://127.0.0.1:{self.port}/health")
+                with urllib.request.urlopen(request, timeout=0.5) as response:
+                    if int(response.status) == 200:
+                        return
+            except (urllib.error.URLError, TimeoutError, OSError):
+                time.sleep(0.15)
+        raise QualificationError("isolated OPA readiness timed out")
+
+    def stop(self) -> bool:
+        return self.process.stop() if self.process is not None else True
+
+
 def _create_certificates(paths: RunPaths) -> tuple[Path, Path, Path]:
     ca_key = ed25519.Ed25519PrivateKey.generate()
     ca_name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "Pocket Lab qualification test CA")])
@@ -491,7 +551,7 @@ def _candidate_sha(repo: Path, value: str) -> str:
 
 
 class QualificationRun:
-    def __init__(self, *, repo: Path, candidate_sha: str, python: str, nats_binary: str | None, evidence_dir: Path | None):
+    def __init__(self, *, repo: Path, candidate_sha: str, python: str, nats_binary: str | None, opa_binary: str | None, evidence_dir: Path | None):
         self.repo = repo
         self.candidate_sha = _candidate_sha(repo, candidate_sha)
         # Preserve the venv launcher itself.  Resolving its symlink can move
@@ -499,6 +559,7 @@ class QualificationRun:
         # nats-py, and cryptography from the qualification environment.
         self.python = str(Path(python).absolute())
         self.nats_binary = nats_binary
+        self.opa_binary = opa_binary
         if not Path(self.python).is_file():
             raise QualificationError("qualification Python interpreter is unavailable")
         self.run_id = uuid.uuid4().hex[:24]
@@ -529,6 +590,7 @@ class QualificationRun:
         self.agent_pid: int | None = None
         self.ca_path, self.cert_path, self.key_path = _create_certificates(self.paths)
         self.nats: DisposableNats | None = None
+        self.opa: DisposableOpa | None = None
         self.webdav: OwnedProcess | None = None
         self.webdav_port = _port()
         self.api_port = _port()
@@ -543,11 +605,17 @@ class QualificationRun:
         self.harness_public = self.harness_private.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw)
         self.harness_public_key = base64.urlsafe_b64encode(self.harness_public).decode().rstrip("=")
         self.harness_fingerprint = "sha256:" + hashlib.sha256(self.harness_public).hexdigest()
+        self.fleet_private = ed25519.Ed25519PrivateKey.generate()
+        self.fleet_public = self.fleet_private.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw)
+        self.fleet_public_key = base64.urlsafe_b64encode(self.fleet_public).decode().rstrip("=")
+        self.fleet_principal_id = f"qualification-fleet-{self.run_id}"
+        self.provisioning_token = secrets_token(48)
         self.server_node = f"qualification-server-{self.run_id}"
         self.node_id = f"qualification-storage-{self.run_id}"
         self.env: dict[str, str] = {}
         self.agent_env: dict[str, str] = {}
         self.session_token = ""
+        self.fleet_session_token = ""
         self.results: dict[str, Any] = {}
         self.started_at = _now()
         self.worktree_created = False
@@ -615,6 +683,8 @@ class QualificationRun:
             "POCKETLAB_PHOTOPRISM_COMMAND_TIMEOUT_SECONDS": "30",
             "POCKETLAB_HARNESS_BOOTSTRAP_PRINCIPAL_ID": f"qualification-{self.run_id}",
             "POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT": self.harness_fingerprint,
+            "POCKETLAB_HARNESS_PROVISIONING_TOKEN": self.provisioning_token,
+            "POCKETLAB_HARNESS_TARGET_DEVICE_ID": self.node_id,
             "POCKETLAB_API_BIND": "127.0.0.1",
             "POCKETLAB_PM2_HOME": str(self.paths.root / "pm2"),
             "PM2_HOME": str(self.paths.root / "pm2"),
@@ -688,6 +758,23 @@ class QualificationRun:
             self.processes.append(self.nats.process)
         self.env.update(self.nats.env)
         self.agent_env.update(self.nats.env)
+        self.opa = DisposableOpa(
+            paths=self.paths,
+            run_id=self.run_id,
+            policy_source=self.paths.worktree / "security" / "policies" / "opa" / "pocketlab" / "pocketlab.rego",
+            binary=self.opa_binary,
+        )
+        self.opa.start(base_env=self.env)
+        if self.opa.process is not None:
+            self.processes.append(self.opa.process)
+        self.env.update(self.opa.env)
+        self.agent_env.update(self.opa.env)
+        self.results["isolated_opa_policy"] = {
+            "status": "PASS",
+            "transport": "loopback_http",
+            "candidate_policy_source": "verified_candidate_worktree",
+            "production_opa_used": False,
+        }
         fixture_env = dict(self.env)
         fixture_env.update({
             "QUALIFICATION_WEBDAV_USER": self.webdav_user,
@@ -801,10 +888,23 @@ class QualificationRun:
             reason = str(getattr(exc, "reason", "") or "").replace("\n", " ")[:120]
             raise QualificationError(f"endpoint unavailable: {type(exc).__name__}:{reason}") from exc
 
-    def _api_request(self, path: str, *, method: str = "GET", payload: dict[str, Any] | None = None, auth: bool = True) -> tuple[int, dict[str, Any]]:
+    def _api_request(
+        self,
+        path: str,
+        *,
+        method: str = "GET",
+        payload: dict[str, Any] | None = None,
+        auth: bool = True,
+        session_token: str | None = None,
+        extra_headers: dict[str, str] | None = None,
+    ) -> tuple[int, dict[str, Any]]:
         headers: dict[str, str] = {"Cache-Control": "no-store"}
-        if auth and self.session_token:
-            headers["X-Pocket-Lab-Harness-Session"] = self.session_token
+        if auth:
+            token = self.session_token if session_token is None else session_token
+            if token:
+                headers["X-Pocket-Lab-Harness-Session"] = token
+        if extra_headers:
+            headers.update(extra_headers)
         return self._request(self.api_origin + path, method=method, payload=payload, headers=headers, context=self._ssl())
 
     def _fixture_request(self, method: str, path: str, *, control: bool = False, payload: dict[str, Any] | None = None) -> tuple[int, dict[str, Any]]:
@@ -858,6 +958,110 @@ class QualificationRun:
             "destructive": False,
             "credential_values_excluded": True,
         }
+
+    def _provisioning_headers(self) -> dict[str, str]:
+        return {
+            "X-Pocket-Lab-Harness-Provisioning": "1",
+            "X-Pocket-Lab-Harness-Provisioning-Token": self.provisioning_token,
+        }
+
+    def _establish_fleet_role_session(self) -> None:
+        status, _ = self._api_request(
+            "/api/lite/harness/principals",
+            method="POST",
+            payload={
+                "principal_id": self.fleet_principal_id,
+                "display_name": "Isolated qualification fleet role",
+                "public_key": self.fleet_public_key,
+                "profiles": ["fleet-role-qualifier"],
+                "algorithm": "ed25519",
+                "expires_in_seconds": 600,
+            },
+            auth=False,
+            extra_headers=self._provisioning_headers(),
+        )
+        if status != 201:
+            raise QualificationError("fleet-role synthetic principal registration was rejected")
+        status, challenge = self._api_request(
+            "/api/lite/harness/challenge",
+            method="POST",
+            payload={
+                "principal_id": self.fleet_principal_id,
+                "purpose": "fleet.role_change",
+                "profile": "fleet-role-qualifier",
+                "target_scope": "local_server_host_only",
+                "target_device_id": self.node_id,
+                "ttl_seconds": 120,
+            },
+            auth=False,
+        )
+        if status != 200:
+            raise QualificationError("fleet-role synthetic challenge was rejected")
+        signing_payload = str(challenge.get("signing_payload") or "")
+        if not signing_payload:
+            raise QualificationError("fleet-role synthetic challenge was empty")
+        signature = base64.urlsafe_b64encode(self.fleet_private.sign(signing_payload.encode())).decode().rstrip("=")
+        status, session = self._api_request(
+            "/api/lite/harness/session",
+            method="POST",
+            payload={
+                "challenge_id": challenge.get("challenge_id"),
+                "signing_payload": signing_payload,
+                "signature": signature,
+                "principal_id": self.fleet_principal_id,
+                "profile": "fleet-role-qualifier",
+                "ttl_seconds": 120,
+            },
+            auth=False,
+        )
+        if status != 201 or not session.get("session_token"):
+            raise QualificationError("fleet-role synthetic session was not established")
+        self.fleet_session_token = str(session["session_token"])
+
+    def _assign_storage_role(self) -> None:
+        self._establish_fleet_role_session()
+        status, payload = self._api_request(
+            f"/api/lite/fleet/devices/{self.node_id}/roles",
+            method="PUT",
+            payload={
+                "device_roles": ["storage"],
+                "confirm": True,
+                "expected_generation": 0,
+                "reason": "Isolated candidate qualification setup",
+            },
+            session_token=self.fleet_session_token,
+        )
+        if status != 202:
+            reason = payload.get("reason_code") or payload.get("message") or payload.get("detail") or "unreported"
+            if isinstance(reason, dict):
+                reason = reason.get("reason_code") or reason.get("message") or "structured_error"
+            raise QualificationError(f"server-owned qualification role assignment was rejected: status={status} reason={str(reason)[:160]}")
+        deadline = time.monotonic() + 40
+        last: dict[str, Any] = {}
+        while time.monotonic() < deadline:
+            status, state = self._api_request(
+                f"/api/lite/fleet/devices/{self.node_id}/roles",
+                session_token=self.fleet_session_token,
+            )
+            last = state
+            active = {str(item) for item in state.get("active_device_roles") or [] if item}
+            if status == 200 and str(state.get("status") or "").lower() == "active" and "storage" in active:
+                self.results["fleet_role_authorization"] = {
+                    "status": "PASS",
+                    "profile": "fleet-role-qualifier",
+                    "server_owned_assignment": True,
+                    "observed_active_role": "storage",
+                }
+                return
+            time.sleep(0.5)
+        raise QualificationError(
+            "server-owned qualification role assignment did not converge: "
+            + json.dumps({
+                "status": str(last.get("status") or "")[:32],
+                "desired": [str(item)[:32] for item in (last.get("desired_device_roles") or []) if item][:4],
+                "active": [str(item)[:32] for item in (last.get("active_device_roles") or []) if item][:4],
+            }, separators=(",", ":"))
+        )
 
     def _wait_agent(self, timeout: float = 50.0) -> dict[str, Any]:
         deadline = time.monotonic() + timeout
@@ -1178,6 +1382,7 @@ class QualificationRun:
             "worker": self.worker.sha_provenance(self.paths.worktree) if self.worker else {"running": False},
             "supervisor": self.supervisor.sha_provenance(self.paths.worktree) if self.supervisor else {"running": False},
             "node_agent": self._agent_sha_provenance(),
+            "opa": self.opa.process.sha_provenance(self.paths.worktree) if self.opa and self.opa.process else {"running": False, "owned": False},
         }
         manifest = {
             "schema_version": 1,
@@ -1189,10 +1394,10 @@ class QualificationRun:
             "finished_at": _now(),
             "status": status,
             "host_platform": {"system": sys.platform, "architecture": os.uname().machine if hasattr(os, "uname") else "unknown"},
-            "component_versions": {"python": sys.version.split()[0], "nats_server": "isolated_process", "webdav": "isolated_https_fixture"},
+            "component_versions": {"python": sys.version.split()[0], "opa": "isolated_process", "nats_server": "isolated_process", "webdav": "isolated_https_fixture"},
             "candidate_components": {name: self.candidate_sha for name in ("fastapi", "worker", "node_agent", "supervisor")},
             "process_provenance": process_provenance,
-            "endpoint_classes": {"api": "https_loopback", "nats": "nats_loopback", "webdav": "https_loopback"},
+            "endpoint_classes": {"api": "https_loopback", "opa": "http_loopback", "nats": "nats_loopback", "webdav": "https_loopback"},
             "isolation_preflight": {
                 "filesystem_root_bound": _safe_under(self.paths.destination, self.paths.root),
                 "destination_not_production": True,
@@ -1226,7 +1431,25 @@ class QualificationRun:
         return path
 
     def cleanup(self) -> dict[str, bool]:
-        results = {"owned_processes_stopped": True, "worktree_removed": True, "temporary_root_removed": False}
+        results = {
+            "owned_processes_stopped": True,
+            "synthetic_principals_revoked": True,
+            "worktree_removed": True,
+            "temporary_root_removed": False,
+        }
+        if self.api is not None and self.api.process.poll() is None:
+            for principal_id in (f"qualification-{self.run_id}", self.fleet_principal_id):
+                try:
+                    status, _ = self._api_request(
+                        f"/api/lite/harness/principals/{principal_id}/revoke",
+                        method="POST",
+                        auth=False,
+                        extra_headers=self._provisioning_headers(),
+                    )
+                    if status not in {200, 204}:
+                        results["synthetic_principals_revoked"] = False
+                except Exception:
+                    results["synthetic_principals_revoked"] = False
         # Stop the supervisor first so it cannot recreate the agent while the
         # run is being dismantled.  Every process has already been identity
         # checked by OwnedProcess; no broad process-name command is used.
@@ -1291,6 +1514,8 @@ class QualificationRun:
             self.start_services(self.nats_binary)
             self._bootstrap()
             agent = self._wait_agent()
+            self._assign_storage_role()
+            agent = self._wait_agent(timeout=35)
             self.results["exact_candidate_runtime"] = {"status": "PASS", "api": self.candidate_sha, "worker": self.candidate_sha, "node_agent": self.candidate_sha, "supervisor": self.candidate_sha}
             observed_capabilities = agent.get("advertised_capabilities") or agent.get("capabilities") or []
             self.results["isolated_node_agent"] = {
@@ -1436,6 +1661,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--candidate-sha", required=True)
     parser.add_argument("--python", default=sys.executable)
     parser.add_argument("--nats-server-bin", default=None)
+    parser.add_argument("--opa-bin", default=None)
     parser.add_argument("--evidence-dir", type=Path, default=None)
     parser.add_argument("--android-read-only", action="store_true")
     args = parser.parse_args(argv)
@@ -1445,7 +1671,14 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0 if result.get("status") == "PASS" else 2
     try:
-        run = QualificationRun(repo=repo, candidate_sha=args.candidate_sha, python=args.python, nats_binary=args.nats_server_bin, evidence_dir=args.evidence_dir)
+        run = QualificationRun(
+            repo=repo,
+            candidate_sha=args.candidate_sha,
+            python=args.python,
+            nats_binary=args.nats_server_bin,
+            opa_binary=args.opa_bin,
+            evidence_dir=args.evidence_dir,
+        )
         status, manifest = run.run()
         print(json.dumps({"status": status, "candidate_sha": run.candidate_sha, "run_id": run.run_id, "manifest": str(manifest) if manifest else None}, indent=2, sort_keys=True))
         return 0 if status == "PASS" else 1
