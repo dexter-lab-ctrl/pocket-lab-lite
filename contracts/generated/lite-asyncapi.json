@@ -543,7 +543,7 @@
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1673",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:36"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:42"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -559,7 +559,7 @@
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1674",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:37"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:43"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -575,7 +575,7 @@
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1672",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:35"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:41"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -687,7 +687,7 @@
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3047",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3081",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1404",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605"
       ],
@@ -756,7 +756,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1685"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1727"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1371,7 +1371,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3060"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3094"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1439,7 +1439,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1656"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1698"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1574,8 +1574,8 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1017",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1684",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1059",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1726",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:754"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -1751,7 +1751,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:361"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:391"
       ],
       "x-pocketlab-stream": "incomplete"
     },

@@ -5197,6 +5197,86 @@
     },
     {
       "aliases": [],
+      "audience": "developer/operator",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/run-isolated-runtime-qualification.py --android-read-only --candidate-sha \"{{.CANDIDATE_SHA}}\""
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:photo-backup:candidate:android-preflight",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/run-isolated-runtime-qualification.py"
+      ],
+      "name": "lite:photo-backup:candidate:android-preflight",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Capture a read-only, fail-closed Android qualification preflight; never starts candidate code",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Recovery-diagnostics loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} scripts/dev/lite/run-photo-backup-candidate-qualification.py --full --candidate-sha \"{{.CANDIDATE_SHA}}\""
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:photo-backup:candidate:full",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
+      ],
+      "name": "lite:photo-backup:candidate:full",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run the full exact-SHA disposable API, worker, NATS/JetStream, node-agent, supervisor and HTTPS WebDAV qualification lane",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Recovery-diagnostics loop"
+    },
+    {
+      "aliases": [],
       "audience": "developer",
       "captures_runtime": false,
       "commands": [

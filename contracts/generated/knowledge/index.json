@@ -21072,7 +21072,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1673",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:36"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:42"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21092,7 +21092,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1674",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:37"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:43"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21112,7 +21112,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1672",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:35"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:41"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21242,7 +21242,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3047",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3081",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1404",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605"
       ],
@@ -21329,7 +21329,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1685"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1727"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22084,7 +22084,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3060"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3094"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22168,7 +22168,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1656"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1698"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22335,8 +22335,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1017",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1684",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1059",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1726",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:754"
       ],
       "stream": "incomplete",
@@ -22552,7 +22552,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:361"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:391"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -28031,6 +28031,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_isolated_qualification_lane.py",
+      "name": "tests/backend/test_lite_isolated_qualification_lane.py",
+      "source_refs": [
+        "tests/backend/test_lite_isolated_qualification_lane.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_long_gate_android_resume.py",
       "name": "tests/backend/test_lite_long_gate_android_resume.py",
       "source_refs": [
@@ -33010,6 +33020,7 @@
         "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
         "test:tests/backend/test_lite_identity_rules_ui_projection.py",
         "test:tests/backend/test_lite_idle_efficiency_runtime.py",
+        "test:tests/backend/test_lite_isolated_qualification_lane.py",
         "test:tests/backend/test_lite_long_gate_android_resume.py",
         "test:tests/backend/test_lite_long_gate_checkpointing.py",
         "test:tests/backend/test_lite_long_gate_framework.py",
@@ -34445,6 +34456,7 @@
         "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
         "test:tests/backend/test_lite_identity_rules_ui_projection.py",
         "test:tests/backend/test_lite_idle_efficiency_runtime.py",
+        "test:tests/backend/test_lite_isolated_qualification_lane.py",
         "test:tests/backend/test_lite_long_gate_android_resume.py",
         "test:tests/backend/test_lite_long_gate_checkpointing.py",
         "test:tests/backend/test_lite_long_gate_framework.py",
@@ -45756,6 +45768,12 @@
       "test:tests/backend/test_lite_idle_efficiency_runtime.py": [
         {
           "source": "reason:shutdown",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_isolated_qualification_lane.py": [
+        {
+          "source": "reason:disabled",
           "type": "verified_by"
         }
       ],
@@ -65165,6 +65183,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_isolated_qualification_lane.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_long_gate_submission_recovery.py",
           "type": "verified_by"
         },
@@ -71516,6 +71538,15 @@
       "id": "rel:10a9c148ecb6951e",
       "source": "requirement:architecture-09",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_isolated_qualification_lane.py"
+      ],
+      "id": "rel:10af4484ddc26564",
+      "source": "reason:disabled",
+      "target": "test:tests/backend/test_lite_isolated_qualification_lane.py",
       "type": "verified_by"
     },
     {
@@ -80579,7 +80610,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:361"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:391"
       ],
       "id": "rel:4eb33eb8264509ea",
       "source": "component:agent-supervisor",
@@ -87305,7 +87336,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:361"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:391"
       ],
       "id": "rel:80315fb6ef5d20bf",
       "source": "component:agent-recovery",
@@ -104363,9 +104394,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "f01a28305a36878a57be78c2b8431b3c3a593de180d65c93caef7d08b3113112",
+  "source_fingerprint": "fb26e3d524dae056c15aa23ee245cc0c80df76522b2b9bb3eeb3036b22ba6231",
   "statistics": {
-    "entity_count": 1354,
+    "entity_count": 1355,
     "entity_type_counts": {
       "adr": 6,
       "api": 228,
@@ -104382,14 +104413,14 @@
       "runtime-topology": 9,
       "subject": 220,
       "table": 81,
-      "test": 256,
+      "test": 257,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3872,
-    "source_count": 293
+    "relation_count": 3873,
+    "source_count": 294
   }
 }

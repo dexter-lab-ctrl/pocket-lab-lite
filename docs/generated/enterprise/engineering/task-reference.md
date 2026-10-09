@@ -21,7 +21,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 | Runtime-evidence loop | 34 |
 | Security-analysis loop | 34 |
 | Release loop | 19 |
-| Recovery-diagnostics loop | 13 |
+| Recovery-diagnostics loop | 15 |
 
 ## `default`
 
@@ -4355,6 +4355,74 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:photo-backup:candidate`
+
+## `lite:photo-backup:candidate:android-preflight`
+
+**Purpose:** Capture a read-only, fail-closed Android qualification preflight; never starts candidate code
+
+**Audience:** developer/operator
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/run-isolated-runtime-qualification.py --android-read-only --candidate-sha "{{.CANDIDATE_SHA}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/run-isolated-runtime-qualification.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:photo-backup:candidate:android-preflight`
+
+## `lite:photo-backup:candidate:full`
+
+**Purpose:** Run the full exact-SHA disposable API, worker, NATS/JetStream, node-agent, supervisor and HTTPS WebDAV qualification lane
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/run-photo-backup-candidate-qualification.py --full --candidate-sha "{{.CANDIDATE_SHA}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/run-photo-backup-candidate-qualification.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:photo-backup:candidate:full`
 
 ## `lite:photo-backup:mocked`
 

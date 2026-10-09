@@ -11009,6 +11009,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_isolated_qualification_lane.py": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_long_gate_checkpointing.py": [
         {
           "source": "reason:interrupted",
@@ -30415,6 +30421,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_isolated_qualification_lane.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_long_gate_submission_recovery.py",
           "type": "verified_by"
         },
@@ -34491,6 +34501,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "f01a28305a36878a57be78c2b8431b3c3a593de180d65c93caef7d08b3113112"
+    "source_fingerprint": "fb26e3d524dae056c15aa23ee245cc0c80df76522b2b9bb3eeb3036b22ba6231"
   }
 }

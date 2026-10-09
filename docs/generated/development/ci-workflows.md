@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: b2fe2db5d9f6d4cea9ed4160808bb9a008e44a817ceb3a031b1f10355f5403e2
+source_fingerprint: 95bc3fcbdd6e364b0728a8e040bbafc8f3f3721316cf3a47c41d16d644005bfb
 schema_revision: 1
 validation_status: generated
 ---
@@ -30,5 +30,6 @@ CI uses the Lite task surface rather than reintroducing full-product workflows.
 - `lite-quality.yml: task lite:parity:backend`
 - `lite-quality.yml: task lite:parity:contracts:check`
 - `lite-quality.yml: task lite:parity:selectors`
+- `lite-quality.yml: task lite:photo-backup:candidate:full`
 - `lite-quality.yml: task lite:test:docs`
 - `lite-quality.yml: task lite:test:storybook`
