@@ -689,7 +689,14 @@ class QualificationRun:
                 return
             except Exception:
                 time.sleep(0.15)
-        raise QualificationError("isolated HTTPS WebDAV fixture did not become ready")
+        poll = self.webdav.process.poll() if self.webdav is not None else None
+        tail = ""
+        if self.webdav is not None:
+            try:
+                tail = " ".join(self.webdav.log.read_text(encoding="utf-8", errors="replace").splitlines()[-8:])
+            except OSError:
+                pass
+        raise QualificationError(f"isolated HTTPS WebDAV fixture did not become ready; exit={poll}; log={tail[-1600:]}")
 
     def _ssl(self) -> ssl.SSLContext:
         return ssl.create_default_context(cafile=str(self.ca_path))
