@@ -39,18 +39,20 @@ export default function DevicePhotoBackup({ deviceId }) {
     staleTime: 15_000,
     refetchInterval: (queryState) => {
       const status = queryState?.state?.data?.latest_backup?.status;
-      return isLive(status) ? 5_000 : 30_000;
+      return isLive(status) || ['installing', 'verifying'].includes(queryState?.state?.data?.tool_repair?.status) ? 5_000 : 30_000;
     },
     refetchOnWindowFocus: false,
   });
 
   const data = query.data || {};
   const latest = data.latest_backup || {};
+  const toolRepair = data.tool_repair || {};
+  const repairing = ['installing', 'verifying'].includes(toolRepair.status);
   const live = isLive(latest.status);
   const progress = latest.progress || {};
   const blockers = Array.isArray(data.blockers) ? data.blockers : [];
   const canStart = Boolean(data.backup_admissible ?? data.ready) && Boolean(selected.length && !live && !actionState.busy);
-  const canRepair = blockers.includes('rclone_unavailable') && !actionState.busy;
+  const canRepair = blockers.includes('rclone_unavailable') && !repairing && !actionState.busy;
 
   async function run(action) {
     setActionState({ busy: true, error: '' });
@@ -81,6 +83,13 @@ export default function DevicePhotoBackup({ deviceId }) {
         </div>
       </div>
 
+      {toolRepair.status && !['unknown', 'not_requested'].includes(toolRepair.status) ? (
+        <p className="lite-device-photo-backup-note" role="status" aria-live="polite">
+          Photo backup tools: {repairing ? 'repair in progress' : toolRepair.status.replaceAll('_', ' ')}.
+          {toolRepair.reason_code ? ` Reason: ${toolRepair.reason_code.replaceAll('_', ' ')}.` : ''}
+          {repairing ? ' You can continue using the device while Pocket Lab checks the tools.' : ''}
+        </p>
+      ) : null}
       {latest.summary && !live ? (
         <p className="lite-device-photo-backup-note" role="status">
           Previous backup: {latest.summary}
@@ -195,7 +204,7 @@ export default function DevicePhotoBackup({ deviceId }) {
 
       <div className="lite-device-photo-backup-actions">
         {canRepair ? (
-          <LiteButton tone="secondary" disabled={actionState.busy} onClick={() => run('repair')}>
+          <LiteButton tone="secondary" disabled={actionState.busy || repairing} onClick={() => run('repair')}>
             <RefreshCw className="h-4 w-4" />
             Repair photo backup
           </LiteButton>
