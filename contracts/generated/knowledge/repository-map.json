@@ -830,6 +830,7 @@
         "reason:connection_failed",
         "reason:credential_expired",
         "reason:credential_identity_mismatch",
+        "reason:credential_revocation_pending",
         "reason:csrf_required",
         "reason:deferred_resource_pressure",
         "reason:destination_identity_mismatch",
@@ -957,6 +958,7 @@
         "reason:passkey_verified",
         "reason:passkey_wrong_owner",
         "reason:payload_too_large",
+        "reason:placement_identity_mismatch",
         "reason:pm2_inventory_failed",
         "reason:pm2_inventory_invalid",
         "reason:pm2_unavailable",
@@ -1036,6 +1038,7 @@
         "reason:trusted_local_admin",
         "reason:unregistered_domain",
         "reason:unsafe_live_media_import",
+        "reason:unsupported_destination",
         "reason:version_not_reported",
         "reason:webauthn_algorithm_unsupported",
         "reason:webauthn_assertion_invalid",
@@ -1183,6 +1186,7 @@
         "reason:connection_failed",
         "reason:credential_expired",
         "reason:credential_identity_mismatch",
+        "reason:credential_revocation_pending",
         "reason:csrf_required",
         "reason:deferred_resource_pressure",
         "reason:destination_identity_mismatch",
@@ -1310,6 +1314,7 @@
         "reason:passkey_verified",
         "reason:passkey_wrong_owner",
         "reason:payload_too_large",
+        "reason:placement_identity_mismatch",
         "reason:pm2_inventory_failed",
         "reason:pm2_inventory_invalid",
         "reason:pm2_unavailable",
@@ -1389,6 +1394,7 @@
         "reason:trusted_local_admin",
         "reason:unregistered_domain",
         "reason:unsafe_live_media_import",
+        "reason:unsupported_destination",
         "reason:version_not_reported",
         "reason:webauthn_algorithm_unsupported",
         "reason:webauthn_assertion_invalid",
@@ -4346,6 +4352,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "c8d20845857a277ddd3086fc223c8e751a9e77ba6ff7b4a130b06a976ab6eb1e"
+    "source_fingerprint": "f01a28305a36878a57be78c2b8431b3c3a593de180d65c93caef7d08b3113112"
   }
 }

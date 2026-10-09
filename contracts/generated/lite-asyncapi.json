@@ -170,7 +170,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:877",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:878",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:72",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1653",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1004"
@@ -687,7 +687,7 @@
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2716",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3047",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1404",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605"
       ],
@@ -724,7 +724,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:683"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:684"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -788,7 +788,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:574"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:575"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1371,7 +1371,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2729"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3060"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1628,8 +1628,8 @@
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:296",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:591",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:691"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:592",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:692"
       ],
       "x-pocketlab-stream": "incomplete"
     },

@@ -3265,7 +3265,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "91e5d14eb5a288a2bb3747d358f6fb27e36ed4f54d89f2eb7121d36ff0acd6c5",
+    "aggregate_fingerprint": "41a0e080cfad82545890e9453794cc5a8a61c2b85bb9df34269b8eb9b724d430",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3276,7 +3276,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/generated/lite-openapi.json": "324a72a7a5b784ff42518e96913f9a96fd4f8f59e84e3095c23259652cf51769",
-      "contracts/metadata/documentation-platform.json": "cc6de54241fb6ec07c591349fbb0e1e26204637c8792b73b79a2819ed63e9d67",
+      "contracts/metadata/documentation-platform.json": "e9cf8fe1dc439b827595e853f9907804e79b7787446b56af98128fbc541d34e2",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4",
       "src/lib/liteApi.js": "f1b52dcdcfd481345813641edc286ff5f236aaaa2761c42abf715f5676bdf871",
@@ -3285,7 +3285,7 @@
       "src/lite/LiteCatalog.jsx": "8e58b8d66a504532ae3a8f97a63b4cb5b058e172f11c167bb11c2484e02e4902",
       "src/lite/LiteCatalog.stories.jsx": "d15cc614846f6c01c5e3d577fe5e747919ae4de80ec8189341a2ed13dac80c05",
       "src/lite/LiteDevices.jsx": "6629b068100aba5832942de0bde7b16bb1e41b254caeff676fd4aef6d1d0e544",
-      "src/lite/LiteDevices.stories.jsx": "aa2c38e436205f2577770f8904f7f0f4668aa6cbcd0592174a1c3802f4554645",
+      "src/lite/LiteDevices.stories.jsx": "a7a5332db1f1b64a1da6beedbd30891ac3ad83c123dadb749ee909e8d5236d33",
       "src/lite/LiteHelp.jsx": "06af915a9e7f9781ac852804a5d7ab40f5a061c12c8b80b3c888b11b94167a4c",
       "src/lite/LiteHome.jsx": "1ed94498ccc68eeaf1ee8fd3ea437b5be55eadf34a1b3a4441edd32f3ca260a4",
       "src/lite/LiteHome.stories.jsx": "8a8cd6bcf833ad98d7140a1e7b6a82bb93419a848fb139d16037418ac61f8966",
@@ -3315,7 +3315,7 @@
       "src/lite/LiteUi.test.jsx": "d09ad1e06cf21773a1d8ed93dc8071ef7516d872ebd3e3f44eafed0644ee8c50",
       "src/lite/LiteUx.jsx": "a915f121a438003fb3af973b7087f7e1d3f108e1ceaa30ad2ab0de02c5f6d6e3",
       "src/lite/LiteUx.stories.jsx": "a45605c9460b371143058035f733beab232d1374d4fa4eb77a9c4b3704843e5f",
-      "src/mocks/handlers.js": "148faa8efb4ecae5be48d7736c6248ba65b8b1a6cbf700ddd37ac42c66aeebb0"
+      "src/mocks/handlers.js": "f87041013b19fa868aea59fa4d9e4ffaa276be3e7cff0858442743f1f24d646d"
     },
     "validation_state": "generated"
   }

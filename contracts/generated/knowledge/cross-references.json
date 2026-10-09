@@ -3633,6 +3633,12 @@
           "type": "owns"
         }
       ],
+      "reason:credential_revocation_pending": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
       "reason:csrf_required": [
         {
           "source": "domain:identity",
@@ -4395,6 +4401,12 @@
           "type": "owns"
         }
       ],
+      "reason:placement_identity_mismatch": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
       "reason:pm2_inventory_failed": [
         {
           "source": "domain:validation",
@@ -4864,6 +4876,12 @@
         }
       ],
       "reason:unsafe_live_media_import": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "reason:unsupported_destination": [
         {
           "source": "domain:apps",
           "type": "owns"
@@ -8465,6 +8483,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:credential_revocation_pending",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:csrf_required",
           "type": "verified_by"
         },
@@ -8973,6 +8995,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:placement_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:pm2_inventory_failed",
           "type": "verified_by"
         },
@@ -9286,6 +9312,10 @@
         },
         {
           "source": "reason:unsafe_live_media_import",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:unsupported_destination",
           "type": "verified_by"
         },
         {
@@ -11161,6 +11191,18 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:credential_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:identity_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:interrupted",
           "type": "verified_by"
         },
@@ -11170,6 +11212,10 @@
         },
         {
           "source": "reason:unsafe_live_media_import",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:unsupported_destination",
           "type": "verified_by"
         }
       ],
@@ -11217,11 +11263,19 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:placement_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:storage_reservation_conflict",
           "type": "verified_by"
         },
         {
           "source": "reason:storage_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:unsupported_destination",
           "type": "verified_by"
         }
       ],
@@ -13675,6 +13729,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:credential_revocation_pending",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:csrf_required",
           "type": "verified_by"
         },
@@ -14183,6 +14241,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:placement_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:pm2_inventory_failed",
           "type": "verified_by"
         },
@@ -14496,6 +14558,10 @@
         },
         {
           "source": "reason:unsafe_live_media_import",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:unsupported_destination",
           "type": "verified_by"
         },
         {
@@ -14833,6 +14899,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:credential_revocation_pending",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:csrf_required",
           "type": "verified_by"
         },
@@ -15341,6 +15411,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:placement_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:pm2_inventory_failed",
           "type": "verified_by"
         },
@@ -15657,6 +15731,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:unsupported_destination",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:version_not_reported",
           "type": "verified_by"
         },
@@ -15956,6 +16034,10 @@
       "test:tests/e2e/lite-photo-backup.spec.ts": [
         {
           "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
           "type": "verified_by"
         },
         {
@@ -24267,6 +24349,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:credential_revocation_pending",
+          "type": "owns"
+        },
+        {
           "target": "reason:destination_identity_mismatch",
           "type": "owns"
         },
@@ -24283,11 +24369,19 @@
           "type": "owns"
         },
         {
+          "target": "reason:placement_identity_mismatch",
+          "type": "owns"
+        },
+        {
           "target": "reason:storage_reservation_conflict",
           "type": "owns"
         },
         {
           "target": "reason:unsafe_live_media_import",
+          "type": "owns"
+        },
+        {
+          "target": "reason:unsupported_destination",
           "type": "owns"
         },
         {
@@ -29887,6 +29981,24 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:credential_revocation_pending": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -30307,6 +30419,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
           "type": "verified_by"
         },
@@ -30352,6 +30468,10 @@
         },
         {
           "target": "test:tests/e2e/lite-performance.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-photo-backup.spec.ts",
           "type": "verified_by"
         },
         {
@@ -31116,6 +31236,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
           "type": "verified_by"
         },
         {
@@ -32046,6 +32170,24 @@
         },
         {
           "target": "test:tests/backend/test_lite_workload_admission.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:placement_identity_mismatch": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
           "type": "verified_by"
         },
         {
@@ -33471,6 +33613,28 @@
           "type": "verified_by"
         }
       ],
+      "reason:unsupported_destination": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:version_not_reported": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -34327,6 +34491,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "c8d20845857a277ddd3086fc223c8e751a9e77ba6ff7b4a130b06a976ab6eb1e"
+    "source_fingerprint": "f01a28305a36878a57be78c2b8431b3c3a593de180d65c93caef7d08b3113112"
   }
 }

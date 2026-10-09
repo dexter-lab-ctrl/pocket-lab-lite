@@ -5153,6 +5153,18 @@
     },
     {
       "confidence": "source-derived",
+      "description": "A Photo Backup credential is awaiting bounded revocation before the job can safely continue or finish.",
+      "domain": "apps",
+      "id": "reason:credential_revocation_pending",
+      "name": "credential_revocation_pending",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
       "description": "A human-session write was rejected because its CSRF proof was missing or invalid.",
       "domain": "identity",
       "id": "reason:csrf_required",
@@ -6677,6 +6689,18 @@
     },
     {
       "confidence": "source-derived",
+      "description": "An existing Photo Backup placement does not match the authenticated node, destination, or protected volume binding.",
+      "domain": "apps",
+      "id": "reason:placement_identity_mismatch",
+      "name": "placement_identity_mismatch",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
       "domain": "validation",
       "id": "reason:pm2_inventory_failed",
@@ -7625,6 +7649,18 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The requested Photo Backup destination is not registered as a supported server-owned adapter.",
+      "domain": "apps",
+      "id": "reason:unsupported_destination",
+      "name": "unsupported_destination",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
       "description": "The device has not reported a trustworthy software version for this component, so Pocket Lab keeps the version unknown rather than inventing one.",
       "domain": "devices",
       "id": "reason:version_not_reported",
@@ -8391,7 +8427,7 @@
       "name": "pocketlab.commands.fleet.join",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:877",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:878",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:72",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1653",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1004"
@@ -8796,7 +8832,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2716",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3047",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1404",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605"
       ],
@@ -8823,7 +8859,7 @@
       "name": "pocketlab.commands.node.all.{command.replace",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:683"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:684"
       ],
       "type": "subject"
     },
@@ -8871,7 +8907,7 @@
       "name": "pocketlab.commands.node.{normalized_node_id}.agent.restart",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:574"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:575"
       ],
       "type": "subject"
     },
@@ -9301,7 +9337,7 @@
       "name": "pocketlab.events.fleet",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2729"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3060"
       ],
       "type": "subject"
     },
@@ -9490,8 +9526,8 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:296",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:591",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:691"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:592",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:692"
       ],
       "type": "subject"
     },
@@ -21080,6 +21116,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_photo_backup_reliability.py"
+      ],
+      "id": "rel:17a9e9c53a0174a4",
+      "source": "reason:unsupported_destination",
+      "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:17ae19930a796af5",
@@ -23328,6 +23378,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_photo_backup.py"
+      ],
+      "id": "rel:2204f5d1b851ac80",
+      "source": "reason:identity_mismatch",
+      "target": "test:tests/backend/test_lite_photo_backup.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:220bcbbe810cc5a3",
@@ -24303,6 +24367,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_photo_backup.py"
+      ],
+      "id": "rel:26048d1f6fbbae0c",
+      "source": "reason:unsupported_destination",
+      "target": "test:tests/backend/test_lite_photo_backup.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_documentation_presentation_polish.py"
       ],
       "id": "rel:2608a300790d1c53",
@@ -24434,6 +24512,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-photo-backup.spec.ts"
+      ],
+      "id": "rel:267802cb06a21480",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-photo-backup.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:267a1e2d3c927a95",
@@ -24468,6 +24560,20 @@
       "source": "reason:webauthn_secure_origin_required",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:26a2b5aeaf172f00",
+      "source": "domain:apps",
+      "target": "reason:placement_identity_mismatch",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -26874,6 +26980,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:326c1e07889cc636",
+      "source": "reason:placement_identity_mismatch",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:326ec8984ca80890",
@@ -27477,6 +27597,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:3579f079aa90e8c7",
+      "source": "reason:unsupported_destination",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "src/lite/LiteRules.jsx"
       ],
       "id": "rel:359945fe6c7ae8d9",
@@ -28028,6 +28162,20 @@
       "id": "rel:377a904f33ad0d49",
       "source": "reason:identity_unavailable",
       "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:37939388bfed3625",
+      "source": "reason:credential_revocation_pending",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -30210,6 +30358,20 @@
       ],
       "id": "rel:40ee7899ca157c4b",
       "source": "reason:rollback_unproved",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:40f1ff05945d85f0",
+      "source": "reason:placement_identity_mismatch",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
@@ -35973,6 +36135,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:5ab642652fb5dbc3",
+      "source": "reason:credential_revocation_pending",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:5ac3dc28df431591",
@@ -37726,6 +37902,20 @@
       "source": "component:backup-engine",
       "target": "subject:pocketlab.events.lite.restore.checkpoint_created",
       "type": "publishes"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:6439b7bc7946d544",
+      "source": "reason:placement_identity_mismatch",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -44388,6 +44578,20 @@
       "source": "domain:recovery",
       "target": "api:get:/api/lite/recovery/database/backups/{backup_id}",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_photo_backup_reliability.py"
+      ],
+      "id": "rel:84061aada431be6c",
+      "source": "reason:placement_identity_mismatch",
+      "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -52535,6 +52739,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:ab9bf739d008a26d",
+      "source": "reason:unsupported_destination",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:abab2857d588951b",
@@ -53878,6 +54096,20 @@
       "id": "rel:b25097a4da99efa5",
       "source": "component:sqlite",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:b258d915edc6d258",
+      "source": "reason:unsupported_destination",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -57344,6 +57576,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_photo_backup.py"
+      ],
+      "id": "rel:c4114cd5112a3b8c",
+      "source": "reason:disabled",
+      "target": "test:tests/backend/test_lite_photo_backup.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_device_removal_invite_reconciliation.py"
       ],
       "id": "rel:c414e391b3b6d327",
@@ -60660,6 +60906,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_photo_backup.py"
+      ],
+      "id": "rel:d383ae409e109713",
+      "source": "reason:credential_identity_mismatch",
+      "target": "test:tests/backend/test_lite_photo_backup.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_security_f3_summary_contract.py"
       ],
       "id": "rel:d394399dc21f8775",
@@ -61072,6 +61332,20 @@
       "source": "domain:rules",
       "target": "reason:policy_source_state_changed",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:d56a9d601d65109f",
+      "source": "reason:credential_revocation_pending",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -65318,6 +65592,20 @@
       "source": "component:scanner-adapters",
       "target": "test:tests/backend/test_lite_api.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:e890a0c4d7401868",
+      "source": "domain:apps",
+      "target": "reason:unsupported_destination",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -70037,6 +70325,20 @@
       "id": "rel:ff951a7df3828b61",
       "source": "domain:enterprise",
       "target": "api:get:/api/lite/enterprise/rules/exceptions",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:ffc49647f7fcc854",
+      "source": "domain:apps",
+      "target": "reason:credential_revocation_pending",
       "type": "owns"
     },
     {

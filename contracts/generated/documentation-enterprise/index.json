@@ -30824,7 +30824,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:877",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:878",
           "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:72",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1653",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1004"
@@ -32013,7 +32013,7 @@
         "security_classification": "internal metadata",
         "source_owner": [
           "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2716",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3047",
           "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1404",
           "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605"
         ],
@@ -32090,7 +32090,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:683"
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:684"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -32238,7 +32238,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:574"
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:575"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -33497,7 +33497,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:2729"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3060"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -34062,8 +34062,8 @@
         "security_classification": "internal metadata",
         "source_owner": [
           "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:296",
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:591",
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:691"
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:592",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:692"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -38784,8 +38784,8 @@
           "confirmation_required",
           "credential_expired",
           "credential_identity_mismatch",
-          "deferred_resource_pressure",
-          "destination_identity_mismatch"
+          "credential_revocation_pending",
+          "deferred_resource_pressure"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -38910,8 +38910,8 @@
           "confirmation_required",
           "credential_expired",
           "credential_identity_mismatch",
-          "deferred_resource_pressure",
-          "destination_identity_mismatch"
+          "credential_revocation_pending",
+          "deferred_resource_pressure"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -38972,7 +38972,8 @@
           "device_role_change_identity_mismatch",
           "device_role_change_stale_generation",
           "device_role_not_joinable",
-          "legacy_telemetry_value"
+          "legacy_telemetry_value",
+          "placement_identity_mismatch"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -39089,8 +39090,8 @@
           "confirmation_required",
           "credential_expired",
           "credential_identity_mismatch",
-          "deferred_resource_pressure",
-          "destination_identity_mismatch"
+          "credential_revocation_pending",
+          "deferred_resource_pressure"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -39181,7 +39182,8 @@
           "device_role_change_identity_mismatch",
           "device_role_change_stale_generation",
           "device_role_not_joinable",
-          "legacy_telemetry_value"
+          "legacy_telemetry_value",
+          "placement_identity_mismatch"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -39241,8 +39243,8 @@
           "confirmation_required",
           "credential_expired",
           "credential_identity_mismatch",
-          "deferred_resource_pressure",
-          "destination_identity_mismatch"
+          "credential_revocation_pending",
+          "deferred_resource_pressure"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -39368,8 +39370,8 @@
           "confirmation_required",
           "credential_expired",
           "credential_identity_mismatch",
-          "deferred_resource_pressure",
-          "destination_identity_mismatch"
+          "credential_revocation_pending",
+          "deferred_resource_pressure"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -39510,8 +39512,8 @@
           "confirmation_required",
           "credential_expired",
           "credential_identity_mismatch",
-          "deferred_resource_pressure",
-          "destination_identity_mismatch"
+          "credential_revocation_pending",
+          "deferred_resource_pressure"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -39697,8 +39699,8 @@
           "confirmation_required",
           "credential_expired",
           "credential_identity_mismatch",
-          "deferred_resource_pressure",
-          "destination_identity_mismatch"
+          "credential_revocation_pending",
+          "deferred_resource_pressure"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -47705,10 +47707,10 @@
       "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
-        "asyncapi": "e760f06f4de9936ffc9bf75c04e9e3cea122d4adb4856af86abc2be516530b9d",
-        "documentation": "6751511b1bf98063a9e374f5e7ef5393aa7e5f905e08ec2e037165b8a583cb12",
+        "asyncapi": "96c9c60d39e21146dae789358c0b6b95eec76d8fe7b8b1a6e549fe342dd532b2",
+        "documentation": "1f84479a2823e44df13faa755add1f37ba414e4d93b519bdfcc3e6cf2f076ced",
         "openapi": "324a72a7a5b784ff42518e96913f9a96fd4f8f59e84e3095c23259652cf51769",
-        "operational_health": "67829d8338359e89c1eafbb9cb42425eb62026b80ad9e4b6b4287fd8ead72040"
+        "operational_health": "6a1de5dce4e9c8dc59b6f7c47651b7d01d2d01ae6e31053739c30044927e976d"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -118478,5 +118480,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "f4a260d1b061332eb7f2015cf16160169bc76bd9244402ee0474c8c2bcc5daa1"
+  "source_fingerprint": "2e1970afc760c4483bcb2998eba2be5b66f1f26e5eb39ee8156d9a5fe55324ad"
 }

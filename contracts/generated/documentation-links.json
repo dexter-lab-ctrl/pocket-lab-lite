@@ -2013,6 +2013,10 @@
         "title": "credential_identity_mismatch",
         "url": "../../docs/generated/development/reason-codes.md#credential-identity-mismatch"
       },
+      "reason:credential_revocation_pending": {
+        "title": "credential_revocation_pending",
+        "url": "../../docs/generated/development/reason-codes.md#credential-revocation-pending"
+      },
       "reason:csrf_required": {
         "title": "csrf_required",
         "url": "../../docs/generated/development/reason-codes.md#csrf-required"
@@ -2521,6 +2525,10 @@
         "title": "payload_too_large",
         "url": "../../docs/generated/development/reason-codes.md#payload-too-large"
       },
+      "reason:placement_identity_mismatch": {
+        "title": "placement_identity_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#placement-identity-mismatch"
+      },
       "reason:pm2_inventory_failed": {
         "title": "pm2_inventory_failed",
         "url": "../../docs/generated/development/reason-codes.md#pm2-inventory-failed"
@@ -2836,6 +2844,10 @@
       "reason:unsafe_live_media_import": {
         "title": "unsafe_live_media_import",
         "url": "../../docs/generated/development/reason-codes.md#unsafe-live-media-import"
+      },
+      "reason:unsupported_destination": {
+        "title": "unsupported_destination",
+        "url": "../../docs/generated/development/reason-codes.md#unsupported-destination"
       },
       "reason:version_not_reported": {
         "title": "version_not_reported",
@@ -3385,7 +3397,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "22d0ad40dcf5760873b3570ac38dc4060e6074b62f8eb55e1cdde97c2771d4fc",
+    "aggregate_fingerprint": "652e681238cc52e06a1720c96df6354ad0ecf49a15e1b0c417c5e08f980601bd",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3396,7 +3408,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/generated/lite-openapi.json": "324a72a7a5b784ff42518e96913f9a96fd4f8f59e84e3095c23259652cf51769",
-      "contracts/metadata/documentation-platform.json": "cc6de54241fb6ec07c591349fbb0e1e26204637c8792b73b79a2819ed63e9d67",
+      "contracts/metadata/documentation-platform.json": "e9cf8fe1dc439b827595e853f9907804e79b7787446b56af98128fbc541d34e2",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
