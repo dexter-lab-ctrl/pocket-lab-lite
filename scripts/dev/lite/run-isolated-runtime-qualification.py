@@ -339,6 +339,7 @@ def _create_certificates(paths: RunPaths) -> tuple[Path, Path, Path]:
         .not_valid_after(now + timedelta(days=1))
         .add_extension(x509.BasicConstraints(ca=True, path_length=None), critical=True)
         .add_extension(x509.SubjectKeyIdentifier.from_public_key(ca_key.public_key()), critical=False)
+        .add_extension(x509.AuthorityKeyIdentifier.from_issuer_public_key(ca_key.public_key()), critical=False)
         .sign(ca_key, algorithm=None)
     )
     server_key = ed25519.Ed25519PrivateKey.generate()
@@ -358,6 +359,7 @@ def _create_certificates(paths: RunPaths) -> tuple[Path, Path, Path]:
         .not_valid_after(now + timedelta(days=1))
         .add_extension(san, critical=False)
         .add_extension(x509.BasicConstraints(ca=False, path_length=None), critical=True)
+        .add_extension(x509.AuthorityKeyIdentifier.from_issuer_public_key(ca_key.public_key()), critical=False)
         .sign(ca_key, algorithm=None)
     )
     ca_path = paths.root / "qualification-ca.pem"
