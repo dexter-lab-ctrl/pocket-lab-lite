@@ -461,6 +461,24 @@ def _photo_capability(agent: dict[str, Any]) -> dict[str, Any]:
             80,
         ),
         "collections": collections,
+        "repair": _safe_repair_projection(raw.get("repair")),
+    }
+
+
+def _safe_repair_projection(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        return {"status": "unknown", "reason_code": None, "sanitized": True}
+    allowed = {"installing", "verifying", "completed", "failed", "already_installed",
+               "interrupted", "unsupported_platform", "unavailable", "not_requested"}
+    status = str(value.get("status") or "")
+    reason = str(value.get("reason_code") or "")
+    return {
+        "status": status if status in allowed else "unknown",
+        "reason_code": reason if reason in P0_REASONS or reason in {
+            "rclone_repair_interrupted", "rclone_repair_in_progress",
+            "rclone_unsupported_platform", "rclone_repair_state_unavailable"} else None,
+        "checked_at": _safe_text(value.get("checked_at"), "", 32),
+        "sanitized": True,
     }
 
 
@@ -587,7 +605,9 @@ P0_REASONS = frozenset({
     "storage_reservation_conflict", "insufficient_space_for_selected_media",
     "network_interrupted", "credential_expired", "credential_identity_mismatch", "credential_revocation_pending",
     "agent_command_undeliverable", "worker_unavailable", "cancelled",
-    "unknown_internal_error",
+    "unknown_internal_error", "rclone_repair_interrupted",
+    "rclone_repair_in_progress", "rclone_unsupported_platform",
+    "rclone_repair_state_unavailable",
 })
 _P0_REMEDIATION = {
     "source_offline": "device", "source_agent_unavailable": "device",
@@ -710,6 +730,8 @@ def readiness(
         blockers.append("source_capabilities_stale")
     if not cap["rclone_available"]:
         blockers.append("rclone_unavailable")
+    if cap["repair"]["status"] in {"installing", "verifying"}:
+        blockers.append("rclone_repair_in_progress")
     if not cap["photo_storage_access"]:
         blockers.append("photo_storage_access_missing")
     if not runtime.get("running"):
@@ -723,7 +745,9 @@ def readiness(
     if capacity_reason:
         blockers.append(capacity_reason)
 
-    if "photo_storage_access_missing" in blockers:
+    if "rclone_repair_in_progress" in blockers:
+        summary = "Photo backup tools repair is in progress."
+    elif "photo_storage_access_missing" in blockers:
         summary = "Allow photo access on this device."
     elif "rclone_unavailable" in blockers:
         summary = "Photo backup tools are not ready on this device."
@@ -779,6 +803,7 @@ def readiness(
         "blockers": blockers,
         "rclone_available": cap["rclone_available"],
         "rclone_version": cap["rclone_version"],
+        "tool_repair": cap["repair"],
         "photo_storage_access": cap["photo_storage_access"],
         "collections": cap["collections"],
         "destination_ready": destination_operational,
