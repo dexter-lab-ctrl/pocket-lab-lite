@@ -166,11 +166,13 @@ def _remote_metadata(url: str, user: str, password: str) -> dict[str, object]:
 
 
 def _parse_args(argv: list[str]) -> tuple[argparse.Namespace, list[str]]:
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("command")
-    parser.add_argument("rest", nargs="*")
-    args = parser.parse_args(argv)
-    return args, args.rest
+    # rclone accepts a broad, command-specific set of flags.  The test double
+    # intentionally interprets only the bounded subset it needs, so asking
+    # argparse to model every rclone option would make valid candidate
+    # invocations fail before they reach the isolated WebDAV fixture.
+    if not argv or not str(argv[0]).strip():
+        raise ValueError("qualification rclone command is missing")
+    return argparse.Namespace(command=str(argv[0]), rest=list(argv[1:])), list(argv[1:])
 
 
 def main(argv: list[str] | None = None) -> int:

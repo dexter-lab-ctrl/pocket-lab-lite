@@ -12,6 +12,7 @@ from pocket_lab_test_utils import ensure_runtime_path
 ROOT = Path(__file__).resolve().parents[2]
 CONTEXT = ROOT / "pocket-lab-final-structure" / "runtime" / "api_fastapi" / "services" / "qualification_context.py"
 CONTROLLER = ROOT / "scripts" / "dev" / "lite" / "run-isolated-runtime-qualification.py"
+RCLONE = ROOT / "scripts" / "dev" / "lite" / "qualification_rclone.py"
 
 
 def _context():
@@ -121,6 +122,30 @@ def test_controller_namespaces_are_run_bound():
     assert first != second
     assert module.RUN_ID_RE.fullmatch(first)
     assert module.RUN_ID_RE.fullmatch(second)
+
+
+def test_qualification_rclone_accepts_candidate_flag_surface():
+    spec = importlib.util.spec_from_file_location("qualification_rclone_test", RCLONE)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    import sys
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    args, rest = module._parse_args([
+        "lsjson",
+        "photoprism:PocketLab/Devices/test",
+        "--recursive",
+        "--files-only",
+        "--hash",
+        "--hash-type",
+        "SHA-256",
+        "--config",
+        "/run-owned/config",
+    ])
+    assert args.command == "lsjson"
+    assert rest[0] == "photoprism:PocketLab/Devices/test"
+    assert "--recursive" in rest
+    assert "--config" in rest
 
 
 def test_fleet_projection_retains_only_sanitized_photo_observation():
