@@ -2498,7 +2498,7 @@ async def execute_start(
             password,
         ):
             raise RuntimeError(
-                "webdav_readiness_failed"
+                "webdav_auth_failed"
             )
         _store_credential(
             credential_ref=credential_ref,
@@ -2617,7 +2617,7 @@ async def execute_start(
             trace_id=backup_id,
         )
         return _public_job(job) or {}
-    except Exception:
+    except Exception as exc:
         if auth_id:
             _revoke_auth_id(auth_id)
         _delete_credential(
@@ -2632,7 +2632,8 @@ async def execute_start(
             ),
             retryable=True,
             reason_code=(
-                "destination_unavailable"
+                "webdav_auth_failed" if str(exc) == "webdav_auth_failed"
+                else "destination_unavailable"
             ),
             completed_at=_now(),
         )
