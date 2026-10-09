@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import fcntl
 import json
 import os
 import shutil
@@ -133,46 +134,111 @@ def collect_photo_backup_capabilities() -> dict[str, Any]:
     }
 
 
-def repair_rclone() -> dict[str, Any]:
-    """Run only the predefined Termux package repair; never expose installer logs."""
-    existing = collect_photo_backup_capabilities()
-    if existing["rclone_available"]:
-        return {"status": "already_installed", "reason_code": None,
-                "summary": "Photo backup tools are already installed.",
-                **existing}
-    pkg = shutil.which("pkg")
-    if not pkg:
-        return {"status": "unsupported_platform",
-                "reason_code": "rclone_install_failed",
-                "summary": "Automatic repair requires the Termux package manager.",
-                "rclone_available": False, "sanitized": True}
-    reason = None
-    try:
-        result = subprocess.run(
-            [pkg, "install", "-y", "rclone"],
-            check=False, stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-            timeout=300,
-        )
-        if result.returncode != 0:
-            reason = "rclone_install_failed"
-    except subprocess.TimeoutExpired:
-        reason = "rclone_install_timeout"
-    except (OSError, subprocess.SubprocessError):
-        reason = "rclone_install_failed"
-    caps = collect_photo_backup_capabilities()
-    if reason is None and not caps["rclone_available"]:
-        reason = "rclone_verification_failed"
-    if reason is None and caps["rclone_version"] in ("Available", "Unavailable"):
-        reason = "rclone_verification_failed"
-    return {
-        **caps,
-        "status": "completed" if reason is None else "failed",
+def _repair_record(path: Path, status: str, reason: str | None = None) -> None:
+    """Record only a safe phase and reason; never persist installer output."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.parent.chmod(0o700)
+    payload = {
+        "schema_version": 1,
+        "status": status,
         "reason_code": reason,
-        "summary": ("Photo backup tools are ready." if reason is None
-                    else "Photo backup tool repair did not complete. Retry when the device and package repository are available."),
+        "checked_at": _now(),
         "sanitized": True,
     }
+    with tempfile.NamedTemporaryFile(
+        mode="w", encoding="utf-8", dir=path.parent,
+        prefix=".photo-backup-repair-", delete=False,
+    ) as temporary:
+        temp_path = Path(temporary.name)
+        os.chmod(temp_path, 0o600)
+        try:
+            json.dump(payload, temporary, sort_keys=True)
+            temporary.flush()
+            os.fsync(temporary.fileno())
+        except BaseException:
+            temp_path.unlink(missing_ok=True)
+            raise
+    os.replace(temp_path, path)
+
+
+def repair_rclone() -> dict[str, Any]:
+    """Bounded Termux-only repair with a cross-process nonblocking lock.
+
+    The persisted record is diagnostic, not proof of current capabilities.
+    A lock held by another process always fails closed rather than starting
+    a second package-manager operation.
+    """
+    state_dir = Path.home() / ".pocketlab-lite"
+    state_dir.mkdir(parents=True, exist_ok=True)
+    state_dir.chmod(0o700)
+    lock_path = state_dir / "photo-backup-repair.lock"
+    record_path = state_dir / "photo-backup-repair.json"
+    fd = os.open(str(lock_path), os.O_CREAT | os.O_RDWR, 0o600)
+    try:
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return {
+                "status": "already_running",
+                "reason_code": "rclone_repair_in_progress",
+                "summary": "Photo backup tools are already being repaired.",
+                "rclone_available": False,
+                "sanitized": True,
+            }
+        existing = collect_photo_backup_capabilities()
+        if existing["rclone_available"]:
+            _repair_record(record_path, "already_installed")
+            return {
+                **existing, "status": "already_installed",
+                "reason_code": None,
+                "summary": "Photo backup tools are already installed.",
+            }
+        pkg = shutil.which("pkg")
+        if not pkg:
+            _repair_record(record_path, "failed", "rclone_install_failed")
+            return {
+                "status": "unsupported_platform",
+                "reason_code": "rclone_install_failed",
+                "summary": "Automatic repair requires the Termux package manager.",
+                "rclone_available": False, "sanitized": True,
+            }
+        _repair_record(record_path, "installing")
+        reason = None
+        try:
+            result = subprocess.run(
+                [pkg, "install", "-y", "rclone"],
+                check=False, stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                timeout=300,
+            )
+            if result.returncode != 0:
+                reason = "rclone_install_failed"
+        except subprocess.TimeoutExpired:
+            reason = "rclone_install_timeout"
+        except (OSError, subprocess.SubprocessError):
+            reason = "rclone_install_failed"
+        _repair_record(record_path, "verifying" if reason is None else "failed", reason)
+        caps = collect_photo_backup_capabilities()
+        if reason is None and (
+            not caps["rclone_available"]
+            or caps["rclone_version"] in ("Available", "Unavailable")
+        ):
+            reason = "rclone_verification_failed"
+        status = "completed" if reason is None else "failed"
+        _repair_record(record_path, status, reason)
+        return {
+            **caps, "status": status, "reason_code": reason,
+            "summary": (
+                "Photo backup tools are ready." if reason is None else
+                "Photo backup tool repair did not complete. Retry when the device and package repository are available."
+            ),
+            "sanitized": True,
+        }
+    finally:
+        try:
+            fcntl.flock(fd, fcntl.LOCK_UN)
+        finally:
+            os.close(fd)
 
 
 class MediaBackupProvider:
