@@ -870,6 +870,24 @@ class QualificationRun:
                 }, separators=(",", ":")))
         except (FileNotFoundError, OSError, ValueError, TypeError):
             diagnostics.append("supervisor_state=unavailable")
+        try:
+            probe = subprocess.run(
+                [str(self.paths.bin / "pm2"), "jlist"],
+                cwd=str(self.candidate_runtime / "agents"),
+                env=self.agent_env,
+                stdin=subprocess.DEVNULL,
+                capture_output=True,
+                text=True,
+                timeout=4,
+                check=False,
+            )
+            diagnostics.append("pm2_probe=" + json.dumps({
+                "returncode": probe.returncode,
+                "stdout": (probe.stdout or "")[:600],
+                "stderr": (probe.stderr or "")[:600],
+            }, separators=(",", ":")))
+        except (OSError, subprocess.SubprocessError) as exc:
+            diagnostics.append("pm2_probe=" + type(exc).__name__)
         raise QualificationError("candidate node agent heartbeat/capabilities did not converge; " + " ".join(diagnostics))
 
     def _wait_backup(self, backup_id: str, timeout: float = 150.0) -> dict[str, Any]:
