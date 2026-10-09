@@ -236,11 +236,14 @@ def _state() -> dict[str, Any]:
     payload.setdefault("schema_version", STATE_SCHEMA_VERSION)
     payload.setdefault("jobs", {})
     payload.setdefault("latest_by_node", {})
+    payload.setdefault("placements", {})
     payload.setdefault("updated_at", None)
     if not isinstance(payload["jobs"], dict):
         payload["jobs"] = {}
     if not isinstance(payload["latest_by_node"], dict):
         payload["latest_by_node"] = {}
+    if not isinstance(payload["placements"], dict):
+        payload["placements"] = {}
     return payload
 
 
@@ -324,6 +327,8 @@ def _public_job(job: dict[str, Any] | None) -> dict[str, Any] | None:
         "bytes_remaining",
         "photo_processing_state",
         "retry_count",
+        "destination_id",
+        "destination_contract_version",
         "reserve_policy",
         "server_storage_before",
         "server_storage_after",
@@ -529,6 +534,52 @@ def _destination_identity(root: Path, stat: os.statvfs_result) -> str | None:
         return None
     except (OSError, ValueError, TypeError):
         return "destination_storage_unavailable"
+
+
+def _current_volume_fingerprint() -> str:
+    """Read only the existing private anchor; never expose it to a device."""
+    record = _read_json(
+        deps.settings().state_dir / "lite_photo_backup_destination_identity.json", {}
+    )
+    value = str(record.get("fingerprint") or "") if isinstance(record, dict) else ""
+    if not re.fullmatch(r"[a-f0-9]{64}", value):
+        raise ValueError("destination_identity_unavailable")
+    return value
+
+
+def _ensure_placement(backup_id: str, node_id: str) -> dict[str, Any]:
+    """Persist immutable destination placement before credential issuance."""
+    with _LOCK:
+        state, job = _find_job(backup_id)
+        if str(job.get("node_id") or "") != node_id:
+            raise ValueError("placement_identity_mismatch")
+        target = lite_photo_backup_destinations.placement(
+            str(job.get("destination_id") or lite_photo_backup_destinations.CURRENT_DESTINATION_ID),
+            node_id, backup_id, _current_volume_fingerprint(),
+        )
+        previous = state["placements"].get(backup_id)
+        if previous is not None and previous != target:
+            raise ValueError("destination_identity_mismatch")
+        if previous is None:
+            state["placements"][backup_id] = target
+            _save_state(state)
+        return target
+
+
+def _verified_placement(backup_id: str, node_id: str) -> dict[str, Any]:
+    state, job = _find_job(backup_id)
+    if str(job.get("node_id") or "") != node_id:
+        raise ValueError("placement_identity_mismatch")
+    entry = state.get("placements", {}).get(backup_id)
+    if not isinstance(entry, dict) or entry.get("schema_version") != lite_photo_backup_destinations.SCHEMA_VERSION:
+        raise ValueError("destination_placement_missing")
+    target = lite_photo_backup_destinations.placement(
+        str(job.get("destination_id") or lite_photo_backup_destinations.CURRENT_DESTINATION_ID),
+        node_id, backup_id, _current_volume_fingerprint(),
+    )
+    if entry != target:
+        raise ValueError("destination_identity_mismatch")
+    return target
 
 
 def server_capacity() -> dict[str, Any]:
@@ -1053,6 +1104,7 @@ def make_start_command(
             100,
         ),
         "provider": _PROVIDER_ID,
+        "destination_id": lite_photo_backup_destinations.CURRENT_DESTINATION_ID,
         "requested_by": "lite-api",
         "requested_at": _now(),
     }
@@ -1110,6 +1162,8 @@ def make_start_command(
                 80,
             ),
             "provider": _PROVIDER_ID,
+            "destination_id": lite_photo_backup_destinations.CURRENT_DESTINATION_ID,
+            "destination_contract_version": lite_photo_backup_destinations.SCHEMA_VERSION,
             "status": "queued",
             "summary": "Photo backup request queued.",
             "collections": command["collections"],
@@ -1955,6 +2009,14 @@ def consume_credential(
             "reason_code": reason,
             "summary": "Not enough protected destination space is available.",
             "sanitized": True})
+    try:
+        placement = _verified_placement(backup_id, node_id)
+    except ValueError:
+        raise HTTPException(status_code=409, detail={
+            "status": "destination_identity_mismatch",
+            "reason_code": "destination_identity_mismatch",
+            "summary": "Destination placement no longer matches this backup.",
+            "sanitized": True}) from None
     response = {
         "credential_ref": credential_ref,
         "backup_id": backup_id,
@@ -1967,9 +2029,7 @@ def consume_credential(
         "webdav_url": str(
             data.get("webdav_url") or ""
         ),
-        "destination_prefix": (
-            f"PocketLab/Devices/{node_id}"
-        ),
+        "destination_prefix": placement["prefix"],
         "expires_at_epoch": float(
             data.get("expires_at_epoch") or 0
         ),
@@ -1992,7 +2052,14 @@ def capacity_for_agent(
                 "summary": "Backup does not belong to this device.",
             },
         )
-    return server_capacity()
+    capacity = server_capacity()
+    try:
+        _verified_placement(backup_id, node_id)
+    except ValueError:
+        return {"status": "unavailable", "reason_code": "destination_identity_mismatch",
+                "hard_upload_budget_bytes": 0, "safe_upload_budget_bytes": 0,
+                "sanitized": True}
+    return capacity
 
 
 def record_agent_progress(
@@ -2559,6 +2626,16 @@ async def execute_start(
             "lite.photo_backup."
             "destination_unavailable",
         )
+        return _public_job(failed) or {}
+
+    try:
+        placement = _ensure_placement(backup_id, node_id)
+    except ValueError:
+        failed = _update_job(backup_id, status="destination_unavailable",
+                             reason_code="destination_identity_mismatch",
+                             summary="Backup destination identity could not be verified.",
+                             retryable=True, completed_at=_now())
+        _append_evidence(failed, "lite.photo_backup.destination_unavailable")
         return _public_job(failed) or {}
 
     password = ""
