@@ -895,7 +895,7 @@ class QualificationRun:
             diagnostics.append("pm2_probe=" + type(exc).__name__)
         try:
             pm2_error = json.loads((self.paths.root / "pm2" / "qualification-last-error.json").read_text(encoding="utf-8"))
-            diagnostics.append("pm2_error=" + json.dumps({"error_type": pm2_error.get("error_type")}, separators=(",", ":")))
+            diagnostics.append("pm2_error=" + json.dumps({"error_type": pm2_error.get("error_type"), "reason_code": pm2_error.get("reason_code")}, separators=(",", ":")))
         except (FileNotFoundError, OSError, ValueError, TypeError):
             diagnostics.append("pm2_error=none")
         raise QualificationError("candidate node agent heartbeat/capabilities did not converge; " + " ".join(diagnostics))

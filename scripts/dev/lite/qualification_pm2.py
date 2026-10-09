@@ -49,10 +49,18 @@ def _write(records: list[dict[str, object]]) -> None:
     temporary.replace(path)
 
 
-def _write_error(error_type: str) -> None:
+def _write_error(error_type: str, detail: str = "") -> None:
     path = _home() / "qualification-last-error.json"
+    detail_text = str(detail or "")
+    reason = {
+        "qualification PM2_HOME is required": "pm2_home_missing",
+        "qualification PM2 name is required": "pm2_name_missing",
+        "qualification PM2 name is incomplete": "pm2_name_incomplete",
+        "qualification PM2 process name is not run-owned": "process_name_not_run_owned",
+        "qualification PM2 command is incomplete": "pm2_command_incomplete",
+    }.get(detail_text, "shim_exception")
     temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
-    temporary.write_text(json.dumps({"error_type": str(error_type)[:80], "sanitized": True}) + "\n", encoding="utf-8")
+    temporary.write_text(json.dumps({"error_type": str(error_type)[:80], "reason_code": reason, "sanitized": True}) + "\n", encoding="utf-8")
     temporary.chmod(0o600)
     temporary.replace(path)
 
@@ -199,7 +207,7 @@ if __name__ == "__main__":
         raise SystemExit(main())
     except (RuntimeError, OSError, SystemExit) as exc:
         try:
-            _write_error(type(exc).__name__)
+            _write_error(type(exc).__name__, str(exc))
         except Exception:
             pass
         print(type(exc).__name__, file=sys.stderr)
