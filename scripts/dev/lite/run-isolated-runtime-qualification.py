@@ -281,8 +281,8 @@ class DisposableNats:
     def _write_config(self) -> None:
         self.store.mkdir(mode=0o700, parents=True, exist_ok=True)
         config = (
-            f"port: {self.port}\n"
-            f"http_port: {self.monitor_port}\n"
+            f"listen: \"127.0.0.1:{self.port}\"\n"
+            f"http: \"127.0.0.1:{self.monitor_port}\"\n"
             f"server_name: \"qualification-{self.run_id}\"\n"
             "jetstream {\n"
             f"  store_dir: {json.dumps(str(self.store))}\n"
@@ -609,6 +609,11 @@ class QualificationRun:
             "POCKETLAB_NATS_COMMAND_ACK_WAIT_SECONDS": "10",
             "POCKETLAB_NATS_COMMAND_MAX_DELIVER": "5",
             "POCKETLAB_NATS_EVENT_FANOUT": "1",
+            # The disposable broker is deliberately capped below its own
+            # JetStream file-store budget.  This keeps the candidate stream
+            # contract bounded while allowing the existing production stream
+            # defaults to remain unchanged.
+            "POCKETLAB_JETSTREAM_MAX_BYTES": "67108864",
             "POCKETLAB_LITE_SECURE_ORIGIN": "",
             "POCKETLAB_SECURE_ORIGIN": "",
             "POCKET_LAB_CADDYFILE": "",
