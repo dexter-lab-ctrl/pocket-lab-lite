@@ -92,6 +92,7 @@ def test_repair_records_only_sanitized_phases(tmp_path, monkeypatch):
     agent = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(agent)
     monkeypatch.setattr(agent.Path, "home", lambda: tmp_path)
+    monkeypatch.setenv("PREFIX", "/data/data/com.termux/files/usr")
     monkeypatch.setattr(agent.shutil, "which",
                         lambda name: "/usr/bin/pkg" if name == "pkg" else None)
     monkeypatch.setattr(agent, "collect_photo_backup_capabilities", lambda: {
@@ -244,3 +245,72 @@ def test_p0_specific_capacity_reason_and_public_credential_revocation():
     })["credential_revoke_status"] == "pending"
     assert "credential_ref_internal" not in backup._public_job({
         "credential_ref_internal": "secret-ref"})
+
+
+def test_p1_reconcile_interrupted_checkpoint(tmp_path, monkeypatch):
+    import importlib.util
+    from pathlib import Path
+    agent_path = (Path(__file__).resolve().parents[2] /
+                  "pocket-lab-final-structure/runtime/agents/lite_photo_backup_agent.py")
+    spec = importlib.util.spec_from_file_location("photo_repair_p1_interruption", agent_path)
+    assert spec and spec.loader
+    agent = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(agent)
+    monkeypatch.setattr(agent.Path, "home", lambda: tmp_path)
+    _, path = agent._repair_paths()
+    agent._repair_record(path, "installing", started_at="2026-10-09T00:00:00Z")
+    agent._reconcile_repair(path)
+    result = agent.photo_backup_repair_status()
+    assert result["status"] == "interrupted"
+    assert result["reason_code"] == "rclone_repair_interrupted"
+    assert "password" not in result and "stdout" not in result
+
+
+def test_p1_repair_progress_and_verification_failure(tmp_path, monkeypatch):
+    import importlib.util
+    from pathlib import Path
+    import subprocess
+    agent_path = (Path(__file__).resolve().parents[2] /
+                  "pocket-lab-final-structure/runtime/agents/lite_photo_backup_agent.py")
+    spec = importlib.util.spec_from_file_location("photo_repair_p1_verification", agent_path)
+    assert spec and spec.loader
+    agent = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(agent)
+    monkeypatch.setattr(agent.Path, "home", lambda: tmp_path)
+    monkeypatch.setenv("PREFIX", "/data/data/com.termux/files/usr")
+    monkeypatch.setattr(agent.shutil, "which",
+                        lambda name: "/data/data/com.termux/files/usr/bin/pkg" if name == "pkg" else None)
+    monkeypatch.setattr(agent, "collect_photo_backup_capabilities", lambda: {
+        "rclone_available": False, "rclone_version": "Unavailable",
+        "photo_storage_access": True, "sanitized": True,
+    })
+    observed = []
+    def install(args, **kwargs):
+        assert args == ["/data/data/com.termux/files/usr/bin/pkg", "install", "-y", "rclone"]
+        assert kwargs["timeout"] == agent.REPAIR_TIMEOUT_SECONDS
+        assert kwargs["stdout"] == subprocess.DEVNULL
+        return subprocess.CompletedProcess(args, 0)
+    monkeypatch.setattr(agent.subprocess, "run", install)
+    result = agent.repair_rclone(progress_callback=observed.append)
+    assert result["status"] == "failed"
+    assert result["reason_code"] == "rclone_verification_failed"
+    assert [item["status"] for item in observed] == ["installing", "verifying", "failed"]
+    assert all(item["sanitized"] and "stdout" not in item for item in observed)
+
+
+def test_p1_repair_state_is_separate_from_tool_capabilities():
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photo_backup as backup
+    capability = backup._photo_capability({
+        "photo_backup": {
+            "rclone_available": True, "rclone_version": "rclone v1",
+            "photo_storage_access": True,
+            "repair": {"status": "failed", "reason_code": "rclone_install_timeout",
+                       "checked_at": "2026-10-09T00:00:00Z",
+                       "password": "do-not-expose"},
+        },
+    })
+    assert capability["rclone_available"] is True
+    assert capability["repair"]["status"] == "failed"
+    assert "password" not in capability["repair"]
