@@ -179,7 +179,13 @@ def main(argv: list[str] | None = None) -> int:
             raise RuntimeError("qualification PM2 process name is not run-owned")
         if "--" not in args:
             raise RuntimeError("qualification PM2 command is incomplete")
-        command_argv = args[args.index("--") + 1 :]
+        interpreter = args[1] if len(args) > 1 else ""
+        if not interpreter:
+            raise RuntimeError("qualification PM2 interpreter is missing")
+        # PM2's supported form is ``pm2 start <python> ... -- <script>``.
+        # Preserve both pieces so the candidate agent is launched by Python,
+        # never as an executable source file.
+        command_argv = [interpreter, *args[args.index("--") + 1 :]]
         records = [record for record in _read() if str(record.get("name") or "") != name]
         record = {
             "name": name,
