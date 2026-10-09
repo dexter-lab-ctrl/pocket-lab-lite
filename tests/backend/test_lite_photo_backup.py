@@ -111,6 +111,17 @@ def test_repeated_start_returns_existing_active_backup(photo_backup, monkeypatch
     assert command["backup_id"] == "photo-existing"
 
 
+def test_server_owned_admission_rejects_unsupported_destination(photo_backup):
+    with pytest.raises(photo_backup.HTTPException) as exc:
+        photo_backup.make_start_command(
+            "storage-phone",
+            ["camera"],
+            destination_id="managed-nas",
+        )
+    assert exc.value.status_code == 422
+    assert exc.value.detail["reason_code"] == "unsupported_destination"
+
+
 def test_worker_start_sends_only_opaque_credential_reference_to_node(photo_backup, monkeypatch):
     monkeypatch.setattr(
         photo_backup,
@@ -700,17 +711,6 @@ def test_photo_backup_api_repeated_start_is_idempotent(monkeypatch):
     assert payload["status"] == "already_running"
     assert payload["backup_id"] == "photo-existing"
     assert payload["sanitized"] is True
-
-
-def test_photo_backup_api_rejects_unsupported_destination_before_admission(monkeypatch):
-    ensure_runtime_path()
-    from pocket_lab_test_utils import client as make_client
-    response = make_client().post(
-        "/api/lite/devices/storage-phone/photo-backup",
-        json={"destination_id": "managed-nas", "collections": ["camera"]},
-    )
-    assert response.status_code == 422
-    assert response.json()["reason_code"] == "unsupported_destination"
 
 
 def test_photo_backup_api_start_queues_only_domain_command(monkeypatch):
