@@ -860,6 +860,16 @@ class QualificationRun:
             diagnostics.append("pm2=" + json.dumps(safe_records, separators=(",", ":")))
         except (FileNotFoundError, OSError, ValueError, TypeError):
             diagnostics.append("pm2=unavailable")
+        try:
+            state = json.loads((self.paths.state / "agent-supervisor.json").read_text(encoding="utf-8"))
+            if isinstance(state, dict):
+                diagnostics.append("supervisor_state=" + json.dumps({
+                    key: state.get(key)
+                    for key in ("status", "agent_status", "agent_process_status", "supervisor_status", "repair_attempted", "repair_result", "repair_reason_code")
+                    if key in state
+                }, separators=(",", ":")))
+        except (FileNotFoundError, OSError, ValueError, TypeError):
+            diagnostics.append("supervisor_state=unavailable")
         raise QualificationError("candidate node agent heartbeat/capabilities did not converge; " + " ".join(diagnostics))
 
     def _wait_backup(self, backup_id: str, timeout: float = 150.0) -> dict[str, Any]:
