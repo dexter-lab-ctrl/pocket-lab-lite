@@ -22,7 +22,7 @@ from pathlib import Path
 def _home() -> Path:
     raw = os.environ.get("PM2_HOME", "").strip()
     if not raw:
-        raise SystemExit("qualification PM2_HOME is required")
+        raise RuntimeError("qualification PM2_HOME is required")
     path = Path(raw).expanduser()
     path.mkdir(mode=0o700, parents=True, exist_ok=True)
     path.chmod(0o700)
@@ -58,6 +58,9 @@ def _write_error(error_type: str, detail: str = "") -> None:
         "qualification PM2 name is incomplete": "pm2_name_incomplete",
         "qualification PM2 process name is not run-owned": "process_name_not_run_owned",
         "qualification PM2 command is incomplete": "pm2_command_incomplete",
+        "unsupported_command": "unsupported_command",
+        "missing_command": "missing_command",
+        "process_not_found": "process_not_found",
     }.get(detail_text, "shim_exception")
     temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
     temporary.write_text(json.dumps({"error_type": str(error_type)[:80], "reason_code": reason, "sanitized": True}) + "\n", encoding="utf-8")
@@ -153,6 +156,7 @@ def _name_from(args: list[str]) -> str:
 def main(argv: list[str] | None = None) -> int:
     args = list(argv or sys.argv[1:])
     if not args:
+        _write_error("CommandError", "missing_command")
         return 1
     command = args[0]
     if command == "jlist":
@@ -163,9 +167,9 @@ def main(argv: list[str] | None = None) -> int:
     if command == "start":
         name = _name_from(args)
         if name != os.environ.get("POCKETLAB_EXPECTED_AGENT_PROCESS", name):
-            raise SystemExit("qualification PM2 process name is not run-owned")
+            raise RuntimeError("qualification PM2 process name is not run-owned")
         if "--" not in args:
-            raise SystemExit("qualification PM2 command is incomplete")
+            raise RuntimeError("qualification PM2 command is incomplete")
         command_argv = args[args.index("--") + 1 :]
         records = [record for record in _read() if str(record.get("name") or "") != name]
         record = {
@@ -183,11 +187,12 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if command in {"restart", "delete"}:
         if len(args) < 2:
-            raise SystemExit("qualification PM2 process name is required")
+            raise RuntimeError("qualification PM2 process name is required")
         name = args[1]
         records = _read()
         found = next((record for record in records if str(record.get("name") or "") == name), None)
         if found is None:
+            _write_error("CommandError", "process_not_found")
             return 1
         if command == "delete":
             _terminate(found)
@@ -199,13 +204,14 @@ def main(argv: list[str] | None = None) -> int:
         replacement = _start_record(found)
         _write([replacement if record is found else record for record in records])
         return 0
+    _write_error("CommandError", "unsupported_command")
     return 1
 
 
 if __name__ == "__main__":
     try:
         raise SystemExit(main())
-    except (RuntimeError, OSError, SystemExit) as exc:
+    except (RuntimeError, OSError) as exc:
         try:
             _write_error(type(exc).__name__, str(exc))
         except Exception:
