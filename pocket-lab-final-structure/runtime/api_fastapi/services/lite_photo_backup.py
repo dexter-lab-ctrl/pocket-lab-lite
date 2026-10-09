@@ -474,6 +474,43 @@ def _secure_origin(request: Request | None = None) -> str | None:
     )
 
 
+def _destination_identity(root: Path, stat: os.statvfs_result) -> str | None:
+    """Bind the current originals volume to a private, server-owned identity.
+
+    No raw path or device number is surfaced. An existing identity is NEVER
+    rewritten after a mismatch; explicit operator recovery is required.
+    """
+    try:
+        real = root.resolve(strict=True)
+        if real.is_symlink() or root.is_symlink():
+            return "destination_identity_mismatch"
+        disk = os.stat(real)
+        fingerprint = hashlib.sha256(
+            f"photoprism-originals:v1:{real}:{disk.st_dev}:{stat.f_fsid}".encode()
+        ).hexdigest()
+        path = deps.settings().state_dir / "lite_photo_backup_destination_identity.json"
+        with _LOCK:
+            record = _read_json(path, {})
+            if record:
+                if (not isinstance(record, dict)
+                    or record.get("schema_version") != 1
+                    or record.get("destination_id") != lite_photo_backup_destinations.CURRENT_DESTINATION_ID
+                    or not secrets.compare_digest(str(record.get("fingerprint") or ""), fingerprint)):
+                    return "destination_identity_mismatch"
+            else:
+                if not root.is_dir() or not os.access(root, os.R_OK | os.W_OK | os.X_OK):
+                    return "destination_storage_unavailable"
+                _write_json(path, {
+                    "schema_version": 1,
+                    "destination_id": lite_photo_backup_destinations.CURRENT_DESTINATION_ID,
+                    "fingerprint": fingerprint,
+                    "enrolled_at": _now(),
+                })
+        return None
+    except (OSError, ValueError, TypeError):
+        return "destination_storage_unavailable"
+
+
 def server_capacity() -> dict[str, Any]:
     root = _originals_path()
     if not root.is_dir():
@@ -505,6 +542,12 @@ def server_capacity() -> dict[str, Any]:
             "hard_upload_budget_bytes": 0,
             "sanitized": True,
         }
+    identity_issue = _destination_identity(root, stat)
+    if identity_issue:
+        return {"status": "unavailable", "reason_code": identity_issue,
+                "identity_mismatch": identity_issue == "destination_identity_mismatch",
+                "hard_upload_budget_bytes": 0, "safe_upload_budget_bytes": 0,
+                "sanitized": True}
     if total <= 0 or free < 0 or free > total or total > (1 << 63) - 1:
         return {"status": "unavailable", "hard_upload_budget_bytes": 0,
                 "safe_upload_budget_bytes": 0, "sanitized": True}
@@ -614,14 +657,16 @@ def _webdav_route_probe(origin: str | None, *, force: bool = False) -> str | Non
 
 
 def _capacity_diagnostic(capacity: dict[str, Any]) -> str | None:
-    if capacity.get("status") == "unavailable":
-        return "destination_storage_unavailable"
-    if capacity.get("mount_missing"):
-        return "destination_mount_missing"
     if capacity.get("identity_mismatch"):
         return "destination_identity_mismatch"
     if capacity.get("read_only"):
         return "destination_read_only"
+    if capacity.get("status") == "unavailable":
+        return str(capacity.get("reason_code") or "destination_storage_unavailable")
+    if capacity.get("mount_missing"):
+        return "destination_mount_missing"
+    if capacity.get("identity_mismatch"):
+        return "destination_identity_mismatch"
     if int(capacity.get("hard_upload_budget_bytes") or 0) <= 0:
         return "storage_below_hard_reserve"
     if int(capacity.get("safe_upload_budget_bytes") or 0) <= 0:
