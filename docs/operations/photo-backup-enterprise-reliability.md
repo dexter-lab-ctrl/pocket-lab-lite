@@ -155,3 +155,48 @@ and sanitized repair-state projection. Android/Termux package-repository
 failure, PM2 recovery, event delivery, actual install, NATS disconnect,
 and restart behavior remain **unvalidated**. GitHub Actions were not
 inspected or monitored, and the PR remains draft.
+
+
+## P2 — capacity-aware partial transfers and durable per-file checkpoints
+
+The existing destination admission computes both a hard 10% filesystem
+reserve and a planning reserve of 15% or 2 GiB, whichever is larger.
+Planning continues after oversized items so smaller eligible files can
+fit in the current protected budget. The agent rechecks destination
+available bytes before **each** file and refuses to cross either reserve.
+Source inventory excludes symlinks and is capped by
+`MAX_INVENTORY_ITEMS`. Remote enumeration has a bounded response size and
+entry count. An inventory-limit error must be surfaced as incomplete
+planning, not silently represented as an empty source.
+
+P2 adds a private node-scoped SHA-256-keyed per-file ledger stored under
+`~/.pocketlab-lite/photo-backup-ledgers` (0700 directory, atomic 0600
+record). The ledger persists an opaque item identifier, source size,
+integer mtime and SHA-256 of source contents; it intentionally does not
+persist filenames, user media paths or credentials. Subsequent attempts
+only reuse a checkpoint when the source hash, size and matching destination
+size still agree. Files transferred from earlier attempts are not removed.
+A partial transfer remains retryable and preserves already completed files.
+
+Each upload goes to a deterministic per-file `.pocketlab-upload` staging
+object, checks its reported remote byte count, then moves to the final key
+and checks the final remote byte count. A retry may delete only the specific
+staging object for that same destination key, never an entire directory
+or completed user media. The agent hashes the source immediately before
+and after transfer to detect concurrent mutation.
+
+**Integrity boundary:** WebDAV/rclone `lsjson --stat` size verification is
+not a byte-for-byte remote digest. Where WebDAV cannot return trusted
+remote file checksums, the implementation cannot truthfully claim
+cryptographic end-to-end verification. Full remote content verification
+and durable ledger concurrency governance require later qualification
+before production reliability claims.
+
+### P2 qualification not executed
+
+Tests were added for ledger privacy and mode, malformed remote size
+responses and single-object cleanup, but not executed. Storage depletion
+under concurrent non-backup writers, huge media catalogs, Termux I/O
+pressure, partial uploads during NATS failures and very large video
+transfer behavior were not exercised. No tests, builds, CI inspection,
+or device/runtime qualification were run per session instructions.
