@@ -82,7 +82,11 @@ def _run(command: List[str], *, env: Dict[str, str] | None = None, timeout: floa
 
 def _pm2_available() -> bool:
     try:
-        return _run(["sh", "-lc", "command -v pm2"], timeout=4).returncode == 0
+        # Resolve the executable in the process environment directly. A login
+        # shell may replace PATH (notably in a disposable WSL/Termux lane),
+        # causing a run-owned PM2 namespace to be reported unavailable even
+        # though its explicitly scoped executable is present.
+        return bool(shutil.which("pm2"))
     except Exception:
         return False
 

@@ -845,6 +845,20 @@ class QualificationRun:
                 diagnostics.append(f"{name}={tail[-1400:]}")
             except OSError:
                 diagnostics.append(f"{name}=unavailable")
+        try:
+            records = json.loads((self.paths.root / "pm2" / "qualification-processes.json").read_text(encoding="utf-8"))
+            safe_records = [
+                {
+                    "name": str(item.get("name") or "")[:100],
+                    "pid": int(item.get("pid") or 0),
+                    "status": str(item.get("status") or "")[:32],
+                    "restart_time": int(item.get("restart_time") or 0),
+                }
+                for item in records if isinstance(item, dict)
+            ]
+            diagnostics.append("pm2=" + json.dumps(safe_records, separators=(",", ":")))
+        except (FileNotFoundError, OSError, ValueError, TypeError):
+            diagnostics.append("pm2=unavailable")
         raise QualificationError("candidate node agent heartbeat/capabilities did not converge; " + " ".join(diagnostics))
 
     def _wait_backup(self, backup_id: str, timeout: float = 150.0) -> dict[str, Any]:
