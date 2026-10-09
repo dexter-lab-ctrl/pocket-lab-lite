@@ -49,6 +49,14 @@ def _write(records: list[dict[str, object]]) -> None:
     temporary.replace(path)
 
 
+def _write_error(error_type: str) -> None:
+    path = _home() / "qualification-last-error.json"
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    temporary.write_text(json.dumps({"error_type": str(error_type)[:80], "sanitized": True}) + "\n", encoding="utf-8")
+    temporary.chmod(0o600)
+    temporary.replace(path)
+
+
 def _start_record(record: dict[str, object]) -> dict[str, object]:
     argv = [str(item) for item in record.get("argv", [])]
     if not argv:
@@ -189,6 +197,10 @@ def main(argv: list[str] | None = None) -> int:
 if __name__ == "__main__":
     try:
         raise SystemExit(main())
-    except (RuntimeError, OSError) as exc:
+    except (RuntimeError, OSError, SystemExit) as exc:
+        try:
+            _write_error(type(exc).__name__)
+        except Exception:
+            pass
         print(type(exc).__name__, file=sys.stderr)
         raise SystemExit(1)
