@@ -13,6 +13,7 @@ import time
 import unicodedata
 import urllib.error
 import urllib.request
+import urllib.parse
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -62,6 +63,10 @@ PHOTOPRISM_COMMAND_TIMEOUT_SECONDS = max(
 STATE_SCHEMA_VERSION = 1
 _PROVIDER_ID = "photoprism_webdav"
 _LOCK = threading.RLock()
+_PREFLIGHT_LOCK = threading.RLock()
+_PREFLIGHT_CACHE: dict[str, Any] = {}
+_PREFLIGHT_TTL_SECONDS = 20
+
 _SECRET_KEYS = {"password", "token", "secret", "credential", "authorization", "api_key"}
 _ANSI_ESCAPE_RE = re.compile(
     r"\x1b(?:\[[0-?]*[ -/]*[@-~]|[@-_])"
@@ -520,9 +525,111 @@ def server_capacity() -> dict[str, Any]:
     }
 
 
+# Stable, public reason codes. Do not emit backend paths or upstream response bodies.
+P0_REASONS = frozenset({
+    "source_offline", "source_agent_unavailable", "source_capabilities_stale",
+    "rclone_unavailable", "rclone_install_failed", "rclone_install_timeout",
+    "rclone_verification_failed", "photo_storage_access_missing",
+    "photoprism_not_running", "photoprism_unreachable", "secure_route_unavailable",
+    "webdav_probe_failed", "webdav_auth_failed", "destination_unavailable",
+    "destination_mount_missing", "destination_identity_mismatch",
+    "destination_read_only", "destination_storage_unavailable",
+    "storage_below_planning_reserve", "storage_below_hard_reserve",
+    "storage_reservation_conflict", "insufficient_space_for_selected_media",
+    "network_interrupted", "credential_expired", "credential_revocation_pending",
+    "agent_command_undeliverable", "worker_unavailable", "cancelled",
+    "unknown_internal_error",
+})
+_P0_REMEDIATION = {
+    "source_offline": "device", "source_agent_unavailable": "device",
+    "source_capabilities_stale": "device", "rclone_unavailable": "repair",
+    "photo_storage_access_missing": "permissions",
+    "photoprism_not_running": "app", "photoprism_unreachable": "app",
+    "secure_route_unavailable": "remote_access",
+    "webdav_probe_failed": "destination", "webdav_auth_failed": "credentials",
+    "destination_mount_missing": "storage", "destination_read_only": "storage",
+    "destination_storage_unavailable": "storage",
+    "storage_below_planning_reserve": "space",
+    "storage_below_hard_reserve": "space", "storage_reservation_conflict": "space",
+}
+
+
+def _source_fresh(agent: dict[str, Any]) -> bool:
+    """Only accept known server-supplied heartbeat timestamps; no clock guessing."""
+    candidate = (agent.get("last_seen") or agent.get("last_heartbeat")
+                 or agent.get("last_seen_at") or agent.get("heartbeat_at"))
+    if not candidate:
+        # Older fleet registry projections do not expose a timestamp.
+        return True
+    try:
+        if isinstance(candidate, (int, float)):
+            epoch = float(candidate)
+            if epoch > 10**12:
+                epoch /= 1000
+        else:
+            epoch = datetime.fromisoformat(str(candidate).replace("Z", "+00:00")).timestamp()
+        return 0 <= (_epoch() - epoch) <= 180
+    except (ValueError, TypeError, OverflowError):
+        return False
+
+
+def _webdav_route_probe(origin: str | None, *, force: bool = False) -> str | None:
+    """Bounded unauthenticated route probe; never claims authentication worked.
+
+    A 401/403 from the fixed WebDAV route proves it is responding, not that
+    a temporary backup credential is valid. Auth is verified separately when
+    the worker creates its one-use app password.
+    """
+    if not origin:
+        return "secure_route_unavailable"
+    parsed = urllib.parse.urlsplit(origin)
+    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password or parsed.query or parsed.fragment or parsed.path not in ("", "/"):
+        return "secure_route_unavailable"
+    with _PREFLIGHT_LOCK:
+        record = _PREFLIGHT_CACHE.get(origin)
+        if not force and record and _epoch() - record["epoch"] < _PREFLIGHT_TTL_SECONDS:
+            return record["reason"]
+    reason = "webdav_probe_failed"
+    url = origin + "/apps/photoprism/originals/"
+    try:
+        request = urllib.request.Request(url, method="OPTIONS")
+        with urllib.request.urlopen(request, timeout=3) as response:
+            code = int(getattr(response, "status", 0) or 0)
+            if code in (200, 204, 207, 401, 403):
+                reason = None
+    except urllib.error.HTTPError as exc:
+        if exc.code in (401, 403):
+            reason = None
+    except (urllib.error.URLError, TimeoutError, OSError):
+        pass
+    with _PREFLIGHT_LOCK:
+        if len(_PREFLIGHT_CACHE) > 12:
+            _PREFLIGHT_CACHE.clear()
+        _PREFLIGHT_CACHE[origin] = {"epoch": _epoch(), "reason": reason}
+    return reason
+
+
+def _capacity_diagnostic(capacity: dict[str, Any]) -> str | None:
+    if capacity.get("status") == "unavailable":
+        return "destination_storage_unavailable"
+    if capacity.get("mount_missing"):
+        return "destination_mount_missing"
+    if capacity.get("identity_mismatch"):
+        return "destination_identity_mismatch"
+    if capacity.get("read_only"):
+        return "destination_read_only"
+    if int(capacity.get("hard_upload_budget_bytes") or 0) <= 0:
+        return "storage_below_hard_reserve"
+    if int(capacity.get("safe_upload_budget_bytes") or 0) <= 0:
+        return "storage_below_planning_reserve"
+    return None
+
+
 def readiness(
     node_id: str,
     request: Request | None = None,
+    *,
+    force: bool = False,
 ) -> dict[str, Any]:
     node_id = _safe_node_id(node_id)
     agent = _agent(node_id)
@@ -535,12 +642,14 @@ def readiness(
             "sanitized": True,
         }
     cap = _photo_capability(agent)
-    runtime = lite_app_runtime.probe_app_runtime("photoprism")
+    runtime = lite_app_runtime.probe_app_runtime("photoprism", force=force)
     origin = _secure_origin(request)
     capacity = server_capacity()
     blockers: list[str] = []
     if not _agent_online(agent):
         blockers.append("source_offline")
+    elif not _source_fresh(agent):
+        blockers.append("source_capabilities_stale")
     if not cap["rclone_available"]:
         blockers.append("rclone_unavailable")
     if not cap["photo_storage_access"]:
@@ -549,18 +658,12 @@ def readiness(
         blockers.append("photoprism_not_running")
     elif not runtime.get("reachable"):
         blockers.append("photoprism_unreachable")
-    if not origin:
-        blockers.append("secure_route_unavailable")
-    if (
-        capacity.get("status") != "ready"
-        or int(
-            capacity.get("hard_upload_budget_bytes") or 0
-        )
-        <= 0
-    ):
-        blockers.append("storage_below_hard_reserve")
-    elif int(capacity.get("safe_upload_budget_bytes") or 0) <= 0:
-        blockers.append("storage_below_planning_reserve")
+    route_reason = _webdav_route_probe(origin, force=force) if runtime.get("running") and runtime.get("reachable") else ("secure_route_unavailable" if not origin else None)
+    if route_reason:
+        blockers.append(route_reason)
+    capacity_reason = _capacity_diagnostic(capacity)
+    if capacity_reason:
+        blockers.append(capacity_reason)
 
     if "photo_storage_access_missing" in blockers:
         summary = "Allow photo access on this device."
@@ -570,6 +673,8 @@ def readiness(
         summary = "This device is offline."
     elif "secure_route_unavailable" in blockers:
         summary = "Remote access not ready."
+    elif "webdav_probe_failed" in blockers:
+        summary = "PhotoPrism photo backup connection is not responding."
     elif ("photoprism_not_running" in blockers or "photoprism_unreachable" in blockers):
         summary = "PhotoPrism is not ready for photo backup."
     elif ("storage_below_hard_reserve" in blockers or "storage_below_planning_reserve" in blockers):
@@ -580,17 +685,27 @@ def readiness(
     else:
         summary = "Ready to back up photos."
 
+    checked_at = _now()
+    destination_operational = bool(runtime.get("running") and runtime.get("reachable") and origin and not route_reason)
+    source_ready = bool(_agent_online(agent) and _source_fresh(agent) and cap["rclone_available"] and cap["photo_storage_access"])
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "status": "ready" if not blockers else "not_ready",
         "ready": not blockers,
-        "source_ready": _agent_online(agent) and cap["rclone_available"] and cap["photo_storage_access"],
-        "destination_operational": bool(runtime.get("running") and runtime.get("reachable") and origin),
+        "source_ready": source_ready,
+        "destination_operational": destination_operational,
         "safe_capacity_available": int(capacity.get("safe_upload_budget_bytes") or 0) > 0,
         "backup_admissible": not blockers,
-        "checked_at": _now(),
+        "checked_at": checked_at,
         "reason_code": blockers[0] if blockers else None,
-        "diagnostics": [{"reason_code": code, "status": "blocked", "checked_at": _now()} for code in blockers],
+        "diagnostics": [
+            {"reason_code": code, "status": "blocked", "checked_at": checked_at,
+             "remediation_category": _P0_REMEDIATION.get(code, "review"), "sanitized": True}
+            for code in blockers
+        ],
+        "webdav_route_responding": bool(origin and not route_reason and destination_operational),
+        "webdav_authenticated": None,  # Verified only with scoped worker credential.
+        "reason_schema_version": 1,
         "node_id": node_id,
         "node_label": _safe_text(
             agent.get("name")
@@ -606,14 +721,10 @@ def readiness(
         "rclone_version": cap["rclone_version"],
         "photo_storage_access": cap["photo_storage_access"],
         "collections": cap["collections"],
-        "destination_ready": bool(
-            runtime.get("running")
-            and runtime.get("reachable")
-            and origin
-        ),
+        "destination_ready": destination_operational,
         "storage": capacity,
         "destinations": lite_photo_backup_destinations.destinations(
-            capacity, operational=bool(runtime.get("running") and runtime.get("reachable") and origin)
+            capacity, operational=destination_operational
         ),
         "selected_destination_id": lite_photo_backup_destinations.CURRENT_DESTINATION_ID,
         "sanitized": True,
@@ -756,7 +867,7 @@ def make_start_command(
     request: Request | None = None,
 ) -> dict[str, Any]:
     node_id = _safe_node_id(node_id)
-    current = status(node_id, request)
+    current = {**status(node_id, request), **readiness(node_id, request, force=True)}
     latest = (
         current.get("latest_backup")
         if isinstance(
@@ -814,13 +925,14 @@ def make_start_command(
                 "sanitized": True,
             },
         )
-    if not current.get("ready"):
+    if not current.get("backup_admissible"):
         raise HTTPException(
             status_code=409,
             detail={
                 "status": "not_ready",
                 "summary": current.get("summary"),
                 "blockers": current.get("blockers") or [],
+                "reason_code": current.get("reason_code"),
                 "sanitized": True,
             },
         )
