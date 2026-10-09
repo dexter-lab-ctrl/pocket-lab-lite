@@ -79,3 +79,55 @@ def test_inventory_limit_is_bounded(monkeypatch, tmp_path):
     import pytest
     with pytest.raises(RuntimeError, match="source_inventory_limit_reached"):
         provider._inventory(["camera"])
+
+
+def test_repair_records_only_sanitized_phases(tmp_path, monkeypatch):
+    import importlib.util
+    from pathlib import Path
+    agent_path = (Path(__file__).resolve().parents[2] /
+                  "pocket-lab-final-structure/runtime/agents/lite_photo_backup_agent.py")
+    spec = importlib.util.spec_from_file_location("photo_backup_repair_isolation", agent_path)
+    assert spec and spec.loader
+    agent = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(agent)
+    monkeypatch.setattr(agent.Path, "home", lambda: tmp_path)
+    monkeypatch.setattr(agent.shutil, "which",
+                        lambda name: "/usr/bin/pkg" if name == "pkg" else None)
+    monkeypatch.setattr(agent, "collect_photo_backup_capabilities", lambda: {
+        "rclone_available": False, "rclone_version": "Unavailable",
+        "photo_storage_access": True, "sanitized": True,
+    })
+    import subprocess
+    monkeypatch.setattr(agent.subprocess, "run", lambda args, **kwargs:
+                        subprocess.CompletedProcess(args, 1))
+    result = agent.repair_rclone()
+    assert result["status"] == "failed"
+    assert result["reason_code"] == "rclone_install_failed"
+    import json
+    record = json.loads((tmp_path / ".pocketlab-lite/photo-backup-repair.json").read_text())
+    assert record["status"] == "failed"
+    assert record["reason_code"] == "rclone_install_failed"
+    assert "stdout" not in record and "stderr" not in record
+    assert (tmp_path / ".pocketlab-lite/photo-backup-repair.json").stat().st_mode & 0o777 == 0o600
+
+
+def test_repair_does_not_launch_second_package_manager(tmp_path, monkeypatch):
+    import importlib.util
+    from pathlib import Path
+    import fcntl
+    agent_path = (Path(__file__).resolve().parents[2] /
+                  "pocket-lab-final-structure/runtime/agents/lite_photo_backup_agent.py")
+    spec = importlib.util.spec_from_file_location("photo_backup_repair_lock", agent_path)
+    assert spec and spec.loader
+    agent = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(agent)
+    monkeypatch.setattr(agent.Path, "home", lambda: tmp_path)
+    directory = tmp_path / ".pocketlab-lite"
+    directory.mkdir()
+    with (directory / "photo-backup-repair.lock").open("w") as lock:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        monkeypatch.setattr(agent.subprocess, "run", lambda *_args, **_kwargs:
+                            (_ for _ in ()).throw(AssertionError("installer was called")))
+        result = agent.repair_rclone()
+        assert result["status"] == "already_running"
+        assert result["reason_code"] == "rclone_repair_in_progress"
