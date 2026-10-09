@@ -736,7 +736,8 @@ class QualificationRun:
                 data = {}
             return int(exc.code), data if isinstance(data, dict) else {}
         except (urllib.error.URLError, TimeoutError, OSError) as exc:
-            raise QualificationError(f"endpoint unavailable: {type(exc).__name__}") from exc
+            reason = str(getattr(exc, "reason", "") or "").replace("\n", " ")[:120]
+            raise QualificationError(f"endpoint unavailable: {type(exc).__name__}:{reason}") from exc
 
     def _api_request(self, path: str, *, method: str = "GET", payload: dict[str, Any] | None = None, auth: bool = True) -> tuple[int, dict[str, Any]]:
         headers: dict[str, str] = {"Cache-Control": "no-store"}
