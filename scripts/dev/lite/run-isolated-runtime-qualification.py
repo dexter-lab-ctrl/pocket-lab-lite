@@ -192,6 +192,11 @@ class OwnedProcess:
         )
         handle.close()
         owned = cls(process, run_id=run_id, log=log)
+        identity_deadline = time.monotonic() + 1.0
+        while time.monotonic() < identity_deadline and owned.process.poll() is None:
+            if owned.is_owned():
+                return owned
+            time.sleep(0.01)
         if not owned.is_owned():
             owned.stop()
             raise QualificationError("owned process identity could not be verified")
