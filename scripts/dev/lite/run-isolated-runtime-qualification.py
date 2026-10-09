@@ -586,6 +586,7 @@ class QualificationRun:
             "POCKETLAB_QUALIFICATION_ROOT": str(self.paths.root),
             "POCKETLAB_QUALIFICATION_DESTINATION_ROOT": str(self.paths.destination),
             "POCKETLAB_QUALIFICATION_TEST_ORIGIN": self.webdav_origin,
+            "POCKETLAB_QUALIFICATION_WEBDAV_USER": self.webdav_user,
             "POCKETLAB_QUALIFICATION_WEBDAV_PASSWORD": self.webdav_password,
             "POCKETLAB_PHOTO_BACKUP_CREDENTIAL_TTL_SECONDS": "120",
             "POCKETLAB_PHOTOPRISM_COMMAND_TIMEOUT_SECONDS": "30",

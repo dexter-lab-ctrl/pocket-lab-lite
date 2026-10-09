@@ -22,6 +22,7 @@ DESTINATION_ID = "server-photoprism-originals"
 _RUN_ID_RE = re.compile(r"^[a-f0-9]{12,64}$")
 _SHA_RE = re.compile(r"^[a-f0-9]{40}$")
 _TOKEN_RE = re.compile(r"^[A-Za-z0-9_-]{32,256}$")
+_USER_RE = re.compile(r"^[A-Za-z0-9_.-]{1,64}$")
 
 
 class QualificationContextError(RuntimeError):
@@ -93,6 +94,9 @@ def assert_safe() -> None:
         raise QualificationContextError("qualification context token is missing or malformed")
     if not _TOKEN_RE.fullmatch(_value("POCKETLAB_QUALIFICATION_WEBDAV_PASSWORD")):
         raise QualificationContextError("qualification WebDAV credential is missing or malformed")
+    username = _value("POCKETLAB_QUALIFICATION_WEBDAV_USER") or "qualification"
+    if not _USER_RE.fullmatch(username):
+        raise QualificationContextError("qualification WebDAV username is malformed")
 
     root_raw = _value("POCKETLAB_QUALIFICATION_ROOT")
     destination_raw = _value("POCKETLAB_QUALIFICATION_DESTINATION_ROOT")
@@ -161,6 +165,11 @@ def test_origin() -> str:
 def synthetic_password() -> str:
     assert_safe()
     return _value("POCKETLAB_QUALIFICATION_WEBDAV_PASSWORD")
+
+
+def synthetic_username() -> str:
+    assert_safe()
+    return _value("POCKETLAB_QUALIFICATION_WEBDAV_USER") or "qualification"
 
 
 def synthetic_auth_id(node_id: str, backup_id: str) -> str:

@@ -2090,7 +2090,11 @@ def _store_credential(
         "credential_ref": credential_ref,
         "backup_id": backup_id,
         "node_id": node_id,
-        "username": "admin",
+        "username": (
+            qualification_context.synthetic_username()
+            if qualification_context.enabled()
+            else "admin"
+        ),
         "password": password,
         "auth_name": auth_name,
         "auth_id": auth_id,
@@ -2559,7 +2563,14 @@ def consume_credential(
         response = {
             "credential_ref": credential_ref,
             "backup_id": backup_id,
-            "username": str(data.get("username") or "admin"),
+            "username": str(
+                data.get("username")
+                or (
+                    qualification_context.synthetic_username()
+                    if qualification_context.enabled()
+                    else "admin"
+                )
+            ),
             "password": str(data.get("password") or ""),
             "webdav_url": str(data.get("webdav_url") or ""),
             "destination_prefix": placement["prefix"],
@@ -3297,7 +3308,9 @@ async def execute_start(
         )
         if not _probe_webdav(
             webdav_url,
-            "admin",
+            qualification_context.synthetic_username()
+            if qualification_context.enabled()
+            else "admin",
             password,
         ):
             raise RuntimeError(
