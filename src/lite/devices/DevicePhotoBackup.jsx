@@ -92,6 +92,24 @@ export default function DevicePhotoBackup({ deviceId }) {
           <p>Free: {formatBytes(data.storage.free_bytes || 0)} · Protected: {formatBytes(data.storage.hard_reserve_bytes || 0)} · Available for backup: {formatBytes(data.storage.safe_upload_budget_bytes || 0)}</p>
         </div>
       ) : null}
+      {Array.isArray(data.destinations) && data.destinations.length ? (
+        <div className="lite-device-photo-backup-note" role="group" aria-label="Photo backup destinations">
+          <strong>Backup destination</strong>
+          <p>{data.destinations.find((item) => item.destination_id === data.selected_destination_id)?.display_name || 'Configured PhotoPrism destination'}</p>
+          {data.destinations.some((item) => !item.supported) ? (
+            <details><summary>Other storage options</summary>
+              <ul>{data.destinations.filter((item) => !item.supported).map((item) => (
+                <li key={item.destination_id}>{item.display_name} — not supported on this setup</li>
+              ))}</ul>
+            </details>
+          ) : null}
+        </div>
+      ) : null}
+      {latest.oversized_items > 0 ? (
+        <p className="lite-device-photo-backup-note" role="status">
+          {latest.oversized_items} large item(s) could not fit in the protected backup budget. Smaller eligible files can still be copied.
+        </p>
+      ) : null}
       {data.photo_storage_access === false || blockers.includes('photo_storage_access_missing') ? (
         <p className="lite-device-photo-backup-note" role="note">
           Allow photo access on this device, then return here. Pocket Lab will not repeatedly open Android permission prompts.
@@ -190,7 +208,7 @@ export default function DevicePhotoBackup({ deviceId }) {
         ) : (
           <LiteButton tone="primary" disabled={!canStart} onClick={() => run('start')}>
             <Camera className="h-4 w-4" />
-            {latest.retryable && canStart ? 'Continue backup' : 'Back up photos'}
+            {latest.retryable && canStart ? 'Retry' : 'Back up photos'}
           </LiteButton>
         )}
       </div>
