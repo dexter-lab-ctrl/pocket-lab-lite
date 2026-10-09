@@ -12,6 +12,15 @@ tasks:
     cmds:
       - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest tests/backend/test_lite_photo_backup_agent.py'
 
+  lite:photo-backup:candidate:
+    desc: Run exact-SHA Photo Backup P0/P1 qualification in a disposable DEV-PC worktree
+    vars:
+      CANDIDATE_SHA: '{{default "" .CANDIDATE_SHA}}'
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/run-photo-backup-candidate-qualification.py
+        {{if .CANDIDATE_SHA}}--candidate-sha "{{.CANDIDATE_SHA}}"{{end}}
+
   lite:photo-backup:mocked:
     desc: Run mocked Photo Backup E2E workflows
     cmds:
