@@ -694,7 +694,7 @@ class QualificationRun:
                 if status == 200:
                     return
             except Exception as exc:
-                last = type(exc).__name__
+                last = str(exc).replace("\n", " ")[:240] or type(exc).__name__
                 time.sleep(0.15)
         poll = self.webdav.process.poll() if self.webdav is not None else None
         tail = ""
