@@ -1032,6 +1032,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
             remaining_bytes = 0
             required_bytes = 0
             planned_bytes = 0
+            oversized_count = 0
             for item in items:
                 regular_key = self._remote_key(
                     str(item["collection"]),
@@ -1072,6 +1073,8 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 ):
                     remaining += 1
                     remaining_bytes += int(item["size"])
+                    if int(item["size"]) > planning_budget:
+                        oversized_count += 1
                     continue
                 plan.append((item, final_key))
                 planned_bytes += int(
@@ -1092,6 +1095,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                     "items_skipped": skipped,
                     "items_remaining": len(plan) + remaining,
                     "conflicts": conflicts,
+                    "oversized_items": oversized_count,
                     "bytes_total": required_bytes,
                     "bytes_total_planned": planned_bytes,
                     "bytes_total_required": required_bytes,
@@ -1128,18 +1132,27 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                         or 0
                     ),
                 )
-                if (
-                    int(item["size"])
-                    > hard_budget
-                ):
-                    remaining += (
-                        len(plan) - index
-                    )
-                    remaining_bytes += sum(
-                        int(pending_item["size"])
-                        for pending_item, _ in plan[index:]
-                    )
-                    break
+                safe_budget = max(
+                    0, int(capacity_now.get("safe_upload_budget_bytes") or 0)
+                )
+                # Defer this item but keep trying smaller eligible objects.
+                # Space changes during the run must not consume the hard reserve.
+                if int(item["size"]) > min(hard_budget, safe_budget):
+                    remaining += 1
+                    remaining_bytes += int(item["size"])
+                    continue
+                # Never upload an item modified after inventory.
+                try:
+                    current_stat = item["path"].stat()
+                except OSError:
+                    remaining += 1
+                    remaining_bytes += int(item["size"])
+                    continue
+                if (current_stat.st_size != item["size"]
+                        or current_stat.st_mtime != item["mtime"]):
+                    remaining += 1
+                    remaining_bytes += int(item["size"])
+                    continue
 
                 self._transfer_one(
                     rclone,
@@ -1246,6 +1259,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 "items_skipped": skipped,
                 "items_remaining": remaining,
                 "conflicts": conflicts,
+                "oversized_items": oversized_count,
                 "bytes_total": required_bytes,
                 "bytes_total_planned": planned_bytes,
                 "bytes_total_required": required_bytes,
