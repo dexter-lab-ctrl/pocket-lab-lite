@@ -144,7 +144,9 @@ export default function DevicePhotoBackup({ deviceId }) {
       {storage ? (
         <div className="lite-device-photo-backup-note" role="group" aria-label="Server Phone destination storage">
           <strong>Server Phone destination</strong>
-          <p>Free: {formatBytes(storage.free_bytes)} · Hard reserve: {formatBytes(storage.hard_reserve_bytes)} · Planning reserve: {formatBytes(storage.planning_reserve_bytes)} · Safe upload budget: {formatBytes(storage.safe_upload_budget_bytes)}</p>
+          {storage.status === 'ready' && Number.isFinite(Number(storage.free_bytes)) && Number.isFinite(Number(storage.safe_upload_budget_bytes)) ? (
+            <p>Free: {formatBytes(storage.free_bytes)} · Hard reserve: {formatBytes(storage.hard_reserve_bytes)} · Planning reserve: {formatBytes(storage.planning_reserve_bytes)} · Safe upload budget: {formatBytes(storage.safe_upload_budget_bytes)}</p>
+          ) : <p>Current destination capacity could not be verified.</p>}
           <small>At least 10% remains protected; new transfers plan around 15% free space or 2 GiB, whichever is greater.</small>
           {storage.status !== 'ready' ? <p role="status">Storage status: {String(storage.reason_code || storage.status || 'unavailable').replaceAll('_', ' ')}. New transfers are blocked when storage cannot be verified.</p> : null}
         </div>
