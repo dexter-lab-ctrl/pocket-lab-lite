@@ -121,3 +121,24 @@ def test_controller_namespaces_are_run_bound():
     assert first != second
     assert module.RUN_ID_RE.fullmatch(first)
     assert module.RUN_ID_RE.fullmatch(second)
+
+
+def test_fleet_projection_retains_only_sanitized_photo_observation():
+    ensure_runtime_path()
+    from api_fastapi.services import fleet_registry
+
+    projected = fleet_registry._normalize_photo_backup({
+        "rclone_available": True,
+        "photo_storage_access": True,
+        "collections": ["camera", "pictures", "unexpected"],
+        "rclone_version": "rclone v1.0.0",
+        "repair": {
+            "status": "completed",
+            "reason_code": "rclone_install_failed",
+            "password": "must-not-project",
+        },
+        "password": "must-not-project",
+    })
+    assert projected["collections"] == ["camera", "pictures"]
+    assert projected["repair"]["status"] == "completed"
+    assert "password" not in repr(projected)
