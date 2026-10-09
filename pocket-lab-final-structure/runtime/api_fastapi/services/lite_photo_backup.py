@@ -311,6 +311,7 @@ def _public_job(job: dict[str, Any] | None) -> dict[str, Any] | None:
         "items_skipped",
         "items_remaining",
         "conflicts",
+        "oversized_items",
         "bytes_total",
         "bytes_total_planned",
         "bytes_total_required",
@@ -1745,6 +1746,11 @@ def consume_credential(
             },
         )
     capacity = server_capacity()
+    if int(capacity.get("safe_upload_budget_bytes") or 0) <= 0:
+        raise HTTPException(status_code=409, detail={
+            "status": "storage_below_planning_reserve",
+            "summary": "Not enough protected destination space is available.",
+            "sanitized": True})
     response = {
         "credential_ref": credential_ref,
         "backup_id": backup_id,
