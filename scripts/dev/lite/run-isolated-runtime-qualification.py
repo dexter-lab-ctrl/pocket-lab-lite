@@ -833,7 +833,19 @@ class QualificationRun:
                 if str(latest.get("connection") or "") == "online" and photo.get("photo_storage_access"):
                     return latest
             time.sleep(0.5)
-        raise QualificationError("candidate node agent heartbeat/capabilities did not converge")
+        diagnostics: list[str] = []
+        diagnostic_paths = [self.paths.logs / "supervisor.log"]
+        diagnostic_paths.extend(sorted(self.paths.logs.glob("pocketlab-agent-*.log")))
+        for path in diagnostic_paths:
+            name = path.name
+            try:
+                tail = " ".join(path.read_text(encoding="utf-8", errors="replace").splitlines()[-12:])
+                for secret in (self.webdav_password, self.webdav_control_token, self.agent_token, self.context_token):
+                    tail = tail.replace(secret, "[redacted]")
+                diagnostics.append(f"{name}={tail[-1400:]}")
+            except OSError:
+                diagnostics.append(f"{name}=unavailable")
+        raise QualificationError("candidate node agent heartbeat/capabilities did not converge; " + " ".join(diagnostics))
 
     def _wait_backup(self, backup_id: str, timeout: float = 150.0) -> dict[str, Any]:
         deadline = time.monotonic() + timeout
