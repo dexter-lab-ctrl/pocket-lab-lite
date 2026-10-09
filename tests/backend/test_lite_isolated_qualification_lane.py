@@ -1,0 +1,123 @@
+from __future__ import annotations
+
+import importlib.util
+import os
+from pathlib import Path
+
+import pytest
+
+from pocket_lab_test_utils import ensure_runtime_path
+
+
+ROOT = Path(__file__).resolve().parents[2]
+CONTEXT = ROOT / "pocket-lab-final-structure" / "runtime" / "api_fastapi" / "services" / "qualification_context.py"
+CONTROLLER = ROOT / "scripts" / "dev" / "lite" / "run-isolated-runtime-qualification.py"
+
+
+def _context():
+    ensure_runtime_path()
+    from api_fastapi.services import qualification_context
+
+    return qualification_context
+
+
+def _arm(monkeypatch: pytest.MonkeyPatch, root: Path, *, origin: str = "https://127.0.0.1:43123") -> Path:
+    destination = root / "webdav" / "originals"
+    destination.mkdir(mode=0o700, parents=True)
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "qualification")
+    monkeypatch.setenv("POCKETLAB_QUALIFICATION_CONTEXT", "isolated-runtime-v1")
+    monkeypatch.setenv("POCKETLAB_QUALIFICATION_RUN_ID", "a" * 24)
+    monkeypatch.setenv("POCKETLAB_QUALIFICATION_CANDIDATE_SHA", "b" * 40)
+    monkeypatch.setenv("POCKETLAB_QUALIFICATION_ALLOW_TEST_DESTINATION", "1")
+    monkeypatch.setenv("POCKETLAB_QUALIFICATION_CONTEXT_TOKEN", "c" * 48)
+    monkeypatch.setenv("POCKETLAB_QUALIFICATION_WEBDAV_PASSWORD", "d" * 48)
+    monkeypatch.setenv("POCKETLAB_QUALIFICATION_ROOT", str(root))
+    monkeypatch.setenv("POCKETLAB_QUALIFICATION_DESTINATION_ROOT", str(destination))
+    monkeypatch.setenv("POCKETLAB_QUALIFICATION_TEST_ORIGIN", origin)
+    return destination
+
+
+def test_qualification_context_is_disabled_without_complete_binding(monkeypatch):
+    context = _context()
+    for name in tuple(os.environ):
+        if name.startswith("POCKETLAB_QUALIFICATION_"):
+            monkeypatch.delenv(name, raising=False)
+    monkeypatch.delenv("POCKETLAB_ENVIRONMENT", raising=False)
+    assert context.enabled() is False
+
+
+def test_qualification_context_requires_loopback_https_and_private_destination(tmp_path, monkeypatch):
+    context = _context()
+    destination = _arm(monkeypatch, tmp_path)
+    assert context.enabled() is True
+    assert context.destination_root() == destination.resolve()
+    assert context.public_summary() == {
+        "enabled": True,
+        "context": "isolated-runtime-v1",
+        "run_id": "a" * 24,
+        "candidate_sha": "b" * 40,
+        "destination_id": "server-photoprism-originals",
+        "origin_class": "https_loopback",
+        "credential_scope": "synthetic_run_node_backup",
+    }
+
+    monkeypatch.setenv("POCKETLAB_QUALIFICATION_TEST_ORIGIN", "https://example.invalid:443")
+    with pytest.raises(context.QualificationContextError):
+        context.assert_safe()
+
+
+def test_qualification_context_rejects_symlink_destination(tmp_path, monkeypatch):
+    context = _context()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    link = tmp_path / "webdav"
+    link.symlink_to(outside, target_is_directory=True)
+    monkeypatch.setenv("POCKETLAB_QUALIFICATION_DESTINATION_ROOT", str(link / "originals"))
+    _arm(monkeypatch, tmp_path)
+    # _arm creates the intended child after the symlink setup; restore the
+    # symlink because the helper intentionally provisions a normal fixture.
+    link.unlink()
+    link.symlink_to(outside, target_is_directory=True)
+    with pytest.raises(context.QualificationContextError):
+        context.assert_safe()
+
+
+def test_partial_context_cannot_fall_back_to_production_origin(tmp_path, monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_catalog
+
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "qualification")
+    monkeypatch.setenv("POCKETLAB_QUALIFICATION_CONTEXT", "isolated-runtime-v1")
+    monkeypatch.setenv("POCKETLAB_LITE_SECURE_ORIGIN", "https://production.example.ts.net")
+    monkeypatch.delenv("POCKETLAB_QUALIFICATION_ROOT", raising=False)
+    assert lite_catalog._detect_secure_origin_from_request(None) is None
+
+
+def test_controller_scrubs_production_nats_and_cloud_credentials(monkeypatch):
+    spec = importlib.util.spec_from_file_location("isolated_qualification_controller", CONTROLLER)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    import sys
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    monkeypatch.setenv("POCKETLAB_NATS_PASSWORD", "production-secret")
+    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "production-secret")
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", "/production/state")
+    clean = module._scrubbed_environment()
+    assert "POCKETLAB_NATS_PASSWORD" not in clean
+    assert "AWS_SECRET_ACCESS_KEY" not in clean
+    assert "POCKETLAB_STATE_DIR" not in clean
+
+
+def test_controller_namespaces_are_run_bound():
+    spec = importlib.util.spec_from_file_location("isolated_qualification_controller_2", CONTROLLER)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    import sys
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    first = module.uuid.uuid4().hex[:24]
+    second = module.uuid.uuid4().hex[:24]
+    assert first != second
+    assert module.RUN_ID_RE.fullmatch(first)
+    assert module.RUN_ID_RE.fullmatch(second)

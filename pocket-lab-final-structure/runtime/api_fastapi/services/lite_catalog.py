@@ -110,6 +110,21 @@ def _safe_message(value: Any, fallback: str = "PhotoPrism install status is avai
 
 
 def _detect_secure_origin_from_request(request: Request | None = None) -> str | None:
+    # The disposable qualification controller supplies a fully validated
+    # loopback HTTPS origin.  It is intentionally checked before the normal
+    # Tailscale/Caddy discovery, and the context module fails closed if any
+    # run-bound field is incomplete.  Production has no such context.
+    try:
+        from . import qualification_context
+
+        if qualification_context.enabled():
+            return qualification_context.test_origin()
+    except Exception:
+        # A partially configured test context must not become a usable origin.
+        # Normal production discovery remains available when no qualification
+        # variables are present.
+        if qualification_context.configured():
+            return None
     configured = (os.environ.get("POCKETLAB_LITE_SECURE_ORIGIN") or os.environ.get("POCKETLAB_SECURE_ORIGIN") or "").strip().rstrip("/")
     if configured.startswith("https://") and ".ts.net" in configured:
         return configured

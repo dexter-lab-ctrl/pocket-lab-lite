@@ -29,7 +29,13 @@ from fastapi import HTTPException, Request
 from cryptography.fernet import Fernet, InvalidToken
 
 from .. import deps
-from . import fleet_registry, lite_app_runtime, lite_catalog, lite_photo_backup_destinations
+from . import (
+    fleet_registry,
+    lite_app_runtime,
+    lite_catalog,
+    lite_photo_backup_destinations,
+    qualification_context,
+)
 from .nats_bus import BUS
 
 PHOTO_BACKUP_START_SUBJECT = "pocketlab.commands.lite.media_backup.start"
@@ -52,13 +58,7 @@ ACTIVE_STATES = {"queued", "planning", "waiting_for_credentials", "starting", "t
 HARD_RESERVE_FRACTION = 0.10
 PLANNING_RESERVE_FRACTION = 0.15
 PLANNING_RESERVE_MIN_BYTES = 2 * 1024 * 1024 * 1024
-CREDENTIAL_TTL_SECONDS = max(
-    3600,
-    min(
-        7200,
-        int(os.environ.get("POCKETLAB_PHOTO_BACKUP_CREDENTIAL_TTL_SECONDS", "5400")),
-    ),
-)
+CREDENTIAL_TTL_SECONDS = qualification_context.credential_ttl_seconds()
 PHOTOPRISM_COMMAND_TIMEOUT_SECONDS = max(
     30,
     min(
@@ -324,6 +324,8 @@ def _evidence_path() -> Path:
 
 
 def _originals_path() -> Path:
+    if qualification_context.enabled():
+        return qualification_context.destination_root()
     return (
         Path.home()
         / ".pocket_lab"
@@ -664,6 +666,16 @@ def _secure_origin(request: Request | None = None) -> str | None:
 
 def _probe_photoprism_runtime(*, force: bool = False) -> dict[str, Any]:
     """Run the bounded runtime probe while retaining old probe-call compatibility."""
+    if qualification_context.enabled():
+        return {
+            "installed": True,
+            "installation_state": "qualification_fixture",
+            "running": True,
+            "reachable": True,
+            "health": "healthy",
+            "process": {"name": "qualification-photoprism-fixture", "status": "online"},
+            "sanitized": True,
+        }
     try:
         result = lite_app_runtime.probe_app_runtime("photoprism", force=force)
     except TypeError as exc:
@@ -1873,6 +1885,12 @@ def _create_app_password(
     node_id: str,
     backup_id: str,
 ) -> tuple[str, str, str]:
+    if qualification_context.enabled():
+        return (
+            qualification_context.synthetic_password(),
+            f"PocketLab-qualification-{node_id[:24]}-{backup_id[-8:]}",
+            qualification_context.synthetic_auth_id(node_id, backup_id),
+        )
     scopes = _photoprism_command(
         ["show", "scopes"],
         timeout=PHOTOPRISM_COMMAND_TIMEOUT_SECONDS,
@@ -1941,6 +1959,11 @@ def _create_app_password(
 
 
 def _revoke_auth_id(auth_id: str) -> bool:
+    if qualification_context.enabled():
+        # The fixture credential is scoped to this run and is revoked by
+        # deleting its one-time credential record plus the fixture's ephemeral
+        # process state.  No PhotoPrism command is ever reached here.
+        return bool(str(auth_id or "").strip())
     safe = str(auth_id or "").strip()
     if (
         not safe

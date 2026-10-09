@@ -21,6 +21,26 @@ tasks:
         {{.PYTHON}} scripts/dev/lite/run-photo-backup-candidate-qualification.py
         {{if .CANDIDATE_SHA}}--candidate-sha "{{.CANDIDATE_SHA}}"{{end}}
 
+  lite:photo-backup:candidate:full:
+    desc: Run the full exact-SHA disposable API, worker, NATS/JetStream, node-agent, supervisor and HTTPS WebDAV qualification lane
+    vars:
+      CANDIDATE_SHA: '{{default "" .CANDIDATE_SHA}}'
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/run-photo-backup-candidate-qualification.py
+        --full
+        --candidate-sha "{{.CANDIDATE_SHA}}"
+
+  lite:photo-backup:candidate:android-preflight:
+    desc: Capture a read-only, fail-closed Android qualification preflight; never starts candidate code
+    vars:
+      CANDIDATE_SHA: '{{default "" .CANDIDATE_SHA}}'
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/run-isolated-runtime-qualification.py
+        --android-read-only
+        --candidate-sha "{{.CANDIDATE_SHA}}"
+
   lite:photo-backup:mocked:
     desc: Run mocked Photo Backup E2E workflows
     cmds:

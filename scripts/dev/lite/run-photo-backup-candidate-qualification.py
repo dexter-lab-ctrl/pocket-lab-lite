@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import contextlib
 import json
+import importlib.util
 import os
 import re
 import shutil
@@ -431,9 +432,24 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candidate-sha", default="", help="full commit SHA; defaults to the clean current HEAD")
     parser.add_argument("--test-timeout-seconds", type=float, default=900.0)
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="compose the disposable API-only lane with the full isolated NATS/WebDAV/agent lane",
+    )
     args = parser.parse_args(argv)
     if args.test_timeout_seconds < 30 or args.test_timeout_seconds > 3600:
         parser.error("--test-timeout-seconds must be between 30 and 3600")
+    if args.full:
+        module_path = SCRIPT_DIR / "run-isolated-runtime-qualification.py"
+        spec = importlib.util.spec_from_file_location("isolated_runtime_qualification", module_path)
+        if spec is None or spec.loader is None:
+            print(json.dumps({"status": "FAIL", "reason": "full qualification controller unavailable", "sanitized": True}, sort_keys=True))
+            return 1
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        forwarded = ["--candidate-sha", args.candidate_sha or _current_candidate_sha(), "--python", sys.executable]
+        return int(module.main(forwarded))
     try:
         result = run(args.candidate_sha or None, test_timeout=args.test_timeout_seconds)
     except (OSError, QualificationError, subprocess.SubprocessError) as exc:
