@@ -1,6 +1,22 @@
 version: '3'
 
 tasks:
+
+  lite:photo-backup:backend:
+    desc: Run Photo Backup service and reliability backend tests
+    cmds:
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest tests/backend/test_lite_photo_backup.py tests/backend/test_lite_photo_backup_reliability.py'
+
+  lite:photo-backup:agent:
+    desc: Run Photo Backup Android/Termux agent unit tests
+    cmds:
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest tests/backend/test_lite_photo_backup_agent.py'
+
+  lite:photo-backup:mocked:
+    desc: Run mocked Photo Backup E2E workflows
+    cmds:
+      - 'VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-photo-backup.spec.ts'
+
   lite:setup:
     desc: Install only missing repository development dependencies without upgrading protected tools
     cmds:
