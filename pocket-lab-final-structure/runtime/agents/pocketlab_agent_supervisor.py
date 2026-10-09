@@ -21,6 +21,7 @@ import signal
 import shutil
 import socket
 import subprocess
+import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, List
@@ -108,7 +109,11 @@ def _source_version(path: Path) -> str:
 
 
 def _prepare_versioned_python_exec(process_name: str, version: str) -> str:
-    python3 = shutil.which("python3")
+    # The supervisor is already running under the device's selected Python
+    # runtime. Reusing that executable keeps venv/Termux package resolution
+    # identical for the restarted agent; falling back to PATH preserves the
+    # historical behavior for launchers that do not expose sys.executable.
+    python3 = sys.executable if sys.executable and Path(sys.executable).exists() else shutil.which("python3")
     if not python3:
         raise RuntimeError("python3_missing")
     safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", process_name)
