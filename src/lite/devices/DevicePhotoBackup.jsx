@@ -49,7 +49,7 @@ export default function DevicePhotoBackup({ deviceId }) {
   const live = isLive(latest.status);
   const progress = latest.progress || {};
   const blockers = Array.isArray(data.blockers) ? data.blockers : [];
-  const canStart = Boolean(data.ready && selected.length && !live && !actionState.busy);
+  const canStart = Boolean(data.backup_admissible ?? data.ready) && Boolean(selected.length && !live && !actionState.busy);
   const canRepair = blockers.includes('rclone_unavailable') && !actionState.busy;
 
   async function run(action) {
@@ -76,11 +76,22 @@ export default function DevicePhotoBackup({ deviceId }) {
         <span className="lite-device-photo-backup-icon"><Camera className="h-4 w-4" /></span>
         <div>
           <span>Photo backup</span>
-          <strong>{live ? 'Backing up photos' : data.ready ? 'Ready' : 'Needs attention'}</strong>
-          <p>{latest.summary || data.summary || 'Pocket Lab is checking photo backup readiness.'}</p>
+          <strong>{live ? 'Backing up photos' : data.ready ? 'Ready' : blockers.includes('storage_below_planning_reserve') ? 'Waiting for space' : 'Needs attention'}</strong>
+          <p>{data.summary || 'Pocket Lab is checking photo backup readiness.'}</p>
         </div>
       </div>
 
+      {latest.summary && !live ? (
+        <p className="lite-device-photo-backup-note" role="status">
+          Previous backup: {latest.summary}
+        </p>
+      ) : null}
+      {data.storage ? (
+        <div className="lite-device-photo-backup-note" role="group" aria-label="Server Phone destination storage">
+          <strong>Server Phone destination</strong>
+          <p>Free: {formatBytes(data.storage.free_bytes || 0)} · Protected: {formatBytes(data.storage.hard_reserve_bytes || 0)} · Available for backup: {formatBytes(data.storage.safe_upload_budget_bytes || 0)}</p>
+        </div>
+      ) : null}
       {data.photo_storage_access === false || blockers.includes('photo_storage_access_missing') ? (
         <p className="lite-device-photo-backup-note" role="note">
           Allow photo access on this device, then return here. Pocket Lab will not repeatedly open Android permission prompts.
@@ -179,7 +190,7 @@ export default function DevicePhotoBackup({ deviceId }) {
         ) : (
           <LiteButton tone="primary" disabled={!canStart} onClick={() => run('start')}>
             <Camera className="h-4 w-4" />
-            {latest.retryable ? 'Retry' : 'Back up photos'}
+            {latest.retryable && canStart ? 'Continue backup' : 'Back up photos'}
           </LiteButton>
         )}
       </div>
