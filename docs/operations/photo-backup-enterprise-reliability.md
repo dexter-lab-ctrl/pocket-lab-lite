@@ -71,3 +71,39 @@ but **not executed**. No live media, Termux, HTTP or credential operation
 was exercised in this implementation session. Extra failure-code taxonomy,
 reservation conflicts, heartbeat field compatibility and mount identity
 need runtime/contract verification before production qualification.
+
+
+## P0 closure implementation — volume binding, heartbeat and lifecycle
+
+The fixed PhotoPrism originals destination now stores a private, server-owned
+identity anchor at `lite_photo_backup_destination_identity.json` within the
+control-plane state directory. The binding includes the resolved originals
+path, operating-system device identity and filesystem identity, represented
+as a SHA-256 fingerprint; the raw path or disk identifiers are not exposed
+to the UI. A mismatch fails closed with
+`destination_identity_mismatch` and the anchor is not automatically
+updated. An operator must verify/remount the original volume or perform a
+separate, explicitly authorized migration; do not edit the binding blindly.
+Initial anchoring is trust-on-first-use at the already configured originals
+path, **not** external media attestation. Filesystem capacity, path permissions
+and WebDAV access are still checked independently.
+
+Fleet heartbeat freshness now uses `last_seen_epoch` from the fleet
+registry first, then known timestamp variants. Timestamp-less legacy
+records fail closed as `source_capabilities_stale` rather than being
+presumed fresh. Confirm the agent is reporting fresh fleet heartbeats before
+attempting a backup.
+
+Cross-device destination exclusivity failures now include
+`storage_reservation_conflict`. Credential expiry and node/backup
+identity mismatch have distinct stable reason codes. The public job view
+exposes only the sanitized `credential_revoke_status` (pending/revoked/none)
+and never the internal credential reference or PhotoPrism auth identifier.
+A pending credential revocation remains visible independently from current
+backup readiness. The shared destination still uses its existing single-job
+admission lock; this change does not introduce a multi-process quota scheduler.
+
+**Source changes and regression cases were committed without execution.**
+No tests, builds, CI inspection or live device qualification were performed.
+Full runtime correctness and the exact device-volume behavior remain
+**unvalidated**.
