@@ -838,6 +838,7 @@ class QualificationRun:
     def _wait_agent(self, timeout: float = 50.0) -> dict[str, Any]:
         deadline = time.monotonic() + timeout
         latest: dict[str, Any] = {}
+        stable_observations = 0
         while time.monotonic() < deadline:
             status, payload = self._api_request(f"/api/fleet/agents/{self.node_id}")
             if status == 200 and isinstance(payload.get("agent"), dict):
@@ -864,8 +865,19 @@ class QualificationRun:
                     photo.get("rclone_available")
                     or "rclone_available" in capabilities
                 )
-                if online and photo_ready:
+                supervisor_status = str(latest.get("supervisor_status") or "").lower()
+                process_status = str(latest.get("agent_process_status") or "").lower()
+                stable = (
+                    online
+                    and photo_ready
+                    and supervisor_status not in {"repairing", "degraded"}
+                    and process_status not in {"stopped", "missing", "errored", "error", "stopping"}
+                )
+                stable_observations = stable_observations + 1 if stable else 0
+                if stable_observations >= 3:
                     return latest
+            else:
+                stable_observations = 0
             time.sleep(0.5)
         diagnostics: list[str] = []
         diagnostic_paths = [self.paths.logs / "supervisor.log"]
