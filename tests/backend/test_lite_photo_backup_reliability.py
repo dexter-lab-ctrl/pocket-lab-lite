@@ -32,6 +32,7 @@ def test_zero_planning_budget_is_not_admissible(monkeypatch):
     monkeypatch.setattr(backup.lite_app_runtime, "probe_app_runtime",
                         lambda name: {"running": True, "reachable": True})
     monkeypatch.setattr(backup, "_secure_origin", lambda request=None: "https://safe.example")
+    monkeypatch.setattr(backup, "_webdav_route_probe", lambda origin, force=False: None)
     monkeypatch.setattr(backup, "server_capacity", lambda: {
         "status": "ready", "safe_upload_budget_bytes": 0,
         "hard_upload_budget_bytes": 100, "sanitized": True})
@@ -131,3 +132,66 @@ def test_repair_does_not_launch_second_package_manager(tmp_path, monkeypatch):
         result = agent.repair_rclone()
         assert result["status"] == "already_running"
         assert result["reason_code"] == "rclone_repair_in_progress"
+
+
+def test_p0_route_probe_caches_auth_challenge_as_reachable(monkeypatch):
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photo_backup as backup
+    import urllib.error
+    backup._PREFLIGHT_CACHE.clear()
+    observed = []
+    def fake_open(request, timeout):
+        observed.append((request.full_url, request.get_method(), timeout))
+        raise urllib.error.HTTPError(request.full_url, 401, "Unauthorized", {}, None)
+    monkeypatch.setattr(backup.urllib.request, "urlopen", fake_open)
+    assert backup._webdav_route_probe("https://safe.example", force=True) is None
+    assert backup._webdav_route_probe("https://safe.example") is None
+    assert observed == [("https://safe.example/apps/photoprism/originals/", "OPTIONS", 3)]
+
+
+def test_p0_route_probe_fails_closed_without_network_on_insecure_origin(monkeypatch):
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photo_backup as backup
+    monkeypatch.setattr(backup.urllib.request, "urlopen",
+                        lambda *a, **k: (_ for _ in ()).throw(AssertionError("network")))
+    assert backup._webdav_route_probe("http://unsafe.example", force=True) == "secure_route_unavailable"
+    assert backup._webdav_route_probe("https://user:pass@safe.example", force=True) == "secure_route_unavailable"
+
+
+def test_p0_reason_classification_and_independent_readiness(monkeypatch):
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photo_backup as backup
+    monkeypatch.setattr(backup, "_safe_node_id", lambda x: x)
+    monkeypatch.setattr(backup, "_agent", lambda node: {"node_id": node, "connection": "online"})
+    monkeypatch.setattr(backup, "_photo_capability", lambda agent: {
+        "rclone_available": True, "rclone_version": "rclone 1.75",
+        "photo_storage_access": True, "collections": ["camera"]})
+    monkeypatch.setattr(backup.lite_app_runtime, "probe_app_runtime",
+                        lambda name, force=False: {"running": True, "reachable": True})
+    monkeypatch.setattr(backup, "_secure_origin", lambda request=None: "https://safe.example")
+    monkeypatch.setattr(backup, "_webdav_route_probe",
+                        lambda origin, force=False: "webdav_probe_failed")
+    monkeypatch.setattr(backup, "server_capacity", lambda: {
+        "status": "ready", "safe_upload_budget_bytes": 2000,
+        "hard_upload_budget_bytes": 3000, "sanitized": True})
+    view = backup.readiness("secondary", force=True)
+    assert view["source_ready"] is True
+    assert view["safe_capacity_available"] is True
+    assert view["destination_operational"] is False
+    assert view["backup_admissible"] is False
+    assert view["reason_code"] == "webdav_probe_failed"
+    assert view["webdav_authenticated"] is None
+    assert view["diagnostics"][0]["remediation_category"] == "destination"
+
+
+def test_p0_worker_capacity_reason_is_independent_of_route():
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photo_backup as backup
+    assert backup._capacity_diagnostic({"status": "unavailable"}) == "destination_storage_unavailable"
+    assert backup._capacity_diagnostic({"status": "ready", "read_only": True}) == "destination_read_only"
+    assert backup._capacity_diagnostic({"status": "ready", "hard_upload_budget_bytes": 10,
+                                        "safe_upload_budget_bytes": 0}) == "storage_below_planning_reserve"
