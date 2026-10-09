@@ -495,6 +495,9 @@ def server_capacity() -> dict[str, Any]:
             "hard_upload_budget_bytes": 0,
             "sanitized": True,
         }
+    if total <= 0 or free < 0 or free > total or total > (1 << 63) - 1:
+        return {"status": "unavailable", "hard_upload_budget_bytes": 0,
+                "safe_upload_budget_bytes": 0, "sanitized": True}
     hard = int(total * HARD_RESERVE_FRACTION)
     planning = max(
         int(total * PLANNING_RESERVE_FRACTION),
@@ -541,11 +544,10 @@ def readiness(
         blockers.append("rclone_unavailable")
     if not cap["photo_storage_access"]:
         blockers.append("photo_storage_access_missing")
-    if not (
-        runtime.get("running")
-        and runtime.get("reachable")
-    ):
-        blockers.append("photoprism_unavailable")
+    if not runtime.get("running"):
+        blockers.append("photoprism_not_running")
+    elif not runtime.get("reachable"):
+        blockers.append("photoprism_unreachable")
     if not origin:
         blockers.append("secure_route_unavailable")
     if (
@@ -555,7 +557,9 @@ def readiness(
         )
         <= 0
     ):
-        blockers.append("destination_storage_full")
+        blockers.append("storage_below_hard_reserve")
+    elif int(capacity.get("safe_upload_budget_bytes") or 0) <= 0:
+        blockers.append("storage_below_planning_reserve")
 
     if "photo_storage_access_missing" in blockers:
         summary = "Allow photo access on this device."
@@ -565,9 +569,9 @@ def readiness(
         summary = "This device is offline."
     elif "secure_route_unavailable" in blockers:
         summary = "Remote access not ready."
-    elif "photoprism_unavailable" in blockers:
+    elif ("photoprism_not_running" in blockers or "photoprism_unreachable" in blockers):
         summary = "PhotoPrism is not ready for photo backup."
-    elif "destination_storage_full" in blockers:
+    elif ("storage_below_hard_reserve" in blockers or "storage_below_planning_reserve" in blockers):
         summary = (
             "Not enough protected space is available "
             "on the Server Phone."
@@ -576,8 +580,16 @@ def readiness(
         summary = "Ready to back up photos."
 
     return {
+        "schema_version": 2,
         "status": "ready" if not blockers else "not_ready",
         "ready": not blockers,
+        "source_ready": _agent_online(agent) and cap["rclone_available"] and cap["photo_storage_access"],
+        "destination_operational": bool(runtime.get("running") and runtime.get("reachable") and origin),
+        "safe_capacity_available": int(capacity.get("safe_upload_budget_bytes") or 0) > 0,
+        "backup_admissible": not blockers,
+        "checked_at": _now(),
+        "reason_code": blockers[0] if blockers else None,
+        "diagnostics": [{"reason_code": code, "status": "blocked", "checked_at": _now()} for code in blockers],
         "node_id": node_id,
         "node_label": _safe_text(
             agent.get("name")
@@ -689,6 +701,7 @@ def status(
     return {
         **ready,
         "latest_backup": latest,
+        "last_backup_retryable": bool(latest and latest.get("retryable")),
         "updated_at": payload.get("updated_at") or _now(),
     }
 
