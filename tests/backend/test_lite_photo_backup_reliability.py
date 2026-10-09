@@ -52,3 +52,22 @@ def test_invalid_capacity_fails_closed(tmp_path, monkeypatch):
     result = backup.server_capacity()
     assert result["status"] == "unavailable"
     assert result["safe_upload_budget_bytes"] == 0
+
+
+def test_inventory_limit_is_bounded(monkeypatch, tmp_path):
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from agents import lite_photo_backup_agent as agent
+    class FakeStat:
+        st_size = 20
+        st_mtime = 42.0
+    root = tmp_path / "DCIM"
+    root.mkdir()
+    (root / "a.jpg").write_bytes(b"abc")
+    monkeypatch.setattr(agent, "_collection_path", lambda name: root)
+    monkeypatch.setattr(agent, "MAX_INVENTORY_ITEMS", 0)
+    provider = agent.PhotoPrismWebDAVProvider(
+        node_id="secondary", agent_token="test", control_origin="https://safe.example")
+    import pytest
+    with pytest.raises(RuntimeError, match="source_inventory_limit_reached"):
+        provider._inventory(["camera"])
