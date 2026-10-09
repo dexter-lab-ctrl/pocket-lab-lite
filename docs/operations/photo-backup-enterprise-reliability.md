@@ -200,3 +200,35 @@ under concurrent non-backup writers, huge media catalogs, Termux I/O
 pressure, partial uploads during NATS failures and very large video
 transfer behavior were not exercised. No tests, builds, CI inspection,
 or device/runtime qualification were run per session instructions.
+
+
+## P3 — Devices Photo Backup UX (source implementation, not validated)
+
+The Devices Photo Backup panel now separates **Current readiness** from
+**Latest backup** history. Current readiness renders the backend's
+admission status, checked time and sanitized reason-code remedies;
+the most recent transfer reports its own terminal/live outcome, counts,
+time markers, retryability and pending credential revocation. A completed
+historical job does not override a newly unavailable destination and a
+historical failure does not make current readiness false.
+
+The Server Phone capacity summary presents current free space,
+10% hard reserve, planning reserve (15% or 2 GiB minimum) and safe
+budget separately. If storage cannot be confirmed, the UI does not
+invent a numeric capacity. Unsupported destinations remain disclosed
+but are not actionable.
+
+Backup sources use a semantic fieldset and legend; progress has an
+accessible label, action buttons are grouped, and there is a manual
+**Check status** control. Repair and transfer selections are disabled
+during conflicting actions; errors leave the Devices screen available.
+The UI uses backend-owned start/stop/repair routes and never executes
+shell commands or stores credentials.
+
+Mocked Playwright cases were added for readiness versus historical
+outcomes, capacity explanation, progress and accessibility, missing
+source, malformed data and mobile viewport behavior. **These cases were
+not executed.** No screenshot or Storybook runtime qualification was
+performed. P3 still requires design review of narrow/mobile Manage
+panels, Playwright results, screen-reader qualification, and any missing
+Storybook scenarios before declaring it production-ready.
