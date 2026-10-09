@@ -33,3 +33,41 @@ task lite:check
 ```
 
 Rollback: revert application commits, retain existing media and job history, and do not remove existing credential or PhotoPrism state. Physical Android/Termux behavior must be separately verified before deployment.
+
+
+## P0 readiness continuation — source implementation, not qualified
+
+The backend returns a versioned current readiness projection independently from
+`latest_backup`. It exposes `source_ready`, `destination_operational`,
+`safe_capacity_available`, `backup_admissible`, an ordered set of stable
+reason-code blockers, sanitized remediation categories, and a checked timestamp.
+
+A bounded, cached unauthenticated HTTPS OPTIONS probe checks whether the
+configured same-origin PhotoPrism WebDAV route responds. An authentication
+challenge is **route reachable**, not **credentials verified**; the
+`webdav_authenticated` field is therefore null in this projection.
+The worker still performs authenticated OPTIONS and PROPFIND using an
+individually scoped, expiring PhotoPrism app password, and will not issue a
+transfer command if its authenticated probe fails.
+
+Current readiness checks never disclose passwords, filesystem paths or
+upstream error bodies. The route probe times out in three seconds and caches
+its sanitized classification for 20 seconds. Starting a new backup forces
+a fresh probe and runtime check, and the worker rechecks runtime, route
+and protected storage before creating transfer credentials. Both checks
+fail closed on unavailable WebDAV or depleted planning reserve.
+
+Only the existing fixed PhotoPrism originals destination is eligible.
+A successful OPTIONS response does not prove WebDAV write permission,
+mount identity or credential validity; these require worker-scoped
+authentication and runtime qualification. A healthy control API is
+not sufficient to mark photo backup ready.
+
+### P0 qualification explicitly deferred
+
+Tests for cache reuse, route challenge handling, forbidden/insecure origins,
+independent readiness semantics and capacity classifications were added,
+but **not executed**. No live media, Termux, HTTP or credential operation
+was exercised in this implementation session. Extra failure-code taxonomy,
+reservation conflicts, heartbeat field compatibility and mount identity
+need runtime/contract verification before production qualification.
