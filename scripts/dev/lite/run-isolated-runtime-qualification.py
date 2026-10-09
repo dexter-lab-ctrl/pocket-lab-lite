@@ -1041,8 +1041,14 @@ class QualificationRun:
             "POCKETLAB_NATS_PASSWORD": self.nats.password if self.nats else "",
             "POCKETLAB_CONTROL_ORIGIN": self.api_origin,
         }
-        if any(parsed.get(key) != value for key, value in expected.items()) or parsed.get("POCKETLAB_NODE_ROLES") != "storage":
-            raise QualificationError("synthetic candidate bootstrap escaped the isolated runtime binding")
+        mismatches = [key for key, value in expected.items() if parsed.get(key) != value]
+        if parsed.get("POCKETLAB_NODE_ROLES") != "storage":
+            mismatches.append("POCKETLAB_NODE_ROLES")
+        if mismatches:
+            raise QualificationError(
+                "synthetic candidate bootstrap escaped the isolated runtime binding: "
+                + ",".join(sorted(set(mismatches)))
+            )
         if not parsed.get("POCKETLAB_AGENT_TOKEN"):
             raise QualificationError("synthetic candidate bootstrap did not issue an agent credential")
         self.agent_env.update(parsed)
