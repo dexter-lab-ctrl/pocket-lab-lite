@@ -758,6 +758,14 @@ class QualificationRun:
             self.processes.append(self.nats.process)
         self.env.update(self.nats.env)
         self.agent_env.update(self.nats.env)
+        self.env.update({
+            "POCKETLAB_AGENT_NATS_USER": self.nats.user,
+            "POCKETLAB_AGENT_NATS_PASSWORD": self.nats.password,
+        })
+        self.agent_env.update({
+            "POCKETLAB_AGENT_NATS_USER": self.nats.user,
+            "POCKETLAB_AGENT_NATS_PASSWORD": self.nats.password,
+        })
         self.opa = DisposableOpa(
             paths=self.paths,
             run_id=self.run_id,
@@ -824,6 +832,8 @@ class QualificationRun:
             log=self.paths.logs / "worker.log",
         )
         self.processes.append(self.worker)
+
+    def start_supervisor(self) -> None:
         self.supervisor = OwnedProcess.launch(
             [self.python, str(self.candidate_runtime / "agents" / "pocketlab_agent_supervisor.py")],
             env=self.agent_env,
@@ -884,6 +894,28 @@ class QualificationRun:
             except (OSError, UnicodeDecodeError, ValueError):
                 data = {}
             return int(exc.code), data if isinstance(data, dict) else {}
+        except (urllib.error.URLError, TimeoutError, OSError) as exc:
+            reason = str(getattr(exc, "reason", "") or "").replace("\n", " ")[:120]
+            raise QualificationError(f"endpoint unavailable: {type(exc).__name__}:{reason}") from exc
+
+    def _request_text(
+        self,
+        url: str,
+        *,
+        method: str = "GET",
+        payload: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        context: ssl.SSLContext | None = None,
+    ) -> tuple[int, str]:
+        body = json.dumps(payload, separators=(",", ":")).encode() if payload is not None else None
+        request = urllib.request.Request(url, data=body, method=method, headers=headers or {})
+        if payload is not None:
+            request.add_header("Content-Type", "application/json")
+        try:
+            with urllib.request.urlopen(request, timeout=8, context=context) as response:
+                return int(response.status), response.read(128 * 1024).decode("utf-8", errors="replace")
+        except urllib.error.HTTPError as exc:
+            return int(exc.code), exc.read(128 * 1024).decode("utf-8", errors="replace")
         except (urllib.error.URLError, TimeoutError, OSError) as exc:
             reason = str(getattr(exc, "reason", "") or "").replace("\n", " ")[:120]
             raise QualificationError(f"endpoint unavailable: {type(exc).__name__}:{reason}") from exc
@@ -959,6 +991,69 @@ class QualificationRun:
             "credential_values_excluded": True,
         }
 
+    def _enroll_candidate_agent(self) -> None:
+        status, enrollment = self._api_request(
+            "/api/lite/harness/qualification/enroll",
+            method="POST",
+            payload={"node_id": self.node_id, "device_roles": ["storage"]},
+            session_token=self.fleet_session_token,
+        )
+        if status != 201 or not enrollment.get("qualification_token"):
+            raise QualificationError("synthetic candidate enrollment was rejected")
+        invite_token = str(enrollment["qualification_token"])
+        status, bootstrap_text = self._request_text(
+            self.api_origin + "/api/lite/fleet/agent/bootstrap.env",
+            method="POST",
+            payload={
+                "token": invite_token,
+                "role": "storage",
+                "device_roles": ["storage"],
+            },
+            headers={"Cache-Control": "no-store"},
+            context=self._ssl(),
+        )
+        if status != 200:
+            raise QualificationError("synthetic candidate bootstrap consumption was rejected")
+        allowed = {
+            "POCKETLAB_NODE_ROLES", "POCKETLAB_NODE_ROLE", "POCKETLAB_NODE_ROLE_GENERATION",
+            "POCKETLAB_NODE_ID", "POCKETLAB_NODE_NAME", "POCKETLAB_AGENT_TOKEN",
+            "POCKETLAB_NATS_URL", "POCKETLAB_NATS_USER", "POCKETLAB_NATS_PASSWORD",
+            "POCKETLAB_CONTROL_ORIGIN",
+        }
+        parsed: dict[str, str] = {}
+        for line in bootstrap_text.splitlines():
+            if not line.startswith("export ") or "=" not in line:
+                continue
+            key, raw = line[7:].split("=", 1)
+            if key not in allowed:
+                continue
+            try:
+                value = json.loads(raw)
+            except (TypeError, ValueError):
+                raise QualificationError("synthetic candidate bootstrap contained invalid environment data") from None
+            if not isinstance(value, str):
+                raise QualificationError("synthetic candidate bootstrap contained non-text environment data")
+            parsed[key] = value
+        expected = {
+            "POCKETLAB_NODE_ID": self.node_id,
+            "POCKETLAB_NATS_URL": self.nats.env["POCKETLAB_NATS_URL"] if self.nats else "",
+            "POCKETLAB_NATS_USER": self.nats.user if self.nats else "",
+            "POCKETLAB_NATS_PASSWORD": self.nats.password if self.nats else "",
+            "POCKETLAB_CONTROL_ORIGIN": self.api_origin,
+        }
+        if any(parsed.get(key) != value for key, value in expected.items()) or parsed.get("POCKETLAB_NODE_ROLES") != "storage":
+            raise QualificationError("synthetic candidate bootstrap escaped the isolated runtime binding")
+        if not parsed.get("POCKETLAB_AGENT_TOKEN"):
+            raise QualificationError("synthetic candidate bootstrap did not issue an agent credential")
+        self.agent_env.update(parsed)
+        self.results["synthetic_enrollment"] = {
+            "status": "PASS",
+            "server_owned_invite": True,
+            "normal_bootstrap_path": True,
+            "credential_values_excluded": True,
+            "media_root": "run_owned_termux_style_storage",
+        }
+
     def _provisioning_headers(self) -> dict[str, str]:
         return {
             "X-Pocket-Lab-Harness-Provisioning": "1",
@@ -1019,14 +1114,22 @@ class QualificationRun:
         self.fleet_session_token = str(session["session_token"])
 
     def _assign_storage_role(self) -> None:
-        self._establish_fleet_role_session()
+        state_status, state = self._api_request(
+            f"/api/lite/fleet/devices/{self.node_id}/roles",
+            session_token=self.fleet_session_token,
+        )
+        if state_status != 200:
+            raise QualificationError("server-owned qualification role state was unavailable")
+        generation = int(state.get("generation") or 0)
+        if generation < 1:
+            raise QualificationError("server-owned qualification role assignment was not enrolled")
         status, payload = self._api_request(
             f"/api/lite/fleet/devices/{self.node_id}/roles",
             method="PUT",
             payload={
                 "device_roles": ["storage"],
                 "confirm": True,
-                "expected_generation": 0,
+                "expected_generation": generation,
                 "reason": "Isolated candidate qualification setup",
             },
             session_token=self.fleet_session_token,
@@ -1513,6 +1616,9 @@ class QualificationRun:
         try:
             self.start_services(self.nats_binary)
             self._bootstrap()
+            self._establish_fleet_role_session()
+            self._enroll_candidate_agent()
+            self.start_supervisor()
             agent = self._wait_agent()
             self._assign_storage_role()
             agent = self._wait_agent(timeout=35)

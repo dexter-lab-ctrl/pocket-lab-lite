@@ -214,7 +214,7 @@ _PROFILE_DATA: dict[str, dict[str, Any]] = {
         "environment_scope": HARNESS_RUNTIME_ENVIRONMENT,
         "availability": "qualification-only",
         "capabilities": (
-            "device.capabilities.read", "device.roles.change",
+            "device.capabilities.read", "device.roles.change", "qualification.device.enroll",
         ),
         "destructive_capabilities": (),
     },
@@ -289,6 +289,7 @@ _ACTION_CAPABILITY: Mapping[str, str] = MappingProxyType({
     "recovery.authorize": "recovery.authorize",
     "device.capabilities.read": "device.capabilities.read",
     "device.roles.change": "device.roles.change",
+    "qualification.device.enroll": "qualification.device.enroll",
     "rules.draft": "rules.draft",
     "rules.activate": "rules.activate",
     "rules.rollback": "rules.rollback",
@@ -2198,7 +2199,7 @@ def enforce_capability(
         denied = ("harness_action_unregistered", "The requested action has no registered harness capability.")
     elif capability not in set(harness.get("capabilities") or []):
         denied = ("harness_capability_denied", "The synthetic principal is not authorized for this capability.")
-    elif str(action_id or "") in {"device.roles.change", "device.capabilities.read"}:
+    elif str(action_id or "") in {"device.roles.change", "device.capabilities.read", "qualification.device.enroll"}:
         if (
             profile_name != HARNESS_FLEET_ROLE_PROFILE
             or str(target_type or "") != "device"
