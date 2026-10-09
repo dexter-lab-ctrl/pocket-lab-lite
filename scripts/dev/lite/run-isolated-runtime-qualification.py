@@ -851,6 +851,21 @@ class QualificationRun:
                 diagnostics.append(f"{name}={tail[-1400:]}")
             except OSError:
                 diagnostics.append(f"{name}=unavailable")
+        if latest:
+            photo = latest.get("photo_backup") if isinstance(latest.get("photo_backup"), dict) else {}
+            diagnostics.append("agent_observation=" + json.dumps({
+                "connection": str(latest.get("connection") or "")[:32],
+                "status": str(latest.get("status") or "")[:32],
+                "agent_status": str(latest.get("agent_status") or "")[:32],
+                "capabilities": sorted(str(item)[:64] for item in (latest.get("capabilities") or latest.get("advertised_capabilities") or []) if item)[:32],
+                "photo_backup": {
+                    "rclone_available": bool(photo.get("rclone_available")),
+                    "photo_storage_access": bool(photo.get("photo_storage_access")),
+                    "collections": [str(item)[:32] for item in (photo.get("collections") or []) if item][:8],
+                    "rclone_version": str(photo.get("rclone_version") or "")[:80],
+                    "status": str(photo.get("status") or "")[:32],
+                },
+            }, separators=(",", ":")))
         try:
             records = json.loads((self.paths.root / "pm2" / "qualification-processes.json").read_text(encoding="utf-8"))
             safe_records = [
