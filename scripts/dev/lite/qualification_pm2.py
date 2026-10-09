@@ -20,9 +20,10 @@ from pathlib import Path
 
 
 def _home() -> Path:
-    path = Path(os.environ.get("PM2_HOME", "")).expanduser()
-    if not str(path):
+    raw = os.environ.get("PM2_HOME", "").strip()
+    if not raw:
         raise SystemExit("qualification PM2_HOME is required")
+    path = Path(raw).expanduser()
     path.mkdir(mode=0o700, parents=True, exist_ok=True)
     path.chmod(0o700)
     return path

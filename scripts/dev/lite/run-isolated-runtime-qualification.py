@@ -588,6 +588,7 @@ class QualificationRun:
             "POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT": self.harness_fingerprint,
             "POCKETLAB_API_BIND": "127.0.0.1",
             "POCKETLAB_PM2_HOME": str(self.paths.root / "pm2"),
+            "PM2_HOME": str(self.paths.root / "pm2"),
             "POCKETLAB_QUALIFICATION_LOG_DIR": str(self.paths.logs),
             "POCKETLAB_QUALIFICATION_RUNNER_BIN": str(self.paths.bin),
             "POCKETLAB_AGENT_SUPERVISOR_STATE": str(self.paths.state / "agent-supervisor.json"),
