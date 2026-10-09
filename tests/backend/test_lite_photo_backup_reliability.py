@@ -57,7 +57,15 @@ def test_invalid_capacity_fails_closed(tmp_path, monkeypatch):
 def test_inventory_limit_is_bounded(monkeypatch, tmp_path):
     from pocket_lab_test_utils import ensure_runtime_path
     ensure_runtime_path()
-    from agents import lite_photo_backup_agent as agent
+    import importlib.util
+    import sys
+    from pathlib import Path
+    runtime = Path(__file__).resolve().parents[2] / "pocket-lab-final-structure" / "runtime"
+    agent_path = runtime / "agents" / "lite_photo_backup_agent.py"
+    spec = importlib.util.spec_from_file_location("photo_backup_agent_reliability", agent_path)
+    assert spec and spec.loader
+    agent = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(agent)
     class FakeStat:
         st_size = 20
         st_mtime = 42.0
