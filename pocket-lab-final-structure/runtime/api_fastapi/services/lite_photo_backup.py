@@ -74,6 +74,7 @@ _PREFLIGHT_CACHE: dict[str, Any] = {}
 _PREFLIGHT_TTL_SECONDS = 20
 _ADMISSION_LOCK_TIMEOUT_SECONDS = 2.0
 PHOTO_BACKUP_PROGRESS_STALE_SECONDS = 90
+_DESTINATION_IDENTITY_SCHEMA_VERSION = 1
 
 _SECRET_KEYS = {"password", "token", "secret", "credential", "authorization", "api_key"}
 _ANSI_ESCAPE_RE = re.compile(
@@ -128,14 +129,13 @@ def _admission_lock_path() -> Path:
 
 @contextmanager
 def _admission_lock():
-    """Serialize destination reservation across API processes.
+    """Serialize persistent photo-backup state transitions across processes.
 
     The JSON state file is atomically replaced, but atomic replacement alone
-    does not prevent two API workers from both observing an empty active-job
-    set.  A short-lived advisory lock closes that admission race while still
-    allowing a crashed process to release the lock through the kernel.  If the
-    platform cannot provide the lock, fail closed instead of issuing a second
-    reservation.
+    does not prevent two API workers from both observing an old state snapshot.
+    A short-lived advisory lock closes that race while still allowing a crashed
+    process to release the lock through the kernel.  All persistent state
+    writers use this same lock; if the platform cannot provide it, fail closed.
     """
     if fcntl is None:
         raise HTTPException(
@@ -212,6 +212,32 @@ def _admission_lock():
                 os.close(fd)
             except OSError:
                 pass
+
+
+def _destination_identity_path() -> Path:
+    return deps.settings().state_dir / "lite_photo_backup_destination_identity.json"
+
+
+def _identity_record(path: Path) -> tuple[bool, dict[str, Any] | None]:
+    """Read the identity anchor without treating corruption as first run."""
+    try:
+        if path.is_symlink():
+            return True, None
+    except OSError:
+        return True, None
+    if os.path.lexists(path) and not path.exists():
+        return True, None
+    try:
+        raw = path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        return False, None
+    except (OSError, UnicodeError):
+        return True, None
+    try:
+        value = json.loads(raw)
+    except json.JSONDecodeError:
+        return True, None
+    return True, value if isinstance(value, dict) else None
 
 
 def _credential_dir() -> Path:
@@ -650,7 +676,12 @@ def _probe_photoprism_runtime(*, force: bool = False) -> dict[str, Any]:
     return result if isinstance(result, dict) else {}
 
 
-def _destination_identity(root: Path, stat: os.statvfs_result) -> str | None:
+def _destination_identity(
+    root: Path,
+    stat: os.statvfs_result,
+    *,
+    allow_enrollment: bool = False,
+) -> str | None:
     """Bind the current originals volume to a private, server-owned identity.
 
     No raw path or device number is surfaced. An existing identity is NEVER
@@ -667,59 +698,122 @@ def _destination_identity(root: Path, stat: os.statvfs_result) -> str | None:
             # by lightweight statvfs test doubles. st_dev remains the stable
             # kernel filesystem identity available on those platforms.
             filesystem_id = getattr(disk, "st_dev", None)
-        if filesystem_id is None:
+        if (
+            filesystem_id is None
+            or isinstance(filesystem_id, bool)
+            or isinstance(disk.st_dev, bool)
+        ):
             return "destination_storage_unavailable"
         fingerprint = hashlib.sha256(
             f"photoprism-originals:v1:{real}:{disk.st_dev}:{filesystem_id}".encode()
         ).hexdigest()
-        path = deps.settings().state_dir / "lite_photo_backup_destination_identity.json"
-        with _LOCK:
-            record = _read_json(path, {})
-            if record:
-                if (not isinstance(record, dict)
-                    or record.get("schema_version") != 1
-                    or record.get("destination_id") != lite_photo_backup_destinations.CURRENT_DESTINATION_ID
-                    or not secrets.compare_digest(str(record.get("fingerprint") or ""), fingerprint)):
-                    return "destination_identity_mismatch"
-            else:
-                if not root.is_dir() or not os.access(root, os.R_OK | os.W_OK | os.X_OK):
-                    return "destination_storage_unavailable"
-                _write_json(path, {
-                    "schema_version": 1,
-                    "destination_id": lite_photo_backup_destinations.CURRENT_DESTINATION_ID,
-                    "fingerprint": fingerprint,
-                    "enrolled_at": _now(),
-                })
+        path = _destination_identity_path()
+
+        def matches(record: dict[str, Any] | None) -> bool:
+            try:
+                mode = path.stat().st_mode & 0o777
+            except OSError:
+                return False
+            return bool(
+                isinstance(record, dict)
+                and mode & 0o077 == 0
+                and record.get("schema_version") == _DESTINATION_IDENTITY_SCHEMA_VERSION
+                and record.get("destination_id") == lite_photo_backup_destinations.CURRENT_DESTINATION_ID
+                and re.fullmatch(r"[a-f0-9]{64}", str(record.get("fingerprint") or ""))
+                and secrets.compare_digest(str(record.get("fingerprint") or ""), fingerprint)
+            )
+
+        present, record = _identity_record(path)
+        if not present:
+            if not allow_enrollment:
+                return "destination_identity_unavailable"
+            if not root.is_dir() or not os.access(root, os.R_OK | os.W_OK | os.X_OK):
+                return "destination_storage_unavailable"
+            # Recheck under the cross-process state lock. A crash before the
+            # atomic replacement leaves no anchor and is safe to retry; an
+            # existing malformed anchor is never treated as first run.
+            with _admission_lock():
+                present, record = _identity_record(path)
+                if not present:
+                    _write_json(path, {
+                        "schema_version": _DESTINATION_IDENTITY_SCHEMA_VERSION,
+                        "destination_id": lite_photo_backup_destinations.CURRENT_DESTINATION_ID,
+                        "fingerprint": fingerprint,
+                        "enrolled_at": _now(),
+                    })
+                    return None
+        if not matches(record):
+            return "destination_identity_mismatch"
         return None
     except (OSError, ValueError, TypeError):
         return "destination_storage_unavailable"
 
 
 def _current_volume_fingerprint() -> str:
-    """Read only the existing private anchor; never expose it to a device."""
-    record = _read_json(
-        deps.settings().state_dir / "lite_photo_backup_destination_identity.json", {}
-    )
-    value = str(record.get("fingerprint") or "") if isinstance(record, dict) else ""
-    if not re.fullmatch(r"[a-f0-9]{64}", value):
+    """Revalidate the live mount, then read the private anchor."""
+    root = _originals_path()
+    if not root.exists() or not root.is_dir():
+        raise ValueError("destination_mount_missing")
+    if not os.access(root, os.R_OK | os.W_OK | os.X_OK):
+        raise ValueError("destination_read_only")
+    try:
+        stat = os.statvfs(root)
+        stat_flags = int(getattr(stat, "f_flag", 0) or 0)
+        readonly_flag = int(getattr(os, "ST_RDONLY", 1) or 1)
+    except (OSError, TypeError, ValueError) as exc:
+        raise ValueError("destination_storage_unavailable") from exc
+    if stat_flags & readonly_flag:
+        raise ValueError("destination_read_only")
+    identity_issue = _destination_identity(root, stat)
+    if identity_issue:
+        raise ValueError(identity_issue)
+    path = _destination_identity_path()
+    present, record = _identity_record(path)
+    value = str(record.get("fingerprint") or "") if present and isinstance(record, dict) else ""
+    try:
+        mode = path.stat().st_mode & 0o077
+    except OSError as exc:
+        raise ValueError("destination_identity_unavailable") from exc
+    if (
+        not re.fullmatch(r"[a-f0-9]{64}", value)
+        or mode
+        or not isinstance(record, dict)
+        or record.get("schema_version") != _DESTINATION_IDENTITY_SCHEMA_VERSION
+        or record.get("destination_id") != lite_photo_backup_destinations.CURRENT_DESTINATION_ID
+    ):
         raise ValueError("destination_identity_unavailable")
     return value
 
 
+def _placement_inputs(job: dict[str, Any]) -> tuple[str, int]:
+    destination_id = job.get("destination_id")
+    version = job.get("destination_contract_version")
+    if not isinstance(destination_id, str) or not destination_id:
+        raise ValueError("destination_placement_missing")
+    if type(version) is not int or version != lite_photo_backup_destinations.SCHEMA_VERSION:
+        raise ValueError("destination_placement_missing")
+    return destination_id, version
+
+
 def _ensure_placement(backup_id: str, node_id: str) -> dict[str, Any]:
     """Persist immutable destination placement before credential issuance."""
-    with _LOCK:
+    with _admission_lock(), _LOCK:
         state, job = _find_job(backup_id)
         if str(job.get("node_id") or "") != node_id:
             raise ValueError("placement_identity_mismatch")
+        destination_id, _ = _placement_inputs(job)
         target = lite_photo_backup_destinations.placement(
-            str(job.get("destination_id") or lite_photo_backup_destinations.CURRENT_DESTINATION_ID),
+            destination_id,
             node_id, backup_id, _current_volume_fingerprint(),
         )
-        previous = state["placements"].get(backup_id)
-        if previous is not None and previous != target:
-            raise ValueError("destination_identity_mismatch")
-        if previous is None:
+        placements = state["placements"]
+        if backup_id in placements:
+            previous = placements[backup_id]
+            if not isinstance(previous, dict):
+                raise ValueError("destination_placement_corrupt")
+            if previous != target:
+                raise ValueError("destination_identity_mismatch")
+        else:
             state["placements"][backup_id] = target
             _save_state(state)
         return target
@@ -729,19 +823,24 @@ def _verified_placement(backup_id: str, node_id: str) -> dict[str, Any]:
     state, job = _find_job(backup_id)
     if str(job.get("node_id") or "") != node_id:
         raise ValueError("placement_identity_mismatch")
+    destination_id, _ = _placement_inputs(job)
     entry = state.get("placements", {}).get(backup_id)
-    if not isinstance(entry, dict) or entry.get("schema_version") != lite_photo_backup_destinations.SCHEMA_VERSION:
+    if entry is None:
         raise ValueError("destination_placement_missing")
+    if not isinstance(entry, dict):
+        raise ValueError("destination_placement_corrupt")
     target = lite_photo_backup_destinations.placement(
-        str(job.get("destination_id") or lite_photo_backup_destinations.CURRENT_DESTINATION_ID),
+        destination_id,
         node_id, backup_id, _current_volume_fingerprint(),
     )
+    if not set(target).issubset(entry):
+        raise ValueError("destination_placement_corrupt")
     if entry != target:
         raise ValueError("destination_identity_mismatch")
     return target
 
 
-def server_capacity() -> dict[str, Any]:
+def server_capacity(*, allow_identity_enrollment: bool = False) -> dict[str, Any]:
     root = _originals_path()
     if not root.exists():
         return {
@@ -807,7 +906,11 @@ def server_capacity() -> dict[str, Any]:
             "hard_upload_budget_bytes": 0,
             "sanitized": True,
         }
-    identity_issue = _destination_identity(root, stat)
+    identity_issue = _destination_identity(
+        root,
+        stat,
+        allow_enrollment=allow_identity_enrollment,
+    )
     if identity_issue:
         return {"status": "unavailable", "reason_code": identity_issue,
                 "identity_mismatch": identity_issue == "destination_identity_mismatch",
@@ -841,6 +944,16 @@ def server_capacity() -> dict[str, Any]:
     }
 
 
+def _capacity_for_admission() -> dict[str, Any]:
+    """Use explicit first-run enrollment with a narrow old-call compatibility fallback."""
+    try:
+        return server_capacity(allow_identity_enrollment=True)
+    except TypeError as exc:
+        if "unexpected keyword argument 'allow_identity_enrollment'" not in str(exc):
+            raise
+        return server_capacity()
+
+
 # Stable, public reason codes. Do not emit backend paths or upstream response bodies.
 P0_REASONS = frozenset({
     "source_offline", "source_agent_unavailable", "source_capabilities_stale",
@@ -849,7 +962,9 @@ P0_REASONS = frozenset({
     "photoprism_not_running", "photoprism_unreachable", "secure_route_unavailable",
     "webdav_probe_failed", "webdav_auth_failed", "destination_unavailable",
     "destination_mount_missing", "destination_identity_mismatch",
-    "destination_read_only", "destination_storage_unavailable",
+    "destination_identity_unavailable", "destination_read_only",
+    "destination_storage_unavailable", "destination_placement_missing",
+    "destination_placement_corrupt", "placement_identity_mismatch",
     "storage_below_planning_reserve", "storage_below_hard_reserve",
     "storage_reservation_conflict", "insufficient_space_for_selected_media",
     "network_interrupted", "credential_expired", "credential_identity_mismatch", "credential_revocation_pending",
@@ -871,7 +986,11 @@ _P0_REMEDIATION = {
     "webdav_probe_failed": "destination", "webdav_auth_failed": "credentials",
     "destination_unavailable": "destination", "destination_mount_missing": "storage",
     "destination_identity_mismatch": "storage", "destination_read_only": "storage",
+    "destination_identity_unavailable": "storage",
     "destination_storage_unavailable": "storage",
+    "destination_placement_missing": "storage",
+    "destination_placement_corrupt": "storage",
+    "placement_identity_mismatch": "storage",
     "storage_below_planning_reserve": "space",
     "storage_below_hard_reserve": "space", "storage_reservation_conflict": "space",
     "insufficient_space_for_selected_media": "space",
@@ -965,6 +1084,8 @@ def _webdav_route_probe(origin: str | None, *, force: bool = False) -> str | Non
 
 
 def _capacity_diagnostic(capacity: dict[str, Any]) -> str | None:
+    if not isinstance(capacity, dict):
+        return "destination_storage_unavailable"
     if capacity.get("identity_mismatch"):
         return "destination_identity_mismatch"
     if capacity.get("read_only"):
@@ -976,9 +1097,13 @@ def _capacity_diagnostic(capacity: dict[str, Any]) -> str | None:
             capacity.get("reason_code"),
             "destination_storage_unavailable",
         )
-    if int(capacity.get("hard_upload_budget_bytes") or 0) <= 0:
+    hard = capacity.get("hard_upload_budget_bytes")
+    safe = capacity.get("safe_upload_budget_bytes")
+    if type(hard) is not int or type(safe) is not int or hard < 0 or safe < 0:
+        return "destination_storage_unavailable"
+    if hard <= 0:
         return "storage_below_hard_reserve"
-    if int(capacity.get("safe_upload_budget_bytes") or 0) <= 0:
+    if safe <= 0:
         return "storage_below_planning_reserve"
     return None
 
@@ -988,6 +1113,7 @@ def readiness(
     request: Request | None = None,
     *,
     force: bool = False,
+    allow_identity_enrollment: bool = False,
 ) -> dict[str, Any]:
     node_id = _safe_node_id(node_id)
     agent = _agent(node_id)
@@ -1002,7 +1128,11 @@ def readiness(
     cap = _photo_capability(agent)
     runtime = _probe_photoprism_runtime(force=force)
     origin = _secure_origin(request)
-    capacity = server_capacity()
+    capacity = (
+        _capacity_for_admission()
+        if allow_identity_enrollment
+        else server_capacity()
+    )
     blockers: list[str] = []
     if not _agent_online(agent):
         connection_state = str(agent.get("connection") or "").lower()
@@ -1115,7 +1245,7 @@ def reconcile_stale_jobs() -> int:
     stale_after = CREDENTIAL_TTL_SECONDS + 15 * 60
     changed = 0
     evidence_jobs: list[dict[str, Any]] = []
-    with _LOCK:
+    with _admission_lock(), _LOCK:
         payload = _state()
         now_epoch = _epoch()
         for job in payload["jobs"].values():
@@ -1246,8 +1376,19 @@ def make_start_command(
     *,
     reason: str = "manual photo backup",
     request: Request | None = None,
+    destination_id: Any = None,
 ) -> dict[str, Any]:
     node_id = _safe_node_id(node_id)
+    if destination_id is not None and destination_id != lite_photo_backup_destinations.CURRENT_DESTINATION_ID:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "status": "unsupported_destination",
+                "reason_code": "unsupported_destination",
+                "summary": "The backup destination is selected by the Server Phone.",
+                "sanitized": True,
+            },
+        )
     # Read the current projection once first so an active request can be
     # answered idempotently without making another network/runtime probe.
     current = status(node_id, request)
@@ -1284,7 +1425,15 @@ def make_start_command(
 
     # Revalidate at the mutation boundary for every new admission. Historical
     # readiness or a stale UI button is never sufficient to issue credentials.
-    current = {**current, **readiness(node_id, request, force=True)}
+    current = {
+        **current,
+        **readiness(
+            node_id,
+            request,
+            force=True,
+            allow_identity_enrollment=True,
+        ),
+    }
 
     backup_id = f"photo-{uuid.uuid4().hex[:20]}"
     retry_count = (
@@ -1835,6 +1984,59 @@ def _credential_path(
     )
 
 
+@contextmanager
+def _credential_consume_lock():
+    """Serialize one-time credential redemption across API processes."""
+    if fcntl is None:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "photo_backup_unavailable",
+                "reason_code": "credential_revocation_pending",
+                "summary": "Photo backup credential safety is unavailable.",
+                "retryable": True,
+                "sanitized": True,
+            },
+        )
+    directory = _credential_dir()
+    path = directory / ".consume.lock"
+    fd = -1
+    try:
+        directory.mkdir(parents=True, exist_ok=True, mode=0o700)
+        directory.chmod(0o700)
+        fd = os.open(
+            path,
+            os.O_CREAT | os.O_RDWR | getattr(os, "O_NOFOLLOW", 0),
+            0o600,
+        )
+        os.fchmod(fd, 0o600)
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        yield
+    except HTTPException:
+        raise
+    except OSError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "photo_backup_unavailable",
+                "reason_code": "credential_revocation_pending",
+                "summary": "Photo backup credential safety is unavailable.",
+                "retryable": True,
+                "sanitized": True,
+            },
+        ) from exc
+    finally:
+        if fd >= 0:
+            try:
+                fcntl.flock(fd, fcntl.LOCK_UN)
+            except OSError:
+                pass
+            try:
+                os.close(fd)
+            except OSError:
+                pass
+
+
 def _store_credential(
     *,
     credential_ref: str,
@@ -1844,7 +2046,22 @@ def _store_credential(
     auth_name: str,
     auth_id: str,
     webdav_url: str,
+    placement: dict[str, Any],
 ) -> None:
+    if (
+        not isinstance(placement, dict)
+        or type(placement.get("schema_version")) is not int
+        or placement.get("schema_version") != lite_photo_backup_destinations.SCHEMA_VERSION
+        or not isinstance(placement.get("destination_id"), str)
+        or not isinstance(placement.get("destination_type"), str)
+        or not isinstance(placement.get("transport"), str)
+        or not re.fullmatch(r"[a-f0-9]{64}", str(placement.get("volume_fingerprint") or ""))
+        or not isinstance(placement.get("prefix"), str)
+        or placement.get("node_id") != node_id
+        or placement.get("backup_id") != backup_id
+        or placement.get("prefix") != f"PocketLab/Devices/{node_id}"
+    ):
+        raise RuntimeError("destination_placement_missing")
     expires_at = _epoch() + CREDENTIAL_TTL_SECONDS
     payload = {
         "credential_ref": credential_ref,
@@ -1858,6 +2075,15 @@ def _store_credential(
         "expires_at_epoch": expires_at,
         "created_at": _now(),
     }
+    payload.update({
+        "destination_id": placement.get("destination_id"),
+        "destination_type": placement.get("destination_type"),
+        "transport": placement.get("transport"),
+        "destination_contract_version": placement.get("schema_version"),
+        "volume_fingerprint": placement.get("volume_fingerprint"),
+        "destination_prefix": placement.get("prefix"),
+        "authorized_namespace": placement.get("authorized_namespace") or placement.get("prefix"),
+    })
     plaintext = json.dumps(
         payload,
         sort_keys=True,
@@ -1915,6 +2141,26 @@ def _load_credential(
             pass
         return None
     return data
+
+
+def _credential_matches_placement(
+    data: dict[str, Any],
+    placement: dict[str, Any],
+) -> bool:
+    if not isinstance(data, dict) or not isinstance(placement, dict):
+        return False
+    fields = {
+        "destination_id": placement.get("destination_id"),
+        "destination_type": placement.get("destination_type"),
+        "transport": placement.get("transport"),
+        "volume_fingerprint": placement.get("volume_fingerprint"),
+        "destination_prefix": placement.get("prefix"),
+        "authorized_namespace": placement.get("authorized_namespace") or placement.get("prefix"),
+    }
+    if any(data.get(key) != value for key, value in fields.items()):
+        return False
+    version = data.get("destination_contract_version")
+    return type(version) is int and version == placement.get("schema_version")
 
 
 def _delete_credential(
@@ -2016,7 +2262,7 @@ def _update_job(
     backup_id: str,
     **changes: Any,
 ) -> dict[str, Any]:
-    with _LOCK:
+    with _admission_lock(), _LOCK:
         payload, job = _find_job(backup_id)
         for key, value in changes.items():
             if key in {
@@ -2196,9 +2442,9 @@ def consume_credential(
     backup_id: str,
 ) -> dict[str, Any]:
     # Credential consumption is one-time. Keep the load, job/placement
-    # validation, and deletion in one process-local critical section so two
-    # concurrent agent requests cannot both receive the same secret.
-    with _LOCK:
+    # validation, and deletion in a durable cross-process critical section so
+    # two API workers cannot both receive the same secret.
+    with _credential_consume_lock(), _LOCK:
         data = _load_credential(credential_ref)
         if not isinstance(data, dict):
             raise HTTPException(
@@ -2263,12 +2509,26 @@ def consume_credential(
                 "sanitized": True})
         try:
             placement = _verified_placement(backup_id, node_id)
-        except ValueError:
+        except ValueError as exc:
+            placement_reason = _safe_reason_code(
+                str(exc),
+                "destination_identity_mismatch",
+            )
             raise HTTPException(status_code=409, detail={
-                "status": "destination_identity_mismatch",
-                "reason_code": "destination_identity_mismatch",
+                "status": placement_reason,
+                "reason_code": placement_reason,
                 "summary": "Destination placement no longer matches this backup.",
                 "sanitized": True}) from None
+        if not _credential_matches_placement(data, placement):
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "status": "forbidden",
+                    "reason_code": "credential_identity_mismatch",
+                    "summary": "Credential target does not match this backup placement.",
+                    "sanitized": True,
+                },
+            )
         try:
             expires_at_epoch = float(data.get("expires_at_epoch") or 0)
         except (TypeError, ValueError):
@@ -2287,6 +2547,12 @@ def consume_credential(
             "destination_contract_version": int(
                 placement.get("schema_version")
                 or lite_photo_backup_destinations.SCHEMA_VERSION
+            ),
+            "transport": str(placement.get("transport") or ""),
+            "authorized_namespace": str(
+                placement.get("authorized_namespace")
+                or placement.get("prefix")
+                or ""
             ),
             "expires_at_epoch": expires_at_epoch,
             "capacity": capacity,
@@ -2311,8 +2577,12 @@ def capacity_for_agent(
     capacity = server_capacity()
     try:
         _verified_placement(backup_id, node_id)
-    except ValueError:
-        return {"status": "unavailable", "reason_code": "destination_identity_mismatch",
+    except ValueError as exc:
+        placement_reason = _safe_reason_code(
+            str(exc),
+            "destination_identity_mismatch",
+        )
+        return {"status": "unavailable", "reason_code": placement_reason,
                 "hard_upload_budget_bytes": 0, "safe_upload_budget_bytes": 0,
                 "sanitized": True}
     return capacity
@@ -2604,7 +2874,7 @@ def claim_progress_audit_events(
     backup_id: str,
     node_id: str,
 ) -> list[dict[str, Any]]:
-    with _LOCK:
+    with _admission_lock(), _LOCK:
         state, job = _find_job(backup_id)
         if str(job.get("node_id") or "") != node_id:
             return []
@@ -2826,6 +3096,20 @@ def _start_failure_reason(
 async def execute_start(
     command: dict[str, Any],
 ) -> dict[str, Any]:
+    requested_destination = command.get("destination_id")
+    if (
+        requested_destination is not None
+        and requested_destination != lite_photo_backup_destinations.CURRENT_DESTINATION_ID
+    ):
+        return {
+            "status": "destination_unavailable",
+            "backup_id": str(command.get("backup_id") or command.get("command_id") or ""),
+            "node_id": _safe_node_id(command.get("node_id")),
+            "summary": "The requested backup destination is not supported.",
+            "retryable": False,
+            "reason_code": "unsupported_destination",
+            "sanitized": True,
+        }
     if command.get("idempotent"):
         return {
             "status": "already_running",
@@ -2848,6 +3132,16 @@ async def execute_start(
     _, existing_job = _find_job(
         backup_id
     )
+    if str(existing_job.get("node_id") or "") != node_id:
+        return {
+            "status": "destination_unavailable",
+            "backup_id": backup_id,
+            "node_id": node_id,
+            "summary": "Photo backup target identity could not be verified.",
+            "retryable": False,
+            "reason_code": "placement_identity_mismatch",
+            "sanitized": True,
+        }
     existing_status = str(
         existing_job.get("status") or ""
     ).lower()
@@ -2891,11 +3185,11 @@ async def execute_start(
                 "Checking destination."
             ),
         },
-        storage=server_capacity(),
+        storage=_capacity_for_admission(),
     )
     origin = _secure_origin(None)
     runtime = _probe_photoprism_runtime(force=True)
-    capacity = server_capacity()
+    capacity = _capacity_for_admission()
     preflight_reason = _capacity_diagnostic(capacity)
     route_reason = (_webdav_route_probe(origin, force=True)
                     if runtime.get("running") and runtime.get("reachable")
@@ -2946,9 +3240,13 @@ async def execute_start(
 
     try:
         placement = _ensure_placement(backup_id, node_id)
-    except ValueError:
+    except ValueError as exc:
+        placement_reason = _safe_reason_code(
+            str(exc),
+            "destination_identity_mismatch",
+        )
         failed = _update_job(backup_id, status="destination_unavailable",
-                             reason_code="destination_identity_mismatch",
+                             reason_code=placement_reason,
                              summary="Backup destination identity could not be verified.",
                              retryable=True, completed_at=_now())
         _append_evidence(failed, "lite.photo_backup.destination_unavailable")
@@ -2990,6 +3288,7 @@ async def execute_start(
             auth_name=auth_name,
             auth_id=auth_id,
             webdav_url=webdav_url,
+            placement=placement,
         )
         job = _update_job(
             backup_id,
@@ -3233,7 +3532,7 @@ def revoke_for_node(node_id: str) -> int:
     )
     count = 0
     evidence_jobs: list[dict[str, Any]] = []
-    with _LOCK:
+    with _admission_lock(), _LOCK:
         payload = _state()
         for job in payload["jobs"].values():
             if (
@@ -3301,7 +3600,7 @@ def revoke_for_node(node_id: str) -> int:
 def reconcile_pending_credential_revocations() -> int:
     reconciled = 0
     evidence_jobs: list[dict[str, Any]] = []
-    with _LOCK:
+    with _admission_lock(), _LOCK:
         payload = _state()
         for job in payload["jobs"].values():
             if not isinstance(job, dict):

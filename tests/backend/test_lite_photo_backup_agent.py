@@ -146,6 +146,39 @@ def test_provider_rejects_non_https_control_origin():
         raise AssertionError("HTTP control origin must fail closed")
 
 
+def test_agent_credential_contract_rejects_arbitrary_destination(monkeypatch):
+    module = _module()
+    provider = module.PhotoPrismWebDAVProvider(
+        node_id="storage-phone",
+        agent_token="token",
+        control_origin="https://pocket.test.ts.net",
+    )
+    base = {
+        "credential_ref": "cred-ref",
+        "backup_id": "photo-agent-contract",
+        "destination_id": module.PHOTO_BACKUP_DESTINATION_ID,
+        "destination_contract_version": module.PHOTO_BACKUP_DESTINATION_SCHEMA_VERSION,
+        "transport": module.PHOTO_BACKUP_DESTINATION_TRANSPORT,
+        "destination_prefix": "PocketLab/Devices/storage-phone",
+        "authorized_namespace": "PocketLab/Devices/storage-phone",
+        "webdav_url": "https://pocket.test.ts.net/apps/photoprism/originals/",
+        "password": "one-time",
+    }
+    provider._validate_credential(base, "cred-ref", "photo-agent-contract")
+    for field, value in (
+        ("destination_id", "managed-nas"),
+        ("destination_prefix", "PocketLab/Devices/other-phone"),
+        ("webdav_url", "https://evil.example/other/"),
+    ):
+        invalid = {**base, field: value}
+        try:
+            provider._validate_credential(invalid, "cred-ref", "photo-agent-contract")
+        except RuntimeError as exc:
+            assert str(exc) == "credential_invalid"
+        else:
+            raise AssertionError("arbitrary destination must be rejected by the agent")
+
+
 
 def test_remote_listing_failure_is_fail_closed(monkeypatch, tmp_path):
     module = _module()

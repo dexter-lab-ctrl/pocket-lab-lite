@@ -307,12 +307,18 @@ def test_p0_destination_identity_binding_requires_explicit_repair(monkeypatch, t
     state = tmp_path / "state"
     state.mkdir()
     monkeypatch.setattr(backup.deps, "settings", lambda: SimpleNamespace(state_dir=state))
-    result = backup._destination_identity(root, __import__("os").statvfs(root))
+    monkeypatch.setattr(backup, "_originals_path", lambda: root)
+    result = backup._destination_identity(
+        root,
+        __import__("os").statvfs(root),
+        allow_enrollment=True,
+    )
     assert result is None
     identity_file = state / "lite_photo_backup_destination_identity.json"
     record = backup._read_json(identity_file, {})
     assert record["schema_version"] == 1
     assert record["destination_id"] == backup.lite_photo_backup_destinations.CURRENT_DESTINATION_ID
+    assert backup._current_volume_fingerprint() == record["fingerprint"]
     record["fingerprint"] = "0" * 64
     backup._write_json(identity_file, record)
     assert backup._destination_identity(root, __import__("os").statvfs(root)) == "destination_identity_mismatch"
@@ -656,6 +662,68 @@ def test_p4_versioned_destination_contract_rejects_unknown_or_disabled():
         d.require_eligible("enrolled-storage-node", capacity, operational=True)
 
 
+def test_p4_destination_contract_fails_closed_for_malformed_capacity_and_ids():
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photo_backup_destinations as d
+    import pytest
+
+    for capacity in (
+        {"status": "ready"},
+        {"status": "ready", "safe_upload_budget_bytes": -1},
+        {"status": "ready", "safe_upload_budget_bytes": "4096"},
+        {"status": "ready", "safe_upload_budget_bytes": True},
+        {"status": "ready", "safe_upload_budget_bytes": 4096.0},
+        {"status": "ready", "safe_upload_budget_bytes": 4096},
+    ):
+        result = d.destinations(capacity, operational=True)[0]
+        if type(capacity.get("safe_upload_budget_bytes")) is int and capacity.get("safe_upload_budget_bytes") == 4096:
+            assert result["eligible"] is True
+        else:
+            assert result["eligible"] is False
+            assert result["available_bytes"] is None
+            assert result["sanitized"] is True
+    for invalid in (None, [], {}, 42):
+        with pytest.raises(ValueError, match="unsupported_destination"):
+            d.adapter(invalid)
+
+
+def test_p4_identity_read_does_not_enroll_or_reenroll_corrupt_state(monkeypatch, tmp_path):
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photo_backup as backup
+    from types import SimpleNamespace
+    import json
+    import os
+
+    root = tmp_path / "originals"
+    root.mkdir()
+    state = tmp_path / "state"
+    state.mkdir()
+    monkeypatch.setattr(backup.deps, "settings", lambda: SimpleNamespace(state_dir=state))
+    stat = os.statvfs(root)
+    identity = state / "lite_photo_backup_destination_identity.json"
+
+    assert backup._destination_identity(root, stat) == "destination_identity_unavailable"
+    assert not identity.exists()
+    assert backup._destination_identity(root, stat, allow_enrollment=True) is None
+    original = identity.read_text(encoding="utf-8")
+    identity.write_text("not-json", encoding="utf-8")
+    assert backup._destination_identity(root, stat, allow_enrollment=True) == "destination_identity_mismatch"
+    assert identity.read_text(encoding="utf-8") == "not-json"
+    identity.write_text(json.dumps({"schema_version": 1, "destination_id": "server-photoprism-originals", "fingerprint": "bad"}), encoding="utf-8")
+    assert backup._destination_identity(root, stat, allow_enrollment=True) == "destination_identity_mismatch"
+    assert identity.read_text(encoding="utf-8") != original
+
+    identity.unlink()
+    target = state / "identity-target.json"
+    target.write_text(original, encoding="utf-8")
+    target.chmod(0o600)
+    identity.symlink_to(target)
+    assert backup._destination_identity(root, stat, allow_enrollment=True) == "destination_identity_mismatch"
+    assert identity.is_symlink()
+
+
 def test_p4_placement_contract_cannot_accept_paths_or_invalid_identity():
     from pocket_lab_test_utils import ensure_runtime_path
     ensure_runtime_path()
@@ -679,7 +747,8 @@ def test_p4_immutable_placement_survives_retry_and_blocks_volume_change(monkeypa
     snapshot = {"schema_version": 1, "jobs": {
         "photo-" + "a" * 20: {"backup_id": "photo-" + "a" * 20,
                              "node_id": "secondary",
-                             "destination_id": "server-photoprism-originals"}},
+                             "destination_id": "server-photoprism-originals",
+                             "destination_contract_version": 2}},
         "latest_by_node": {"secondary": "photo-" + "a" * 20},
         "placements": {}}
     monkeypatch.setattr(backup, "_state", lambda: snapshot)
@@ -694,3 +763,59 @@ def test_p4_immutable_placement_survives_retry_and_blocks_volume_change(monkeypa
         backup._verified_placement(ident, "secondary")
     with pytest.raises(ValueError, match="placement_identity_mismatch"):
         backup._verified_placement(ident, "another-node")
+
+
+def test_p4_legacy_or_corrupt_placement_never_gets_current_destination_fallback(monkeypatch, tmp_path):
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photo_backup as backup
+    import pytest
+
+    snapshot = {
+        "schema_version": 1,
+        "jobs": {
+            "photo-" + "b" * 20: {
+                "backup_id": "photo-" + "b" * 20,
+                "node_id": "secondary",
+            },
+        },
+        "latest_by_node": {},
+        "placements": {},
+    }
+    monkeypatch.setattr(backup, "_state", lambda: snapshot)
+    monkeypatch.setattr(backup, "_current_volume_fingerprint", lambda: "f" * 64)
+    with pytest.raises(ValueError, match="destination_placement_missing"):
+        backup._ensure_placement("photo-" + "b" * 20, "secondary")
+
+    snapshot["jobs"]["photo-" + "b" * 20].update({
+        "destination_id": backup.lite_photo_backup_destinations.CURRENT_DESTINATION_ID,
+        "destination_contract_version": backup.lite_photo_backup_destinations.SCHEMA_VERSION,
+    })
+    snapshot["placements"]["photo-" + "b" * 20] = {"schema_version": 2, "corrupt": True}
+    with pytest.raises(ValueError, match="destination_placement_corrupt"):
+        backup._verified_placement("photo-" + "b" * 20, "secondary")
+
+
+def test_p4_state_writer_respects_cross_process_admission_lock(monkeypatch, tmp_path):
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photo_backup as backup
+    import fcntl
+    import os
+    import pytest
+
+    state = {"schema_version": 1, "jobs": {"photo-" + "c" * 20: {"status": "queued"}}, "latest_by_node": {}, "placements": {}}
+    monkeypatch.setattr(backup, "_state", lambda: state)
+    lock_path = tmp_path / "photo-backup.admission.lock"
+    monkeypatch.setattr(backup, "_admission_lock_path", lambda: lock_path)
+    monkeypatch.setattr(backup, "_ADMISSION_LOCK_TIMEOUT_SECONDS", 0.01)
+    fd = os.open(lock_path, os.O_CREAT | os.O_RDWR, 0o600)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        with pytest.raises(backup.HTTPException) as exc:
+            backup._update_job("photo-" + "c" * 20, status="planning")
+    finally:
+        fcntl.flock(fd, fcntl.LOCK_UN)
+        os.close(fd)
+    assert exc.value.status_code == 409
+    assert exc.value.detail["reason_code"] == "storage_reservation_conflict"

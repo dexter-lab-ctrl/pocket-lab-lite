@@ -58,6 +58,9 @@ MAX_REMOTE_LISTING_BYTES = 32 * 1024 * 1024
 MAX_INVENTORY_ITEMS = 250_000
 MAX_INVENTORY_SPOOL_BYTES = 256 * 1024 * 1024
 MAX_LEDGER_ITEMS = MAX_INVENTORY_ITEMS
+PHOTO_BACKUP_DESTINATION_ID = "server-photoprism-originals"
+PHOTO_BACKUP_DESTINATION_SCHEMA_VERSION = 2
+PHOTO_BACKUP_DESTINATION_TRANSPORT = "https_webdav"
 
 
 def _now() -> str:
@@ -448,10 +451,49 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
             str(backup_id or ""),
             safe="",
         )
-        return self._request_json(
+        data = self._request_json(
             "/api/lite/internal/photo-backup/"
             f"credentials/{ref}?backup_id={backup}"
         )
+        self._validate_credential(data, credential_ref, backup_id)
+        return data
+
+    def _validate_credential(
+        self,
+        credential: dict[str, Any],
+        credential_ref: str,
+        backup_id: str,
+    ) -> None:
+        """Require the server-owned placement before any rclone setup."""
+        if not isinstance(credential, dict):
+            raise RuntimeError("credential_invalid")
+        if (
+            str(credential.get("credential_ref") or "") != str(credential_ref)
+            or str(credential.get("backup_id") or "") != str(backup_id)
+            or str(credential.get("destination_id") or "") != PHOTO_BACKUP_DESTINATION_ID
+            or credential.get("destination_contract_version") != PHOTO_BACKUP_DESTINATION_SCHEMA_VERSION
+            or str(credential.get("transport") or "") != PHOTO_BACKUP_DESTINATION_TRANSPORT
+        ):
+            raise RuntimeError("credential_invalid")
+        expected_prefix = f"PocketLab/Devices/{self.node_id}"
+        if (
+            str(credential.get("destination_prefix") or "") != expected_prefix
+            or str(credential.get("authorized_namespace") or "") != expected_prefix
+        ):
+            raise RuntimeError("credential_invalid")
+        url = str(credential.get("webdav_url") or "")
+        parsed = urllib.parse.urlsplit(url)
+        if (
+            parsed.scheme != "https"
+            or not parsed.hostname
+            or parsed.username
+            or parsed.password
+            or parsed.query
+            or parsed.fragment
+            or parsed.path != "/apps/photoprism/originals/"
+            or not str(credential.get("password") or "")
+        ):
+            raise RuntimeError("credential_invalid")
 
     def _capacity(
         self,
@@ -465,6 +507,12 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
             "/api/lite/internal/photo-backup/"
             f"{backup}/capacity"
         )
+
+    @staticmethod
+    def _nonnegative_capacity(value: Any) -> int:
+        if type(value) is not int or value < 0:
+            raise RuntimeError("destination_storage_unavailable")
+        return value
 
     def _post_progress(
         self,
@@ -1477,14 +1525,8 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 raise RuntimeError(
                     str(capacity.get("reason_code") or "destination_storage_unavailable")
                 )
-            planning_budget = max(
-                0,
-                int(
-                    capacity.get(
-                        "safe_upload_budget_bytes"
-                    )
-                    or 0
-                ),
+            planning_budget = self._nonnegative_capacity(
+                capacity.get("safe_upload_budget_bytes")
             )
             readable_collections = [
                 name
@@ -1726,8 +1768,12 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                         raise RuntimeError(
                             str(capacity_now.get("reason_code") or "destination_storage_unavailable")
                         )
-                    hard_budget = max(0, int(capacity_now.get("hard_upload_budget_bytes") or 0))
-                    safe_budget = max(0, int(capacity_now.get("safe_upload_budget_bytes") or 0))
+                    hard_budget = self._nonnegative_capacity(
+                        capacity_now.get("hard_upload_budget_bytes")
+                    )
+                    safe_budget = self._nonnegative_capacity(
+                        capacity_now.get("safe_upload_budget_bytes")
+                    )
                     # Defer this item but keep trying smaller eligible objects.
                     if int(item["size"]) > min(hard_budget, safe_budget):
                         remaining += 1

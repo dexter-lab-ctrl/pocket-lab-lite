@@ -23,6 +23,11 @@ def photo_backup(tmp_path, monkeypatch):
     originals = tmp_path / "originals"
     originals.mkdir()
     monkeypatch.setattr(lite_photo_backup, "_originals_path", lambda: originals)
+    assert lite_photo_backup._destination_identity(
+        originals,
+        os.statvfs(originals),
+        allow_enrollment=True,
+    ) is None
     return lite_photo_backup
 
 
@@ -36,6 +41,12 @@ def test_server_capacity_enforces_hard_and_planning_reserves(photo_backup, monke
         f_frsize=block,
     )
     monkeypatch.setattr(os, "statvfs", lambda _path: stat)
+    (photo_backup._destination_identity_path()).unlink(missing_ok=True)
+    assert photo_backup._destination_identity(
+        photo_backup._originals_path(),
+        stat,
+        allow_enrollment=True,
+    ) is None
 
     capacity = photo_backup.server_capacity()
 
@@ -277,6 +288,13 @@ def test_credential_response_uses_stable_per_device_namespace(photo_backup, monk
             "password": "short-lived-password",
             "webdav_url": "https://pocket.test.ts.net/apps/photoprism/originals/",
             "expires_at_epoch": photo_backup._epoch() + 60,
+            "destination_id": "server-photoprism-originals",
+            "destination_type": "photoprism_originals",
+            "transport": "https_webdav",
+            "destination_contract_version": 2,
+            "volume_fingerprint": "a" * 64,
+            "destination_prefix": "PocketLab/Devices/storage-phone",
+            "authorized_namespace": "PocketLab/Devices/storage-phone",
         },
     )
     monkeypatch.setattr(photo_backup, "_delete_credential", lambda ref: deleted.append(ref))
@@ -290,7 +308,17 @@ def test_credential_response_uses_stable_per_device_namespace(photo_backup, monk
     monkeypatch.setattr(
         photo_backup,
         "_verified_placement",
-        lambda *_args: {"prefix": "PocketLab/Devices/storage-phone"},
+        lambda *_args: {
+            "schema_version": 2,
+            "destination_id": "server-photoprism-originals",
+            "destination_type": "photoprism_originals",
+            "transport": "https_webdav",
+            "volume_fingerprint": "a" * 64,
+            "node_id": "storage-phone",
+            "backup_id": "photo-1",
+            "prefix": "PocketLab/Devices/storage-phone",
+            "authorized_namespace": "PocketLab/Devices/storage-phone",
+        },
     )
     monkeypatch.setattr(
         photo_backup,
@@ -308,6 +336,63 @@ def test_credential_response_uses_stable_per_device_namespace(photo_backup, monk
     assert deleted == ["cred-" + ("a" * 32)]
 
 
+def test_credential_consumption_rejects_stale_destination_binding(photo_backup, monkeypatch):
+    monkeypatch.setattr(
+        photo_backup,
+        "_load_credential",
+        lambda _ref: {
+            "node_id": "storage-phone",
+            "backup_id": "photo-binding",
+            "username": "admin",
+            "password": "short-lived-password",
+            "webdav_url": "https://pocket.test.ts.net/apps/photoprism/originals/",
+            "expires_at_epoch": photo_backup._epoch() + 60,
+            "destination_id": "server-photoprism-originals",
+            "destination_type": "photoprism_originals",
+            "transport": "https_webdav",
+            "destination_contract_version": 2,
+            "volume_fingerprint": "0" * 64,
+            "destination_prefix": "PocketLab/Devices/storage-phone",
+            "authorized_namespace": "PocketLab/Devices/storage-phone",
+        },
+    )
+    monkeypatch.setattr(
+        photo_backup,
+        "server_capacity",
+        lambda: {"status": "ready", "safe_upload_budget_bytes": 123, "hard_upload_budget_bytes": 456},
+    )
+    state = photo_backup._state()
+    state["jobs"]["photo-binding"] = {
+        "backup_id": "photo-binding",
+        "node_id": "storage-phone",
+        "status": "starting",
+    }
+    photo_backup._save_state(state)
+    monkeypatch.setattr(
+        photo_backup,
+        "_verified_placement",
+        lambda *_args: {
+            "schema_version": 2,
+            "destination_id": "server-photoprism-originals",
+            "destination_type": "photoprism_originals",
+            "transport": "https_webdav",
+            "volume_fingerprint": "a" * 64,
+            "node_id": "storage-phone",
+            "backup_id": "photo-binding",
+            "prefix": "PocketLab/Devices/storage-phone",
+            "authorized_namespace": "PocketLab/Devices/storage-phone",
+        },
+    )
+    with pytest.raises(photo_backup.HTTPException) as exc:
+        photo_backup.consume_credential(
+            credential_ref="cred-" + ("d" * 32),
+            node_id="storage-phone",
+            backup_id="photo-binding",
+        )
+    assert exc.value.status_code == 403
+    assert exc.value.detail["reason_code"] == "credential_identity_mismatch"
+
+
 def test_credential_consumption_is_one_time_under_concurrency(photo_backup, monkeypatch):
     ref = "cred-" + ("c" * 32)
     backup_id = "photo-concurrent"
@@ -319,6 +404,17 @@ def test_credential_consumption_is_one_time_under_concurrency(photo_backup, monk
         auth_name="PocketLab-concurrent",
         auth_id="auth-concurrent",
         webdav_url="https://pocket.test.ts.net/apps/photoprism/originals/",
+        placement={
+            "schema_version": 2,
+            "destination_id": "server-photoprism-originals",
+            "destination_type": "photoprism_originals",
+            "transport": "https_webdav",
+            "volume_fingerprint": "a" * 64,
+            "node_id": "storage-phone",
+            "backup_id": backup_id,
+            "prefix": "PocketLab/Devices/storage-phone",
+            "authorized_namespace": "PocketLab/Devices/storage-phone",
+        },
     )
     state = photo_backup._state()
     state["jobs"][backup_id] = {
@@ -330,7 +426,17 @@ def test_credential_consumption_is_one_time_under_concurrency(photo_backup, monk
     monkeypatch.setattr(
         photo_backup,
         "_verified_placement",
-        lambda *_args: {"prefix": "PocketLab/Devices/storage-phone"},
+        lambda *_args: {
+            "schema_version": 2,
+            "destination_id": "server-photoprism-originals",
+            "destination_type": "photoprism_originals",
+            "transport": "https_webdav",
+            "volume_fingerprint": "a" * 64,
+            "node_id": "storage-phone",
+            "backup_id": backup_id,
+            "prefix": "PocketLab/Devices/storage-phone",
+            "authorized_namespace": "PocketLab/Devices/storage-phone",
+        },
     )
     monkeypatch.setattr(
         photo_backup,
@@ -427,6 +533,12 @@ def test_capacity_contract_exposes_reserve_policy_without_paths(photo_backup, mo
             f_frsize=block,
         ),
     )
+    (photo_backup._destination_identity_path()).unlink(missing_ok=True)
+    assert photo_backup._destination_identity(
+        photo_backup._originals_path(),
+        os.statvfs(photo_backup._originals_path()),
+        allow_enrollment=True,
+    ) is None
     result = photo_backup.server_capacity()
     assert result["hard_reserve_fraction"] == 0.10
     assert result["planning_reserve_fraction"] == 0.15
@@ -446,6 +558,17 @@ def test_ephemeral_credential_file_is_encrypted_at_rest(photo_backup, monkeypatc
         auth_name="PocketLab-test",
         auth_id="authidentifier",
         webdav_url="https://pocket.test.ts.net/apps/photoprism/originals/",
+        placement={
+            "schema_version": 2,
+            "destination_id": "server-photoprism-originals",
+            "destination_type": "photoprism_originals",
+            "transport": "https_webdav",
+            "volume_fingerprint": "a" * 64,
+            "node_id": "storage-phone",
+            "backup_id": "photo-encrypted",
+            "prefix": "PocketLab/Devices/storage-phone",
+            "authorized_namespace": "PocketLab/Devices/storage-phone",
+        },
     )
 
     path = photo_backup._credential_path(ref)
@@ -577,6 +700,17 @@ def test_photo_backup_api_repeated_start_is_idempotent(monkeypatch):
     assert payload["status"] == "already_running"
     assert payload["backup_id"] == "photo-existing"
     assert payload["sanitized"] is True
+
+
+def test_photo_backup_api_rejects_unsupported_destination_before_admission(monkeypatch):
+    ensure_runtime_path()
+    from pocket_lab_test_utils import client as make_client
+    response = make_client().post(
+        "/api/lite/devices/storage-phone/photo-backup",
+        json={"destination_id": "managed-nas", "collections": ["camera"]},
+    )
+    assert response.status_code == 422
+    assert response.json()["reason_code"] == "unsupported_destination"
 
 
 def test_photo_backup_api_start_queues_only_domain_command(monkeypatch):
@@ -845,6 +979,19 @@ def test_worker_redelivery_does_not_rotate_credential_or_republish_node_start(ph
     }))
     assert result["status"] == "starting"
     assert result["backup_id"] == "photo-redelivery"
+
+
+def test_worker_rejects_unsupported_destination_without_state_mutation(photo_backup):
+    result = asyncio.run(photo_backup.execute_start({
+        "command_id": "photo-disabled-destination",
+        "backup_id": "photo-disabled-destination",
+        "node_id": "storage-phone",
+        "destination_id": "encrypted-object-store",
+        "collections": ["camera"],
+    }))
+    assert result["status"] == "destination_unavailable"
+    assert result["reason_code"] == "unsupported_destination"
+    assert photo_backup._state()["jobs"] == {}
 
 
 def test_terminal_agent_progress_cannot_regress_completed_job(photo_backup):
