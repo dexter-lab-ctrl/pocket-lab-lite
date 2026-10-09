@@ -22,7 +22,7 @@ from fastapi import HTTPException, Request
 from cryptography.fernet import Fernet, InvalidToken
 
 from .. import deps
-from . import fleet_registry, lite_app_runtime, lite_catalog
+from . import fleet_registry, lite_app_runtime, lite_catalog, lite_photo_backup_destinations
 from .nats_bus import BUS
 
 PHOTO_BACKUP_START_SUBJECT = "pocketlab.commands.lite.media_backup.start"
@@ -611,6 +611,10 @@ def readiness(
             and origin
         ),
         "storage": capacity,
+        "destinations": lite_photo_backup_destinations.destinations(
+            capacity, operational=bool(runtime.get("running") and runtime.get("reachable") and origin)
+        ),
+        "selected_destination_id": lite_photo_backup_destinations.CURRENT_DESTINATION_ID,
         "sanitized": True,
     }
 
