@@ -154,3 +154,60 @@ test.describe('Phase 1 Photo Backup mocked UX', () => {
     await expect(truth).not.toContainText(/password|token|credential|WebDAV URL/i);
   });
 });
+
+
+test.describe('P3 Photo Backup readiness and recovery presentation', () => {
+  test('separates current readiness from latest historical failure', async ({ page }) => {
+    await installScenario(page, 'photo-backup-interrupted');
+    const backup = await openPhotoBackup(page);
+    await expect(backup.getByRole('group', { name: 'Current backup readiness' })).toBeVisible();
+    await expect(backup.getByRole('group', { name: 'Latest backup details' })).toBeVisible();
+    await expect(backup).toContainText(/Latest backup outcome/i);
+    await expect(backup.getByRole('button', { name: 'Retry' })).toBeEnabled();
+  });
+
+  test('shows protected storage reserve as separate hard and planning budgets', async ({ page }) => {
+    await installScenario(page, 'photo-backup-partial');
+    const backup = await openPhotoBackup(page);
+    const destination = backup.getByRole('group', { name: 'Server Phone destination storage' });
+    await expect(destination).toContainText(/Hard reserve/i);
+    await expect(destination).toContainText(/Planning reserve/i);
+    await expect(destination).toContainText(/Safe upload budget/i);
+    await expect(destination).toContainText(/15%|2 GiB/i);
+  });
+
+  test('shows accessible semantic progress and selection controls', async ({ page }) => {
+    await installScenario(page, 'photo-backup-running');
+    const backup = await openPhotoBackup(page);
+    await expect(backup.getByRole('progressbar', { name: 'Photo backup progress' })).toBeVisible();
+    await expect(backup.getByRole('group', { name: 'Photo backup actions' })).toBeVisible();
+    await expect(backup.getByRole('group', { name: 'Photo collections' })).toBeVisible();
+    await expectNoBlockingAxeViolations(page, '.lite-device-photo-backup');
+  });
+
+  test('source failure offers recovery without falsely calling previous backup current', async ({ page }) => {
+    await installScenario(page, 'photo-backup-source-offline');
+    const backup = await openPhotoBackup(page);
+    await expect(backup).toContainText(/Reconnect this device/i);
+    await expect(backup.getByRole('button', { name: 'Back up photos' })).toBeDisabled();
+    await expect(backup.getByRole('button', { name: 'Check status' })).toBeEnabled();
+  });
+
+  test('malformed status remains recoverable and never enables an unsafe start', async ({ page }) => {
+    await installScenario(page, 'photo-backup-malformed');
+    const backup = await openPhotoBackup(page);
+    await expect(backup).toContainText(/Status unavailable|Current readiness could not be confirmed|Needs attention/i);
+    await expect(backup.getByRole('button', { name: 'Back up photos' })).toBeDisabled();
+    await expect(backup.getByRole('button', { name: 'Check status' })).toBeEnabled();
+    await expect(page.locator('[data-lite-screen-id="devices"]')).toBeVisible();
+  });
+
+  test('photo backup UI remains available at mobile viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await installScenario(page, 'photo-backup-partial');
+    const backup = await openPhotoBackup(page);
+    await expect(backup.getByRole('group', { name: 'Current backup readiness' })).toBeVisible();
+    await expect(backup.getByRole('button', { name: 'Retry' })).toBeVisible();
+    await expect(backup.getByRole('button', { name: 'Check status' })).toBeVisible();
+  });
+});
