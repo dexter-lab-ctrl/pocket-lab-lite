@@ -838,7 +838,28 @@ class QualificationRun:
             if status == 200 and isinstance(payload.get("agent"), dict):
                 latest = payload["agent"]
                 photo = latest.get("photo_backup") if isinstance(latest.get("photo_backup"), dict) else {}
-                if str(latest.get("connection") or "") == "online" and photo.get("photo_storage_access"):
+                capabilities = {
+                    str(item)
+                    for item in (
+                        latest.get("advertised_capabilities")
+                        or latest.get("capabilities")
+                        or []
+                    )
+                    if item
+                }
+                online = (
+                    str(latest.get("connection") or "").lower() == "online"
+                    or str(latest.get("status") or "").lower() in {"active", "healthy", "online"}
+                    or str(latest.get("agent_status") or "").lower() in {"active", "healthy", "online"}
+                )
+                photo_ready = bool(
+                    photo.get("photo_storage_access")
+                    or "photo_storage_access" in capabilities
+                ) and bool(
+                    photo.get("rclone_available")
+                    or "rclone_available" in capabilities
+                )
+                if online and photo_ready:
                     return latest
             time.sleep(0.5)
         diagnostics: list[str] = []
@@ -1124,7 +1145,13 @@ class QualificationRun:
             self._bootstrap()
             agent = self._wait_agent()
             self.results["exact_candidate_runtime"] = {"status": "PASS", "api": self.candidate_sha, "worker": self.candidate_sha, "node_agent": self.candidate_sha, "supervisor": self.candidate_sha}
-            self.results["isolated_node_agent"] = {"status": "PASS", "node_identity": "synthetic_run_scoped", "connection": "isolated_nats", "capabilities": bool(agent.get("photo_backup"))}
+            observed_capabilities = agent.get("advertised_capabilities") or agent.get("capabilities") or []
+            self.results["isolated_node_agent"] = {
+                "status": "PASS",
+                "node_identity": "synthetic_run_scoped",
+                "connection": "isolated_nats",
+                "capabilities": "photo_storage_access" in observed_capabilities and "rclone_available" in observed_capabilities,
+            }
             self.results["isolated_supervisor"] = {"status": "PASS", "process_namespace": "run_owned_pm2_home", "production_pm2_touched": False}
             nats_probe = self._wait_nats_probe()
             self.results["isolated_nats_jetstream"] = {"status": "PASS", **nats_probe, "subjects": "fixed production conventions on isolated broker only"}
