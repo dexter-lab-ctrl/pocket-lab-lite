@@ -73,6 +73,7 @@ _PREFLIGHT_LOCK = threading.RLock()
 _PREFLIGHT_CACHE: dict[str, Any] = {}
 _PREFLIGHT_TTL_SECONDS = 20
 _ADMISSION_LOCK_TIMEOUT_SECONDS = 2.0
+PHOTO_BACKUP_PROGRESS_STALE_SECONDS = 90
 
 _SECRET_KEYS = {"password", "token", "secret", "credential", "authorization", "api_key"}
 _ANSI_ESCAPE_RE = re.compile(
@@ -99,6 +100,22 @@ def _now() -> str:
 
 def _epoch() -> float:
     return time.time()
+
+
+def _progress_is_stale(job: dict[str, Any]) -> bool:
+    """Mark active progress unavailable when no fresh agent update arrived."""
+    if str(job.get("status") or "").strip().lower() not in ACTIVE_STATES:
+        return False
+    if bool(job.get("progress_stale")):
+        return True
+    updated_at = str(job.get("updated_at") or "")
+    try:
+        updated_epoch = datetime.fromisoformat(
+            updated_at.replace("Z", "+00:00")
+        ).timestamp()
+    except (TypeError, ValueError, OverflowError):
+        return True
+    return _epoch() - updated_epoch > PHOTO_BACKUP_PROGRESS_STALE_SECONDS
 
 
 def _state_path() -> Path:
@@ -461,6 +478,8 @@ def _public_job(job: dict[str, Any] | None) -> dict[str, Any] | None:
         "photo_storage_access",
         "storage",
         "progress",
+        "progress_stale",
+        "integrity_mode",
         "sanitized",
     )
     result = {
@@ -471,6 +490,7 @@ def _public_job(job: dict[str, Any] | None) -> dict[str, Any] | None:
     if "reason_code" in result:
         result["reason_code"] = _safe_reason_code(result.get("reason_code"))
     result["credential_revoke_status"] = str(job.get("credential_revoke_status_internal") or "none") if str(job.get("credential_revoke_status_internal") or "") in {"pending", "revoked"} else "none"
+    result["progress_stale"] = _progress_is_stale(job)
     result["sanitized"] = True
     return result
 
@@ -798,9 +818,11 @@ def server_capacity() -> dict[str, Any]:
                 "safe_upload_budget_bytes": 0,
                 "reason_code": "destination_storage_unavailable",
                 "sanitized": True}
-    hard = int(total * HARD_RESERVE_FRACTION)
+    # Round reserves upward so the protected fraction is never under-run on
+    # small or otherwise non-divisible filesystems.
+    hard = max(1, (total * 10 + 99) // 100)
     planning = max(
-        int(total * PLANNING_RESERVE_FRACTION),
+        (total * 15 + 99) // 100,
         hard,
         PLANNING_RESERVE_MIN_BYTES,
     )
@@ -866,6 +888,7 @@ _VERSIONED_SAFE_REASONS = frozenset({
     "remote_inventory_limit_reached", "remote_listing_failed", "remote_listing_too_large",
     "remote_listing_invalid", "rclone_timeout", "copy_failed", "staging_integrity_failed",
     "finalize_failed", "destination_integrity_failed", "credential_invalid",
+    "remote_integrity_mismatch", "control_plane_unavailable",
     "credential_obscure_failed", "webdav_scope_unavailable",
     "webdav_credential_creation_failed", "webdav_credential_parse_failed",
     "webdav_credential_revoke_failed", "photoprism_runtime_unavailable",
@@ -2257,6 +2280,14 @@ def consume_credential(
             "password": str(data.get("password") or ""),
             "webdav_url": str(data.get("webdav_url") or ""),
             "destination_prefix": placement["prefix"],
+            "destination_id": str(
+                placement.get("destination_id")
+                or lite_photo_backup_destinations.CURRENT_DESTINATION_ID
+            ),
+            "destination_contract_version": int(
+                placement.get("schema_version")
+                or lite_photo_backup_destinations.SCHEMA_VERSION
+            ),
             "expires_at_epoch": expires_at_epoch,
             "capacity": capacity,
         }
@@ -2385,6 +2416,19 @@ def record_agent_progress(
                 or 0
             ),
         ),
+        "oversized_items": max(
+            0,
+            int(
+                progress.get("oversized_items")
+                or job.get("oversized_items")
+                or 0
+            ),
+        ),
+        "integrity_mode": (
+            "sha256"
+            if str(progress.get("integrity_mode") or job.get("integrity_mode") or "") == "sha256"
+            else "size_only"
+        ),
         "bytes_total": max(
             0,
             int(
@@ -2495,6 +2539,23 @@ def record_agent_progress(
         },
         "storage": capacity_snapshot,
     }
+    # A terminal success with outstanding work is contradictory. Normalize it
+    # to a truthful retryable partial result before it reaches the UI or audit
+    # projection.
+    if (
+        bounded["status"] == "completed"
+        and (
+            bounded["items_remaining"] > 0
+            or bounded["bytes_remaining"] > 0
+        )
+    ):
+        bounded["status"] = "partial_storage_limit"
+        bounded["summary"] = "Photos backed up. Some items are still waiting to be copied."
+        bounded["partial"] = True
+        bounded["retryable"] = True
+        bounded["reason_code"] = "storage_limit"
+        bounded["progress"]["phase"] = "partial_storage_limit"
+        bounded["progress"]["percent"] = min(99, bounded["progress"]["percent"])
     credential_revoked = True
     if status_value in TERMINAL_STATES:
         bounded["completed_at"] = _now()

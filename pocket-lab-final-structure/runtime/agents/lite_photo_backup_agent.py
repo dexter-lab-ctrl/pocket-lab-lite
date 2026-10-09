@@ -1,14 +1,18 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 import hashlib
 import fcntl
 import json
 import os
+import signal
 import shutil
+import stat as stat_module
 import subprocess
 import tempfile
 import threading
 import time
+import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -23,7 +27,10 @@ MEDIA_EXTENSIONS = frozenset({
     ".mp4", ".mov", ".m4v", ".3gp", ".webm", ".mkv", ".avi",
 })
 COLLECTION_ROOTS = {
-    "camera": ("shared", "DCIM"),
+    # Android camera media belongs to the camera collection, not the whole
+    # shared DCIM tree.  Keeping the boundary here prevents unrelated folders
+    # under shared storage from entering the backup inventory.
+    "camera": ("shared", "DCIM", "Camera"),
     "pictures": ("shared", "Pictures"),
     "videos": ("shared", "Movies"),
 }
@@ -49,6 +56,8 @@ TERMINAL_STATUSES = frozenset({
 })
 MAX_REMOTE_LISTING_BYTES = 32 * 1024 * 1024
 MAX_INVENTORY_ITEMS = 250_000
+MAX_INVENTORY_SPOOL_BYTES = 256 * 1024 * 1024
+MAX_LEDGER_ITEMS = MAX_INVENTORY_ITEMS
 
 
 def _now() -> str:
@@ -367,6 +376,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
         self._process_lock = threading.RLock()
         self._process: subprocess.Popen[str] | None = None
         self._active_backup_id = ""
+        self._integrity_mode = "size_only"
 
     def _headers(self) -> dict[str, str]:
         return {
@@ -461,6 +471,12 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
         backup_id: str,
         payload: dict[str, Any],
     ) -> bool:
+        def count(value: Any) -> int:
+            try:
+                return max(0, int(value or 0))
+            except (TypeError, ValueError, OverflowError):
+                return 0
+
         safe = {
             "status": str(
                 payload.get("status")
@@ -470,83 +486,19 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 payload.get("summary")
                 or "Photo backup is running."
             )[:180],
-            "items_total": max(
-                0,
-                int(payload.get("items_total") or 0),
+            "items_total": count(payload.get("items_total")),
+            "items_transferred": count(payload.get("items_transferred")),
+            "items_skipped": count(payload.get("items_skipped")),
+            "items_remaining": count(payload.get("items_remaining")),
+            "conflicts": count(payload.get("conflicts")),
+            "oversized_items": count(payload.get("oversized_items")),
+            "bytes_total": count(payload.get("bytes_total")),
+            "bytes_total_planned": count(payload.get("bytes_total_planned")),
+            "bytes_total_required": count(
+                payload.get("bytes_total_required") or payload.get("bytes_total")
             ),
-            "items_transferred": max(
-                0,
-                int(
-                    payload.get(
-                        "items_transferred"
-                    )
-                    or 0
-                ),
-            ),
-            "items_skipped": max(
-                0,
-                int(
-                    payload.get("items_skipped")
-                    or 0
-                ),
-            ),
-            "items_remaining": max(
-                0,
-                int(
-                    payload.get(
-                        "items_remaining"
-                    )
-                    or 0
-                ),
-            ),
-            "conflicts": max(
-                0,
-                int(payload.get("conflicts") or 0),
-            ),
-            "bytes_total": max(
-                0,
-                int(
-                    payload.get("bytes_total")
-                    or 0
-                ),
-            ),
-            "bytes_total_planned": max(
-                0,
-                int(
-                    payload.get(
-                        "bytes_total_planned"
-                    )
-                    or 0
-                ),
-            ),
-            "bytes_total_required": max(
-                0,
-                int(
-                    payload.get(
-                        "bytes_total_required"
-                    )
-                    or payload.get("bytes_total")
-                    or 0
-                ),
-            ),
-            "bytes_transferred": max(
-                0,
-                int(
-                    payload.get(
-                        "bytes_transferred"
-                    )
-                    or 0
-                ),
-            ),
-            "bytes_remaining": max(
-                0,
-                int(
-                    payload.get(
-                        "bytes_remaining"
-                    )
-                    or 0
-                ),
-            ),
+            "bytes_transferred": count(payload.get("bytes_transferred")),
+            "bytes_remaining": count(payload.get("bytes_remaining")),
             "photo_processing_state": str(
                 payload.get(
                     "photo_processing_state"
@@ -563,6 +515,11 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 payload.get("reason_code")
                 or ""
             )[:64],
+            "integrity_mode": (
+                "sha256"
+                if str(payload.get("integrity_mode") or self._integrity_mode) == "sha256"
+                else "size_only"
+            ),
             "progress": (
                 payload.get("progress")
                 if isinstance(
@@ -625,6 +582,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
             stderr=stderr,
             text=True,
             close_fds=True,
+            start_new_session=(os.name == "posix"),
         )
         with self._process_lock:
             self._process = process
@@ -634,11 +592,11 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 timeout=timeout,
             )
         except subprocess.TimeoutExpired:
-            process.terminate()
+            self._terminate_process_tree(process)
             try:
                 process.wait(timeout=3)
             except subprocess.TimeoutExpired:
-                process.kill()
+                self._kill_process_tree(process)
                 process.wait(timeout=3)
             raise RuntimeError("rclone_timeout")
         finally:
@@ -655,6 +613,32 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
             stderr=err or "",
         )
 
+    @staticmethod
+    def _terminate_process_tree(process: subprocess.Popen[str]) -> None:
+        try:
+            if os.name == "posix":
+                os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+            else:
+                process.terminate()
+        except (AttributeError, OSError, ProcessLookupError):
+            try:
+                process.terminate()
+            except OSError:
+                pass
+
+    @staticmethod
+    def _kill_process_tree(process: subprocess.Popen[str]) -> None:
+        try:
+            if os.name == "posix":
+                os.killpg(os.getpgid(process.pid), signal.SIGKILL)
+            else:
+                process.kill()
+        except (AttributeError, OSError, ProcessLookupError):
+            try:
+                process.kill()
+            except OSError:
+                pass
+
     def cancel(self, backup_id: str) -> None:
         if (
             self._active_backup_id
@@ -669,95 +653,121 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
             process is not None
             and process.poll() is None
         ):
-            try:
-                process.terminate()
-            except OSError:
-                pass
+            self._terminate_process_tree(process)
 
-    def _inventory(
-        self,
-        collections: list[str],
-    ) -> list[dict[str, Any]]:
-        items: list[dict[str, Any]] = []
+    @staticmethod
+    def _normalise_relative(path: Path, root: Path) -> str | None:
+        """Return a safe, stable relative media name.
+
+        Android filenames may contain Unicode in more than one equivalent
+        form.  Normalising the destination name makes collision handling
+        deterministic while the original Path remains the read source.  A
+        relative path is rejected rather than repaired if it could escape its
+        collection root.
+        """
+        try:
+            relative = path.relative_to(root).as_posix()
+        except ValueError:
+            return None
+        parts = []
+        for part in relative.split("/"):
+            normalised = unicodedata.normalize("NFC", part)
+            if not normalised or normalised in {".", ".."} or "\x00" in normalised:
+                return None
+            parts.append(normalised)
+        return "/".join(parts) if parts else None
+
+    def _inventory(self, collections: list[str]):
+        # Keep the public call eager enough for configuration errors while
+        # returning a lazy stream for normal inventories.
+        if MAX_INVENTORY_ITEMS <= 0:
+            raise RuntimeError("source_inventory_limit_reached")
+        return self._inventory_stream(collections)
+
+    def _inventory_stream(self, collections: list[str]):
+        """Yield media records without retaining the whole library in RAM.
+
+        ``os.walk`` materialises each directory's file list and the previous
+        implementation then retained every record until sorting completed.
+        An explicit scandir stack keeps memory proportional to the current
+        directory depth.  The backup planner spools records to a private,
+        bounded JSONL file when it needs to make a second pass.
+        """
+        count = 0
         for collection in collections:
             if collection not in COLLECTION_ROOTS:
                 continue
             root = _collection_path(collection)
-            if (
-                not root.is_dir()
-                or not os.access(
-                    root,
-                    os.R_OK | os.X_OK,
-                )
-            ):
+            try:
+                root_stat = root.stat(follow_symlinks=False)
+                if (
+                    not root.is_dir()
+                    or root.is_symlink()
+                    or not os.access(root, os.R_OK | os.X_OK)
+                    or not getattr(root_stat, "st_mode", 0)
+                ):
+                    continue
+            except OSError:
                 continue
-            for current, dirs, files in os.walk(
-                root,
-                topdown=True,
-                followlinks=False,
-            ):
-                current_path = Path(current)
+
+            pending = [root]
+            while pending:
+                current_path = pending.pop()
                 try:
-                    if (
-                        current_path / ".nomedia"
-                    ).exists():
-                        dirs[:] = []
+                    if (current_path / ".nomedia").is_file():
                         continue
                 except OSError:
-                    pass
-                dirs[:] = [
-                    name
-                    for name in dirs
-                    if (
-                        name.lower()
-                        not in EXCLUDED_DIR_NAMES
-                        and not name.startswith(".")
-                    )
-                ]
-                for filename in files:
-                    if filename.startswith("."):
-                        continue
-                    path = current_path / filename
-                    if (
-                        path.suffix.lower()
-                        not in MEDIA_EXTENSIONS
-                    ):
-                        continue
-                    if path.is_symlink():
-                        continue
-                    try:
-                        stat = path.stat()
-                    except OSError:
-                        continue
-                    if (
-                        not path.is_file()
-                        or stat.st_size <= 0
-                    ):
-                        continue
-                    try:
-                        relative = (
-                            path.relative_to(root)
-                            .as_posix()
-                        )
-                    except ValueError:
-                        continue
-                    if len(items) >= MAX_INVENTORY_ITEMS:
-                        raise RuntimeError("source_inventory_limit_reached")
-                    items.append({
-                        "collection": collection,
-                        "path": path,
-                        "relative": relative,
-                        "size": int(stat.st_size),
-                        "mtime": float(stat.st_mtime),
-                    })
-        items.sort(
-            key=lambda item: (
-                -float(item["mtime"]),
-                str(item["collection"]),
-                str(item["relative"]).casefold(),
-            )
-        )
-        return items
+                    continue
+
+                child_directories: list[Path] = []
+                try:
+                    entries = os.scandir(current_path)
+                except OSError:
+                    continue
+                try:
+                    for entry in entries:
+                        name = entry.name
+                        if not name or name.startswith("."):
+                            continue
+                        try:
+                            if entry.is_dir(follow_symlinks=False):
+                                if name.casefold() not in EXCLUDED_DIR_NAMES:
+                                    child_directories.append(Path(entry.path))
+                                continue
+                            if (
+                                not entry.is_file(follow_symlinks=False)
+                                or Path(name).suffix.casefold() not in MEDIA_EXTENSIONS
+                            ):
+                                continue
+                            stat_result = entry.stat(follow_symlinks=False)
+                        except OSError:
+                            # A removable-media directory can change while it
+                            # is being inventoried.  Skip that entry and keep
+                            # the rest of the bounded scan useful.
+                            continue
+                        if stat_result.st_size <= 0:
+                            continue
+                        path = Path(entry.path)
+                        relative = self._normalise_relative(path, root)
+                        if relative is None:
+                            continue
+                        if count >= MAX_INVENTORY_ITEMS:
+                            raise RuntimeError("source_inventory_limit_reached")
+                        count += 1
+                        yield {
+                            "collection": collection,
+                            "path": path,
+                            "relative": relative,
+                            "size": int(stat_result.st_size),
+                            "mtime": float(stat_result.st_mtime),
+                            "mtime_ns": int(getattr(stat_result, "st_mtime_ns", 0)),
+                        }
+                finally:
+                    entries.close()
+                # Sorting only the child-directory names keeps traversal
+                # deterministic without retaining media records.
+                for child in sorted(child_directories, key=lambda item: item.name.casefold(), reverse=True):
+                    pending.append(child)
 
     @staticmethod
     def _remote_key(
@@ -799,6 +809,9 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 f"photoprism:{destination_prefix}",
                 "--recursive",
                 "--files-only",
+                "--hash",
+                "--hash-type",
+                "SHA-256",
                 "--config",
                 str(config_path),
                 "--checkers",
@@ -807,6 +820,28 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
             timeout=180,
             capture=True,
         )
+        hash_error = str(result.stderr or "").casefold()
+        if result.returncode != 0 and (
+            "hash" in hash_error
+            and ("unsupported" in hash_error or "not supported" in hash_error)
+        ):
+            # Plain WebDAV commonly has no checksum provider.  Fall back to
+            # the same bounded listing without pretending that a digest exists.
+            result = self._run(
+                [
+                    rclone,
+                    "lsjson",
+                    f"photoprism:{destination_prefix}",
+                    "--recursive",
+                    "--files-only",
+                    "--config",
+                    str(config_path),
+                    "--checkers",
+                    "1",
+                ],
+                timeout=180,
+                capture=True,
+            )
         if result.returncode != 0:
             error_text = str(
                 result.stderr or ""
@@ -843,33 +878,59 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 "remote_listing_invalid"
             ) from exc
 
+        if not isinstance(data, list):
+            raise RuntimeError("remote_listing_invalid")
+
         listing: dict[str, dict[str, Any]] = {}
-        for item in (
-            data
-            if isinstance(data, list)
-            else []
-        ):
-            if (
-                not isinstance(item, dict)
-                or item.get("IsDir")
-            ):
+        folded_keys: set[str] = set()
+        for item in data:
+            if not isinstance(item, dict):
+                raise RuntimeError("remote_listing_invalid")
+            if item.get("IsDir"):
                 continue
-            key = (
-                str(item.get("Path") or "")
-                .replace("\\", "/")
-                .lstrip("/")
+            raw_key = str(item.get("Path") or "").replace("\\", "/")
+            if raw_key.startswith("/") or raw_key.startswith("\\"):
+                raise RuntimeError("remote_listing_invalid")
+            key = "/".join(
+                unicodedata.normalize("NFC", part)
+                for part in raw_key.split("/")
+                if part
             )
-            if key:
-                if len(listing) >= MAX_INVENTORY_ITEMS:
-                    raise RuntimeError("remote_inventory_limit_reached")
-                listing[key] = {
-                    "size": int(
-                        item.get("Size") or 0
-                    ),
-                    "mtime": self._parse_time(
-                        item.get("ModTime")
-                    ),
-                }
+            parts = key.split("/") if key else []
+            if not parts or any(part in {".", ".."} or "\x00" in part for part in parts):
+                raise RuntimeError("remote_listing_invalid")
+            folded = key.casefold()
+            if folded in folded_keys:
+                # A case-insensitive destination cannot safely represent two
+                # objects that differ only by case.  Do not silently overwrite
+                # one during inventory reconciliation.
+                raise RuntimeError("remote_listing_invalid")
+            try:
+                size = int(item.get("Size") or 0)
+            except (TypeError, ValueError) as exc:
+                raise RuntimeError("remote_listing_invalid") from exc
+            if size < 0:
+                raise RuntimeError("remote_listing_invalid")
+            if len(listing) >= MAX_INVENTORY_ITEMS:
+                raise RuntimeError("remote_inventory_limit_reached")
+            hashes = item.get("Hashes")
+            sha256 = ""
+            if isinstance(hashes, dict):
+                candidate = hashes.get("SHA-256") or hashes.get("sha-256") or ""
+                if candidate:
+                    if len(str(candidate)) != 64:
+                        raise RuntimeError("remote_listing_invalid")
+                    try:
+                        int(str(candidate), 16)
+                    except ValueError:
+                        raise RuntimeError("remote_listing_invalid") from None
+                    sha256 = str(candidate).lower()
+            folded_keys.add(folded)
+            listing[key] = {
+                "size": size,
+                "mtime": self._parse_time(item.get("ModTime")),
+                "sha256": sha256,
+            }
         return listing
 
     @staticmethod
@@ -905,7 +966,8 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
         digest = hashlib.sha256(
             (
                 f"{int(item['size'])}:"
-                f"{int(float(item['mtime']))}"
+                f"{int(float(item['mtime']))}:"
+                f"{unicodedata.normalize('NFC', str(item.get('relative') or ''))}"
             ).encode("utf-8")
         ).hexdigest()[:12]
         return str(
@@ -977,28 +1039,115 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
         digest = hashlib.sha256(self.node_id.encode("utf-8")).hexdigest()[:24]
         return root / (digest + ".json")
 
-    def _ledger_load(self) -> dict[str, Any]:
+    @contextmanager
+    def _ledger_lock(self):
+        """Serialize ledger read/merge/write operations per device."""
+        path = self._ledger_path().with_suffix(".lock")
+        fd = os.open(
+            str(path),
+            os.O_CREAT | os.O_RDWR | getattr(os, "O_NOFOLLOW", 0),
+            0o600,
+        )
         try:
-            data = json.loads(self._ledger_path().read_text(encoding="utf-8"))
-            if data.get("schema_version") == 1 and isinstance(data.get("items"), dict):
-                return data["items"]
+            os.fchmod(fd, 0o600)
+            fcntl.flock(fd, fcntl.LOCK_EX)
+            yield
+        finally:
+            try:
+                fcntl.flock(fd, fcntl.LOCK_UN)
+            finally:
+                os.close(fd)
+
+    @staticmethod
+    def _sanitised_ledger_entries(entries: dict[str, Any]) -> dict[str, Any]:
+        clean: dict[str, Any] = {}
+        for identity, entry in list(entries.items())[-MAX_LEDGER_ITEMS:]:
+            if not isinstance(identity, str) or len(identity) != 64:
+                continue
+            if not isinstance(entry, dict):
+                continue
+            sha256 = str(entry.get("sha256") or "").lower()
+            try:
+                int(sha256, 16)
+                size = int(entry.get("size"))
+                mtime = int(entry.get("mtime"))
+            except (TypeError, ValueError):
+                continue
+            if len(sha256) != 64 or size < 0 or mtime < 0:
+                continue
+            clean[identity] = {
+                "size": size,
+                "mtime": mtime,
+                "mtime_ns": max(0, int(entry.get("mtime_ns") or 0)),
+                "sha256": sha256,
+                "verified_at": str(entry.get("verified_at") or "")[:32],
+            }
+        return clean
+
+    def _ledger_load(self, destination_identity: str | None = None) -> dict[str, Any]:
+        path = self._ledger_path()
+        try:
+            with self._ledger_lock():
+                data = json.loads(path.read_text(encoding="utf-8"))
+                if not isinstance(data, dict) or not isinstance(data.get("items"), dict):
+                    return {}
+                if data.get("schema_version") == 2:
+                    if destination_identity is not None and data.get("destination_identity") != destination_identity:
+                        return {}
+                    return self._sanitised_ledger_entries(data["items"])
+                # Schema 1 is only useful to direct compatibility callers. A
+                # backup execution always supplies a destination identity and
+                # therefore cannot trust a legacy ledger.
+                if destination_identity is None and data.get("schema_version") == 1:
+                    return self._sanitised_ledger_entries(data["items"])
         except (OSError, ValueError, TypeError, AttributeError):
             pass
         return {}
 
-    def _ledger_save(self, entries: dict[str, Any]) -> None:
+    def _ledger_save(
+        self,
+        entries: dict[str, Any],
+        destination_identity: str | None = None,
+    ) -> None:
         path = self._ledger_path()
         temp = None
         try:
-            with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8",
-                prefix=".ledger-", dir=path.parent, delete=False) as stream:
-                temp = Path(stream.name)
-                os.chmod(temp, 0o600)
-                json.dump({"schema_version": 1, "items": entries,
-                           "updated_at": _now(), "sanitized": True}, stream)
-                stream.flush()
-                os.fsync(stream.fileno())
-            os.replace(temp, path)
+            with self._ledger_lock():
+                current: dict[str, Any] = {}
+                try:
+                    data = json.loads(path.read_text(encoding="utf-8"))
+                    if (
+                        isinstance(data, dict)
+                        and data.get("schema_version") == 2
+                        and data.get("destination_identity") == destination_identity
+                        and isinstance(data.get("items"), dict)
+                    ):
+                        current = data["items"]
+                except (OSError, ValueError, TypeError):
+                    current = {}
+                current.update(entries)
+                clean = self._sanitised_ledger_entries(current)
+                with tempfile.NamedTemporaryFile(
+                    mode="w", encoding="utf-8", prefix=".ledger-",
+                    dir=path.parent, delete=False,
+                ) as stream:
+                    temp = Path(stream.name)
+                    os.chmod(temp, 0o600)
+                    json.dump({
+                        "schema_version": 2,
+                        "destination_identity": destination_identity or "",
+                        "items": clean,
+                        "updated_at": _now(),
+                        "sanitized": True,
+                    }, stream, sort_keys=True, separators=(",", ":"))
+                    stream.flush()
+                    os.fsync(stream.fileno())
+                os.replace(temp, path)
+                directory_fd = os.open(str(path.parent), os.O_RDONLY)
+                try:
+                    os.fsync(directory_fd)
+                finally:
+                    os.close(directory_fd)
         finally:
             if temp is not None:
                 temp.unlink(missing_ok=True)
@@ -1006,42 +1155,106 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
     @staticmethod
     def _item_identity(item: dict[str, Any], destination: str) -> str:
         # No filenames or source paths are persisted in the ledger.
-        value = (str(item["collection"]) + "\\0" + str(item["relative"])
-                 + "\\0" + destination)
+        value = (
+            unicodedata.normalize("NFC", str(item["collection"]))
+            + "\x00"
+            + unicodedata.normalize("NFC", str(item["relative"]))
+            + "\x00"
+            + unicodedata.normalize("NFC", destination)
+        )
         return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
     @staticmethod
     def _source_digest(path: Path, *, expected_size: int) -> str:
         h = hashlib.sha256()
         total = 0
-        with path.open("rb") as stream:
-            while True:
-                block = stream.read(1024 * 1024)
-                if not block:
-                    break
-                total += len(block)
-                if total > expected_size:
-                    raise RuntimeError("source_changed")
-                h.update(block)
+        flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+        try:
+            descriptor = os.open(str(path), flags)
+        except OSError as exc:
+            raise RuntimeError("source_changed") from exc
+        try:
+            descriptor_stat = os.fstat(descriptor)
+            if (
+                not stat_module.S_ISREG(descriptor_stat.st_mode)
+                or int(descriptor_stat.st_size) != int(expected_size)
+            ):
+                raise RuntimeError("source_changed")
+            with os.fdopen(descriptor, "rb", closefd=True) as stream:
+                descriptor = -1
+                while True:
+                    block = stream.read(1024 * 1024)
+                    if not block:
+                        break
+                    total += len(block)
+                    if total > expected_size:
+                        raise RuntimeError("source_changed")
+                    h.update(block)
+        finally:
+            if descriptor >= 0:
+                os.close(descriptor)
         if total != expected_size:
             raise RuntimeError("source_changed")
         return h.hexdigest()
 
-    def _remote_size(self, rclone: str, config_path: Path,
-                     destination_prefix: str, remote_relative: str) -> int | None:
+    def _remote_metadata(
+        self,
+        rclone: str,
+        config_path: Path,
+        destination_prefix: str,
+        remote_relative: str,
+    ) -> dict[str, Any] | None:
         target = f"photoprism:{destination_prefix}/{remote_relative}"
-        result = self._run([rclone, "lsjson", target, "--stat", "--config",
-                            str(config_path), "--checkers", "1"],
+        result = self._run([
+            rclone, "lsjson", target, "--stat", "--hash", "--hash-type",
+            "SHA-256", "--config", str(config_path), "--checkers", "1",
+        ],
                            timeout=60, capture=True)
-        if result.returncode != 0 or len(result.stdout.encode("utf-8")) > 4096:
+        hash_error = str(result.stderr or "").casefold()
+        if result.returncode != 0 and (
+            "hash" in hash_error
+            and ("unsupported" in hash_error or "not supported" in hash_error)
+        ):
+            result = self._run([
+                rclone, "lsjson", target, "--stat", "--config",
+                str(config_path), "--checkers", "1",
+            ], timeout=60, capture=True)
+        raw = result.stdout or ""
+        if result.returncode != 0 or len(raw.encode("utf-8")) > 4096:
             return None
         try:
-            item = json.loads(result.stdout)
+            item = json.loads(raw)
             if isinstance(item, dict) and not item.get("IsDir"):
-                return int(item.get("Size", -1))
+                size = int(item.get("Size", -1))
+                if size < 0:
+                    return None
+                hashes = item.get("Hashes")
+                sha256 = ""
+                if isinstance(hashes, dict):
+                    candidate = hashes.get("SHA-256") or hashes.get("sha-256") or ""
+                    if candidate:
+                        if len(str(candidate)) != 64:
+                            return None
+                        try:
+                            int(str(candidate), 16)
+                        except ValueError:
+                            return None
+                        sha256 = str(candidate).lower()
+                return {
+                    "size": size,
+                    "mtime": self._parse_time(item.get("ModTime")),
+                    "sha256": sha256,
+                }
         except (ValueError, TypeError):
             pass
         return None
+
+    def _remote_size(self, rclone: str, config_path: Path,
+                     destination_prefix: str, remote_relative: str) -> int | None:
+        metadata = self._remote_metadata(
+            rclone, config_path, destination_prefix, remote_relative,
+        )
+        return int(metadata["size"]) if metadata else None
 
     def _cleanup_staging(self, rclone: str, config_path: Path,
                          destination_prefix: str, remote_relative: str) -> None:
@@ -1068,57 +1281,134 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
         # Clean up only this exact deterministic staging object on retry.
         # Never delete the final destination or any other namespace.
         self._cleanup_staging(rclone, config_path, destination_prefix, remote_relative)
-        copied = self._run(
-            [
-                rclone,
-                "copyto",
-                str(item["path"]),
-                f"photoprism:{temporary}",
-                "--config",
-                str(config_path),
-                "--transfers",
-                "1",
-                "--checkers",
-                "1",
-                "--retries",
-                "2",
-                "--low-level-retries",
-                "3",
-                "--contimeout",
-                "10s",
-                "--timeout",
-                "5m",
-                "--no-traverse",
-            ],
-            timeout=900,
-        )
-        if copied.returncode != 0:
-            raise RuntimeError("copy_failed")
+        try:
+            copied = self._run(
+                [
+                    rclone,
+                    "copyto",
+                    str(item["path"]),
+                    f"photoprism:{temporary}",
+                    "--config",
+                    str(config_path),
+                    "--transfers",
+                    "1",
+                    "--checkers",
+                    "1",
+                    "--retries",
+                    "2",
+                    "--low-level-retries",
+                    "3",
+                    "--contimeout",
+                    "10s",
+                    "--timeout",
+                    "5m",
+                    "--no-traverse",
+                ],
+                timeout=900,
+            )
+            if copied.returncode != 0:
+                raise RuntimeError("copy_failed")
 
-        # Confirm staging bytes arrived before finalizing the destination.
-        if self._remote_size(rclone, config_path, destination_prefix,
-                             remote_relative + ".pocketlab-upload") != int(item["size"]):
-            raise RuntimeError("staging_integrity_failed")
-        moved = self._run(
-            [
-                rclone,
-                "moveto",
-                f"photoprism:{temporary}",
-                f"photoprism:{final}",
-                "--config",
-                str(config_path),
-                "--checkers",
-                "1",
-                "--retries",
-                "2",
-            ],
-            timeout=120,
-        )
-        if moved.returncode != 0:
-            raise RuntimeError("finalize_failed")
-        if self._remote_size(rclone, config_path, destination_prefix,
-                             remote_relative) != int(item["size"]):
-            raise RuntimeError("destination_integrity_failed")
+            # Size is always available. A SHA-256 comparison is used only
+            # when the remote backend actually reports one; plain WebDAV does
+            # not provide a trusted digest, so the result remains size-only.
+            staged = self._remote_metadata(
+                rclone, config_path, destination_prefix,
+                remote_relative + ".pocketlab-upload",
+            )
+            expected_hash = str(getattr(self, "_expected_remote_sha256", "") or "")
+            if not staged or int(staged.get("size", -1)) != int(item["size"]):
+                raise RuntimeError("staging_integrity_failed")
+            if expected_hash and staged.get("sha256") and staged["sha256"] != expected_hash:
+                raise RuntimeError("remote_integrity_mismatch")
+            self._integrity_mode = "sha256" if expected_hash and staged.get("sha256") else "size_only"
+            moved = self._run(
+                [
+                    rclone,
+                    "moveto",
+                    f"photoprism:{temporary}",
+                    f"photoprism:{final}",
+                    "--config",
+                    str(config_path),
+                    "--checkers",
+                    "1",
+                    "--retries",
+                    "2",
+                ],
+                timeout=120,
+            )
+            if moved.returncode != 0:
+                raise RuntimeError("finalize_failed")
+            finalized = self._remote_metadata(
+                rclone, config_path, destination_prefix, remote_relative,
+            )
+            if not finalized or int(finalized.get("size", -1)) != int(item["size"]):
+                raise RuntimeError("destination_integrity_failed")
+            if expected_hash and finalized.get("sha256") and finalized["sha256"] != expected_hash:
+                raise RuntimeError("remote_integrity_mismatch")
+        finally:
+            # This is an exact object cleanup, never a directory purge. It is
+            # safe after a successful move and recovers staging after a crash
+            # or failed finalization on the next retry.
+            try:
+                self._cleanup_staging(
+                    rclone, config_path, destination_prefix, remote_relative,
+                )
+            except Exception:
+                pass
+
+    @staticmethod
+    def _spool_record(item: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "collection": str(item.get("collection") or ""),
+            "path": str(item.get("path") or ""),
+            "relative": str(item.get("relative") or ""),
+            "size": int(item.get("size") or 0),
+            "mtime": float(item.get("mtime") or 0),
+            "mtime_ns": int(item.get("mtime_ns") or 0),
+        }
+
+    @staticmethod
+    def _spool_item(record: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "collection": str(record.get("collection") or ""),
+            "path": Path(str(record.get("path") or "")),
+            "relative": str(record.get("relative") or ""),
+            "size": int(record.get("size") or 0),
+            "mtime": float(record.get("mtime") or 0),
+            "mtime_ns": int(record.get("mtime_ns") or 0),
+        }
+
+    def _write_inventory_spool(
+        self,
+        collections: list[str],
+        destination: Path,
+    ) -> int:
+        count = 0
+        with destination.open("w", encoding="utf-8", buffering=1024 * 1024) as stream:
+            os.chmod(destination, 0o600)
+            for item in self._inventory(collections):
+                encoded = json.dumps(
+                    self._spool_record(item),
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                )
+                stream.write(encoded + "\n")
+                count += 1
+                if stream.tell() > MAX_INVENTORY_SPOOL_BYTES:
+                    raise RuntimeError("source_inventory_limit_reached")
+        return count
+
+    def _iter_spool(self, path: Path):
+        with path.open("r", encoding="utf-8") as stream:
+            for line in stream:
+                try:
+                    record = json.loads(line)
+                except (TypeError, ValueError) as exc:
+                    raise RuntimeError("source_inventory_limit_reached") from exc
+                if not isinstance(record, dict):
+                    raise RuntimeError("source_inventory_limit_reached")
+                yield self._spool_item(record)
 
     def backup(
         self,
@@ -1158,6 +1448,16 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
 
         credential: dict[str, Any] = {}
         temp_root: Path | None = None
+        transferred = 0
+        bytes_transferred = 0
+        skipped = 0
+        remaining = 0
+        conflicts = 0
+        remaining_bytes = 0
+        required_bytes = 0
+        planned_bytes = 0
+        oversized_count = 0
+        planned_count = 0
         try:
             credential = self._credential(
                 credential_ref,
@@ -1173,6 +1473,10 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 )
                 else {}
             )
+            if str(capacity.get("status") or "").lower() in {"unavailable", "error"}:
+                raise RuntimeError(
+                    str(capacity.get("reason_code") or "destination_storage_unavailable")
+                )
             planning_budget = max(
                 0,
                 int(
@@ -1212,10 +1516,14 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 )
                 return result
 
-            items = self._inventory(
-                readable_collections
+            temp_root = Path(tempfile.mkdtemp(prefix="pocketlab-photo-backup-"))
+            temp_root.chmod(0o700)
+            inventory_path = temp_root / "inventory.jsonl"
+            inventory_count = self._write_inventory_spool(
+                readable_collections,
+                inventory_path,
             )
-            if not items:
+            if inventory_count == 0:
                 result = {
                     "status": "completed",
                     "summary": (
@@ -1247,14 +1555,6 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 )
                 return result
 
-            temp_root = Path(
-                tempfile.mkdtemp(
-                    prefix=(
-                        "pocketlab-photo-backup-"
-                    )
-                )
-            )
-            temp_root.chmod(0o700)
             config_path = self._make_config(
                 rclone,
                 credential,
@@ -1267,83 +1567,119 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 )
                 or f"PocketLab/Devices/{self.node_id}"
             ).strip("/")
+            destination_parts = destination_prefix.split("/")
+            if (
+                not destination_prefix
+                or any(
+                    not part
+                    or part in {".", ".."}
+                    or "\x00" in part
+                    for part in destination_parts
+                )
+            ):
+                raise RuntimeError("destination_identity_mismatch")
+            destination_id = str(credential.get("destination_id") or "").strip()
+            ledger_identity = (
+                hashlib.sha256(
+                    (destination_id + "\x00" + destination_prefix).encode("utf-8")
+                ).hexdigest()
+                if destination_id
+                else None
+            )
             remote = self._remote_listing(
                 rclone,
                 config_path,
                 destination_prefix,
             )
 
-            ledger = self._ledger_load()
-            plan: list[
-                tuple[dict[str, Any], str]
-            ] = []
-            skipped = 0
-            remaining = 0
-            conflicts = 0
-            remaining_bytes = 0
-            required_bytes = 0
-            planned_bytes = 0
-            oversized_count = 0
-            for item in items:
-                regular_key = self._remote_key(
-                    str(item["collection"]),
-                    str(item["relative"]),
-                )
-                identity = self._item_identity(item, regular_key)
-                checkpoint = ledger.get(identity)
-                remote_item = remote.get(regular_key)
-                if (isinstance(checkpoint, dict)
-                    and checkpoint.get("size") == int(item["size"])
-                    and checkpoint.get("mtime") == int(item["mtime"])
-                    and remote_item and int(remote_item.get("size", -1)) == int(item["size"])
-                    and checkpoint.get("sha256") == self._source_digest(item["path"], expected_size=int(item["size"]))):
-                    skipped += 1
-                    continue
-                if self._matches(remote_item, item):
-                    skipped += 1
-                    continue
-
-                final_key = regular_key
-                if regular_key in remote:
-                    conflicts += 1
-                    conflict_rel = (
-                        self._conflict_relative(
-                            str(item["relative"]),
-                            item,
-                        )
-                    )
-                    final_key = self._remote_key(
+            ledger = self._ledger_load(ledger_identity) if ledger_identity else {}
+            plan_path = temp_root / "plan.jsonl"
+            seen_destination_keys: set[str] = set()
+            with plan_path.open("w", encoding="utf-8", buffering=1024 * 1024) as plan_stream:
+                os.chmod(plan_path, 0o600)
+                for item in self._iter_spool(inventory_path):
+                    regular_key = self._remote_key(
                         str(item["collection"]),
-                        conflict_rel,
+                        str(item["relative"]),
                     )
-                    if self._matches(
-                        remote.get(final_key),
-                        item,
+                    identity = self._item_identity(item, regular_key)
+                    checkpoint = ledger.get(identity)
+                    remote_item = remote.get(regular_key)
+                    local_collision = regular_key.casefold() in seen_destination_keys
+                    seen_destination_keys.add(regular_key.casefold())
+                    source_digest = ""
+                    if isinstance(checkpoint, dict) and remote_item:
+                        try:
+                            source_digest = self._source_digest(
+                                item["path"], expected_size=int(item["size"]),
+                            )
+                        except RuntimeError as exc:
+                            if str(exc) == "source_changed":
+                                required_bytes += int(item["size"])
+                                remaining += 1
+                                remaining_bytes += int(item["size"])
+                                continue
+                            raise
+                    if (
+                        isinstance(checkpoint, dict)
+                        and checkpoint.get("size") == int(item["size"])
+                        and checkpoint.get("mtime") == int(item["mtime"])
+                        and checkpoint.get("mtime_ns", 0) in {0, int(item.get("mtime_ns") or 0)}
+                        and remote_item
+                        and int(remote_item.get("size", -1)) == int(item["size"])
+                        and checkpoint.get("sha256") == source_digest
+                        and (
+                            not remote_item.get("sha256")
+                            or remote_item.get("sha256") == source_digest
+                        )
                     ):
                         skipped += 1
                         continue
+                    if self._matches(remote_item, item):
+                        if remote_item.get("sha256"):
+                            if not source_digest:
+                                source_digest = self._source_digest(
+                                    item["path"], expected_size=int(item["size"]),
+                                )
+                            if remote_item.get("sha256") != source_digest:
+                                pass
+                            else:
+                                skipped += 1
+                                continue
+                        else:
+                            skipped += 1
+                            continue
 
-                required_bytes += int(item["size"])
-                if (
-                    planned_bytes
-                    + int(item["size"])
-                    > planning_budget
-                ):
-                    remaining += 1
-                    remaining_bytes += int(item["size"])
-                    if int(item["size"]) > planning_budget:
-                        oversized_count += 1
-                    continue
-                plan.append((item, final_key))
-                planned_bytes += int(
-                    item["size"]
-                )
+                    final_key = regular_key
+                    if regular_key in remote or local_collision:
+                        conflicts += 1
+                        conflict_rel = self._conflict_relative(
+                            str(item["relative"]), item,
+                        )
+                        final_key = self._remote_key(
+                            str(item["collection"]), conflict_rel,
+                        )
+                        if self._matches(remote.get(final_key), item):
+                            skipped += 1
+                            continue
 
-            total_candidates = (
-                len(plan)
-                + skipped
-                + remaining
-            )
+                    required_bytes += int(item["size"])
+                    if planned_bytes + int(item["size"]) > planning_budget:
+                        remaining += 1
+                        remaining_bytes += int(item["size"])
+                        if int(item["size"]) > planning_budget:
+                            oversized_count += 1
+                        continue
+                    plan_stream.write(json.dumps({
+                        "item": self._spool_record(item),
+                        "final_key": final_key,
+                    }, ensure_ascii=False, separators=(",", ":")) + "\n")
+                    planned_count += 1
+                    planned_bytes += int(item["size"])
+                if plan_stream.tell() > MAX_INVENTORY_SPOOL_BYTES:
+                    raise RuntimeError("source_inventory_limit_reached")
+
+            total_candidates = planned_count + skipped + remaining
             self._post_progress(
                 backup_id,
                 {
@@ -1351,9 +1687,10 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                     "summary": "Backing up photos.",
                     "items_total": total_candidates,
                     "items_skipped": skipped,
-                    "items_remaining": len(plan) + remaining,
+                    "items_remaining": planned_count + remaining,
                     "conflicts": conflicts,
                     "oversized_items": oversized_count,
+                    "integrity_mode": self._integrity_mode,
                     "bytes_total": required_bytes,
                     "bytes_total_planned": planned_bytes,
                     "bytes_total_required": required_bytes,
@@ -1369,142 +1706,113 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
             transferred = 0
             bytes_transferred = 0
             last_report = 0.0
-            for index, (
-                item,
-                final_key,
-            ) in enumerate(plan):
-                if self.cancel_event.is_set():
-                    raise InterruptedError(
-                        "cancelled"
-                    )
+            with plan_path.open("r", encoding="utf-8") as plan_stream:
+                for line in plan_stream:
+                    try:
+                        planned = json.loads(line)
+                        item = self._spool_item(planned["item"])
+                        final_key = str(planned["final_key"])
+                    except (KeyError, TypeError, ValueError) as exc:
+                        raise RuntimeError("source_inventory_limit_reached") from exc
+                    if self.cancel_event.is_set():
+                        raise InterruptedError("cancelled")
 
-                capacity_now = self._capacity(
-                    backup_id
-                )
-                hard_budget = max(
-                    0,
-                    int(
-                        capacity_now.get(
-                            "hard_upload_budget_bytes"
+                    capacity_now = self._capacity(backup_id)
+                    if (
+                        str(capacity_now.get("status") or "").lower() in {"unavailable", "error"}
+                        or "safe_upload_budget_bytes" not in capacity_now
+                        or "hard_upload_budget_bytes" not in capacity_now
+                    ):
+                        raise RuntimeError(
+                            str(capacity_now.get("reason_code") or "destination_storage_unavailable")
                         )
-                        or 0
-                    ),
-                )
-                safe_budget = max(
-                    0, int(capacity_now.get("safe_upload_budget_bytes") or 0)
-                )
-                # Defer this item but keep trying smaller eligible objects.
-                # Space changes during the run must not consume the hard reserve.
-                if int(item["size"]) > min(hard_budget, safe_budget):
-                    remaining += 1
-                    remaining_bytes += int(item["size"])
-                    continue
-                # Never upload an item modified after inventory.
-                try:
-                    current_stat = item["path"].stat()
-                except OSError:
-                    remaining += 1
-                    remaining_bytes += int(item["size"])
-                    continue
-                if (current_stat.st_size != item["size"]
-                        or current_stat.st_mtime != item["mtime"]):
-                    remaining += 1
-                    remaining_bytes += int(item["size"])
-                    continue
+                    hard_budget = max(0, int(capacity_now.get("hard_upload_budget_bytes") or 0))
+                    safe_budget = max(0, int(capacity_now.get("safe_upload_budget_bytes") or 0))
+                    # Defer this item but keep trying smaller eligible objects.
+                    if int(item["size"]) > min(hard_budget, safe_budget):
+                        remaining += 1
+                        remaining_bytes += int(item["size"])
+                        continue
 
-                source_hash = self._source_digest(item["path"], expected_size=int(item["size"]))
-                self._transfer_one(
-                    rclone,
-                    config_path,
-                    item,
-                    final_key,
-                    destination_prefix,
-                )
-                if self._source_digest(item["path"], expected_size=int(item["size"])) != source_hash:
-                    raise RuntimeError("source_changed_during_transfer")
-                ledger[self._item_identity(item, final_key)] = {
-                    "size": int(item["size"]), "mtime": int(item["mtime"]),
-                    "sha256": source_hash, "verified_at": _now(),
-                }
-                self._ledger_save(ledger)
-                transferred += 1
-                bytes_transferred += int(
-                    item["size"]
-                )
-                remote[final_key] = {
-                    "size": int(item["size"]),
-                    "mtime": float(item["mtime"]),
-                }
-
-                now = time.monotonic()
-                if (
-                    now - last_report >= 5.0
-                    or transferred == len(plan)
-                ):
-                    percent = (
-                        int(
-                            (
-                                bytes_transferred
-                                / required_bytes
-                            )
-                            * 100
+                    try:
+                        current_stat = item["path"].stat()
+                    except OSError:
+                        remaining += 1
+                        remaining_bytes += int(item["size"])
+                        continue
+                    if item["path"].is_symlink() or not stat_module.S_ISREG(current_stat.st_mode):
+                        remaining += 1
+                        remaining_bytes += int(item["size"])
+                        continue
+                    if (
+                        current_stat.st_size != item["size"]
+                        or current_stat.st_mtime != item["mtime"]
+                        or (
+                            item.get("mtime_ns")
+                            and getattr(current_stat, "st_mtime_ns", 0) != item["mtime_ns"]
                         )
-                        if required_bytes
-                        else 100
+                    ):
+                        remaining += 1
+                        remaining_bytes += int(item["size"])
+                        continue
+
+                    source_hash = self._source_digest(
+                        item["path"], expected_size=int(item["size"]),
                     )
-                    self._post_progress(
-                        backup_id,
-                        {
-                            "status": "transferring",
-                            "summary": (
-                                "Backing up photos."
-                            ),
-                            "items_total": (
-                                total_candidates
-                            ),
-                            "items_transferred": (
-                                transferred
-                            ),
-                            "items_skipped": skipped,
-                            "items_remaining": (
-                                max(0, len(plan) - transferred)
-                                + remaining
-                            ),
-                            "conflicts": conflicts,
-                            "bytes_total": (
-                                required_bytes
-                            ),
-                            "bytes_total_planned": (
-                                planned_bytes
-                            ),
-                            "bytes_total_required": (
-                                required_bytes
-                            ),
-                            "bytes_transferred": (
-                                bytes_transferred
-                            ),
-                            "bytes_remaining": (
-                                max(
-                                    0,
-                                    required_bytes
-                                    - bytes_transferred,
-                                )
-                            ),
-                            "progress": {
-                                "phase": (
-                                    "transferring"
-                                ),
-                                "percent": max(
-                                    0,
-                                    min(99, percent),
-                                ),
-                                "step": (
-                                    "Backing up photos."
-                                ),
+                    self._expected_remote_sha256 = source_hash
+                    self._transfer_one(
+                        rclone, config_path, item, final_key, destination_prefix,
+                    )
+                    if self._source_digest(
+                        item["path"], expected_size=int(item["size"]),
+                    ) != source_hash:
+                        raise RuntimeError("source_changed")
+                    ledger[self._item_identity(item, final_key)] = {
+                        "size": int(item["size"]),
+                        "mtime": int(item["mtime"]),
+                        "mtime_ns": int(item.get("mtime_ns") or 0),
+                        "sha256": source_hash,
+                        "verified_at": _now(),
+                    }
+                    if ledger_identity:
+                        self._ledger_save(ledger, ledger_identity)
+                    transferred += 1
+                    bytes_transferred += int(item["size"])
+                    remote[final_key] = {
+                        "size": int(item["size"]),
+                        "mtime": float(item["mtime"]),
+                        # Plain WebDAV generally has no trusted checksum.
+                        "sha256": "",
+                    }
+
+                    now = time.monotonic()
+                    if now - last_report >= 5.0 or transferred == planned_count:
+                        percent = int((bytes_transferred / required_bytes) * 100) if required_bytes else 100
+                        self._post_progress(
+                            backup_id,
+                            {
+                                "status": "transferring",
+                                "summary": "Backing up photos.",
+                                "items_total": total_candidates,
+                                "items_transferred": transferred,
+                                "items_skipped": skipped,
+                                "items_remaining": max(0, planned_count - transferred) + remaining,
+                                "conflicts": conflicts,
+                                "oversized_items": oversized_count,
+                                "integrity_mode": self._integrity_mode,
+                                "bytes_total": required_bytes,
+                                "bytes_total_planned": planned_bytes,
+                                "bytes_total_required": required_bytes,
+                                "bytes_transferred": bytes_transferred,
+                                "bytes_remaining": max(0, required_bytes - bytes_transferred),
+                                "progress": {
+                                    "phase": "transferring",
+                                    "percent": max(0, min(99, percent)),
+                                    "step": "Backing up photos.",
+                                },
                             },
-                        },
-                    )
-                    last_report = now
+                        )
+                        last_report = now
 
             partial = remaining > 0
             final_status = (
@@ -1526,6 +1834,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 "items_remaining": remaining,
                 "conflicts": conflicts,
                 "oversized_items": oversized_count,
+                "integrity_mode": self._integrity_mode,
                 "bytes_total": required_bytes,
                 "bytes_total_planned": planned_bytes,
                 "bytes_total_required": required_bytes,
@@ -1557,7 +1866,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                             int(
                                 (
                                     bytes_transferred
-                                    / required_bytes
+                                / required_bytes
                                 )
                                 * 100
                             )
@@ -1595,15 +1904,43 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 final,
             )
             return final
-        except Exception:
+        except Exception as exc:
+            reason = str(exc).strip() or "interrupted"
+            if reason == "source_changed_during_transfer":
+                reason = "source_changed"
+            if reason in {"destination_storage_unavailable", "destination_identity_mismatch"}:
+                final_status = "destination_unavailable"
+            elif reason == "source_offline":
+                final_status = "source_offline"
+            else:
+                final_status = "interrupted"
+            percent = int((bytes_transferred / required_bytes) * 100) if required_bytes else 0
             final = {
-                "status": "interrupted",
+                "status": final_status,
                 "summary": (
-                    "Photo backup was interrupted. "
-                    "You can retry safely."
+                    "Photo backup could not finish safely. "
+                    "Completed files were kept; you can retry."
                 ),
+                "items_total": planned_count + skipped + remaining,
+                "items_transferred": transferred,
+                "items_skipped": skipped,
+                "items_remaining": max(0, planned_count - transferred) + remaining,
+                "conflicts": conflicts,
+                "oversized_items": oversized_count,
+                "integrity_mode": self._integrity_mode,
+                "bytes_total": required_bytes,
+                "bytes_total_planned": planned_bytes,
+                "bytes_total_required": required_bytes,
+                "bytes_transferred": bytes_transferred,
+                "bytes_remaining": max(0, required_bytes - bytes_transferred),
+                "partial": bool(transferred or remaining),
                 "retryable": True,
-                "reason_code": "interrupted",
+                "reason_code": reason if reason != "control_plane_unavailable" else "destination_unavailable",
+                "progress": {
+                    "phase": final_status,
+                    "percent": max(0, min(99, percent)),
+                    "step": "Backup stopped before completion.",
+                },
             }
             self._post_progress(
                 backup_id,
@@ -1612,6 +1949,8 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
             return final
         finally:
             credential["password"] = ""
+            self._expected_remote_sha256 = ""
+            self._integrity_mode = "size_only"
             self._active_backup_id = ""
             if temp_root is not None:
                 shutil.rmtree(

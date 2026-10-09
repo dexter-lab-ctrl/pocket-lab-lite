@@ -5,7 +5,6 @@ import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers'
 async function expectNoBlockingAxeViolations(page, selector) {
   const result = await new AxeBuilder({ page })
     .include(selector)
-    .disableRules(['color-contrast'])
     .analyze();
   const blocking = result.violations.filter((item) => (
     ['serious', 'critical'].includes(item.impact || '')
@@ -209,5 +208,53 @@ test.describe('P3 Photo Backup readiness and recovery presentation', () => {
     await expect(backup.getByRole('group', { name: 'Current backup readiness' })).toBeVisible();
     await expect(backup.getByRole('button', { name: 'Retry' })).toBeVisible();
     await expect(backup.getByRole('button', { name: 'Check status' })).toBeVisible();
+  });
+
+  test('stale active progress stays stoppable but does not claim a live percentage', async ({ page }) => {
+    await installScenario(page, 'photo-backup-progress-stale');
+    const backup = await openPhotoBackup(page);
+    await expect(backup).toContainText(/fresh transfer progress is unavailable/i);
+    await expect(backup).toContainText(/do not treat this as completion/i);
+    await expect(backup.getByRole('button', { name: 'Stop backup' })).toBeEnabled();
+    await expect(backup.getByRole('progressbar', { name: 'Photo backup progress' })).toHaveCount(0);
+  });
+
+  test('unknown destination capacity never fabricates zero bytes or enables start', async ({ page }) => {
+    await installScenario(page, 'photo-backup-storage-unknown');
+    const backup = await openPhotoBackup(page);
+    const destination = backup.getByRole('group', { name: 'Server Phone destination storage' });
+    await expect(destination).toContainText(/capacity could not be verified/i);
+    await expect(destination).not.toContainText('0 B');
+    await expect(backup.getByRole('button', { name: 'Back up photos' })).toBeDisabled();
+  });
+
+  test('destination identity mismatch remains fail-closed and actionable', async ({ page }) => {
+    await installScenario(page, 'photo-backup-destination-mismatch');
+    const backup = await openPhotoBackup(page);
+    await expect(backup).toContainText(/Destination storage changed/i);
+    await expect(backup.getByRole('button', { name: 'Back up photos' })).toBeDisabled();
+  });
+
+  test('saved snapshot is visible but cannot authorize a new backup', async ({ page }) => {
+    await installScenario(page, 'photo-backup-saved');
+    const backup = await openPhotoBackup(page);
+    await expect(backup).toContainText(/cached or degraded snapshot/i);
+    await expect(backup).toContainText(/refresh to confirm current readiness/i);
+    await expect(backup.getByRole('button', { name: 'Back up photos' })).toBeDisabled();
+  });
+
+  test('action failures show reason guidance without upstream details', async ({ page }) => {
+    await installScenario(page, 'photo-backup-action-failure');
+    const backup = await openPhotoBackup(page);
+    await backup.getByRole('button', { name: 'Back up photos' }).click();
+    const alert = backup.getByRole('alert').last();
+    await expect(alert).toContainText(/destination checksum did not match/i);
+    await expect(alert).not.toContainText(/credential=secret|upstream detail/i);
+  });
+
+  test('partial state has a reviewed visual regression snapshot', async ({ page }) => {
+    await installScenario(page, 'photo-backup-partial');
+    const backup = await openPhotoBackup(page);
+    await expect(backup).toHaveScreenshot('photo-backup-partial.png', { animations: 'disabled' });
   });
 });

@@ -26324,6 +26324,7 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
 .lite-device-photo-backup {
   display: grid;
   gap: 0.8rem;
+  min-width: 0;
   margin: 0.9rem 0;
   padding: 0.9rem;
   border: 1px solid var(--lite-border, rgba(148, 163, 184, 0.24));
@@ -26350,10 +26351,26 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
 }
 
 .lite-device-photo-backup-head p,
+.lite-device-photo-backup-head strong,
 .lite-device-photo-backup-note,
 .lite-device-photo-backup-transfer,
 .lite-device-photo-backup-error {
   margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.lite-device-photo-backup-note,
+.lite-device-photo-backup-progress,
+.lite-device-photo-backup-collections,
+.lite-device-photo-backup-actions {
+  min-width: 0;
+}
+
+.lite-device-photo-backup-collections {
+  margin: 0;
+  border: 0;
+  padding: 0;
 }
 
 .lite-device-photo-backup-icon {

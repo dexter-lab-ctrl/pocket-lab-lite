@@ -470,6 +470,174 @@ def test_p2_staging_cleanup_is_scoped_to_single_file(monkeypatch, tmp_path):
     assert "purge" not in calls[0] and "delete" not in calls[0]
 
 
+def test_p2_inventory_stream_scopes_camera_to_dcim_camera_and_skips_symlinks(tmp_path, monkeypatch):
+    import importlib.util
+    from pathlib import Path
+
+    agent_path = (Path(__file__).resolve().parents[2] /
+                  "pocket-lab-final-structure/runtime/agents/lite_photo_backup_agent.py")
+    spec = importlib.util.spec_from_file_location("photo_p2_inventory_stream", agent_path)
+    assert spec and spec.loader
+    agent = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(agent)
+    roots = {
+        "camera": tmp_path / "DCIM" / "Camera",
+        "pictures": tmp_path / "Pictures",
+        "videos": tmp_path / "Movies",
+    }
+    for root in roots.values():
+        root.mkdir(parents=True)
+    (tmp_path / "DCIM" / "unrelated.jpg").write_bytes(b"outside")
+    (roots["camera"] / "Näme-камера.JPG").write_bytes(b"camera")
+    hidden = roots["camera"] / "hidden"
+    hidden.mkdir()
+    (hidden / ".nomedia").write_text("", encoding="utf-8")
+    (hidden / "private.jpg").write_bytes(b"private")
+    outside = tmp_path / "outside.jpg"
+    outside.write_bytes(b"outside")
+    try:
+        (roots["camera"] / "linked.jpg").symlink_to(outside)
+    except OSError:
+        pass
+    monkeypatch.setattr(agent, "_collection_path", lambda name: roots[name])
+    provider = agent.PhotoPrismWebDAVProvider(
+        node_id="secondary", agent_token="test", control_origin="https://safe.example")
+
+    records = list(provider._inventory(["camera"]))
+    assert len(records) == 1
+    assert records[0]["collection"] == "camera"
+    assert records[0]["relative"] == "Näme-камера.JPG"
+    assert records[0]["mtime_ns"] > 0
+
+
+def test_p2_remote_inventory_rejects_case_collisions_and_traversal(monkeypatch, tmp_path):
+    import importlib.util
+    import json
+    import subprocess
+    from pathlib import Path
+
+    agent_path = (Path(__file__).resolve().parents[2] /
+                  "pocket-lab-final-structure/runtime/agents/lite_photo_backup_agent.py")
+    spec = importlib.util.spec_from_file_location("photo_p2_remote_inventory", agent_path)
+    assert spec and spec.loader
+    agent = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(agent)
+    provider = agent.PhotoPrismWebDAVProvider(
+        node_id="secondary", agent_token="test", control_origin="https://safe.example")
+    for entries in (
+        [{"Path": "DCIM/A.JPG", "Size": 1}, {"Path": "DCIM/a.jpg", "Size": 1}],
+        [{"Path": "../outside.jpg", "Size": 1}],
+    ):
+        monkeypatch.setattr(
+            provider,
+            "_run",
+            lambda *_args, entries=entries, **_kwargs: subprocess.CompletedProcess(
+                args=["rclone"], returncode=0, stdout=json.dumps(entries), stderr=""
+            ),
+        )
+        try:
+            provider._remote_listing("rclone", tmp_path / "config", "PocketLab/Devices/secondary")
+        except RuntimeError as exc:
+            assert str(exc) == "remote_listing_invalid"
+        else:
+            raise AssertionError("unsafe remote inventory must fail closed")
+
+
+def test_p2_ledger_destination_identity_is_not_reused_after_destination_change(tmp_path, monkeypatch):
+    import importlib.util
+    import hashlib
+    import json
+    from pathlib import Path
+
+    agent_path = (Path(__file__).resolve().parents[2] /
+                  "pocket-lab-final-structure/runtime/agents/lite_photo_backup_agent.py")
+    spec = importlib.util.spec_from_file_location("photo_p2_ledger_identity", agent_path)
+    assert spec and spec.loader
+    agent = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(agent)
+    monkeypatch.setattr(agent.Path, "home", lambda: tmp_path)
+    provider = agent.PhotoPrismWebDAVProvider(
+        node_id="secondary", agent_token="test", control_origin="https://safe.example")
+    identity_a = hashlib.sha256(b"destination-a").hexdigest()
+    item_identity = "a" * 64
+    provider._ledger_save({item_identity: {"size": 1, "mtime": 1, "sha256": "b" * 64}}, identity_a)
+    assert provider._ledger_load(identity_a)[item_identity]["size"] == 1
+    assert provider._ledger_load(hashlib.sha256(b"destination-b").hexdigest()) == {}
+    raw = json.loads(provider._ledger_path().read_text(encoding="utf-8"))
+    assert raw["destination_identity"] == identity_a
+    assert "secondary" not in json.dumps(raw)
+
+
+def test_p2_remote_hash_is_used_when_webdav_reports_one(monkeypatch, tmp_path):
+    import importlib.util
+    import subprocess
+    from pathlib import Path
+
+    agent_path = (Path(__file__).resolve().parents[2] /
+                  "pocket-lab-final-structure/runtime/agents/lite_photo_backup_agent.py")
+    spec = importlib.util.spec_from_file_location("photo_p2_remote_hash", agent_path)
+    assert spec and spec.loader
+    agent = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(agent)
+    provider = agent.PhotoPrismWebDAVProvider(
+        node_id="secondary", agent_token="test", control_origin="https://safe.example")
+    digest = "a" * 64
+    monkeypatch.setattr(
+        provider,
+        "_run",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess(
+            args=["rclone"], returncode=0,
+            stdout='{"Size": 3, "IsDir": false, "Hashes": {"SHA-256": "' + digest + '"}}',
+            stderr="",
+        ),
+    )
+    metadata = provider._remote_metadata(
+        "rclone", tmp_path / "config", "PocketLab/Devices/secondary", "DCIM/a.jpg")
+    assert metadata == {"size": 3, "mtime": 0.0, "sha256": digest}
+
+
+def test_p3_public_active_progress_becomes_stale_without_agent_updates(monkeypatch):
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photo_backup as backup
+    monkeypatch.setattr(backup, "_epoch", lambda: 1000.0)
+    public = backup._public_job({
+        "backup_id": "photo-stale",
+        "status": "transferring",
+        "updated_at": "1970-01-01T00:13:00+00:00",
+        "progress": {"phase": "transferring", "percent": 42},
+    })
+    assert public["progress_stale"] is True
+
+
+def test_p3_progress_cannot_publish_completed_with_remaining_work(monkeypatch):
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photo_backup as backup
+    job = {"backup_id": "photo-partial", "node_id": "secondary", "status": "transferring"}
+    monkeypatch.setattr(backup, "_find_job", lambda _backup_id: ({}, job))
+    monkeypatch.setattr(backup, "server_capacity", lambda: {"status": "ready", "safe_upload_budget_bytes": 100})
+    monkeypatch.setattr(backup, "_update_job", lambda _backup_id, **updates: {**job, **updates})
+    monkeypatch.setattr(backup, "_revoke_job_credential", lambda _job: True)
+    result = backup.record_agent_progress(
+        "photo-partial",
+        "secondary",
+        {
+            "status": "completed",
+            "items_total": 3,
+            "items_transferred": 2,
+            "items_remaining": 1,
+            "bytes_total_required": 30,
+            "bytes_transferred": 20,
+            "bytes_remaining": 10,
+            "progress": {"phase": "completed", "percent": 100},
+        },
+    )
+    assert result["status"] == "partial_storage_limit"
+    assert result["partial"] is True
+    assert result["progress"]["percent"] == 99
+
+
 def test_p4_versioned_destination_contract_rejects_unknown_or_disabled():
     from pocket_lab_test_utils import ensure_runtime_path
     ensure_runtime_path()
