@@ -161,12 +161,24 @@ class RunPaths:
 
 
 class OwnedProcess:
-    def __init__(self, process: subprocess.Popen[bytes], *, run_id: str, log: Path):
+    def __init__(
+        self,
+        process: subprocess.Popen[bytes],
+        *,
+        run_id: str,
+        log: Path,
+        argv: list[str],
+        env: dict[str, str],
+        cwd: Path,
+    ):
         self.process = process
         self.pid = int(process.pid)
         self.run_id = run_id
         self.start_ticks = _proc_start_ticks(self.pid)
         self.log = log
+        self.argv = list(argv)
+        self.env = dict(env)
+        self.cwd = cwd
 
     @classmethod
     def launch(
@@ -191,7 +203,7 @@ class OwnedProcess:
             start_new_session=True,
         )
         handle.close()
-        owned = cls(process, run_id=run_id, log=log)
+        owned = cls(process, run_id=run_id, log=log, argv=argv, env=env, cwd=cwd)
         identity_deadline = time.monotonic() + 1.0
         while time.monotonic() < identity_deadline and owned.process.poll() is None:
             if owned.is_owned():
@@ -248,6 +260,17 @@ class OwnedProcess:
             "source_tree_verified": bool(cwd and _safe_under(Path(cwd), candidate_root)),
             "candidate_sha_bound": True,
         }
+
+    def crash(self) -> bool:
+        """Kill exactly this owned process group for bounded recovery tests."""
+        if self.process.poll() is not None or not self.is_owned():
+            return False
+        try:
+            os.killpg(self.pid, signal.SIGKILL)
+            self.process.wait(timeout=5)
+        except (OSError, subprocess.TimeoutExpired):
+            return self.process.poll() is not None
+        return True
 
 
 class DisposableNats:
@@ -1043,6 +1066,25 @@ class QualificationRun:
             detail = str(exc).replace("\n", " ").replace(self.run_id, "[run]")[:180]
             raise QualificationError(f"isolated JetStream probe failed: {type(exc).__name__}:{detail}") from exc
 
+    def _restart_owned_service(self, attribute: str) -> tuple[int, int]:
+        """Crash and restart one run-owned candidate service from its exact argv/env."""
+        if attribute not in {"api", "worker"}:
+            raise QualificationError("unsupported candidate fault target")
+        current = getattr(self, attribute)
+        if not isinstance(current, OwnedProcess) or not current.crash():
+            raise QualificationError(f"owned {attribute} fault injection was rejected")
+        old_pid = current.pid
+        replacement = OwnedProcess.launch(
+            current.argv,
+            env=current.env,
+            cwd=current.cwd,
+            run_id=self.run_id,
+            log=current.log,
+        )
+        setattr(self, attribute, replacement)
+        self.processes.append(replacement)
+        return old_pid, replacement.pid
+
     def _kill_owned_agent(self) -> tuple[int, int]:
         state_path = self.paths.root / "pm2" / "qualification-processes.json"
         try:
@@ -1080,11 +1122,62 @@ class QualificationRun:
         if code != 200:
             raise QualificationError("WebDAV fault injection was rejected")
 
+    def _agent_sha_provenance(self) -> dict[str, object]:
+        """Capture the run-owned PM2 child identity without trusting its name alone."""
+        expected_name = f"pocketlab-agent-{self.node_id}"
+        state_path = self.paths.root / "pm2" / "qualification-processes.json"
+        try:
+            records = json.loads(state_path.read_text(encoding="utf-8"))
+        except (FileNotFoundError, OSError, ValueError):
+            return {
+                "running": False,
+                "owned": False,
+                "source_tree_verified": False,
+                "candidate_sha_bound": True,
+                "process_namespace": "run_owned_pm2_home",
+            }
+        record = next(
+            (
+                item
+                for item in records
+                if isinstance(item, dict) and str(item.get("name") or "") == expected_name
+            ),
+            None,
+        )
+        if not isinstance(record, dict):
+            return {
+                "running": False,
+                "owned": False,
+                "source_tree_verified": False,
+                "candidate_sha_bound": True,
+                "process_namespace": "run_owned_pm2_home",
+            }
+        pid = int(record.get("pid") or 0)
+        running = bool(pid and _proc_state(pid) not in {"", "Z"})
+        owned = bool(
+            running
+            and _proc_has_marker(pid, f"POCKETLAB_QUALIFICATION_RUN_ID={self.run_id}")
+            and _proc_start_ticks(pid) is not None
+        )
+        cwd = ""
+        try:
+            cwd = str(Path(f"/proc/{pid}/cwd").resolve()) if pid else ""
+        except (FileNotFoundError, OSError):
+            pass
+        return {
+            "running": running,
+            "owned": owned,
+            "source_tree_verified": bool(owned and cwd and _safe_under(Path(cwd), self.paths.worktree)),
+            "candidate_sha_bound": True,
+            "process_namespace": "run_owned_pm2_home",
+        }
+
     def _write_manifest(self, status: str, error: str | None = None) -> Path:
         process_provenance = {
             "api": self.api.sha_provenance(self.paths.worktree) if self.api else {"running": False},
             "worker": self.worker.sha_provenance(self.paths.worktree) if self.worker else {"running": False},
             "supervisor": self.supervisor.sha_provenance(self.paths.worktree) if self.supervisor else {"running": False},
+            "node_agent": self._agent_sha_provenance(),
         }
         manifest = {
             "schema_version": 1,
@@ -1229,6 +1322,20 @@ class QualificationRun:
                 )
             self.results["synthetic_webdav_transfer"] = {"status": "PASS", "terminal_status": job.get("status"), "remote_files_observed": int(fixture.get("files") or 0), "remote_integrity": job.get("integrity_mode") or "size_only"}
             self.results["credential_revocation"] = {"status": "PASS", "public_revoke_state": job.get("credential_revoke_status") or "revoked_or_not_projected"}
+            api_old_pid, api_new_pid = self._restart_owned_service("api")
+            self._wait_api()
+            self.results["owned_api_crash_recovery"] = {
+                "status": "PASS",
+                "old_pid_owned": True,
+                "new_pid_observed": api_new_pid != api_old_pid,
+            }
+            worker_old_pid, worker_new_pid = self._restart_owned_service("worker")
+            self._wait_agent(timeout=30)
+            self.results["owned_worker_crash_recovery"] = {
+                "status": "PASS",
+                "old_pid_owned": True,
+                "new_pid_observed": worker_new_pid != worker_old_pid,
+            }
             old_pid, _ = self._kill_owned_agent()
             recovered = self._wait_agent_recovery(old_pid)
             self.results["owned_agent_crash_recovery"] = {"status": "PASS" if recovered else "FAIL", "old_pid_owned": True, "new_pid_observed": recovered}
@@ -1274,13 +1381,48 @@ def shlex_quote(value: str) -> str:
 def android_read_only_preflight(*, repo: Path, hosts: tuple[str, ...]) -> dict[str, Any]:
     """Capture only bounded, sanitized observations; never launch candidate code."""
     output: dict[str, Any] = {"status": "BLOCKED", "reason": "no separately authorized private candidate transport and isolated destination", "hosts": {}}
+    remote_probe = r'''set +e
+printf 'system=%s\n' "$(uname -s 2>/dev/null || printf unknown)"
+printf 'architecture=%s\n' "$(uname -m 2>/dev/null || printf unknown)"
+printf 'source_sha=%s\n' "$(git -C "$HOME/pocket-lab-lite" rev-parse HEAD 2>/dev/null || printf unavailable)"
+printf 'pm2_process_count=%s\n' "$(pm2 jlist 2>/dev/null | python3 -c 'import json,sys; data=json.load(sys.stdin); print(len(data) if isinstance(data,list) else "unavailable")' 2>/dev/null || printf unavailable)"
+printf 'storage_available_kb=%s\n' "$(df -P "$HOME" 2>/dev/null | tail -1 | awk '{print $4}' || printf unavailable)"
+printf 'listener_count=%s\n' "$(ss -ltnH 2>/dev/null | awk 'END {print NR+0}' || printf unavailable)"
+if command -v tailscale >/dev/null 2>&1; then
+  printf 'tailscale=%s\n' "$(tailscale status --json 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("BackendState", "unobserved"))' 2>/dev/null || printf unobserved)"
+else
+  printf 'tailscale=unavailable\n'
+fi
+if command -v curl >/dev/null 2>&1; then
+  code=$(curl --silent --show-error --fail --max-time 3 --output /dev/null --write-out '%{http_code}' https://127.0.0.1/api/v1/status 2>/dev/null)
+  case "$code" in
+    2*) printf 'photoprism_health=healthy\n' ;;
+    *) printf 'photoprism_health=unobserved\n' ;;
+  esac
+else
+  printf 'photoprism_health=unobserved\n'
+fi
+'''
     for host in hosts:
         item: dict[str, Any] = {"status": "NOT RUN"}
         try:
-            result = _command(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5", host, "uname -s; uname -m; git -C $HOME/pocket-lab-lite rev-parse HEAD 2>/dev/null || true; pm2 jlist 2>/dev/null | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || true; df -P $HOME | tail -1 | awk '{print $4}'"], cwd=repo, timeout=12)
+            result = _command(
+                ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5", host, remote_probe],
+                cwd=repo,
+                timeout=12,
+            )
             if result.returncode == 0:
-                lines = [line.strip() for line in result.stdout.splitlines() if line.strip()]
-                item = {"status": "PASS", "observations": {"line_count": len(lines), "architecture_observed": lines[1] if len(lines) > 1 else "unavailable", "process_count_observed": lines[3] if len(lines) > 3 else "unavailable", "candidate_launch": "not_attempted"}}
+                observations: dict[str, str] = {}
+                for line in result.stdout.splitlines():
+                    key, separator, value = line.partition("=")
+                    if separator and key in {
+                        "system", "architecture", "source_sha", "pm2_process_count",
+                        "storage_available_kb", "listener_count", "tailscale", "photoprism_health",
+                    }:
+                        observations[key] = value.strip()[:128]
+                observations["candidate_launch"] = "not_attempted"
+                observations["production_state_mutation"] = "not_attempted"
+                item = {"status": "PASS", "observations": observations}
             else:
                 item = {"status": "BLOCKED", "reason": "read_only_ssh_baseline_unavailable"}
         except (OSError, subprocess.SubprocessError):
