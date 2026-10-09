@@ -335,6 +335,7 @@ def _public_job(job: dict[str, Any] | None) -> dict[str, Any] | None:
         "retryable",
         "reason_code",
         "credential_expires_at",
+        "credential_revoke_status",
         "destination_ready",
         "rclone_available",
         "photo_storage_access",
@@ -347,6 +348,7 @@ def _public_job(job: dict[str, Any] | None) -> dict[str, Any] | None:
         for key in allowed
         if key in job
     }
+    result["credential_revoke_status"] = str(job.get("credential_revoke_status_internal") or "none") if str(job.get("credential_revoke_status_internal") or "") in {"pending", "revoked"} else "none"
     result["sanitized"] = True
     return result
 
@@ -583,7 +585,7 @@ P0_REASONS = frozenset({
     "destination_read_only", "destination_storage_unavailable",
     "storage_below_planning_reserve", "storage_below_hard_reserve",
     "storage_reservation_conflict", "insufficient_space_for_selected_media",
-    "network_interrupted", "credential_expired", "credential_revocation_pending",
+    "network_interrupted", "credential_expired", "credential_identity_mismatch", "credential_revocation_pending",
     "agent_command_undeliverable", "worker_unavailable", "cancelled",
     "unknown_internal_error",
 })
@@ -602,20 +604,27 @@ _P0_REMEDIATION = {
 
 
 def _source_fresh(agent: dict[str, Any]) -> bool:
-    """Only accept known server-supplied heartbeat timestamps; no clock guessing."""
-    candidate = (agent.get("last_seen") or agent.get("last_heartbeat")
-                 or agent.get("last_seen_at") or agent.get("heartbeat_at"))
+    """Respect the fleet registry's authoritative heartbeat epoch.
+
+    Timestamp-free legacy snapshots are *unknown*, never assumed fresh.
+    """
+    candidate = (agent.get("last_seen_epoch")
+                 or agent.get("last_heartbeat_at")
+                 or agent.get("last_seen")
+                 or agent.get("last_heartbeat")
+                 or agent.get("last_seen_at")
+                 or agent.get("heartbeat_at"))
     if not candidate:
-        # Older fleet registry projections do not expose a timestamp.
-        return True
+        return False
     try:
-        if isinstance(candidate, (int, float)):
+        if isinstance(candidate, (int, float)) or str(candidate).replace(".", "", 1).isdigit():
             epoch = float(candidate)
             if epoch > 10**12:
                 epoch /= 1000
         else:
             epoch = datetime.fromisoformat(str(candidate).replace("Z", "+00:00")).timestamp()
-        return 0 <= (_epoch() - epoch) <= 180
+        age = _epoch() - epoch
+        return -15 <= age <= 180
     except (ValueError, TypeError, OverflowError):
         return False
 
@@ -720,6 +729,8 @@ def readiness(
         summary = "Photo backup tools are not ready on this device."
     elif "source_offline" in blockers:
         summary = "This device is offline."
+    elif "source_capabilities_stale" in blockers:
+        summary = "Waiting for a fresh device heartbeat."
     elif "secure_route_unavailable" in blockers:
         summary = "Remote access not ready."
     elif "webdav_probe_failed" in blockers:
@@ -867,6 +878,7 @@ def status(
         **ready,
         "latest_backup": latest,
         "last_backup_retryable": bool(latest and latest.get("retryable")),
+        "credential_revocation_pending": bool(latest and latest.get("credential_revoke_status") == "pending"),
         "updated_at": payload.get("updated_at") or _now(),
     }
 
@@ -966,6 +978,7 @@ def make_start_command(
             status_code=409,
             detail={
                 "status": "photo_backup_busy",
+                "reason_code": "storage_reservation_conflict",
                 "summary": (
                     "Another device is backing up photos. "
                     "Try again when it finishes."
@@ -1051,6 +1064,7 @@ def make_start_command(
                 status_code=409,
                 detail={
                     "status": "photo_backup_busy",
+                    "reason_code": "storage_reservation_conflict",
                     "summary": (
                         "Another device is backing up photos. "
                         "Try again when it finishes."
@@ -1883,6 +1897,7 @@ def consume_credential(
             status_code=410,
             detail={
                 "status": "expired",
+                "reason_code": "credential_expired",
                 "summary": (
                     "Photo backup credential "
                     "expired. Start the backup "
@@ -1900,6 +1915,7 @@ def consume_credential(
             status_code=403,
             detail={
                 "status": "forbidden",
+                "reason_code": "credential_identity_mismatch",
                 "summary": (
                     "Credential reference does "
                     "not match this backup."
@@ -1907,9 +1923,11 @@ def consume_credential(
             },
         )
     capacity = server_capacity()
-    if int(capacity.get("safe_upload_budget_bytes") or 0) <= 0:
+    reason = _capacity_diagnostic(capacity)
+    if reason:
         raise HTTPException(status_code=409, detail={
-            "status": "storage_below_planning_reserve",
+            "status": reason,
+            "reason_code": reason,
             "summary": "Not enough protected destination space is available.",
             "sanitized": True})
     response = {
@@ -2749,6 +2767,7 @@ async def execute_cancel(
         summary=(
             "Stopping photo backup safely."
         ),
+        reason_code=("credential_revocation_pending" if not credential_revoked else "cancelled"),
         credential_revoke_status_internal=(
             "revoked"
             if credential_revoked
