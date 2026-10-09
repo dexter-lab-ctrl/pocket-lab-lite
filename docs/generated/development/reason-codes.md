@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 7995b83eddd04afa1cfdb9bae17b5ae08c341ef5ec1d708e780ed913a1867900
+source_fingerprint: 8105ec553fd32efcb5f54fd2598c3852463ce1136e860b640daacfd3bc26b78f
 schema_revision: 1
 validation_status: generated
 ---
@@ -55,8 +55,15 @@ validation_status: generated
 | `configured_target_budget` | security | The configured atomic-target budget was reached after durable checkpoint work. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
 | `confirmation_required` | devices | A potentially destructive device or recovery action requires explicit confirmation before it can continue. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py |
 | `connection_failed` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |
+| `credential_expired` | apps | The one-time Photo Backup credential is expired or no longer usable. | yes | no | 410 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py |
+| `credential_identity_mismatch` | apps | A Photo Backup credential does not match the requesting device or backup job. | no | yes | 403 | high | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py |
+| `credential_revocation_pending` | apps | A Photo Backup credential is awaiting bounded revocation before the job can safely continue or finish. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py |
 | `csrf_required` | identity | A human-session write was rejected because its CSRF proof was missing or invalid. | yes | no | 403 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `deferred_resource_pressure` | security | A heavy Security target was not omitted; it was deferred after a durable checkpoint by a backend resource decision. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py |
+| `destination_identity_mismatch` | apps | The protected PhotoPrism destination no longer matches its enrolled filesystem identity. | no | yes | 409 | high | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py |
+| `destination_mount_missing` | apps | The protected PhotoPrism originals storage mount is missing or is not a directory. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py |
+| `destination_read_only` | apps | The protected PhotoPrism destination is visible but cannot accept writes. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py |
+| `destination_storage_unavailable` | apps | The protected PhotoPrism destination filesystem cannot be inspected safely. | yes | no | 503 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py |
 | `device_capability_not_advertised` | devices | The device has not advertised the capability required by its governed role assignment. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_roles.py |
 | `device_capability_not_authorized` | devices | The server policy does not authorize the device capability for its current governed role assignment. | no | yes | 403 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_roles.py |
 | `device_capability_stale` | devices | The device capability evidence is older than the governed freshness window. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_roles.py |
@@ -178,6 +185,7 @@ validation_status: generated
 | `passkey_verified` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `passkey_wrong_owner` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `payload_too_large` | validation | The bounded payload limit was exceeded. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `placement_identity_mismatch` | apps | An existing Photo Backup placement does not match the authenticated node, destination, or protected volume binding. | no | yes | 409 | high | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py |
 | `pm2_inventory_failed` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |
 | `pm2_inventory_invalid` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |
 | `pm2_unavailable` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |
@@ -245,6 +253,7 @@ validation_status: generated
 | `shutdown_during_mailbox_backpressure` | projections | Shutdown occurred while the bounded mailbox was under pressure. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `source_inventory_failed` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |
 | `storage_pressure` | security | Private free storage was below the backend scan threshold. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
+| `storage_reservation_conflict` | apps | Another Photo Backup job currently holds the protected destination reservation. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py |
 | `storage_unavailable` | recovery | A registered backup location cannot currently be reached or inspected safely. | yes | no | 409 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `submit_failed` | system | The work request could not be admitted. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `target_not_allowed` | validation | The requested target is outside the approved scope. | no | yes | 400 | warning | structured reason/failure fields in Lite backend or contracts metadata |
@@ -256,6 +265,7 @@ validation_status: generated
 | `trusted_local_admin` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `unregistered_domain` | projections | The requested domain is not registered. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `unsafe_live_media_import` | apps | Live phone media import is intentionally blocked; use the managed Photo Backup workflow instead. | no | yes | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_media.py |
+| `unsupported_destination` | apps | The requested Photo Backup destination is not registered as a supported server-owned adapter. | no | yes | 422 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py and pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup_destinations.py |
 | `version_not_reported` | devices | The device has not reported a trustworthy software version for this component, so Pocket Lab keeps the version unknown rather than inventing one. | yes | no | 200 | info | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_facts.py |
 | `webauthn_algorithm_unsupported` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `webauthn_assertion_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |

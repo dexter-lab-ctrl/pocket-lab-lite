@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 7d535f74173aaf3030548ef6e022f118d43f8f46e0ad34cbea6d17f197a6270f
+source_fingerprint: b2fe2db5d9f6d4cea9ed4160808bb9a008e44a817ceb3a031b1f10355f5403e2
 schema_revision: 1
 validation_status: generated
 ---
@@ -21,7 +21,7 @@ validation_status: generated
 
 Subjects are scanned from current runtime source. This does not reintroduce the retired full-product typed-operation catalog.
 
-## Detected subjects (218)
+## Detected subjects (219)
 
 - `pocketlab.commands.`
 - `pocketlab.commands.catalog.refresh`
@@ -115,6 +115,7 @@ Subjects are scanned from current runtime source. This does not reintroduce the 
 - `pocketlab.events.fleet.invite_started`
 - `pocketlab.events.fleet.node_`
 - `pocketlab.events.fleet.node_capabilities`
+- `pocketlab.events.fleet.node_command_progress`
 - `pocketlab.events.fleet.node_command_queued`
 - `pocketlab.events.fleet.node_command_result`
 - `pocketlab.events.fleet.node_health`

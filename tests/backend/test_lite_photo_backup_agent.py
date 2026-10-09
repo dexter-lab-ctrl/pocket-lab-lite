@@ -126,7 +126,8 @@ def test_missing_rclone_reports_degraded_without_arbitrary_install(monkeypatch):
     module = _module()
     monkeypatch.setattr(module.shutil, "which", lambda name: None)
     result = module.repair_rclone()
-    assert result["status"] == "failed"
+    assert result["status"] == "unsupported_platform"
+    assert result["reason_code"] == "rclone_unsupported_platform"
     assert result["rclone_available"] is False
 
 
@@ -143,6 +144,39 @@ def test_provider_rejects_non_https_control_origin():
         assert str(exc) == "secure_control_origin_required"
     else:
         raise AssertionError("HTTP control origin must fail closed")
+
+
+def test_agent_credential_contract_rejects_arbitrary_destination(monkeypatch):
+    module = _module()
+    provider = module.PhotoPrismWebDAVProvider(
+        node_id="storage-phone",
+        agent_token="token",
+        control_origin="https://pocket.test.ts.net",
+    )
+    base = {
+        "credential_ref": "cred-ref",
+        "backup_id": "photo-agent-contract",
+        "destination_id": module.PHOTO_BACKUP_DESTINATION_ID,
+        "destination_contract_version": module.PHOTO_BACKUP_DESTINATION_SCHEMA_VERSION,
+        "transport": module.PHOTO_BACKUP_DESTINATION_TRANSPORT,
+        "destination_prefix": "PocketLab/Devices/storage-phone",
+        "authorized_namespace": "PocketLab/Devices/storage-phone",
+        "webdav_url": "https://pocket.test.ts.net/apps/photoprism/originals/",
+        "password": "one-time",
+    }
+    provider._validate_credential(base, "cred-ref", "photo-agent-contract")
+    for field, value in (
+        ("destination_id", "managed-nas"),
+        ("destination_prefix", "PocketLab/Devices/other-phone"),
+        ("webdav_url", "https://evil.example/other/"),
+    ):
+        invalid = {**base, field: value}
+        try:
+            provider._validate_credential(invalid, "cred-ref", "photo-agent-contract")
+        except RuntimeError as exc:
+            assert str(exc) == "credential_invalid"
+        else:
+            raise AssertionError("arbitrary destination must be rejected by the agent")
 
 
 
@@ -306,7 +340,10 @@ def test_conflict_count_is_aggregate_only_and_versioning_is_non_destructive(monk
     monkeypatch.setattr(
         provider,
         "_capacity",
-        lambda *_args: {"hard_upload_budget_bytes": 10_000_000},
+        lambda *_args: {
+            "safe_upload_budget_bytes": 10_000_000,
+            "hard_upload_budget_bytes": 10_000_000,
+        },
     )
     transfers = []
     monkeypatch.setattr(
@@ -431,8 +468,8 @@ def test_capacity_drop_mid_transfer_stops_before_next_file(monkeypatch, tmp_path
     monkeypatch.setattr(provider, "_remote_listing", lambda *_args: {})
     monkeypatch.setattr(provider, "_make_config", lambda *_args: tmp_path / "rclone.conf")
     budgets = iter([
-        {"hard_upload_budget_bytes": 1000},
-        {"hard_upload_budget_bytes": 0},
+        {"safe_upload_budget_bytes": 1000, "hard_upload_budget_bytes": 1000},
+        {"safe_upload_budget_bytes": 0, "hard_upload_budget_bytes": 0},
     ])
     monkeypatch.setattr(provider, "_capacity", lambda *_args: next(budgets))
     transfers = []
@@ -496,7 +533,10 @@ def test_incremental_run_skips_matching_remote_and_copies_only_new_media(monkeyp
         },
     )
     monkeypatch.setattr(provider, "_make_config", lambda *_args: tmp_path / "rclone.conf")
-    monkeypatch.setattr(provider, "_capacity", lambda *_args: {"hard_upload_budget_bytes": 1000})
+    monkeypatch.setattr(provider, "_capacity", lambda *_args: {
+        "safe_upload_budget_bytes": 1000,
+        "hard_upload_budget_bytes": 1000,
+    })
     transfers = []
     monkeypatch.setattr(
         provider,

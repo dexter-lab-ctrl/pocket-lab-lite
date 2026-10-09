@@ -328,3 +328,39 @@ export const PhotoBackupFirstBackup = {
     await expect(await canvas.findByRole('button', { name: /Back up photos/i })).toBeEnabled();
   },
 };
+
+export const PhotoBackupProgressStale = {
+  ...createLiteStory('devices', 'photo-backup-progress-stale', { viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await openHealthyDeviceManage(canvasElement);
+    await expect(await canvas.findByText(/fresh transfer progress is unavailable/i)).toBeInTheDocument();
+    await expect(await canvas.findByRole('button', { name: /Stop backup/i })).toBeEnabled();
+  },
+};
+
+export const PhotoBackupStorageUnknown = {
+  ...createLiteStory('devices', 'photo-backup-storage-unknown', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await openHealthyDeviceManage(canvasElement);
+    await expect(await canvas.findByText(/capacity could not be verified/i)).toBeInTheDocument();
+    await expect(await canvas.findByRole('button', { name: /Back up photos/i })).toBeDisabled();
+  },
+};
+
+export const PhotoBackupDestinationMismatch = {
+  ...createLiteStory('devices', 'photo-backup-destination-mismatch', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await openHealthyDeviceManage(canvasElement);
+    await expect(await canvas.findByText(/Destination storage changed/i)).toBeInTheDocument();
+    await expect(await canvas.findByRole('button', { name: /Back up photos/i })).toBeDisabled();
+  },
+};
+
+export const PhotoBackupSavedSnapshot = {
+  ...createLiteStory('devices', 'photo-backup-saved', { viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await openHealthyDeviceManage(canvasElement);
+    await expect(await canvas.findByText(/cached or degraded snapshot/i)).toBeInTheDocument();
+    await expect(await canvas.findByRole('button', { name: /Back up photos/i })).toBeDisabled();
+  },
+};

@@ -34,6 +34,7 @@ from lite_photo_backup_agent import (
     PhotoPrismWebDAVProvider,
     collect_photo_backup_capabilities,
     repair_rclone,
+    photo_backup_repair_status,
 )
 
 try:
@@ -211,6 +212,7 @@ class PocketLabNodeAgent:
         self.self_heal_seconds = int(env("POCKETLAB_AGENT_SELF_HEAL_SECONDS", "180"))
         self.control_origin = env("POCKETLAB_CONTROL_ORIGIN", "").strip().rstrip("/")
         self.photo_backup = collect_photo_backup_capabilities()
+        self.photo_backup["repair"] = photo_backup_repair_status()
         self.photo_backup_provider = PhotoPrismWebDAVProvider(
             node_id=self.node_id,
             agent_token=self.token,
@@ -709,6 +711,7 @@ class PocketLabNodeAgent:
 
     def _refresh_photo_backup_capabilities(self) -> None:
         self.photo_backup = collect_photo_backup_capabilities()
+        self.photo_backup["repair"] = photo_backup_repair_status()
         self.capabilities = advertised_capabilities(
             self.device_roles,
             is_control_plane=self.is_control_plane,
@@ -991,15 +994,50 @@ class PocketLabNodeAgent:
                 result = {"message": "Photo backup stop requested.", "accepted": True, "backup_id": backup_id}
                 status = "acknowledged"
             elif command_name == "media.backup.tools.repair":
-                repair = await asyncio.to_thread(repair_rclone)
+                loop = asyncio.get_running_loop()
+                # Progress is sent as sanitized node events on the normal NATS
+                # control path, never as direct UI actions or installer output.
+                def notify(phase: Dict[str, Any]) -> None:
+                    async def publish_phase() -> None:
+                        await self.safe_publish(
+                            "pocketlab.events.fleet.node_command_progress",
+                            "fleet.node_command_progress",
+                            {
+                                **self.base_payload(),
+                                "command_id": command_id,
+                                "command": command_name,
+                                "status": phase["status"],
+                                "reason_code": phase.get("reason_code"),
+                                "checked_at": phase.get("checked_at"),
+                                "sanitized": True,
+                            },
+                            critical=True,
+                        )
+                    loop.call_soon_threadsafe(
+                        lambda: asyncio.create_task(publish_phase())
+                    )
+                repair = await asyncio.to_thread(
+                    repair_rclone, command_id=command_id,
+                    progress_callback=notify,
+                )
                 self._refresh_photo_backup_capabilities()
+                await self.publish_capabilities(critical=True)
                 result = {
                     "message": str(repair.get("summary") or "Photo backup tools repair finished.")[:180],
-                    "accepted": True,
+                    "accepted": repair.get("status") not in {"already_running", "unsupported_platform", "failed"},
                     "rclone_available": bool(self.photo_backup.get("rclone_available")),
                     "photo_storage_access": bool(self.photo_backup.get("photo_storage_access")),
+                    "reason_code": repair.get("reason_code"),
+                    "repair_status": repair.get("status"),
+                    "repair": self.photo_backup.get("repair"),
+                    "sanitized": True,
                 }
-                status = "completed" if bool(self.photo_backup.get("rclone_available")) else "failed"
+                status = (
+                    "completed" if repair.get("status") in {"completed", "already_installed"}
+                    else "acknowledged" if repair.get("status") == "already_running"
+                    else "unsupported" if repair.get("status") == "unsupported_platform"
+                    else "failed"
+                )
             elif command_name in {"apply_blueprint", "node.apply_blueprint"}:
                 result = {
                     "message": "Blueprint execution is acknowledged; install a node executor to enable remote apply.",

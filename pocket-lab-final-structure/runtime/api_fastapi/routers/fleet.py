@@ -340,6 +340,7 @@ async def start_lite_photo_backup(
         payload.get("collections"),
         reason=str(payload.get("reason") or "manual photo backup"),
         request=request,
+        destination_id=payload.get("destination_id"),
     )
     if command.get("idempotent"):
         return {

@@ -244,6 +244,7 @@
         "subject:pocketlab.events.fleet.invite_started",
         "subject:pocketlab.events.fleet.node_",
         "subject:pocketlab.events.fleet.node_capabilities",
+        "subject:pocketlab.events.fleet.node_command_progress",
         "subject:pocketlab.events.fleet.node_command_queued",
         "subject:pocketlab.events.fleet.node_command_result",
         "subject:pocketlab.events.fleet.node_health",
@@ -827,8 +828,15 @@
         "reason:configured_target_budget",
         "reason:confirmation_required",
         "reason:connection_failed",
+        "reason:credential_expired",
+        "reason:credential_identity_mismatch",
+        "reason:credential_revocation_pending",
         "reason:csrf_required",
         "reason:deferred_resource_pressure",
+        "reason:destination_identity_mismatch",
+        "reason:destination_mount_missing",
+        "reason:destination_read_only",
+        "reason:destination_storage_unavailable",
         "reason:device_capability_not_advertised",
         "reason:device_capability_not_authorized",
         "reason:device_capability_stale",
@@ -950,6 +958,7 @@
         "reason:passkey_verified",
         "reason:passkey_wrong_owner",
         "reason:payload_too_large",
+        "reason:placement_identity_mismatch",
         "reason:pm2_inventory_failed",
         "reason:pm2_inventory_invalid",
         "reason:pm2_unavailable",
@@ -1017,6 +1026,7 @@
         "reason:shutdown_during_mailbox_backpressure",
         "reason:source_inventory_failed",
         "reason:storage_pressure",
+        "reason:storage_reservation_conflict",
         "reason:storage_unavailable",
         "reason:submit_failed",
         "reason:target_not_allowed",
@@ -1028,6 +1038,7 @@
         "reason:trusted_local_admin",
         "reason:unregistered_domain",
         "reason:unsafe_live_media_import",
+        "reason:unsupported_destination",
         "reason:version_not_reported",
         "reason:webauthn_algorithm_unsupported",
         "reason:webauthn_assertion_invalid",
@@ -1173,8 +1184,15 @@
         "reason:configured_target_budget",
         "reason:confirmation_required",
         "reason:connection_failed",
+        "reason:credential_expired",
+        "reason:credential_identity_mismatch",
+        "reason:credential_revocation_pending",
         "reason:csrf_required",
         "reason:deferred_resource_pressure",
+        "reason:destination_identity_mismatch",
+        "reason:destination_mount_missing",
+        "reason:destination_read_only",
+        "reason:destination_storage_unavailable",
         "reason:device_capability_not_advertised",
         "reason:device_capability_not_authorized",
         "reason:device_capability_stale",
@@ -1296,6 +1314,7 @@
         "reason:passkey_verified",
         "reason:passkey_wrong_owner",
         "reason:payload_too_large",
+        "reason:placement_identity_mismatch",
         "reason:pm2_inventory_failed",
         "reason:pm2_inventory_invalid",
         "reason:pm2_unavailable",
@@ -1363,6 +1382,7 @@
         "reason:shutdown_during_mailbox_backpressure",
         "reason:source_inventory_failed",
         "reason:storage_pressure",
+        "reason:storage_reservation_conflict",
         "reason:storage_unavailable",
         "reason:submit_failed",
         "reason:target_not_allowed",
@@ -1374,6 +1394,7 @@
         "reason:trusted_local_admin",
         "reason:unregistered_domain",
         "reason:unsafe_live_media_import",
+        "reason:unsupported_destination",
         "reason:version_not_reported",
         "reason:webauthn_algorithm_unsupported",
         "reason:webauthn_assertion_invalid",
@@ -1617,6 +1638,7 @@
         "subject:pocketlab.commands.node.all",
         "subject:pocketlab.commands.node.{self.node_id}",
         "subject:pocketlab.events.fleet.node_capabilities",
+        "subject:pocketlab.events.fleet.node_command_progress",
         "subject:pocketlab.events.fleet.node_command_result",
         "subject:pocketlab.events.fleet.node_health",
         "subject:pocketlab.events.fleet.node_heartbeat",
@@ -3287,6 +3309,18 @@
     },
     {
       "entities": [
+        "test:tests/backend/test_lite_photo_backup_candidate_qualification.py"
+      ],
+      "source": "tests/backend/test_lite_photo_backup_candidate_qualification.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_photo_backup_reliability.py"
+      ],
+      "source": "tests/backend/test_lite_photo_backup_reliability.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_lite_photoprism_backup.py"
       ],
       "source": "tests/backend/test_lite_photoprism_backup.py"
@@ -4318,6 +4352,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5c014a4c5563838ac674dd41d16975a1c93ca0993b41619c15187d787d7c19e3"
+    "source_fingerprint": "f01a28305a36878a57be78c2b8431b3c3a593de180d65c93caef7d08b3113112"
   }
 }

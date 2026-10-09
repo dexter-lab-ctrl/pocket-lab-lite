@@ -285,6 +285,67 @@ function mockPhotoBackupDevice(deviceId = 'test-phone-4') {
       },
     };
   }
+  if (selected === 'photo-backup-progress-stale') {
+    return {
+      ...base,
+      latest_backup: {
+        backup_id: 'photo-mock-stale',
+        node_id: base.node_id,
+        status: 'transferring',
+        summary: 'Backing up photos.',
+        items_total: 40,
+        items_transferred: 17,
+        items_skipped: 8,
+        items_remaining: 15,
+        bytes_total_required: 5000000000,
+        bytes_transferred: 2100000000,
+        bytes_remaining: 2900000000,
+        progress_stale: true,
+        progress: { phase: 'transferring', percent: 42, step: 'Last known progress.' },
+        updated_at: mockIso(-8 * 60 * 1000),
+        sanitized: true,
+      },
+    };
+  }
+  if (selected === 'photo-backup-storage-unknown') {
+    return {
+      ...base,
+      status: 'not_ready',
+      ready: false,
+      backup_admissible: false,
+      summary: 'Destination storage could not be verified.',
+      blockers: ['destination_storage_unavailable'],
+      storage: {
+        status: 'unavailable',
+        free_bytes: null,
+        hard_reserve_bytes: null,
+        planning_reserve_bytes: null,
+        safe_upload_budget_bytes: null,
+        hard_upload_budget_bytes: null,
+        reason_code: 'destination_storage_unavailable',
+        sanitized: true,
+      },
+    };
+  }
+  if (selected === 'photo-backup-destination-mismatch') {
+    return {
+      ...base,
+      status: 'not_ready',
+      ready: false,
+      backup_admissible: false,
+      summary: 'Destination storage changed. Repair is required before backup.',
+      blockers: ['destination_identity_mismatch'],
+      destination_ready: false,
+    };
+  }
+  if (selected === 'photo-backup-saved') {
+    return {
+      ...base,
+      read_degraded: true,
+      data_source: 'saved_snapshot',
+      __liteSnapshot: { cached: true, savedAt: mockIso(-15 * 60 * 1000), checkedAt: mockIso(-15 * 60 * 1000) },
+    };
+  }
   return base;
 }
 
@@ -1274,6 +1335,14 @@ export const handlers = [
   )),
   http.post('/api/lite/devices/:deviceId/photo-backup', async ({ request, params }) => {
     const body = await request.json().catch(() => ({}));
+    if (scenario() === 'photo-backup-action-failure') {
+      return HttpResponse.json({
+        detail: {
+          reason_code: 'remote_integrity_mismatch',
+          summary: 'Do not expose this upstream detail or credential=secret.',
+        },
+      }, { status: 503 });
+    }
     return HttpResponse.json({
       accepted: true,
       status: 'queued',
