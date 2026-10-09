@@ -134,106 +134,189 @@ def collect_photo_backup_capabilities() -> dict[str, Any]:
     }
 
 
-def _repair_record(path: Path, status: str, reason: str | None = None) -> None:
-    """Record only a safe phase and reason; never persist installer output."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.parent.chmod(0o700)
+REPAIR_TIMEOUT_SECONDS = 300
+REPAIR_STALE_SECONDS = REPAIR_TIMEOUT_SECONDS + 60
+REPAIR_PHASES = frozenset({"installing", "verifying"})
+REPAIR_REASONS = frozenset({
+    "rclone_install_failed", "rclone_install_timeout",
+    "rclone_verification_failed", "rclone_repair_in_progress",
+    "rclone_repair_interrupted", "rclone_unsupported_platform",
+    "rclone_repair_state_unavailable",
+})
+
+
+def _repair_paths() -> tuple[Path, Path]:
+    directory = Path.home() / ".pocketlab-lite"
+    directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+    directory.chmod(0o700)
+    return directory / "photo-backup-repair.lock", directory / "photo-backup-repair.json"
+
+
+def _repair_record(path: Path, status: str, reason: str | None = None, *,
+                   command_id: str = "", started_at: str = "") -> dict[str, Any]:
+    """Atomic private progress checkpoint containing strictly enumerated fields."""
+    if reason is not None and reason not in REPAIR_REASONS:
+        reason = "rclone_install_failed"
     payload = {
-        "schema_version": 1,
-        "status": status,
-        "reason_code": reason,
-        "checked_at": _now(),
+        "schema_version": 2, "status": status, "reason_code": reason,
+        "command_id": command_id if _repair_command_id(command_id) else "",
+        "started_at": started_at or _now(), "checked_at": _now(),
         "sanitized": True,
     }
-    with tempfile.NamedTemporaryFile(
-        mode="w", encoding="utf-8", dir=path.parent,
-        prefix=".photo-backup-repair-", delete=False,
-    ) as temporary:
-        temp_path = Path(temporary.name)
-        os.chmod(temp_path, 0o600)
-        try:
+    temporary_path = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", dir=path.parent,
+            prefix=".photo-backup-repair-", delete=False,
+        ) as temporary:
+            temporary_path = Path(temporary.name)
+            os.chmod(temporary_path, 0o600)
             json.dump(payload, temporary, sort_keys=True)
             temporary.flush()
             os.fsync(temporary.fileno())
-        except BaseException:
-            temp_path.unlink(missing_ok=True)
-            raise
-    os.replace(temp_path, path)
+        os.replace(temporary_path, path)
+        # Make phase transitions durable across abrupt Termux process restarts.
+        directory_fd = os.open(str(path.parent), os.O_RDONLY)
+        try:
+            os.fsync(directory_fd)
+        finally:
+            os.close(directory_fd)
+    finally:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
+    return payload
 
 
-def repair_rclone() -> dict[str, Any]:
-    """Bounded Termux-only repair with a cross-process nonblocking lock.
+def _repair_command_id(value: str) -> bool:
+    import re
+    return bool(re.fullmatch(r"repair-[a-f0-9]{18}", str(value or "")))
 
-    The persisted record is diagnostic, not proof of current capabilities.
-    A lock held by another process always fails closed rather than starting
-    a second package-manager operation.
+
+def photo_backup_repair_status() -> dict[str, Any]:
+    """Read sanitized status; historical installer outcome is not live availability."""
+    try:
+        _, path = _repair_paths()
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict) or data.get("schema_version") not in {1, 2}:
+            raise ValueError("invalid repair state")
+        status = str(data.get("status") or "")
+        if status not in {"installing", "verifying", "completed", "failed",
+                          "already_installed", "interrupted", "unsupported_platform"}:
+            raise ValueError("invalid repair status")
+        reason = data.get("reason_code")
+        if reason not in REPAIR_REASONS:
+            reason = None
+        return {
+            "schema_version": 2, "status": status, "reason_code": reason,
+            "started_at": str(data.get("started_at") or "")[:32],
+            "checked_at": str(data.get("checked_at") or "")[:32],
+            "sanitized": True,
+        }
+    except FileNotFoundError:
+        return {"schema_version": 2, "status": "not_requested",
+                "reason_code": None, "sanitized": True}
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        return {"schema_version": 2, "status": "unavailable",
+                "reason_code": "rclone_repair_state_unavailable", "sanitized": True}
+
+
+def _reconcile_repair(path: Path) -> None:
+    """Caller holds the installer lock: old active checkpoint cannot still own it."""
+    current = photo_backup_repair_status()
+    if current["status"] in REPAIR_PHASES:
+        _repair_record(path, "interrupted", "rclone_repair_interrupted",
+                       started_at=current.get("started_at") or "")
+
+
+def repair_rclone(*, command_id: str = "",
+                  progress_callback: Callable[[dict[str, Any]], None] | None = None
+                  ) -> dict[str, Any]:
+    """Bounded Termux-only installer; serialized, durable and output-free.
+
+    Only fixed package-manager argv is permitted. A completed installer must
+    pass independent rclone version verification before it can report success.
     """
-    state_dir = Path.home() / ".pocketlab-lite"
-    state_dir.mkdir(parents=True, exist_ok=True)
-    state_dir.chmod(0o700)
-    lock_path = state_dir / "photo-backup-repair.lock"
-    record_path = state_dir / "photo-backup-repair.json"
-    fd = os.open(str(lock_path), os.O_CREAT | os.O_RDWR, 0o600)
+    def emit(state: dict[str, Any]) -> None:
+        if progress_callback is not None:
+            try:
+                progress_callback({
+                    "status": state["status"], "reason_code": state.get("reason_code"),
+                    "checked_at": state.get("checked_at"), "sanitized": True,
+                })
+            except Exception:
+                pass
+
+    try:
+        lock_path, record_path = _repair_paths()
+        fd = os.open(str(lock_path), os.O_CREAT | os.O_RDWR | getattr(os, "O_NOFOLLOW", 0), 0o600)
+    except OSError:
+        return {"status": "failed", "reason_code": "rclone_repair_state_unavailable",
+                "summary": "Photo backup repair state is not writable.",
+                "rclone_available": False, "sanitized": True}
     try:
         try:
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
+            return {"status": "already_running",
+                    "reason_code": "rclone_repair_in_progress",
+                    "summary": "Photo backup tools are already being repaired.",
+                    "rclone_available": False, "sanitized": True}
+        try:
+            _reconcile_repair(record_path)
+            started_at = _now()
+            def phase(status: str, reason: str | None = None) -> None:
+                emit(_repair_record(record_path, status, reason,
+                                    command_id=command_id, started_at=started_at))
+            existing = collect_photo_backup_capabilities()
+            if (existing.get("rclone_available") and
+                str(existing.get("rclone_version") or "").startswith("rclone ")):
+                phase("already_installed")
+                return {**existing, "status": "already_installed", "reason_code": None,
+                        "summary": "Photo backup tools are already installed.", "sanitized": True}
+            # 'pkg' is the Termux package manager. Never execute apt, curl, sh or
+            # attacker supplied command paths for this repair.
+            pkg = shutil.which("pkg")
+            if not pkg or not (os.environ.get("PREFIX", "").startswith("/data/data/com.termux/")):
+                phase("unsupported_platform", "rclone_unsupported_platform")
+                return {"status": "unsupported_platform",
+                        "reason_code": "rclone_unsupported_platform",
+                        "summary": "Automatic repair is only supported in Termux.",
+                        "rclone_available": False, "sanitized": True}
+            phase("installing")
+            reason = None
+            try:
+                result = subprocess.run(
+                    [pkg, "install", "-y", "rclone"],
+                    check=False, stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                    timeout=REPAIR_TIMEOUT_SECONDS,
+                )
+                if result.returncode != 0:
+                    reason = "rclone_install_failed"
+            except subprocess.TimeoutExpired:
+                reason = "rclone_install_timeout"
+            except (OSError, subprocess.SubprocessError):
+                reason = "rclone_install_failed"
+            if reason is None:
+                phase("verifying")
+            caps = collect_photo_backup_capabilities()
+            if reason is None and (
+                not caps.get("rclone_available") or
+                not str(caps.get("rclone_version") or "").startswith("rclone ")
+            ):
+                reason = "rclone_verification_failed"
+            status = "completed" if reason is None else "failed"
+            phase(status, reason)
             return {
-                "status": "already_running",
-                "reason_code": "rclone_repair_in_progress",
-                "summary": "Photo backup tools are already being repaired.",
-                "rclone_available": False,
+                **caps, "status": status, "reason_code": reason,
+                "summary": ("Photo backup tools are ready." if reason is None
+                            else "Photo backup tool repair did not complete. You can retry."),
                 "sanitized": True,
             }
-        existing = collect_photo_backup_capabilities()
-        if existing["rclone_available"]:
-            _repair_record(record_path, "already_installed")
-            return {
-                **existing, "status": "already_installed",
-                "reason_code": None,
-                "summary": "Photo backup tools are already installed.",
-            }
-        pkg = shutil.which("pkg")
-        if not pkg:
-            _repair_record(record_path, "failed", "rclone_install_failed")
-            return {
-                "status": "unsupported_platform",
-                "reason_code": "rclone_install_failed",
-                "summary": "Automatic repair requires the Termux package manager.",
-                "rclone_available": False, "sanitized": True,
-            }
-        _repair_record(record_path, "installing")
-        reason = None
-        try:
-            result = subprocess.run(
-                [pkg, "install", "-y", "rclone"],
-                check=False, stdin=subprocess.DEVNULL,
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                timeout=300,
-            )
-            if result.returncode != 0:
-                reason = "rclone_install_failed"
-        except subprocess.TimeoutExpired:
-            reason = "rclone_install_timeout"
-        except (OSError, subprocess.SubprocessError):
-            reason = "rclone_install_failed"
-        _repair_record(record_path, "verifying" if reason is None else "failed", reason)
-        caps = collect_photo_backup_capabilities()
-        if reason is None and (
-            not caps["rclone_available"]
-            or caps["rclone_version"] in ("Available", "Unavailable")
-        ):
-            reason = "rclone_verification_failed"
-        status = "completed" if reason is None else "failed"
-        _repair_record(record_path, status, reason)
-        return {
-            **caps, "status": status, "reason_code": reason,
-            "summary": (
-                "Photo backup tools are ready." if reason is None else
-                "Photo backup tool repair did not complete. Retry when the device and package repository are available."
-            ),
-            "sanitized": True,
-        }
+        except (OSError, ValueError):
+            return {"status": "failed", "reason_code": "rclone_repair_state_unavailable",
+                    "summary": "Photo backup repair state could not be saved.",
+                    "rclone_available": False, "sanitized": True}
     finally:
         try:
             fcntl.flock(fd, fcntl.LOCK_UN)
