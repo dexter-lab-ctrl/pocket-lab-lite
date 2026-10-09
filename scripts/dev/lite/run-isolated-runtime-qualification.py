@@ -994,7 +994,7 @@ class QualificationRun:
                         await nc.close()
                         return {"connected": True, "jetstream": True, "streams": streams}
                     except Exception as exc:
-                        last_error = type(exc).__name__
+                        last_error = f"{type(exc).__name__}:{str(exc).replace(chr(10), ' ')[:160]}"
                         if nc is not None:
                             try:
                                 await nc.close()
@@ -1005,7 +1005,8 @@ class QualificationRun:
 
             return asyncio.run(probe())
         except Exception as exc:
-            raise QualificationError(f"isolated JetStream probe failed: {type(exc).__name__}") from exc
+            detail = str(exc).replace("\n", " ").replace(self.run_id, "[run]")[:180]
+            raise QualificationError(f"isolated JetStream probe failed: {type(exc).__name__}:{detail}") from exc
 
     def _kill_owned_agent(self) -> tuple[int, int]:
         state_path = self.paths.root / "pm2" / "qualification-processes.json"
