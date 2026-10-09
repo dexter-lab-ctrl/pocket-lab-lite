@@ -232,3 +232,52 @@ not executed.** No screenshot or Storybook runtime qualification was
 performed. P3 still requires design review of narrow/mobile Manage
 panels, Playwright results, screen-reader qualification, and any missing
 Storybook scenarios before declaring it production-ready.
+
+
+## P4 — Versioned destination adapters and immutable placement records
+
+Destination types are server-owned, closed-registry adapters. The active
+production adapter is `server-photoprism-originals` (HTTPS WebDAV,
+PhotoPrism indexing, scoped PhotoPrism app-password issuance and private
+server volume fingerprint). The contract now advertises schema version 2,
+supported/eligible/write-capable truth, the fixed transport and credential
+strategy, and the existing protected capacity policy. A client-supplied
+destination URL, remote path, filesystem mount or arbitrary adapter ID is
+never accepted as an execution target.
+
+`server-removable`, `managed-nas`, `enrolled-storage-node` and
+`encrypted-object-store` remain explicit unsupported examples, with no
+credential issuer, execution handler or write capability. Enabling these
+classes requires a separate reviewed adapter implementation. Rendering
+them in the UI does not enable them.
+
+Each newly admitted backup is bound to a server-persisted immutable
+placement record keyed by backup ID. This private placement ties together
+the fixed destination ID, transport, node ID, backup ID, volume fingerprint
+and a deterministic per-device WebDAV namespace. Placement is created
+before worker credential issuance; redelivery reuses the binding rather
+than silently moving a job. A changed volume or another node's backup
+fails closed. Credential consumption rechecks the immutable binding before
+handing over the one-time scoped WebDAV credential. The capacity endpoint
+also refuses to advertise spendable backup space for a mismatched
+placement, even if the filesystem reports ample free bytes.
+
+The placement record is an internal control-plane object. Its volume
+fingerprint and private storage identifiers are not projected into the
+Devices UI or transmitted as agent secrets. The agent continues using
+only the fixed, server-constructed per-device destination prefix.
+
+### Compatibility and qualification
+
+Existing historical backup jobs without P4 placement are still readable;
+newly enqueued work receives a placement before credential issuance.
+Already-started legacy jobs without a placement cannot silently obtain a
+new credential through the P4 path. An operator must explicitly restart
+a new backup rather than transplant its prior credential to a new target.
+
+Regression cases cover schema versioning, unknown/disabled adapter
+rejection, traversal-shaped node names and immutable retry/volume-change
+behavior. **Tests were not executed** and end-to-end authorization,
+JetStream redelivery, restart persistence, volume remount, and Termux
+transfer behavior are **unvalidated**. No CI, build, lint, documentation
+generation or live-device operation occurred. The PR remains draft.
