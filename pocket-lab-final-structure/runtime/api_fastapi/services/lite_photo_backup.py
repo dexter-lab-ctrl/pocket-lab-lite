@@ -488,6 +488,10 @@ def server_capacity() -> dict[str, Any]:
             "planning_reserve_min_bytes": PLANNING_RESERVE_MIN_BYTES,
             "sanitized": True,
         }
+    if not os.access(root, os.R_OK | os.W_OK | os.X_OK):
+        return {"status": "unavailable", "read_only": True,
+                "hard_upload_budget_bytes": 0, "safe_upload_budget_bytes": 0,
+                "sanitized": True}
     try:
         stat = os.statvfs(root)
         total = int(stat.f_blocks * stat.f_frsize)
@@ -2436,19 +2440,16 @@ async def execute_start(
         force=True,
     )
     capacity = server_capacity()
+    preflight_reason = _capacity_diagnostic(capacity)
+    route_reason = (_webdav_route_probe(origin, force=True)
+                    if runtime.get("running") and runtime.get("reachable")
+                    else ("secure_route_unavailable" if not origin else None))
     if (
-        not origin
+        preflight_reason or route_reason or not origin
         or not (
             runtime.get("running")
             and runtime.get("reachable")
         )
-        or int(
-            capacity.get(
-                "hard_upload_budget_bytes"
-            )
-            or 0
-        )
-        <= 0
     ):
         failed = _update_job(
             backup_id,
@@ -2458,9 +2459,10 @@ async def execute_start(
                 "is not ready."
             ),
             retryable=True,
-            reason_code=(
-                "destination_unavailable"
-            ),
+            reason_code=(preflight_reason or route_reason or
+                         ("photoprism_not_running" if not runtime.get("running") else
+                          "photoprism_unreachable" if not runtime.get("reachable") else
+                          "destination_unavailable")),
             completed_at=_now(),
             storage=capacity,
         )
