@@ -447,6 +447,7 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps({"status": "FAIL", "reason": "full qualification controller unavailable", "sanitized": True}, sort_keys=True))
             return 1
         module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
         spec.loader.exec_module(module)
         forwarded = ["--candidate-sha", args.candidate_sha or _current_candidate_sha(), "--python", sys.executable]
         return int(module.main(forwarded))
