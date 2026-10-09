@@ -686,11 +686,15 @@ class QualificationRun:
 
     def _wait_webdav(self) -> None:
         deadline = time.monotonic() + 12
+        last = "unobserved"
         while time.monotonic() < deadline:
             try:
-                self._fixture_request("GET", "/__qualification__/summary", control=True)
-                return
-            except Exception:
+                status, _ = self._fixture_request("GET", "/__qualification__/summary", control=True)
+                last = f"status={status}"
+                if status == 200:
+                    return
+            except Exception as exc:
+                last = type(exc).__name__
                 time.sleep(0.15)
         poll = self.webdav.process.poll() if self.webdav is not None else None
         tail = ""
@@ -699,7 +703,7 @@ class QualificationRun:
                 tail = " ".join(self.webdav.log.read_text(encoding="utf-8", errors="replace").splitlines()[-8:])
             except OSError:
                 pass
-        raise QualificationError(f"isolated HTTPS WebDAV fixture did not become ready; exit={poll}; log={tail[-1600:]}")
+        raise QualificationError(f"isolated HTTPS WebDAV fixture did not become ready; exit={poll}; last={last}; log={tail[-1600:]}")
 
     def _ssl(self) -> ssl.SSLContext:
         return ssl.create_default_context(cafile=str(self.ca_path))
