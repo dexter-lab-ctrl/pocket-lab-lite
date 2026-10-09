@@ -1,6 +1,6 @@
 # Photo Backup reliability workstream (unvalidated)
 
-This change is an incremental implementation, **not P0–P4 completion**.
+This change is an incremental implementation, **not P0–P4 completion**. Per-transfer capacity is rechecked against both planning and hard limits; oversized items are deferred rather than stopping all smaller media, and source size/mtime is rechecked before transfer.
 
 ## Current readiness and previous backup history
 
@@ -8,7 +8,7 @@ The server reports current readiness separately from the latest job result. Curr
 
 ## Storage admission
 
-The destination's actual filesystem supplies total/free bytes. Pocket Lab retains a hard 10% reserve and a preferred 15% reserve (minimum 2 GiB). When the planning budget is zero, new transfers are blocked even when the hard reserve has not been exhausted. Concurrent non-Pocket-Lab writers may reduce free space; measured capacity is not an absolute guarantee.
+The destination's actual filesystem supplies total/free bytes. Credential redemption checks the current planning budget before disclosing a transfer credential. Pocket Lab retains a hard 10% reserve and a preferred 15% reserve (minimum 2 GiB). When the planning budget is zero, new transfers are blocked even when the hard reserve has not been exhausted. Concurrent non-Pocket-Lab writers may reduce free space; measured capacity is not an absolute guarantee.
 
 ## Repair
 
