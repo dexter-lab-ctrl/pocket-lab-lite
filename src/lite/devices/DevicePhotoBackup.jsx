@@ -15,6 +15,32 @@ function isLive(status) {
     .includes(String(status || '').toLowerCase());
 }
 
+const GUIDANCE = {
+  source_offline: 'Reconnect this device and wait for a fresh heartbeat.',
+  source_capabilities_stale: 'Wait for the device to report fresh photo backup capabilities.',
+  rclone_unavailable: 'Use Repair photo backup to install or verify tools on this device.',
+  rclone_repair_in_progress: 'The device is repairing photo backup tools. Check the latest update.',
+  photo_storage_access_missing: 'Allow photo and video access in Android settings, then refresh.',
+  photoprism_not_running: 'Open Apps and check PhotoPrism on the Server Phone.',
+  photoprism_unreachable: 'Check PhotoPrism health and its local connection on the Server Phone.',
+  secure_route_unavailable: 'Check remote access in Devices before retrying.',
+  webdav_probe_failed: 'Check the PhotoPrism HTTPS route and retry when it is reachable.',
+  webdav_auth_failed: 'A protected upload credential was rejected. Retry after checking PhotoPrism.',
+  destination_identity_mismatch: 'Destination storage changed. Verify the original drive on the Server Phone; do not force a backup.',
+  destination_storage_unavailable: 'Check the Server Phone storage mount and permissions.',
+  destination_read_only: 'The backup destination is not writable. Check Server Phone storage.',
+  storage_below_planning_reserve: 'Free up destination space without deleting existing backups.',
+  storage_below_hard_reserve: 'Server Phone storage is critically low. Free up space before trying again.',
+  storage_reservation_conflict: 'Another device is using the photo backup destination. Retry when it finishes.',
+  credential_expired: 'The previous one-time credential expired. Start a new backup when ready.',
+  credential_revocation_pending: 'Credential revocation is pending. Check the connection before retrying.',
+};
+
+function safeDate(value) {
+  const date = typeof value === 'string' ? new Date(value) : null;
+  return date && Number.isFinite(date.getTime()) ? date.toLocaleString() : 'Not available';
+}
+
 function formatBytes(value) {
   const bytes = Number(value || 0);
   if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
@@ -30,7 +56,7 @@ function formatBytes(value) {
 
 export default function DevicePhotoBackup({ deviceId }) {
   const [selected, setSelected] = React.useState(['camera', 'pictures', 'videos']);
-  const [actionState, setActionState] = React.useState({ busy: false, error: '' });
+  const [actionState, setActionState] = React.useState({ busy: false, error: '', message: '' });
   const query = useLiteQuery({
     queryKey: ['lite', 'photo-backup', deviceId],
     path: `/api/lite/devices/${encodeURIComponent(deviceId || '')}/photo-backup`,
@@ -51,11 +77,14 @@ export default function DevicePhotoBackup({ deviceId }) {
   const live = isLive(latest.status);
   const progress = latest.progress || {};
   const blockers = Array.isArray(data.blockers) ? data.blockers : [];
-  const canStart = Boolean(data.backup_admissible ?? data.ready) && Boolean(selected.length && !live && !actionState.busy);
-  const canRepair = blockers.includes('rclone_unavailable') && !repairing && !actionState.busy;
+  const canStart = Boolean(data.backup_admissible ?? data.ready) && Boolean(selected.length && !live && !repairing && !actionState.busy && !query.error);
+  const canRepair = blockers.includes('rclone_unavailable') && !repairing && !live && !actionState.busy && !query.error;
+  const diagnostics = Array.isArray(data.diagnostics) ? data.diagnostics.filter((entry) => entry && typeof entry.reason_code === 'string') : [];
+  const hasStatus = Boolean(query.data && !query.error);
+  const storage = data.storage && typeof data.storage === 'object' ? data.storage : null;
 
   async function run(action) {
-    setActionState({ busy: true, error: '' });
+    setActionState({ busy: true, error: '', message: '' });
     try {
       if (action === 'start') {
         await liteApi.startPhotoBackup(deviceId, { collections: selected });
@@ -65,11 +94,11 @@ export default function DevicePhotoBackup({ deviceId }) {
         await liteApi.repairPhotoBackup(deviceId);
       }
       await query.refresh();
+      setActionState({ busy: false, error: '', message: action === 'start' ? 'Backup request sent. Waiting for device acknowledgement.' : action === 'cancel' ? 'Stop requested. Waiting for the device to confirm.' : 'Repair request sent. The device will report its outcome.' });
     } catch (error) {
       setActionState({ busy: false, error: error?.message || 'Pocket Lab could not update photo backup.' });
       return;
     }
-    setActionState({ busy: false, error: '' });
   }
 
   return (
@@ -78,9 +107,26 @@ export default function DevicePhotoBackup({ deviceId }) {
         <span className="lite-device-photo-backup-icon"><Camera className="h-4 w-4" /></span>
         <div>
           <span>Photo backup</span>
-          <strong>{live ? 'Backing up photos' : data.ready ? 'Ready' : blockers.includes('storage_below_planning_reserve') ? 'Waiting for space' : 'Needs attention'}</strong>
+          <strong>{live ? 'Backing up photos' : repairing ? 'Repairing tools' : !hasStatus ? 'Status unavailable' : data.ready ? 'Ready' : blockers.some((code) => code.startsWith('storage_')) ? 'Waiting for space' : 'Needs attention'}</strong>
           <p>{data.summary || 'Pocket Lab is checking photo backup readiness.'}</p>
         </div>
+      </div>
+
+      <div className="lite-device-photo-backup-note" role="group" aria-label="Current backup readiness">
+        <strong>Current readiness</strong>
+        <p>{hasStatus ? (data.backup_admissible ? 'Ready to start a new backup.' : 'New backup is blocked until the conditions below are resolved.') : 'Current readiness could not be confirmed.'}</p>
+        <small>Checked: {safeDate(data.checked_at)}</small>
+        {diagnostics.length ? (
+          <ul aria-label="Backup readiness checks">
+            {diagnostics.map((entry, index) => (
+              <li key={`${entry.reason_code}-${index}`}>
+                {GUIDANCE[entry.reason_code] || 'This check needs attention on the device or Server Phone.'}
+                {entry.remediation_category ? ` (Area: ${String(entry.remediation_category).replaceAll('_', ' ')})` : ''}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {data.webdav_authenticated === null ? <small>WebDAV access is checked with a temporary credential when a backup starts.</small> : null}
       </div>
 
       {toolRepair.status && !['unknown', 'not_requested'].includes(toolRepair.status) ? (
@@ -92,13 +138,15 @@ export default function DevicePhotoBackup({ deviceId }) {
       ) : null}
       {latest.summary && !live ? (
         <p className="lite-device-photo-backup-note" role="status">
-          Previous backup: {latest.summary}
+          Latest backup outcome: {latest.summary}
         </p>
       ) : null}
-      {data.storage ? (
+      {storage ? (
         <div className="lite-device-photo-backup-note" role="group" aria-label="Server Phone destination storage">
           <strong>Server Phone destination</strong>
-          <p>Free: {formatBytes(data.storage.free_bytes || 0)} · Protected: {formatBytes(data.storage.hard_reserve_bytes || 0)} · Available for backup: {formatBytes(data.storage.safe_upload_budget_bytes || 0)}</p>
+          <p>Free: {formatBytes(storage.free_bytes)} · Hard reserve: {formatBytes(storage.hard_reserve_bytes)} · Planning reserve: {formatBytes(storage.planning_reserve_bytes)} · Safe upload budget: {formatBytes(storage.safe_upload_budget_bytes)}</p>
+          <small>At least 10% remains protected; new transfers plan around 15% free space or 2 GiB, whichever is greater.</small>
+          {storage.status !== 'ready' ? <p role="status">Storage status: {String(storage.reason_code || storage.status || 'unavailable').replaceAll('_', ' ')}. New transfers are blocked when storage cannot be verified.</p> : null}
         </div>
       ) : null}
       {Array.isArray(data.destinations) && data.destinations.length ? (
@@ -112,6 +160,16 @@ export default function DevicePhotoBackup({ deviceId }) {
               ))}</ul>
             </details>
           ) : null}
+        </div>
+      ) : null}
+      {latest.backup_id ? (
+        <div className="lite-device-photo-backup-note" role="group" aria-label="Latest backup details">
+          <strong>Latest backup</strong>
+          <p>Outcome: {String(latest.status || 'unknown').replaceAll('_', ' ')} · Started: {safeDate(latest.started_at)} · Updated: {safeDate(latest.updated_at)}</p>
+          <p>{Number(latest.items_transferred || 0)} copied · {Number(latest.items_skipped || 0)} already backed up · {Number(latest.items_remaining || 0)} remaining</p>
+          {latest.retryable ? <small>Retry is available when current readiness checks pass.</small> : null}
+          {latest.reason_code && GUIDANCE[latest.reason_code] ? <p>{GUIDANCE[latest.reason_code]}</p> : null}
+          {latest.credential_revoke_status === 'pending' ? <p role="status">Credential revocation is pending. Do not assume access has been revoked yet.</p> : null}
         </div>
       ) : null}
       {latest.oversized_items > 0 ? (
@@ -131,7 +189,8 @@ export default function DevicePhotoBackup({ deviceId }) {
         </p>
       ) : null}
 
-      <div className="lite-device-photo-backup-collections" aria-label="Photo collections">
+      <fieldset className="lite-device-photo-backup-collections" disabled={live || repairing || actionState.busy}>
+        <legend>Photo collections</legend>
         {COLLECTIONS.map((collection) => {
           const available = !Array.isArray(data.collections) || data.collections.includes(collection.id);
           const checked = selected.includes(collection.id);
@@ -153,7 +212,7 @@ export default function DevicePhotoBackup({ deviceId }) {
             </label>
           );
         })}
-      </div>
+      </fieldset>
 
       {live ? (
         <div className="lite-device-photo-backup-progress" aria-live="polite">
@@ -161,7 +220,7 @@ export default function DevicePhotoBackup({ deviceId }) {
             <span>{progress.step || 'Backing up photos.'}</span>
             <strong>{Math.max(0, Math.min(100, Number(progress.percent || 0)))}%</strong>
           </div>
-          <progress max="100" value={Math.max(0, Math.min(100, Number(progress.percent || 0)))} />
+          <progress aria-label="Photo backup progress" max="100" value={Math.max(0, Math.min(100, Number(progress.percent || 0)))} />
           <small>
             {Number(latest.items_transferred || 0)} backed up · {Number(latest.items_skipped || 0)} already safe
             {Number(latest.items_remaining || 0) ? ` · ${latest.items_remaining} waiting` : ''}
@@ -200,9 +259,13 @@ export default function DevicePhotoBackup({ deviceId }) {
         </small>
       ) : null}
 
+      {actionState.message ? <p className="lite-device-photo-backup-note" role="status">{actionState.message}</p> : null}
       {actionState.error ? <p className="lite-device-photo-backup-error" role="alert">{actionState.error}</p> : null}
 
-      <div className="lite-device-photo-backup-actions">
+      <div className="lite-device-photo-backup-actions" role="group" aria-label="Photo backup actions">
+        <LiteButton tone="secondary" disabled={actionState.busy || !deviceId} onClick={() => query.refresh()}>
+          <RefreshCw className="h-4 w-4" /> Check status
+        </LiteButton>
         {canRepair ? (
           <LiteButton tone="secondary" disabled={actionState.busy || repairing} onClick={() => run('repair')}>
             <RefreshCw className="h-4 w-4" />
