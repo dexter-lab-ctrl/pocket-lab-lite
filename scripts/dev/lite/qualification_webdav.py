@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import html
 import json
 import os
 import secrets
@@ -50,17 +51,47 @@ def _safe_path(root: Path, raw: str) -> tuple[Path, str]:
 
 
 def _xml_metadata(relative: str, size: int, modified: str, *, directory: bool = False) -> bytes:
-    name = Path(relative).name
     resource_type = "<D:collection/>" if directory else ""
     return (
         '<?xml version="1.0" encoding="utf-8"?>'
         '<D:multistatus xmlns:D="DAV:">'
-        '<D:response><D:href>/' + PREFIX + "/" + relative + '</D:href>'
+        '<D:response><D:href>/' + html.escape(PREFIX + ("/" + relative if relative else "/")) + '</D:href>'
         f'<D:propstat><D:prop><D:resourcetype>{resource_type}</D:resourcetype>'
         f"<D:getcontentlength>{size}</D:getcontentlength>"
         f"<D:getlastmodified>{modified}</D:getlastmodified>"
         '</D:prop><D:status>HTTP/1.1 200 OK</D:status></D:propstat>'
         '</D:response></D:multistatus>'
+    ).encode("utf-8")
+
+
+def _xml_listing(root: Path, relative: str, *, recursive: bool) -> bytes:
+    base = root / relative
+    paths = [base]
+    if recursive:
+        paths.extend(sorted(base.rglob("*"), key=lambda path: str(path).casefold()))
+    responses: list[str] = []
+    for path in paths:
+        if path.is_symlink() or not (path.is_file() or path.is_dir()):
+            continue
+        child = path.relative_to(root).as_posix() if path != root else ""
+        size = path.stat().st_size if path.is_file() else 0
+        kind = "<D:collection/>" if path.is_dir() else ""
+        responses.append(
+            '<D:response><D:href>/'
+            + html.escape(PREFIX + ("/" + child if child else "/"))
+            + '</D:href><D:propstat><D:prop><D:resourcetype>'
+            + kind
+            + '</D:resourcetype><D:getcontentlength>'
+            + str(size)
+            + '</D:getcontentlength><D:getlastmodified>'
+            + _now()
+            + '</D:getlastmodified></D:prop><D:status>HTTP/1.1 200 OK</D:status></D:propstat></D:response>'
+        )
+    return (
+        '<?xml version="1.0" encoding="utf-8"?>'
+        '<D:multistatus xmlns:D="DAV:">'
+        + "".join(responses)
+        + '</D:multistatus>'
     ).encode("utf-8")
 
 
@@ -179,9 +210,15 @@ def build_app(root: Path, user: str, password: str, control_token: str) -> FastA
             record(operation, 200)
             return Response(status_code=200, headers={"Allow": "OPTIONS, PROPFIND, PUT, MOVE, DELETE, GET, HEAD", "DAV": "1,2"})
         if operation == "PROPFIND":
-            if relative == "" and target.is_dir():
+            if target.is_dir():
                 record(operation, 207)
-                return Response(content=_xml_metadata("", 0, _now(), directory=True), status_code=207, media_type="application/xml", headers={"DAV": "1,2"})
+                depth = str(request.headers.get("depth") or "0").strip().lower()
+                return Response(
+                    content=_xml_listing(root, relative, recursive=depth != "0"),
+                    status_code=207,
+                    media_type="application/xml",
+                    headers={"DAV": "1,2"},
+                )
             if not target.is_file() or target.is_symlink():
                 record(operation, 404)
                 return Response(status_code=404)

@@ -109,6 +109,51 @@ def _parse_propfind(payload: bytes) -> dict[str, object]:
     }
 
 
+def _parse_listing(payload: bytes, base_relative: str) -> list[dict[str, object]]:
+    root = ET.fromstring(payload)
+    base = "/".join(part for part in base_relative.strip("/").split("/") if part)
+    prefix = "apps/photoprism/originals"
+    result: list[dict[str, object]] = []
+    for response in root.iter():
+        if response.tag.rsplit("}", 1)[-1].casefold() != "response":
+            continue
+        href = ""
+        size = 0
+        modified = ""
+        is_dir = False
+        for elem in response.iter():
+            name = elem.tag.rsplit("}", 1)[-1].casefold()
+            text = (elem.text or "").strip()
+            if name == "href":
+                href = urllib.parse.unquote(urllib.parse.urlsplit(text).path).strip("/")
+            elif name == "getcontentlength":
+                try:
+                    size = int(text or 0)
+                except ValueError:
+                    size = 0
+            elif name == "collection":
+                is_dir = True
+            elif name == "getlastmodified":
+                modified = text
+        expected_prefix = prefix + ("/" + base if base else "")
+        if href == expected_prefix or href == expected_prefix + "/":
+            continue
+        if not href.startswith(expected_prefix + "/"):
+            raise ValueError("qualification WebDAV listing escaped requested namespace")
+        relative = href[len(expected_prefix) + 1 :].strip("/")
+        if not relative:
+            continue
+        result.append({
+            "Path": relative,
+            "Name": relative.rsplit("/", 1)[-1],
+            "Size": size,
+            "IsDir": is_dir,
+            "ModTime": modified or datetime.now(timezone.utc).isoformat(),
+            "Hashes": {},
+        })
+    return result
+
+
 def _remote_metadata(url: str, user: str, password: str) -> dict[str, object]:
     _, body, _ = _request(
         "PROPFIND",
@@ -159,6 +204,19 @@ def main(argv: list[str] | None = None) -> int:
         base, user, password = _config(config_path)
         target = _url(base, remote)
         if command == "lsjson":
+            if "--recursive" in rest:
+                try:
+                    _, body, _ = _request(
+                        "PROPFIND", target, user, password,
+                        headers={"Depth": "infinity", "Content-Length": "0"},
+                    )
+                except urllib.error.HTTPError as exc:
+                    if exc.code == 404:
+                        return _error("directory not found")
+                    raise
+                relative = remote.split(":", 1)[1].lstrip("/")
+                print(json.dumps(_parse_listing(body, relative), separators=(",", ":")))
+                return 0
             print(json.dumps(_remote_metadata(target, user, password), separators=(",", ":")))
             return 0
         if command == "deletefile":
