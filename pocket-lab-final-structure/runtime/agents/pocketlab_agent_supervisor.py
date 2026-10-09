@@ -182,6 +182,7 @@ class LiteAgentSupervisor:
         ).expanduser()
         self.repair_count = 0
         self.last_repair_at = ""
+        self.last_repair_failure_reason = ""
         self.nc = None
         self.next_nats_attempt_epoch = 0.0
         self.nats_backoff_seconds = 1.0
@@ -224,12 +225,16 @@ class LiteAgentSupervisor:
 
     def _start_or_restart_agent(self, process_status: str, *, force_recreate: bool = False) -> bool:
         if not _pm2_available() or not self.agent_file.exists():
+            self.last_repair_failure_reason = (
+                "pm2_unavailable" if not _pm2_available() else "agent_file_missing"
+            )
             return False
         env = self._process_env()
         expected_version = _source_version(self.agent_file)
         try:
             python_exec = _prepare_versioned_python_exec(self.agent_process, expected_version)
         except Exception:
+            self.last_repair_failure_reason = "versioned_exec_failed"
             return False
 
         started = False
@@ -255,12 +260,15 @@ class LiteAgentSupervisor:
                 )
                 started = fallback.returncode == 0
         if started:
+            self.last_repair_failure_reason = ""
             self.repair_count += 1
             self.last_repair_at = _now_iso()
             try:
                 _run(["pm2", "save"], env=env, timeout=12)
             except Exception:
                 pass
+        else:
+            self.last_repair_failure_reason = "pm2_start_failed"
         return started
 
     def _nats_reachable(self) -> bool:
@@ -433,6 +441,7 @@ class LiteAgentSupervisor:
             "repair_attempted": repair_attempted,
             "repair_reason_code": repair_reason_code,
             "repair_result": "recovered" if repaired else "failed" if repair_attempted else "not_needed",
+            "repair_failure_reason_code": self.last_repair_failure_reason or None,
             "repair_started_at": repair_started_at or None,
             "repair_completed_at": repair_completed_at or None,
             "repair_count": self.repair_count,

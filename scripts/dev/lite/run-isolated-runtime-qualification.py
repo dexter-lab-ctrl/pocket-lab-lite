@@ -865,7 +865,7 @@ class QualificationRun:
             if isinstance(state, dict):
                 diagnostics.append("supervisor_state=" + json.dumps({
                     key: state.get(key)
-                    for key in ("status", "agent_status", "agent_process_status", "supervisor_status", "repair_attempted", "repair_result", "repair_reason_code")
+                    for key in ("status", "agent_status", "agent_process_status", "supervisor_status", "repair_attempted", "repair_result", "repair_reason_code", "repair_failure_reason_code")
                     if key in state
                 }, separators=(",", ":")))
         except (FileNotFoundError, OSError, ValueError, TypeError):
