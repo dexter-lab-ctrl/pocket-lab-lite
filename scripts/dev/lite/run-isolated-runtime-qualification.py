@@ -613,7 +613,7 @@ class QualificationRun:
             # JetStream file-store budget.  This keeps the candidate stream
             # contract bounded while allowing the existing production stream
             # defaults to remain unchanged.
-            "POCKETLAB_JETSTREAM_MAX_BYTES": "67108864",
+            "POCKETLAB_JETSTREAM_MAX_BYTES": "16777216",
             "POCKETLAB_LITE_SECURE_ORIGIN": "",
             "POCKETLAB_SECURE_ORIGIN": "",
             "POCKET_LAB_CADDYFILE": "",
