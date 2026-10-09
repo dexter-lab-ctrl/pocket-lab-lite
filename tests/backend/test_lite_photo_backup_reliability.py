@@ -314,3 +314,69 @@ def test_p1_repair_state_is_separate_from_tool_capabilities():
     assert capability["rclone_available"] is True
     assert capability["repair"]["status"] == "failed"
     assert "password" not in capability["repair"]
+
+
+def test_p2_checkpoint_ledger_contains_no_media_paths(tmp_path, monkeypatch):
+    import importlib.util, json
+    from pathlib import Path
+    agent_path = (Path(__file__).resolve().parents[2] /
+                  "pocket-lab-final-structure/runtime/agents/lite_photo_backup_agent.py")
+    spec = importlib.util.spec_from_file_location("photo_p2_ledger", agent_path)
+    assert spec and spec.loader
+    agent = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(agent)
+    monkeypatch.setattr(agent.Path, "home", lambda: tmp_path)
+    provider = agent.PhotoPrismWebDAVProvider(
+        node_id="secondary", agent_token="test", control_origin="https://safe.example")
+    path = tmp_path / "private-photo.jpg"
+    path.write_bytes(b"photo-content")
+    item = {"collection": "camera", "relative": "private-photo.jpg",
+            "path": path, "size": 13, "mtime": 100}
+    identity = provider._item_identity(item, "DCIM/private-photo.jpg")
+    digest = provider._source_digest(path, expected_size=13)
+    provider._ledger_save({identity: {"size": 13, "mtime": 100, "sha256": digest}})
+    raw = provider._ledger_path().read_text()
+    assert "private-photo.jpg" not in raw and "photo-content" not in raw
+    assert provider._ledger_load()[identity]["sha256"] == digest
+    assert provider._ledger_path().stat().st_mode & 0o777 == 0o600
+
+
+def test_p2_remote_size_fails_closed_on_bad_or_missing_response(monkeypatch, tmp_path):
+    import importlib.util, subprocess
+    from pathlib import Path
+    agent_path = (Path(__file__).resolve().parents[2] /
+                  "pocket-lab-final-structure/runtime/agents/lite_photo_backup_agent.py")
+    spec = importlib.util.spec_from_file_location("photo_p2_remote_verify", agent_path)
+    assert spec and spec.loader
+    agent = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(agent)
+    provider = agent.PhotoPrismWebDAVProvider(
+        node_id="secondary", agent_token="test", control_origin="https://safe.example")
+    monkeypatch.setattr(provider, "_run", lambda args, **kwargs:
+                        subprocess.CompletedProcess(args, 0, stdout='{"Size": 13, "IsDir": false}', stderr=""))
+    assert provider._remote_size("rclone", tmp_path / "config", "PocketLab/Devices/secondary", "DCIM/a.jpg") == 13
+    monkeypatch.setattr(provider, "_run", lambda args, **kwargs:
+                        subprocess.CompletedProcess(args, 0, stdout='bad json', stderr=""))
+    assert provider._remote_size("rclone", tmp_path / "config", "PocketLab/Devices/secondary", "DCIM/a.jpg") is None
+
+
+def test_p2_staging_cleanup_is_scoped_to_single_file(monkeypatch, tmp_path):
+    import importlib.util, subprocess
+    from pathlib import Path
+    agent_path = (Path(__file__).resolve().parents[2] /
+                  "pocket-lab-final-structure/runtime/agents/lite_photo_backup_agent.py")
+    spec = importlib.util.spec_from_file_location("photo_p2_staging", agent_path)
+    assert spec and spec.loader
+    agent = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(agent)
+    provider = agent.PhotoPrismWebDAVProvider(
+        node_id="secondary", agent_token="test", control_origin="https://safe.example")
+    calls = []
+    def capture(args, **kwargs):
+        calls.append(args)
+        return subprocess.CompletedProcess(args, 0, stdout="", stderr="")
+    monkeypatch.setattr(provider, "_run", capture)
+    provider._cleanup_staging("rclone", tmp_path / "config", "PocketLab/Devices/secondary", "DCIM/a.jpg")
+    assert calls[0][1] == "deletefile"
+    assert calls[0][2] == "photoprism:PocketLab/Devices/secondary/DCIM/a.jpg.pocketlab-upload"
+    assert "purge" not in calls[0] and "delete" not in calls[0]
