@@ -970,20 +970,33 @@ class QualificationRun:
             import nats  # type: ignore
 
             async def probe() -> dict[str, Any]:
-                nc = await nats.connect(
-                    servers=[self.nats.env["POCKETLAB_NATS_URL"]],
-                    user=self.nats.user,
-                    password=self.nats.password,
-                    name=f"qualification-probe-{self.run_id}",
-                    connect_timeout=3,
-                )
-                js = nc.jetstream()
-                streams = []
-                for name in ("POCKETLAB_COMMANDS", "POCKETLAB_EVENTS", "POCKETLAB_AUDIT"):
-                    info = await js.stream_info(name)
-                    streams.append({"name": name, "messages": int(info.state.messages), "bytes": int(info.state.bytes)})
-                await nc.close()
-                return {"connected": True, "jetstream": True, "streams": streams}
+                last_error = "unobserved"
+                for _ in range(20):
+                    nc = None
+                    try:
+                        nc = await nats.connect(
+                            servers=[self.nats.env["POCKETLAB_NATS_URL"]],
+                            user=self.nats.user,
+                            password=self.nats.password,
+                            name=f"qualification-probe-{self.run_id}",
+                            connect_timeout=3,
+                        )
+                        js = nc.jetstream()
+                        streams = []
+                        for name in ("POCKETLAB_COMMANDS", "POCKETLAB_EVENTS", "POCKETLAB_AUDIT"):
+                            info = await js.stream_info(name)
+                            streams.append({"name": name, "messages": int(info.state.messages), "bytes": int(info.state.bytes)})
+                        await nc.close()
+                        return {"connected": True, "jetstream": True, "streams": streams}
+                    except Exception as exc:
+                        last_error = type(exc).__name__
+                        if nc is not None:
+                            try:
+                                await nc.close()
+                            except Exception:
+                                pass
+                        await asyncio.sleep(0.5)
+                raise RuntimeError(last_error)
 
             return asyncio.run(probe())
         except Exception as exc:
