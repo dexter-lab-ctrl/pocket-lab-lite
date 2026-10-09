@@ -655,6 +655,8 @@ class QualificationRun:
         self._environment()
         self.nats = DisposableNats(paths=self.paths, env=self.env, run_id=self.run_id, binary=nats_binary)
         self.nats.start()
+        if self.nats.process is not None:
+            self.processes.append(self.nats.process)
         self.env.update(self.nats.env)
         self.agent_env.update(self.nats.env)
         fixture_env = dict(self.env)
@@ -1063,6 +1065,46 @@ class QualificationRun:
         for process in reversed(self.processes):
             if process is not None and not process.stop():
                 results["owned_processes_stopped"] = False
+        # The real supervisor launches the candidate agent through the
+        # run-owned PM2 compatibility shim, so that child is not represented
+        # by an OwnedProcess handle.  Remove exactly the expected run-scoped
+        # process after the supervisor is stopped; never use a broad PM2 or
+        # process-name command.
+        try:
+            if self.agent_env:
+                result = subprocess.run(
+                    [str(self.paths.bin / "pm2"), "delete", f"pocketlab-agent-{self.node_id}"],
+                    cwd=str(self.candidate_runtime / "agents"),
+                    env=self.agent_env,
+                    stdin=subprocess.DEVNULL,
+                    capture_output=True,
+                    text=True,
+                    timeout=15,
+                    check=False,
+                )
+                if result.returncode != 0:
+                    results["owned_processes_stopped"] = False
+                else:
+                    probe = subprocess.run(
+                        [str(self.paths.bin / "pm2"), "jlist"],
+                        cwd=str(self.candidate_runtime / "agents"),
+                        env=self.agent_env,
+                        stdin=subprocess.DEVNULL,
+                        capture_output=True,
+                        text=True,
+                        timeout=5,
+                        check=False,
+                    )
+                    if probe.returncode != 0 or any(
+                        str(item.get("name") or "") == f"pocketlab-agent-{self.node_id}"
+                        for item in (json.loads(probe.stdout or "[]") if probe.stdout.strip() else [])
+                        if isinstance(item, dict)
+                    ):
+                        results["owned_processes_stopped"] = False
+        except (OSError, subprocess.SubprocessError, TypeError, ValueError, json.JSONDecodeError):
+            results["owned_processes_stopped"] = False
+        if self.nats is not None and not self.nats.stop():
+            results["owned_processes_stopped"] = False
         if self.worktree_created:
             removed = _command(["git", "worktree", "remove", "--force", str(self.paths.worktree)], cwd=self.repo, timeout=30)
             results["worktree_removed"] = removed.returncode == 0

@@ -108,8 +108,20 @@ def _start_record(record: dict[str, object]) -> dict[str, object]:
 def _alive(record: dict[str, object]) -> bool:
     try:
         pid = int(record.get("pid") or 0)
+        if pid <= 0:
+            return False
+        # ``kill(pid, 0)`` also succeeds for a zombie.  Treating a defunct
+        # candidate as online would suppress supervisor recovery and could
+        # leave a stale run-owned process record behind during cleanup.
+        try:
+            stat = Path(f"/proc/{pid}/stat").read_text(encoding="ascii")
+            state = stat.rsplit(")", 1)[1].strip().split(" ", 1)[0]
+            if state == "Z":
+                return False
+        except (FileNotFoundError, OSError, UnicodeError, IndexError):
+            pass
         os.kill(pid, 0)
-        return pid > 0
+        return True
     except (OSError, TypeError, ValueError):
         return False
 
