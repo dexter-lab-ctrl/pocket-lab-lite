@@ -962,6 +962,81 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
         config.chmod(0o600)
         return config
 
+    def _ledger_path(self) -> Path:
+        root = Path.home() / ".pocketlab-lite" / "photo-backup-ledgers"
+        root.mkdir(parents=True, exist_ok=True, mode=0o700)
+        root.chmod(0o700)
+        # Node IDs may be supplied by an external registry: never use them
+        # directly as a filesystem path.
+        digest = hashlib.sha256(self.node_id.encode("utf-8")).hexdigest()[:24]
+        return root / (digest + ".json")
+
+    def _ledger_load(self) -> dict[str, Any]:
+        try:
+            data = json.loads(self._ledger_path().read_text(encoding="utf-8"))
+            if data.get("schema_version") == 1 and isinstance(data.get("items"), dict):
+                return data["items"]
+        except (OSError, ValueError, TypeError, AttributeError):
+            pass
+        return {}
+
+    def _ledger_save(self, entries: dict[str, Any]) -> None:
+        path = self._ledger_path()
+        temp = None
+        try:
+            with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8",
+                prefix=".ledger-", dir=path.parent, delete=False) as stream:
+                temp = Path(stream.name)
+                os.chmod(temp, 0o600)
+                json.dump({"schema_version": 1, "items": entries,
+                           "updated_at": _now(), "sanitized": True}, stream)
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(temp, path)
+        finally:
+            if temp is not None:
+                temp.unlink(missing_ok=True)
+
+    @staticmethod
+    def _item_identity(item: dict[str, Any], destination: str) -> str:
+        # No filenames or source paths are persisted in the ledger.
+        value = (str(item["collection"]) + "\\0" + str(item["relative"])
+                 + "\\0" + destination)
+        return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def _source_digest(path: Path, *, expected_size: int) -> str:
+        h = hashlib.sha256()
+        total = 0
+        with path.open("rb") as stream:
+            while True:
+                block = stream.read(1024 * 1024)
+                if not block:
+                    break
+                total += len(block)
+                if total > expected_size:
+                    raise RuntimeError("source_changed")
+                h.update(block)
+        if total != expected_size:
+            raise RuntimeError("source_changed")
+        return h.hexdigest()
+
+    def _remote_size(self, rclone: str, config_path: Path,
+                     destination_prefix: str, remote_relative: str) -> int | None:
+        target = f"photoprism:{destination_prefix}/{remote_relative}"
+        result = self._run([rclone, "lsjson", target, "--stat", "--config",
+                            str(config_path), "--checkers", "1"],
+                           timeout=60, capture=True)
+        if result.returncode != 0 or len(result.stdout.encode("utf-8")) > 4096:
+            return None
+        try:
+            item = json.loads(result.stdout)
+            if isinstance(item, dict) and not item.get("IsDir"):
+                return int(item.get("Size", -1))
+        except (ValueError, TypeError):
+            pass
+        return None
+
     def _transfer_one(
         self,
         rclone: str,
@@ -1004,6 +1079,10 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
         if copied.returncode != 0:
             raise RuntimeError("copy_failed")
 
+        # Confirm staging bytes arrived before finalizing the destination.
+        if self._remote_size(rclone, config_path, destination_prefix,
+                             remote_relative + ".pocketlab-upload") != int(item["size"]):
+            raise RuntimeError("staging_integrity_failed")
         moved = self._run(
             [
                 rclone,
@@ -1020,9 +1099,10 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
             timeout=120,
         )
         if moved.returncode != 0:
-            raise RuntimeError(
-                "finalize_failed"
-            )
+            raise RuntimeError("finalize_failed")
+        if self._remote_size(rclone, config_path, destination_prefix,
+                             remote_relative) != int(item["size"]):
+            raise RuntimeError("destination_integrity_failed")
 
     def backup(
         self,
@@ -1177,6 +1257,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 destination_prefix,
             )
 
+            ledger = self._ledger_load()
             plan: list[
                 tuple[dict[str, Any], str]
             ] = []
@@ -1192,10 +1273,17 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                     str(item["collection"]),
                     str(item["relative"]),
                 )
-                if self._matches(
-                    remote.get(regular_key),
-                    item,
-                ):
+                identity = self._item_identity(item, regular_key)
+                checkpoint = ledger.get(identity)
+                remote_item = remote.get(regular_key)
+                if (isinstance(checkpoint, dict)
+                    and checkpoint.get("size") == int(item["size"])
+                    and checkpoint.get("mtime") == int(item["mtime"])
+                    and remote_item and int(remote_item.get("size", -1)) == int(item["size"])
+                    and checkpoint.get("sha256") == self._source_digest(item["path"], expected_size=int(item["size"]))):
+                    skipped += 1
+                    continue
+                if self._matches(remote_item, item):
                     skipped += 1
                     continue
 
@@ -1308,6 +1396,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                     remaining_bytes += int(item["size"])
                     continue
 
+                source_hash = self._source_digest(item["path"], expected_size=int(item["size"]))
                 self._transfer_one(
                     rclone,
                     config_path,
@@ -1315,6 +1404,13 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                     final_key,
                     destination_prefix,
                 )
+                if self._source_digest(item["path"], expected_size=int(item["size"])) != source_hash:
+                    raise RuntimeError("source_changed_during_transfer")
+                ledger[self._item_identity(item, final_key)] = {
+                    "size": int(item["size"]), "mtime": int(item["mtime"]),
+                    "sha256": source_hash, "verified_at": _now(),
+                }
+                self._ledger_save(ledger)
                 transferred += 1
                 bytes_transferred += int(
                     item["size"]
