@@ -55,6 +55,7 @@ test.describe('Phase 1 Photo Backup mocked UX', () => {
     const backup = await openPhotoBackup(page);
     await expect(backup).toContainText(/protected Server Phone reserve/i);
     await expect(backup).toContainText(/10%/i);
+    await expect(backup).toContainText(/Server Phone destination/i);
     await expect(backup).toContainText(/4\.1 GB|4\.4 GB|GB/i);
     await expect(backup.getByRole('button', { name: 'Retry' })).toBeEnabled();
     await expect(backup).toContainText(/PhotoPrism is processing/i);
