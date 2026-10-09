@@ -249,6 +249,10 @@ def repair_rclone(*, command_id: str = "",
     try:
         lock_path, record_path = _repair_paths()
         fd = os.open(str(lock_path), os.O_CREAT | os.O_RDWR | getattr(os, "O_NOFOLLOW", 0), 0o600)
+        try:
+            os.fchmod(fd, 0o600)
+        except OSError:
+            pass
     except OSError:
         return {"status": "failed", "reason_code": "rclone_repair_state_unavailable",
                 "summary": "Photo backup repair state is not writable.",

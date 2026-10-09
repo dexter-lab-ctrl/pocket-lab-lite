@@ -17,23 +17,38 @@ function isLive(status) {
 
 const GUIDANCE = {
   source_offline: 'Reconnect this device and wait for a fresh heartbeat.',
+  source_agent_unavailable: 'The device agent is unavailable. Reconnect the device and wait for a fresh heartbeat.',
   source_capabilities_stale: 'Wait for the device to report fresh photo backup capabilities.',
   rclone_unavailable: 'Use Repair photo backup to install or verify tools on this device.',
+  rclone_install_failed: 'Repair photo backup tools again after checking the device connection.',
+  rclone_install_timeout: 'Photo backup tool repair timed out. Retry when the device is stable.',
+  rclone_verification_failed: 'Photo backup tools could not be verified. Retry repair or review the device.',
   rclone_repair_in_progress: 'The device is repairing photo backup tools. Check the latest update.',
+  rclone_repair_interrupted: 'Photo backup tool repair was interrupted. Retry the backend-owned repair.',
+  rclone_unsupported_platform: 'Automatic tool repair is unavailable on this platform.',
+  rclone_repair_state_unavailable: 'Repair state could not be saved. Check the device and retry.',
   photo_storage_access_missing: 'Allow photo and video access in Android settings, then refresh.',
   photoprism_not_running: 'Open Apps and check PhotoPrism on the Server Phone.',
   photoprism_unreachable: 'Check PhotoPrism health and its local connection on the Server Phone.',
   secure_route_unavailable: 'Check remote access in Devices before retrying.',
   webdav_probe_failed: 'Check the PhotoPrism HTTPS route and retry when it is reachable.',
   webdav_auth_failed: 'A protected upload credential was rejected. Retry after checking PhotoPrism.',
+  destination_unavailable: 'The protected PhotoPrism destination is unavailable. Check the Server Phone.',
+  destination_mount_missing: 'The PhotoPrism originals storage mount is missing. Check the Server Phone.',
   destination_identity_mismatch: 'Destination storage changed. Verify the original drive on the Server Phone; do not force a backup.',
   destination_storage_unavailable: 'Check the Server Phone storage mount and permissions.',
   destination_read_only: 'The backup destination is not writable. Check Server Phone storage.',
   storage_below_planning_reserve: 'Free up destination space without deleting existing backups.',
   storage_below_hard_reserve: 'Server Phone storage is critically low. Free up space before trying again.',
   storage_reservation_conflict: 'Another device is using the photo backup destination. Retry when it finishes.',
+  insufficient_space_for_selected_media: 'The selected media do not fit in the protected upload budget. Choose fewer items or free space.',
+  network_interrupted: 'The device or protected route disconnected. Reconnect and retry the backup.',
   credential_expired: 'The previous one-time credential expired. Start a new backup when ready.',
   credential_revocation_pending: 'Credential revocation is pending. Check the connection before retrying.',
+  agent_command_undeliverable: 'The device did not receive the backup command. Reconnect it and retry.',
+  worker_unavailable: 'The backup worker is unavailable. Check the connection and retry shortly.',
+  cancelled: 'The backup was cancelled. Completed files were preserved.',
+  unknown_internal_error: 'The backup could not be classified safely. Review the latest device and Server Phone status.',
 };
 
 function safeDate(value) {
@@ -80,6 +95,9 @@ export default function DevicePhotoBackup({ deviceId }) {
   const canStart = Boolean(data.backup_admissible ?? data.ready) && Boolean(selected.length && !live && !repairing && !actionState.busy && !query.error);
   const canRepair = blockers.includes('rclone_unavailable') && !repairing && !live && !actionState.busy && !query.error;
   const diagnostics = Array.isArray(data.diagnostics) ? data.diagnostics.filter((entry) => entry && typeof entry.reason_code === 'string') : [];
+  const visibleDiagnostics = diagnostics.length
+    ? diagnostics
+    : blockers.map((reason_code) => ({ reason_code }));
   const hasStatus = Boolean(query.data && !query.error);
   const storage = data.storage && typeof data.storage === 'object' ? data.storage : null;
 
@@ -116,9 +134,9 @@ export default function DevicePhotoBackup({ deviceId }) {
         <strong>Current readiness</strong>
         <p>{hasStatus ? (data.backup_admissible ? 'Ready to start a new backup.' : 'New backup is blocked until the conditions below are resolved.') : 'Current readiness could not be confirmed.'}</p>
         <small>Checked: {safeDate(data.checked_at)}</small>
-        {diagnostics.length ? (
+        {visibleDiagnostics.length ? (
           <ul aria-label="Backup readiness checks">
-            {diagnostics.map((entry, index) => (
+            {visibleDiagnostics.map((entry, index) => (
               <li key={`${entry.reason_code}-${index}`}>
                 {GUIDANCE[entry.reason_code] || 'This check needs attention on the device or Server Phone.'}
                 {entry.remediation_category ? ` (Area: ${String(entry.remediation_category).replaceAll('_', ' ')})` : ''}

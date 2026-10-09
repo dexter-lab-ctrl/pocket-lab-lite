@@ -126,7 +126,8 @@ def test_missing_rclone_reports_degraded_without_arbitrary_install(monkeypatch):
     module = _module()
     monkeypatch.setattr(module.shutil, "which", lambda name: None)
     result = module.repair_rclone()
-    assert result["status"] == "failed"
+    assert result["status"] == "unsupported_platform"
+    assert result["reason_code"] == "rclone_unsupported_platform"
     assert result["rclone_available"] is False
 
 
@@ -306,7 +307,10 @@ def test_conflict_count_is_aggregate_only_and_versioning_is_non_destructive(monk
     monkeypatch.setattr(
         provider,
         "_capacity",
-        lambda *_args: {"hard_upload_budget_bytes": 10_000_000},
+        lambda *_args: {
+            "safe_upload_budget_bytes": 10_000_000,
+            "hard_upload_budget_bytes": 10_000_000,
+        },
     )
     transfers = []
     monkeypatch.setattr(
@@ -431,8 +435,8 @@ def test_capacity_drop_mid_transfer_stops_before_next_file(monkeypatch, tmp_path
     monkeypatch.setattr(provider, "_remote_listing", lambda *_args: {})
     monkeypatch.setattr(provider, "_make_config", lambda *_args: tmp_path / "rclone.conf")
     budgets = iter([
-        {"hard_upload_budget_bytes": 1000},
-        {"hard_upload_budget_bytes": 0},
+        {"safe_upload_budget_bytes": 1000, "hard_upload_budget_bytes": 1000},
+        {"safe_upload_budget_bytes": 0, "hard_upload_budget_bytes": 0},
     ])
     monkeypatch.setattr(provider, "_capacity", lambda *_args: next(budgets))
     transfers = []
@@ -496,7 +500,10 @@ def test_incremental_run_skips_matching_remote_and_copies_only_new_media(monkeyp
         },
     )
     monkeypatch.setattr(provider, "_make_config", lambda *_args: tmp_path / "rclone.conf")
-    monkeypatch.setattr(provider, "_capacity", lambda *_args: {"hard_upload_budget_bytes": 1000})
+    monkeypatch.setattr(provider, "_capacity", lambda *_args: {
+        "safe_upload_budget_bytes": 1000,
+        "hard_upload_budget_bytes": 1000,
+    })
     transfers = []
     monkeypatch.setattr(
         provider,

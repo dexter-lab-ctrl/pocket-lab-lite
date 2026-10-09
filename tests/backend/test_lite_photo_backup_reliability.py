@@ -25,7 +25,11 @@ def test_zero_planning_budget_is_not_admissible(monkeypatch):
     ensure_runtime_path()
     from api_fastapi.services import lite_photo_backup as backup
     monkeypatch.setattr(backup, "_safe_node_id", lambda x: x)
-    monkeypatch.setattr(backup, "_agent", lambda node: {"node_id": node, "connection": "online"})
+    monkeypatch.setattr(backup, "_agent", lambda node: {
+        "node_id": node,
+        "connection": "online",
+        "last_seen_epoch": backup._epoch(),
+    })
     monkeypatch.setattr(backup, "_photo_capability", lambda agent: {
         "rclone_available": True, "rclone_version": "rclone 1.75",
         "photo_storage_access": True, "collections": ["camera"]})
@@ -53,6 +57,31 @@ def test_invalid_capacity_fails_closed(tmp_path, monkeypatch):
     result = backup.server_capacity()
     assert result["status"] == "unavailable"
     assert result["safe_upload_budget_bytes"] == 0
+
+
+def test_p0_capacity_rejects_read_only_and_symlinked_destinations(tmp_path, monkeypatch):
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photo_backup as backup
+    import os
+
+    root = tmp_path / "originals"
+    root.mkdir()
+    stat = SimpleNamespace(
+        f_blocks=1000,
+        f_bavail=900,
+        f_frsize=4096,
+        f_flag=os.ST_RDONLY,
+    )
+    monkeypatch.setattr(backup, "_originals_path", lambda: root)
+    monkeypatch.setattr(backup.os, "statvfs", lambda _path: stat)
+    assert backup.server_capacity()["reason_code"] == "destination_read_only"
+
+    link = tmp_path / "originals-link"
+    link.symlink_to(root, target_is_directory=True)
+    monkeypatch.setattr(backup, "_originals_path", lambda: link)
+    stat.f_flag = 0
+    assert backup.server_capacity()["reason_code"] == "destination_identity_mismatch"
 
 
 def test_inventory_limit_is_bounded(monkeypatch, tmp_path):
@@ -166,7 +195,11 @@ def test_p0_reason_classification_and_independent_readiness(monkeypatch):
     ensure_runtime_path()
     from api_fastapi.services import lite_photo_backup as backup
     monkeypatch.setattr(backup, "_safe_node_id", lambda x: x)
-    monkeypatch.setattr(backup, "_agent", lambda node: {"node_id": node, "connection": "online"})
+    monkeypatch.setattr(backup, "_agent", lambda node: {
+        "node_id": node,
+        "connection": "online",
+        "last_seen_epoch": backup._epoch(),
+    })
     monkeypatch.setattr(backup, "_photo_capability", lambda agent: {
         "rclone_available": True, "rclone_version": "rclone 1.75",
         "photo_storage_access": True, "collections": ["camera"]})
@@ -196,6 +229,61 @@ def test_p0_worker_capacity_reason_is_independent_of_route():
     assert backup._capacity_diagnostic({"status": "ready", "read_only": True}) == "destination_read_only"
     assert backup._capacity_diagnostic({"status": "ready", "hard_upload_budget_bytes": 10,
                                         "safe_upload_budget_bytes": 0}) == "storage_below_planning_reserve"
+
+
+def test_p0_admission_lock_fails_closed_when_reservation_is_contended(tmp_path, monkeypatch):
+    from pocket_lab_test_utils import ensure_runtime_path
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photo_backup as backup
+    import fcntl
+    import os
+    import pytest
+
+    lock_path = tmp_path / "photo-backup.admission.lock"
+    monkeypatch.setattr(backup, "_admission_lock_path", lambda: lock_path)
+    monkeypatch.setattr(
+        backup,
+        "status",
+        lambda node_id, *_args, **_kwargs: {
+            "ready": True,
+            "latest_backup": None,
+            "node_id": node_id,
+        },
+    )
+    monkeypatch.setattr(
+        backup,
+        "readiness",
+        lambda *_args, **_kwargs: {
+            "backup_admissible": True,
+            "destination_operational": True,
+            "rclone_available": True,
+            "photo_storage_access": True,
+            "storage": {
+                "status": "ready",
+                "safe_upload_budget_bytes": 100,
+                "hard_upload_budget_bytes": 200,
+            },
+        },
+    )
+    monkeypatch.setattr(backup, "_agent", lambda node_id: {"node_id": node_id, "name": node_id})
+    monkeypatch.setattr(
+        backup,
+        "server_capacity",
+        lambda: {"status": "ready", "safe_upload_budget_bytes": 100, "hard_upload_budget_bytes": 200},
+    )
+
+    fd = os.open(lock_path, os.O_CREAT | os.O_RDWR, 0o600)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        with pytest.raises(backup.HTTPException) as exc:
+            backup.make_start_command("secondary", ["camera"])
+    finally:
+        fcntl.flock(fd, fcntl.LOCK_UN)
+        os.close(fd)
+
+    assert exc.value.status_code == 409
+    assert exc.value.detail["reason_code"] == "storage_reservation_conflict"
+    assert exc.value.detail["retryable"] is True
 
 
 def test_p0_missing_or_old_fleet_heartbeat_fails_closed(monkeypatch):
