@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: d181e36eac9c46df728c9c4845343506ea52b4842f9c51da6c5a0a50cd976f79
+source_fingerprint: 2ac2adec1aa75091b03db66ca2e7ee1d14e5a5ebb43e6708fd93213956dab57a
 schema_revision: 1
 validation_status: generated
 ---
@@ -732,9 +732,9 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_PUBLIC_NATS_PORT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py, scripts/dev/check-lite-runtime-resilience-server-phone.sh |
 | `POCKETLAB_PUBLIC_NATS_URL` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py, scripts/dev/lite/run-isolated-runtime-qualification.py |
 | `POCKETLAB_QUALIFICATION` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, scripts/dev/lite/start-qualification.sh |
-| `POCKETLAB_QUALIFICATION_` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py, scripts/dev/lite/run-isolated-runtime-qualification.py |
+| `POCKETLAB_QUALIFICATION_` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-isolated-runtime-qualification.py |
 | `POCKETLAB_QUALIFICATION_ALLOW_TEST_DESTINATION` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py, scripts/dev/lite/run-isolated-runtime-qualification.py |
-| `POCKETLAB_QUALIFICATION_CANDIDATE_SHA` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py, scripts/dev/lite/run-isolated-runtime-qualification.py, scripts/dev/lite/run-photo-backup-candidate-qualification.py |
+| `POCKETLAB_QUALIFICATION_CANDIDATE_SHA` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py, scripts/dev/lite/run-isolated-runtime-qualification.py |
 | `POCKETLAB_QUALIFICATION_CONTEXT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py, scripts/dev/lite/run-isolated-runtime-qualification.py |
 | `POCKETLAB_QUALIFICATION_CONTEXT_TOKEN` | secret | not documented for secret variables | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py, scripts/dev/lite/run-isolated-runtime-qualification.py |
 | `POCKETLAB_QUALIFICATION_CONTROL_ORIGIN` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py, scripts/dev/lite/run-isolated-runtime-qualification.py |
@@ -745,8 +745,8 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_QUALIFICATION_PM2_SHIM` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/qualification_pm2.py |
 | `POCKETLAB_QUALIFICATION_ROOT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py, scripts/dev/lite/run-isolated-runtime-qualification.py |
 | `POCKETLAB_QUALIFICATION_RUNNER_BIN` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-isolated-runtime-qualification.py |
-| `POCKETLAB_QUALIFICATION_RUN_ID` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py, scripts/dev/lite/qualification_pm2.py, scripts/dev/lite/run-isolated-runtime-qualification.py, scripts/dev/lite/run-photo-backup-candidate-qualification.py |
-| `POCKETLAB_QUALIFICATION_STATE_DIR` | configuration | $POCKETLAB_BASE_DIR/qualification-state | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, scripts/dev/lite/run-photo-backup-candidate-qualification.py, scripts/dev/lite/start-qualification.sh, scripts/dev/lite/task_runtime.py |
+| `POCKETLAB_QUALIFICATION_RUN_ID` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py, scripts/dev/lite/qualification_pm2.py, scripts/dev/lite/run-isolated-runtime-qualification.py |
+| `POCKETLAB_QUALIFICATION_STATE_DIR` | configuration | $POCKETLAB_BASE_DIR/qualification-state | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py, scripts/dev/lite/run-photo-backup-candidate-qualification.py, scripts/dev/lite/start-qualification.sh, scripts/dev/lite/task_runtime.py |
 | `POCKETLAB_QUALIFICATION_TEST_ORIGIN` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py, scripts/dev/lite/run-isolated-runtime-qualification.py |
 | `POCKETLAB_QUALIFICATION_WEBDAV_PASSWORD` | secret | not documented for secret variables | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py, scripts/dev/lite/run-isolated-runtime-qualification.py |
 | `POCKETLAB_QUALIFICATION_WEBDAV_USER` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py, scripts/dev/lite/run-isolated-runtime-qualification.py |

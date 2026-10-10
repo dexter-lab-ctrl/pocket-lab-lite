@@ -13318,7 +13318,6 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
-        "pocket-lab-final-structure",
         "scripts"
       ],
       "deprecated_aliases": [],
@@ -13327,7 +13326,6 @@
       "required": false,
       "restart_required": "component-dependent",
       "runtime_readers": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py"
       ],
       "safe_default": "source-defined or empty",
@@ -13368,8 +13366,7 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
-        "scripts/dev/lite/run-isolated-runtime-qualification.py",
-        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
+        "scripts/dev/lite/run-isolated-runtime-qualification.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -13592,8 +13589,7 @@
       "runtime_readers": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
         "scripts/dev/lite/qualification_pm2.py",
-        "scripts/dev/lite/run-isolated-runtime-qualification.py",
-        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
+        "scripts/dev/lite/run-isolated-runtime-qualification.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -13613,6 +13609,7 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
         "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
         "scripts/dev/lite/start-qualification.sh",
         "scripts/dev/lite/task_runtime.py"
@@ -18800,7 +18797,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "31333ed41e0aeee90c5b9b29093d06e8175f3463eceb0b1cf9c9cbc38b7f7c8b",
+    "aggregate_fingerprint": "8a4a6dafcbf6c222b6d1f7a32d14de01911b6c48ec1bcb6696ed7a06a2c14b7a",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -18941,7 +18938,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/operation_events.py": "a51d5763bbc2d1b201b017fe05ddd1737bf05f7a5a769ec0d66b8991285e90fe",
       "pocket-lab-final-structure/runtime/api_fastapi/services/process_runtime.py": "239a8c90868ec2ca121d823eddeb5e8f5b4d825fbebfdbc616be5992a1336ace",
       "pocket-lab-final-structure/runtime/api_fastapi/services/projection_scheduler.py": "d28f52760555788c05461d4725a67b89997140cf981e43eec643075b54ac3f34",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py": "70d6ccb13ef1253504c2bdb396ee975b8a03fb592ea4769b5b83791869d36ce6",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py": "db012e1bee1c4836071edaefe3f3f78360f836075c7a53801f1da1a7045881e5",
       "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py": "046d6d3a1a733a10dd67b9ede76b76c028dcfd8c4b5d379e40b01d9103a938a4",
       "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py": "86bafcac97fad7b3bd4a4dfc8fb9b3196defe2009c485249b0f39f8ac27fd121",
       "pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py": "5f0b729056de07c7510a2b0a4288f9b12ba714b7362f3c6b833872614663840f",

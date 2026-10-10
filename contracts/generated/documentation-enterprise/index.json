@@ -22814,25 +22814,23 @@
       },
       {
         "affected_components": [
-          "FastAPI",
           "repository tooling"
         ],
-        "affects_release": true,
+        "affects_release": false,
         "affects_runtime": true,
         "default": "source-defined/unvalidated",
         "name": "POCKETLAB_QUALIFICATION_",
-        "owner": "FastAPI/runtime",
+        "owner": "repository tooling",
         "purpose": "Pocket Lab runtime/development configuration discovered from source",
         "related_troubleshooting": [
           "Development Troubleshooting",
           "Production Troubleshooting"
         ],
         "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
-        "restart_required": "likely-runtime-restart",
+        "restart_required": "source-dependent",
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
           "scripts/dev/lite/run-isolated-runtime-qualification.py",
           "tests/backend/test_lite_isolated_qualification_lane.py"
         ],
@@ -22886,8 +22884,8 @@
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
           "scripts/dev/lite/run-isolated-runtime-qualification.py",
-          "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
-          "tests/backend/test_lite_isolated_qualification_lane.py"
+          "tests/backend/test_lite_isolated_qualification_lane.py",
+          "tests/backend/test_lite_photo_backup_candidate_qualification.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -23168,13 +23166,14 @@
           "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
           "scripts/dev/lite/qualification_pm2.py",
           "scripts/dev/lite/run-isolated-runtime-qualification.py",
-          "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
-          "tests/backend/test_lite_isolated_qualification_lane.py"
+          "tests/backend/test_lite_isolated_qualification_lane.py",
+          "tests/backend/test_lite_photo_backup_candidate_qualification.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
       {
         "affected_components": [
+          "FastAPI",
           "bootstrap/runtime",
           "repository tooling"
         ],
@@ -23194,10 +23193,11 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
           "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
           "scripts/dev/lite/start-qualification.sh",
           "scripts/dev/lite/task_runtime.py",
-          "tests/backend/test_lite_security_assurance_portability.py"
+          "tests/backend/test_lite_isolated_qualification_lane.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -48305,9 +48305,9 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "3c6b3a761ba2cedd8f4fdc52e268dc8e8f6fc84e8336be39f344e6cd3ba7c85e",
-        "documentation": "d5d9a5679664cad60d407ecd5674af4fd467bbd1b37ea375ccdd14bd9b314e1b",
+        "documentation": "6f5378a9f6a321b843018bd39e29438c2b238299c85f0a7b9e882d61e7827c16",
         "openapi": "d7571194d848b19a5a21343c682e5bb659a2e1c2da7e465ac5a5b3eb09deb58d",
-        "operational_health": "5d81d99e0059046b7255ead08bc3bb6059948b56347609aceac10200a803cec6"
+        "operational_health": "01b23d662db23560f4d2ac95f196c59bb4f6fad2ec0cbd0dc75a9c801bf4a76c"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -119159,5 +119159,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "1bca4aa19e9f9d8755a77593c931fca086bb7ce9aa3b29c4bb59e275d3683b00"
+  "source_fingerprint": "64267d8c1c785c72571cd0213259a0449f4630b051c1da77d6f4e1d339980a6e"
 }

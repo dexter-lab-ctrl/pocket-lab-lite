@@ -20656,25 +20656,23 @@
     },
     {
       "affected_components": [
-        "FastAPI",
         "repository tooling"
       ],
-      "affects_release": true,
+      "affects_release": false,
       "affects_runtime": true,
       "default": "source-defined/unvalidated",
       "name": "POCKETLAB_QUALIFICATION_",
-      "owner": "FastAPI/runtime",
+      "owner": "repository tooling",
       "purpose": "Pocket Lab runtime/development configuration discovered from source",
       "related_troubleshooting": [
         "Development Troubleshooting",
         "Production Troubleshooting"
       ],
       "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
-      "restart_required": "likely-runtime-restart",
+      "restart_required": "source-dependent",
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
         "tests/backend/test_lite_isolated_qualification_lane.py"
       ],
@@ -20728,8 +20726,8 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
-        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
-        "tests/backend/test_lite_isolated_qualification_lane.py"
+        "tests/backend/test_lite_isolated_qualification_lane.py",
+        "tests/backend/test_lite_photo_backup_candidate_qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -21010,13 +21008,14 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
         "scripts/dev/lite/qualification_pm2.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
-        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
-        "tests/backend/test_lite_isolated_qualification_lane.py"
+        "tests/backend/test_lite_isolated_qualification_lane.py",
+        "tests/backend/test_lite_photo_backup_candidate_qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
     {
       "affected_components": [
+        "FastAPI",
         "bootstrap/runtime",
         "repository tooling"
       ],
@@ -21036,10 +21035,11 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
         "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
         "scripts/dev/lite/start-qualification.sh",
         "scripts/dev/lite/task_runtime.py",
-        "tests/backend/test_lite_security_assurance_portability.py"
+        "tests/backend/test_lite_isolated_qualification_lane.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
