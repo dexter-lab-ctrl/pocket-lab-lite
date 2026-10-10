@@ -568,7 +568,9 @@ def _make_media(paths: RunPaths) -> None:
         path.write_bytes(payload)
         path.chmod(0o600)
     (roots["camera"] / ".hidden.jpg").write_bytes(b"must-not-transfer")
-    (roots["camera"] / ".nomedia").write_text("synthetic\n", encoding="utf-8")
+    ignored = roots["camera"] / "ignored"
+    ignored.mkdir(mode=0o700)
+    (ignored / ".nomedia").write_text("synthetic\n", encoding="utf-8")
     try:
         (roots["camera"] / "symlink.jpg").symlink_to(files[next(iter(files))])
     except FileExistsError:
@@ -2074,14 +2076,14 @@ def _android_media_archive(root: Path) -> tuple[Path, list[dict[str, Any]]]:
         "storage/shared/Pictures/Case.JPG": b"case-collision\n" * 24,
         "storage/shared/Movies/qualification-video.mp4": b"synthetic-video\n" * 256,
         "storage/shared/DCIM/Camera/.hidden.jpg": b"must-not-transfer",
-        "storage/shared/DCIM/Camera/.nomedia": b"synthetic\n",
+        "storage/shared/DCIM/Camera/ignored/.nomedia": b"synthetic\n",
     }
     archive_path = root / "synthetic-media.tar"
     expected: list[dict[str, Any]] = []
     with tarfile.open(archive_path, "w") as bundle:
         directories = {
             "storage", "storage/shared", "storage/shared/DCIM", "storage/shared/DCIM/Camera",
-            "storage/shared/Pictures", "storage/shared/Movies",
+            "storage/shared/DCIM/Camera/ignored", "storage/shared/Pictures", "storage/shared/Movies",
         }
         for directory in sorted(directories):
             info = tarfile.TarInfo(directory)
