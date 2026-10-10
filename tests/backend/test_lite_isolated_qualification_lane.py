@@ -204,6 +204,26 @@ def test_android_python_probes_preserve_argument_boundaries(monkeypatch):
     assert calls[0][1][3:] == ["nats"]
 
 
+def test_android_ssh_input_does_not_duplicate_stdin(monkeypatch):
+    spec = importlib.util.spec_from_file_location("isolated_android_stdin_test", CONTROLLER)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    import sys
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    captured = {}
+
+    def fake_run(args, **kwargs):
+        captured["args"] = args
+        captured.update(kwargs)
+        return subprocess.CompletedProcess(args, 0, stdout=b"", stderr=b"")
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+    module._android_ssh_run("pocketlab-secondary", ["sh", "-c", "cat"], input_data=b"fixture")
+    assert captured["input"] == b"fixture"
+    assert captured["stdin"] is None
+
+
 def test_qualification_rclone_accepts_candidate_flag_surface():
     spec = importlib.util.spec_from_file_location("qualification_rclone_test", RCLONE)
     assert spec and spec.loader

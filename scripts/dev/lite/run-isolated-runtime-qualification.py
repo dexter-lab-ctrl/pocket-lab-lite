@@ -2418,7 +2418,7 @@ def _android_ssh_run(
     return subprocess.run(
         _android_ssh_base(host) + [remote_command],
         input=input_data,
-        stdin=subprocess.PIPE if input_data is not None else subprocess.DEVNULL,
+        stdin=subprocess.DEVNULL if input_data is None else None,
         capture_output=True,
         text=isinstance(input_data, str),
         timeout=timeout,
