@@ -248,6 +248,8 @@ def test_android_supervisor_uses_explicit_run_scoped_pm2_binary():
     assert '"repair_failure_detail": self.last_repair_failure_detail or None' in supervisor
     assert '"LD_PRELOAD": str(remote.baseline.get("termux_exec_ld_preload") or "")' in controller
     assert '"termux_exec_ld_preload"' in controller
+    assert 'shlex.join([pm2, "jlist"])' in controller
+    assert 'agent_error_log' in controller
     assert '"POCKETLAB_PM2_BIN": remote.pm2 or ""' in controller
 
 

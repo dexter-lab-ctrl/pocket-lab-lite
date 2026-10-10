@@ -3006,11 +3006,12 @@ class AndroidRemoteProcess:
 
 
 _ANDROID_PM2_LIST_CODE = r'''
-import json, pathlib, subprocess, sys
+import json, pathlib, shlex, shutil, subprocess, sys
 env = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
 pm2 = sys.argv[2]
+shell = shutil.which("sh", path=str(env.get("PATH") or "")) or "sh"
 result = subprocess.run(
-    [pm2, "jlist"],
+    [shell, "-c", shlex.join([pm2, "jlist"])],
     env={str(k): str(v) for k, v in env.items()},
     capture_output=True,
     text=True,
@@ -3056,7 +3057,7 @@ def _android_pm2_list(remote: AndroidRemote, env_path: str, *, root: str) -> lis
 
 
 _ANDROID_PM2_COMMAND_CODE = r'''
-import json, pathlib, subprocess, sys
+import json, pathlib, shlex, shutil, subprocess, sys
 env = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
 pm2 = sys.argv[2]
 name = sys.argv[3]
@@ -3074,7 +3075,7 @@ elif command == "kill":
 else:
     raise SystemExit(5)
 result = subprocess.run(
-    args,
+    [shutil.which("sh", path=str(env.get("PATH") or "")) or "sh", "-c", shlex.join(args)],
     env={str(k): str(v) for k, v in env.items()},
     capture_output=True,
     text=True,
@@ -4042,14 +4043,29 @@ class AndroidQualificationRun(QualificationRun):
                     root=self.secondary_root,
                 )
                 records = _android_pm2_list(self.secondary, self.secondary_env_path, root=self.secondary_root)
+                agent_name = f"pocketlab-agent-{self.node_id}"
+                agent_error_log = _android_read_text(
+                    self.secondary,
+                    f"{self.secondary_root}/pm2/logs/{agent_name}-error.log",
+                    root=self.secondary_root,
+                )
+                agent_out_log = _android_read_text(
+                    self.secondary,
+                    f"{self.secondary_root}/pm2/logs/{agent_name}-out.log",
+                    root=self.secondary_root,
+                )
                 for secret in (self.agent_token, self.context_token, self.provisioning_token):
                     state = state.replace(secret, "[redacted]")
                     log = log.replace(secret, "[redacted]")
+                    agent_error_log = agent_error_log.replace(secret, "[redacted]")
+                    agent_out_log = agent_out_log.replace(secret, "[redacted]")
                 self.results["android_agent_diagnostics"] = {
                     "status": "FAIL",
                     "supervisor_state": state[-6000:],
                     "supervisor_log": log[-6000:],
                     "pm2": records,
+                    "agent_error_log": agent_error_log[-6000:],
+                    "agent_out_log": agent_out_log[-6000:],
                 }
                 remote_details.append("remote_supervisor_state=" + state.replace("\n", " ")[-1800:])
                 remote_details.append("remote_supervisor_log=" + log.replace("\n", " ")[-1800:])
