@@ -3149,6 +3149,14 @@ if root.parent != parent or not root.name.isalnum() or len(root.name) != 24:
 if not str(root).startswith(str(parent) + "/") or root.is_symlink():
     raise SystemExit(4)
 if root.exists():
+    for path in sorted(root.rglob("*"), key=lambda item: len(item.parts), reverse=True):
+        if path.is_symlink():
+            raise SystemExit(5)
+        if path.is_dir():
+            path.chmod(0o700)
+        elif path.is_file():
+            path.chmod(0o600)
+    root.chmod(0o700)
     shutil.rmtree(root)
 print("removed")
 '''
@@ -3323,6 +3331,7 @@ class AndroidQualificationRun(QualificationRun):
         self.active_backup_id = ""
         self.roots_created = False
         self.launch_started = False
+        self.supervisor_started = False
         self.cleanup_done = False
         self.preflight_done = False
 
@@ -3970,6 +3979,7 @@ class AndroidQualificationRun(QualificationRun):
         self.supervisor.launch()
         if not self.supervisor.alive():
             raise QualificationError("candidate supervisor exited during startup")
+        self.supervisor_started = True
 
     def _wait_agent(self, timeout: float = 50.0) -> dict[str, Any]:
         latest = super()._wait_agent(timeout=timeout)
@@ -4425,7 +4435,7 @@ class AndroidQualificationRun(QualificationRun):
                     cleanup["credentials_revoked"] = False
         if self.supervisor is not None and not self.supervisor.stop():
             cleanup["candidate_processes_stopped"] = False
-        if self.secondary is not None and self.secondary_env_path:
+        if self.secondary is not None and self.secondary_env_path and self.supervisor_started:
             agent_name = f"pocketlab-agent-{self.node_id}"
             if not _android_pm2_command(self.secondary, self.secondary_env_path, agent_name, "delete", root=self.secondary_root):
                 cleanup["candidate_processes_stopped"] = False

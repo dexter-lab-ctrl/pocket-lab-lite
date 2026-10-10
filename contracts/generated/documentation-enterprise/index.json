@@ -48358,7 +48358,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "3c6b3a761ba2cedd8f4fdc52e268dc8e8f6fc84e8336be39f344e6cd3ba7c85e",
-        "documentation": "9710c53b0f65cb9b13d991cff863acb87ec8610b385daf65497c44ab6bca2391",
+        "documentation": "0d5a3a7ad8b307d5ae4c0e7aa3cdd7b6f89570d0a585092fd3ca82f2811381f7",
         "openapi": "d7571194d848b19a5a21343c682e5bb659a2e1c2da7e465ac5a5b3eb09deb58d",
         "operational_health": "01b23d662db23560f4d2ac95f196c59bb4f6fad2ec0cbd0dc75a9c801bf4a76c"
       },
@@ -119254,5 +119254,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "a9b691f603bf06d3be47da4ae593074bda16ab9bb7226cea7d49a83a29404666"
+  "source_fingerprint": "730587b8aaeb8574f260d7cd59aa3b59a91d27827699338bc7560e3279f55887"
 }

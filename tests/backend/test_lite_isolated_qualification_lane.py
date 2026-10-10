@@ -224,6 +224,17 @@ def test_android_ssh_input_does_not_duplicate_stdin(monkeypatch):
     assert captured["stdin"] is None
 
 
+def test_android_cleanup_unlocks_read_only_roots_and_avoids_unstarted_pm2():
+    spec = importlib.util.spec_from_file_location("isolated_android_cleanup_test", CONTROLLER)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    import sys
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    assert "path.chmod(0o600)" in module._ANDROID_REMOVE_ROOT_CODE
+    assert "self.secondary_env_path and self.supervisor_started" in CONTROLLER.read_text(encoding="utf-8")
+
+
 def test_qualification_rclone_accepts_candidate_flag_surface():
     spec = importlib.util.spec_from_file_location("qualification_rclone_test", RCLONE)
     assert spec and spec.loader
