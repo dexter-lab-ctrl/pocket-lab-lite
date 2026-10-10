@@ -4358,9 +4358,14 @@ class AndroidQualificationRun(QualificationRun):
         })
 
     def _arm_webdav_partial(self) -> None:
+        # The physical lane uses the installed Android rclone client, whose
+        # bounded low-level retries can transparently replace one truncated
+        # PUT. Keep the fault active across those retries so the first backup
+        # must expose an incomplete staging object; the following retry then
+        # runs without an armed fault.
         status, _ = self._fixture_request(
             "POST", "/__qualification__/fault", control=True,
-            payload={"operation": "PUT", "partial": True, "remaining": 1},
+            payload={"operation": "PUT", "partial": True, "remaining": 8},
         )
         if status != 200:
             raise QualificationError("partial WebDAV fault injection was rejected")
