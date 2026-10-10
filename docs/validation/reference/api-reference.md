@@ -30,6 +30,7 @@ Pydantic models.
 | DELETE /api/lite/harness/session/{session_id} | Revoke a session | direct loopback; session header for the same session | path/session header; returns bounded revocation result |
 | POST /api/lite/harness/recovery/authorize | Issue a one-use receipt for the offline main-database handoff | direct loopback; recovery session with exact target main/schema binding and `recovery.authorize` capability | body `backup_id`, `preview_id`, `target_schema`, `confirm`; returns bounded receipt metadata while the opaque token is written only to a private client file |
 | POST /api/lite/harness/browser/bridge | Create a short-lived browser projection for UI qualification | direct loopback; authenticated `qualification-owner` session with `qualification.browser_bridge` capability; never a browser authority source | no body; returns process-only bridge metadata/token to the runner; browser receives only the bounded bridge header |
+| POST /api/lite/harness/qualification/enroll | Enroll a synthetic candidate device through the isolated qualification lane | direct loopback; explicitly enabled isolated qualification context with a scoped qualification-owner session | body candidate device identity and synthetic enrollment proof; returns sanitized enrollment metadata and never a production credential |
 
 The legacy manual registration path is retained for compatibility. The
 operator-approved key-bound bootstrap is the preferred automated qualification

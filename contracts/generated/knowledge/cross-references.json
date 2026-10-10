@@ -1483,6 +1483,12 @@
           "type": "owns"
         }
       ],
+      "api:post:/api/lite/harness/qualification/enroll": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
       "api:post:/api/lite/harness/recovery/authorize": [
         {
           "source": "domain:harness",
@@ -4680,6 +4686,18 @@
       "reason:qualification_authentication_required": [
         {
           "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "reason:qualification_enrollment_invalid": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:qualification_enrollment_unavailable": [
+        {
+          "source": "domain:validation",
           "type": "owns"
         }
       ],
@@ -9183,6 +9201,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:qualification_enrollment_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:qualification_enrollment_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:queue_full",
           "type": "verified_by"
         },
@@ -10205,6 +10231,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/harness/qualification/enroll",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/harness/recovery/authorize",
           "type": "verified_by"
         },
@@ -11006,6 +11036,12 @@
       "test:tests/backend/test_lite_idle_efficiency_runtime.py": [
         {
           "source": "reason:shutdown",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_isolated_qualification_lane.py": [
+        {
+          "source": "reason:disabled",
           "type": "verified_by"
         }
       ],
@@ -14429,6 +14465,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:qualification_enrollment_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:qualification_enrollment_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:queue_full",
           "type": "verified_by"
         },
@@ -15596,6 +15640,14 @@
         },
         {
           "source": "reason:qualification_authentication_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:qualification_enrollment_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:qualification_enrollment_unavailable",
           "type": "verified_by"
         },
         {
@@ -16796,6 +16848,10 @@
         },
         {
           "source": "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/qualification/enroll",
           "type": "verified_by"
         },
         {
@@ -19762,6 +19818,16 @@
         }
       ],
       "api:post:/api/lite/harness/principals/{principal_id}/revoke": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/harness/qualification/enroll": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -25441,6 +25507,10 @@
           "type": "owns"
         },
         {
+          "target": "api:post:/api/lite/harness/qualification/enroll",
+          "type": "owns"
+        },
+        {
           "target": "api:post:/api/lite/harness/recovery/authorize",
           "type": "owns"
         },
@@ -28127,6 +28197,14 @@
           "type": "owns"
         },
         {
+          "target": "reason:qualification_enrollment_invalid",
+          "type": "owns"
+        },
+        {
+          "target": "reason:qualification_enrollment_unavailable",
+          "type": "owns"
+        },
+        {
           "target": "reason:registered_tool_result_missing",
           "type": "owns"
         },
@@ -30412,6 +30490,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_isolated_qualification_lane.py",
           "type": "verified_by"
         },
         {
@@ -32995,6 +33077,34 @@
           "type": "verified_by"
         }
       ],
+      "reason:qualification_enrollment_invalid": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:qualification_enrollment_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:queue_full": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -34491,6 +34601,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "f01a28305a36878a57be78c2b8431b3c3a593de180d65c93caef7d08b3113112"
+    "source_fingerprint": "126390d29cf3124050d15c65071faa05e2cb6a1a382be00649a974a84f01a33e"
   }
 }

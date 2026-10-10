@@ -5092,6 +5092,29 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Qualification Enroll",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/qualification/enroll",
+      "method": "POST",
+      "name": "POST /api/lite/harness/qualification/enroll",
+      "operation_id": "qualification_enroll_api_lite_harness_qualification_enroll_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/harness/qualification/enroll",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-harness"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Recovery Authorize",
       "domain": "harness",
       "id": "api:post:/api/lite/harness/recovery/authorize",
@@ -6895,6 +6918,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "f01a28305a36878a57be78c2b8431b3c3a593de180d65c93caef7d08b3113112"
+    "source_fingerprint": "126390d29cf3124050d15c65071faa05e2cb6a1a382be00649a974a84f01a33e"
   }
 }

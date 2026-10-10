@@ -5290,6 +5290,29 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Qualification Enroll",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/qualification/enroll",
+      "method": "POST",
+      "name": "POST /api/lite/harness/qualification/enroll",
+      "operation_id": "qualification_enroll_api_lite_harness_qualification_enroll_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/harness/qualification/enroll",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-harness"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Recovery Authorize",
       "domain": "harness",
       "id": "api:post:/api/lite/harness/recovery/authorize",
@@ -17882,6 +17905,46 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The isolated qualification enrollment request did not satisfy the server-owned synthetic-device or qualification-context contract.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 422,
+      "id": "reason:qualification_enrollment_invalid",
+      "name": "qualification_enrollment_invalid",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The isolated qualification device could not be enrolled."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The isolated qualification context could not issue its bounded synthetic bootstrap token.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:qualification_enrollment_unavailable",
+      "name": "qualification_enrollment_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The isolated qualification enrollment service is unavailable."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The bounded queue cannot accept more work.",
       "domain": "projections",
       "event_mapping": [],
@@ -20612,7 +20675,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:878",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:72",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1653",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1004"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1012"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21072,7 +21135,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1673",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:36"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:42"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21092,7 +21155,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1674",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:37"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:43"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21112,7 +21175,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1672",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:35"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:41"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21242,7 +21305,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3047",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3081",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1404",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605"
       ],
@@ -21329,7 +21392,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1685"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1766"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22084,7 +22147,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3060"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3094"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22104,8 +22167,8 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:449",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:778",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:800"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:786",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:808"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22168,7 +22231,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1656"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1737"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22251,7 +22314,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:448",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:976"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:984"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22275,7 +22338,7 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:278",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:447",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1010",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1018",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:471"
       ],
       "stream": "incomplete",
@@ -22295,7 +22358,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:662"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:670"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22335,8 +22398,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1017",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1684",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1098",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1765",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:754"
       ],
       "stream": "incomplete",
@@ -22552,7 +22615,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:361"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:469"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -28031,6 +28094,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_isolated_qualification_lane.py",
+      "name": "tests/backend/test_lite_isolated_qualification_lane.py",
+      "source_refs": [
+        "tests/backend/test_lite_isolated_qualification_lane.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_long_gate_android_resume.py",
       "name": "tests/backend/test_lite_long_gate_android_resume.py",
       "source_refs": [
@@ -32308,6 +32381,7 @@
         "api:post:/api/lite/harness/principal/revoke",
         "api:post:/api/lite/harness/principals",
         "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+        "api:post:/api/lite/harness/qualification/enroll",
         "api:post:/api/lite/harness/recovery/authorize",
         "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
         "api:post:/api/lite/harness/security-assurance/policy-sync",
@@ -33010,6 +33084,7 @@
         "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
         "test:tests/backend/test_lite_identity_rules_ui_projection.py",
         "test:tests/backend/test_lite_idle_efficiency_runtime.py",
+        "test:tests/backend/test_lite_isolated_qualification_lane.py",
         "test:tests/backend/test_lite_long_gate_android_resume.py",
         "test:tests/backend/test_lite_long_gate_checkpointing.py",
         "test:tests/backend/test_lite_long_gate_framework.py",
@@ -33270,6 +33345,8 @@
         "reason:policy_probe_failed",
         "reason:preflight_exception",
         "reason:process_start_failed",
+        "reason:qualification_enrollment_invalid",
+        "reason:qualification_enrollment_unavailable",
         "reason:registered_tool_result_missing",
         "reason:report_write_failed",
         "reason:restore_not_attempted",
@@ -33537,6 +33614,7 @@
         "api:post:/api/lite/harness/principal/revoke",
         "api:post:/api/lite/harness/principals",
         "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+        "api:post:/api/lite/harness/qualification/enroll",
         "api:post:/api/lite/harness/recovery/authorize",
         "api:post:/api/lite/harness/security-assurance/faults/{fault_id}",
         "api:post:/api/lite/harness/security-assurance/policy-sync",
@@ -33984,6 +34062,8 @@
         "reason:projection_unavailable",
         "reason:protected_server_host",
         "reason:qualification_authentication_required",
+        "reason:qualification_enrollment_invalid",
+        "reason:qualification_enrollment_unavailable",
         "reason:queue_full",
         "reason:read_degraded",
         "reason:registered_tool_result_missing",
@@ -34445,6 +34525,7 @@
         "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
         "test:tests/backend/test_lite_identity_rules_ui_projection.py",
         "test:tests/backend/test_lite_idle_efficiency_runtime.py",
+        "test:tests/backend/test_lite_isolated_qualification_lane.py",
         "test:tests/backend/test_lite_long_gate_android_resume.py",
         "test:tests/backend/test_lite_long_gate_checkpointing.py",
         "test:tests/backend/test_lite_long_gate_framework.py",
@@ -36228,6 +36309,12 @@
         }
       ],
       "api:post:/api/lite/harness/principals/{principal_id}/revoke": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/harness/qualification/enroll": [
         {
           "source": "domain:harness",
           "type": "owns"
@@ -39430,6 +39517,18 @@
       "reason:qualification_authentication_required": [
         {
           "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "reason:qualification_enrollment_invalid": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:qualification_enrollment_unavailable": [
+        {
+          "source": "domain:validation",
           "type": "owns"
         }
       ],
@@ -43933,6 +44032,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:qualification_enrollment_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:qualification_enrollment_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:queue_full",
           "type": "verified_by"
         },
@@ -44955,6 +45062,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/harness/qualification/enroll",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/harness/recovery/authorize",
           "type": "verified_by"
         },
@@ -45756,6 +45867,12 @@
       "test:tests/backend/test_lite_idle_efficiency_runtime.py": [
         {
           "source": "reason:shutdown",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_isolated_qualification_lane.py": [
+        {
+          "source": "reason:disabled",
           "type": "verified_by"
         }
       ],
@@ -49179,6 +49296,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:qualification_enrollment_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:qualification_enrollment_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:queue_full",
           "type": "verified_by"
         },
@@ -50346,6 +50471,14 @@
         },
         {
           "source": "reason:qualification_authentication_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:qualification_enrollment_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:qualification_enrollment_unavailable",
           "type": "verified_by"
         },
         {
@@ -51546,6 +51679,10 @@
         },
         {
           "source": "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/qualification/enroll",
           "type": "verified_by"
         },
         {
@@ -54512,6 +54649,16 @@
         }
       ],
       "api:post:/api/lite/harness/principals/{principal_id}/revoke": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/harness/qualification/enroll": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -60191,6 +60338,10 @@
           "type": "owns"
         },
         {
+          "target": "api:post:/api/lite/harness/qualification/enroll",
+          "type": "owns"
+        },
+        {
           "target": "api:post:/api/lite/harness/recovery/authorize",
           "type": "owns"
         },
@@ -62877,6 +63028,14 @@
           "type": "owns"
         },
         {
+          "target": "reason:qualification_enrollment_invalid",
+          "type": "owns"
+        },
+        {
+          "target": "reason:qualification_enrollment_unavailable",
+          "type": "owns"
+        },
+        {
           "target": "reason:registered_tool_result_missing",
           "type": "owns"
         },
@@ -65162,6 +65321,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_identity_rules_enterprise_governance.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_isolated_qualification_lane.py",
           "type": "verified_by"
         },
         {
@@ -67745,6 +67908,34 @@
           "type": "verified_by"
         }
       ],
+      "reason:qualification_enrollment_invalid": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:qualification_enrollment_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:queue_full": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -69321,6 +69512,15 @@
       "source": "domain:identity",
       "target": "reason:webauthn_rp_id_mismatch",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:00bc10e7fe1d8132",
+      "source": "api:post:/api/lite/harness/qualification/enroll",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -71030,6 +71230,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:0d2be47d188f1e94",
+      "source": "api:post:/api/lite/harness/qualification/enroll",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1003"
       ],
       "id": "rel:0d2d2474dfc99fcd",
@@ -71516,6 +71725,15 @@
       "id": "rel:10a9c148ecb6951e",
       "source": "requirement:architecture-09",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_isolated_qualification_lane.py"
+      ],
+      "id": "rel:10af4484ddc26564",
+      "source": "reason:disabled",
+      "target": "test:tests/backend/test_lite_isolated_qualification_lane.py",
       "type": "verified_by"
     },
     {
@@ -79800,6 +80018,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:49329090b74d6a55",
+      "source": "domain:harness",
+      "target": "api:post:/api/lite/harness/qualification/enroll",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:493ec9dfc6680985",
@@ -80579,7 +80806,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:361"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:469"
       ],
       "id": "rel:4eb33eb8264509ea",
       "source": "component:agent-supervisor",
@@ -87305,7 +87532,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:361"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:469"
       ],
       "id": "rel:80315fb6ef5d20bf",
       "source": "component:agent-recovery",
@@ -90857,6 +91084,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:9c25ed1ea882b51a",
+      "source": "reason:qualification_enrollment_unavailable",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:9c3b2842dea4c547",
@@ -92464,6 +92700,15 @@
       ],
       "id": "rel:a7d1c8c9444c412b",
       "source": "reason:webauthn_credential_mismatch",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:a7d77df1f00e53a3",
+      "source": "reason:qualification_enrollment_unavailable",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
@@ -98036,6 +98281,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:d1c416a36f9b5c5b",
+      "source": "reason:qualification_enrollment_unavailable",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:d1e3249ee084fe2a",
@@ -100205,6 +100459,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:e13d4c3b203ec72a",
+      "source": "reason:qualification_enrollment_invalid",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:e17173f04a2fb5ba",
@@ -100838,6 +101101,15 @@
       "source": "domain:validation",
       "target": "reason:fault_recovery_timeout",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:e5d17111a2c53ca6",
+      "source": "reason:qualification_enrollment_invalid",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -101562,6 +101834,15 @@
       "source": "reason:battery_policy_threshold",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:eb378b73c6c9f7b6",
+      "source": "domain:validation",
+      "target": "reason:qualification_enrollment_invalid",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -104021,6 +104302,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:fc61970a1121fd82",
+      "source": "domain:validation",
+      "target": "reason:qualification_enrollment_unavailable",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:fc67fe20c6baef6e",
@@ -104354,6 +104644,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:ffcfa9195d318ac0",
+      "source": "reason:qualification_enrollment_invalid",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:ffd552f3c1382f15",
@@ -104363,33 +104662,33 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "f01a28305a36878a57be78c2b8431b3c3a593de180d65c93caef7d08b3113112",
+  "source_fingerprint": "126390d29cf3124050d15c65071faa05e2cb6a1a382be00649a974a84f01a33e",
   "statistics": {
-    "entity_count": 1354,
+    "entity_count": 1358,
     "entity_type_counts": {
       "adr": 6,
-      "api": 228,
+      "api": 229,
       "capability": 5,
       "component": 58,
       "domain": 49,
       "glossary": 16,
       "journey": 24,
       "limitation": 18,
-      "reason-code": 272,
+      "reason-code": 274,
       "release": 3,
       "requirement": 10,
       "runbook": 5,
       "runtime-topology": 9,
       "subject": 220,
       "table": 81,
-      "test": 256,
+      "test": 257,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3872,
-    "source_count": 293
+    "relation_count": 3884,
+    "source_count": 294
   }
 }

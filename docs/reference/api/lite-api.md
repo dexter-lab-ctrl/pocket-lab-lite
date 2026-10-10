@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 6aab4a5a1887126ed956a6c94a3da936810732d91bcc0997b48c95103141e9aa
+source_fingerprint: 3049db02abb6414de3d34771f8c7a94cc287872405eccd8918e30550d865506b
 schema_revision: 1
 validation_status: generated
 ---
@@ -2373,6 +2373,29 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-harness-qualification-enroll"></a>
+## POST `/api/lite/harness/qualification/enroll`
+
+- Operation ID: `qualification_enroll_api_lite_harness_qualification_enroll_post`
+- Summary: Qualification Enroll
+- Deprecated: no
+- Tags: `lite-harness`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `QualificationEnrollmentRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 201 | Successful Response | application/json: `object` |
 | 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |

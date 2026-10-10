@@ -4320,6 +4320,46 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The isolated qualification enrollment request did not satisfy the server-owned synthetic-device or qualification-context contract.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 422,
+      "id": "reason:qualification_enrollment_invalid",
+      "name": "qualification_enrollment_invalid",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The isolated qualification device could not be enrolled."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The isolated qualification context could not issue its bounded synthetic bootstrap token.",
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:qualification_enrollment_unavailable",
+      "name": "qualification_enrollment_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The isolated qualification enrollment service is unavailable."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The bounded queue cannot accept more work.",
       "domain": "projections",
       "event_mapping": [],
@@ -5581,6 +5621,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "f01a28305a36878a57be78c2b8431b3c3a593de180d65c93caef7d08b3113112"
+    "source_fingerprint": "126390d29cf3124050d15c65071faa05e2cb6a1a382be00649a974a84f01a33e"
   }
 }

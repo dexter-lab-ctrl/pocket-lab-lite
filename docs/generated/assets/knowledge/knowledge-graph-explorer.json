@@ -2004,6 +2004,17 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Qualification Enroll",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/qualification/enroll",
+      "name": "POST /api/lite/harness/qualification/enroll",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Recovery Authorize",
       "domain": "harness",
       "id": "api:post:/api/lite/harness/recovery/authorize",
@@ -7253,6 +7264,30 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The isolated qualification enrollment request did not satisfy the server-owned synthetic-device or qualification-context contract.",
+      "domain": "validation",
+      "id": "reason:qualification_enrollment_invalid",
+      "name": "qualification_enrollment_invalid",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The isolated qualification context could not issue its bounded synthetic bootstrap token.",
+      "domain": "validation",
+      "id": "reason:qualification_enrollment_unavailable",
+      "name": "qualification_enrollment_unavailable",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
       "description": "The bounded queue cannot accept more work.",
       "domain": "projections",
       "id": "reason:queue_full",
@@ -8430,7 +8465,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:878",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:72",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1653",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1004"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1012"
       ],
       "type": "subject"
     },
@@ -8725,7 +8760,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1673",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:36"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:42"
       ],
       "type": "subject"
     },
@@ -8738,7 +8773,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1674",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:37"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:43"
       ],
       "type": "subject"
     },
@@ -8751,7 +8786,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1672",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:35"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:41"
       ],
       "type": "subject"
     },
@@ -8832,7 +8867,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3047",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3081",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1404",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605"
       ],
@@ -8883,7 +8918,7 @@
       "name": "pocketlab.commands.node.{node_id}",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1685"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1766"
       ],
       "type": "subject"
     },
@@ -9337,7 +9372,7 @@
       "name": "pocketlab.events.fleet",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3060"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3094"
       ],
       "type": "subject"
     },
@@ -9350,8 +9385,8 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:449",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:778",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:800"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:786",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:808"
       ],
       "type": "subject"
     },
@@ -9387,7 +9422,7 @@
       "name": "pocketlab.events.fleet.device_removed",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1656"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1737"
       ],
       "type": "subject"
     },
@@ -9436,7 +9471,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:448",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:976"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:984"
       ],
       "type": "subject"
     },
@@ -9450,7 +9485,7 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:278",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:447",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1010",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1018",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:471"
       ],
       "type": "subject"
@@ -9463,7 +9498,7 @@
       "name": "pocketlab.events.fleet.invite_revoked",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:662"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:670"
       ],
       "type": "subject"
     },
@@ -9487,8 +9522,8 @@
       "name": "pocketlab.events.fleet.node_",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1017",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1684",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1098",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1765",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:754"
       ],
       "type": "subject"
@@ -9614,7 +9649,7 @@
       "name": "pocketlab.events.fleet.node_supervisor",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:361"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:469"
       ],
       "type": "subject"
     },
@@ -12723,6 +12758,17 @@
       "name": "tests/backend/test_lite_idle_efficiency_runtime.py",
       "source_refs": [
         "tests/backend/test_lite_idle_efficiency_runtime.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_isolated_qualification_lane.py",
+      "name": "tests/backend/test_lite_isolated_qualification_lane.py",
+      "source_refs": [
+        "tests/backend/test_lite_isolated_qualification_lane.py"
       ],
       "type": "test"
     },
@@ -16008,6 +16054,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:00bc10e7fe1d8132",
+      "source": "api:post:/api/lite/harness/qualification/enroll",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_documentation_presentation_polish.py"
       ],
       "id": "rel:00c8713f503a3ec0",
@@ -18659,6 +18719,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:0d2be47d188f1e94",
+      "source": "api:post:/api/lite/harness/qualification/enroll",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1003"
       ],
       "id": "rel:0d2d2474dfc99fcd",
@@ -19410,6 +19484,20 @@
       "id": "rel:10a9c148ecb6951e",
       "source": "requirement:architecture-09",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_isolated_qualification_lane.py"
+      ],
+      "id": "rel:10af4484ddc26564",
+      "source": "reason:disabled",
+      "target": "test:tests/backend/test_lite_isolated_qualification_lane.py",
       "type": "verified_by"
     },
     {
@@ -32259,6 +32347,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:49329090b74d6a55",
+      "source": "domain:harness",
+      "target": "api:post:/api/lite/harness/qualification/enroll",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:493ec9dfc6680985",
@@ -33468,7 +33570,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:361"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:469"
       ],
       "id": "rel:4eb33eb8264509ea",
       "source": "component:agent-supervisor",
@@ -43909,7 +44011,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:361"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:469"
       ],
       "id": "rel:80315fb6ef5d20bf",
       "source": "component:agent-recovery",
@@ -49416,6 +49518,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:9c25ed1ea882b51a",
+      "source": "reason:qualification_enrollment_unavailable",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:9c3b2842dea4c547",
@@ -51908,6 +52024,20 @@
       ],
       "id": "rel:a7d1c8c9444c412b",
       "source": "reason:webauthn_credential_mismatch",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:a7d77df1f00e53a3",
+      "source": "reason:qualification_enrollment_unavailable",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
@@ -60555,6 +60685,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:d1c416a36f9b5c5b",
+      "source": "reason:qualification_enrollment_unavailable",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:d1e3249ee084fe2a",
@@ -63919,6 +64063,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:e13d4c3b203ec72a",
+      "source": "reason:qualification_enrollment_invalid",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:e17173f04a2fb5ba",
@@ -64897,6 +65055,20 @@
       "source": "domain:validation",
       "target": "reason:fault_recovery_timeout",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:e5d17111a2c53ca6",
+      "source": "reason:qualification_enrollment_invalid",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -66016,6 +66188,20 @@
       "source": "reason:battery_policy_threshold",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:eb378b73c6c9f7b6",
+      "source": "domain:validation",
+      "target": "reason:qualification_enrollment_invalid",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -69830,6 +70016,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:fc61970a1121fd82",
+      "source": "domain:validation",
+      "target": "reason:qualification_enrollment_unavailable",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:fc67fe20c6baef6e",
@@ -70340,6 +70540,20 @@
       "source": "domain:apps",
       "target": "reason:credential_revocation_pending",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:ffcfa9195d318ac0",
+      "source": "reason:qualification_enrollment_invalid",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "derivation": {

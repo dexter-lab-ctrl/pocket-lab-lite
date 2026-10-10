@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 from ..services import lite_harness
+from ..services import lite_invites, qualification_context
 
 router = APIRouter(prefix="/api/lite/harness", tags=["lite-harness"])
 
@@ -83,6 +84,13 @@ class BootstrapCompleteRequest(BaseModel):
     ttl_seconds: int | None = Field(default=None, ge=60, le=3600)
 
 
+class QualificationEnrollmentRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    node_id: str = Field(min_length=3, max_length=128, pattern=r"^[A-Za-z0-9][A-Za-z0-9._:-]{2,127}$")
+    device_roles: list[str] = Field(min_length=1, max_length=2)
+
+
 def _require_direct(request: Request) -> None:
     if not lite_harness.is_direct_local_request(request):
         raise HTTPException(
@@ -116,6 +124,61 @@ def _raise(exc: lite_harness.HarnessError) -> None:
 
 def _no_store(response: Response) -> None:
     response.headers["Cache-Control"] = "no-store"
+
+
+@router.post("/qualification/enroll", status_code=201)
+async def qualification_enroll(
+    payload: QualificationEnrollmentRequest,
+    request: Request,
+    response: Response,
+) -> dict[str, Any]:
+    """Enroll one synthetic device through the normal invite/bootstrap path.
+
+    This bridge is unavailable outside the isolated qualification context and
+    is bound to the single fleet-role harness target.  The raw invite token is
+    returned only to the direct-loopback controller so it can exercise the
+    existing bootstrap endpoint; it is never written to evidence or state.
+    """
+    _require_direct(request)
+    try:
+        auth = lite_harness.authenticate_request(request)
+        lite_harness.enforce_capability(
+            auth,
+            action_id="qualification.device.enroll",
+            target_type="device",
+            target_id=payload.node_id,
+        )
+        qualification_context.assert_safe()
+        result = lite_invites.create_lite_invite(
+            hostname=payload.node_id,
+            device_roles=payload.device_roles,
+            authorization=auth,
+            return_qualification_token=True,
+        )
+        await lite_invites.publish_invite_evidence(result)
+        token = str(result.get("qualification_token") or "")
+        if not token:
+            raise lite_harness.HarnessError(
+                "qualification_enrollment_unavailable",
+                "The isolated qualification invite did not produce a bounded bootstrap token.",
+                status_code=503,
+            )
+        _no_store(response)
+        return {
+            "status": "enrollment_ready",
+            "node_id": payload.node_id,
+            "device_roles": [str(item)[:32] for item in (result.get("invite") or {}).get("device_roles") or []],
+            "qualification_token": token,
+            "sanitized": True,
+        }
+    except lite_harness.HarnessError as exc:
+        _raise(exc)
+    except (ValueError, RuntimeError) as exc:
+        raise HTTPException(
+            status_code=422,
+            headers={"Cache-Control": "no-store"},
+            detail={"reason_code": "qualification_enrollment_invalid", "message": str(exc)[:240], "sanitized": True},
+        ) from exc
 
 
 @router.post("/bootstrap/grants", status_code=201)

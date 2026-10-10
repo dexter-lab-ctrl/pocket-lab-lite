@@ -10,7 +10,7 @@ from .. import deps
 from ..services.action_queue import submit_domain_command
 from ..services.live_status import LIVE_STATUS
 from ..services.nats_bus import BUS
-from ..services import fleet_registry, lite_catalog, lite_invites, lite_photo_backup, lite_policy_opa
+from ..services import fleet_registry, lite_catalog, lite_invites, lite_photo_backup, lite_policy_opa, qualification_context
 
 router = APIRouter(tags=["fleet"])
 
@@ -969,6 +969,18 @@ def lite_fleet_agent_bootstrap_env(payload: dict | None = None, request: Request
     agent_token = cfg["agent_token"]
     agent_token_hash = cfg["agent_token_hash"]
 
+    # A valid invite is the only authority that permits this one-time
+    # server-issued agent credential rotation.  This is intentionally a local
+    # registry transition, not an event-driven identity override.
+    try:
+        fleet_registry.rotate_pending_agent_token_hash(node_id, agent_token_hash)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=409,
+            headers={"Cache-Control": "no-store"},
+            detail={"reason_code": str(exc)[:80], "message": "The pending device identity could not be bound safely.", "sanitized": True},
+        ) from None
+
     internal_nats_url = cfg.get("nats_url") or os.environ.get("POCKETLAB_NATS_URL", "nats://127.0.0.1:4222")
     nats_url = _public_nats_url_for_invite(request, internal_nats_url)
     nats_user = os.environ.get(
@@ -998,8 +1010,15 @@ def lite_fleet_agent_bootstrap_env(payload: dict | None = None, request: Request
     )
 
     request_base = str(request.base_url).rstrip("/") if request is not None else ""
-    secure_origin = str(lite_catalog.access_status(request).get("secure_origin") or "").rstrip("/")
-    control_origin = secure_origin if secure_origin.startswith("https://") else request_base
+    if qualification_context.enabled():
+        # The isolated fixture and candidate API intentionally have different
+        # loopback ports.  Production uses one same-origin Caddy endpoint,
+        # but a qualification bootstrap must bind the agent to the API port,
+        # never to the synthetic WebDAV destination.
+        control_origin = qualification_context.control_origin()
+    else:
+        secure_origin = str(lite_catalog.access_status(request).get("secure_origin") or "").rstrip("/")
+        control_origin = secure_origin if secure_origin.startswith("https://") else request_base
     env_lines = [
         f"export POCKETLAB_NODE_ROLES={json.dumps(','.join(device_roles))}",
         f"export POCKETLAB_NODE_ROLE={json.dumps(role)}",

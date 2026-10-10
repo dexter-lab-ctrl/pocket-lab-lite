@@ -3196,6 +3196,7 @@
       "/api/lite/harness/principals",
       "/api/lite/harness/principals/{principal_id}",
       "/api/lite/harness/principals/{principal_id}/revoke",
+      "/api/lite/harness/qualification/enroll",
       "/api/lite/harness/recovery/authorize",
       "/api/lite/harness/security-assurance/capabilities",
       "/api/lite/harness/security-assurance/faults",
@@ -3265,7 +3266,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "41a0e080cfad82545890e9453794cc5a8a61c2b85bb9df34269b8eb9b724d430",
+    "aggregate_fingerprint": "ebf2ef5c51c6a20562cf5b8fabc94081a51138e040015439c6eaf09178d4f77a",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3275,8 +3276,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "324a72a7a5b784ff42518e96913f9a96fd4f8f59e84e3095c23259652cf51769",
-      "contracts/metadata/documentation-platform.json": "e9cf8fe1dc439b827595e853f9907804e79b7787446b56af98128fbc541d34e2",
+      "contracts/generated/lite-openapi.json": "d7571194d848b19a5a21343c682e5bb659a2e1c2da7e465ac5a5b3eb09deb58d",
+      "contracts/metadata/documentation-platform.json": "453f7fbc885f8dc67965a1004276152c8013c7aadfaa395b896091b740810f7d",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4",
       "src/lib/liteApi.js": "f1b52dcdcfd481345813641edc286ff5f236aaaa2761c42abf715f5676bdf871",

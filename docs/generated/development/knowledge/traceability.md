@@ -189,6 +189,7 @@ generator_version: 3
 | POST /api/lite/harness/principal/revoke | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/harness/principals | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/harness/principals/{principal_id}/revoke | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/harness/qualification/enroll | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/harness/recovery/authorize | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/harness/security-assurance/faults/{fault_id} | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/harness/security-assurance/policy-sync | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |

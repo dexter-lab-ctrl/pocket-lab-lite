@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import contextlib
 import json
+import importlib.util
 import os
 import re
 import shutil
@@ -185,8 +186,6 @@ def _isolated_environment(root: Path, run_id: str, api_port: int) -> dict[str, s
             "POCKETLAB_NODE_ID": node_id,
             "POCKETLAB_NODE_NAME": node_id,
             "POCKETLAB_NODE_ROLE": "compute",
-            "POCKETLAB_QUALIFICATION_RUN_ID": run_id,
-            "POCKETLAB_QUALIFICATION_CANDIDATE_SHA": "",
             "PYTHONDONTWRITEBYTECODE": "1",
             "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
         }
@@ -393,7 +392,6 @@ def run(candidate_sha: str | None, *, test_timeout: float) -> dict[str, object]:
     with tempfile.TemporaryDirectory(prefix="pocketlab-photo-backup-candidate-") as temporary:
         root = Path(temporary)
         env = _isolated_environment(root, run_id, api_port)
-        env["POCKETLAB_QUALIFICATION_CANDIDATE_SHA"] = selected_sha
         _assert_isolated_environment(env, root, run_id)
         worktree = _prepare_worktree(root, selected_sha)
         try:
@@ -431,9 +429,31 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candidate-sha", default="", help="full commit SHA; defaults to the clean current HEAD")
     parser.add_argument("--test-timeout-seconds", type=float, default=900.0)
+    parser.add_argument("--nats-server-bin", default="", help="explicit approved nats-server executable for the full lane")
+    parser.add_argument("--opa-bin", default="", help="explicit approved OPA executable for the full lane")
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="compose the disposable API-only lane with the full isolated NATS/WebDAV/agent lane",
+    )
     args = parser.parse_args(argv)
     if args.test_timeout_seconds < 30 or args.test_timeout_seconds > 3600:
         parser.error("--test-timeout-seconds must be between 30 and 3600")
+    if args.full:
+        module_path = SCRIPT_DIR / "run-isolated-runtime-qualification.py"
+        spec = importlib.util.spec_from_file_location("isolated_runtime_qualification", module_path)
+        if spec is None or spec.loader is None:
+            print(json.dumps({"status": "FAIL", "reason": "full qualification controller unavailable", "sanitized": True}, sort_keys=True))
+            return 1
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
+        spec.loader.exec_module(module)
+        forwarded = ["--candidate-sha", args.candidate_sha or _current_candidate_sha(), "--python", sys.executable]
+        if args.nats_server_bin:
+            forwarded.extend(["--nats-server-bin", args.nats_server_bin])
+        if args.opa_bin:
+            forwarded.extend(["--opa-bin", args.opa_bin])
+        return int(module.main(forwarded))
     try:
         result = run(args.candidate_sha or None, test_timeout=args.test_timeout_seconds)
     except (OSError, QualificationError, subprocess.SubprocessError) as exc:

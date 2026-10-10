@@ -201,6 +201,7 @@ nav:
       - Validation index: validation/README.md
       - Qualification & maintenance harness: validation/qualification-maintenance-harness.md
       - Runtime security assurance harness: validation/runtime-security-assurance-harness.md
+      - Isolated runtime qualification lane: validation/isolated-runtime-qualification-lane.md
       - Accessibility & visual gates: generated/development/accessibility-visual.md
       - Lite UX maturity contract: validation/lite-ux-maturity-contract.md
       - Backend-to-Frontend parity: generated/development/validation/parity/index.md

@@ -856,6 +856,7 @@ def _owner(path: str) -> str:
         "validation/README.md": "build-test",
         "validation/qualification-maintenance-harness.md": "build-test",
         "validation/runtime-security-assurance-harness.md": "build-test",
+        "validation/isolated-runtime-qualification-lane.md": "build-test",
         "validation/security-assurance/README.md": "security-assurance",
     }
     if path in exact:

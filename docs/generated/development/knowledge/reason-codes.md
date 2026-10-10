@@ -224,6 +224,8 @@ generator_version: 3
 | `projection_unavailable` | projections | The prepared projection is unavailable. | warning | yes | no | The prepared projection is unavailable. |
 | `protected_server_host` | devices | The protected server host cannot use this destructive action. | warning | no | no | The protected server host cannot use this destructive action. |
 | `qualification_authentication_required` | identity | A synthetic qualification principal was rejected because the explicit qualification environment, direct-local proof, or authentication guard was not satisfied. | warning | yes | no | Qualification authentication is unavailable. |
+| `qualification_enrollment_invalid` | validation | The isolated qualification enrollment request did not satisfy the server-owned synthetic-device or qualification-context contract. | warning | no | yes | The isolated qualification device could not be enrolled. |
+| `qualification_enrollment_unavailable` | validation | The isolated qualification context could not issue its bounded synthetic bootstrap token. | warning | yes | no | The isolated qualification enrollment service is unavailable. |
 | `queue_full` | projections | The bounded queue cannot accept more work. | warning | yes | no | The bounded queue cannot accept more work. |
 | `read_degraded` | system | A safe last-known read is shown while refresh is unavailable. | warning | yes | no | A safe last-known read is shown while refresh is unavailable. |
 | `registered_tool_result_missing` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | warning | yes | no | Runtime Security Assurance could not continue safely. |
