@@ -304,7 +304,17 @@ class LiteAgentSupervisor:
             env["POCKETLAB_SERVICE_VERSION"] = expected_version
             result = _run_pm2(
                 pm2,
-                ["start", python_exec, "--name", self.agent_process, "--update-env", "--", str(self.agent_file)],
+                [
+                    "start",
+                    python_exec,
+                    "--interpreter",
+                    "none",
+                    "--name",
+                    self.agent_process,
+                    "--update-env",
+                    "--",
+                    str(self.agent_file),
+                ],
                 env=env,
                 timeout=20,
             )
@@ -316,7 +326,17 @@ class LiteAgentSupervisor:
                 env["POCKETLAB_SERVICE_VERSION"] = expected_version
                 fallback = _run_pm2(
                     pm2,
-                    ["start", python_exec, "--name", self.agent_process, "--update-env", "--", str(self.agent_file)],
+                    [
+                        "start",
+                        python_exec,
+                        "--interpreter",
+                        "none",
+                        "--name",
+                        self.agent_process,
+                        "--update-env",
+                        "--",
+                        str(self.agent_file),
+                    ],
                     env=env,
                     timeout=20,
                 )
