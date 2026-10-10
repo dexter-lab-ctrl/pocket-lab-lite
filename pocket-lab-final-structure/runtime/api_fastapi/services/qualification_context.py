@@ -23,6 +23,18 @@ _RUN_ID_RE = re.compile(r"^[a-f0-9]{12,64}$")
 _SHA_RE = re.compile(r"^[a-f0-9]{40}$")
 _TOKEN_RE = re.compile(r"^[A-Za-z0-9_-]{32,256}$")
 _USER_RE = re.compile(r"^[A-Za-z0-9_.-]{1,64}$")
+_CONTEXT_BINDING_KEYS = (
+    "POCKETLAB_QUALIFICATION_CONTEXT",
+    "POCKETLAB_QUALIFICATION_RUN_ID",
+    "POCKETLAB_QUALIFICATION_CANDIDATE_SHA",
+    "POCKETLAB_QUALIFICATION_ALLOW_TEST_DESTINATION",
+    "POCKETLAB_QUALIFICATION_CONTEXT_TOKEN",
+    "POCKETLAB_QUALIFICATION_WEBDAV_PASSWORD",
+    "POCKETLAB_QUALIFICATION_ROOT",
+    "POCKETLAB_QUALIFICATION_DESTINATION_ROOT",
+    "POCKETLAB_QUALIFICATION_TEST_ORIGIN",
+    "POCKETLAB_QUALIFICATION_CONTROL_ORIGIN",
+)
 
 
 class QualificationContextError(RuntimeError):
@@ -65,7 +77,11 @@ def _resolved_without_symlink_escape(path: Path, root: Path) -> Path:
 
 def configured() -> bool:
     """Return true when any qualification binding was supplied."""
-    return any(name.startswith("POCKETLAB_QUALIFICATION_") for name in os.environ)
+    # POCKETLAB_QUALIFICATION_STATE_DIR and the qualification log/runner
+    # paths are also used by the existing lightweight security harness.  They
+    # are not destination-binding material and must not accidentally arm this
+    # context merely because that harness is running.
+    return any(name in os.environ for name in _CONTEXT_BINDING_KEYS)
 
 
 def enabled() -> bool:

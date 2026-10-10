@@ -49,6 +49,15 @@ def test_qualification_context_is_disabled_without_complete_binding(monkeypatch)
     assert context.enabled() is False
 
 
+def test_existing_qualification_harness_state_path_does_not_arm_destination_context(monkeypatch):
+    context = _context()
+    for name in tuple(os.environ):
+        if name.startswith("POCKETLAB_QUALIFICATION_"):
+            monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv("POCKETLAB_QUALIFICATION_STATE_DIR", "/run-owned/qualification-state")
+    assert context.enabled() is False
+
+
 def test_qualification_context_requires_loopback_https_and_private_destination(tmp_path, monkeypatch):
     context = _context()
     destination = _arm(monkeypatch, tmp_path)
