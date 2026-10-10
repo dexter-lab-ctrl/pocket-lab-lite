@@ -2585,6 +2585,12 @@ print(json.dumps({
     "architecture": os.uname().machine,
     "home": str(home),
     "prefix": str(os.environ.get("PREFIX") or ""),
+    "termux_exec_ld_preload": (
+        str(os.environ.get("LD_PRELOAD") or "")
+        if str(os.environ.get("LD_PRELOAD") or "").startswith(str(os.environ.get("PREFIX") or "") + "/")
+        and pathlib.Path(str(os.environ.get("LD_PRELOAD") or "")).is_file()
+        else ""
+    ),
     "home_class": "termux_private_home" if str(home).startswith("/data/data/com.termux/") else "unexpected",
     "prefix_class": "termux_prefix" if os.environ.get("PREFIX", "").startswith("/data/data/com.termux/") else "unexpected",
     "python": sys.executable,
@@ -3391,6 +3397,7 @@ class AndroidQualificationRun(QualificationRun):
                 or not home.startswith("/data/data/com.termux/")
                 or not prefix.startswith("/data/data/com.termux/")
                 or not python.startswith(prefix + "/")
+                or not str(baseline.get("termux_exec_ld_preload") or "").startswith(prefix + "/")
             ):
                 raise QualificationError(f"{host} failed the Termux ARM64 identity preflight")
             remotes.append(AndroidRemote(
@@ -3633,6 +3640,7 @@ class AndroidQualificationRun(QualificationRun):
             "PYTHONPATH": runtime,
             "PYTHONDONTWRITEBYTECODE": "1",
             "PREFIX": remote.prefix,
+            "LD_PRELOAD": str(remote.baseline.get("termux_exec_ld_preload") or ""),
             "LANG": "C.UTF-8",
             "LC_ALL": "C.UTF-8",
             "POCKETLAB_ENVIRONMENT": "qualification",

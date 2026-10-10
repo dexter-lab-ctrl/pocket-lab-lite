@@ -338,9 +338,11 @@ class LiteAgentSupervisor:
                 for value in (item.stderr, item.stdout)
                 if value
             )
-            for value in sorted(self.env_data.values(), key=lambda item: len(str(item)), reverse=True):
+            for key, value in self.env_data.items():
+                if not any(token in str(key).lower() for token in ("token", "password", "secret", "credential", "private", "provisioning")):
+                    continue
                 text = str(value or "")
-                if len(text) >= 12:
+                if len(text) >= 8:
                     output = output.replace(text, "[redacted]")
             self.last_repair_failure_detail = re.sub(r"\s+", " ", output)[:600] or "pm2_command_failed"
         return started

@@ -9649,7 +9649,7 @@
       "name": "pocketlab.events.fleet.node_supervisor",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:447"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:449"
       ],
       "type": "subject"
     },
@@ -33570,7 +33570,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:447"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:449"
       ],
       "id": "rel:4eb33eb8264509ea",
       "source": "component:agent-supervisor",
@@ -44011,7 +44011,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:447"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:449"
       ],
       "id": "rel:80315fb6ef5d20bf",
       "source": "component:agent-recovery",
