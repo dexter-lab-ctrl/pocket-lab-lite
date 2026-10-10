@@ -4402,9 +4402,9 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Commands:**
 
-- `{{.PYTHON}} scripts/dev/lite/run-photo-backup-candidate-qualification.py --full --candidate-sha "{{.CANDIDATE_SHA}}"`
+- `{{.PYTHON}} scripts/dev/lite/run-photo-backup-candidate-qualification.py --full --candidate-sha "{{.CANDIDATE_SHA}}" {{if .NATS_SERVER_BIN}}--nats-server-bin "{{.NATS_SERVER_BIN}}"{{end}} {{if .OPA_BIN}}--opa-bin "{{.OPA_BIN}}"{{end}}`
 
-**Environment:** None source-discovered
+**Environment:** NATS_SERVER_BIN
 
 **Inputs:** scripts/dev/lite/run-photo-backup-candidate-qualification.py
 

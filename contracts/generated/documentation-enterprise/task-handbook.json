@@ -5240,10 +5240,12 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
-        "{{.PYTHON}} scripts/dev/lite/run-photo-backup-candidate-qualification.py --full --candidate-sha \"{{.CANDIDATE_SHA}}\""
+        "{{.PYTHON}} scripts/dev/lite/run-photo-backup-candidate-qualification.py --full --candidate-sha \"{{.CANDIDATE_SHA}}\" {{if .NATS_SERVER_BIN}}--nats-server-bin \"{{.NATS_SERVER_BIN}}\"{{end}} {{if .OPA_BIN}}--opa-bin \"{{.OPA_BIN}}\"{{end}}"
       ],
       "dependencies": [],
-      "environment": [],
+      "environment": [
+        "NATS_SERVER_BIN"
+      ],
       "example_invocation": "task lite:photo-backup:candidate:full",
       "expected_runtime_class": "bounded",
       "failure_modes": [

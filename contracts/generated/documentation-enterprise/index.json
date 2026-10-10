@@ -6747,6 +6747,30 @@
         "affects_release": false,
         "affects_runtime": true,
         "default": "source-defined/unvalidated",
+        "name": "NATS_SERVER_BIN",
+        "owner": "repository tooling",
+        "purpose": "NATS/JetStream connection or runtime configuration",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "tasks/Taskfile.lite.yml",
+          "tests/backend/test_lite_isolated_qualification_lane.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
         "name": "NATS_SERVICE",
         "owner": "repository tooling",
         "purpose": "NATS/JetStream connection or runtime configuration",
@@ -48281,7 +48305,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "3c6b3a761ba2cedd8f4fdc52e268dc8e8f6fc84e8336be39f344e6cd3ba7c85e",
-        "documentation": "77bc1ebfb0753f53f3ab41ec6ec97b0477f72e8a3f7794c3d234d3d7be3fc356",
+        "documentation": "d5d9a5679664cad60d407ecd5674af4fd467bbd1b37ea375ccdd14bd9b314e1b",
         "openapi": "d7571194d848b19a5a21343c682e5bb659a2e1c2da7e465ac5a5b3eb09deb58d",
         "operational_health": "5d81d99e0059046b7255ead08bc3bb6059948b56347609aceac10200a803cec6"
       },
@@ -95774,10 +95798,12 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
-          "{{.PYTHON}} scripts/dev/lite/run-photo-backup-candidate-qualification.py --full --candidate-sha \"{{.CANDIDATE_SHA}}\""
+          "{{.PYTHON}} scripts/dev/lite/run-photo-backup-candidate-qualification.py --full --candidate-sha \"{{.CANDIDATE_SHA}}\" {{if .NATS_SERVER_BIN}}--nats-server-bin \"{{.NATS_SERVER_BIN}}\"{{end}} {{if .OPA_BIN}}--opa-bin \"{{.OPA_BIN}}\"{{end}}"
         ],
         "dependencies": [],
-        "environment": [],
+        "environment": [
+          "NATS_SERVER_BIN"
+        ],
         "example_invocation": "task lite:photo-backup:candidate:full",
         "expected_runtime_class": "bounded",
         "failure_modes": [
@@ -119133,5 +119159,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "d4dabee022d8456e874d8eedc2784c0d6d675cd11d2a6c2c6571d23b1d4ae29d"
+  "source_fingerprint": "1bca4aa19e9f9d8755a77593c931fca086bb7ce9aa3b29c4bb59e275d3683b00"
 }
