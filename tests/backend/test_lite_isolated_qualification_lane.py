@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 from pathlib import Path
+import subprocess
 
 import pytest
 
@@ -177,6 +179,29 @@ def test_android_transport_is_loopback_only_and_not_a_reverse_shell():
     assert "GatewayPorts=no" in source
     assert "\"ssh\", \"-v\", \"-N\", \"-T\"" in source
     assert "--no-check-certificate" not in source
+
+
+def test_android_python_probes_preserve_argument_boundaries(monkeypatch):
+    spec = importlib.util.spec_from_file_location("isolated_android_argument_test", CONTROLLER)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    import sys
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    calls = []
+
+    def fake_ssh_run(host, args, *, input_data=None, timeout=20):
+        calls.append((host, args, input_data, timeout))
+        return subprocess.CompletedProcess(
+            args,
+            0,
+            stdout=json.dumps({"missing": [], "python": args[0], "version": "3.14.6"}),
+            stderr="",
+        )
+
+    monkeypatch.setattr(module, "_android_ssh_run", fake_ssh_run)
+    assert module._android_import_check("pocketlab-termux", "/data/data/com.termux/files/usr/bin/python", ["nats"])["missing"] == []
+    assert calls[0][1][3:] == ["nats"]
 
 
 def test_qualification_rclone_accepts_candidate_flag_surface():

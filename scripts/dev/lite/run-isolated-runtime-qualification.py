@@ -2624,7 +2624,7 @@ modules = sys.argv[1:]
 missing = [name for name in modules if importlib.util.find_spec(name) is None]
 print(json.dumps({"missing": missing, "python": sys.executable, "version": sys.version.split()[0]}))
 '''
-    result = _android_ssh_run(host, [python, "-c", code, "--", *modules], timeout=20)
+    result = _android_ssh_run(host, [python, "-c", code, *modules], timeout=20)
     if result.returncode != 0:
         raise QualificationError("Android runtime dependency preflight failed")
     try:
@@ -2655,7 +2655,7 @@ if not str(resolved).startswith(str(home) + "/"):
     raise SystemExit(4)
 print(json.dumps({"root": str(resolved), "home": str(home)}))
 '''
-    result = _android_ssh_run(remote.host, [remote.python, "-c", code, "--", root], timeout=20)
+    result = _android_ssh_run(remote.host, [remote.python, "-c", code, root], timeout=20)
     if result.returncode != 0:
         raise QualificationError("remote qualification root creation failed")
     try:
@@ -2722,7 +2722,7 @@ def _android_verify_snapshot(remote: AndroidRemote, candidate_root: str, manifes
     _android_safe_remote_path(candidate_root, root)
     _android_safe_remote_path(manifest, root)
     result = _android_ssh_run(remote.host, [
-        remote.python, "-c", _ANDROID_VERIFY_SNAPSHOT_CODE, "--", candidate_root, manifest,
+        remote.python, "-c", _ANDROID_VERIFY_SNAPSHOT_CODE, candidate_root, manifest,
     ], timeout=40)
     if result.returncode != 0:
         raise QualificationError("remote candidate snapshot verification failed")
@@ -2802,7 +2802,7 @@ except Exception:
 def _android_process_info(remote: AndroidRemote, pid: int, *, root: str) -> dict[str, Any]:
     _android_safe_remote_path(root + "/probe", root)
     result = _android_ssh_run(remote.host, [
-        remote.python, "-c", _ANDROID_PROCESS_INFO_CODE, "--",
+        remote.python, "-c", _ANDROID_PROCESS_INFO_CODE,
         str(int(pid)), root, root.rsplit("/", 1)[-1],
     ], timeout=15)
     if result.returncode != 0:
@@ -2827,7 +2827,7 @@ def _android_launch_remote(
         _android_safe_remote_path(path, root)
     encoded = base64.urlsafe_b64encode(json.dumps(argv, separators=(",", ":")).encode()).decode()
     result = _android_ssh_run(remote.host, [
-        remote.python, "-c", _ANDROID_LAUNCH_CODE, "--",
+        remote.python, "-c", _ANDROID_LAUNCH_CODE,
         env_path, encoded, cwd, log_path,
     ], timeout=20)
     if result.returncode != 0:
@@ -2901,7 +2901,7 @@ def _android_stop_process(
     crash: bool = False,
 ) -> bool:
     result = _android_ssh_run(remote.host, [
-        remote.python, "-c", _ANDROID_STOP_CODE, "--",
+        remote.python, "-c", _ANDROID_STOP_CODE,
         str(pid), str(start_ticks), root, run_id, "crash" if crash else "stop",
     ], timeout=15)
     return result.returncode == 0
@@ -3005,7 +3005,7 @@ def _android_pm2_list(remote: AndroidRemote, env_path: str, *, root: str) -> lis
     if not remote.pm2:
         return []
     result = _android_ssh_run(remote.host, [
-        remote.python, "-c", _ANDROID_PM2_LIST_CODE, "--", env_path, remote.pm2,
+        remote.python, "-c", _ANDROID_PM2_LIST_CODE, env_path, remote.pm2,
     ], timeout=20)
     if result.returncode != 0:
         return []
@@ -3050,7 +3050,7 @@ def _android_pm2_command(remote: AndroidRemote, env_path: str, name: str, comman
     if not remote.pm2:
         return False
     result = _android_ssh_run(remote.host, [
-        remote.python, "-c", _ANDROID_PM2_COMMAND_CODE, "--",
+        remote.python, "-c", _ANDROID_PM2_COMMAND_CODE,
         env_path, remote.pm2, name, root, command,
     ], timeout=30)
     return result.returncode == 0
@@ -3128,7 +3128,7 @@ print(json.dumps({
 def _android_metrics(remote: AndroidRemote, root: str) -> dict[str, Any]:
     _android_safe_remote_path(root + "/metrics", root)
     result = _android_ssh_run(remote.host, [
-        remote.python, "-c", _ANDROID_METRICS_CODE, "--", root,
+        remote.python, "-c", _ANDROID_METRICS_CODE, root,
     ], timeout=20)
     if result.returncode != 0:
         return {"status": "UNVALIDATED"}
@@ -3156,7 +3156,7 @@ print("removed")
 
 def _android_remove_root(remote: AndroidRemote, root: str) -> bool:
     result = _android_ssh_run(remote.host, [
-        remote.python, "-c", _ANDROID_REMOVE_ROOT_CODE, "--", root,
+        remote.python, "-c", _ANDROID_REMOVE_ROOT_CODE, root,
     ], timeout=30)
     return result.returncode == 0
 
@@ -3179,7 +3179,7 @@ print("locked")
 def _android_lock_snapshot(remote: AndroidRemote, candidate_root: str, *, root: str) -> None:
     _android_safe_remote_path(candidate_root, root)
     result = _android_ssh_run(remote.host, [
-        remote.python, "-c", _ANDROID_LOCK_SNAPSHOT_CODE, "--", candidate_root,
+        remote.python, "-c", _ANDROID_LOCK_SNAPSHOT_CODE, candidate_root,
     ], timeout=30)
     if result.returncode != 0:
         raise QualificationError("candidate source snapshot could not be made read-only")
