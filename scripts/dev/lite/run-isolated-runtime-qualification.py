@@ -1410,6 +1410,8 @@ class QualificationRun:
                 last_error = "unobserved"
                 for _ in range(20):
                     nc = None
+                    reconnect_nc = None
+                    probe_stream = ""
                     try:
                         nc = await nats.connect(
                             servers=[self.nats.env["POCKETLAB_NATS_URL"]],
@@ -1423,13 +1425,92 @@ class QualificationRun:
                         for name in ("POCKETLAB_COMMANDS", "POCKETLAB_EVENTS", "POCKETLAB_AUDIT"):
                             info = await js.stream_info(name)
                             streams.append({"name": name, "messages": int(info.state.messages), "bytes": int(info.state.bytes)})
+                        # Use a run-unique stream and durable pull consumer to
+                        # prove that an unacknowledged delivery is redelivered
+                        # after the client connection is replaced.  It cannot
+                        # collide with the candidate's fixed production
+                        # subjects or be consumed by the worker.
+                        from nats.js.api import ConsumerConfig
+
+                        probe_stream = f"QUALIFICATION_PROBE_{self.run_id.upper()}"
+                        probe_subject = f"qualification.probe.{self.run_id}"
+                        probe_durable = f"qualification_probe_{self.run_id}"
+                        await js.add_stream(
+                            name=probe_stream,
+                            subjects=[probe_subject],
+                            max_msgs=4,
+                            max_bytes=65536,
+                        )
+                        consumer_config = ConsumerConfig(
+                            durable_name=probe_durable,
+                            filter_subject=probe_subject,
+                            ack_wait=1.0,
+                            max_deliver=3,
+                        )
+                        subscription = await js.pull_subscribe(
+                            probe_subject,
+                            durable=probe_durable,
+                            stream=probe_stream,
+                            config=consumer_config,
+                        )
+                        await js.publish(probe_subject, b"qualification-redelivery-probe")
+                        first_messages = await subscription.fetch(1, timeout=3)
+                        if len(first_messages) != 1:
+                            raise RuntimeError("jetstream_probe_initial_delivery_missing")
                         await nc.close()
-                        return {"connected": True, "jetstream": True, "streams": streams}
+                        nc = None
+                        reconnect_nc = await nats.connect(
+                            servers=[self.nats.env["POCKETLAB_NATS_URL"]],
+                            user=self.nats.user,
+                            password=self.nats.password,
+                            name=f"qualification-redelivery-{self.run_id}",
+                            connect_timeout=3,
+                        )
+                        reconnect_js = reconnect_nc.jetstream()
+                        reconnect_subscription = await reconnect_js.pull_subscribe(
+                            probe_subject,
+                            durable=probe_durable,
+                            stream=probe_stream,
+                        )
+                        redelivered_messages = []
+                        redelivery_deadline = time.monotonic() + 5
+                        while time.monotonic() < redelivery_deadline and not redelivered_messages:
+                            try:
+                                redelivered_messages = await reconnect_subscription.fetch(1, timeout=1)
+                            except Exception:
+                                continue
+                        if len(redelivered_messages) != 1 or redelivered_messages[0].metadata.num_delivered < 2:
+                            raise RuntimeError("jetstream_probe_redelivery_missing")
+                        await redelivered_messages[0].ack()
+                        await reconnect_js.delete_stream(probe_stream)
+                        await reconnect_nc.close()
+                        reconnect_nc = None
+                        return {
+                            "connected": True,
+                            "jetstream": True,
+                            "streams": streams,
+                            "durable_consumer_redelivery": True,
+                            "initial_delivery_count": len(first_messages),
+                            "redelivery_count": int(redelivered_messages[0].metadata.num_delivered),
+                            "probe_stream_run_scoped": True,
+                        }
                     except Exception as exc:
                         last_error = f"{type(exc).__name__}:{str(exc).replace(chr(10), ' ')[:160]}"
+                        if probe_stream:
+                            cleanup_nc = reconnect_nc or nc
+                            if cleanup_nc is not None:
+                                try:
+                                    await cleanup_nc.jetstream().delete_stream(probe_stream)
+                                except Exception:
+                                    pass
                         if nc is not None:
                             try:
                                 await nc.close()
+                            except Exception:
+                                pass
+                        if reconnect_nc is not None:
+                            try:
+                                await reconnect_nc.close()
                             except Exception:
                                 pass
                         await asyncio.sleep(0.5)
