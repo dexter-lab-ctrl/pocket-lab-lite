@@ -4463,6 +4463,16 @@ class AndroidQualificationRun(QualificationRun):
 
     @staticmethod
     def _production_projection(value: dict[str, Any]) -> dict[str, Any]:
+        pm2 = []
+        for item in value.get("pm2") or []:
+            if not isinstance(item, dict):
+                continue
+            pm2.append({
+                "name": item.get("name"),
+                "status": item.get("status"),
+                "version": item.get("version"),
+                "cwd_class": item.get("cwd_class"),
+            })
         return {
             "system": value.get("system"),
             "architecture": value.get("architecture"),
@@ -4470,7 +4480,7 @@ class AndroidQualificationRun(QualificationRun):
             "prefix_class": value.get("prefix_class"),
             "source_sha": value.get("source_sha"),
             "git_clean": value.get("git_clean"),
-            "pm2": value.get("pm2") or [],
+            "pm2": sorted(pm2, key=lambda item: str(item.get("name") or "")),
             "listeners": value.get("listeners") or {},
             "tailscale": value.get("tailscale"),
             "photoprism_health": value.get("photoprism_health"),

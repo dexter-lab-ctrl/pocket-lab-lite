@@ -197,6 +197,31 @@ def test_android_media_fixture_keeps_camera_files_with_nested_nomedia_marker(tmp
     ]) == 6
 
 
+def test_android_production_projection_ignores_ephemeral_pm2_pids():
+    spec = importlib.util.spec_from_file_location("isolated_android_projection_test", CONTROLLER)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    import sys
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    before = {
+        "system": "Linux",
+        "architecture": "aarch64",
+        "home_class": "termux_private_home",
+        "prefix_class": "termux_prefix",
+        "source_sha": "a" * 40,
+        "git_clean": True,
+        "pm2": [{"name": "pocket-api", "pid": 101, "status": "online", "version": "1.0", "cwd_class": "other"}],
+        "listeners": {"count": 0, "addresses": [], "loopback_only": True},
+        "tailscale": "unobserved",
+        "photoprism_health": "unobserved",
+    }
+    after = {**before, "pm2": [{**before["pm2"][0], "pid": 202}]}
+
+    assert module.AndroidQualificationRun._production_projection(before) == module.AndroidQualificationRun._production_projection(after)
+
+
 def test_android_transport_is_loopback_only_and_not_a_reverse_shell():
     spec = importlib.util.spec_from_file_location("isolated_android_transport_test", CONTROLLER)
     assert spec and spec.loader
