@@ -15,8 +15,14 @@ The full lane is explicitly selected:
 
 ```bash
 CANDIDATE_SHA="$(git rev-parse HEAD)"
-command -v nats-server
-task lite:photo-backup:candidate:full CANDIDATE_SHA="$CANDIDATE_SHA"
+NATS_SERVER_BIN="${NATS_SERVER_BIN:-$(command -v nats-server)}"
+OPA_BIN="${OPA_BIN:-$(command -v opa)}"
+test -x "$NATS_SERVER_BIN"
+test -x "$OPA_BIN"
+task lite:photo-backup:candidate:full \
+  CANDIDATE_SHA="$CANDIDATE_SHA" \
+  NATS_SERVER_BIN="$NATS_SERVER_BIN" \
+  OPA_BIN="$OPA_BIN"
 ```
 
 The full lane exits successfully only after the candidate API, worker,
@@ -256,8 +262,9 @@ media. Physical Android qualification is not a pull-request prerequisite.
 - If the run reports that the candidate is dirty, commit or discard the local
   change through the normal authorized workflow; the controller will not
   qualify an ambiguous working tree.
-- If `nats-server` is missing, install/use the pinned CI release or place the
-  approved binary on `PATH`; do not point the lane at a production broker.
+- If `nats-server` or `opa` is missing, install/use the pinned CI releases or
+  pass their approved executable paths through `NATS_SERVER_BIN` and `OPA_BIN`;
+  do not point the lane at a production broker or policy endpoint.
 - If the fixture cannot start, inspect only the bounded retained manifest and
   rerun after fixing the local prerequisite. The fixture uses its own CA and
   loopback port; do not disable TLS verification globally.

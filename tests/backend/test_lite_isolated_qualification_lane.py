@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[2]
 CONTEXT = ROOT / "pocket-lab-final-structure" / "runtime" / "api_fastapi" / "services" / "qualification_context.py"
 CONTROLLER = ROOT / "scripts" / "dev" / "lite" / "run-isolated-runtime-qualification.py"
 RCLONE = ROOT / "scripts" / "dev" / "lite" / "qualification_rclone.py"
+TASKFILE = ROOT / "tasks" / "Taskfile.lite.yml"
 
 
 def _context():
@@ -126,6 +127,14 @@ def test_controller_namespaces_are_run_bound():
     assert first != second
     assert module.RUN_ID_RE.fullmatch(first)
     assert module.RUN_ID_RE.fullmatch(second)
+
+
+def test_full_task_exposes_explicit_isolated_dependency_paths():
+    taskfile = TASKFILE.read_text(encoding="utf-8")
+    assert 'NATS_SERVER_BIN: \'{{default "" .NATS_SERVER_BIN}}\'' in taskfile
+    assert 'OPA_BIN: \'{{default "" .OPA_BIN}}\'' in taskfile
+    assert "--nats-server-bin" in taskfile
+    assert "--opa-bin" in taskfile
 
 
 def test_qualification_rclone_accepts_candidate_flag_surface():

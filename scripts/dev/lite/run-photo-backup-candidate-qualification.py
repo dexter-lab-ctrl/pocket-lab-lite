@@ -432,6 +432,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candidate-sha", default="", help="full commit SHA; defaults to the clean current HEAD")
     parser.add_argument("--test-timeout-seconds", type=float, default=900.0)
+    parser.add_argument("--nats-server-bin", default="", help="explicit approved nats-server executable for the full lane")
+    parser.add_argument("--opa-bin", default="", help="explicit approved OPA executable for the full lane")
     parser.add_argument(
         "--full",
         action="store_true",
@@ -450,6 +452,10 @@ def main(argv: list[str] | None = None) -> int:
         sys.modules[spec.name] = module
         spec.loader.exec_module(module)
         forwarded = ["--candidate-sha", args.candidate_sha or _current_candidate_sha(), "--python", sys.executable]
+        if args.nats_server_bin:
+            forwarded.extend(["--nats-server-bin", args.nats_server_bin])
+        if args.opa_bin:
+            forwarded.extend(["--opa-bin", args.opa_bin])
         return int(module.main(forwarded))
     try:
         result = run(args.candidate_sha or None, test_timeout=args.test_timeout_seconds)
