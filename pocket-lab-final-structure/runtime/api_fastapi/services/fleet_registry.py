@@ -579,6 +579,45 @@ def upsert_agent(
         return _upsert_agent_unlocked(data, event_type=event_type)
 
 
+def rotate_pending_agent_token_hash(node_id: str, token_hash: str) -> Dict[str, Any]:
+    """Commit a server-issued bootstrap credential for a pending invite.
+
+    Invite records use the one-time invite token as their pre-bootstrap
+    identity marker.  The bootstrap endpoint deliberately rotates that marker
+    to a separate long-lived agent credential before the device can publish
+    heartbeats.  Keep that transition explicit and local to the control plane;
+    an arbitrary NATS event must never be able to rotate an enrolled identity.
+    """
+    normalized = normalize_node_id(node_id)
+    incoming = str(token_hash or "").strip()
+    if not normalized or not re.fullmatch(r"[a-f0-9]{16,64}", incoming):
+        raise ValueError("agent_token_hash_invalid")
+    with _AGENT_REGISTRY_LOCK:
+        payload = _agents_payload()
+        agents = payload["agents"]
+        existing = dict(agents.get(normalized) or {})
+        if not existing:
+            raise ValueError("agent_identity_missing")
+        identity_status = str(existing.get("identity_status") or "").casefold()
+        if identity_status in {"verified", "protected_server_host"}:
+            raise ValueError("agent_identity_rotation_forbidden")
+        if str(existing.get("auth_token_hash") or "") == incoming:
+            return existing
+        enrollment_status = str(existing.get("enrollment_status") or "").casefold()
+        if enrollment_status not in {"invite_pending", "waiting_for_heartbeat", "joining"}:
+            raise ValueError("agent_identity_rotation_not_pending")
+        existing.update({
+            "auth_token_hash": incoming,
+            "identity_status": "pending",
+            "enrollment_status": "waiting_for_heartbeat",
+            "updated_at": _now(),
+        })
+        agents[normalized] = existing
+        payload["updated_at"] = existing["updated_at"]
+        _write(_state_path("fleet_agents.json"), payload)
+        return existing
+
+
 def _upsert_agent_unlocked(
     data: Dict[str, Any], *, event_type: str = "fleet.node_seen"
 ) -> Dict[str, Any]:

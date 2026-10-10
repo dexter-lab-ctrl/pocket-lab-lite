@@ -969,6 +969,18 @@ def lite_fleet_agent_bootstrap_env(payload: dict | None = None, request: Request
     agent_token = cfg["agent_token"]
     agent_token_hash = cfg["agent_token_hash"]
 
+    # A valid invite is the only authority that permits this one-time
+    # server-issued agent credential rotation.  This is intentionally a local
+    # registry transition, not an event-driven identity override.
+    try:
+        fleet_registry.rotate_pending_agent_token_hash(node_id, agent_token_hash)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=409,
+            headers={"Cache-Control": "no-store"},
+            detail={"reason_code": str(exc)[:80], "message": "The pending device identity could not be bound safely.", "sanitized": True},
+        ) from None
+
     internal_nats_url = cfg.get("nats_url") or os.environ.get("POCKETLAB_NATS_URL", "nats://127.0.0.1:4222")
     nats_url = _public_nats_url_for_invite(request, internal_nats_url)
     nats_user = os.environ.get(
