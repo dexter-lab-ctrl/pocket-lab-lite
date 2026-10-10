@@ -559,40 +559,103 @@ def provisioning_allowed(request: Any) -> bool:
     return bool(configured and supplied and hmac.compare_digest(supplied, configured))
 
 
-def _runtime_revision() -> str:
-    """Resolve the exact checked-out revision without accepting caller input."""
-    git = shutil.which("git")
-    if not git:
+def _qualification_snapshot_revision(repository_root: Path) -> str:
+    """Verify and resolve the revision of an immutable qualification snapshot."""
+    candidate_revision = os.environ.get("POCKETLAB_QUALIFICATION_CANDIDATE_SHA", "").strip().casefold()
+    root_raw = os.environ.get("POCKETLAB_QUALIFICATION_ROOT", "").strip()
+    manifest_digest = os.environ.get("POCKETLAB_QUALIFICATION_SNAPSHOT_MANIFEST_SHA256", "").strip().casefold()
+    if (
+        not re.fullmatch(r"[0-9a-f]{40}", candidate_revision)
+        or candidate_revision == "0" * 40
+        or not re.fullmatch(r"[0-9a-f]{64}", manifest_digest)
+        or not root_raw
+    ):
         raise HarnessError(
             "harness_revision_unavailable",
             "The qualification runtime revision could not be verified.",
             status_code=503,
         )
-    repository_root = Path(__file__).resolve().parents[4]
     try:
-        result = subprocess.run(
-            [str(Path(git).resolve()), "rev-parse", "HEAD"],
-            cwd=str(repository_root),
-            stdin=subprocess.DEVNULL,
-            capture_output=True,
-            text=True,
-            timeout=2,
-            check=False,
-        )
-    except (OSError, subprocess.SubprocessError):
+        qualification_root = Path(root_raw).expanduser().resolve(strict=True)
+        candidate_root = repository_root.resolve(strict=True)
+        if (
+            qualification_root.parent.name != ".pocketlab-qualification"
+            or not re.fullmatch(r"[0-9a-f]{24}", qualification_root.name)
+            or candidate_root != qualification_root / "candidate"
+        ):
+            raise ValueError("qualification snapshot root binding mismatch")
+        manifest_path = qualification_root / "candidate-manifest.json"
+        manifest_bytes = manifest_path.read_bytes()
+        if hashlib.sha256(manifest_bytes).hexdigest() != manifest_digest:
+            raise ValueError("qualification snapshot manifest digest mismatch")
+        manifest = json.loads(manifest_bytes.decode("utf-8"))
+        if not isinstance(manifest, dict) or manifest.get("candidate_sha") != candidate_revision:
+            raise ValueError("qualification snapshot candidate mismatch")
+        files = manifest.get("files")
+        if not isinstance(files, list) or not files:
+            raise ValueError("qualification snapshot file inventory is missing")
+        seen: set[str] = set()
+        for item in files:
+            if not isinstance(item, dict):
+                raise ValueError("qualification snapshot file entry is invalid")
+            relative = str(item.get("path") or "")
+            relative_path = Path(relative)
+            if (
+                not relative
+                or relative_path.is_absolute()
+                or any(part in {"", ".", ".."} for part in relative_path.parts)
+                or relative in seen
+            ):
+                raise ValueError("qualification snapshot file path is unsafe")
+            path = candidate_root / relative_path
+            if path.is_symlink() or not path.is_file() or any(parent.is_symlink() for parent in path.parents if parent != candidate_root):
+                raise ValueError("qualification snapshot contains an unsafe file")
+            resolved = path.resolve(strict=True)
+            if resolved != path or not str(resolved).startswith(str(candidate_root) + "/"):
+                raise ValueError("qualification snapshot file escaped its root")
+            content = path.read_bytes()
+            if (
+                hashlib.sha256(content).hexdigest() != str(item.get("sha256") or "")
+                or len(content) != int(item.get("size") or -1)
+            ):
+                raise ValueError("qualification snapshot file digest mismatch")
+            seen.add(relative)
+    except (OSError, TypeError, ValueError, json.JSONDecodeError, UnicodeDecodeError):
         raise HarnessError(
             "harness_revision_unavailable",
             "The qualification runtime revision could not be verified.",
             status_code=503,
         ) from None
-    revision = result.stdout.strip().casefold()
-    if result.returncode != 0 or not re.fullmatch(r"[0-9a-f]{40}", revision):
-        raise HarnessError(
-            "harness_revision_unavailable",
-            "The qualification runtime revision could not be verified.",
-            status_code=503,
-        )
-    return revision
+    return candidate_revision
+
+
+def _runtime_revision() -> str:
+    """Resolve the exact runtime revision without accepting an unverified caller value."""
+    git = shutil.which("git")
+    repository_root = Path(__file__).resolve().parents[4]
+    if git:
+        try:
+            result = subprocess.run(
+                [str(Path(git).resolve()), "rev-parse", "HEAD"],
+                cwd=str(repository_root),
+                stdin=subprocess.DEVNULL,
+                capture_output=True,
+                text=True,
+                timeout=2,
+                check=False,
+            )
+            revision = result.stdout.strip().casefold()
+            if result.returncode == 0 and re.fullmatch(r"[0-9a-f]{40}", revision):
+                return revision
+        except (OSError, subprocess.SubprocessError):
+            pass
+    if environment() == HARNESS_RUNTIME_ENVIRONMENT:
+        return _qualification_snapshot_revision(repository_root)
+    raise HarnessError(
+        "harness_revision_unavailable",
+        "The qualification runtime revision could not be verified.",
+        status_code=503,
+    )
 
 
 def _bootstrap_approval_configured(

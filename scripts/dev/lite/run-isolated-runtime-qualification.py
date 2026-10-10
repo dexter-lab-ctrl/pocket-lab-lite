@@ -3516,7 +3516,7 @@ class AndroidQualificationRun(QualificationRun):
                 _android_remote_mkdir(remote.host, f"{root}/{relative}", root=root)
             _android_remote_write(
                 remote.host, f"{root}/candidate-manifest.json",
-                self.snapshot.manifest.read_bytes(), root=root,
+                self.snapshot.manifest.read_bytes(), root=root, mode="400",
             )
             _android_remote_extract(remote, self.snapshot.archive, f"{root}/candidate", root=root)
             _android_verify_snapshot(
@@ -3626,6 +3626,7 @@ class AndroidQualificationRun(QualificationRun):
             "POCKETLAB_QUALIFICATION_CONTEXT": "isolated-runtime-v1",
             "POCKETLAB_QUALIFICATION_RUN_ID": self.run_id,
             "POCKETLAB_QUALIFICATION_CANDIDATE_SHA": self.candidate_sha,
+            "POCKETLAB_QUALIFICATION_SNAPSHOT_MANIFEST_SHA256": self.snapshot.manifest_sha256,
             "POCKETLAB_QUALIFICATION_ALLOW_TEST_DESTINATION": "1",
             "POCKETLAB_QUALIFICATION_CONTEXT_TOKEN": self.context_token,
             "POCKETLAB_QUALIFICATION_ROOT": root,
