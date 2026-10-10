@@ -75,6 +75,7 @@ Provides the verified managed photo application under a same-origin Caddy path.
 - verified_by: `tests/backend/test_lite_control_plane_sqlite_p3.py`
 - verified_by: `tests/backend/test_lite_device_health_d4.py`
 - verified_by: `tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py`
+- verified_by: `tests/backend/test_lite_isolated_qualification_lane.py`
 - verified_by: `tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py`
 - verified_by: `tests/backend/test_lite_photo_backup.py`
 - verified_by: `tests/backend/test_lite_photo_backup_agent.py`

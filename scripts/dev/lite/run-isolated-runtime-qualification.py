@@ -568,7 +568,9 @@ def _make_media(paths: RunPaths) -> None:
         path.write_bytes(payload)
         path.chmod(0o600)
     (roots["camera"] / ".hidden.jpg").write_bytes(b"must-not-transfer")
-    (roots["camera"] / ".nomedia").write_text("synthetic\n", encoding="utf-8")
+    ignored = roots["camera"] / "ignored"
+    ignored.mkdir(mode=0o700)
+    (ignored / ".nomedia").write_text("synthetic\n", encoding="utf-8")
     try:
         (roots["camera"] / "symlink.jpg").symlink_to(files[next(iter(files))])
     except FileExistsError:
@@ -2074,14 +2076,14 @@ def _android_media_archive(root: Path) -> tuple[Path, list[dict[str, Any]]]:
         "storage/shared/Pictures/Case.JPG": b"case-collision\n" * 24,
         "storage/shared/Movies/qualification-video.mp4": b"synthetic-video\n" * 256,
         "storage/shared/DCIM/Camera/.hidden.jpg": b"must-not-transfer",
-        "storage/shared/DCIM/Camera/.nomedia": b"synthetic\n",
+        "storage/shared/DCIM/Camera/ignored/.nomedia": b"synthetic\n",
     }
     archive_path = root / "synthetic-media.tar"
     expected: list[dict[str, Any]] = []
     with tarfile.open(archive_path, "w") as bundle:
         directories = {
             "storage", "storage/shared", "storage/shared/DCIM", "storage/shared/DCIM/Camera",
-            "storage/shared/Pictures", "storage/shared/Movies",
+            "storage/shared/DCIM/Camera/ignored", "storage/shared/Pictures", "storage/shared/Movies",
         }
         for directory in sorted(directories):
             info = tarfile.TarInfo(directory)
@@ -4226,22 +4228,41 @@ class AndroidQualificationRun(QualificationRun):
 
 
     def _start_backup(self) -> tuple[str, dict[str, Any]]:
-        status, payload = self._api_request(
-            f"/api/lite/devices/{self.node_id}/photo-backup",
-            method="POST",
-            payload={"collections": ["camera", "pictures", "videos"]},
-        )
-        if status != 202 or not payload.get("backup_id"):
+        last_status = 0
+        last_payload: dict[str, Any] = {}
+        for attempt in range(3):
+            status, payload = self._api_request(
+                f"/api/lite/devices/{self.node_id}/photo-backup",
+                method="POST",
+                payload={"collections": ["camera", "pictures", "videos"]},
+            )
+            last_status = status
+            last_payload = payload
+            if status == 202 and payload.get("backup_id"):
+                backup_id = str(payload["backup_id"])
+                self.active_backup_id = backup_id
+                try:
+                    return backup_id, self._wait_backup(backup_id)
+                finally:
+                    self.active_backup_id = ""
+
             reason = payload.get("reason_code") or payload.get("error") or payload.get("status") or payload.get("message") or payload.get("detail") or "unreported"
             if isinstance(reason, dict):
                 reason = reason.get("reason_code") or reason.get("error") or reason.get("message") or "structured_error"
-            raise QualificationError(f"physical candidate photo backup admission was rejected: status={status} reason={str(reason)[:160]}")
-        backup_id = str(payload["backup_id"])
-        self.active_backup_id = backup_id
-        try:
-            return backup_id, self._wait_backup(backup_id)
-        finally:
-            self.active_backup_id = ""
+            if status != 404 or str(reason) != "not_found" or attempt >= 2:
+                break
+
+            # A phone NATS reconnect can deliver the fresh heartbeat just
+            # before the API process observes the durable fleet projection.
+            # Admission is retried only after a bounded, read-only convergence
+            # wait; a missing device remains a hard failure.
+            self._wait_agent(timeout=12)
+            time.sleep(0.5)
+
+        reason = last_payload.get("reason_code") or last_payload.get("error") or last_payload.get("status") or last_payload.get("message") or last_payload.get("detail") or "unreported"
+        if isinstance(reason, dict):
+            reason = reason.get("reason_code") or reason.get("error") or reason.get("message") or "structured_error"
+        raise QualificationError(f"physical candidate photo backup admission was rejected: status={last_status} reason={str(reason)[:160]}")
 
     def _verify_destination(self) -> dict[str, Any]:
         expected = {
@@ -4337,12 +4358,25 @@ class AndroidQualificationRun(QualificationRun):
         })
 
     def _arm_webdav_partial(self) -> None:
+        # The physical lane uses the installed Android rclone client, whose
+        # bounded low-level retries can transparently replace one truncated
+        # PUT. Keep the fault active across those retries so the first backup
+        # must expose an incomplete staging object; the following retry then
+        # runs without an armed fault.
         status, _ = self._fixture_request(
             "POST", "/__qualification__/fault", control=True,
-            payload={"operation": "PUT", "partial": True, "remaining": 1},
+            payload={"operation": "PUT", "partial": True, "remaining": 8},
         )
         if status != 200:
             raise QualificationError("partial WebDAV fault injection was rejected")
+
+    def _clear_webdav_fault(self) -> None:
+        status, _ = self._fixture_request(
+            "POST", "/__qualification__/fault", control=True,
+            payload={"operation": "PUT", "status": 503, "remaining": 0},
+        )
+        if status != 200:
+            raise QualificationError("partial WebDAV fault cleanup was rejected")
 
     def _component_provenance(self) -> dict[str, Any]:
         assert self.server is not None and self.secondary is not None
@@ -4429,6 +4463,16 @@ class AndroidQualificationRun(QualificationRun):
 
     @staticmethod
     def _production_projection(value: dict[str, Any]) -> dict[str, Any]:
+        pm2 = []
+        for item in value.get("pm2") or []:
+            if not isinstance(item, dict):
+                continue
+            pm2.append({
+                "name": item.get("name"),
+                "status": item.get("status"),
+                "version": item.get("version"),
+                "cwd_class": item.get("cwd_class"),
+            })
         return {
             "system": value.get("system"),
             "architecture": value.get("architecture"),
@@ -4436,7 +4480,7 @@ class AndroidQualificationRun(QualificationRun):
             "prefix_class": value.get("prefix_class"),
             "source_sha": value.get("source_sha"),
             "git_clean": value.get("git_clean"),
-            "pm2": value.get("pm2") or [],
+            "pm2": sorted(pm2, key=lambda item: str(item.get("name") or "")),
             "listeners": value.get("listeners") or {},
             "tailscale": value.get("tailscale"),
             "photoprism_health": value.get("photoprism_health"),
@@ -4736,6 +4780,7 @@ class AndroidQualificationRun(QualificationRun):
             self._arm_webdav_partial()
             _partial_id, partial_job = self._start_backup()
             partial_terminal = str(partial_job.get("status") or "")
+            self._clear_webdav_fault()
             partial_detected = False
             try:
                 self._verify_destination()

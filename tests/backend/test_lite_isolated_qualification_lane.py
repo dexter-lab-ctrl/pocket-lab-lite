@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import tarfile
 
 import pytest
 
@@ -154,6 +155,71 @@ def test_android_candidate_task_is_explicit_and_preserves_read_only_mode():
     assert "--android-qualify" in taskfile
     assert "--android-read-only" in taskfile
     assert "EVIDENCE_DIR" in taskfile
+
+
+def test_android_media_fixture_keeps_camera_files_with_nested_nomedia_marker(tmp_path, monkeypatch):
+    spec = importlib.util.spec_from_file_location("isolated_android_media_fixture_test", CONTROLLER)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    import sys
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    archive, expected = module._android_media_archive(tmp_path)
+    home = tmp_path / "home"
+    home.mkdir()
+    with tarfile.open(archive, "r") as bundle:
+        bundle.extractall(home)
+
+    ensure_runtime_path()
+    from agents import lite_photo_backup_agent
+
+    roots = {
+        "camera": home / "storage" / "shared" / "DCIM" / "Camera",
+        "pictures": home / "storage" / "shared" / "Pictures",
+        "videos": home / "storage" / "shared" / "Movies",
+    }
+    monkeypatch.setattr(lite_photo_backup_agent, "_collection_path", lambda name: roots[name])
+    provider = lite_photo_backup_agent.PhotoPrismWebDAVProvider(
+        node_id="qualification-test",
+        agent_token="qualification-token",
+        control_origin="https://127.0.0.1:43123",
+    )
+
+    records = list(provider._inventory(["camera", "pictures", "videos"]))
+    assert len(records) == 6
+    assert {record["collection"] for record in records} == {"camera", "pictures", "videos"}
+    assert not any("ignored" in str(record["path"]) for record in records)
+    assert not any(Path(record["path"]).name.startswith(".") for record in records)
+    assert len([
+        item for item in expected
+        if not Path(str(item["path"])).name.startswith(".")
+    ]) == 6
+
+
+def test_android_production_projection_ignores_ephemeral_pm2_pids():
+    spec = importlib.util.spec_from_file_location("isolated_android_projection_test", CONTROLLER)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    import sys
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    before = {
+        "system": "Linux",
+        "architecture": "aarch64",
+        "home_class": "termux_private_home",
+        "prefix_class": "termux_prefix",
+        "source_sha": "a" * 40,
+        "git_clean": True,
+        "pm2": [{"name": "pocket-api", "pid": 101, "status": "online", "version": "1.0", "cwd_class": "other"}],
+        "listeners": {"count": 0, "addresses": [], "loopback_only": True},
+        "tailscale": "unobserved",
+        "photoprism_health": "unobserved",
+    }
+    after = {**before, "pm2": [{**before["pm2"][0], "pid": 202}]}
+
+    assert module.AndroidQualificationRun._production_projection(before) == module.AndroidQualificationRun._production_projection(after)
 
 
 def test_android_transport_is_loopback_only_and_not_a_reverse_shell():
