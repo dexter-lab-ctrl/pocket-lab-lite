@@ -125,12 +125,22 @@ def assert_safe() -> None:
     if destination == production or _contained(destination, production) or _contained(production, destination):
         raise QualificationContextError("qualification destination aliases the production originals path")
 
-    origin = _value("POCKETLAB_QUALIFICATION_TEST_ORIGIN").rstrip("/")
-    parsed = urlsplit(origin)
+    _assert_loopback_origin(
+        _value("POCKETLAB_QUALIFICATION_TEST_ORIGIN"),
+        label="WebDAV",
+    )
+    _assert_loopback_origin(
+        _value("POCKETLAB_QUALIFICATION_CONTROL_ORIGIN"),
+        label="control API",
+    )
+
+
+def _assert_loopback_origin(origin: str, *, label: str) -> None:
+    parsed = urlsplit(origin.rstrip("/"))
     try:
         port = parsed.port
     except ValueError as exc:
-        raise QualificationContextError("qualification WebDAV origin port is invalid") from exc
+        raise QualificationContextError(f"qualification {label} origin port is invalid") from exc
     if (
         parsed.scheme != "https"
         or parsed.hostname not in {"127.0.0.1", "::1", "localhost"}
@@ -141,7 +151,7 @@ def assert_safe() -> None:
         or parsed.path not in {"", "/"}
         or not port
     ):
-        raise QualificationContextError("qualification WebDAV origin must be an HTTPS loopback endpoint")
+        raise QualificationContextError(f"qualification {label} origin must be an HTTPS loopback endpoint")
 
 
 def root() -> Path:
@@ -160,6 +170,11 @@ def destination_root() -> Path:
 def test_origin() -> str:
     assert_safe()
     return _value("POCKETLAB_QUALIFICATION_TEST_ORIGIN").rstrip("/")
+
+
+def control_origin() -> str:
+    assert_safe()
+    return _value("POCKETLAB_QUALIFICATION_CONTROL_ORIGIN").rstrip("/")
 
 
 def synthetic_password() -> str:

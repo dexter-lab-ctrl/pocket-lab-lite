@@ -519,7 +519,12 @@ def _scrubbed_environment() -> dict[str, str]:
             continue
         if key in {"POCKETLAB_STATE_DIR", "POCKETLAB_LITE_DB_PATH", "POCKETLAB_BASE_DIR", "POCKET_LAB_BASE_DIR", "PM2_HOME"}:
             continue
-        if key in {"POCKETLAB_API_TOKEN", "POCKETLAB_SECURE_ORIGIN", "POCKETLAB_LITE_SECURE_ORIGIN", "CADDYFILE", "POCKET_LAB_CADDYFILE"}:
+        if key in {
+            "POCKETLAB_API_TOKEN", "POCKETLAB_SECURE_ORIGIN", "POCKETLAB_LITE_SECURE_ORIGIN",
+            "POCKETLAB_LITE_PUBLIC_NATS_URL", "POCKETLAB_PUBLIC_NATS_URL", "POCKETLAB_LITE_NATS_URL",
+            "POCKETLAB_AGENT_NATS_USER", "POCKETLAB_AGENT_NATS_PASSWORD",
+            "CADDYFILE", "POCKET_LAB_CADDYFILE",
+        }:
             continue
         clean[key] = value
     return clean
@@ -677,6 +682,7 @@ class QualificationRun:
             "POCKETLAB_QUALIFICATION_ROOT": str(self.paths.root),
             "POCKETLAB_QUALIFICATION_DESTINATION_ROOT": str(self.paths.destination),
             "POCKETLAB_QUALIFICATION_TEST_ORIGIN": self.webdav_origin,
+            "POCKETLAB_QUALIFICATION_CONTROL_ORIGIN": self.api_origin,
             "POCKETLAB_QUALIFICATION_WEBDAV_USER": self.webdav_user,
             "POCKETLAB_QUALIFICATION_WEBDAV_PASSWORD": self.webdav_password,
             "POCKETLAB_PHOTO_BACKUP_CREDENTIAL_TTL_SECONDS": "120",
@@ -758,6 +764,13 @@ class QualificationRun:
             self.processes.append(self.nats.process)
         self.env.update(self.nats.env)
         self.agent_env.update(self.nats.env)
+        # Invite/bootstrap generation normally derives a public NATS host from
+        # the request host or local network interfaces.  A qualification
+        # consumer must instead receive this run's loopback broker explicitly;
+        # the override is run-owned and removed with the temporary root.
+        isolated_nats_url = self.nats.env["POCKETLAB_NATS_URL"]
+        self.env["POCKETLAB_LITE_PUBLIC_NATS_URL"] = isolated_nats_url
+        self.agent_env["POCKETLAB_LITE_PUBLIC_NATS_URL"] = isolated_nats_url
         self.env.update({
             "POCKETLAB_AGENT_NATS_USER": self.nats.user,
             "POCKETLAB_AGENT_NATS_PASSWORD": self.nats.password,

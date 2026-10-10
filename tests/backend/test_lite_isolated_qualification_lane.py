@@ -35,6 +35,7 @@ def _arm(monkeypatch: pytest.MonkeyPatch, root: Path, *, origin: str = "https://
     monkeypatch.setenv("POCKETLAB_QUALIFICATION_ROOT", str(root))
     monkeypatch.setenv("POCKETLAB_QUALIFICATION_DESTINATION_ROOT", str(destination))
     monkeypatch.setenv("POCKETLAB_QUALIFICATION_TEST_ORIGIN", origin)
+    monkeypatch.setenv("POCKETLAB_QUALIFICATION_CONTROL_ORIGIN", "https://127.0.0.1:43124")
     return destination
 
 
@@ -52,6 +53,7 @@ def test_qualification_context_requires_loopback_https_and_private_destination(t
     destination = _arm(monkeypatch, tmp_path)
     assert context.enabled() is True
     assert context.destination_root() == destination.resolve()
+    assert context.control_origin() == "https://127.0.0.1:43124"
     assert context.public_summary() == {
         "enabled": True,
         "context": "isolated-runtime-v1",
@@ -102,10 +104,12 @@ def test_controller_scrubs_production_nats_and_cloud_credentials(monkeypatch):
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     monkeypatch.setenv("POCKETLAB_NATS_PASSWORD", "production-secret")
+    monkeypatch.setenv("POCKETLAB_LITE_PUBLIC_NATS_URL", "nats://production.example:4222")
     monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "production-secret")
     monkeypatch.setenv("POCKETLAB_STATE_DIR", "/production/state")
     clean = module._scrubbed_environment()
     assert "POCKETLAB_NATS_PASSWORD" not in clean
+    assert "POCKETLAB_LITE_PUBLIC_NATS_URL" not in clean
     assert "AWS_SECRET_ACCESS_KEY" not in clean
     assert "POCKETLAB_STATE_DIR" not in clean
 
