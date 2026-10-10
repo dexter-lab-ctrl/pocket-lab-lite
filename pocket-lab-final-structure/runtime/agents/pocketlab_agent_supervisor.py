@@ -103,6 +103,27 @@ def _pm2_available() -> bool:
     return bool(_pm2_binary())
 
 
+def _run_pm2(
+    executable: str,
+    args: List[str],
+    *,
+    env: Dict[str, str],
+    timeout: float,
+) -> subprocess.CompletedProcess[str]:
+    # Termux can abort a Python parent during direct PM2 argv finalization.
+    # Keep the command shell-mediated, while quoting every argument and using
+    # the explicitly qualified run-scoped PM2 executable.
+    shell = shutil.which("sh", path=env.get("PATH")) or "sh"
+    return subprocess.run(
+        [shell, "-c", shlex.join([executable, *args])],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+        timeout=timeout,
+    )
+
+
 def _source_version(path: Path) -> str:
     version = "0.0.0"
     for parent in (path.parent, *path.parents):
@@ -235,7 +256,7 @@ class LiteAgentSupervisor:
         if not pm2:
             return []
         try:
-            result = _run([pm2, "jlist"], env=env, timeout=8)
+            result = _run_pm2(pm2, ["jlist"], env=env, timeout=8)
             if result.returncode != 0 or not result.stdout.strip():
                 return []
             payload = json.loads(result.stdout)
@@ -274,21 +295,23 @@ class LiteAgentSupervisor:
         started = False
         if process_status == "missing" or force_recreate:
             if process_status != "missing":
-                _run([pm2, "delete", self.agent_process], env=env, timeout=20)
+                _run_pm2(pm2, ["delete", self.agent_process], env=env, timeout=20)
             env["POCKETLAB_SERVICE_VERSION"] = expected_version
-            result = _run(
-                [pm2, "start", python_exec, "--name", self.agent_process, "--update-env", "--", str(self.agent_file)],
+            result = _run_pm2(
+                pm2,
+                ["start", python_exec, "--name", self.agent_process, "--update-env", "--", str(self.agent_file)],
                 env=env,
                 timeout=20,
             )
             started = result.returncode == 0
         else:
-            result = _run([pm2, "restart", self.agent_process, "--update-env"], env=env, timeout=20)
+            result = _run_pm2(pm2, ["restart", self.agent_process, "--update-env"], env=env, timeout=20)
             started = result.returncode == 0
             if not started:
                 env["POCKETLAB_SERVICE_VERSION"] = expected_version
-                fallback = _run(
-                    [pm2, "start", python_exec, "--name", self.agent_process, "--update-env", "--", str(self.agent_file)],
+                fallback = _run_pm2(
+                    pm2,
+                    ["start", python_exec, "--name", self.agent_process, "--update-env", "--", str(self.agent_file)],
                     env=env,
                     timeout=20,
                 )
@@ -298,7 +321,7 @@ class LiteAgentSupervisor:
             self.repair_count += 1
             self.last_repair_at = _now_iso()
             try:
-                _run([pm2, "save"], env=env, timeout=12)
+                _run_pm2(pm2, ["save"], env=env, timeout=12)
             except Exception:
                 pass
         else:

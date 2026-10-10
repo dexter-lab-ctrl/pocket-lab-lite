@@ -35,7 +35,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "5cc004512a0f628216e6daeb91d56f4435a1bd738267253ab3cd746e59b294e4",
+  "source_fingerprint": "28ae798ffa54bf6b0ff559cdf0af283e8761ebd3562bc590a734af9b2f818837",
   "source_fingerprints": {
     ".github/workflows/docs-security-supply-chain.yml": "b5ce9661a2c0673d9e9c2a3be9b19e958b4046543816728556a581a2f338fa27",
     ".github/workflows/lite-quality.yml": "67f86bec496b25f4e61ade7f7e6361a1381afc3d030a15fc9f0035e316139ff1",
@@ -75,7 +75,7 @@
     "scripts/dev/lite/release_artifact_check.py": "1a50fb4d9438fba3c3d6c31f43c5bcbeef041828fb6320153c0d50bfa2c79e44",
     "scripts/dev/lite/resolve-browser.mjs": "cfce0a19ef05720f3099df781151d32c611b70ffdb0808a17a12038dc3094a2a",
     "scripts/dev/lite/run-gate.sh": "81b2d42dbbb265fbc31dc28ec7f87c77a863a4d3bfa9586a9875a4aeb30e7ee1",
-    "scripts/dev/lite/run-isolated-runtime-qualification.py": "b8157bc9175a3cd8a7d8018ebff408b72ffbe05ebb23bae12844f766ac379b95",
+    "scripts/dev/lite/run-isolated-runtime-qualification.py": "869de5d394f6e1300348902a9db38ea48735788d59c40dd5b70ee4bca906c703",
     "scripts/dev/lite/run-photo-backup-candidate-qualification.py": "50bba8f6effcac043d97bb2a06834ae1463c89af48adc254661eb24fdde787bf",
     "scripts/dev/lite/run-playwright-mocked.sh": "9293ca6becf155ebefd5348901302e694eae8cca478ed0012b91e3a0dc68fd16",
     "scripts/dev/lite/run-ui-performance-android-baseline.sh": "ab353bc98382ea73cc698d97cdbec25fc4ecf587e50dcba36d49ddbaa62950ee",

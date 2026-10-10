@@ -241,7 +241,9 @@ def test_android_supervisor_uses_explicit_run_scoped_pm2_binary():
     supervisor = (ROOT / "pocket-lab-final-structure" / "runtime" / "agents" / "pocketlab_agent_supervisor.py").read_text(encoding="utf-8")
     controller = CONTROLLER.read_text(encoding="utf-8")
     assert "POCKETLAB_PM2_BIN" in supervisor
-    assert "[pm2, \"jlist\"]" in supervisor
+    assert "def _run_pm2(" in supervisor
+    assert "shlex.join([executable, *args])" in supervisor
+    assert '_run_pm2(pm2, ["jlist"]' in supervisor
     assert '"POCKETLAB_PM2_BIN": remote.pm2 or ""' in controller
 
 

@@ -2799,6 +2799,31 @@ except Exception:
 '''
 
 
+_ANDROID_READ_TEXT_CODE = r'''
+import pathlib, sys
+root = pathlib.Path(sys.argv[1]).resolve(strict=True)
+path = pathlib.Path(sys.argv[2]).resolve(strict=False)
+if not str(path).startswith(str(root) + "/") or path.is_symlink():
+    raise SystemExit(3)
+try:
+    text = path.read_text(encoding="utf-8", errors="replace")
+except OSError:
+    print("unavailable")
+else:
+    print(text[-12000:])
+'''
+
+
+def _android_read_text(remote: AndroidRemote, path: str, *, root: str) -> str:
+    _android_safe_remote_path(path, root)
+    result = _android_ssh_run(remote.host, [
+        remote.python, "-c", _ANDROID_READ_TEXT_CODE, root, path,
+    ], timeout=15)
+    if result.returncode != 0:
+        return "unavailable"
+    return str(result.stdout or "")[-12000:]
+
+
 def _android_process_info(remote: AndroidRemote, pid: int, *, root: str) -> dict[str, Any]:
     _android_safe_remote_path(root + "/probe", root)
     result = _android_ssh_run(remote.host, [
@@ -3993,7 +4018,26 @@ class AndroidQualificationRun(QualificationRun):
         self.supervisor_started = True
 
     def _wait_agent(self, timeout: float = 50.0) -> dict[str, Any]:
-        latest = super()._wait_agent(timeout=timeout)
+        try:
+            latest = super()._wait_agent(timeout=timeout)
+        except QualificationError as exc:
+            remote_details: list[str] = []
+            if self.secondary is not None and self.secondary_root:
+                state = _android_read_text(
+                    self.secondary,
+                    f"{self.secondary_root}/state/agent-supervisor.json",
+                    root=self.secondary_root,
+                )
+                log = _android_read_text(
+                    self.secondary,
+                    f"{self.secondary_root}/logs/supervisor.log",
+                    root=self.secondary_root,
+                )
+                records = _android_pm2_list(self.secondary, self.secondary_env_path, root=self.secondary_root)
+                remote_details.append("remote_supervisor_state=" + state.replace("\n", " ")[-2400:])
+                remote_details.append("remote_supervisor_log=" + log.replace("\n", " ")[-2400:])
+                remote_details.append("remote_pm2=" + json.dumps(records, separators=(",", ":"))[:2400])
+            raise QualificationError(str(exc) + (" " + " ".join(remote_details) if remote_details else "")) from exc
         record, info = self._agent_record()
         if not info.get("owned"):
             raise QualificationError("candidate PM2 agent ownership could not be verified")
