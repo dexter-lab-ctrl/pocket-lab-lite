@@ -147,6 +147,45 @@ def _proc_has_marker(pid: int, marker: str) -> bool:
         return False
 
 
+def _proc_resource_usage(pid: int) -> dict[str, int] | None:
+    """Read bounded Linux process counters without invoking host tooling."""
+    try:
+        stat_fields = Path(f"/proc/{pid}/stat").read_text(encoding="ascii").split(") ", 1)[1].split()
+        rss_kib = 0
+        for line in Path(f"/proc/{pid}/status").read_text(encoding="ascii").splitlines():
+            if line.startswith("VmRSS:"):
+                rss_kib = int(line.split()[1])
+                break
+        ticks = max(1, int(os.sysconf("SC_CLK_TCK")))
+        return {
+            "cpu_user_ms": int(int(stat_fields[11]) * 1000 / ticks),
+            "cpu_system_ms": int(int(stat_fields[12]) * 1000 / ticks),
+            "rss_kib": max(0, rss_kib),
+        }
+    except (FileNotFoundError, OSError, IndexError, ValueError):
+        return None
+
+
+def _tree_size_bytes(root: Path, *, max_entries: int = 100_000) -> tuple[int, int]:
+    """Return regular-file bytes/count while refusing symlink traversal."""
+    total = 0
+    count = 0
+    try:
+        for path in root.rglob("*"):
+            if count >= max_entries:
+                break
+            if path.is_symlink() or not path.is_file():
+                continue
+            try:
+                total += max(0, path.stat().st_size)
+                count += 1
+            except OSError:
+                continue
+    except OSError:
+        pass
+    return total, count
+
+
 @dataclass
 class RunPaths:
     root: Path
@@ -1498,6 +1537,80 @@ class QualificationRun:
             "process_namespace": "run_owned_pm2_home",
         }
 
+    def _resource_evidence(self) -> dict[str, Any]:
+        """Capture observed disposable-lane CPU, memory, and storage usage."""
+        handles = [
+            ("nats", self.nats.process if self.nats else None),
+            ("opa", self.opa.process if self.opa and self.opa.process else None),
+            ("webdav", self.webdav),
+            ("api", self.api),
+            ("worker", self.worker),
+            ("supervisor", self.supervisor),
+        ]
+        by_pid: dict[int, OwnedProcess] = {}
+        labels: dict[int, str] = {}
+        for label, handle in handles:
+            if handle is not None and handle.process.poll() is None:
+                by_pid[handle.pid] = handle
+                labels[handle.pid] = label
+        # The supervised child is owned by the run-scoped PM2 shim rather than
+        # by a direct controller handle.  Include it only after the same marker
+        # check used by fault injection and cleanup.
+        try:
+            records = json.loads((self.paths.root / "pm2" / "qualification-processes.json").read_text(encoding="utf-8"))
+        except (FileNotFoundError, OSError, ValueError):
+            records = []
+        agent_name = f"pocketlab-agent-{self.node_id}"
+        agent_pid = next(
+            (int(item.get("pid") or 0) for item in records
+             if isinstance(item, dict) and str(item.get("name") or "") == agent_name),
+            0,
+        )
+        if agent_pid and _proc_state(agent_pid) not in {"", "Z"} and _proc_has_marker(agent_pid, f"POCKETLAB_QUALIFICATION_RUN_ID={self.run_id}"):
+            usage = _proc_resource_usage(agent_pid)
+            if usage is not None:
+                agent_usage = usage
+            else:
+                agent_usage = None
+        else:
+            agent_usage = None
+        process_usage: dict[str, dict[str, int]] = {}
+        for handle in by_pid.values():
+            usage = _proc_resource_usage(handle.pid)
+            if usage is not None:
+                process_usage[labels.get(handle.pid, "owned-process")[:48]] = usage
+        if agent_usage is not None:
+            process_usage["candidate-node-agent"] = agent_usage
+        total_cpu_user = sum(item["cpu_user_ms"] for item in process_usage.values())
+        total_cpu_system = sum(item["cpu_system_ms"] for item in process_usage.values())
+        total_rss = sum(item["rss_kib"] for item in process_usage.values())
+        root_bytes, root_files = _tree_size_bytes(self.paths.root)
+        destination_bytes, destination_files = _tree_size_bytes(self.paths.destination)
+        live_owned = len(process_usage)
+        observed = {
+            "live_owned_processes": live_owned,
+            "root_bytes": root_bytes,
+            "root_files": root_files,
+            "destination_bytes": destination_bytes,
+            "destination_files": destination_files,
+            "cpu_user_ms": total_cpu_user,
+            "cpu_system_ms": total_cpu_system,
+            "rss_kib": total_rss,
+            "processes": process_usage,
+        }
+        budget = {
+            "max_live_owned_processes": 8,
+            "max_root_bytes": 256 * 1024 * 1024,
+            "max_destination_bytes": 64 * 1024 * 1024,
+            "measurement": "point_in_time_before_cleanup",
+        }
+        within_budget = (
+            live_owned <= budget["max_live_owned_processes"]
+            and root_bytes <= budget["max_root_bytes"]
+            and destination_bytes <= budget["max_destination_bytes"]
+        )
+        return {"status": "PASS" if within_budget else "FAIL", "budget": budget, "observed": observed}
+
     def _write_manifest(self, status: str, error: str | None = None) -> Path:
         process_provenance = {
             "api": self.api.sha_provenance(self.paths.worktree) if self.api else {"running": False},
@@ -1700,7 +1813,11 @@ class QualificationRun:
             self._arm_webdav_fault("PUT", 503, 1)
             _, retry_job = self._start_backup()
             self.results["webdav_503_retry"] = {"status": "PASS" if str(retry_job.get("status") or "") in {"completed", "partial_storage_limit"} else "FAIL", "terminal_status": retry_job.get("status")}
-            status = "PASS" if self.results["webdav_503_retry"]["status"] == "PASS" else "FAIL"
+            self.results["resource_budget"] = self._resource_evidence()
+            status = "PASS" if (
+                self.results["webdav_503_retry"]["status"] == "PASS"
+                and self.results["resource_budget"]["status"] == "PASS"
+            ) else "FAIL"
         except QualificationError as exc:
             error = str(exc)
             status = "FAIL"
