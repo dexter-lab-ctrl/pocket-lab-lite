@@ -7188,6 +7188,7 @@
         "source": [
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
           "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
+          "scripts/dev/lite/run-isolated-runtime-qualification.py",
           "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -7195,7 +7196,8 @@
       {
         "affected_components": [
           "FastAPI",
-          "bootstrap/runtime"
+          "bootstrap/runtime",
+          "repository tooling"
         ],
         "affects_release": true,
         "affects_runtime": true,
@@ -7213,7 +7215,8 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py"
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
+          "scripts/dev/lite/run-isolated-runtime-qualification.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -12191,30 +12194,29 @@
       {
         "affected_components": [
           "FastAPI",
-          "documentation",
           "repository tooling"
         ],
-        "affects_release": false,
-        "affects_runtime": false,
+        "affects_release": true,
+        "affects_runtime": true,
         "default": "redacted/not inferred",
         "name": "POCKETLAB_HARNESS_PROVISIONING_TOKEN",
-        "owner": "documentation tooling",
-        "purpose": "Documentation/developer automation configuration",
+        "owner": "FastAPI/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
         "related_troubleshooting": [
           "Development Troubleshooting",
           "Production Troubleshooting"
         ],
         "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
-        "restart_required": "no-runtime-restart-for-doc-tooling",
+        "restart_required": "likely-runtime-restart",
         "runtime_scope": "runtime or development depending on source",
         "secret": true,
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
           "scripts/dev/lite/harness.py",
+          "scripts/dev/lite/run-isolated-runtime-qualification.py",
           "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
           "scripts/dev/lite/run-ui-performance-qualified.py",
-          "scripts/dev/lite/start-qualification.sh",
-          "scripts/docs/check_security_assurance_playbooks.py"
+          "scripts/dev/lite/start-qualification.sh"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -12340,6 +12342,7 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
+          "scripts/dev/lite/run-isolated-runtime-qualification.py",
           "scripts/dev/lite/start-qualification.sh",
           "tests/backend/test_lite_harness.py"
         ],
@@ -15111,6 +15114,7 @@
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py",
+          "scripts/dev/lite/run-isolated-runtime-qualification.py",
           "tests/backend/test_lite_api.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -15550,7 +15554,9 @@
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py",
-          "tests/backend/test_lite_api.py"
+          "scripts/dev/lite/run-isolated-runtime-qualification.py",
+          "tests/backend/test_lite_api.py",
+          "tests/backend/test_lite_isolated_qualification_lane.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -20482,6 +20488,7 @@
           "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
           "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py",
           "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
+          "scripts/dev/lite/run-isolated-runtime-qualification.py",
           "tests/backend/test_lite_fleet_multi_role_authorization.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -20652,7 +20659,7 @@
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
           "pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_reconciler.py",
-          "tests/backend/test_lite_identity_rules_authorization.py"
+          "scripts/dev/lite/run-isolated-runtime-qualification.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -20679,6 +20686,7 @@
         "source": [
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
+          "scripts/dev/lite/run-isolated-runtime-qualification.py",
           "tests/backend/test_lite_policy_lifecycle_p2_2.py",
           "tests/backend/test_opa_policy_staging.py"
         ],
@@ -20902,7 +20910,8 @@
       },
       {
         "affected_components": [
-          "FastAPI"
+          "FastAPI",
+          "repository tooling"
         ],
         "affects_release": true,
         "affects_runtime": true,
@@ -20919,7 +20928,8 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
+          "scripts/dev/lite/run-isolated-runtime-qualification.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -22748,6 +22758,7 @@
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py",
+          "scripts/dev/lite/run-isolated-runtime-qualification.py",
           "tests/backend/test_lite_api.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -22901,6 +22912,32 @@
         "restart_required": "likely-runtime-restart",
         "runtime_scope": "runtime or development depending on source",
         "secret": true,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
+          "scripts/dev/lite/run-isolated-runtime-qualification.py",
+          "tests/backend/test_lite_isolated_qualification_lane.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_QUALIFICATION_CONTROL_ORIGIN",
+        "owner": "FastAPI/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
           "scripts/dev/lite/run-isolated-runtime-qualification.py",
@@ -31363,7 +31400,7 @@
           "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:878",
           "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:72",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1653",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1004"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1012"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -32700,7 +32737,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1727"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1766"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -34071,8 +34108,8 @@
         "security_classification": "internal metadata",
         "source_owner": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:449",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:778",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:800"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:786",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:808"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -34183,7 +34220,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1698"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1737"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -34332,7 +34369,7 @@
         "security_classification": "internal metadata",
         "source_owner": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:448",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:976"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:984"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -34372,7 +34409,7 @@
         "source_owner": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:278",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:447",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1010",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1018",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:471"
         ],
         "tests": [],
@@ -34410,7 +34447,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:662"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:670"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -34484,8 +34521,8 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1059",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1726",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1098",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1765",
           "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:754"
         ],
         "tests": [],
@@ -48243,10 +48280,10 @@
       "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
-        "asyncapi": "6b2a0945f62b17262d4530cb2d7f2a32175b615bdbedf488491254a4c2b9ef3a",
-        "documentation": "d125eda4b64fd3779b21bbadf9be08408af71f3edc57cc82a8be54bf9a3552d0",
-        "openapi": "324a72a7a5b784ff42518e96913f9a96fd4f8f59e84e3095c23259652cf51769",
-        "operational_health": "caccd3329e208aa8f4ab39d919c1006306a5629385ae8fcefb016ae8384c8066"
+        "asyncapi": "3c6b3a761ba2cedd8f4fdc52e268dc8e8f6fc84e8336be39f344e6cd3ba7c85e",
+        "documentation": "77bc1ebfb0753f53f3ab41ec6ec97b0477f72e8a3f7794c3d234d3d7be3fc356",
+        "openapi": "d7571194d848b19a5a21343c682e5bb659a2e1c2da7e465ac5a5b3eb09deb58d",
+        "operational_health": "5d81d99e0059046b7255ead08bc3bb6059948b56347609aceac10200a803cec6"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -119096,5 +119133,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "11b7b5a0324d22eda90a5037a38e398c41c90cde6d7e5278b3b5e07d6d60b0d7"
+  "source_fingerprint": "d4dabee022d8456e874d8eedc2784c0d6d675cd11d2a6c2c6571d23b1d4ae29d"
 }

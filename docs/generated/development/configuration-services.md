@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 95bc3fcbdd6e364b0728a8e040bbafc8f3f3721316cf3a47c41d16d644005bfb
+source_fingerprint: 3969e43647302a6f0f1914bae3242dd17f03dde65bbee6a0d822c74dd7a689bd
 schema_revision: 1
 validation_status: generated
 ---
@@ -101,6 +101,7 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_AGENT_FILE`
 - `POCKETLAB_AGENT_HEARTBEAT_SECONDS`
 - `POCKETLAB_AGENT_NATS_PASSWORD`
+- `POCKETLAB_AGENT_NATS_USER`
 - `POCKETLAB_AGENT_SUPERVISOR_SECONDS`
 - `POCKETLAB_AGENT_SUPERVISOR_STATE`
 - `POCKETLAB_AGENT_TOKEN`
@@ -196,7 +197,9 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_LITE_DIRECT_BASE_URL`
 - `POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS`
 - `POCKETLAB_LITE_NATS_PORT`
+- `POCKETLAB_LITE_NATS_URL`
 - `POCKETLAB_LITE_PROXY_BASE_URL`
+- `POCKETLAB_LITE_PUBLIC_NATS_URL`
 - `POCKETLAB_LITE_RELEASE_`
 - `POCKETLAB_LITE_RELEASE_REPO`
 - `POCKETLAB_LITE_S8_FAULT_POINT`
@@ -270,9 +273,6 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_LONG_GATE_WAL_READER_INTERVAL_MS`
 - `POCKETLAB_LONG_GATE_WAL_READER_P95_SECONDS`
 - `POCKETLAB_LONG_GATE_WAL_SCENARIO`
-- `POCKETLAB_LONG_GATE_WAL_WRITER_INTERVAL_MS`
-- `POCKETLAB_LONG_GATE_WAL_WRITER_P95_SECONDS`
-- `POCKETLAB_LOW_STORAGE_ABSOLUTE_CAP_BYTES`
 
 ## Process roles
 

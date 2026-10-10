@@ -1767,6 +1767,33 @@
         "title": "PublishEventRequest",
         "type": "object"
       },
+      "QualificationEnrollmentRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "device_roles": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 2,
+            "minItems": 1,
+            "title": "Device Roles",
+            "type": "array"
+          },
+          "node_id": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{2,127}$",
+            "title": "Node Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "node_id",
+          "device_roles"
+        ],
+        "title": "QualificationEnrollmentRequest",
+        "type": "object"
+      },
       "RecoveryAuthorizeRequest": {
         "additionalProperties": false,
         "properties": {
@@ -9663,6 +9690,80 @@
           }
         },
         "summary": "Revoke Principal",
+        "tags": [
+          "lite-harness"
+        ]
+      }
+    },
+    "/api/lite/harness/qualification/enroll": {
+      "post": {
+        "description": "Enroll one synthetic device through the normal invite/bootstrap path.\n\nThis bridge is unavailable outside the isolated qualification context and\nis bound to the single fleet-role harness target.  The raw invite token is\nreturned only to the direct-loopback controller so it can exercise the\nexisting bootstrap endpoint; it is never written to evidence or state.",
+        "operationId": "qualification_enroll_api_lite_harness_qualification_enroll_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QualificationEnrollmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Qualification Enroll Api Lite Harness Qualification Enroll Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Qualification Enroll",
         "tags": [
           "lite-harness"
         ]

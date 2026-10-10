@@ -753,6 +753,10 @@
         "title": "POST /api/lite/harness/principals/{principal_id}/revoke",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-principals-principal-id-revoke"
       },
+      "endpoint:POST:/api/lite/harness/qualification/enroll": {
+        "title": "POST /api/lite/harness/qualification/enroll",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-qualification-enroll"
+      },
       "endpoint:POST:/api/lite/harness/recovery/authorize": {
         "title": "POST /api/lite/harness/recovery/authorize",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-recovery-authorize"
@@ -2713,6 +2717,14 @@
         "title": "qualification_authentication_required",
         "url": "../../docs/generated/development/reason-codes.md#qualification-authentication-required"
       },
+      "reason:qualification_enrollment_invalid": {
+        "title": "qualification_enrollment_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#qualification-enrollment-invalid"
+      },
+      "reason:qualification_enrollment_unavailable": {
+        "title": "qualification_enrollment_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#qualification-enrollment-unavailable"
+      },
       "reason:queue_full": {
         "title": "queue_full",
         "url": "../../docs/generated/development/reason-codes.md#queue-full"
@@ -3397,7 +3409,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "652e681238cc52e06a1720c96df6354ad0ecf49a15e1b0c417c5e08f980601bd",
+    "aggregate_fingerprint": "df5f7e1baca465108445683c3ac5b304b3381bb5dac6cffad209f8c7b00442d9",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3407,8 +3419,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "324a72a7a5b784ff42518e96913f9a96fd4f8f59e84e3095c23259652cf51769",
-      "contracts/metadata/documentation-platform.json": "e9cf8fe1dc439b827595e853f9907804e79b7787446b56af98128fbc541d34e2",
+      "contracts/generated/lite-openapi.json": "d7571194d848b19a5a21343c682e5bb659a2e1c2da7e465ac5a5b3eb09deb58d",
+      "contracts/metadata/documentation-platform.json": "453f7fbc885f8dc67965a1004276152c8013c7aadfaa395b896091b740810f7d",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",

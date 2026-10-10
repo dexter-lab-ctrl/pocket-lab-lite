@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 8856cf5dfde176c4290f583b6b760778875965714adc7823f56619dd0c628929
+source_fingerprint: 91887def25ac0b61aade7c0f6e52418b7269405a1e9e4d161b521f65a5c9a18f
 schema_revision: 1
 validation_status: generated
 ---
@@ -333,6 +333,7 @@ validation_status: generated
 - `/api/lite/harness/principals`
 - `/api/lite/harness/principals/{principal_id}`
 - `/api/lite/harness/principals/{principal_id}/revoke`
+- `/api/lite/harness/qualification/enroll`
 - `/api/lite/harness/recovery/authorize`
 - `/api/lite/harness/security-assurance/capabilities`
 - `/api/lite/harness/security-assurance/faults`

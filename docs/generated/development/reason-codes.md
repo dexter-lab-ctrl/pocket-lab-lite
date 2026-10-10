@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 4c8b2a0667e08ee12de47cc303f67b566464eb796dbb9cae8c5d813c729f1f3a
+source_fingerprint: 95ea8b91205f09424750971b5e775642ce4682ea55949477676db8396510929c
 schema_revision: 1
 validation_status: generated
 ---
@@ -232,6 +232,8 @@ validation_status: generated
 | `projection_unavailable` | projections | The prepared projection is unavailable. | yes | no | 503 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `protected_server_host` | devices | The protected server host cannot use this destructive action. | no | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `qualification_authentication_required` | identity | A synthetic qualification principal was rejected because the explicit qualification environment, direct-local proof, or authentication guard was not satisfied. | yes | no | 401 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `qualification_enrollment_invalid` | validation | The isolated qualification enrollment request did not satisfy the server-owned synthetic-device or qualification-context contract. | no | yes | 422 | warning | pocket-lab-final-structure/runtime/api_fastapi/routers/harness.py |
+| `qualification_enrollment_unavailable` | validation | The isolated qualification context could not issue its bounded synthetic bootstrap token. | yes | no | 503 | warning | pocket-lab-final-structure/runtime/api_fastapi/routers/harness.py |
 | `queue_full` | projections | The bounded queue cannot accept more work. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `read_degraded` | system | A safe last-known read is shown while refresh is unavailable. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `registered_tool_result_missing` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |

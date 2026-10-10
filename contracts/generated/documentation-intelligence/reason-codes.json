@@ -2523,6 +2523,30 @@
       "user_message": "Qualification authentication is unavailable."
     },
     {
+      "code": "qualification_enrollment_invalid",
+      "domain": "validation",
+      "http_status": 422,
+      "meaning": "The isolated qualification enrollment request did not satisfy the server-owned synthetic-device or qualification-context contract.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "warning",
+      "terminal": true,
+      "user_message": "The isolated qualification device could not be enrolled."
+    },
+    {
+      "code": "qualification_enrollment_unavailable",
+      "domain": "validation",
+      "http_status": 503,
+      "meaning": "The isolated qualification context could not issue its bounded synthetic bootstrap token.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "The isolated qualification enrollment service is unavailable."
+    },
+    {
       "code": "queue_full",
       "domain": "projections",
       "http_status": 200,
@@ -3270,5 +3294,5 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "c548e37862a59f6c72707b2445c88e6bf5d2f616a75a25d0765043a9ffe647fb"
+  "source_fingerprint": "ff18a3cb32e91b9f996d1d5d5d1c9322a1f47038d4018d46f41c4c7d22d29d06"
 }
