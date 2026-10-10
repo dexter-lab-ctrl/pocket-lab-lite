@@ -2477,7 +2477,7 @@ def _android_remote_mkdir(host: str, path: str, *, root: str) -> None:
 
 
 _ANDROID_BASELINE_CODE = r'''
-import json, os, pathlib, shlex, shutil, subprocess, sys
+import json, os, pathlib, shlex, shutil, site, subprocess, sys
 
 home = pathlib.Path.home()
 repo = home / "pocket-lab-lite"
@@ -2500,6 +2500,18 @@ def which(name):
         if candidate.is_file() and os.access(candidate, os.X_OK):
             return str(candidate)
     return ""
+
+def python_site_packages():
+    paths = []
+    try:
+        candidates = [site.getusersitepackages(), *site.getsitepackages()]
+    except Exception:
+        candidates = []
+    for value in candidates:
+        path = pathlib.Path(str(value or "")).resolve(strict=False)
+        if path.is_dir() and not path.is_symlink() and str(path) not in paths:
+            paths.append(str(path))
+    return paths
 
 def safe_pm2():
     pm2 = which("pm2")
@@ -2595,6 +2607,7 @@ print(json.dumps({
     "prefix_class": "termux_prefix" if os.environ.get("PREFIX", "").startswith("/data/data/com.termux/") else "unexpected",
     "python": sys.executable,
     "python_version": sys.version.split()[0],
+    "python_site_packages": python_site_packages(),
     "pm2_path": which("pm2"),
     "rclone_path": which("rclone"),
     "df_free_bytes": free_bytes(home),
@@ -2623,14 +2636,33 @@ def _android_baseline(host: str) -> dict[str, Any]:
     return payload
 
 
-def _android_import_check(host: str, python: str, modules: list[str]) -> dict[str, Any]:
+def _android_import_check(
+    host: str,
+    python: str,
+    modules: list[str],
+    *,
+    extra_paths: list[str] | None = None,
+) -> dict[str, Any]:
     code = r'''
-import importlib.util, json, sys
-modules = sys.argv[1:]
-missing = [name for name in modules if importlib.util.find_spec(name) is None]
-print(json.dumps({"missing": missing, "python": sys.executable, "version": sys.version.split()[0]}))
+import importlib, json, sys
+extra_paths = json.loads(sys.argv[1])
+if not isinstance(extra_paths, list) or any(not isinstance(item, str) for item in extra_paths):
+    raise SystemExit(2)
+sys.path[:0] = [item for item in extra_paths if item]
+modules = sys.argv[2:]
+missing = []
+errors = {}
+for name in modules:
+    try:
+        importlib.import_module(name)
+    except ModuleNotFoundError:
+        missing.append(name)
+    except Exception as exc:
+        errors[name] = type(exc).__name__
+print(json.dumps({"missing": missing, "errors": errors, "python": sys.executable, "version": sys.version.split()[0]}))
 '''
-    result = _android_ssh_run(host, [python, "-c", code, *modules], timeout=20)
+    paths = [str(item) for item in (extra_paths or []) if str(item)]
+    result = _android_ssh_run(host, [python, "-c", code, json.dumps(paths), *modules], timeout=20)
     if result.returncode != 0:
         raise QualificationError("Android runtime dependency preflight failed")
     try:
@@ -3429,17 +3461,41 @@ class AndroidQualificationRun(QualificationRun):
         if not self.opa_binary:
             raise QualificationError("Dev PC disposable OPA is unavailable")
 
+        def verified_site_packages(remote: AndroidRemote) -> list[str]:
+            values = remote.baseline.get("python_site_packages")
+            if not isinstance(values, list):
+                raise QualificationError(f"{remote.host} did not report Python site-package paths")
+            paths: list[str] = []
+            for value in values:
+                path = str(value or "").strip()
+                if not path.startswith((remote.home.rstrip("/") + "/", remote.prefix.rstrip("/") + "/")):
+                    raise QualificationError(f"{remote.host} reported a Python site-package path outside Termux")
+                if path not in paths:
+                    paths.append(path)
+            if not paths:
+                raise QualificationError(f"{remote.host} has no usable Python site-package path")
+            return paths
+
+        server_site_packages = verified_site_packages(self.server)
+        secondary_site_packages = verified_site_packages(self.secondary)
         server_imports = _android_import_check(
             self.server.host,
             self.server.python,
             ["fastapi", "uvicorn", "nats", "cryptography", "pydantic"],
+            extra_paths=server_site_packages,
         )
         secondary_imports = _android_import_check(
             self.secondary.host,
             self.secondary.python,
             ["nats"],
+            extra_paths=secondary_site_packages,
         )
-        if server_imports.get("missing") or secondary_imports.get("missing"):
+        if (
+            server_imports.get("missing")
+            or server_imports.get("errors")
+            or secondary_imports.get("missing")
+            or secondary_imports.get("errors")
+        ):
             raise QualificationError("Android candidate runtime dependency preflight failed")
         self.results["android_preflight"] = {
             "status": "PASS",
@@ -3447,6 +3503,8 @@ class AndroidQualificationRun(QualificationRun):
             "secondary_architecture": self.secondary.baseline.get("architecture"),
             "server_python": server_imports.get("version"),
             "secondary_python": secondary_imports.get("version"),
+            "server_python_site_package_count": len(server_site_packages),
+            "secondary_python_site_package_count": len(secondary_site_packages),
             "server_pm2_processes": len(self.server.baseline.get("pm2") or []),
             "secondary_pm2_processes": len(self.secondary.baseline.get("pm2") or []),
             "secondary_tailscale": self.secondary.baseline.get("tailscale"),
@@ -3629,6 +3687,13 @@ class AndroidQualificationRun(QualificationRun):
         runtime = f"{root}/candidate/pocket-lab-final-structure/runtime"
         home = f"{root}/home"
         state = f"{root}/state"
+        site_packages = [
+            str(value)
+            for value in (remote.baseline.get("python_site_packages") or [])
+            if str(value).startswith((remote.home.rstrip("/") + "/", remote.prefix.rstrip("/") + "/"))
+        ]
+        if not site_packages:
+            raise QualificationError(f"{remote.host} has no verified Python site-package path")
         env = {
             "HOME": home,
             "TMPDIR": f"{root}/tmp",
@@ -3638,7 +3703,7 @@ class AndroidQualificationRun(QualificationRun):
             "XDG_CACHE_HOME": f"{root}/xdg-cache",
             "XDG_DATA_HOME": f"{root}/xdg-data",
             "PATH": f"{root}/bin:{remote.prefix}/bin",
-            "PYTHONPATH": runtime,
+            "PYTHONPATH": os.pathsep.join([runtime, *site_packages]),
             "PYTHONDONTWRITEBYTECODE": "1",
             "PREFIX": remote.prefix,
             "LD_PRELOAD": str(remote.baseline.get("termux_exec_ld_preload") or ""),

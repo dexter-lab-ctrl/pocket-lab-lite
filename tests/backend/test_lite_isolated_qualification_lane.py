@@ -200,8 +200,16 @@ def test_android_python_probes_preserve_argument_boundaries(monkeypatch):
         )
 
     monkeypatch.setattr(module, "_android_ssh_run", fake_ssh_run)
-    assert module._android_import_check("pocketlab-termux", "/data/data/com.termux/files/usr/bin/python", ["nats"])["missing"] == []
-    assert calls[0][1][3:] == ["nats"]
+    assert module._android_import_check(
+        "pocketlab-termux",
+        "/data/data/com.termux/files/usr/bin/python",
+        ["nats"],
+        extra_paths=["/data/data/com.termux/files/home/.local/lib/python3.13/site-packages"],
+    )["missing"] == []
+    assert calls[0][1][3:] == [
+        '["/data/data/com.termux/files/home/.local/lib/python3.13/site-packages"]',
+        "nats",
+    ]
 
 
 def test_android_ssh_input_does_not_duplicate_stdin(monkeypatch):
