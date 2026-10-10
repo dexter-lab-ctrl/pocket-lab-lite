@@ -4228,22 +4228,41 @@ class AndroidQualificationRun(QualificationRun):
 
 
     def _start_backup(self) -> tuple[str, dict[str, Any]]:
-        status, payload = self._api_request(
-            f"/api/lite/devices/{self.node_id}/photo-backup",
-            method="POST",
-            payload={"collections": ["camera", "pictures", "videos"]},
-        )
-        if status != 202 or not payload.get("backup_id"):
+        last_status = 0
+        last_payload: dict[str, Any] = {}
+        for attempt in range(3):
+            status, payload = self._api_request(
+                f"/api/lite/devices/{self.node_id}/photo-backup",
+                method="POST",
+                payload={"collections": ["camera", "pictures", "videos"]},
+            )
+            last_status = status
+            last_payload = payload
+            if status == 202 and payload.get("backup_id"):
+                backup_id = str(payload["backup_id"])
+                self.active_backup_id = backup_id
+                try:
+                    return backup_id, self._wait_backup(backup_id)
+                finally:
+                    self.active_backup_id = ""
+
             reason = payload.get("reason_code") or payload.get("error") or payload.get("status") or payload.get("message") or payload.get("detail") or "unreported"
             if isinstance(reason, dict):
                 reason = reason.get("reason_code") or reason.get("error") or reason.get("message") or "structured_error"
-            raise QualificationError(f"physical candidate photo backup admission was rejected: status={status} reason={str(reason)[:160]}")
-        backup_id = str(payload["backup_id"])
-        self.active_backup_id = backup_id
-        try:
-            return backup_id, self._wait_backup(backup_id)
-        finally:
-            self.active_backup_id = ""
+            if status != 404 or str(reason) != "not_found" or attempt >= 2:
+                break
+
+            # A phone NATS reconnect can deliver the fresh heartbeat just
+            # before the API process observes the durable fleet projection.
+            # Admission is retried only after a bounded, read-only convergence
+            # wait; a missing device remains a hard failure.
+            self._wait_agent(timeout=12)
+            time.sleep(0.5)
+
+        reason = last_payload.get("reason_code") or last_payload.get("error") or last_payload.get("status") or last_payload.get("message") or last_payload.get("detail") or "unreported"
+        if isinstance(reason, dict):
+            reason = reason.get("reason_code") or reason.get("error") or reason.get("message") or "structured_error"
+        raise QualificationError(f"physical candidate photo backup admission was rejected: status={last_status} reason={str(reason)[:160]}")
 
     def _verify_destination(self) -> dict[str, Any]:
         expected = {
