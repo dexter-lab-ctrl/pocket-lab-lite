@@ -186,8 +186,6 @@ def _isolated_environment(root: Path, run_id: str, api_port: int) -> dict[str, s
             "POCKETLAB_NODE_ID": node_id,
             "POCKETLAB_NODE_NAME": node_id,
             "POCKETLAB_NODE_ROLE": "compute",
-            "POCKETLAB_QUALIFICATION_RUN_ID": run_id,
-            "POCKETLAB_QUALIFICATION_CANDIDATE_SHA": "",
             "PYTHONDONTWRITEBYTECODE": "1",
             "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
         }
@@ -394,7 +392,6 @@ def run(candidate_sha: str | None, *, test_timeout: float) -> dict[str, object]:
     with tempfile.TemporaryDirectory(prefix="pocketlab-photo-backup-candidate-") as temporary:
         root = Path(temporary)
         env = _isolated_environment(root, run_id, api_port)
-        env["POCKETLAB_QUALIFICATION_CANDIDATE_SHA"] = selected_sha
         _assert_isolated_environment(env, root, run_id)
         worktree = _prepare_worktree(root, selected_sha)
         try:

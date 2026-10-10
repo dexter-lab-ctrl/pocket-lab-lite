@@ -35,6 +35,8 @@ def test_isolated_environment_removes_production_credentials_and_uses_private_ro
     assert env["POCKETLAB_STATE_DIR"].startswith(str(tmp_path))
     assert "POCKETLAB_NATS_PASSWORD" not in env
     assert "POCKETLAB_NATS_CREDENTIALS_FILE" not in env
+    assert "POCKETLAB_QUALIFICATION_RUN_ID" not in env
+    assert "POCKETLAB_QUALIFICATION_CANDIDATE_SHA" not in env
     assert env["PM2_HOME"].startswith(str(tmp_path))
 
 
