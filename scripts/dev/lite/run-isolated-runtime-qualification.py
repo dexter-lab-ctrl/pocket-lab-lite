@@ -2867,6 +2867,14 @@ def owned():
     except Exception:
         return False
 
+try:
+    current_ticks = ticks(pid)
+except FileNotFoundError:
+    print("already_stopped")
+    raise SystemExit(0)
+if current_ticks != expected_ticks:
+    raise SystemExit(3)
+
 if not owned():
     raise SystemExit(3)
 try:
@@ -3151,7 +3159,8 @@ if not str(root).startswith(str(parent) + "/") or root.is_symlink():
 if root.exists():
     for path in sorted(root.rglob("*"), key=lambda item: len(item.parts), reverse=True):
         if path.is_symlink():
-            raise SystemExit(5)
+            path.unlink()
+            continue
         if path.is_dir():
             path.chmod(0o700)
         elif path.is_file():
@@ -3682,9 +3691,10 @@ class AndroidQualificationRun(QualificationRun):
         }
         if roles == "storage":
             env.update({
-                "POCKETLAB_PM2_HOME": f"{root}/pm2",
-                "PM2_HOME": f"{root}/pm2",
-                "POCKETLAB_AGENT_FILE": f"{runtime}/agents/pocketlab_node_agent.py",
+            "POCKETLAB_PM2_HOME": f"{root}/pm2",
+            "PM2_HOME": f"{root}/pm2",
+            "POCKETLAB_PM2_BIN": remote.pm2 or "",
+            "POCKETLAB_AGENT_FILE": f"{runtime}/agents/pocketlab_node_agent.py",
                 "POCKETLAB_AGENT_ENV_FILE": f"{home}/.pocketlab-lite-agent.env",
                 "POCKETLAB_EXPECTED_AGENT_PROCESS": f"pocketlab-agent-{self.node_id}",
             })

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: ca4bfd758c77785a8dd398727b3a5cf96644567092feed378b3bb0f4a7f49b53
+source_fingerprint: 9acba97453bb6686784de523440ff2f05e2ce02ed23cc67e438efa2e031eee68
 schema_revision: 1
 validation_status: generated
 ---
@@ -702,7 +702,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_PLAYWRIGHT_REPORT_PATH` | configuration | .pocketlab-dev/reports/playwright-browser.json | yes | component-dependent | scripts/dev/install-playwright-browser.sh |
 | `POCKETLAB_PLAYWRIGHT_VIDEO` | configuration | source-defined or empty | yes | component-dependent | playwright.config.ts |
 | `POCKETLAB_PM2_` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_registry.py |
-| `POCKETLAB_PM2_BIN` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_runtime.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py |
+| `POCKETLAB_PM2_BIN` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_runtime.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py, scripts/dev/lite/run-isolated-runtime-qualification.py |
 | `POCKETLAB_PM2_HOME` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-isolated-runtime-qualification.py |
 | `POCKETLAB_PM2_LOG_CEILING_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_contract.py |
 | `POCKETLAB_PM2_LOG_CLEANUP_INTERVAL_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_contract.py |

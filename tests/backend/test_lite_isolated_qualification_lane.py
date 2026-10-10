@@ -232,7 +232,17 @@ def test_android_cleanup_unlocks_read_only_roots_and_avoids_unstarted_pm2():
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     assert "path.chmod(0o600)" in module._ANDROID_REMOVE_ROOT_CODE
+    assert "path.unlink()" in module._ANDROID_REMOVE_ROOT_CODE
+    assert "already_stopped" in module._ANDROID_STOP_CODE
     assert "self.secondary_env_path and self.supervisor_started" in CONTROLLER.read_text(encoding="utf-8")
+
+
+def test_android_supervisor_uses_explicit_run_scoped_pm2_binary():
+    supervisor = (ROOT / "pocket-lab-final-structure" / "runtime" / "agents" / "pocketlab_agent_supervisor.py").read_text(encoding="utf-8")
+    controller = CONTROLLER.read_text(encoding="utf-8")
+    assert "POCKETLAB_PM2_BIN" in supervisor
+    assert "[pm2, \"jlist\"]" in supervisor
+    assert '"POCKETLAB_PM2_BIN": remote.pm2 or ""' in controller
 
 
 def test_qualification_rclone_accepts_candidate_flag_surface():

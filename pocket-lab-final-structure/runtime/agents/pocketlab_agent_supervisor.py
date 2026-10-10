@@ -81,15 +81,26 @@ def _run(command: List[str], *, env: Dict[str, str] | None = None, timeout: floa
     return subprocess.run(command, check=False, capture_output=True, text=True, env=env, timeout=timeout)
 
 
-def _pm2_available() -> bool:
+def _pm2_binary(env: Dict[str, str] | None = None) -> str:
+    source = env or os.environ
+    configured = str(source.get("POCKETLAB_PM2_BIN") or "").strip()
+    if configured:
+        candidate = Path(configured).expanduser()
+        if candidate.is_file() and os.access(candidate, os.X_OK):
+            return str(candidate)
+        return ""
     try:
         # Resolve the executable in the process environment directly. A login
         # shell may replace PATH (notably in a disposable WSL/Termux lane),
         # causing a run-owned PM2 namespace to be reported unavailable even
         # though its explicitly scoped executable is present.
-        return bool(shutil.which("pm2"))
+        return str(shutil.which("pm2") or "")
     except Exception:
-        return False
+        return ""
+
+
+def _pm2_available() -> bool:
+    return bool(_pm2_binary())
 
 
 def _source_version(path: Path) -> str:
@@ -219,8 +230,12 @@ class LiteAgentSupervisor:
         return env
 
     def _pm2_processes(self) -> List[Dict[str, Any]]:
+        env = self._process_env()
+        pm2 = _pm2_binary(env)
+        if not pm2:
+            return []
         try:
-            result = _run(["pm2", "jlist"], env=self._process_env(), timeout=8)
+            result = _run([pm2, "jlist"], env=env, timeout=8)
             if result.returncode != 0 or not result.stdout.strip():
                 return []
             payload = json.loads(result.stdout)
@@ -242,12 +257,13 @@ class LiteAgentSupervisor:
         return self._agent_process_state()[0]
 
     def _start_or_restart_agent(self, process_status: str, *, force_recreate: bool = False) -> bool:
-        if not _pm2_available() or not self.agent_file.exists():
+        env = self._process_env()
+        pm2 = _pm2_binary(env)
+        if not pm2 or not self.agent_file.exists():
             self.last_repair_failure_reason = (
-                "pm2_unavailable" if not _pm2_available() else "agent_file_missing"
+                "pm2_unavailable" if not pm2 else "agent_file_missing"
             )
             return False
-        env = self._process_env()
         expected_version = _source_version(self.agent_file)
         try:
             python_exec = _prepare_versioned_python_exec(self.agent_process, expected_version)
@@ -258,21 +274,21 @@ class LiteAgentSupervisor:
         started = False
         if process_status == "missing" or force_recreate:
             if process_status != "missing":
-                _run(["pm2", "delete", self.agent_process], env=env, timeout=20)
+                _run([pm2, "delete", self.agent_process], env=env, timeout=20)
             env["POCKETLAB_SERVICE_VERSION"] = expected_version
             result = _run(
-                ["pm2", "start", python_exec, "--name", self.agent_process, "--update-env", "--", str(self.agent_file)],
+                [pm2, "start", python_exec, "--name", self.agent_process, "--update-env", "--", str(self.agent_file)],
                 env=env,
                 timeout=20,
             )
             started = result.returncode == 0
         else:
-            result = _run(["pm2", "restart", self.agent_process, "--update-env"], env=env, timeout=20)
+            result = _run([pm2, "restart", self.agent_process, "--update-env"], env=env, timeout=20)
             started = result.returncode == 0
             if not started:
                 env["POCKETLAB_SERVICE_VERSION"] = expected_version
                 fallback = _run(
-                    ["pm2", "start", python_exec, "--name", self.agent_process, "--update-env", "--", str(self.agent_file)],
+                    [pm2, "start", python_exec, "--name", self.agent_process, "--update-env", "--", str(self.agent_file)],
                     env=env,
                     timeout=20,
                 )
@@ -282,7 +298,7 @@ class LiteAgentSupervisor:
             self.repair_count += 1
             self.last_repair_at = _now_iso()
             try:
-                _run(["pm2", "save"], env=env, timeout=12)
+                _run([pm2, "save"], env=env, timeout=12)
             except Exception:
                 pass
         else:

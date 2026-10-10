@@ -12759,7 +12759,8 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
-        "pocket-lab-final-structure"
+        "pocket-lab-final-structure",
+        "scripts"
       ],
       "deprecated_aliases": [],
       "name": "POCKETLAB_PM2_BIN",
@@ -12767,8 +12768,10 @@
       "required": false,
       "restart_required": "component-dependent",
       "runtime_readers": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_runtime.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py",
+        "scripts/dev/lite/run-isolated-runtime-qualification.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -18868,7 +18871,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "fc94014d45344d68e6029f1c93a93c568099fe65c42164ea752ed314287be106",
+    "aggregate_fingerprint": "5d1a63da40740ffa174c175f8a64d704cbe54142789dd6764c78beb60e5a4038",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -18884,7 +18887,7 @@
       "pocket-lab-final-structure/runtime/agents/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
       "pocket-lab-final-structure/runtime/agents/lite_photo_backup_agent.py": "321ce8504e8c1c888b09b3c461614013c747815b4d8d48dc7b47b600df47e19e",
       "pocket-lab-final-structure/runtime/agents/lite_system_profile.py": "559c1f44fe21f63cc9da0f4978d01fea67cd9ee2c436633f28ac3b0d7aff7b86",
-      "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py": "2b7897501a9202e72afcc96e8e407adc81a857caab4e97702ddbbe65eaae18aa",
+      "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py": "fa8584d68d993d033273325a58e885ffef10c04a4dcf0cab240224e634a50eda",
       "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py": "b43d5b5c81d94f93138cac64b4f6256dfc4a599421d42a025df7631dea7e68d3",
       "pocket-lab-final-structure/runtime/api_fastapi/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
       "pocket-lab-final-structure/runtime/api_fastapi/db/__init__.py": "526884a92d46e87f3a6c5ece60852976c4bf968476cf5e37767a345540fea946",

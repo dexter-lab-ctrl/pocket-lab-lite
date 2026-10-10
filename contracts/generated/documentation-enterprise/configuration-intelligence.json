@@ -19821,7 +19821,8 @@
     },
     {
       "affected_components": [
-        "FastAPI"
+        "FastAPI",
+        "repository tooling"
       ],
       "affects_release": true,
       "affects_runtime": true,
@@ -19838,8 +19839,11 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_runtime.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py",
+        "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "tests/backend/test_lite_isolated_qualification_lane.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
