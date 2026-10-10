@@ -3,13 +3,14 @@
     "add governed multi-role fleet contracts for exact compute/storage role sets, role-change generations, device capability projection, and backend-owned convergence while keeping the protected Server Host non-joinable",
     "bind fleet role changes and agent restart authorization to the server-owned policy/OPA decision path, exact device target, authorization version, policy revision, and sanitized audit evidence",
     "add qualification-only target-device binding across synthetic principals, challenges, sessions, and audit events so a qualification session cannot authorize another device",
+    "add the fail-closed isolated candidate qualification context, synthetic enrollment route, and loopback control-origin binding without changing production destination defaults",
     "add one-use recovery authorization receipts bound to the selected backup, preview, target schema, target runtime, issued runtime identity, and expiry for the offline main-database promotion handoff",
     "promote the exact generated multi-role fleet and target-bound recovery OpenAPI contract after DEV-PC focused/full gates and exact-feature-runtime qualification; secondary-device media transfer remains outside this change and unvalidated"
   ],
   "baseline": "contracts/parity/openapi-baseline.json",
   "contract": "contracts/generated/lite-openapi.json",
-  "previous_sha256": "204711484f7bc0eaef802657ee762a9f88d1135f19775ba46172dac045abc11a",
-  "promoted_sha256": "324a72a7a5b784ff42518e96913f9a96fd4f8f59e84e3095c23259652cf51769",
+  "previous_sha256": "324a72a7a5b784ff42518e96913f9a96fd4f8f59e84e3095c23259652cf51769",
+  "promoted_sha256": "d7571194d848b19a5a21343c682e5bb659a2e1c2da7e465ac5a5b3eb09deb58d",
   "sanitized": true,
   "schema_version": "1.0.0",
   "security_review": {
@@ -18,7 +19,7 @@
     "runtime_routes_removed": false,
     "write_operations_added": true
   },
-  "source_revision": "feat/fleet-multi-role-capability-authorization@7eab8c1ab72096960cd2f9b251e994baac37083d",
+  "source_revision": "feat/isolated-runtime-qualification-lane@f37742c8d415d701011d2a54647d621dcfa84a59",
   "status": "promoted",
-  "validation_status": "dev-pc-focused-and-full-gates-passed; exact-feature-runtime-fleet-and-recovery-qualification-validated; secondary-device-media-transfer-unvalidated-and-deferred"
+  "validation_status": "dev-pc-focused-and-full-gates-passed; exact-candidate-isolated-runtime-qualification-validated; physical-android-candidate-blocked-by-missing-authorized-private-transport-and-isolated-destination"
 }
