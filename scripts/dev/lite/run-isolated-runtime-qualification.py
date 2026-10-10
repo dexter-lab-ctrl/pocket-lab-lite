@@ -1181,22 +1181,31 @@ class QualificationRun:
         generation = int(state.get("generation") or 0)
         if generation < 1:
             raise QualificationError("server-owned qualification role assignment was not enrolled")
-        status, payload = self._api_request(
-            f"/api/lite/fleet/devices/{self.node_id}/roles",
-            method="PUT",
-            payload={
-                "device_roles": ["storage"],
-                "confirm": True,
-                "expected_generation": generation,
-                "reason": "Isolated candidate qualification setup",
-            },
-            session_token=self.fleet_session_token,
-        )
-        if status != 202:
+        status = 0
+        payload: dict[str, Any] = {}
+        retry_deadline = time.monotonic() + 30
+        while time.monotonic() < retry_deadline:
+            status, payload = self._api_request(
+                f"/api/lite/fleet/devices/{self.node_id}/roles",
+                method="PUT",
+                payload={
+                    "device_roles": ["storage"],
+                    "confirm": True,
+                    "expected_generation": generation,
+                    "reason": "Isolated candidate qualification setup",
+                },
+                session_token=self.fleet_session_token,
+            )
+            if status == 202:
+                break
             reason = payload.get("reason_code") or payload.get("message") or payload.get("detail") or "unreported"
             if isinstance(reason, dict):
                 reason = reason.get("reason_code") or reason.get("message") or "structured_error"
-            raise QualificationError(f"server-owned qualification role assignment was rejected: status={status} reason={str(reason)[:160]}")
+            if str(reason) != "device_role_change_device_offline":
+                raise QualificationError(f"server-owned qualification role assignment was rejected: status={status} reason={str(reason)[:160]}")
+            time.sleep(0.5)
+        if status != 202:
+            raise QualificationError("server-owned qualification role assignment remained offline after bounded retry")
         deadline = time.monotonic() + 40
         last: dict[str, Any] = {}
         while time.monotonic() < deadline:
