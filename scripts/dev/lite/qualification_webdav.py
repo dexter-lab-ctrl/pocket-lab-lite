@@ -145,6 +145,10 @@ def build_app(root: Path, user: str, password: str, control_token: str) -> FastA
             remaining = int(fault.get("remaining") or 0)
             if remaining <= 0:
                 return None
+            # Partial PUTs are handled by the PUT path so the candidate sees
+            # a successful response and must prove its own integrity checks.
+            if bool(fault.get("partial")) and operation == "PUT":
+                return None
             fault["remaining"] = remaining - 1
             write_json(fault_path, fault)
         status = int(fault.get("status") or 503)
@@ -184,13 +188,14 @@ def build_app(root: Path, user: str, password: str, control_token: str) -> FastA
             operation = str(payload.get("operation") or "*")
             status = int(payload.get("status") or 503)
             remaining = int(payload.get("remaining") or 0)
+            partial = bool(payload.get("partial"))
         except Exception:
             return Response(status_code=400)
-        if operation not in {"OPTIONS", "PROPFIND", "PUT", "MOVE", "DELETE", "GET", "*"} or status < 400 or status > 599 or not 0 <= remaining <= 100:
+        if operation not in {"OPTIONS", "PROPFIND", "PUT", "MOVE", "DELETE", "GET", "*"} or status < 400 or status > 599 or not 0 <= remaining <= 100 or (partial and operation not in {"PUT", "*"}):
             return Response(status_code=422)
         with lock:
-            write_json(fault_path, {"operation": operation, "status": status, "remaining": remaining})
-        return Response(content=json.dumps({"status": "armed", "sanitized": True}), media_type="application/json")
+            write_json(fault_path, {"operation": operation, "status": status, "remaining": remaining, "partial": partial})
+        return Response(content=json.dumps({"status": "armed", "partial": partial, "sanitized": True}), media_type="application/json")
 
     @app.api_route("/{path:path}", methods=["OPTIONS", "PROPFIND", "PUT", "MOVE", "DELETE", "GET", "HEAD"])
     async def webdav(request: Request, path: str) -> Response:
@@ -227,12 +232,25 @@ def build_app(root: Path, user: str, password: str, control_token: str) -> FastA
         if operation == "PUT":
             target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
             data = await request.body()
+            partial = False
+            with lock:
+                fault = read_json(fault_path, {})
+                if (
+                    str(fault.get("operation") or "") in {"PUT", "*"}
+                    and bool(fault.get("partial"))
+                    and int(fault.get("remaining") or 0) > 0
+                ):
+                    fault["remaining"] = int(fault.get("remaining") or 0) - 1
+                    write_json(fault_path, fault)
+                    partial = True
+            if partial:
+                data = data[:max(1, len(data) // 2)] if data else data
             temporary = target.with_name(f".{target.name}.{os.getpid()}.upload")
             temporary.write_bytes(data)
             temporary.chmod(0o600)
             temporary.replace(target)
             record(operation, 201)
-            return Response(status_code=201)
+            return Response(status_code=201, headers={"X-Qualification-Partial": "1"} if partial else None)
         if operation == "MOVE":
             destination = str(request.headers.get("destination") or "")
             parsed = urlsplit(destination)

@@ -146,6 +146,39 @@ def test_full_task_exposes_explicit_isolated_dependency_paths():
     assert "--opa-bin" in taskfile
 
 
+def test_android_candidate_task_is_explicit_and_preserves_read_only_mode():
+    taskfile = TASKFILE.read_text(encoding="utf-8")
+    assert "lite:photo-backup:candidate:android:qualify:" in taskfile
+    assert "--android-qualify" in taskfile
+    assert "--android-read-only" in taskfile
+    assert "EVIDENCE_DIR" in taskfile
+
+
+def test_android_transport_is_loopback_only_and_not_a_reverse_shell():
+    spec = importlib.util.spec_from_file_location("isolated_android_transport_test", CONTROLLER)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    import sys
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    tunnel = module.AndroidTunnel(
+        host="pocketlab-secondary",
+        run_id="a" * 24,
+        kind="test",
+        log=Path("/tmp/qualification-test.log"),
+        direction="reverse",
+        local_port=12345,
+        target_port=23456,
+    )
+    assert tunnel.mapping["bind_address"] == "127.0.0.1"
+    assert tunnel.direction == "reverse"
+    source = CONTROLLER.read_text(encoding="utf-8")
+    assert "ClearAllForwardings=no" in source
+    assert "GatewayPorts=no" in source
+    assert "\"ssh\", \"-v\", \"-N\", \"-T\"" in source
+    assert "--no-check-certificate" not in source
+
+
 def test_qualification_rclone_accepts_candidate_flag_surface():
     spec = importlib.util.spec_from_file_location("qualification_rclone_test", RCLONE)
     assert spec and spec.loader

@@ -225,7 +225,7 @@ The manifest is sanitized and does not contain tokens, passwords, private
 keys, real media paths, personal filenames, device fingerprints, or private
 network configuration.
 
-## Android model and current limitation
+## Android modes and physical candidate lane
 
 The available Android command is intentionally read-only:
 
@@ -238,15 +238,78 @@ listener-count, Tailscale-state, and best-effort PhotoPrism-health
 observations for `pocketlab-termux` and `pocketlab-secondary`. It never starts
 candidate code, changes PM2, starts Tailscale, changes Caddy/NATS/PhotoPrism,
 installs packages, writes media, or changes production state. Its top-level
-result remains `BLOCKED` because the repository does not currently have a
-separately authorized private Android candidate transport and isolated remote
-destination. A successful read-only baseline is not Android candidate
-qualification evidence.
+result remains `BLOCKED` by design. A successful read-only baseline is not
+Android candidate qualification evidence.
+
+The separately authorized physical mode is opt-in and reuses the same
+run-scoped identity and evidence contract:
+
+```bash
+task lite:photo-backup:candidate:android:qualify \
+  CANDIDATE_SHA="$(git rev-parse HEAD)" \
+  NATS_SERVER_BIN="/approved/path/to/nats-server" \
+  OPA_BIN="$(command -v opa)"
+```
+
+The controller first requires a clean exact-SHA Dev-PC checkout, both SSH
+aliases, Termux ARM64/Python dependencies, production PM2/listener/Git
+baselines, the secondary phone's existing `rclone` and PM2, and disposable
+Dev-PC `nats-server` and OPA binaries. If any prerequisite is missing it
+returns `BLOCKED` before creating a phone run root or starting candidate code.
+
+On an authorized run, the controller creates a minimal Git archive containing
+only the selected runtime and candidate OPA policy, verifies a SHA-256 manifest
+and no symlinks/production configuration, transfers it into a fresh
+`$HOME/.pocketlab-qualification/<run-id>` root on each phone, and locks the
+candidate tree read-only. No phone checkout is switched and no phone source is
+edited.
+
+Each phone receives independently owned SSH reverse forwards bound to
+`127.0.0.1` for the Dev-PC NATS and HTTPS WebDAV fixture. The server phone
+also receives the isolated OPA forward; a local SSH forward exposes only the
+candidate API to the controller, and a secondary reverse forward exposes that
+API to the secondary agent. Dynamic server-side ports are recorded from the
+OpenSSH allocation evidence. The secondary phone receives the server-selected
+NATS/WebDAV ports only after a bounded loopback reservation/forwarding check.
+`ClearAllForwardings=no`, `GatewayPorts=no`, `ExitOnForwardFailure=yes`, and
+no wildcard/public bind are mandatory. Tunnel PIDs, start ticks, mappings,
+run IDs, and health are retained in sanitized evidence; tunnel loss is a
+candidate-run failure.
+
+The test CA and loopback leaf certificate include `localhost`, `127.0.0.1`,
+and `::1`. The Dev-PC controller, remote Python clients, and the secondary
+phone's run-owned `rclone` wrapper trust only that CA. The controller proves
+untrusted-CA and hostname-mismatch rejection. Android/global trust stores are
+not changed and `--no-check-certificate` is never used.
+
+The server phone runs the exact candidate API and worker on private ports and
+state; the secondary phone runs the exact candidate supervisor and PM2 agent
+with a run-owned `PM2_HOME`, synthetic storage identity, and archived media
+fixtures. The signed non-destructive harness and server-owned fleet-role
+profile are used for one-time synthetic enrollment. The physical lane proves
+real NATS/JetStream delivery/redelivery, heartbeat/capability projection,
+synthetic WebDAV transfer, size/hash read-back, API/worker/agent recovery,
+NATS and SSH-forward reconnection, and bounded WebDAV retry. It does not use
+production NATS, Caddy, PhotoPrism, credentials, Tailscale on the secondary,
+or real media.
+
+Cleanup cancels command admission, revokes synthetic principals, stops the
+candidate supervisor/agent/API/worker, deletes only the run-owned PM2 name,
+stops the run's SSH forwards and Dev-PC services, compares both production
+baselines, removes only the two run roots, and removes the local temporary
+root. Incomplete cleanup or production drift is `FAIL`; missing safe
+preconditions are `BLOCKED`. Resource defaults are explicit and conservative:
+256 MiB per run root, 1 MiB fixture archive, eight owned processes, 32 MiB
+minimum free space, three transport retries, and a 20-minute run limit.
+
+Physical Android evidence is not substituted by a mock or read-only
+observation. The final manifest records separate Server Phone, secondary
+phone, transport, TLS, NATS/JetStream, WebDAV, recovery, resource,
+production-preservation, and cleanup statuses.
 
 The secondary phone is never asked to start Tailscale. Exact SHA execution on
-either physical device must remain a separately gated future operation until
-the preflight can prove all candidate NATS, WebDAV, state, identity, process,
-credential, and cleanup boundaries without touching production resources.
+either physical device remains gated by this explicit command and its
+fail-closed preflight; the read-only command remains the safe default.
 
 ## CI integration
 

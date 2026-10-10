@@ -45,6 +45,22 @@ tasks:
         --android-read-only
         --candidate-sha "{{.CANDIDATE_SHA}}"
 
+  lite:photo-backup:candidate:android:qualify:
+    desc: Run the explicitly authorized exact-SHA physical Android candidate qualification over run-owned SSH reverse forwards
+    vars:
+      CANDIDATE_SHA: '{{default "" .CANDIDATE_SHA}}'
+      NATS_SERVER_BIN: '{{default "" .NATS_SERVER_BIN}}'
+      OPA_BIN: '{{default "" .OPA_BIN}}'
+      EVIDENCE_DIR: '{{default "" .EVIDENCE_DIR}}'
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/run-isolated-runtime-qualification.py
+        --android-qualify
+        --candidate-sha "{{.CANDIDATE_SHA}}"
+        {{if .NATS_SERVER_BIN}}--nats-server-bin "{{.NATS_SERVER_BIN}}"{{end}}
+        {{if .OPA_BIN}}--opa-bin "{{.OPA_BIN}}"{{end}}
+        {{if .EVIDENCE_DIR}}--evidence-dir "{{.EVIDENCE_DIR}}"{{end}}
+
   lite:photo-backup:mocked:
     desc: Run mocked Photo Backup E2E workflows
     cmds:
