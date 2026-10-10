@@ -239,6 +239,7 @@ class LiteAgentSupervisor:
         self.publish_sequence = 0
         self.last_publish_at = ""
         self.last_publish_reason = "not_attempted"
+        self.error_stage = "initialization"
 
     def _process_env(self) -> Dict[str, str]:
         env = {**os.environ, **self.env_data}
@@ -446,7 +447,9 @@ class LiteAgentSupervisor:
             return False
 
     async def tick(self) -> Dict[str, Any]:
+        self.error_stage = "pm2_process_probe"
         process_status, process_version = self._agent_process_state()
+        self.error_stage = "agent_version_probe"
         expected_version = _source_version(self.agent_file) if self.agent_file.exists() else ""
         version_drift = bool(expected_version and process_version != expected_version)
         repair_attempted = False
@@ -457,6 +460,7 @@ class LiteAgentSupervisor:
         supervisor_status = "healthy"
 
         if process_status in {"missing", "stopped", "errored", "error", "stopping", "stopped"} or version_drift:
+            self.error_stage = "pm2_agent_repair"
             repair_attempted = True
             repair_started_at = _now_iso()
             repair_reason_code = "agent_version_drift" if version_drift and process_status == "online" else "agent_process_not_running"
@@ -466,6 +470,7 @@ class LiteAgentSupervisor:
             if repaired:
                 process_status, process_version = self._agent_process_state()
 
+        self.error_stage = "nats_reachability_probe"
         nats_reachable = self._nats_reachable()
         if process_status in {"stopped", "errored", "error", "missing"}:
             agent_status = "agent_stopped"
@@ -511,13 +516,16 @@ class LiteAgentSupervisor:
             "publish_sequence": self.publish_sequence + 1,
             "capabilities": ["agent-supervisor", "agent-repair"],
         }
+        self.error_stage = "nats_evidence_publish"
         published = await self._publish_status(payload)
         payload.update({
             "evidence_delivery_status": "published" if published else "saved_locally",
             "last_evidence_published_at": self.last_publish_at or None,
             "last_publish_reason_code": self.last_publish_reason,
         })
+        self.error_stage = "supervisor_state_write"
         self._write_state(payload)
+        self.error_stage = "idle"
         return payload
 
     async def run(self) -> None:
@@ -531,6 +539,7 @@ class LiteAgentSupervisor:
                         "name": self.node_name,
                         "supervisor_status": "degraded",
                         "error_type": type(exc).__name__,
+                        "error_stage": self.error_stage,
                         "summary": "Supervisor check failed. Details were kept private.",
                         "checked_at": _now_iso(),
                     })

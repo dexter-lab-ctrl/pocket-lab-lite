@@ -244,6 +244,7 @@ def test_android_supervisor_uses_explicit_run_scoped_pm2_binary():
     assert "def _run_pm2(" in supervisor
     assert "shlex.join([executable, *args])" in supervisor
     assert '_run_pm2(pm2, ["jlist"]' in supervisor
+    assert '"error_stage": self.error_stage' in supervisor
     assert '"POCKETLAB_PM2_BIN": remote.pm2 or ""' in controller
 
 

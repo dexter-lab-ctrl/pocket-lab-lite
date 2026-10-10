@@ -4034,9 +4034,18 @@ class AndroidQualificationRun(QualificationRun):
                     root=self.secondary_root,
                 )
                 records = _android_pm2_list(self.secondary, self.secondary_env_path, root=self.secondary_root)
-                remote_details.append("remote_supervisor_state=" + state.replace("\n", " ")[-2400:])
-                remote_details.append("remote_supervisor_log=" + log.replace("\n", " ")[-2400:])
-                remote_details.append("remote_pm2=" + json.dumps(records, separators=(",", ":"))[:2400])
+                for secret in (self.agent_token, self.context_token, self.provisioning_token):
+                    state = state.replace(secret, "[redacted]")
+                    log = log.replace(secret, "[redacted]")
+                self.results["android_agent_diagnostics"] = {
+                    "status": "FAIL",
+                    "supervisor_state": state[-6000:],
+                    "supervisor_log": log[-6000:],
+                    "pm2": records,
+                }
+                remote_details.append("remote_supervisor_state=" + state.replace("\n", " ")[-1800:])
+                remote_details.append("remote_supervisor_log=" + log.replace("\n", " ")[-1800:])
+                remote_details.append("remote_pm2=" + json.dumps(records, separators=(",", ":"))[:1800])
             raise QualificationError(str(exc) + (" " + " ".join(remote_details) if remote_details else "")) from exc
         record, info = self._agent_record()
         if not info.get("owned"):
