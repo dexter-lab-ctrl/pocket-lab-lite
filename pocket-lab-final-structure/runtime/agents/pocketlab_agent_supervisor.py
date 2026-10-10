@@ -233,6 +233,7 @@ class LiteAgentSupervisor:
         self.repair_count = 0
         self.last_repair_at = ""
         self.last_repair_failure_reason = ""
+        self.last_repair_failure_detail = ""
         self.nc = None
         self.next_nats_attempt_epoch = 0.0
         self.nats_backoff_seconds = 1.0
@@ -294,6 +295,9 @@ class LiteAgentSupervisor:
             return False
 
         started = False
+        self.last_repair_failure_detail = ""
+        result = None
+        fallback = None
         if process_status == "missing" or force_recreate:
             if process_status != "missing":
                 _run_pm2(pm2, ["delete", self.agent_process], env=env, timeout=20)
@@ -327,6 +331,18 @@ class LiteAgentSupervisor:
                 pass
         else:
             self.last_repair_failure_reason = "pm2_start_failed"
+            output = " ".join(
+                str(value or "").strip()
+                for item in (result, fallback)
+                if item is not None
+                for value in (item.stderr, item.stdout)
+                if value
+            )
+            for value in sorted(self.env_data.values(), key=lambda item: len(str(item)), reverse=True):
+                text = str(value or "")
+                if len(text) >= 12:
+                    output = output.replace(text, "[redacted]")
+            self.last_repair_failure_detail = re.sub(r"\s+", " ", output)[:600] or "pm2_command_failed"
         return started
 
     def _nats_reachable(self) -> bool:
@@ -504,6 +520,7 @@ class LiteAgentSupervisor:
             "repair_reason_code": repair_reason_code,
             "repair_result": "recovered" if repaired else "failed" if repair_attempted else "not_needed",
             "repair_failure_reason_code": self.last_repair_failure_reason or None,
+            "repair_failure_detail": self.last_repair_failure_detail or None,
             "repair_started_at": repair_started_at or None,
             "repair_completed_at": repair_completed_at or None,
             "repair_count": self.repair_count,

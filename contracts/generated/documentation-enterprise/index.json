@@ -35009,7 +35009,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:431"
+          "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:447"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -48391,8 +48391,8 @@
       "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
-        "asyncapi": "b6efe885b1084af8d3d1fd5e048b5829f05d14ee60591d8bd4d97d63fa3da8e2",
-        "documentation": "4a2fa992d0de986b8236be906b67319b724874617fa5fc1a0e6a0d563cb11143",
+        "asyncapi": "54ab75c285b51217edfa2ff80b42a93c87ebd0c0f6f0f257e25210be3b28f3e3",
+        "documentation": "9047847112a47ca6f4e9d7bfd6158912978c6b4702ff3d465ce1995e9e48f659",
         "openapi": "d7571194d848b19a5a21343c682e5bb659a2e1c2da7e465ac5a5b3eb09deb58d",
         "operational_health": "1b3be1c924384cfa58314bdb2f5a5ef488eaaeef97bb4540f607ec5ea5371e7f"
       },
@@ -119288,5 +119288,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "f44a8811ef571f22a57b074534e2c688cead8e1190224837b9b093fe7547ad6c"
+  "source_fingerprint": "a2cf6265ba4b425b1fa303f5cc8cea7aa57b05491567f15e57589e5939a888ac"
 }
