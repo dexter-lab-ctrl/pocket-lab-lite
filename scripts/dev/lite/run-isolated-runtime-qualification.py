@@ -4370,6 +4370,14 @@ class AndroidQualificationRun(QualificationRun):
         if status != 200:
             raise QualificationError("partial WebDAV fault injection was rejected")
 
+    def _clear_webdav_fault(self) -> None:
+        status, _ = self._fixture_request(
+            "POST", "/__qualification__/fault", control=True,
+            payload={"operation": "PUT", "status": 503, "remaining": 0},
+        )
+        if status != 200:
+            raise QualificationError("partial WebDAV fault cleanup was rejected")
+
     def _component_provenance(self) -> dict[str, Any]:
         assert self.server is not None and self.secondary is not None
         api_info = self.api.info() if self.api else {"owned": False}
@@ -4762,6 +4770,7 @@ class AndroidQualificationRun(QualificationRun):
             self._arm_webdav_partial()
             _partial_id, partial_job = self._start_backup()
             partial_terminal = str(partial_job.get("status") or "")
+            self._clear_webdav_fault()
             partial_detected = False
             try:
                 self._verify_destination()
