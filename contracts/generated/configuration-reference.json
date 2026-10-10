@@ -1423,7 +1423,8 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
-        "pocket-lab-final-structure"
+        "pocket-lab-final-structure",
+        "scripts"
       ],
       "deprecated_aliases": [],
       "name": "POCKETLAB_AGENT_ENV_FILE",
@@ -1432,7 +1433,8 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py",
+        "scripts/dev/lite/run-isolated-runtime-qualification.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -1674,7 +1676,8 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
-        "pocket-lab-final-structure"
+        "pocket-lab-final-structure",
+        "scripts"
       ],
       "deprecated_aliases": [],
       "name": "POCKETLAB_AGENT_TELEMETRY_SECONDS",
@@ -1683,7 +1686,8 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py",
+        "scripts/dev/lite/run-isolated-runtime-qualification.py"
       ],
       "safe_default": "20",
       "secret_classification": "configuration",
@@ -1900,7 +1904,8 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
-        "pocket-lab-final-structure"
+        "pocket-lab-final-structure",
+        "scripts"
       ],
       "deprecated_aliases": [],
       "name": "POCKETLAB_API_DIR",
@@ -1908,7 +1913,8 @@
       "required": false,
       "restart_required": "component-dependent",
       "runtime_readers": [
-        "pocket-lab-final-structure/runtime/core/control_plane_core.py"
+        "pocket-lab-final-structure/runtime/core/control_plane_core.py",
+        "scripts/dev/lite/run-isolated-runtime-qualification.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -1969,6 +1975,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/pocket_lab_fastapi_server.py",
         "pocket-lab-final-structure/runtime/core/control_plane_core.py",
         "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py",
+        "scripts/dev/lite/run-isolated-runtime-qualification.py",
         "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
       ],
       "safe_default": "source-defined or empty",
@@ -3415,7 +3422,8 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
-        "pocket-lab-final-structure"
+        "pocket-lab-final-structure",
+        "scripts"
       ],
       "deprecated_aliases": [],
       "name": "POCKETLAB_DISABLE_RELEASE_UPDATER",
@@ -3423,7 +3431,8 @@
       "required": false,
       "restart_required": "component-dependent",
       "runtime_readers": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py",
+        "scripts/dev/lite/run-isolated-runtime-qualification.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -5635,7 +5644,8 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
-        "pocket-lab-final-structure"
+        "pocket-lab-final-structure",
+        "scripts"
       ],
       "deprecated_aliases": [],
       "name": "POCKETLAB_IAC_DIR",
@@ -5643,7 +5653,8 @@
       "required": false,
       "restart_required": "component-dependent",
       "runtime_readers": [
-        "pocket-lab-final-structure/runtime/core/control_plane_core.py"
+        "pocket-lab-final-structure/runtime/core/control_plane_core.py",
+        "scripts/dev/lite/run-isolated-runtime-qualification.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -13356,6 +13367,24 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_QUALIFICATION_CA",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/run-isolated-runtime-qualification.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
         "pocket-lab-final-structure",
         "scripts"
       ],
@@ -13632,6 +13661,24 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
+        "scripts/dev/lite/run-isolated-runtime-qualification.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_QUALIFICATION_TRANSPORT",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
         "scripts/dev/lite/run-isolated-runtime-qualification.py"
       ],
       "safe_default": "source-defined or empty",
@@ -16895,7 +16942,8 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
-        "pocket-lab-final-structure"
+        "pocket-lab-final-structure",
+        "scripts"
       ],
       "deprecated_aliases": [],
       "name": "POCKETLAB_TELEMETRY_PATH",
@@ -16903,7 +16951,8 @@
       "required": false,
       "restart_required": "component-dependent",
       "runtime_readers": [
-        "pocket-lab-final-structure/runtime/core/control_plane_core.py"
+        "pocket-lab-final-structure/runtime/core/control_plane_core.py",
+        "scripts/dev/lite/run-isolated-runtime-qualification.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",

@@ -7135,6 +7135,7 @@
         "source": [
           "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py",
           "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py",
+          "scripts/dev/lite/run-isolated-runtime-qualification.py",
           "tests/backend/test_lite_fleet_multi_role_authorization.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -7451,7 +7452,8 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh",
-          "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py"
+          "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py",
+          "scripts/dev/lite/run-isolated-runtime-qualification.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -7741,7 +7743,8 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          "pocket-lab-final-structure/runtime/core/control_plane_core.py"
+          "pocket-lab-final-structure/runtime/core/control_plane_core.py",
+          "scripts/dev/lite/run-isolated-runtime-qualification.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -7817,6 +7820,7 @@
           "pocket-lab-final-structure/runtime/api_fastapi/pocket_lab_fastapi_server.py",
           "pocket-lab-final-structure/runtime/core/control_plane_core.py",
           "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py",
+          "scripts/dev/lite/run-isolated-runtime-qualification.py",
           "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -9722,7 +9726,8 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py"
+          "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py",
+          "scripts/dev/lite/run-isolated-runtime-qualification.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -12654,7 +12659,8 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          "pocket-lab-final-structure/runtime/core/control_plane_core.py"
+          "pocket-lab-final-structure/runtime/core/control_plane_core.py",
+          "scripts/dev/lite/run-isolated-runtime-qualification.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -22864,6 +22870,29 @@
       },
       {
         "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_QUALIFICATION_CA",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/lite/run-isolated-runtime-qualification.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "FastAPI",
           "repository tooling"
         ],
@@ -23224,6 +23253,29 @@
           "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
           "scripts/dev/lite/run-isolated-runtime-qualification.py",
           "tests/backend/test_lite_isolated_qualification_lane.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_QUALIFICATION_TRANSPORT",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/lite/run-isolated-runtime-qualification.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -27505,7 +27557,8 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          "pocket-lab-final-structure/runtime/core/control_plane_core.py"
+          "pocket-lab-final-structure/runtime/core/control_plane_core.py",
+          "scripts/dev/lite/run-isolated-runtime-qualification.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -48305,7 +48358,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "3c6b3a761ba2cedd8f4fdc52e268dc8e8f6fc84e8336be39f344e6cd3ba7c85e",
-        "documentation": "6f5378a9f6a321b843018bd39e29438c2b238299c85f0a7b9e882d61e7827c16",
+        "documentation": "9fcdff9db4cf042cee54f349d01e79399f932db7f29f5021b451d1cfcc606fec",
         "openapi": "d7571194d848b19a5a21343c682e5bb659a2e1c2da7e465ac5a5b3eb09deb58d",
         "operational_health": "01b23d662db23560f4d2ac95f196c59bb4f6fad2ec0cbd0dc75a9c801bf4a76c"
       },
@@ -95795,6 +95848,48 @@
       },
       {
         "aliases": [],
+        "audience": "developer/operator",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/dev/lite/run-isolated-runtime-qualification.py --android-qualify --candidate-sha \"{{.CANDIDATE_SHA}}\" {{if .NATS_SERVER_BIN}}--nats-server-bin \"{{.NATS_SERVER_BIN}}\"{{end}} {{if .OPA_BIN}}--opa-bin \"{{.OPA_BIN}}\"{{end}} {{if .EVIDENCE_DIR}}--evidence-dir \"{{.EVIDENCE_DIR}}\"{{end}}"
+        ],
+        "dependencies": [],
+        "environment": [
+          "NATS_SERVER_BIN"
+        ],
+        "example_invocation": "task lite:photo-backup:candidate:android:qualify",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/run-isolated-runtime-qualification.py"
+        ],
+        "name": "lite:photo-backup:candidate:android:qualify",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run the explicitly authorized exact-SHA physical Android candidate qualification over run-owned SSH reverse forwards",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Recovery-diagnostics loop"
+      },
+      {
+        "aliases": [],
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
@@ -119159,5 +119254,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "64267d8c1c785c72571cd0213259a0449f4630b051c1da77d6f4e1d339980a6e"
+  "source_fingerprint": "c79fb802f5aafac7727c1a5c608b5a19ad911b6389b716d1e55460802fc143bf"
 }
