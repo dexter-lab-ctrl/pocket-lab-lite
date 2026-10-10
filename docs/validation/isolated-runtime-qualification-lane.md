@@ -22,7 +22,8 @@ task lite:photo-backup:candidate:full CANDIDATE_SHA="$CANDIDATE_SHA"
 The full lane exits successfully only after the candidate API, worker,
 isolated NATS/JetStream broker, node agent, supervisor, HTTPS WebDAV fixture,
 synthetic media transfer, owned-process recovery, NATS reconnect, WebDAV fault
-retry, and cleanup have all produced the expected observations. Evidence is
+retry, resource-budget sampling, and cleanup have all produced the expected
+observations. Evidence is
 written to `/tmp/pocket-lab-lite-qualification-evidence/<run-id>/` with mode
 `0700`; the manifest and summary inside it are mode `0600`.
 
@@ -97,9 +98,10 @@ are unchanged.
 The candidate continues to use its normal production subject conventions, but
 only against the run-owned broker. This tests the production message path
 without allowing a candidate subscription to reach production NATS. The full
-lane observes the command, event, and audit streams, then stops and restarts
-the broker and requires an agent heartbeat after reconnect. No production NATS
-credential is inherited or reused.
+lane observes the command, event, and audit streams, creates a run-unique
+durable pull consumer, proves unacknowledged redelivery after client reconnect,
+then stops and restarts the broker and requires an agent heartbeat after
+reconnect. No production NATS credential is inherited or reused.
 
 CI installs the pinned `nats-server` release used by the lane and verifies its
 SHA-256 before running the full task. A missing broker is a blocked/failed
@@ -184,8 +186,11 @@ The Dev-PC run uses bounded readiness and subprocess timeouts, loopback-only
 ports, a 128 MiB JetStream file-store cap, 16 MiB per-stream limits, limited
 synthetic media, one WebDAV fixture, one worker, one supervisor, and one
 synthetic agent. Temporary files, ledgers, configs, logs, and evidence live
-under the run root. The controller does not install packages or change host
-services.
+under the run root. The manifest records a point-in-time CPU, RSS,
+live-process, run-root, and synthetic-destination sample against explicit
+qualification-only budgets (`8` live owned processes, `256 MiB` run root,
+`64 MiB` destination). The controller does not install packages or change
+host services.
 
 Physical Android resource limits and battery/thermal thresholds are not
 invented by this lane. Physical execution is blocked unless a separately
@@ -271,7 +276,7 @@ production credential rotation, or media migration.
 | Deferred area | Current evidence | Classification |
 | --- | --- | --- |
 | Exact Dev-PC API and worker SHA | Full lane process and manifest provenance | PASS |
-| Candidate NATS/JetStream path | Real command/event/audit streams and reconnect | PASS |
+| Candidate NATS/JetStream path | Real command/event/audit streams, durable redelivery, and reconnect | PASS |
 | Candidate agent/supervisor | Synthetic identity, heartbeat, owned recovery | PASS |
 | Synthetic WebDAV transfer | Real HTTPS transfer; partial capacity outcome | PASS |
 | Credential revocation and placement rejection | Terminal revocation plus negative destination admission | PASS |
@@ -280,7 +285,7 @@ production credential rotation, or media migration.
 | Physical Server Phone candidate | No safe isolated remote lane exists | BLOCKED |
 | Physical secondary candidate | No safe isolated remote lane exists | BLOCKED |
 | Cross-device Android qualification | Requires both physical candidate lanes | BLOCKED |
-| Production media/process preservation | Dev-PC run targets no production services | PASS |
+| Production media/process preservation | Dev-PC run targets no production services | NOT APPLICABLE |
 
 The matrix is evidence-bound: source implementation or a successful API-only
 test does not close the NATS, WebDAV, Android, or cryptographic-integrity

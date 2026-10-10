@@ -171,3 +171,33 @@ def test_fleet_projection_retains_only_sanitized_photo_observation():
     assert projected["collections"] == ["camera", "pictures"]
     assert projected["repair"]["status"] == "completed"
     assert "password" not in repr(projected)
+
+
+def test_pending_bootstrap_token_rotation_is_server_owned(monkeypatch, tmp_path):
+    ensure_runtime_path()
+    from api_fastapi.services import fleet_registry
+
+    node_id = "qualification-token-rotation"
+    state = {
+        "agents": {
+            node_id: {
+                "node_id": node_id,
+                "identity_status": "pending",
+                "enrollment_status": "waiting_for_heartbeat",
+                "auth_token_hash": "a" * 16,
+            }
+        }
+    }
+    writes = []
+    monkeypatch.setattr(fleet_registry, "_agents_payload", lambda: state)
+    monkeypatch.setattr(fleet_registry, "_write", lambda path, payload: writes.append((path, payload)))
+    monkeypatch.setattr(fleet_registry, "_state_path", lambda name: tmp_path / name)
+
+    rotated = fleet_registry.rotate_pending_agent_token_hash(node_id, "b" * 16)
+    assert rotated["auth_token_hash"] == "b" * 16
+    assert rotated["enrollment_status"] == "waiting_for_heartbeat"
+    assert writes
+
+    state["agents"][node_id]["identity_status"] = "verified"
+    with pytest.raises(ValueError, match="rotation_forbidden"):
+        fleet_registry.rotate_pending_agent_token_hash(node_id, "c" * 16)
