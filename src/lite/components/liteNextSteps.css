@@ -1,0 +1,25 @@
+/* P1: compact, evidence-only recommendations shared by Home, Devices, Apps, Recovery. */
+.lite-p1-next-steps {
+  display: grid;
+  gap: var(--lite-p0-space-md, 1rem);
+  margin: 1rem 0;
+  border: 1px solid var(--pocket-border, rgba(148,163,184,.2));
+  border-radius: var(--lite-p0-radius-card, 1.25rem);
+  padding: clamp(1rem, 2vw, 1.5rem);
+  background: var(--pocket-surface, rgba(15,23,42,.75));
+  color: var(--pocket-text, inherit);
+}
+.lite-p1-next-steps-heading { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: .5rem 1rem; }
+.lite-p1-next-steps-heading span { font-size: .75rem; letter-spacing: .05em; text-transform: uppercase; opacity: .75; }
+.lite-p1-next-steps-heading h2 { font-size: 1.125rem; font-weight: 750; margin: .125rem 0; }
+.lite-p1-next-steps-heading p, .lite-p1-next-steps-copy p { margin: .25rem 0 0; line-height: 1.5; opacity: .8; font-size: .875rem; overflow-wrap: anywhere; }
+.lite-p1-next-steps-heading small { font-size: .75rem; max-width: 20rem; }
+.lite-p1-next-steps-list { margin: 0; padding: 0; list-style: none; display: grid; gap: .5rem; }
+.lite-p1-next-steps-list li { display: flex; justify-content: space-between; gap: .875rem; align-items: center; padding: .75rem; border-radius: .875rem; border: 1px solid var(--pocket-border, rgba(148,163,184,.18)); min-width: 0; }
+.lite-p1-next-steps-copy { min-width: 0; }
+.lite-p1-next-steps-copy strong { overflow-wrap: anywhere; }
+.lite-p1-next-steps-list button { min-height: 44px; flex-shrink: 0; padding: .6rem .85rem; border-radius: .75rem; border: 1px solid currentColor; font-weight: 650; }
+.lite-p1-next-steps-list button:focus-visible { outline: 2px solid var(--lite-p0-focus-ring, #2563eb); outline-offset: 3px; }
+.lite-p1-next-steps[data-lite-information="saved"] { border-style: dashed; }
+@media(max-width: 520px) { .lite-p1-next-steps-list li { flex-direction: column; align-items: stretch; } .lite-p1-next-steps-list button { width: 100%; } }
+@media(prefers-reduced-motion:reduce) { .lite-p1-next-steps * { animation: none !important; transition: none !important; } }

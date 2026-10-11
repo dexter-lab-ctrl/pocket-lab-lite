@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import LiteNextSteps from '../components/LiteNextSteps.jsx';
 import { createPortal } from 'react-dom';
 import { useDrag } from '@use-gesture/react';
 import { animated, config, useSpring } from '@react-spring/web';
@@ -3197,6 +3198,16 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         refreshing={catalogRefreshing}
         lastUpdatedLabel={lastUpdatedLabel || ''}
         backendReachable={backendReachable}
+      />
+      <LiteNextSteps
+        title="App readiness"
+        saved={catalogSaved}
+        description="Open and Manage remain available on each app card. These checks reflect the current catalog projection."
+        items={[
+          ...(insecureAppCount > 0 ? [{ id: "access", label: "App access needs attention", description: "Review the affected app’s access and health before opening it." }] : []),
+          ...(setupNeededCount > 0 ? [{ id: "setup", label: "App setup needs attention", description: "Use Manage on the relevant app to review available setup actions." }] : []),
+          ...(!isCatalogSecure && insecureAppCount === 0 ? [{ id: "remote", label: "Protected access is not confirmed", description: "Review local and Tailnet HTTPS readiness before relying on remote access." }] : []),
+        ]}
       />
       <div className="lite-catalog-toolbar lite-catalog-toolbar--simple">
         <p>{displayedApps.length} {displayedApps.length === 1 ? 'app available' : 'apps available'}</p>

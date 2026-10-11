@@ -16,6 +16,7 @@ import {
 import { LiteFreshness, LiteTechnicalFacts } from './LiteUx.jsx';
 import { LiteDetailsPanel } from './LiteOverlay.jsx';
 import LiteReleaseUpdateCard from './LiteReleaseUpdateCard.jsx';
+import LiteNextSteps from './components/LiteNextSteps.jsx';
 
 const HOME_WORKFLOW_STEPS = Object.freeze([
   { id: 'device', label: 'Device', icon: Smartphone },
@@ -158,6 +159,17 @@ export default function HomeScreen({
         refreshing={refreshing || status.refresh_pending === true}
         lastUpdatedLabel={lastUpdatedLabel || overview.workspaceDetails.freshness}
         backendReachable={backendReachable}
+      />
+
+      <LiteNextSteps
+        title={overview.attentionCount ? "Review what needs attention" : "Your workspace at a glance"}
+        description={effectiveSavedStateOnly ? "These details are saved, not verified live." : "Follow a known area to its current details."}
+        saved={effectiveSavedStateOnly}
+        items={overview.keyAreas.filter((item) => item.tone !== "ready").slice(0, 3).map((item) => ({
+          id: item.key, label: item.label, description: item.summary,
+          actionLabel: "Open", onClick: item.screen && item.screen !== "home" ? () => goTo(item.screen) : undefined,
+        }))}
+        className="lite-p1-home-guidance"
       />
 
       <section className="lite-home-premium-services lite-render-containment lite-render-containment--home" aria-labelledby="lite-home-key-areas">

@@ -99,6 +99,7 @@ import LiteVirtualList from './components/LiteVirtualList.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 import { loadDeviceCard } from './devices/devicesPreload.js';
 import { isLitePerformanceMode } from './liteNavigationRuntime.js';
+import LiteNextSteps from './components/LiteNextSteps.jsx';
 
 const MemoLiteVirtualList = React.memo(LiteVirtualList);
 const DeviceCardLazy = React.lazy(loadDeviceCard);
@@ -1071,6 +1072,19 @@ export default function DevicesScreen() {
         refreshing={refreshing}
         lastUpdatedLabel={lastUpdatedLabel}
         backendReachable={backendReachable}
+      />
+      <LiteNextSteps
+        title="Connection review"
+        description="Connection and remote access are separate checks. Review the affected device before sending a command."
+        saved={savedStateOnly || isExpired}
+        items={[
+          ...devices.filter((device) => deviceLinkState(device) !== "joined" && deviceLinkState(device) !== "server").slice(0, 2).map((device) => ({
+            id: String(device.id || device.name), label: device.name || "Device",
+            description: deviceLinkState(device) === "repairing" ? "Connection is being repaired." : "Device connection is not confirmed.",
+            actionLabel: "Review device", onClick: () => toggleDeviceDetails(String(device.id || device.name)),
+          })),
+          ...(!remoteAccessReady ? [{ id: "remote-access", label: "Remote access not ready", description: remoteAccessView.summary || "Review Tailnet connectivity below." }] : []),
+        ]}
       />
       <DeviceRelationshipMap devices={devices} />
 

@@ -2,6 +2,19 @@ version: '3'
 
 tasks:
 
+  lite:ui:p1:unit:
+    desc: Run Home, Devices, Apps and Recovery P1 guidance component tests
+    cmds:
+      - npm run test -- src/lite/components/LiteNextSteps.test.jsx
+
+  lite:ui:p1:regression:
+    desc: Run existing desktop and mobile mocked UI regression for the P1 screens
+    cmds:
+      - npm run test:mock-regression
+      - npm run test:a11y:states
+      - npm run build:budget
+
+
   lite:ui:p0:unit:
     desc: Run P0 shared design-system and safety component tests
     cmds:
