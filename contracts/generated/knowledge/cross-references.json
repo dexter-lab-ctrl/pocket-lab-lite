@@ -1191,6 +1191,12 @@
           "type": "owns"
         }
       ],
+      "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
       "api:post:/api/lite/devices/{node_id}/photo-backup/cancel": [
         {
           "source": "domain:devices",
@@ -1478,6 +1484,12 @@
         }
       ],
       "api:post:/api/lite/harness/principals/{principal_id}/revoke": [
+        {
+          "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/harness/qualification/enroll": [
         {
           "source": "domain:harness",
           "type": "owns"
@@ -3621,6 +3633,24 @@
           "type": "owns"
         }
       ],
+      "reason:credential_expired": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "reason:credential_identity_mismatch": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "reason:credential_revocation_pending": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
       "reason:csrf_required": [
         {
           "source": "domain:identity",
@@ -3630,6 +3660,30 @@
       "reason:deferred_resource_pressure": [
         {
           "source": "domain:security",
+          "type": "owns"
+        }
+      ],
+      "reason:destination_identity_mismatch": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "reason:destination_mount_missing": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "reason:destination_read_only": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "reason:destination_storage_unavailable": [
+        {
+          "source": "domain:apps",
           "type": "owns"
         }
       ],
@@ -4359,6 +4413,12 @@
           "type": "owns"
         }
       ],
+      "reason:placement_identity_mismatch": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
       "reason:pm2_inventory_failed": [
         {
           "source": "domain:validation",
@@ -4635,6 +4695,18 @@
           "type": "owns"
         }
       ],
+      "reason:qualification_enrollment_invalid": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:qualification_enrollment_unavailable": [
+        {
+          "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
       "reason:queue_full": [
         {
           "source": "domain:projections",
@@ -4749,6 +4821,24 @@
           "type": "owns"
         }
       ],
+      "reason:source_fixture_expired": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "reason:source_fixture_invalid": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "reason:source_fixture_unavailable": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
       "reason:source_inventory_failed": [
         {
           "source": "domain:validation",
@@ -4758,6 +4848,12 @@
       "reason:storage_pressure": [
         {
           "source": "domain:security",
+          "type": "owns"
+        }
+      ],
+      "reason:storage_reservation_conflict": [
+        {
+          "source": "domain:apps",
           "type": "owns"
         }
       ],
@@ -4822,6 +4918,12 @@
         }
       ],
       "reason:unsafe_live_media_import": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "reason:unsupported_destination": [
         {
           "source": "domain:apps",
           "type": "owns"
@@ -5874,6 +5976,28 @@
         }
       ],
       "subject:pocketlab.events.fleet.node_capabilities": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        },
+        {
+          "source": "component:agent-command-executor",
+          "type": "publishes"
+        },
+        {
+          "source": "component:agent-recovery",
+          "type": "publishes"
+        },
+        {
+          "source": "component:agent-signals",
+          "type": "publishes"
+        },
+        {
+          "source": "component:node-agent",
+          "type": "publishes"
+        }
+      ],
+      "subject:pocketlab.events.fleet.node_command_progress": [
         {
           "source": "domain:devices",
           "type": "owns"
@@ -8393,11 +8517,39 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:credential_expired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:credential_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:credential_revocation_pending",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:csrf_required",
           "type": "verified_by"
         },
         {
           "source": "reason:deferred_resource_pressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:destination_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:destination_mount_missing",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:destination_read_only",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:destination_storage_unavailable",
           "type": "verified_by"
         },
         {
@@ -8885,6 +9037,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:placement_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:pm2_inventory_failed",
           "type": "verified_by"
         },
@@ -9069,6 +9225,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:qualification_enrollment_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:qualification_enrollment_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:queue_full",
           "type": "verified_by"
         },
@@ -9145,11 +9309,27 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:source_fixture_expired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:source_inventory_failed",
           "type": "verified_by"
         },
         {
           "source": "reason:storage_pressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_reservation_conflict",
           "type": "verified_by"
         },
         {
@@ -9194,6 +9374,10 @@
         },
         {
           "source": "reason:unsafe_live_media_import",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:unsupported_destination",
           "type": "verified_by"
         },
         {
@@ -9931,6 +10115,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
           "type": "verified_by"
         },
@@ -10080,6 +10268,10 @@
         },
         {
           "source": "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/qualification/enroll",
           "type": "verified_by"
         },
         {
@@ -10887,6 +11079,16 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_isolated_qualification_lane.py": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_long_gate_checkpointing.py": [
         {
           "source": "reason:interrupted",
@@ -11069,6 +11271,18 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:credential_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:identity_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:interrupted",
           "type": "verified_by"
         },
@@ -11077,7 +11291,19 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:source_fixture_expired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:unsafe_live_media_import",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:unsupported_destination",
           "type": "verified_by"
         }
       ],
@@ -11088,6 +11314,60 @@
         },
         {
           "source": "reason:interrupted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_invalid",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_photo_backup_reliability.py": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:destination_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:destination_read_only",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:destination_storage_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:identity_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:interrupted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:placement_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_reservation_conflict",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:unsupported_destination",
           "type": "verified_by"
         }
       ],
@@ -13533,11 +13813,39 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:credential_expired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:credential_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:credential_revocation_pending",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:csrf_required",
           "type": "verified_by"
         },
         {
           "source": "reason:deferred_resource_pressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:destination_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:destination_mount_missing",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:destination_read_only",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:destination_storage_unavailable",
           "type": "verified_by"
         },
         {
@@ -14025,6 +14333,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:placement_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:pm2_inventory_failed",
           "type": "verified_by"
         },
@@ -14209,6 +14521,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:qualification_enrollment_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:qualification_enrollment_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:queue_full",
           "type": "verified_by"
         },
@@ -14285,11 +14605,27 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:source_fixture_expired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:source_inventory_failed",
           "type": "verified_by"
         },
         {
           "source": "reason:storage_pressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_reservation_conflict",
           "type": "verified_by"
         },
         {
@@ -14334,6 +14670,10 @@
         },
         {
           "source": "reason:unsafe_live_media_import",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:unsupported_destination",
           "type": "verified_by"
         },
         {
@@ -14663,11 +15003,39 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:credential_expired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:credential_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:credential_revocation_pending",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:csrf_required",
           "type": "verified_by"
         },
         {
           "source": "reason:deferred_resource_pressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:destination_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:destination_mount_missing",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:destination_read_only",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:destination_storage_unavailable",
           "type": "verified_by"
         },
         {
@@ -15155,6 +15523,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:placement_identity_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:pm2_inventory_failed",
           "type": "verified_by"
         },
@@ -15339,6 +15711,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:qualification_enrollment_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:qualification_enrollment_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:queue_full",
           "type": "verified_by"
         },
@@ -15415,11 +15795,27 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:source_fixture_expired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:source_inventory_failed",
           "type": "verified_by"
         },
         {
           "source": "reason:storage_pressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_reservation_conflict",
           "type": "verified_by"
         },
         {
@@ -15464,6 +15860,10 @@
         },
         {
           "source": "reason:unsafe_live_media_import",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:unsupported_destination",
           "type": "verified_by"
         },
         {
@@ -15766,6 +16166,10 @@
       "test:tests/e2e/lite-photo-backup.spec.ts": [
         {
           "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
           "type": "verified_by"
         },
         {
@@ -16375,6 +16779,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
           "type": "verified_by"
         },
@@ -16524,6 +16932,10 @@
         },
         {
           "source": "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/harness/qualification/enroll",
           "type": "verified_by"
         },
         {
@@ -19119,6 +19531,16 @@
           "type": "verified_by"
         }
       ],
+      "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:post:/api/lite/devices/{node_id}/photo-backup/cancel": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -19490,6 +19912,16 @@
         }
       ],
       "api:post:/api/lite/harness/principals/{principal_id}/revoke": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/harness/qualification/enroll": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -20059,6 +20491,10 @@
           "type": "publishes"
         },
         {
+          "target": "subject:pocketlab.events.fleet.node_command_progress",
+          "type": "publishes"
+        },
+        {
           "target": "subject:pocketlab.events.fleet.node_command_result",
           "type": "publishes"
         },
@@ -20146,6 +20582,10 @@
         },
         {
           "target": "subject:pocketlab.events.fleet.node_capabilities",
+          "type": "publishes"
+        },
+        {
+          "target": "subject:pocketlab.events.fleet.node_command_progress",
           "type": "publishes"
         },
         {
@@ -20256,6 +20696,10 @@
         },
         {
           "target": "subject:pocketlab.events.fleet.node_capabilities",
+          "type": "publishes"
+        },
+        {
+          "target": "subject:pocketlab.events.fleet.node_command_progress",
           "type": "publishes"
         },
         {
@@ -22193,6 +22637,10 @@
           "type": "publishes"
         },
         {
+          "target": "subject:pocketlab.events.fleet.node_command_progress",
+          "type": "publishes"
+        },
+        {
           "target": "subject:pocketlab.events.fleet.node_command_result",
           "type": "publishes"
         },
@@ -22377,6 +22825,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_isolated_qualification_lane.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py",
           "type": "verified_by"
         },
@@ -22386,6 +22838,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_photo_backup_agent.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
           "type": "verified_by"
         },
         {
@@ -24049,7 +24505,59 @@
           "type": "owns"
         },
         {
+          "target": "reason:credential_expired",
+          "type": "owns"
+        },
+        {
+          "target": "reason:credential_identity_mismatch",
+          "type": "owns"
+        },
+        {
+          "target": "reason:credential_revocation_pending",
+          "type": "owns"
+        },
+        {
+          "target": "reason:destination_identity_mismatch",
+          "type": "owns"
+        },
+        {
+          "target": "reason:destination_mount_missing",
+          "type": "owns"
+        },
+        {
+          "target": "reason:destination_read_only",
+          "type": "owns"
+        },
+        {
+          "target": "reason:destination_storage_unavailable",
+          "type": "owns"
+        },
+        {
+          "target": "reason:placement_identity_mismatch",
+          "type": "owns"
+        },
+        {
+          "target": "reason:source_fixture_expired",
+          "type": "owns"
+        },
+        {
+          "target": "reason:source_fixture_invalid",
+          "type": "owns"
+        },
+        {
+          "target": "reason:source_fixture_unavailable",
+          "type": "owns"
+        },
+        {
+          "target": "reason:storage_reservation_conflict",
+          "type": "owns"
+        },
+        {
           "target": "reason:unsafe_live_media_import",
+          "type": "owns"
+        },
+        {
+          "target": "reason:unsupported_destination",
           "type": "owns"
         },
         {
@@ -24345,6 +24853,10 @@
           "type": "owns"
         },
         {
+          "target": "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
+          "type": "owns"
+        },
+        {
           "target": "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
           "type": "owns"
         },
@@ -24582,6 +25094,10 @@
         },
         {
           "target": "subject:pocketlab.events.fleet.node_capabilities",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.events.fleet.node_command_progress",
           "type": "owns"
         },
         {
@@ -25102,6 +25618,10 @@
         },
         {
           "target": "api:post:/api/lite/harness/principals/{principal_id}/revoke",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/harness/qualification/enroll",
           "type": "owns"
         },
         {
@@ -27791,6 +28311,14 @@
           "type": "owns"
         },
         {
+          "target": "reason:qualification_enrollment_invalid",
+          "type": "owns"
+        },
+        {
+          "target": "reason:qualification_enrollment_unavailable",
+          "type": "owns"
+        },
+        {
           "target": "reason:registered_tool_result_missing",
           "type": "owns"
         },
@@ -29625,6 +30153,52 @@
           "type": "verified_by"
         }
       ],
+      "reason:credential_expired": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:credential_identity_mismatch": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:credential_revocation_pending": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:csrf_required": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -29654,6 +30228,74 @@
         },
         {
           "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:destination_identity_mismatch": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:destination_mount_missing": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:destination_read_only": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:destination_storage_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
           "type": "verified_by"
         },
         {
@@ -29965,7 +30607,19 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_isolated_qualification_lane.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_long_gate_submission_recovery.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
           "type": "verified_by"
         },
         {
@@ -30010,6 +30664,10 @@
         },
         {
           "target": "test:tests/e2e/lite-performance.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-photo-backup.spec.ts",
           "type": "verified_by"
         },
         {
@@ -30777,6 +31435,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
           "type": "verified_by"
         },
@@ -30909,6 +31575,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security.py",
           "type": "verified_by"
         },
@@ -30986,6 +31656,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_photo_backup_agent.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
           "type": "verified_by"
         },
         {
@@ -31692,6 +32366,24 @@
         },
         {
           "target": "test:tests/backend/test_lite_workload_admission.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:placement_identity_mismatch": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
           "type": "verified_by"
         },
         {
@@ -32499,6 +33191,34 @@
           "type": "verified_by"
         }
       ],
+      "reason:qualification_enrollment_invalid": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:qualification_enrollment_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:queue_full": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -32873,6 +33593,60 @@
           "type": "verified_by"
         }
       ],
+      "reason:source_fixture_expired": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:source_fixture_invalid": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_agent.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:source_fixture_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:source_inventory_failed": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -32921,9 +33695,31 @@
           "type": "verified_by"
         }
       ],
+      "reason:storage_reservation_conflict": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:storage_unavailable": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
           "type": "verified_by"
         },
         {
@@ -33084,6 +33880,28 @@
         },
         {
           "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:unsupported_destination": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
           "type": "verified_by"
         },
         {
@@ -33951,6 +34769,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5c014a4c5563838ac674dd41d16975a1c93ca0993b41619c15187d787d7c19e3"
+    "source_fingerprint": "9428680fa8e2428b6ab03a1c9153cf83601b2cf1a7b07f08e07c5ee04b89a94a"
   }
 }

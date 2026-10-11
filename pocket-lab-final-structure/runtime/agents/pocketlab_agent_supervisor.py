@@ -21,6 +21,7 @@ import signal
 import shutil
 import socket
 import subprocess
+import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, List
@@ -80,11 +81,47 @@ def _run(command: List[str], *, env: Dict[str, str] | None = None, timeout: floa
     return subprocess.run(command, check=False, capture_output=True, text=True, env=env, timeout=timeout)
 
 
-def _pm2_available() -> bool:
+def _pm2_binary(env: Dict[str, str] | None = None) -> str:
+    source = env or os.environ
+    configured = str(source.get("POCKETLAB_PM2_BIN") or "").strip()
+    if configured:
+        candidate = Path(configured).expanduser()
+        if candidate.is_file() and os.access(candidate, os.X_OK):
+            return str(candidate)
+        return ""
     try:
-        return _run(["sh", "-lc", "command -v pm2"], timeout=4).returncode == 0
+        # Resolve the executable in the process environment directly. A login
+        # shell may replace PATH (notably in a disposable WSL/Termux lane),
+        # causing a run-owned PM2 namespace to be reported unavailable even
+        # though its explicitly scoped executable is present.
+        return str(shutil.which("pm2") or "")
     except Exception:
-        return False
+        return ""
+
+
+def _pm2_available() -> bool:
+    return bool(_pm2_binary())
+
+
+def _run_pm2(
+    executable: str,
+    args: List[str],
+    *,
+    env: Dict[str, str],
+    timeout: float,
+) -> subprocess.CompletedProcess[str]:
+    # Termux can abort a Python parent during direct PM2 argv finalization.
+    # Keep the command shell-mediated, while quoting every argument and using
+    # the explicitly qualified run-scoped PM2 executable.
+    shell = shutil.which("sh", path=env.get("PATH")) or "sh"
+    return subprocess.run(
+        [shell, "-c", shlex.join([executable, *args])],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+        timeout=timeout,
+    )
 
 
 def _source_version(path: Path) -> str:
@@ -104,7 +141,11 @@ def _source_version(path: Path) -> str:
 
 
 def _prepare_versioned_python_exec(process_name: str, version: str) -> str:
-    python3 = shutil.which("python3")
+    # The supervisor is already running under the device's selected Python
+    # runtime. Reusing that executable keeps venv/Termux package resolution
+    # identical for the restarted agent; falling back to PATH preserves the
+    # historical behavior for launchers that do not expose sys.executable.
+    python3 = sys.executable if sys.executable and Path(sys.executable).exists() else shutil.which("python3")
     if not python3:
         raise RuntimeError("python3_missing")
     safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", process_name)
@@ -135,7 +176,20 @@ def _prepare_versioned_python_exec(process_name: str, version: str) -> str:
         link.unlink()
     except FileNotFoundError:
         pass
-    link.symlink_to(python3)
+    # A symlink placed outside a venv no longer lets CPython discover that
+    # venv's pyvenv.cfg. Use a tiny private launcher so restarted agents keep
+    # the supervisor's exact interpreter and installed dependency set. The
+    # fallback remains a direct symlink for runtimes without an interpreter
+    # path (for example a constrained legacy launcher).
+    if sys.executable and Path(sys.executable).exists():
+        link.write_text(
+            "#!/bin/sh\n"
+            f"exec {shlex.quote(sys.executable)} \"$@\"\n",
+            encoding="utf-8",
+        )
+        link.chmod(0o700)
+    else:
+        link.symlink_to(python3)
     return str(link)
 
 
@@ -178,12 +232,15 @@ class LiteAgentSupervisor:
         ).expanduser()
         self.repair_count = 0
         self.last_repair_at = ""
+        self.last_repair_failure_reason = ""
+        self.last_repair_failure_detail = ""
         self.nc = None
         self.next_nats_attempt_epoch = 0.0
         self.nats_backoff_seconds = 1.0
         self.publish_sequence = 0
         self.last_publish_at = ""
         self.last_publish_reason = "not_attempted"
+        self.error_stage = "initialization"
 
     def _process_env(self) -> Dict[str, str]:
         env = {**os.environ, **self.env_data}
@@ -196,8 +253,12 @@ class LiteAgentSupervisor:
         return env
 
     def _pm2_processes(self) -> List[Dict[str, Any]]:
+        env = self._process_env()
+        pm2 = _pm2_binary(env)
+        if not pm2:
+            return []
         try:
-            result = _run(["pm2", "jlist"], env=self._process_env(), timeout=8)
+            result = _run_pm2(pm2, ["jlist"], env=env, timeout=8)
             if result.returncode != 0 or not result.stdout.strip():
                 return []
             payload = json.loads(result.stdout)
@@ -219,44 +280,91 @@ class LiteAgentSupervisor:
         return self._agent_process_state()[0]
 
     def _start_or_restart_agent(self, process_status: str, *, force_recreate: bool = False) -> bool:
-        if not _pm2_available() or not self.agent_file.exists():
-            return False
         env = self._process_env()
+        pm2 = _pm2_binary(env)
+        if not pm2 or not self.agent_file.exists():
+            self.last_repair_failure_reason = (
+                "pm2_unavailable" if not pm2 else "agent_file_missing"
+            )
+            return False
         expected_version = _source_version(self.agent_file)
         try:
             python_exec = _prepare_versioned_python_exec(self.agent_process, expected_version)
         except Exception:
+            self.last_repair_failure_reason = "versioned_exec_failed"
             return False
 
         started = False
+        self.last_repair_failure_detail = ""
+        result = None
+        fallback = None
         if process_status == "missing" or force_recreate:
             if process_status != "missing":
-                _run(["pm2", "delete", self.agent_process], env=env, timeout=20)
+                _run_pm2(pm2, ["delete", self.agent_process], env=env, timeout=20)
             env["POCKETLAB_SERVICE_VERSION"] = expected_version
-            result = _run(
-                ["pm2", "start", python_exec, "--name", self.agent_process, "--update-env", "--", str(self.agent_file)],
+            result = _run_pm2(
+                pm2,
+                [
+                    "start",
+                    python_exec,
+                    "--interpreter",
+                    "none",
+                    "--name",
+                    self.agent_process,
+                    "--update-env",
+                    "--",
+                    str(self.agent_file),
+                ],
                 env=env,
                 timeout=20,
             )
             started = result.returncode == 0
         else:
-            result = _run(["pm2", "restart", self.agent_process, "--update-env"], env=env, timeout=20)
+            result = _run_pm2(pm2, ["restart", self.agent_process, "--update-env"], env=env, timeout=20)
             started = result.returncode == 0
             if not started:
                 env["POCKETLAB_SERVICE_VERSION"] = expected_version
-                fallback = _run(
-                    ["pm2", "start", python_exec, "--name", self.agent_process, "--update-env", "--", str(self.agent_file)],
+                fallback = _run_pm2(
+                    pm2,
+                    [
+                        "start",
+                        python_exec,
+                        "--interpreter",
+                        "none",
+                        "--name",
+                        self.agent_process,
+                        "--update-env",
+                        "--",
+                        str(self.agent_file),
+                    ],
                     env=env,
                     timeout=20,
                 )
                 started = fallback.returncode == 0
         if started:
+            self.last_repair_failure_reason = ""
             self.repair_count += 1
             self.last_repair_at = _now_iso()
             try:
-                _run(["pm2", "save"], env=env, timeout=12)
+                _run_pm2(pm2, ["save"], env=env, timeout=12)
             except Exception:
                 pass
+        else:
+            self.last_repair_failure_reason = "pm2_start_failed"
+            output = " ".join(
+                str(value or "").strip()
+                for item in (result, fallback)
+                if item is not None
+                for value in (item.stderr, item.stdout)
+                if value
+            )
+            for key, value in self.env_data.items():
+                if not any(token in str(key).lower() for token in ("token", "password", "secret", "credential", "private", "provisioning")):
+                    continue
+                text = str(value or "")
+                if len(text) >= 8:
+                    output = output.replace(text, "[redacted]")
+            self.last_repair_failure_detail = re.sub(r"\s+", " ", output)[:600] or "pm2_command_failed"
         return started
 
     def _nats_reachable(self) -> bool:
@@ -377,7 +485,9 @@ class LiteAgentSupervisor:
             return False
 
     async def tick(self) -> Dict[str, Any]:
+        self.error_stage = "pm2_process_probe"
         process_status, process_version = self._agent_process_state()
+        self.error_stage = "agent_version_probe"
         expected_version = _source_version(self.agent_file) if self.agent_file.exists() else ""
         version_drift = bool(expected_version and process_version != expected_version)
         repair_attempted = False
@@ -388,6 +498,7 @@ class LiteAgentSupervisor:
         supervisor_status = "healthy"
 
         if process_status in {"missing", "stopped", "errored", "error", "stopping", "stopped"} or version_drift:
+            self.error_stage = "pm2_agent_repair"
             repair_attempted = True
             repair_started_at = _now_iso()
             repair_reason_code = "agent_version_drift" if version_drift and process_status == "online" else "agent_process_not_running"
@@ -397,6 +508,7 @@ class LiteAgentSupervisor:
             if repaired:
                 process_status, process_version = self._agent_process_state()
 
+        self.error_stage = "nats_reachability_probe"
         nats_reachable = self._nats_reachable()
         if process_status in {"stopped", "errored", "error", "missing"}:
             agent_status = "agent_stopped"
@@ -429,6 +541,8 @@ class LiteAgentSupervisor:
             "repair_attempted": repair_attempted,
             "repair_reason_code": repair_reason_code,
             "repair_result": "recovered" if repaired else "failed" if repair_attempted else "not_needed",
+            "repair_failure_reason_code": self.last_repair_failure_reason or None,
+            "repair_failure_detail": self.last_repair_failure_detail or None,
             "repair_started_at": repair_started_at or None,
             "repair_completed_at": repair_completed_at or None,
             "repair_count": self.repair_count,
@@ -441,13 +555,16 @@ class LiteAgentSupervisor:
             "publish_sequence": self.publish_sequence + 1,
             "capabilities": ["agent-supervisor", "agent-repair"],
         }
+        self.error_stage = "nats_evidence_publish"
         published = await self._publish_status(payload)
         payload.update({
             "evidence_delivery_status": "published" if published else "saved_locally",
             "last_evidence_published_at": self.last_publish_at or None,
             "last_publish_reason_code": self.last_publish_reason,
         })
+        self.error_stage = "supervisor_state_write"
         self._write_state(payload)
+        self.error_stage = "idle"
         return payload
 
     async def run(self) -> None:
@@ -461,6 +578,7 @@ class LiteAgentSupervisor:
                         "name": self.node_name,
                         "supervisor_status": "degraded",
                         "error_type": type(exc).__name__,
+                        "error_stage": self.error_stage,
                         "summary": "Supervisor check failed. Details were kept private.",
                         "checked_at": _now_iso(),
                     })

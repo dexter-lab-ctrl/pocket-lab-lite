@@ -1,0 +1,283 @@
+# Photo Backup reliability workstream (unvalidated)
+
+This change is an incremental implementation, **not P0–P4 completion**. Per-transfer capacity is rechecked against both planning and hard limits; oversized items are deferred rather than stopping all smaller media, and source size/mtime is rechecked before transfer.
+
+## Current readiness and previous backup history
+
+The server reports current readiness separately from the latest job result. Current admission requires a working source, PhotoPrism runtime, secure route, and **positive planning-space budget**. A previous error cannot override the current status headline. Backend reason codes differentiate PhotoPrism stopped/unreachable and hard/planning storage blocks. Older job reason codes remain readable.
+
+## Storage admission
+
+The destination's actual filesystem supplies total/free bytes. Credential redemption checks the current planning budget before disclosing a transfer credential. Pocket Lab retains a hard 10% reserve and a preferred 15% reserve (minimum 2 GiB). When the planning budget is zero, new transfers are blocked even when the hard reserve has not been exhausted. Concurrent non-Pocket-Lab writers may reduce free space; measured capacity is not an absolute guarantee.
+
+## Repair
+
+Termux repair runs only the fixed `pkg install -y rclone` invocation, bounded at 300 seconds. Package-manager failures, timeouts, and verification failures are distinct sanitized outcomes. An agent reports success only when installation and verification succeed. This does not yet provide a durable server-side repair operation state machine.
+
+## Destinations
+
+`server-photoprism-originals` is the only supported WebDAV transfer destination. Removable volumes, NAS, other enrolled nodes and object storage are listed as unsupported. These entries cannot be selected for transfer, and no arbitrary path, URL, or filesystem migration occurs. Disaster recovery remains separate from storing originals on the Server Phone.
+
+## Limitations and qualification
+
+Streaming inventory, durable per-object checkpoints, stronger integrity verification, independent destination adapters, repair lifecycle durability, mounting/identity enforcement for newly supported storage and full UX/test coverage remain deferred. No tests, lint, build, docs generators, GitHub Actions inspection, or device qualification were performed.
+
+Suggested later DEV-PC qualification:
+
+```sh
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 .venv/bin/python -m pytest tests/backend/test_lite_photo_backup.py tests/backend/test_lite_photo_backup_agent.py tests/backend/test_lite_photo_backup_reliability.py
+npm run build
+npx playwright test tests/e2e/lite-photo-backup.spec.ts
+task lite:docs:check
+task lite:check
+```
+
+Rollback: revert application commits, retain existing media and job history, and do not remove existing credential or PhotoPrism state. Physical Android/Termux behavior must be separately verified before deployment.
+
+
+## P0 readiness continuation — source implementation, not qualified
+
+The backend returns a versioned current readiness projection independently from
+`latest_backup`. It exposes `source_ready`, `destination_operational`,
+`safe_capacity_available`, `backup_admissible`, an ordered set of stable
+reason-code blockers, sanitized remediation categories, and a checked timestamp.
+
+A bounded, cached unauthenticated HTTPS OPTIONS probe checks whether the
+configured same-origin PhotoPrism WebDAV route responds. An authentication
+challenge is **route reachable**, not **credentials verified**; the
+`webdav_authenticated` field is therefore null in this projection.
+The worker still performs authenticated OPTIONS and PROPFIND using an
+individually scoped, expiring PhotoPrism app password, and will not issue a
+transfer command if its authenticated probe fails.
+
+Current readiness checks never disclose passwords, filesystem paths or
+upstream error bodies. The route probe times out in three seconds and caches
+its sanitized classification for 20 seconds. Starting a new backup forces
+a fresh probe and runtime check, and the worker rechecks runtime, route
+and protected storage before creating transfer credentials. Both checks
+fail closed on unavailable WebDAV or depleted planning reserve.
+
+Only the existing fixed PhotoPrism originals destination is eligible.
+A successful OPTIONS response does not prove WebDAV write permission,
+mount identity or credential validity; these require worker-scoped
+authentication and runtime qualification. A healthy control API is
+not sufficient to mark photo backup ready.
+
+### P0 qualification explicitly deferred
+
+Tests for cache reuse, route challenge handling, forbidden/insecure origins,
+independent readiness semantics and capacity classifications were added,
+but **not executed**. No live media, Termux, HTTP or credential operation
+was exercised in this implementation session. Extra failure-code taxonomy,
+reservation conflicts, heartbeat field compatibility and mount identity
+need runtime/contract verification before production qualification.
+
+
+## P0 closure implementation — volume binding, heartbeat and lifecycle
+
+The fixed PhotoPrism originals destination now stores a private, server-owned
+identity anchor at `lite_photo_backup_destination_identity.json` within the
+control-plane state directory. The binding includes the resolved originals
+path, operating-system device identity and filesystem identity, represented
+as a SHA-256 fingerprint; the raw path or disk identifiers are not exposed
+to the UI. A mismatch fails closed with
+`destination_identity_mismatch` and the anchor is not automatically
+updated. An operator must verify/remount the original volume or perform a
+separate, explicitly authorized migration; do not edit the binding blindly.
+Initial anchoring is trust-on-first-use at the already configured originals
+path, **not** external media attestation. Filesystem capacity, path permissions
+and WebDAV access are still checked independently.
+
+Fleet heartbeat freshness now uses `last_seen_epoch` from the fleet
+registry first, then known timestamp variants. Timestamp-less legacy
+records fail closed as `source_capabilities_stale` rather than being
+presumed fresh. Confirm the agent is reporting fresh fleet heartbeats before
+attempting a backup.
+
+Cross-device destination exclusivity failures now include
+`storage_reservation_conflict`. Credential expiry and node/backup
+identity mismatch have distinct stable reason codes. The public job view
+exposes only the sanitized `credential_revoke_status` (pending/revoked/none)
+and never the internal credential reference or PhotoPrism auth identifier.
+A pending credential revocation remains visible independently from current
+backup readiness. The shared destination still uses its existing single-job
+admission lock; this change does not introduce a multi-process quota scheduler.
+
+**Source changes and regression cases were committed without execution.**
+No tests, builds, CI inspection or live device qualification were performed.
+Full runtime correctness and the exact device-volume behavior remain
+**unvalidated**.
+
+
+## P1 — Termux rclone repair lifecycle (source implementation; unvalidated)
+
+Photo backup tool repair remains a backend-authorized `media.backup.tools.repair`
+command delivered over NATS/JetStream to the enrolled node agent. Only the
+agent invokes the fixed `pkg install -y rclone` argument vector, and only
+when the node identifies as Termux through its package manager and
+`PREFIX`. It never runs a user-provided command, emits installer stdout or
+stderr, or places credentials in a browser.
+
+The agent holds an exclusive nonblocking private `flock` during repair:
+a duplicate returns `already_running` instead of launching another package
+manager. A 300-second bounded command classifies installer timeout and exit
+failures. Successful process exit alone is insufficient; the agent checks
+that rclone is available and returns a verified `rclone ...` version string.
+
+The private atomically-replaced mode-0600 checkpoint records only
+`schema_version`, `status`, an enumerated `reason_code`,
+a sanitized command identifier and timestamps. Transitions:
+`installing -> verifying -> completed`, or `failed`; attempts on
+unsupported platforms return `unsupported_platform`.
+If the agent is restarted during an active phase and later obtains the
+exclusive lock, it reconciles that abandoned phase to `interrupted`
+before attempting repair again. The checkpoint is diagnostic history:
+the current rclone binary availability is probed independently.
+
+Progress phases are published through sanitized
+`fleet.node_command_progress` events; final command outcome continues
+through `fleet.node_command_result`, followed by refreshed agent
+capabilities. The Devices panel projects the most recent reported tool
+repair state, polls more frequently while reported active, and disables
+duplicate repair controls. Offline/dropped progress events must not be
+interpreted as evidence of success.
+
+### P1 restrictions and qualification
+
+No arbitrary command arguments, remote scripts, apt/curl piping, raw
+exception details, credential output, or browser-side shell execution.
+Fixed installations can change package-manager state only on the secondary
+Termux device through the existing agent execution boundary.
+
+Tests were **added but not executed**, including fixed installer command,
+post-install verification failure, interrupted checkpoint reconciliation,
+and sanitized repair-state projection. Android/Termux package-repository
+failure, PM2 recovery, event delivery, actual install, NATS disconnect,
+and restart behavior remain **unvalidated**. GitHub Actions were not
+inspected or monitored, and the PR remains draft.
+
+
+## P2 — capacity-aware partial transfers and durable per-file checkpoints
+
+The existing destination admission computes both a hard 10% filesystem
+reserve and a planning reserve of 15% or 2 GiB, whichever is larger.
+Planning continues after oversized items so smaller eligible files can
+fit in the current protected budget. The agent rechecks destination
+available bytes before **each** file and refuses to cross either reserve.
+Source inventory excludes symlinks and is capped by
+`MAX_INVENTORY_ITEMS`. Remote enumeration has a bounded response size and
+entry count. An inventory-limit error must be surfaced as incomplete
+planning, not silently represented as an empty source.
+
+P2 adds a private node-scoped SHA-256-keyed per-file ledger stored under
+`~/.pocketlab-lite/photo-backup-ledgers` (0700 directory, atomic 0600
+record). The ledger persists an opaque item identifier, source size,
+integer mtime and SHA-256 of source contents; it intentionally does not
+persist filenames, user media paths or credentials. Subsequent attempts
+only reuse a checkpoint when the source hash, size and matching destination
+size still agree. Files transferred from earlier attempts are not removed.
+A partial transfer remains retryable and preserves already completed files.
+
+Each upload goes to a deterministic per-file `.pocketlab-upload` staging
+object, checks its reported remote byte count, then moves to the final key
+and checks the final remote byte count. A retry may delete only the specific
+staging object for that same destination key, never an entire directory
+or completed user media. The agent hashes the source immediately before
+and after transfer to detect concurrent mutation.
+
+**Integrity boundary:** WebDAV/rclone `lsjson --stat` size verification is
+not a byte-for-byte remote digest. Where WebDAV cannot return trusted
+remote file checksums, the implementation cannot truthfully claim
+cryptographic end-to-end verification. Full remote content verification
+and durable ledger concurrency governance require later qualification
+before production reliability claims.
+
+### P2 qualification not executed
+
+Tests were added for ledger privacy and mode, malformed remote size
+responses and single-object cleanup, but not executed. Storage depletion
+under concurrent non-backup writers, huge media catalogs, Termux I/O
+pressure, partial uploads during NATS failures and very large video
+transfer behavior were not exercised. No tests, builds, CI inspection,
+or device/runtime qualification were run per session instructions.
+
+
+## P3 — Devices Photo Backup UX (source implementation, not validated)
+
+The Devices Photo Backup panel now separates **Current readiness** from
+**Latest backup** history. Current readiness renders the backend's
+admission status, checked time and sanitized reason-code remedies;
+the most recent transfer reports its own terminal/live outcome, counts,
+time markers, retryability and pending credential revocation. A completed
+historical job does not override a newly unavailable destination and a
+historical failure does not make current readiness false.
+
+The Server Phone capacity summary presents current free space,
+10% hard reserve, planning reserve (15% or 2 GiB minimum) and safe
+budget separately. If storage cannot be confirmed, the UI does not
+invent a numeric capacity. Unsupported destinations remain disclosed
+but are not actionable.
+
+Backup sources use a semantic fieldset and legend; progress has an
+accessible label, action buttons are grouped, and there is a manual
+**Check status** control. Repair and transfer selections are disabled
+during conflicting actions; errors leave the Devices screen available.
+The UI uses backend-owned start/stop/repair routes and never executes
+shell commands or stores credentials.
+
+Mocked Playwright cases were added for readiness versus historical
+outcomes, capacity explanation, progress and accessibility, missing
+source, malformed data and mobile viewport behavior. **These cases were
+not executed.** No screenshot or Storybook runtime qualification was
+performed. P3 still requires design review of narrow/mobile Manage
+panels, Playwright results, screen-reader qualification, and any missing
+Storybook scenarios before declaring it production-ready.
+
+
+## P4 — Versioned destination adapters and immutable placement records
+
+Destination types are server-owned, closed-registry adapters. The active
+production adapter is `server-photoprism-originals` (HTTPS WebDAV,
+PhotoPrism indexing, scoped PhotoPrism app-password issuance and private
+server volume fingerprint). The contract now advertises schema version 2,
+supported/eligible/write-capable truth, the fixed transport and credential
+strategy, and the existing protected capacity policy. A client-supplied
+destination URL, remote path, filesystem mount or arbitrary adapter ID is
+never accepted as an execution target.
+
+`server-removable`, `managed-nas`, `enrolled-storage-node` and
+`encrypted-object-store` remain explicit unsupported examples, with no
+credential issuer, execution handler or write capability. Enabling these
+classes requires a separate reviewed adapter implementation. Rendering
+them in the UI does not enable them.
+
+Each newly admitted backup is bound to a server-persisted immutable
+placement record keyed by backup ID. This private placement ties together
+the fixed destination ID, transport, node ID, backup ID, volume fingerprint
+and a deterministic per-device WebDAV namespace. Placement is created
+before worker credential issuance; redelivery reuses the binding rather
+than silently moving a job. A changed volume or another node's backup
+fails closed. Credential consumption rechecks the immutable binding before
+handing over the one-time scoped WebDAV credential. The capacity endpoint
+also refuses to advertise spendable backup space for a mismatched
+placement, even if the filesystem reports ample free bytes.
+
+The placement record is an internal control-plane object. Its volume
+fingerprint and private storage identifiers are not projected into the
+Devices UI or transmitted as agent secrets. The agent continues using
+only the fixed, server-constructed per-device destination prefix.
+
+### Compatibility and qualification
+
+Existing historical backup jobs without P4 placement are still readable;
+newly enqueued work receives a placement before credential issuance.
+Already-started legacy jobs without a placement cannot silently obtain a
+new credential through the P4 path. An operator must explicitly restart
+a new backup rather than transplant its prior credential to a new target.
+
+Regression cases cover schema versioning, unknown/disabled adapter
+rejection, traversal-shaped node names and immutable retry/volume-change
+behavior. **Tests were not executed** and end-to-end authorization,
+JetStream redelivery, restart persistence, volume remount, and Termux
+transfer behavior are **unvalidated**. No CI, build, lint, documentation
+generation or live-device operation occurred. The PR remains draft.

@@ -4,7 +4,9 @@
 
 **Phase 1 implementation:** feature-branch implementation for Pocket Lab-managed photo and video backup from enrolled secondary Android/Termux devices to the Server Phone's existing PhotoPrism originals storage.
 
-**Runtime qualification:** the repository implementation must still be qualified on the real Server Phone and at least one enrolled secondary Android/Termux phone before production acceptance. Until those commands and device flows are run, treat physical runtime behavior as **UNVALIDATED ON SERVER PHONE**.
+**Bounded production acceptance:** the backend also supports a short-lived, server-issued acceptance fixture. It is intended for one deliberately bounded test photo and does not expand the normal collection-wide UI workflow. The fixture path and bytes are agent-owned; the caller cannot provide a source path.
+
+**Runtime qualification:** the feature branch still requires release-bound qualification on the real Server Phone and at least one enrolled secondary Android/Termux phone before production acceptance. A synthetic or isolated candidate result is not production evidence. Until the deployed branch is qualified, treat physical runtime behavior as **UNVALIDATED ON SERVER PHONE**.
 
 ## Product boundary
 
@@ -44,6 +46,28 @@ PhotoPrism originals/
 ```
 
 The node cannot provide an arbitrary URL, path, rclone flag, remote, or command.
+
+## Bounded acceptance workflow
+
+Do not use a collection-wide backup as the first production test when the source contains personal media. Use the backend-owned acceptance fixture only after the read-only destination, capacity, agent, and authorization preflight passes.
+
+1. An authenticated operator requests `POST /api/lite/devices/{node_id}/photo-backup/acceptance-fixture` for an enrolled secondary device.
+2. FastAPI verifies the fresh agent heartbeat, rclone capability, Pictures access, and secondary-device eligibility. It returns an opaque fixture ID with a 30-minute expiry; no source path is returned or stored.
+3. The operator submits that ID to the normal `POST /api/lite/devices/{node_id}/photo-backup` action. The backend forces the source scope to the fixed `pictures` collection and revalidates the fixture while holding the admission lock. Client-supplied collections cannot widen the scope.
+4. The secondary agent creates a metadata-free JPEG only at its fixed `Pictures/PocketLabAcceptance/<fixture-id>.jpg` location. It refuses symlinks, refuses to overwrite different bytes, inventories exactly that one object, and transfers it to `Pictures/PocketLabAcceptance/<fixture-id>.jpg` inside the server-owned `PocketLab/Devices/<node-id>/` namespace.
+5. The normal NATS/JetStream command, scoped WebDAV credential, staging/finalization, progress, evidence, and credential-revocation lifecycle remains in force. A repeated request for the same completed fixture is reconciled through the normal ledger and does not create a duplicate object.
+
+This route is an operational acceptance surface, not a frontend filesystem or shell surface. It must be released and deployed through the normal reviewed workflow before it can be used against production phones. If the installed runtime does not expose this route, do not substitute a broad backup.
+
+## Destination enrollment and recovery
+
+The Server Phone originals filesystem is enrolled by the backend during the protected admission capacity check. The backend resolves the canonical originals directory, rejects symlinked or non-writable targets, computes the filesystem-bound fingerprint, and atomically writes the private destination identity anchor only when no anchor exists. The anchor is private state and is not an operator-supplied fingerprint.
+
+First enrollment is allowed only after the operator has independently verified the intended PhotoPrism originals mount, ownership, permissions, available capacity, and absence of a conflicting identity. A matching existing anchor is reused. A malformed anchor, changed filesystem identity, different destination, or stale placement fails closed with `destination_identity_mismatch`; never delete, regenerate, or rebind that anchor as a normal retry.
+
+The admission capacity formula remains unchanged: retain the 10% hard reserve and the larger of 15% of total storage or 2 GiB as the planning reserve. Capacity, identity, WebDAV route readiness, fresh secondary heartbeat, and active-job exclusion are rechecked at the mutation boundary. The backend writes sanitized lifecycle evidence; the agent and UI never receive the private volume fingerprint or backend credential.
+
+If a first enrollment or bounded transfer fails, leave existing identity state and user media untouched, allow the short-lived fixture to expire, and retry only after the reported prerequisite is resolved. If an identity mismatch is reported, stop and use the separately authorized protected recovery procedure. There is no automatic rollback that removes a PhotoPrism destination copy; indexed destination media is retained according to the PhotoPrism backup-retention contract.
 
 ## Credential lifecycle
 
@@ -115,6 +139,7 @@ User-facing semantic reads and actions:
 ```text
 GET  /api/lite/media-backup
 GET  /api/lite/devices/{node_id}/photo-backup
+POST /api/lite/devices/{node_id}/photo-backup/acceptance-fixture
 POST /api/lite/devices/{node_id}/photo-backup
 POST /api/lite/devices/{node_id}/photo-backup/cancel
 POST /api/lite/devices/{node_id}/photo-backup/repair
@@ -129,6 +154,12 @@ Internal agent-only endpoints resolve one-time credentials, current capacity, an
 **Apps -> PhotoPrism -> Manage** shows only lightweight backup truth: whether a device is ready, whether a backup is running, and the latest aggregate result. It points operational control back to Devices.
 
 The UI never exposes raw filesystem paths, per-file inventories, raw rclone output, WebDAV credentials, app passwords, NATS subjects, or backend command payloads.
+
+## Evidence and indexing
+
+Fixture preparation is recorded as a sanitized `lite.photo_backup.acceptance_fixture.prepared` lifecycle event. The backup job then records its fixed source scope, destination contract, aggregate transfer counts, integrity mode, terminal state, and credential-revocation result without exposing paths or secrets. Successful WebDAV finalization proves that the object reached the authorized originals namespace; it does not by itself prove PhotoPrism indexing. Verify indexing separately through the supported PhotoPrism view or API and report transfer-complete/processing when indexing is still pending.
+
+The generated fixture is disposable source media, but the destination copy is managed backup media. Do not delete the destination object merely to make test cleanup appear complete. Remove only the source fixture created by the acceptance session when that cleanup is explicitly safe and does not conflict with PhotoPrism retention or indexing.
 
 ## Validation
 

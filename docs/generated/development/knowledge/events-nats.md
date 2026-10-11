@@ -109,6 +109,7 @@ Credentials are never included. Incomplete delivery semantics remain explicitly 
 | `pocketlab.events.fleet.invite_started` | devices | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.fleet.node_` | devices | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.fleet.node_capabilities` | devices | pocketlab_node_agent.py | — | incomplete | incomplete | incomplete |
+| `pocketlab.events.fleet.node_command_progress` | devices | pocketlab_node_agent.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.fleet.node_command_queued` | devices | fleet.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.fleet.node_command_result` | devices | pocketlab_node_agent.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.fleet.node_health` | devices | pocketlab_node_agent.py | — | incomplete | incomplete | incomplete |

@@ -47,8 +47,15 @@ generator_version: 3
 | `configured_target_budget` | security | The configured atomic-target budget was reached after durable checkpoint work. | warning | yes | no | The remaining safety targets can resume in a later Full check. |
 | `confirmation_required` | devices | A potentially destructive device or recovery action requires explicit confirmation before it can continue. | warning | yes | no | Confirm this action before continuing. |
 | `connection_failed` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | warning | yes | no | Runtime Security Assurance could not continue safely. |
+| `credential_expired` | apps | The one-time Photo Backup credential is expired or no longer usable. | warning | yes | no | Start the photo backup again to obtain a fresh protected credential. |
+| `credential_identity_mismatch` | apps | A Photo Backup credential does not match the requesting device or backup job. | high | no | yes | This photo backup credential cannot be used by the requesting device. |
+| `credential_revocation_pending` | apps | A Photo Backup credential is awaiting bounded revocation before the job can safely continue or finish. | warning | yes | no | Credential cleanup is still in progress; wait for it to finish before retrying. |
 | `csrf_required` | identity | A human-session write was rejected because its CSRF proof was missing or invalid. | warning | yes | no | Refresh the page and try again. |
 | `deferred_resource_pressure` | security | A heavy Security target was not omitted; it was deferred after a durable checkpoint by a backend resource decision. | warning | yes | no | This safety target can resume in a later Full check. |
+| `destination_identity_mismatch` | apps | The protected PhotoPrism destination no longer matches its enrolled filesystem identity. | high | no | yes | Verify the protected PhotoPrism storage before continuing; do not force a backup. |
+| `destination_mount_missing` | apps | The protected PhotoPrism originals storage mount is missing or is not a directory. | warning | yes | no | Restore the PhotoPrism originals storage mount before starting a backup. |
+| `destination_read_only` | apps | The protected PhotoPrism destination is visible but cannot accept writes. | warning | yes | no | Make the protected PhotoPrism destination writable before starting a backup. |
+| `destination_storage_unavailable` | apps | The protected PhotoPrism destination filesystem cannot be inspected safely. | warning | yes | no | Check the protected PhotoPrism storage mount and permissions before retrying. |
 | `device_capability_not_advertised` | devices | The device has not advertised the capability required by its governed role assignment. | warning | yes | no | The device has not advertised this capability. |
 | `device_capability_not_authorized` | devices | The server policy does not authorize the device capability for its current governed role assignment. | warning | no | yes | This capability is not authorized for the device's current roles. |
 | `device_capability_stale` | devices | The device capability evidence is older than the governed freshness window. | warning | yes | no | Wait for a fresh device heartbeat before relying on this capability. |
@@ -170,6 +177,7 @@ generator_version: 3
 | `passkey_verified` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `passkey_wrong_owner` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `payload_too_large` | validation | The bounded payload limit was exceeded. | warning | yes | no | The bounded payload limit was exceeded. |
+| `placement_identity_mismatch` | apps | An existing Photo Backup placement does not match the authenticated node, destination, or protected volume binding. | high | no | yes | This backup is bound to a different device or protected destination; do not force a retry. |
 | `pm2_inventory_failed` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | warning | yes | no | Runtime Security Assurance could not continue safely. |
 | `pm2_inventory_invalid` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | warning | yes | no | Runtime Security Assurance could not continue safely. |
 | `pm2_unavailable` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | warning | yes | no | Runtime Security Assurance could not continue safely. |
@@ -216,6 +224,8 @@ generator_version: 3
 | `projection_unavailable` | projections | The prepared projection is unavailable. | warning | yes | no | The prepared projection is unavailable. |
 | `protected_server_host` | devices | The protected server host cannot use this destructive action. | warning | no | no | The protected server host cannot use this destructive action. |
 | `qualification_authentication_required` | identity | A synthetic qualification principal was rejected because the explicit qualification environment, direct-local proof, or authentication guard was not satisfied. | warning | yes | no | Qualification authentication is unavailable. |
+| `qualification_enrollment_invalid` | validation | The isolated qualification enrollment request did not satisfy the server-owned synthetic-device or qualification-context contract. | warning | no | yes | The isolated qualification device could not be enrolled. |
+| `qualification_enrollment_unavailable` | validation | The isolated qualification context could not issue its bounded synthetic bootstrap token. | warning | yes | no | The isolated qualification enrollment service is unavailable. |
 | `queue_full` | projections | The bounded queue cannot accept more work. | warning | yes | no | The bounded queue cannot accept more work. |
 | `read_degraded` | system | A safe last-known read is shown while refresh is unavailable. | warning | yes | no | A safe last-known read is shown while refresh is unavailable. |
 | `registered_tool_result_missing` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | warning | yes | no | Runtime Security Assurance could not continue safely. |
@@ -235,8 +245,12 @@ generator_version: 3
 | `session_not_found` | identity | The requested human session is absent, expired, revoked, or no longer active. | warning | no | yes | That session is no longer active. |
 | `shutdown` | system | The process is shutting down. | warning | yes | no | The process is shutting down. |
 | `shutdown_during_mailbox_backpressure` | projections | Shutdown occurred while the bounded mailbox was under pressure. | warning | yes | no | Shutdown occurred while the bounded mailbox was under pressure. |
+| `source_fixture_expired` | apps | The short-lived bounded acceptance fixture expired before admission. | warning | yes | no | The bounded acceptance photo selector expired. Request a new selector. |
+| `source_fixture_invalid` | apps | The bounded acceptance selector is not a valid server-issued fixture for the fixed source scope. | warning | no | yes | The bounded acceptance photo selector is invalid. Request a new server-issued selector. |
+| `source_fixture_unavailable` | apps | The selected secondary device or its short-lived bounded acceptance fixture is not ready. | warning | yes | no | The secondary device is not ready for a bounded acceptance photo. |
 | `source_inventory_failed` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | warning | yes | no | Runtime Security Assurance could not continue safely. |
 | `storage_pressure` | security | Private free storage was below the backend scan threshold. | warning | yes | no | The remaining safety targets were deferred because private storage is constrained. |
+| `storage_reservation_conflict` | apps | Another Photo Backup job currently holds the protected destination reservation. | warning | yes | no | Wait for the active photo backup to finish before starting another one. |
 | `storage_unavailable` | recovery | A registered backup location cannot currently be reached or inspected safely. | warning | yes | no | Reconnect this storage or choose another backup location before continuing. |
 | `submit_failed` | system | The work request could not be admitted. | warning | yes | no | The work request could not be admitted. |
 | `target_not_allowed` | validation | The requested target is outside the approved scope. | warning | no | yes | The requested target is outside the approved scope. |
@@ -248,6 +262,7 @@ generator_version: 3
 | `trusted_local_admin` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `unregistered_domain` | projections | The requested domain is not registered. | warning | yes | no | The requested domain is not registered. |
 | `unsafe_live_media_import` | apps | Live phone media import is intentionally blocked; use the managed Photo Backup workflow instead. | warning | no | yes | Import photos is paused for live phone folders. Use Back up photos instead. |
+| `unsupported_destination` | apps | The requested Photo Backup destination is not registered as a supported server-owned adapter. | warning | no | yes | Use the configured server-owned PhotoPrism destination; this destination is not available. |
 | `version_not_reported` | devices | The device has not reported a trustworthy software version for this component, so Pocket Lab keeps the version unknown rather than inventing one. | info | yes | no | This device has not reported that software version yet. |
 | `webauthn_algorithm_unsupported` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `webauthn_assertion_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |

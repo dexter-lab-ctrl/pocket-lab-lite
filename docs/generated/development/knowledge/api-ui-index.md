@@ -153,6 +153,7 @@ generator_version: 3
 | `POST /api/lite/catalog/install` | apps | — | install_lite_catalog_item_api_lite_catalog_install_post | contract-derived |
 | `POST /api/lite/catalog/remove` | apps | — | remove_lite_catalog_item_api_lite_catalog_remove_post | contract-derived |
 | `POST /api/lite/devices/{node_id}/photo-backup` | devices | — | start_lite_photo_backup_api_lite_devices__node_id__photo_backup_post | contract-derived |
+| `POST /api/lite/devices/{node_id}/photo-backup/acceptance-fixture` | devices | — | prepare_lite_photo_backup_acceptance_fixture_api_lite_devices__node_id__photo_backup_acceptance_fixture_post | contract-derived |
 | `POST /api/lite/devices/{node_id}/photo-backup/cancel` | devices | — | cancel_lite_photo_backup_api_lite_devices__node_id__photo_backup_cancel_post | contract-derived |
 | `POST /api/lite/devices/{node_id}/photo-backup/repair` | devices | — | repair_lite_photo_backup_tools_api_lite_devices__node_id__photo_backup_repair_post | contract-derived |
 | `POST /api/lite/diagnostics/frontend-lifecycle` | diagnostics | — | record_frontend_lifecycle_diagnostics_api_lite_diagnostics_frontend_lifecycle_post | contract-derived |
@@ -191,6 +192,7 @@ generator_version: 3
 | `POST /api/lite/harness/principal/revoke` | harness | — | revoke_authenticated_principal_api_lite_harness_principal_revoke_post | contract-derived |
 | `POST /api/lite/harness/principals` | harness | — | register_principal_api_lite_harness_principals_post | contract-derived |
 | `POST /api/lite/harness/principals/{principal_id}/revoke` | harness | — | revoke_principal_api_lite_harness_principals__principal_id__revoke_post | contract-derived |
+| `POST /api/lite/harness/qualification/enroll` | harness | — | qualification_enroll_api_lite_harness_qualification_enroll_post | contract-derived |
 | `POST /api/lite/harness/recovery/authorize` | harness | — | recovery_authorize_api_lite_harness_recovery_authorize_post | contract-derived |
 | `POST /api/lite/harness/security-assurance/faults/{fault_id}` | harness | — | execute_fault_api_lite_harness_security_assurance_faults__fault_id__post | contract-derived |
 | `POST /api/lite/harness/security-assurance/policy-sync` | harness | — | policy_sync_api_lite_harness_security_assurance_policy_sync_post | contract-derived |

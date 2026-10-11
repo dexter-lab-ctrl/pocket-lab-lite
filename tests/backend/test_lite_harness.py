@@ -73,6 +73,44 @@ def _canonical(value: object) -> str:
     return json.dumps(value, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
 
 
+def test_qualification_snapshot_revision_is_bound_to_manifest_hash(tmp_path, monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_harness
+
+    candidate_sha = "a" * 40
+    qualification_root = tmp_path / ".pocketlab-qualification" / ("b" * 24)
+    candidate_root = qualification_root / "candidate"
+    relative = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py")
+    source = candidate_root / relative
+    source.parent.mkdir(mode=0o700, parents=True)
+    source.write_bytes(b"synthetic candidate source")
+    manifest = {
+        "schema_version": 1,
+        "repository": "dexter-lab-ctrl/pocket-lab-lite",
+        "candidate_sha": candidate_sha,
+        "files": [{
+            "path": relative.as_posix(),
+            "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+            "size": source.stat().st_size,
+        }],
+    }
+    manifest_path = qualification_root / "candidate-manifest.json"
+    manifest_path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    manifest_bytes = (json.dumps(manifest, sort_keys=True) + "\n").encode()
+    manifest_path.write_bytes(manifest_bytes)
+    monkeypatch.setenv("POCKETLAB_QUALIFICATION_CANDIDATE_SHA", candidate_sha)
+    monkeypatch.setenv("POCKETLAB_QUALIFICATION_ROOT", str(qualification_root))
+    monkeypatch.setenv(
+        "POCKETLAB_QUALIFICATION_SNAPSHOT_MANIFEST_SHA256",
+        hashlib.sha256(manifest_bytes).hexdigest(),
+    )
+    assert lite_harness._qualification_snapshot_revision(candidate_root) == candidate_sha
+    source.write_bytes(b"tampered candidate source")
+    with pytest.raises(lite_harness.HarnessError) as error:
+        lite_harness._qualification_snapshot_revision(candidate_root)
+    assert error.value.reason_code == "harness_revision_unavailable"
+
+
 def _key():
     from cryptography.hazmat.primitives import serialization
     from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey

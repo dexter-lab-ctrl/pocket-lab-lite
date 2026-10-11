@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 7d535f74173aaf3030548ef6e022f118d43f8f46e0ad34cbea6d17f197a6270f
+source_fingerprint: 716da7264607de159cd8b4c7771bd185c20d702b77afbe0495f646e81d07ddef
 schema_revision: 1
 validation_status: generated
 ---
@@ -164,6 +164,13 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:parity:tools:check`
 - `lite:performance:edge`
 - `lite:performance:wsl`
+- `lite:photo-backup:agent`
+- `lite:photo-backup:backend`
+- `lite:photo-backup:candidate`
+- `lite:photo-backup:candidate:android-preflight`
+- `lite:photo-backup:candidate:android:qualify`
+- `lite:photo-backup:candidate:full`
+- `lite:photo-backup:mocked`
 - `lite:playwright:preflight`
 - `lite:qualification:start`
 - `lite:qualification:start:key-bound`

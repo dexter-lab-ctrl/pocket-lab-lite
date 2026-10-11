@@ -49,10 +49,10 @@
         "checkpoint_ineligible",
         "configured_target_budget",
         "confirmation_required",
-        "deferred_resource_pressure",
-        "device_capability_not_advertised",
-        "device_capability_not_authorized",
-        "device_capability_stale"
+        "credential_expired",
+        "credential_identity_mismatch",
+        "credential_revocation_pending",
+        "deferred_resource_pressure"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -175,10 +175,10 @@
         "checkpoint_ineligible",
         "configured_target_budget",
         "confirmation_required",
-        "deferred_resource_pressure",
-        "device_capability_not_advertised",
-        "device_capability_not_authorized",
-        "device_capability_stale"
+        "credential_expired",
+        "credential_identity_mismatch",
+        "credential_revocation_pending",
+        "deferred_resource_pressure"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -239,7 +239,8 @@
         "device_role_change_identity_mismatch",
         "device_role_change_stale_generation",
         "device_role_not_joinable",
-        "legacy_telemetry_value"
+        "legacy_telemetry_value",
+        "placement_identity_mismatch"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -354,10 +355,10 @@
         "checkpoint_ineligible",
         "configured_target_budget",
         "confirmation_required",
-        "deferred_resource_pressure",
-        "device_capability_not_advertised",
-        "device_capability_not_authorized",
-        "device_capability_stale"
+        "credential_expired",
+        "credential_identity_mismatch",
+        "credential_revocation_pending",
+        "deferred_resource_pressure"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -448,7 +449,8 @@
         "device_role_change_identity_mismatch",
         "device_role_change_stale_generation",
         "device_role_not_joinable",
-        "legacy_telemetry_value"
+        "legacy_telemetry_value",
+        "placement_identity_mismatch"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -506,10 +508,10 @@
         "checkpoint_ineligible",
         "configured_target_budget",
         "confirmation_required",
-        "deferred_resource_pressure",
-        "device_capability_not_advertised",
-        "device_capability_not_authorized",
-        "device_capability_stale"
+        "credential_expired",
+        "credential_identity_mismatch",
+        "credential_revocation_pending",
+        "deferred_resource_pressure"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -633,10 +635,10 @@
         "checkpoint_ineligible",
         "configured_target_budget",
         "confirmation_required",
-        "deferred_resource_pressure",
-        "device_capability_not_advertised",
-        "device_capability_not_authorized",
-        "device_capability_stale"
+        "credential_expired",
+        "credential_identity_mismatch",
+        "credential_revocation_pending",
+        "deferred_resource_pressure"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -775,10 +777,10 @@
         "checkpoint_ineligible",
         "configured_target_budget",
         "confirmation_required",
-        "deferred_resource_pressure",
-        "device_capability_not_advertised",
-        "device_capability_not_authorized",
-        "device_capability_stale"
+        "credential_expired",
+        "credential_identity_mismatch",
+        "credential_revocation_pending",
+        "deferred_resource_pressure"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -962,10 +964,10 @@
         "checkpoint_ineligible",
         "configured_target_budget",
         "confirmation_required",
-        "deferred_resource_pressure",
-        "device_capability_not_advertised",
-        "device_capability_not_authorized",
-        "device_capability_stale"
+        "credential_expired",
+        "credential_identity_mismatch",
+        "credential_revocation_pending",
+        "deferred_resource_pressure"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",

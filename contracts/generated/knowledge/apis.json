@@ -3992,6 +3992,29 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Prepare Lite Photo Backup Acceptance Fixture",
+      "domain": "devices",
+      "id": "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
+      "method": "POST",
+      "name": "POST /api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
+      "operation_id": "prepare_lite_photo_backup_acceptance_fixture_api_lite_devices__node_id__photo_backup_acceptance_fixture_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "fleet"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Cancel Lite Photo Backup",
       "domain": "devices",
       "frontend_clients": [
@@ -5082,6 +5105,29 @@
         "503"
       ],
       "route": "/api/lite/harness/principals/{principal_id}/revoke",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-harness"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Qualification Enroll",
+      "domain": "harness",
+      "id": "api:post:/api/lite/harness/qualification/enroll",
+      "method": "POST",
+      "name": "POST /api/lite/harness/qualification/enroll",
+      "operation_id": "qualification_enroll_api_lite_harness_qualification_enroll_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/harness/qualification/enroll",
       "source_refs": [
         "contracts/generated/lite-openapi.json"
       ],
@@ -6895,6 +6941,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5c014a4c5563838ac674dd41d16975a1c93ca0993b41619c15187d787d7c19e3"
+    "source_fingerprint": "9428680fa8e2428b6ab03a1c9153cf83601b2cf1a7b07f08e07c5ee04b89a94a"
   }
 }

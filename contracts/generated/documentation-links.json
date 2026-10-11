@@ -601,6 +601,10 @@
         "title": "POST /api/lite/devices/{node_id}/photo-backup",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-devices-node-id-photo-backup"
       },
+      "endpoint:POST:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture": {
+        "title": "POST /api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-devices-node-id-photo-backup-acceptance-fixture"
+      },
       "endpoint:POST:/api/lite/devices/{node_id}/photo-backup/cancel": {
         "title": "POST /api/lite/devices/{node_id}/photo-backup/cancel",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-devices-node-id-photo-backup-cancel"
@@ -752,6 +756,10 @@
       "endpoint:POST:/api/lite/harness/principals/{principal_id}/revoke": {
         "title": "POST /api/lite/harness/principals/{principal_id}/revoke",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-principals-principal-id-revoke"
+      },
+      "endpoint:POST:/api/lite/harness/qualification/enroll": {
+        "title": "POST /api/lite/harness/qualification/enroll",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-harness-qualification-enroll"
       },
       "endpoint:POST:/api/lite/harness/recovery/authorize": {
         "title": "POST /api/lite/harness/recovery/authorize",
@@ -1336,6 +1344,10 @@
       "event:pocketlab.events.fleet.node_capabilities": {
         "title": "pocketlab.events.fleet.node_capabilities",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-node-capabilities"
+      },
+      "event:pocketlab.events.fleet.node_command_progress": {
+        "title": "pocketlab.events.fleet.node_command_progress",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-node-command-progress"
       },
       "event:pocketlab.events.fleet.node_command_queued": {
         "title": "pocketlab.events.fleet.node_command_queued",
@@ -2001,6 +2013,18 @@
         "title": "connection_failed",
         "url": "../../docs/generated/development/reason-codes.md#connection-failed"
       },
+      "reason:credential_expired": {
+        "title": "credential_expired",
+        "url": "../../docs/generated/development/reason-codes.md#credential-expired"
+      },
+      "reason:credential_identity_mismatch": {
+        "title": "credential_identity_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#credential-identity-mismatch"
+      },
+      "reason:credential_revocation_pending": {
+        "title": "credential_revocation_pending",
+        "url": "../../docs/generated/development/reason-codes.md#credential-revocation-pending"
+      },
       "reason:csrf_required": {
         "title": "csrf_required",
         "url": "../../docs/generated/development/reason-codes.md#csrf-required"
@@ -2008,6 +2032,22 @@
       "reason:deferred_resource_pressure": {
         "title": "deferred_resource_pressure",
         "url": "../../docs/generated/development/reason-codes.md#deferred-resource-pressure"
+      },
+      "reason:destination_identity_mismatch": {
+        "title": "destination_identity_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#destination-identity-mismatch"
+      },
+      "reason:destination_mount_missing": {
+        "title": "destination_mount_missing",
+        "url": "../../docs/generated/development/reason-codes.md#destination-mount-missing"
+      },
+      "reason:destination_read_only": {
+        "title": "destination_read_only",
+        "url": "../../docs/generated/development/reason-codes.md#destination-read-only"
+      },
+      "reason:destination_storage_unavailable": {
+        "title": "destination_storage_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#destination-storage-unavailable"
       },
       "reason:device_capability_not_advertised": {
         "title": "device_capability_not_advertised",
@@ -2493,6 +2533,10 @@
         "title": "payload_too_large",
         "url": "../../docs/generated/development/reason-codes.md#payload-too-large"
       },
+      "reason:placement_identity_mismatch": {
+        "title": "placement_identity_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#placement-identity-mismatch"
+      },
       "reason:pm2_inventory_failed": {
         "title": "pm2_inventory_failed",
         "url": "../../docs/generated/development/reason-codes.md#pm2-inventory-failed"
@@ -2677,6 +2721,14 @@
         "title": "qualification_authentication_required",
         "url": "../../docs/generated/development/reason-codes.md#qualification-authentication-required"
       },
+      "reason:qualification_enrollment_invalid": {
+        "title": "qualification_enrollment_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#qualification-enrollment-invalid"
+      },
+      "reason:qualification_enrollment_unavailable": {
+        "title": "qualification_enrollment_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#qualification-enrollment-unavailable"
+      },
       "reason:queue_full": {
         "title": "queue_full",
         "url": "../../docs/generated/development/reason-codes.md#queue-full"
@@ -2753,6 +2805,18 @@
         "title": "shutdown_during_mailbox_backpressure",
         "url": "../../docs/generated/development/reason-codes.md#shutdown-during-mailbox-backpressure"
       },
+      "reason:source_fixture_expired": {
+        "title": "source_fixture_expired",
+        "url": "../../docs/generated/development/reason-codes.md#source-fixture-expired"
+      },
+      "reason:source_fixture_invalid": {
+        "title": "source_fixture_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#source-fixture-invalid"
+      },
+      "reason:source_fixture_unavailable": {
+        "title": "source_fixture_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#source-fixture-unavailable"
+      },
       "reason:source_inventory_failed": {
         "title": "source_inventory_failed",
         "url": "../../docs/generated/development/reason-codes.md#source-inventory-failed"
@@ -2760,6 +2824,10 @@
       "reason:storage_pressure": {
         "title": "storage_pressure",
         "url": "../../docs/generated/development/reason-codes.md#storage-pressure"
+      },
+      "reason:storage_reservation_conflict": {
+        "title": "storage_reservation_conflict",
+        "url": "../../docs/generated/development/reason-codes.md#storage-reservation-conflict"
       },
       "reason:storage_unavailable": {
         "title": "storage_unavailable",
@@ -2804,6 +2872,10 @@
       "reason:unsafe_live_media_import": {
         "title": "unsafe_live_media_import",
         "url": "../../docs/generated/development/reason-codes.md#unsafe-live-media-import"
+      },
+      "reason:unsupported_destination": {
+        "title": "unsupported_destination",
+        "url": "../../docs/generated/development/reason-codes.md#unsupported-destination"
       },
       "reason:version_not_reported": {
         "title": "version_not_reported",
@@ -3353,7 +3425,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "ece11135d2010eaba822a8c01cc4f6fd17232aac40773745a63686a27ee53dec",
+    "aggregate_fingerprint": "1ea574c5d99390ece8d8cb729e04ddee6a5bc504c7d01e5533afd3d9740eea42",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3363,8 +3435,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "324a72a7a5b784ff42518e96913f9a96fd4f8f59e84e3095c23259652cf51769",
-      "contracts/metadata/documentation-platform.json": "beb223fca558ca6150f7c35927953294652eb4ce69e4d565e3c460e314158de6",
+      "contracts/generated/lite-openapi.json": "515e939d9da2ea7ad29889b58396b8c9b1a3aa353c73738ecbe22ec35ba92b68",
+      "contracts/metadata/documentation-platform.json": "e173e121e9ee0740d25855d6ab2606bb78bde640aaa3d60aa5382fbabd32f03d",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",

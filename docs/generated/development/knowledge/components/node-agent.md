@@ -85,6 +85,7 @@ Connects to NATS, publishes heartbeat/telemetry/health, handles device commands,
 - protected_by: `Managed-device boundary`
 - protected_by: `Managed-device boundary`
 - publishes: `pocketlab.events.fleet.node_capabilities`
+- publishes: `pocketlab.events.fleet.node_command_progress`
 - publishes: `pocketlab.events.fleet.node_command_result`
 - publishes: `pocketlab.events.fleet.node_health`
 - publishes: `pocketlab.events.fleet.node_heartbeat`

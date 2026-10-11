@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "7cf760ca2a5e35cf2c57bce85cabd5896c563e97ddfa635e654a3913a476d676",
+    "aggregate_fingerprint": "2c29c121ca16b849df763d90c4bd243ac1051496d8f83f64ca2321b09373d267",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -10,7 +10,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/metadata/documentation-platform.json": "beb223fca558ca6150f7c35927953294652eb4ce69e4d565e3c460e314158de6",
+      "contracts/metadata/documentation-platform.json": "e173e121e9ee0740d25855d6ab2606bb78bde640aaa3d60aa5382fbabd32f03d",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
       "pocket-lab-final-structure/runtime/api_fastapi/db/__init__.py": "526884a92d46e87f3a6c5ece60852976c4bf968476cf5e37767a345540fea946",
@@ -26,9 +26,9 @@
       "pocket-lab-final-structure/runtime/api_fastapi/routers/catalog.py": "b0cf578f5102bf4d284f4e895945ac3689bce2e324da5a083167d39530035cf5",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/drift.py": "3ffc8c5f37e40777c7cd9cc6da4a3f594308f187ea87d6f077ca283b407dff24",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py": "f8ac4edfc0ea3c00f37deca914f53c1852414bfac5f934035df0b570defae5c4",
-      "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py": "321bb1b8c35aaa438fcced4e4cd75db2f230891489f7fca4446d298147eaba8e",
+      "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py": "cf86d84cc07be79a4f03773883e97c70a8bf3c9b82f5677fc1a1f83881f0320d",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/gitops.py": "ebbdf1850a5d29caecb50a016d2533621e723f0c4b0554e12004a94ec6e8384e",
-      "pocket-lab-final-structure/runtime/api_fastapi/routers/harness.py": "e0bb47cdea9be539c1a58f3b52cb369c4c70434f8de81d86425aacd8b68eaa94",
+      "pocket-lab-final-structure/runtime/api_fastapi/routers/harness.py": "506e9d125c76c347fea6d31d10e10e2b7de3fe4cd2ecf436c76c0339f4589795",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py": "df656e61d4d78e6ee9b95348a839118a85995edbaa449c23dd075aaaacf86e6d",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py": "fbfae5c9d0814819d4f5bf43429b39ea409c1859211cd2a23b059542686bcfe0",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_identity.py": "f3766153bdeec66c70cbba55851cee4593f7a45d5dfabee5c2fef4af13cecbdb",
@@ -53,7 +53,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/adaptive_runtime.py": "e52b504ed403b569c8f36ba4be003583ecae103944b7936bbf827570dd104133",
       "pocket-lab-final-structure/runtime/api_fastapi/services/approval_policy.py": "dfa11d711b8b1e67f4847b419ba538f702e9de4e8e6fca4cce0830f40b9439d5",
       "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py": "b389e346f929833781fb921e8ddd21b0270db278ce01b7361ff36b9487ebb79d",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py": "4f6178716e3716c3626cdcb5ae59f7124940a0410efc7e3d900746aa83cd3dcd",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py": "ac87473915b9616ca00337c37f177ca6b681309a8dc46da695379a0572b4a95e",
       "pocket-lab-final-structure/runtime/api_fastapi/services/governance_settings.py": "62032d95bcc9945f13f60c8c337628442a7d6df5e10cee793f162e467e8e368f",
       "pocket-lab-final-structure/runtime/api_fastapi/services/hot_path_profiler.py": "886fa7e04117e358217172f9cacb4f26a10c98db8776d64056bd4afff08a9ce6",
       "pocket-lab-final-structure/runtime/api_fastapi/services/idle_efficiency.py": "b1e39f7213a82ca8d1185738ecb4f01be75be42711fcfd3745061ed9eadcf07b",
@@ -72,7 +72,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup_manifest.py": "2ae0e0c1e1ed9503955e6e8481f51b92d4f843ba702d418a9f15dd1c6ac68332",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup_policy.py": "1e3a181dbbafd4869a9a5182a7ce2dfd7362bf6eeadf4df74f19582475d06a60",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_capability_projection.py": "10ce833ab9dc17998352b96d4a3bf1a0858d31c8971e9f3a5d4ea069a3fad97f",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py": "d1c5c1a77c4bd9c488ac013cf0a263733ab809497aba20a3985646f726aebb47",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py": "bb77b78be7d8bb3aa000ad32c2f9961f1a29599d41741f59b4e3d7a1f4e416ef",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog_live.py": "b886926e70709eefc8cd80b35be58b6d559131d7984b6b3335b611164bd80221",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py": "dc022d46231759731ee2385fd7b0cd656507d40861dbe6b05a8af25cc6bd9f8f",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_core_projections.py": "62b30d29d5aac1071f242258592263dd195222d04d5014fd6a12d97b6b010538",
@@ -93,13 +93,14 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_enterprise_managed_enrollment.py": "1202aad81ce69535e7944badaa2b9658b229e4f5c22af21c16f7da6bb8385df3",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_evidence_receipts.py": "235bc1445412635b01980f631ef1fae301436a6163ad0dfb3ffbc4e34516ed7b",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_gate_faults.py": "115b0f5622cd008befc9030c4b31092b6400a0ac9a26ea8cf5337cb7cf7e2e24",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py": "b87116540cccee8c08c53d3c2e24371940d8c2c4eb314320a6fe8276a4e73ccd",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py": "afdc015c3acb936c1e44f4c8558d3fecf5c4d972f38d90744453978bd807d718",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py": "e9ef4a881b48375b057a5d5c80302b502d07e1f176736e2bb0a689a5e27b7748",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py": "f80d59074faa298e6836cd63fd348c44c4b5dc3ea9837b19e813e22139c697c4",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py": "d673e1ad1feb7c005f3317a85f5b175b718c7aaadc8a960f6390ef4b5125d519",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_lifecycle_diagnostics.py": "6ca0ea3cdac825a7b91f517fef90e77dca515e96e7ab96006421131d24237c7c",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_phase3b_projections.py": "0ca0448ae5ead1f92e3dbeefb23c8293e91de6885b2cbbb119be500c968b6267",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_phase3c_projections.py": "cab9a59573ab61e16ae4af62176ee7ddf24416104eb0bd78ee37d6a45a0b39c2",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py": "c5b2f5e30cd0820596c1dcf9b30f86e334016c168d0b23f256f5f541266f027d",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py": "f4b1045ade0848a73bcec859d6900242e7eb3cf17ce51245c33d60c02718dc05",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup_destinations.py": "62019cc526fac23851634cbdd8771f651f0e6eace4c98a8d086ddb5361e8e50d",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_backup.py": "c66e1ebc3bcd8cedc9e95fbe0b005481bcb2c616533bca55f23a3d887f5b82f6",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_lifecycle.py": "dffed3d8cbbd745ad27f9681037bce477e38b5fe59da8197fca8b3cd64ba5853",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_media.py": "15c6be2a53d5e587530cd6c18d5a4baacfa07164741af8bd2e972f04228df9b9",
@@ -134,6 +135,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/operation_events.py": "a51d5763bbc2d1b201b017fe05ddd1737bf05f7a5a769ec0d66b8991285e90fe",
       "pocket-lab-final-structure/runtime/api_fastapi/services/process_runtime.py": "239a8c90868ec2ca121d823eddeb5e8f5b4d825fbebfdbc616be5992a1336ace",
       "pocket-lab-final-structure/runtime/api_fastapi/services/projection_scheduler.py": "d28f52760555788c05461d4725a67b89997140cf981e43eec643075b54ac3f34",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py": "db012e1bee1c4836071edaefe3f3f78360f836075c7a53801f1da1a7045881e5",
       "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py": "046d6d3a1a733a10dd67b9ede76b76c028dcfd8c4b5d379e40b01d9103a938a4",
       "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py": "86bafcac97fad7b3bd4a4dfc8fb9b3196defe2009c485249b0f39f8ac27fd121",
       "pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py": "5f0b729056de07c7510a2b0a4288f9b12ba714b7362f3c6b833872614663840f",
@@ -176,7 +178,13 @@
       "cold_start_validation",
       "confirmation_required",
       "connection_failed",
+      "credential_expired",
+      "credential_identity_mismatch",
+      "credential_revocation_pending",
       "csrf_required",
+      "destination_mount_missing",
+      "destination_read_only",
+      "destination_storage_unavailable",
       "device_role_change_blocked_by_dependency",
       "device_role_change_device_offline",
       "device_role_change_failed",
@@ -266,6 +274,7 @@
       "passkey_unknown",
       "passkey_wrong_owner",
       "payload_too_large",
+      "placement_identity_mismatch",
       "pm2_inventory_failed",
       "pm2_unavailable",
       "pm2_worker_missing",
@@ -304,6 +313,7 @@
       "process_start_failed",
       "projection_unavailable",
       "qualification_authentication_required",
+      "qualification_enrollment_invalid",
       "queue_full",
       "registered_tool_result_missing",
       "release_projection_unavailable",
@@ -320,13 +330,18 @@
       "session_not_found",
       "shutdown",
       "shutdown_during_mailbox_backpressure",
+      "source_fixture_expired",
+      "source_fixture_invalid",
+      "source_fixture_unavailable",
       "source_inventory_failed",
+      "storage_reservation_conflict",
       "storage_unavailable",
       "submit_failed",
       "target_not_allowed",
       "test_bypass_explicit",
       "unregistered_domain",
       "unsafe_live_media_import",
+      "unsupported_destination",
       "version_not_reported",
       "webauthn_algorithm_unsupported",
       "webauthn_assertion_invalid",
@@ -856,6 +871,63 @@
       },
       {
         "audit_severity": "warning",
+        "code": "credential_expired",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 410,
+        "meaning": "The one-time Photo Backup credential is expired or no longer usable.",
+        "projection_mapping": [
+          "photo_backup_readiness"
+        ],
+        "retryable": true,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": false,
+        "ui_mapping": [
+          "Photo Backup credential expired"
+        ],
+        "user_message": "Start the photo backup again to obtain a fresh protected credential."
+      },
+      {
+        "audit_severity": "high",
+        "code": "credential_identity_mismatch",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 403,
+        "meaning": "A Photo Backup credential does not match the requesting device or backup job.",
+        "projection_mapping": [
+          "photo_backup_readiness"
+        ],
+        "retryable": false,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": true,
+        "ui_mapping": [
+          "Photo Backup credential identity mismatch"
+        ],
+        "user_message": "This photo backup credential cannot be used by the requesting device."
+      },
+      {
+        "audit_severity": "warning",
+        "code": "credential_revocation_pending",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 409,
+        "meaning": "A Photo Backup credential is awaiting bounded revocation before the job can safely continue or finish.",
+        "projection_mapping": [
+          "photo_backup_readiness"
+        ],
+        "retryable": true,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": false,
+        "ui_mapping": [
+          "Photo Backup credential revocation pending"
+        ],
+        "user_message": "Credential cleanup is still in progress; wait for it to finish before retrying."
+      },
+      {
+        "audit_severity": "warning",
         "code": "csrf_required",
         "deprecated_aliases": [],
         "domain": "identity",
@@ -883,6 +955,82 @@
         "terminal": false,
         "ui_mapping": [],
         "user_message": "This safety target can resume in a later Full check."
+      },
+      {
+        "audit_severity": "high",
+        "code": "destination_identity_mismatch",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 409,
+        "meaning": "The protected PhotoPrism destination no longer matches its enrolled filesystem identity.",
+        "projection_mapping": [
+          "photo_backup_readiness"
+        ],
+        "retryable": false,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": true,
+        "ui_mapping": [
+          "Photo Backup destination identity mismatch"
+        ],
+        "user_message": "Verify the protected PhotoPrism storage before continuing; do not force a backup."
+      },
+      {
+        "audit_severity": "warning",
+        "code": "destination_mount_missing",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 409,
+        "meaning": "The protected PhotoPrism originals storage mount is missing or is not a directory.",
+        "projection_mapping": [
+          "photo_backup_readiness"
+        ],
+        "retryable": true,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": false,
+        "ui_mapping": [
+          "Photo Backup destination mount missing"
+        ],
+        "user_message": "Restore the PhotoPrism originals storage mount before starting a backup."
+      },
+      {
+        "audit_severity": "warning",
+        "code": "destination_read_only",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 409,
+        "meaning": "The protected PhotoPrism destination is visible but cannot accept writes.",
+        "projection_mapping": [
+          "photo_backup_readiness"
+        ],
+        "retryable": true,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": false,
+        "ui_mapping": [
+          "Photo Backup destination read-only"
+        ],
+        "user_message": "Make the protected PhotoPrism destination writable before starting a backup."
+      },
+      {
+        "audit_severity": "warning",
+        "code": "destination_storage_unavailable",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 503,
+        "meaning": "The protected PhotoPrism destination filesystem cannot be inspected safely.",
+        "projection_mapping": [
+          "photo_backup_readiness"
+        ],
+        "retryable": true,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": false,
+        "ui_mapping": [
+          "Photo Backup destination unavailable"
+        ],
+        "user_message": "Check the protected PhotoPrism storage mount and permissions before retrying."
       },
       {
         "audit_severity": "warning",
@@ -2784,6 +2932,25 @@
         "user_message": "The bounded payload limit was exceeded."
       },
       {
+        "audit_severity": "high",
+        "code": "placement_identity_mismatch",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 409,
+        "meaning": "An existing Photo Backup placement does not match the authenticated node, destination, or protected volume binding.",
+        "projection_mapping": [
+          "photo_backup_readiness"
+        ],
+        "retryable": false,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": true,
+        "ui_mapping": [
+          "Photo Backup placement identity mismatch"
+        ],
+        "user_message": "This backup is bound to a different device or protected destination; do not force a retry."
+      },
+      {
         "audit_severity": "warning",
         "code": "pm2_inventory_failed",
         "deprecated_aliases": [],
@@ -3475,6 +3642,36 @@
       },
       {
         "audit_severity": "warning",
+        "code": "qualification_enrollment_invalid",
+        "deprecated_aliases": [],
+        "domain": "validation",
+        "event_mapping": [],
+        "http_status": 422,
+        "meaning": "The isolated qualification enrollment request did not satisfy the server-owned synthetic-device or qualification-context contract.",
+        "projection_mapping": [],
+        "retryable": false,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/routers/harness.py",
+        "terminal": true,
+        "ui_mapping": [],
+        "user_message": "The isolated qualification device could not be enrolled."
+      },
+      {
+        "audit_severity": "warning",
+        "code": "qualification_enrollment_unavailable",
+        "deprecated_aliases": [],
+        "domain": "validation",
+        "event_mapping": [],
+        "http_status": 503,
+        "meaning": "The isolated qualification context could not issue its bounded synthetic bootstrap token.",
+        "projection_mapping": [],
+        "retryable": true,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/routers/harness.py",
+        "terminal": false,
+        "ui_mapping": [],
+        "user_message": "The isolated qualification enrollment service is unavailable."
+      },
+      {
+        "audit_severity": "warning",
         "code": "queue_full",
         "deprecated_aliases": [],
         "domain": "projections",
@@ -3760,6 +3957,53 @@
       },
       {
         "audit_severity": "warning",
+        "code": "source_fixture_expired",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 409,
+        "meaning": "The short-lived bounded acceptance fixture expired before admission.",
+        "projection_mapping": [],
+        "retryable": true,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": false,
+        "ui_mapping": [],
+        "user_message": "The bounded acceptance photo selector expired. Request a new selector."
+      },
+      {
+        "audit_severity": "warning",
+        "code": "source_fixture_invalid",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 422,
+        "meaning": "The bounded acceptance selector is not a valid server-issued fixture for the fixed source scope.",
+        "projection_mapping": [],
+        "retryable": false,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": true,
+        "ui_mapping": [],
+        "user_message": "The bounded acceptance photo selector is invalid. Request a new server-issued selector."
+      },
+      {
+        "audit_severity": "warning",
+        "code": "source_fixture_unavailable",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [
+          "lite.photo_backup.acceptance_fixture.prepared"
+        ],
+        "http_status": 409,
+        "meaning": "The selected secondary device or its short-lived bounded acceptance fixture is not ready.",
+        "projection_mapping": [],
+        "retryable": true,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": false,
+        "ui_mapping": [],
+        "user_message": "The secondary device is not ready for a bounded acceptance photo."
+      },
+      {
+        "audit_severity": "warning",
         "code": "source_inventory_failed",
         "deprecated_aliases": [],
         "domain": "validation",
@@ -3787,6 +4031,25 @@
         "terminal": false,
         "ui_mapping": [],
         "user_message": "The remaining safety targets were deferred because private storage is constrained."
+      },
+      {
+        "audit_severity": "warning",
+        "code": "storage_reservation_conflict",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 409,
+        "meaning": "Another Photo Backup job currently holds the protected destination reservation.",
+        "projection_mapping": [
+          "photo_backup_readiness"
+        ],
+        "retryable": true,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": false,
+        "ui_mapping": [
+          "Photo Backup destination busy"
+        ],
+        "user_message": "Wait for the active photo backup to finish before starting another one."
       },
       {
         "audit_severity": "warning",
@@ -3960,6 +4223,25 @@
           "Use Back up photos"
         ],
         "user_message": "Import photos is paused for live phone folders. Use Back up photos instead."
+      },
+      {
+        "audit_severity": "warning",
+        "code": "unsupported_destination",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 422,
+        "meaning": "The requested Photo Backup destination is not registered as a supported server-owned adapter.",
+        "projection_mapping": [
+          "photo_backup_readiness"
+        ],
+        "retryable": false,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py and pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup_destinations.py",
+        "terminal": true,
+        "ui_mapping": [
+          "Photo Backup destination unsupported"
+        ],
+        "user_message": "Use the configured server-owned PhotoPrism destination; this destination is not available."
       },
       {
         "audit_severity": "info",

@@ -4680,7 +4680,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 489,
+  "page_count": 491,
   "page_types": [
     "overview",
     "guide",
@@ -16365,6 +16365,30 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "operations/photo-backup-enterprise-reliability.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "recovery",
+      "generated": false,
+      "id": "page:operations/photo-backup-enterprise-reliability",
+      "intents": [
+        "operate",
+        "diagnose"
+      ],
+      "page_type": "reference",
+      "path": "operations/photo-backup-enterprise-reliability.md",
+      "primary_audience": "operator",
+      "primary_navigation_owner": "operate",
+      "related_pages": [],
+      "source_or_generator": "operations/photo-backup-enterprise-reliability.md",
+      "title": "Photo Backup reliability workstream (unvalidated)",
+      "url": "/operations/photo-backup-enterprise-reliability/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "operations/photo-backup-photoprism-webdav.md"
       ],
       "confidence": "source-derived",
@@ -16656,6 +16680,30 @@
       "source_or_generator": "validation/evidence-history/runtime-security-assurance-qualification.md",
       "title": "Runtime Security Assurance Qualification Dossier",
       "url": "/validation/evidence-history/runtime-security-assurance-qualification/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "validation/isolated-runtime-qualification-lane.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "testing",
+      "generated": false,
+      "id": "page:validation/isolated-runtime-qualification-lane",
+      "intents": [
+        "build",
+        "test"
+      ],
+      "page_type": "reference",
+      "path": "validation/isolated-runtime-qualification-lane.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "build-test",
+      "related_pages": [],
+      "source_or_generator": "validation/isolated-runtime-qualification-lane.md",
+      "title": "Isolated runtime qualification lane",
+      "url": "/validation/isolated-runtime-qualification-lane/"
     },
     {
       "additional_audiences": [],
@@ -17592,7 +17640,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "128a7455b525fa029be85bc240f10de88102f3beb90619983ced16e992206e0a",
+  "source_fingerprint": "0aaf798bd8cce5c04f2c08fa3045f1c03f35b3640f04c2c49ade044dc5f376dd",
   "top_level": [
     "start-here",
     "use",

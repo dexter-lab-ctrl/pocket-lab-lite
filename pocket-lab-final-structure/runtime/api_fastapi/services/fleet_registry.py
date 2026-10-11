@@ -29,6 +29,11 @@ _PROFILE_TEXT_FIELDS = (
     "profile_fingerprint", "collection_status", "collected_at",
 )
 _HEALTH_FLOAT_FIELDS = ("load_average_1m", "load_average_5m", "load_average_15m")
+_PHOTO_COLLECTIONS = frozenset({"camera", "pictures", "videos"})
+_PHOTO_REPAIR_STATUSES = frozenset({
+    "installing", "verifying", "completed", "failed", "already_installed",
+    "interrupted", "unsupported_platform", "unavailable", "not_requested",
+})
 _CONTROL_TEXT_RE = re.compile(r"[\x00-\x1f\x7f]")
 
 
@@ -332,6 +337,40 @@ def _normalize_system_health(value: Any) -> Dict[str, Any]:
     return health
 
 
+def _normalize_photo_backup(value: Any) -> Dict[str, Any]:
+    """Keep the agent's bounded Photo Backup observation in the Fleet record.
+
+    The node agent reports collection availability alongside its advertised
+    capabilities.  The projection must retain that observation for the
+    server-owned Photo Backup readiness gate; it never grants authority or
+    persists credentials, paths, or command output.
+    """
+    if not isinstance(value, dict):
+        return {}
+    collections = [
+        item for item in value.get("collections", [])
+        if str(item) in _PHOTO_COLLECTIONS
+    ][:3] if isinstance(value.get("collections"), list) else []
+    result: Dict[str, Any] = {
+        "rclone_available": bool(value.get("rclone_available")),
+        "photo_storage_access": bool(value.get("photo_storage_access")),
+        "collections": collections,
+        "rclone_version": _safe_profile_text(value.get("rclone_version"), 80),
+        "status": _safe_profile_text(value.get("status"), 32),
+        "sanitized": True,
+    }
+    repair = value.get("repair")
+    if isinstance(repair, dict):
+        repair_status = str(repair.get("status") or "")
+        result["repair"] = {
+            "status": repair_status if repair_status in _PHOTO_REPAIR_STATUSES else "unknown",
+            "reason_code": _safe_profile_text(repair.get("reason_code"), 80) or None,
+            "checked_at": _safe_profile_text(repair.get("checked_at"), 64),
+            "sanitized": True,
+        }
+    return result
+
+
 def _agents_payload() -> Dict[str, Any]:
     payload = _read(
         _state_path("fleet_agents.json"), {"agents": {}, "updated_at": None}
@@ -538,6 +577,45 @@ def upsert_agent(
     """
     with _AGENT_REGISTRY_LOCK:
         return _upsert_agent_unlocked(data, event_type=event_type)
+
+
+def rotate_pending_agent_token_hash(node_id: str, token_hash: str) -> Dict[str, Any]:
+    """Commit a server-issued bootstrap credential for a pending invite.
+
+    Invite records use the one-time invite token as their pre-bootstrap
+    identity marker.  The bootstrap endpoint deliberately rotates that marker
+    to a separate long-lived agent credential before the device can publish
+    heartbeats.  Keep that transition explicit and local to the control plane;
+    an arbitrary NATS event must never be able to rotate an enrolled identity.
+    """
+    normalized = normalize_node_id(node_id)
+    incoming = str(token_hash or "").strip()
+    if not normalized or not re.fullmatch(r"[a-f0-9]{16,64}", incoming):
+        raise ValueError("agent_token_hash_invalid")
+    with _AGENT_REGISTRY_LOCK:
+        payload = _agents_payload()
+        agents = payload["agents"]
+        existing = dict(agents.get(normalized) or {})
+        if not existing:
+            raise ValueError("agent_identity_missing")
+        identity_status = str(existing.get("identity_status") or "").casefold()
+        if identity_status in {"verified", "protected_server_host"}:
+            raise ValueError("agent_identity_rotation_forbidden")
+        if str(existing.get("auth_token_hash") or "") == incoming:
+            return existing
+        enrollment_status = str(existing.get("enrollment_status") or "").casefold()
+        if enrollment_status not in {"invite_pending", "waiting_for_heartbeat", "joining"}:
+            raise ValueError("agent_identity_rotation_not_pending")
+        existing.update({
+            "auth_token_hash": incoming,
+            "identity_status": "pending",
+            "enrollment_status": "waiting_for_heartbeat",
+            "updated_at": _now(),
+        })
+        agents[normalized] = existing
+        payload["updated_at"] = existing["updated_at"]
+        _write(_state_path("fleet_agents.json"), payload)
+        return existing
 
 
 def _upsert_agent_unlocked(
@@ -805,6 +883,9 @@ def _upsert_agent_unlocked(
         # Advertised capabilities are observations only. Effective capabilities
         # are projected after server-owned role authorization and verification.
         merged["reported_capabilities"] = list(merged["advertised_capabilities"])
+    photo_backup = _normalize_photo_backup(data.get("photo_backup"))
+    if photo_backup:
+        merged["photo_backup"] = photo_backup
     if isinstance(data.get("storage"), dict):
         merged["storage"] = data["storage"]
     if isinstance(data.get("media_roots"), list):

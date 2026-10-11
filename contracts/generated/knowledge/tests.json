@@ -573,6 +573,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_isolated_qualification_lane.py",
+      "name": "tests/backend/test_lite_isolated_qualification_lane.py",
+      "source_refs": [
+        "tests/backend/test_lite_isolated_qualification_lane.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_long_gate_android_resume.py",
       "name": "tests/backend/test_lite_long_gate_android_resume.py",
       "source_refs": [
@@ -827,6 +837,26 @@
       "name": "tests/backend/test_lite_photo_backup_agent.py",
       "source_refs": [
         "tests/backend/test_lite_photo_backup_agent.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_photo_backup_candidate_qualification.py",
+      "name": "tests/backend/test_lite_photo_backup_candidate_qualification.py",
+      "source_refs": [
+        "tests/backend/test_lite_photo_backup_candidate_qualification.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_photo_backup_reliability.py",
+      "name": "tests/backend/test_lite_photo_backup_reliability.py",
+      "source_refs": [
+        "tests/backend/test_lite_photo_backup_reliability.py"
       ],
       "type": "test"
     },
@@ -2547,6 +2577,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5c014a4c5563838ac674dd41d16975a1c93ca0993b41619c15187d787d7c19e3"
+    "source_fingerprint": "9428680fa8e2428b6ab03a1c9153cf83601b2cf1a7b07f08e07c5ee04b89a94a"
   }
 }

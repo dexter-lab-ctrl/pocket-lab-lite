@@ -16,7 +16,7 @@ from fastapi import Request
 from .. import deps
 from .fleet_registry import append_device_lifecycle_event, normalize_node_id, upsert_agent
 from .nats_bus import BUS
-from . import lite_device_roles
+from . import lite_device_roles, qualification_context
 
 LITE_INVITE_TTL_SECONDS = int(os.environ.get("POCKETLAB_LITE_INVITE_TTL_SECONDS", "1800"))
 
@@ -493,7 +493,10 @@ def create_lite_invite(
     device_roles: Any = None,
     role: str | None = None,
     authorization: dict[str, Any] | None = None,
+    return_qualification_token: bool = False,
 ) -> dict[str, Any]:
+    if return_qualification_token and not qualification_context.enabled():
+        raise ValueError("qualification_invite_requires_isolated_context")
     roles = normalize_device_roles(device_roles, role=role)
     # Preserve the established invite-facing labels (App Host / Storage Node)
     # while the role service owns canonical normalization and authorization.
@@ -588,7 +591,7 @@ def create_lite_invite(
     )
 
     public_invite = _public_invite(record, url=invite_url, bootstrap_url=bootstrap_url)
-    return {
+    result = {
         "accepted": True,
         "status": "invite_ready",
         "summary": f"Invite ready for {hostname_text}.",
@@ -600,6 +603,11 @@ def create_lite_invite(
         "invite": public_invite,
         "event": _safe_event_payload(record),
     }
+    if return_qualification_token:
+        # This is returned only to the direct-loopback qualification bridge and
+        # is never copied into invite evidence, logs, or prepared projections.
+        result["qualification_token"] = token
+    return result
 
 def active_invite_device_keys() -> set[str]:
     keys: set[str] = set()

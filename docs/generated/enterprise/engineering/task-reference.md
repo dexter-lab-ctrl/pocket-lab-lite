@@ -21,7 +21,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 | Runtime-evidence loop | 34 |
 | Security-analysis loop | 34 |
 | Release loop | 19 |
-| Recovery-diagnostics loop | 9 |
+| Recovery-diagnostics loop | 16 |
 
 ## `default`
 
@@ -4253,6 +4253,244 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** gate-defined
 
 **Example:** `task lite:harness:verify-off`
+
+## `lite:photo-backup:agent`
+
+**Purpose:** Run Photo Backup Android/Termux agent unit tests
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest tests/backend/test_lite_photo_backup_agent.py`
+
+**Environment:** None source-discovered
+
+**Inputs:** tests/backend/test_lite_photo_backup_agent.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:photo-backup:agent`
+
+## `lite:photo-backup:backend`
+
+**Purpose:** Run Photo Backup service and reliability backend tests
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest tests/backend/test_lite_photo_backup.py tests/backend/test_lite_photo_backup_reliability.py`
+
+**Environment:** None source-discovered
+
+**Inputs:** tests/backend/test_lite_photo_backup.py, tests/backend/test_lite_photo_backup_reliability.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:photo-backup:backend`
+
+## `lite:photo-backup:candidate`
+
+**Purpose:** Run exact-SHA Photo Backup P0/P1 qualification in a disposable DEV-PC worktree
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/run-photo-backup-candidate-qualification.py {{if .CANDIDATE_SHA}}--candidate-sha "{{.CANDIDATE_SHA}}"{{end}}`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/run-photo-backup-candidate-qualification.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:photo-backup:candidate`
+
+## `lite:photo-backup:candidate:android-preflight`
+
+**Purpose:** Capture a read-only, fail-closed Android qualification preflight; never starts candidate code
+
+**Audience:** developer/operator
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/run-isolated-runtime-qualification.py --android-read-only --candidate-sha "{{.CANDIDATE_SHA}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/run-isolated-runtime-qualification.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:photo-backup:candidate:android-preflight`
+
+## `lite:photo-backup:candidate:android:qualify`
+
+**Purpose:** Run the explicitly authorized exact-SHA physical Android candidate qualification over run-owned SSH reverse forwards
+
+**Audience:** developer/operator
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/run-isolated-runtime-qualification.py --android-qualify --candidate-sha "{{.CANDIDATE_SHA}}" {{if .NATS_SERVER_BIN}}--nats-server-bin "{{.NATS_SERVER_BIN}}"{{end}} {{if .OPA_BIN}}--opa-bin "{{.OPA_BIN}}"{{end}} {{if .EVIDENCE_DIR}}--evidence-dir "{{.EVIDENCE_DIR}}"{{end}}`
+
+**Environment:** NATS_SERVER_BIN
+
+**Inputs:** scripts/dev/lite/run-isolated-runtime-qualification.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:photo-backup:candidate:android:qualify`
+
+## `lite:photo-backup:candidate:full`
+
+**Purpose:** Run the full exact-SHA disposable API, worker, NATS/JetStream, node-agent, supervisor and HTTPS WebDAV qualification lane
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/run-photo-backup-candidate-qualification.py --full --candidate-sha "{{.CANDIDATE_SHA}}" {{if .NATS_SERVER_BIN}}--nats-server-bin "{{.NATS_SERVER_BIN}}"{{end}} {{if .OPA_BIN}}--opa-bin "{{.OPA_BIN}}"{{end}}`
+
+**Environment:** NATS_SERVER_BIN
+
+**Inputs:** scripts/dev/lite/run-photo-backup-candidate-qualification.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:photo-backup:candidate:full`
+
+## `lite:photo-backup:mocked`
+
+**Purpose:** Run mocked Photo Backup E2E workflows
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-photo-backup.spec.ts`
+
+**Environment:** LITE_E2E_MODE
+
+**Inputs:** tests/e2e/lite-photo-backup.spec.ts
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=True; safe local=True; class=heavy-dev
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:photo-backup:mocked`
 
 ## `lite:playwright:preflight`
 

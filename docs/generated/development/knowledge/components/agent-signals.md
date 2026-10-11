@@ -79,6 +79,7 @@ Publish fresh runtime signals used to derive Online, Offline, Stale, Agent stopp
 - protected_by: `Managed-device boundary`
 - protected_by: `Managed-device boundary`
 - publishes: `pocketlab.events.fleet.node_capabilities`
+- publishes: `pocketlab.events.fleet.node_command_progress`
 - publishes: `pocketlab.events.fleet.node_command_result`
 - publishes: `pocketlab.events.fleet.node_health`
 - publishes: `pocketlab.events.fleet.node_heartbeat`
