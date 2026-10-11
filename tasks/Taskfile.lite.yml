@@ -2,6 +2,36 @@ version: '3'
 
 tasks:
 
+  lite:ui:p4:unit:
+    desc: Run P0-P3 shared UI contract unit tests; no runtime mutation
+    cmds:
+      - npm run test -- src/lite/LiteDesignSystemP0.test.jsx src/lite/components/LiteNextSteps.test.jsx src/lite/components/LiteEvidenceGuide.test.jsx src/lite/components/LiteQuickNavigate.test.jsx
+
+  lite:ui:p4:mocked:
+    desc: Run P4 mocked desktop/mobile regressions and scoped accessibility checks
+    cmds:
+      - npm run test:ui:p4:mocked
+
+  lite:ui:p4:full-mocked:
+    desc: Run full established mocked UI, visual, accessibility, and performance lanes
+    cmds:
+      - npm run test:ui:p4:mocked
+      - npm run test:mock-regression
+      - npm run test:perf:mocked
+      - npm run build:budget
+
+  lite:ui:p4:live:
+    desc: Explicitly qualified read-only live UI lane; requires separately approved runtime setup
+    cmds:
+      - npm run test:e2e:live
+      - npm run test:perf:live
+
+  lite:ui:p4:android:
+    desc: Physical Android performance lane; requires external device preflight and authorization
+    cmds:
+      - npm run test:perf:android-cdp
+
+
   lite:ui:p3:unit:
     desc: Run P3 responsive navigation and keyboard safety component tests
     cmds:
