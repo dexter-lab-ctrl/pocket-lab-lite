@@ -45872,6 +45872,10 @@
       ],
       "test:tests/backend/test_lite_isolated_qualification_lane.py": [
         {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:disabled",
           "type": "verified_by"
         }
@@ -57559,6 +57563,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_isolated_qualification_lane.py",
           "type": "verified_by"
         },
         {
@@ -85854,6 +85862,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_isolated_qualification_lane.py"
+      ],
+      "id": "rel:734142b240c9e012",
+      "source": "component:photoprism",
+      "target": "test:tests/backend/test_lite_isolated_qualification_lane.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:7351b759dfc0abea",
@@ -104662,7 +104679,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "126390d29cf3124050d15c65071faa05e2cb6a1a382be00649a974a84f01a33e",
+  "source_fingerprint": "e8285a41bf517edfe51c0fe763dc098c2457f53c1db5e9497b694b51b1b323ce",
   "statistics": {
     "entity_count": 1358,
     "entity_type_counts": {
@@ -104688,7 +104705,7 @@
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3884,
+    "relation_count": 3885,
     "source_count": 294
   }
 }
