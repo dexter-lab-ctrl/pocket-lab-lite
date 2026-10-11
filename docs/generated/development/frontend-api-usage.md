@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 000aed5a7952e3190ae6afc2791011ea0d6a874f981644ae9823640c34a5a5fe
+source_fingerprint: 3ccc63d2bd138946b20862a852e338c8e2a0b12abe8269477c660db49322de0a
 schema_revision: 1
 validation_status: generated
 ---
@@ -120,6 +120,7 @@ validation_status: generated
 | src/mocks/deviceFactsScenarios.js | MSW handler | GET | `/api/lite/devices/:deviceId/history` | mock | yes | static |
 | src/mocks/deviceFactsScenarios.js | MSW handler | GET | `/api/lite/fleet` | mock | yes | static |
 | src/mocks/deviceFactsScenarios.js | MSW handler | GET | `/api/lite/status` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/apps/example-app/actions` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/apps/lifecycle` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/apps/lifecycle/photoprism` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/apps/photoprism/actions` | mock | yes | static |

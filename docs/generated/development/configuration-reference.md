@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 073e6422113cef6f346507ff1451032dcecaefdd0bbbf89fe794ebf0d999de55
+source_fingerprint: d8e0ecbb869c30ce296128d94275b2a3898c75469318c8a0f973a116727a75ea
 schema_revision: 1
 validation_status: generated
 ---
@@ -143,7 +143,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_BOOTSTRAP_DRY_RUN` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/bootstrap.sh |
 | `POCKETLAB_BUILD_ID` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-candidate.sh, scripts/dev/lite/run-ui-performance-candidate.sh |
 | `POCKETLAB_BUILD_VERSION` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/projection_scheduler.py |
-| `POCKETLAB_CADDYFILE` | configuration | $CADDYFILE | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog_live.py, pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py, scripts/dev/lite/run-photo-backup-candidate-qualification.py, scripts/docs/runtime/termux_runtime_probe.sh |
+| `POCKETLAB_CADDYFILE` | configuration | $CADDYFILE | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_adapters.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py, pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py, scripts/dev/lite/run-photo-backup-candidate-qualification.py, scripts/docs/runtime/termux_runtime_probe.sh |
 | `POCKETLAB_CADDY_REFRESH_NESTED` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/restart-caddy-proxy.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh |
 | `POCKETLAB_CADDY_REFRESH_RELOAD_ONLY` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/restart-caddy-proxy.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh |
 | `POCKETLAB_COMMANDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py, scripts/dev/lite/run-isolated-runtime-qualification.py, scripts/docs/generate_asyncapi_contract.py, scripts/docs/generate_event_docs.py |

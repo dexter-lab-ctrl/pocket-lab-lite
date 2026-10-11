@@ -344,7 +344,7 @@ export function normalizeLiteAppAction(action = {}, actionId = '') {
   const normalized = {
     id,
     action_id: id,
-    app_id: safeString(action.app_id || 'photoprism'),
+    app_id: safeString(action.app_id || ''),
     label: safeString(action.label || id.replace(/_/g, ' ')),
     category: actionCategory(id, action),
     category_label: safeString(action.category_label || ''),
@@ -374,22 +374,23 @@ export function normalizeLiteAppAction(action = {}, actionId = '') {
 
 function collectActions(payload = {}) {
   const actions = {};
+  const payloadAppId = safeString(payload?.app_id || '');
   if (isObject(payload.actions)) {
     Object.entries(payload.actions).forEach(([actionId, action]) => {
-      const normalized = normalizeLiteAppAction({ id: actionId, ...(action || {}) }, actionId);
+      const normalized = normalizeLiteAppAction({ app_id: action?.app_id || payloadAppId, id: actionId, ...(action || {}) }, actionId);
       if (normalized) actions[normalized.id] = normalized;
     });
   }
   if (Array.isArray(payload.action_list)) {
     payload.action_list.forEach((action) => {
       const actionId = action?.id || action?.action_id;
-      const normalized = normalizeLiteAppAction({ ...(actions[actionId] || {}), ...(action || {}), id: actionId }, actionId);
+      const normalized = normalizeLiteAppAction({ app_id: action?.app_id || actions[actionId]?.app_id || payloadAppId, ...(actions[actionId] || {}), ...(action || {}), id: actionId }, actionId);
       if (normalized) actions[normalized.id] = normalized;
     });
   }
   if (isObject(payload.latest_results)) {
     Object.entries(payload.latest_results).forEach(([actionId, result]) => {
-      const base = actions[actionId] || normalizeLiteAppAction({ id: actionId }, actionId);
+      const base = actions[actionId] || normalizeLiteAppAction({ app_id: payloadAppId, id: actionId }, actionId);
       if (base) {
         base.result = { ...(base.result || {}), ...(normalizeResult(result) || {}) };
         base.latest_result = normalizeResult(result);
@@ -440,8 +441,7 @@ function normalizeMediaSummary(media = null) {
   };
 }
 
-export function selectPhotoPrismActionsView(payload = {}) {
-  if (payload?.view_model === 'photoprism-actions-s3-v1' && payload?.version === LITE_APP_CATALOG_VIEW_MODEL_VERSION) return payload;
+export function selectAppActionsView(payload = {}) {
   const actions = collectActions(payload || {});
   const actionList = Object.values(actions);
   const latestResults = actionList.reduce((items, action) => {
@@ -453,10 +453,10 @@ export function selectPhotoPrismActionsView(payload = {}) {
     return items;
   }, {});
   const output = {
-    view_model: 'photoprism-actions-s3-v1',
+    view_model: 'app-actions-s3-v1',
     version: LITE_APP_CATALOG_VIEW_MODEL_VERSION,
-    app_id: safeString(payload?.app_id || 'photoprism'),
-    app_label: safeString(payload?.app_label || payload?.name || 'PhotoPrism'),
+    app_id: safeString(payload?.app_id || ''),
+    app_label: safeString(payload?.app_label || payload?.name || 'App'),
     status: normalizeStatus(payload?.status || 'ready'),
     actions,
     action_list: actionList,
@@ -469,6 +469,18 @@ export function selectPhotoPrismActionsView(payload = {}) {
     live_action_ids: actionList.filter(isLiteAppActionLive).map((action) => action.id),
   };
   return withSnapshotMeta(payload, output);
+}
+
+export function selectPhotoPrismActionsView(payload = {}) {
+  const generic = selectAppActionsView({
+    ...payload,
+    app_id: payload?.app_id || 'photoprism',
+    app_label: payload?.app_label || payload?.name || 'PhotoPrism',
+  });
+  return {
+    ...generic,
+    view_model: 'photoprism-actions-s3-v1',
+  };
 }
 
 function safeStorageMappings(storage = {}) {
@@ -490,10 +502,10 @@ function safeStorageMappings(storage = {}) {
   ]));
 }
 
-function selectLifecycleActions(actions = {}) {
+function selectLifecycleActions(actions = {}, appId = '') {
   if (!isObject(actions)) return {};
   return Object.entries(actions).reduce((selected, [actionId, action]) => {
-    const normalized = normalizeLiteAppAction({ id: actionId, ...(action || {}) }, actionId);
+    const normalized = normalizeLiteAppAction({ app_id: action?.app_id || appId, id: actionId, ...(action || {}) }, actionId);
     if (normalized) selected[actionId] = normalized;
     return selected;
   }, {});
@@ -514,7 +526,7 @@ function selectLifecycleSummary(lifecycle = {}) {
     attention: Array.isArray(lifecycle.attention)
       ? lifecycle.attention.slice(0, 4).map((item) => copySafeKeys(item, ['id', 'title', 'summary', 'status']))
       : [],
-    actions: selectLifecycleActions(lifecycle.actions),
+    actions: selectLifecycleActions(lifecycle.actions, safeString(lifecycle.app_id || '')),
   };
 }
 
@@ -640,18 +652,40 @@ export function selectLiteCatalogAppSummary(app = {}) {
   const access = isObject(app.access) ? app.access : {};
   const runtime = isObject(app.runtime) ? app.runtime : {};
   const actions = isObject(app.actions) ? app.actions : {};
+  const platformContract = isObject(app.platform_contract) ? app.platform_contract : {};
+  const platformCapabilities = isObject(platformContract.capabilities) ? platformContract.capabilities : {};
+  const platformActions = isObject(platformContract.actions) ? platformContract.actions : {};
   const canonical = selectCanonicalAppState(app);
   return {
-    id: safeString(app.id || 'photoprism'),
-    name: safeString(app.name || app.label || 'PhotoPrism'),
-    label: safeString(app.label || app.name || 'PhotoPrism'),
-    category: safeString(app.category || 'Photos'),
+    id: safeString(app.id || 'app'),
+    name: safeString(app.name || app.label || 'App'),
+    label: safeString(app.label || app.name || 'App'),
+    category: safeString(app.category || 'Apps'),
     summary: safeString(app.summary || ''),
     status: normalizeStatus(canonical.running ? 'ready' : canonical.degraded || canonical.stopped ? 'needs_attention' : canonical.installed ? 'installed' : app.status || 'not_installed'),
     health: normalizeStatus(app.health || runtime.health || ''),
     installed: canonical.installed,
     install_state: canonical.installationState,
     actions: copySafeKeys(actions, ['open', 'install', 'remove', 'retry']),
+    platform_contract: {
+      schema_version: Number(platformContract.schema_version || 0),
+      id: safeString(platformContract.id || app.id || ''),
+      name: safeString(platformContract.name || app.name || app.label || ''),
+      category: safeString(platformContract.category || app.category || ''),
+      summary: safeString(platformContract.summary || app.summary || ''),
+      platforms: Array.isArray(platformContract.platforms) ? platformContract.platforms.slice(0, 8).map(safeString).filter(Boolean) : [],
+      capabilities: Object.fromEntries(
+        Object.entries(platformCapabilities)
+          .filter(([key, value]) => /^[a-z0-9_]+$/.test(key) && value === true)
+          .slice(0, 32)
+      ),
+      actions: Object.fromEntries(
+        Object.entries(platformActions)
+          .filter(([key, value]) => /^[a-z0-9_]+$/.test(key) && isObject(value))
+          .slice(0, 32)
+          .map(([key, value]) => [key, copySafeKeys(value, ['label', 'category', 'summary', 'risk'])])
+      ),
+    },
     access: copySafeKeys(access, ['route_ready', 'open_url', 'route', 'url', 'message', 'https_ready', 'open']),
     runtime: copySafeKeys(runtime, ['route', 'url', 'health', 'process', 'status', 'checked_at', 'installation_state', 'process_status', 'reachable', 'running', 'state_conflict', 'evidence_quality', 'authoritative_source', 'evidence']),
     canonical_state: canonical,
@@ -685,10 +719,16 @@ export function selectLiteCatalogAppSummary(app = {}) {
     checked_at: app.checked_at || app.updated_at || runtime.checked_at || null,
     health_chips: [
       { id: 'route', label: access.route_ready ? 'Route ready' : 'Route checking', status: access.route_ready ? 'ready' : 'checking' },
-      { id: 'photos', label: storage.mapping_count || safeStorageMappings(storage).length ? 'Photos connected' : 'Photos not connected', status: storage.mapping_count || safeStorageMappings(storage).length ? 'ready' : 'checking' },
-      { id: 'safety', label: app.security_profile?.label || lifecycle?.security?.summary || 'Check app', status: normalizeStatus(app.security_profile?.status || lifecycle?.security?.status || 'checking') },
-      { id: 'backup', label: app.backup_profile?.label || lifecycle?.backup?.summary || 'Backup ready', status: normalizeStatus(app.backup_profile?.status || lifecycle?.backup?.status || 'checking') },
-    ],
+      platformCapabilities.media_sources === true
+        ? { id: 'media', label: storage.mapping_count || safeStorageMappings(storage).length ? 'Media connected' : 'Media not connected', status: storage.mapping_count || safeStorageMappings(storage).length ? 'ready' : 'checking' }
+        : null,
+      platformCapabilities.security_check === true
+        ? { id: 'safety', label: app.security_profile?.label || lifecycle?.security?.summary || 'Check app', status: normalizeStatus(app.security_profile?.status || lifecycle?.security?.status || 'checking') }
+        : null,
+      platformCapabilities.backup === true
+        ? { id: 'backup', label: app.backup_profile?.label || lifecycle?.backup?.summary || 'Backup ready', status: normalizeStatus(app.backup_profile?.status || lifecycle?.backup?.status || 'checking') }
+        : null,
+    ].filter(Boolean),
   };
 }
 
@@ -719,22 +759,30 @@ export function isLiteAppActionsViewLive(payload = {}) {
   return Boolean(actionLive || media.operation_running || isLiteAppActionLive(media.last_import || {}));
 }
 
-export function selectPhotoPrismManageView({ catalog, appActions, recoverySummary = null, securitySummary = null } = {}) {
+export function selectAppManageView({ catalog, appActions, appId = '', recoverySummary = null, securitySummary = null } = {}) {
   const catalogView = selectCatalogSummaryView(catalog || {});
-  const actionsView = selectPhotoPrismActionsView(appActions || {});
-  const photoprism = catalogView.apps.find((app) => app.id === 'photoprism') || catalogView.apps[0] || null;
+  const actionsView = selectAppActionsView(appActions || {});
+  const selectedId = safeString(appId || actionsView.app_id || '');
+  const app = catalogView.apps.find((item) => item.id === selectedId) || catalogView.apps[0] || null;
   return {
-    view_model: 'photoprism-manage-s3-v1',
+    view_model: 'app-manage-s3-v1',
     version: LITE_APP_CATALOG_VIEW_MODEL_VERSION,
-    app: photoprism,
+    app,
     action_groups: actionsView.action_groups,
     actions: actionsView.actions,
     live_action_ids: actionsView.live_action_ids,
     active_live_action: actionsView.live_action_ids[0] ? actionsView.actions[actionsView.live_action_ids[0]] : null,
-    media: actionsView.media || photoprism?.media || null,
-    recovery: recoverySummary ? copySafeKeys(recoverySummary, ['status', 'summary', 'updated_at']) : photoprism?.lifecycle?.backup || null,
-    security: securitySummary ? copySafeKeys(securitySummary, ['status', 'summary', 'updated_at']) : photoprism?.lifecycle?.security || null,
+    media: actionsView.media || app?.media || null,
+    recovery: recoverySummary ? copySafeKeys(recoverySummary, ['status', 'summary', 'updated_at']) : app?.lifecycle?.backup || null,
+    security: securitySummary ? copySafeKeys(securitySummary, ['status', 'summary', 'updated_at']) : app?.lifecycle?.security || null,
     updated_at: actionsView.updated_at || catalogView.updated_at || null,
+  };
+}
+
+export function selectPhotoPrismManageView(options = {}) {
+  return {
+    ...selectAppManageView({ ...options, appId: 'photoprism' }),
+    view_model: 'photoprism-manage-s3-v1',
   };
 }
 

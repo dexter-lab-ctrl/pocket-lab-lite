@@ -289,8 +289,8 @@ def test_lite_catalog_endpoint_registered():
 
 def test_lite_catalog_install_validates_app_and_target_before_queue():
     unknown = client().post("/api/lite/catalog/install", json={"app_id": "vault"})
-    assert unknown.status_code == 400
-    assert "PhotoPrism" in unknown.text
+    assert unknown.status_code == 404
+    assert "not registered" in unknown.text.lower()
 
     remote = client().post("/api/lite/catalog/install", json={"app_id": "photoprism", "target_node_id": "other-device"})
     assert remote.status_code == 409
@@ -3118,7 +3118,7 @@ def test_lite_storage_and_app_lifecycle_ui_source_is_present():
     assert "Saved to Storage Phone" in ui
     assert "Remove app" in ui
     assert "Confirm remove" in ui
-    assert "Delete your photo files." in ui
+    assert "Connected media files are not deleted by default." in ui
     assert "Delete existing backups by default." in ui
     assert "Repair" in ui
     assert "Update" in ui
@@ -3768,7 +3768,7 @@ def test_lite_app_update_apply_stays_disabled(monkeypatch):
 def test_lite_app_update_unknown_app_is_safe():
     response = client().get("/api/lite/apps/vault/update")
     assert response.status_code == 404
-    assert "PhotoPrism is the first app" in response.text
+    assert "not registered" in response.text.lower()
 
 
 def test_lite_app_update_frontend_source_is_readiness_only():
@@ -4350,7 +4350,7 @@ def test_lite_app_catalog_details_selection_is_action_specific():
     ui = _lite_ui_source()
     css = Path("src/index.css").read_text()
     assert "detailsActionId" in ui
-    assert "openActionDetails(entry.actionId, app.id || 'photoprism')" in ui
+    assert "openActionDetails(entry.actionId, app.id)" in ui
     assert "detailsActionId === entry.actionId" in ui
     assert "lite-catalog-action-details-anchor" in ui
     assert "AppActionDetailsPanel" in ui
@@ -4799,7 +4799,7 @@ def test_lite_safe_reads_use_query_backed_resource_source():
     assert "useState" not in status_hook
     assert "setInterval" not in status_hook
     assert "useLiteQuery" in catalog
-    assert "liteQueryPaths.appActions('photoprism')" in catalog
+    assert "liteQueryPaths.appActions(featuredAppId)" in catalog
     assert "useLiteMutation" in catalog
     assert "getLiteAppActionInvalidations" in catalog
     assert "liteMutationInvalidations" not in catalog
@@ -7389,13 +7389,13 @@ def test_lite_security_app_check_profile_source_contract():
     assert "PhotoPrism database" in app_plan["skipped_targets"]
     assert "PhotoPrism thumbnails, cache, sidecars, and database" in app_plan["excluded_groups"]
     assert "photoprism.env" in policy_source
-    assert "target-photoprism-route-posture.json" in security
-    assert "target-photoprism-trivy.json" in security
+    assert 'f"target-{prefix}-route-posture.json"' in security
+    assert 'f"target-{prefix}-trivy.json"' in security
     assert "target-{target_id}-sbom.cdx.json" in security
-    assert '"photoprism_app_files", "PhotoPrism", policy.SCAN_PROFILE_APP' in security
-    assert "target-photoprism-config-secret.json" in security
-    assert "target-photoprism-backup-metadata.json" in security
-    assert "target-photoprism-action-state.json" in security
+    assert 'f"{app_label} app files"' in security
+    assert 'f"target-{prefix}-config-secret.json"' in security
+    assert 'f"target-{prefix}-backup-metadata.json"' in security
+    assert 'f"target-{prefix}-action-state.json"' in security
     assert "App route checked" in security
     assert "App files checked" in security
     assert "App settings checked" in security
@@ -7405,7 +7405,7 @@ def test_lite_security_app_check_profile_source_contract():
     assert "profile=profile" in router
     assert "app_id=app_id" in router
     assert "App Check requires an app_id." in router
-    assert "security_app_check" in app_actions
+    assert "check_app" in app_actions
     assert "profile" in app_actions and "app" in app_actions
     assert "SECURITY_PROFILE3_APP_CHECK_GUARDS" in ui
     assert "Check PhotoPrism" in ui
@@ -7551,7 +7551,7 @@ def test_lite_security_enterprise_scanner_profile_history_contract():
     assert "target-aware" not in security.lower()
     assert "_photoprism_proot_targets" in security
     assert "binary_path.exists()" in security
-    assert "PhotoPrism app binary" in security
+    assert 'f"{app_label} app binary"' in security
     assert "POCKETLAB_LITE_BACKUP_ROOT" in policy_source
     assert "pocket-lab-lite-backups" in policy_source
     assert "scanner_quality" in security
