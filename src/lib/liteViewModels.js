@@ -236,6 +236,22 @@ function copySafeKeys(source = {}, keys = []) {
   }, {});
 }
 
+const SAFE_CREDENTIAL_BACKUP_POLICY_VALUES = Object.freeze({
+  app_backup: new Set(['neither']),
+  workspace_database: new Set(['metadata_only']),
+  secret_material: new Set(['not_stored']),
+});
+
+function selectSafeCredentialBackupPolicy(source = {}) {
+  if (!isObject(source)) return null;
+  const policy = {};
+  for (const [key, allowedValues] of Object.entries(SAFE_CREDENTIAL_BACKUP_POLICY_VALUES)) {
+    const value = String(source[key] || '').trim();
+    if (allowedValues.has(value)) policy[key] = value;
+  }
+  return Object.keys(policy).length ? policy : null;
+}
+
 function actionCategory(actionId = '', action = {}) {
   const category = String(action?.category || '').replace('app_setup', 'setup');
   if (category) return category;
@@ -3303,9 +3319,7 @@ export function selectAppResourceView(payload = {}) {
       credential_rebinding_required: Boolean(recovery.credential_rebinding_required),
       recovery_ready: Boolean(recovery.recovery_ready),
       recovery_blockers: (Array.isArray(recovery.recovery_blockers) ? recovery.recovery_blockers : []).slice(0, 6).map((item) => safeString(item)).filter(Boolean),
-      credential_backup_policy: isObject(recovery.credential_backup_policy)
-        ? copySafeKeys(recovery.credential_backup_policy, ['app_backup', 'workspace_database', 'secret_material'])
-        : null,
+      credential_backup_policy: selectSafeCredentialBackupPolicy(recovery.credential_backup_policy),
       summary: safeString(recovery.summary || ''),
     },
     credential_status: {

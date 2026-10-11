@@ -331,15 +331,16 @@ export default function RulesScreen() {
 
               <section aria-labelledby="rules-manage-templates">
                 <div className="lite-rules-card-head"><LiteHelpHeading title="Safe protection templates" helpKey="rules.policies" as="h2" /><span className="lite-rules-soft-badge">Server owned</span></div>
-                <p>These templates explain the safeguards that are available without exposing internal rule definitions.</p>
+                <p>These templates explain the safeguards that are available without exposing internal rule definitions. Normal UI describes safeguards rather than exposing policy source. The browser cannot grant itself a role, approval, exception or assurance.</p>
                 <div className="lite-rules-template-grid">{templates.map((template) => <div key={template.id} className="lite-rules-template-card"><div><strong>{template.label}</strong><StatusBadge status={template.status === 'active' ? 'healthy' : 'neutral'}>{template.status === 'active' ? 'Active' : 'Available'}</StatusBadge></div><p>{template.summary}</p></div>)}{!templates.length ? <StateSurface tone="neutral" title="No safeguard summaries" description="Pocket Lab will show current safe templates here when the server returns them." /> : null}</div>
               </section>
 
               <LiteTechnicalFacts
-                title="Technical details"
+                title="Technical status"
                 description="Safe operational facts about the current Safety Rules."
                 facts={[
                   { id: 'protection', label: 'Protection service', value: ready ? 'Ready' : 'Needs attention', tone: ready ? 'ready' : 'review' },
+                  { id: 'policy-engine', label: 'Policy engine', value: ready ? 'Ready' : 'Needs attention', tone: ready ? 'ready' : 'review' },
                   { id: 'scope', label: 'Runs on', value: data?.engine?.loopback_only ? 'This Pocket Lab only' : 'Needs attention' },
                   { id: 'rules-package', label: 'Safety Rules set', value: data?.active_policy?.bundle_ready ? 'Ready' : 'Not ready' },
                   { id: 'information', label: 'Information', value: savedStateOnly ? 'Saved information' : 'Current information' },

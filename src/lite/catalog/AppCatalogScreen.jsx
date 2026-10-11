@@ -2131,7 +2131,7 @@ function CatalogManagePortal({
   const accessSummary = blockedByRules
     ? 'Access is blocked by Rules.'
     : approvalRequired
-      ? 'Some app changes need approval.'
+      ? 'A requested app change needs approval.'
       : temporaryAccessRequired
         ? 'Some app changes need temporary access.'
         : appAuthority.summary || 'App access follows current Safety Rules.';

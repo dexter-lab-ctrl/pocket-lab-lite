@@ -121,9 +121,12 @@ def test_full_backup_manifest_registers_photoprism_metadata_without_secrets(isol
     _create_photoprism_tree(tmp_path)
     from api_fastapi import deps
     from api_fastapi.db.migrations import apply_migrations
-    from api_fastapi.services import lite_backup, lite_backup_manifest
+    from api_fastapi.services import lite_backup, lite_backup_locations, lite_backup_manifest
 
     apply_migrations()
+    layout = lite_backup_locations.layout_for_location(lite_backup_locations.DEFAULT_LOCATION_ID)
+    layout.ensure()
+    (layout.repository / "config").write_text("synthetic-restic-config\n", encoding="utf-8")
 
     def fake_restic(args, *, env, timeout=180, cwd=None, capture_stdout=True):
         if "backup" in args:
@@ -199,11 +202,14 @@ def test_photoprism_restore_preserves_secret_lines_and_rejects_unregistered_path
 def test_selected_full_restore_restores_photoprism_metadata_and_leaves_media_untouched(
     isolated_runtime, tmp_path, monkeypatch
 ):
-    from api_fastapi.services import lite_backup, lite_backup_manifest, lite_database_recovery
+    from api_fastapi.services import lite_backup, lite_backup_locations, lite_backup_manifest, lite_database_recovery
     from api_fastapi.services import lite_photoprism_backup
 
     root, config, database = _create_photoprism_tree(tmp_path)
     saved_snapshot = tmp_path / "saved-snapshot"
+    layout = lite_backup_locations.layout_for_location(lite_backup_locations.DEFAULT_LOCATION_ID)
+    layout.ensure()
+    (layout.repository / "config").write_text("synthetic-restic-config\n", encoding="utf-8")
 
     def fake_restic(args, *, env, timeout=180, cwd=None, capture_stdout=True):
         if "backup" in args:

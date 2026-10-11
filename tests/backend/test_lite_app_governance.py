@@ -95,6 +95,7 @@ def test_resource_contract_rejects_capability_spoof_and_unverified_placement(mon
             "photoprism",
             "app.install",
             fleet_payload=unverified,
+            enforce_placement=True,
         )
     assert blocked.value.status_code == 409
     assert blocked.value.detail["reason_code"] == "required_device_capability_unverified"

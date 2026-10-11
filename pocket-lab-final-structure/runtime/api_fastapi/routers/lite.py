@@ -4649,13 +4649,22 @@ def get_lite_recovery_app_backup_targets(app_id: str, request: Request) -> dict[
 
 
 @router.post("/recovery/apps/{app_id}/backup-to-target")
-def backup_lite_app_to_target(app_id: str, payload: LiteAppActionRequest, request: Request) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
-    return lite_app_backup.backup_to_storage_readiness(
+async def backup_lite_app_to_target(app_id: str, payload: LiteAppActionRequest, request: Request) -> dict[str, Any]:
+    auth_context = deps.require_auth(request, write=True)
+    contract, decision = await _authorize_app_resource(
+        auth_context=auth_context,
+        app_id=app_id,
+        action_id="app.backup.to_storage",
+        target_device_id=payload.target_device_id,
+        operation_id="app-backup-target-" + uuid.uuid4().hex,
+    )
+    result = lite_app_backup.backup_to_storage_readiness(
         app_id,
         payload.target_device_id,
         reason=payload.reason,
     )
+    result["authorization"] = _app_authorization_summary(contract, decision)
+    return result
 
 @router.get("/recovery/apps")
 def get_lite_recovery_apps(request: Request) -> dict[str, Any]:

@@ -8181,7 +8181,12 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     run["execution_timeline"] = execution_timeline_for_phase(run, "settings_running")
     _write_intermediate_running_state(run, findings, evidence_refs)
 
-    config_path = Path.home() / str(target_contract["config_relative"])
+    # Resolve the adapter-owned configuration path through the policy service
+    # just like the full scan does. This keeps App Check bounded to the
+    # canonical backend path and allows isolated qualification runtimes to
+    # provide their own disposable configuration root without changing the
+    # app contract or exposing raw settings.
+    config_path = policy.photoprism_config_dir() if app_id == "photoprism" else Path.home() / str(target_contract["config_relative"])
     config_findings, config_status, _ = _run_trivy_target_job(
         trivy=trivy,
         run_id=run_id,

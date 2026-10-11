@@ -592,10 +592,10 @@ def test_preflight_distinguishes_pm2_online_from_api_readiness(assurance_runtime
 
 def test_migration_and_blocked_run_report_are_durable_and_sanitized(assurance_runtime):
     from api_fastapi.db.connection import read_connection
-    from api_fastapi.db.migrations import current_schema_version
+    from api_fastapi.db.migrations import current_schema_version, latest_schema_version
     from api_fastapi.services import lite_security_assurance as assurance
 
-    assert current_schema_version() == 38
+    assert current_schema_version() == latest_schema_version()
     with read_connection() as conn:
         tables = {
             row[0]

@@ -308,7 +308,12 @@ def test_typed_rules_candidate_owner_step_up_and_health_roles(governance_runtime
             (revision_id, revision_id, _iso()),
         )
         conn.commit()
-    assert json.loads(raw["canonical_parameters_json"]) == {"admin_device_remove_approval": 1, "operator_device_remove_approval": 1}
+    assert json.loads(raw["canonical_parameters_json"]) == {
+        "admin_device_remove_approval": 1,
+        "operator_device_remove_approval": 1,
+        "admin_storage_role_approval": 1,
+        "operator_storage_role_approval": 1,
+    }
 
     with pytest.raises(lite_enterprise_governance.GovernanceError) as needs_step_up:
         lite_enterprise_governance.require_recent_assurance(owner_context, "policy.rules.activate")

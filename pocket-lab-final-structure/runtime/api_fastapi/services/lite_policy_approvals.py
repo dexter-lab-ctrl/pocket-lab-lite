@@ -16,6 +16,10 @@ APPROVAL_PURPOSES = {
     "device.roles.change": "policy.approval.device.roles.change",
     "app.remove": "policy.approval.app.remove",
 }
+# Compatibility name for the original device-removal UI projection. New code
+# binds the purpose through APPROVAL_PURPOSES by action, while this bounded
+# alias keeps older read-only projections from inventing a different purpose.
+APPROVAL_PURPOSE = APPROVAL_PURPOSES["device.remove"]
 APPROVAL_ACTIONS = frozenset(APPROVAL_PURPOSES)
 APPROVER_ROLES = frozenset({"Owner", "Admin"})
 # Owner is root-equivalent and never enters an independent approval continuation.

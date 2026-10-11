@@ -27,7 +27,7 @@ def policy_runtime(tmp_path, monkeypatch):
     ensure_runtime_path()
     from api_fastapi import deps
     from api_fastapi.db.connection import reset_sqlite_path_cache
-    from api_fastapi.db.migrations import apply_migrations
+    from api_fastapi.db.migrations import apply_migrations, latest_schema_version, migration_versions
     from api_fastapi.db.runtime import SQLITE_READS
     from api_fastapi.services import lite_enterprise_identity, lite_identity_auth
 
@@ -49,18 +49,20 @@ def policy_runtime(tmp_path, monkeypatch):
 def test_migration_fresh_upgrade_idempotence_and_p21_tables(tmp_path, monkeypatch):
     ensure_runtime_path()
     from api_fastapi.db.connection import read_connection, reset_sqlite_path_cache
-    from api_fastapi.db.migrations import apply_migrations
+    from api_fastapi.db.migrations import apply_migrations, latest_schema_version, migration_versions
 
     db = tmp_path / "state" / "rules.sqlite3"; monkeypatch.setenv("POCKETLAB_LITE_DB_PATH", str(db)); reset_sqlite_path_cache()
     assert 27 in apply_migrations()
     assert apply_migrations() == []
     legacy = tmp_path / "legacy-schema"; legacy.mkdir()
     for source in SCHEMA.glob("*.sql"):
-        if source.name != "0027_policy_revision_activation_p2.sql":
+        version = int(source.name.split("_", 1)[0])
+        if version <= 26:
             shutil.copy2(source, legacy / source.name)
     upgraded = tmp_path / "state" / "upgrade.sqlite3"; monkeypatch.setenv("POCKETLAB_LITE_DB_PATH", str(upgraded)); reset_sqlite_path_cache()
-    assert 26 in apply_migrations(legacy)
-    assert apply_migrations()[-1] == 27
+    assert apply_migrations(legacy) == list(range(1, 27))
+    assert apply_migrations() == migration_versions()[26:]
+    assert latest_schema_version() == migration_versions()[-1]
     with read_connection() as conn:
         tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         indexes = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='index'")}

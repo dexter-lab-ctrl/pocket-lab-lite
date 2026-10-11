@@ -788,6 +788,11 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
 
   test('Apps projects governed access states consistently on desktop and mobile Manage', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'mocked-desktop', 'Governed Manage state matrix runs once in Chromium.');
+    // The matrix deliberately opens seven governed states at two viewport
+    // sizes. Keep the test deadline above the measured local runtime so a
+    // slow isolated browser run does not turn complete coverage into a false
+    // timeout.
+    test.setTimeout(120_000);
     const cases = [
       ['app-governance-full-access', /You can manage this app/i],
       ['app-governance-read-only', /Read-only access/i],

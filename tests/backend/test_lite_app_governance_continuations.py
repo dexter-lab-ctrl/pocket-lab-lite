@@ -34,6 +34,10 @@ def app_continuation_runtime(tmp_path, monkeypatch):
     now = _iso()
     with connection() as conn:
         with begin_immediate(conn) as tx:
+            tx.execute(
+                "INSERT INTO enterprise_configuration(configuration_id,enabled,authorization_version,created_at,updated_at) VALUES (1,1,7,?,?)",
+                (now, now),
+            )
             tx.execute("UPDATE enterprise_configuration SET enabled=1, authorization_version=7 WHERE configuration_id=1")
             for human_id, username, role in (
                 ("human-owner", "owner-app-governance", "Owner"),

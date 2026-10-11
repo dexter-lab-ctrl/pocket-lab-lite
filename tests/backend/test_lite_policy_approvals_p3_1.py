@@ -144,6 +144,7 @@ def test_admin_request_requires_independent_step_up_and_is_single_use(approvals_
         action_id="device.remove",
         target_type="device",
         target_id="node-1",
+        target_revision="assessment",
         policy_revision="revision-p3",
     ) == approval_id
     consumed = approvals.consume_matching(
@@ -152,6 +153,7 @@ def test_admin_request_requires_independent_step_up_and_is_single_use(approvals_
         action_id="device.remove",
         target_type="device",
         target_id="node-1",
+        target_revision="assessment",
         policy_revision="revision-p3",
     )
     assert consumed["consumed"] is True
@@ -162,6 +164,7 @@ def test_admin_request_requires_independent_step_up_and_is_single_use(approvals_
             action_id="device.remove",
             target_type="device",
             target_id="node-1",
+            target_revision="assessment",
             policy_revision="revision-p3",
         )
     assert replay.value.reason_code == "approval_continuation_unavailable"
@@ -255,6 +258,7 @@ def test_concurrent_consumption_is_single_use(approvals_runtime):
                 action_id="device.remove",
                 target_type="device",
                 target_id="node-race",
+                target_revision="assessment",
                 policy_revision="revision-p3",
             )["consumed"]
         except approvals.ApprovalError:
