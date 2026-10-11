@@ -1510,6 +1510,17 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
+      "name": "POST /api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
       "name": "POST /api/lite/devices/{node_id}/photo-backup/cancel",
       "note": "A test link does not by itself prove runtime verification.",
@@ -4441,6 +4452,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e8285a41bf517edfe51c0fe763dc098c2457f53c1db5e9497b694b51b1b323ce"
+    "source_fingerprint": "8e4b7ba3c2e672e0565e5c5c9c0c7eb5074fbeb3cf9cfb9c73b03b2a097d0ee3"
   }
 }

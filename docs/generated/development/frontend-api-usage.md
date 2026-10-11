@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 91887def25ac0b61aade7c0f6e52418b7269405a1e9e4d161b521f65a5c9a18f
+source_fingerprint: 000aed5a7952e3190ae6afc2791011ea0d6a874f981644ae9823640c34a5a5fe
 schema_revision: 1
 validation_status: generated
 ---
@@ -272,6 +272,7 @@ validation_status: generated
 - `/api/lite/apps/{app_id}/update/receipts/{operation_id}`
 - `/api/lite/catalog/remove`
 - `/api/lite/commands/history`
+- `/api/lite/devices/{node_id}/photo-backup/acceptance-fixture`
 - `/api/lite/diagnostics/frontend-lifecycle`
 - `/api/lite/diagnostics/frontend-lifecycle/challenge`
 - `/api/lite/diagnostics/runtime/full`

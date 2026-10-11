@@ -2777,6 +2777,42 @@
       "user_message": "Shutdown occurred while the bounded mailbox was under pressure."
     },
     {
+      "code": "source_fixture_expired",
+      "domain": "apps",
+      "http_status": 409,
+      "meaning": "The short-lived bounded acceptance fixture expired before admission.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "The bounded acceptance photo selector expired. Request a new selector."
+    },
+    {
+      "code": "source_fixture_invalid",
+      "domain": "apps",
+      "http_status": 422,
+      "meaning": "The bounded acceptance selector is not a valid server-issued fixture for the fixed source scope.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "warning",
+      "terminal": true,
+      "user_message": "The bounded acceptance photo selector is invalid. Request a new server-issued selector."
+    },
+    {
+      "code": "source_fixture_unavailable",
+      "domain": "apps",
+      "http_status": 409,
+      "meaning": "The selected secondary device or its short-lived bounded acceptance fixture is not ready.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "The secondary device is not ready for a bounded acceptance photo."
+    },
+    {
       "code": "source_inventory_failed",
       "domain": "validation",
       "http_status": 409,
@@ -3294,5 +3330,5 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "721ceae9bd49206f9c3ab1d03054bbbb19994b11c791e6c5b1b63fbbe7053f87"
+  "source_fingerprint": "ff66a2597d6021bd60ffb49ea4f09dc30b4c9ecbdfd9492c632f6dc6e3079fea"
 }

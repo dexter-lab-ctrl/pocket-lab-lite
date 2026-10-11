@@ -207,7 +207,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:878",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:889",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:72",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1653",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1012"
@@ -840,7 +840,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3081",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3352",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1404",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605"
       ],
@@ -887,7 +887,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:684"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:695"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -967,7 +967,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:575"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:586"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1682,7 +1682,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3094"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3365"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1977,7 +1977,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1003"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1014"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1999,8 +1999,8 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:296",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:592",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:692"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:603",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:703"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2021,9 +2021,9 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1051",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1065",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:897"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1062",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1076",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:902"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2087,7 +2087,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1094"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1105"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -4638,6 +4638,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e8285a41bf517edfe51c0fe763dc098c2457f53c1db5e9497b694b51b1b323ce"
+    "source_fingerprint": "8e4b7ba3c2e672e0565e5c5c9c0c7eb5074fbeb3cf9cfb9c73b03b2a097d0ee3"
   }
 }

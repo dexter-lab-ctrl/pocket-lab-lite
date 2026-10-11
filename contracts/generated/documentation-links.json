@@ -601,6 +601,10 @@
         "title": "POST /api/lite/devices/{node_id}/photo-backup",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-devices-node-id-photo-backup"
       },
+      "endpoint:POST:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture": {
+        "title": "POST /api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-devices-node-id-photo-backup-acceptance-fixture"
+      },
       "endpoint:POST:/api/lite/devices/{node_id}/photo-backup/cancel": {
         "title": "POST /api/lite/devices/{node_id}/photo-backup/cancel",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-devices-node-id-photo-backup-cancel"
@@ -2801,6 +2805,18 @@
         "title": "shutdown_during_mailbox_backpressure",
         "url": "../../docs/generated/development/reason-codes.md#shutdown-during-mailbox-backpressure"
       },
+      "reason:source_fixture_expired": {
+        "title": "source_fixture_expired",
+        "url": "../../docs/generated/development/reason-codes.md#source-fixture-expired"
+      },
+      "reason:source_fixture_invalid": {
+        "title": "source_fixture_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#source-fixture-invalid"
+      },
+      "reason:source_fixture_unavailable": {
+        "title": "source_fixture_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#source-fixture-unavailable"
+      },
       "reason:source_inventory_failed": {
         "title": "source_inventory_failed",
         "url": "../../docs/generated/development/reason-codes.md#source-inventory-failed"
@@ -3409,7 +3425,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "df5f7e1baca465108445683c3ac5b304b3381bb5dac6cffad209f8c7b00442d9",
+    "aggregate_fingerprint": "1ea574c5d99390ece8d8cb729e04ddee6a5bc504c7d01e5533afd3d9740eea42",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3419,8 +3435,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "d7571194d848b19a5a21343c682e5bb659a2e1c2da7e465ac5a5b3eb09deb58d",
-      "contracts/metadata/documentation-platform.json": "453f7fbc885f8dc67965a1004276152c8013c7aadfaa395b896091b740810f7d",
+      "contracts/generated/lite-openapi.json": "515e939d9da2ea7ad29889b58396b8c9b1a3aa353c73738ecbe22ec35ba92b68",
+      "contracts/metadata/documentation-platform.json": "e173e121e9ee0740d25855d6ab2606bb78bde640aaa3d60aa5382fbabd32f03d",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",

@@ -4190,6 +4190,29 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Prepare Lite Photo Backup Acceptance Fixture",
+      "domain": "devices",
+      "id": "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
+      "method": "POST",
+      "name": "POST /api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
+      "operation_id": "prepare_lite_photo_backup_acceptance_fixture_api_lite_devices__node_id__photo_backup_acceptance_fixture_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "fleet"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Cancel Lite Photo Backup",
       "domain": "devices",
       "frontend_clients": [
@@ -18325,6 +18348,68 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The short-lived bounded acceptance fixture expired before admission.",
+      "domain": "apps",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:source_fixture_expired",
+      "name": "source_fixture_expired",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The bounded acceptance photo selector expired. Request a new selector."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The bounded acceptance selector is not a valid server-issued fixture for the fixed source scope.",
+      "domain": "apps",
+      "event_mapping": [],
+      "http_status": 422,
+      "id": "reason:source_fixture_invalid",
+      "name": "source_fixture_invalid",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The bounded acceptance photo selector is invalid. Request a new server-issued selector."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The selected secondary device or its short-lived bounded acceptance fixture is not ready.",
+      "domain": "apps",
+      "event_mapping": [
+        "lite.photo_backup.acceptance_fixture.prepared"
+      ],
+      "http_status": 409,
+      "id": "reason:source_fixture_unavailable",
+      "name": "source_fixture_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The secondary device is not ready for a bounded acceptance photo."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
       "domain": "validation",
       "event_mapping": [],
@@ -20672,7 +20757,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:878",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:889",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:72",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1653",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1012"
@@ -21305,7 +21390,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3081",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3352",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1404",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605"
       ],
@@ -21352,7 +21437,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:684"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:695"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -21432,7 +21517,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:575"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:586"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22147,7 +22232,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3094"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3365"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22442,7 +22527,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1003"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1014"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22464,8 +22549,8 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:296",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:592",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:692"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:603",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:703"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22486,9 +22571,9 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1051",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1065",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:897"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1062",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1076",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:902"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22552,7 +22637,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1094"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1105"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -32072,6 +32157,9 @@
         "reason:destination_read_only",
         "reason:destination_storage_unavailable",
         "reason:placement_identity_mismatch",
+        "reason:source_fixture_expired",
+        "reason:source_fixture_invalid",
+        "reason:source_fixture_unavailable",
         "reason:storage_reservation_conflict",
         "reason:unsafe_live_media_import",
         "reason:unsupported_destination",
@@ -32176,6 +32264,7 @@
         "api:get:/api/lite/fleet/health-summary",
         "api:get:/api/lite/fleet/invites/latest",
         "api:post:/api/lite/devices/{node_id}/photo-backup",
+        "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
         "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
         "api:post:/api/lite/devices/{node_id}/photo-backup/repair",
         "api:post:/api/lite/fleet/add-device",
@@ -33576,6 +33665,7 @@
         "api:post:/api/lite/catalog/install",
         "api:post:/api/lite/catalog/remove",
         "api:post:/api/lite/devices/{node_id}/photo-backup",
+        "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
         "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
         "api:post:/api/lite/devices/{node_id}/photo-backup/repair",
         "api:post:/api/lite/diagnostics/frontend-lifecycle",
@@ -34083,6 +34173,9 @@
         "reason:session_not_found",
         "reason:shutdown",
         "reason:shutdown_during_mailbox_backpressure",
+        "reason:source_fixture_expired",
+        "reason:source_fixture_invalid",
+        "reason:source_fixture_unavailable",
         "reason:source_inventory_failed",
         "reason:storage_pressure",
         "reason:storage_reservation_conflict",
@@ -36017,6 +36110,12 @@
         }
       ],
       "api:post:/api/lite/devices/{node_id}/photo-backup": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture": [
         {
           "source": "domain:devices",
           "type": "owns"
@@ -39643,6 +39742,24 @@
       "reason:shutdown_during_mailbox_backpressure": [
         {
           "source": "domain:projections",
+          "type": "owns"
+        }
+      ],
+      "reason:source_fixture_expired": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "reason:source_fixture_invalid": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "reason:source_fixture_unavailable": [
+        {
+          "source": "domain:apps",
           "type": "owns"
         }
       ],
@@ -44116,6 +44233,18 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:source_fixture_expired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:source_inventory_failed",
           "type": "verified_by"
         },
@@ -44907,6 +45036,10 @@
         },
         {
           "source": "api:post:/api/lite/devices/{node_id}/photo-backup",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
           "type": "verified_by"
         },
         {
@@ -46082,6 +46215,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:source_fixture_expired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:unsafe_live_media_import",
           "type": "verified_by"
         },
@@ -46097,6 +46238,10 @@
         },
         {
           "source": "reason:interrupted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_invalid",
           "type": "verified_by"
         }
       ],
@@ -49384,6 +49529,18 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:source_fixture_expired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:source_inventory_failed",
           "type": "verified_by"
         },
@@ -50562,6 +50719,18 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:source_fixture_expired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:source_inventory_failed",
           "type": "verified_by"
         },
@@ -51531,6 +51700,10 @@
         },
         {
           "source": "api:post:/api/lite/devices/{node_id}/photo-backup",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
           "type": "verified_by"
         },
         {
@@ -54273,6 +54446,16 @@
         }
       ],
       "api:post:/api/lite/devices/{node_id}/photo-backup": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -59278,6 +59461,18 @@
           "type": "owns"
         },
         {
+          "target": "reason:source_fixture_expired",
+          "type": "owns"
+        },
+        {
+          "target": "reason:source_fixture_invalid",
+          "type": "owns"
+        },
+        {
+          "target": "reason:source_fixture_unavailable",
+          "type": "owns"
+        },
+        {
           "target": "reason:storage_reservation_conflict",
           "type": "owns"
         },
@@ -59579,6 +59774,10 @@
         },
         {
           "target": "api:post:/api/lite/devices/{node_id}/photo-backup",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
           "type": "owns"
         },
         {
@@ -68318,6 +68517,60 @@
           "type": "verified_by"
         }
       ],
+      "reason:source_fixture_expired": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:source_fixture_invalid": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_agent.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:source_fixture_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:source_inventory_failed": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -70019,6 +70272,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_photo_backup.py"
+      ],
+      "id": "rel:044d914c45d1b442",
+      "source": "reason:source_fixture_expired",
+      "target": "test:tests/backend/test_lite_photo_backup.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:04560e34ab51aac5",
@@ -71247,7 +71509,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1003"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1014"
       ],
       "id": "rel:0d2d2474dfc99fcd",
       "source": "component:node-agent",
@@ -72277,7 +72539,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:897"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:902"
       ],
       "id": "rel:13cef9faca6544c1",
       "source": "component:agent-signals",
@@ -72737,7 +72999,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1003"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1014"
       ],
       "id": "rel:16cf3133ef4ccd85",
       "source": "component:agent-recovery",
@@ -73436,6 +73698,15 @@
       "id": "rel:1b63974777db7726",
       "source": "component:lan",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:1b76666321faa396",
+      "source": "reason:source_fixture_expired",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -78490,6 +78761,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:3eb0da2896cfd82b",
+      "source": "reason:source_fixture_unavailable",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/parity/accepted-limitations.json"
       ],
       "id": "rel:3eca06b3911cd8b6",
@@ -79605,7 +79885,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1003"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1014"
       ],
       "id": "rel:45854b80494e2833",
       "source": "component:agent-command-executor",
@@ -81229,6 +81509,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:517f84d1d531f6bb",
+      "source": "domain:apps",
+      "target": "reason:source_fixture_expired",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
       ],
@@ -81617,6 +81906,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:54bcb15d5a3651d9",
+      "source": "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:54cfd3bc1f75bc7a",
@@ -81817,6 +82115,15 @@
       "source": "component:prepared-state",
       "target": "component:sqlite",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:565273521ab52024",
+      "source": "reason:source_fixture_expired",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -82997,7 +83304,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1003"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1014"
       ],
       "id": "rel:5ebffd87e47bf0d5",
       "source": "component:agent-signals",
@@ -83673,6 +83980,15 @@
       "source": "component:backup-engine",
       "target": "subject:pocketlab.events.lite.restore.checkpoint_created",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:642f35e08dff65b2",
+      "source": "reason:source_fixture_invalid",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -85421,7 +85737,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1094"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1105"
       ],
       "id": "rel:7029047d31809239",
       "source": "component:agent-command-executor",
@@ -85601,6 +85917,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:7117c76a16cfe6cb",
+      "source": "reason:source_fixture_invalid",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:711a29a71c17d35e",
@@ -85655,7 +85980,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1094"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1105"
       ],
       "id": "rel:71ce16a6ad088fd2",
       "source": "component:agent-recovery",
@@ -85943,7 +86268,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:897"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:902"
       ],
       "id": "rel:739ef9e473409282",
       "source": "component:agent-command-executor",
@@ -86030,6 +86355,15 @@
       "source": "domain:security",
       "target": "test:tests/backend/test_lite_worker_recovery.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:7429ef5bed852e0c",
+      "source": "domain:apps",
+      "target": "reason:source_fixture_unavailable",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -87137,6 +87471,15 @@
       "source": "domain:recovery",
       "target": "limitation:recovery:gap-1",
       "type": "affected_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:7d7dc91a932cee16",
+      "source": "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -88840,7 +89183,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:897"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:902"
       ],
       "id": "rel:8a4dc38eda8aacf2",
       "source": "component:node-agent",
@@ -90479,7 +90822,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:897"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:902"
       ],
       "id": "rel:970a0be8f8f4dc36",
       "source": "component:agent-recovery",
@@ -90993,7 +91336,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1094"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1105"
       ],
       "id": "rel:9ba8d503eb9c63d0",
       "source": "component:agent-signals",
@@ -92767,6 +93110,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:a845647ca7943c2d",
+      "source": "domain:devices",
+      "target": "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:a84b2bfbe229dd1c",
@@ -93911,6 +94263,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:b0a87f267d2a0d89",
+      "source": "reason:source_fixture_invalid",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_security_s7_saved_state_history.py"
       ],
       "id": "rel:b0ab9945ef6bd5a8",
@@ -94314,7 +94675,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1094"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1105"
       ],
       "id": "rel:b363fa96daf3d3cf",
       "source": "component:node-agent",
@@ -95756,6 +96117,15 @@
       "id": "rel:bece6dda05ae1601",
       "source": "component:frontend-state",
       "target": "test:tests/backend/test_lite_phase3c_system_aggregates.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:bef4160170fdeeb9",
+      "source": "reason:source_fixture_expired",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -97448,6 +97818,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_photo_backup_agent.py"
+      ],
+      "id": "rel:cc594f248b0a31fa",
+      "source": "reason:source_fixture_invalid",
+      "target": "test:tests/backend/test_lite_photo_backup_agent.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:cc7c35e540408552",
@@ -97791,6 +98170,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:ce4b2aa4800d1f8b",
+      "source": "reason:source_fixture_unavailable",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:ce671cbf0c2b5917",
@@ -98085,6 +98473,15 @@
       "source": "component:node-agent",
       "target": "subject:pocketlab.events.fleet.node_capabilities",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:d04300ebe781ae26",
+      "source": "domain:apps",
+      "target": "reason:source_fixture_invalid",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -98655,6 +99052,15 @@
       "id": "rel:d435caf7c596cd6f",
       "source": "reason:security_scanner_execution_failed",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_photo_backup.py"
+      ],
+      "id": "rel:d43b37b40627af5c",
+      "source": "reason:source_fixture_unavailable",
+      "target": "test:tests/backend/test_lite_photo_backup.py",
       "type": "verified_by"
     },
     {
@@ -104364,6 +104770,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:fca153b24d240cb5",
+      "source": "reason:source_fixture_unavailable",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_long_gate_group2_reporting.py"
       ],
       "id": "rel:fcbdce3e9e1bddc8",
@@ -104679,19 +105094,19 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "e8285a41bf517edfe51c0fe763dc098c2457f53c1db5e9497b694b51b1b323ce",
+  "source_fingerprint": "8e4b7ba3c2e672e0565e5c5c9c0c7eb5074fbeb3cf9cfb9c73b03b2a097d0ee3",
   "statistics": {
-    "entity_count": 1358,
+    "entity_count": 1362,
     "entity_type_counts": {
       "adr": 6,
-      "api": 229,
+      "api": 230,
       "capability": 5,
       "component": 58,
       "domain": 49,
       "glossary": 16,
       "journey": 24,
       "limitation": 18,
-      "reason-code": 274,
+      "reason-code": 277,
       "release": 3,
       "requirement": 10,
       "runbook": 5,
@@ -104705,7 +105120,7 @@
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3885,
+    "relation_count": 3903,
     "source_count": 294
   }
 }

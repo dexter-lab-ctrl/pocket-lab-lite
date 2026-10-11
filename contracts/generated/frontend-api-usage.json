@@ -3135,6 +3135,7 @@
       "/api/lite/apps/{app_id}/update/receipts/{operation_id}",
       "/api/lite/catalog/remove",
       "/api/lite/commands/history",
+      "/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
       "/api/lite/diagnostics/frontend-lifecycle",
       "/api/lite/diagnostics/frontend-lifecycle/challenge",
       "/api/lite/diagnostics/runtime/full",
@@ -3266,7 +3267,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "ebf2ef5c51c6a20562cf5b8fabc94081a51138e040015439c6eaf09178d4f77a",
+    "aggregate_fingerprint": "c953f0a0d7f1d2e98ece1d33493bd66ebe3c78eeada2ad5443ebaa1747f1f49b",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3276,8 +3277,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "d7571194d848b19a5a21343c682e5bb659a2e1c2da7e465ac5a5b3eb09deb58d",
-      "contracts/metadata/documentation-platform.json": "453f7fbc885f8dc67965a1004276152c8013c7aadfaa395b896091b740810f7d",
+      "contracts/generated/lite-openapi.json": "515e939d9da2ea7ad29889b58396b8c9b1a3aa353c73738ecbe22ec35ba92b68",
+      "contracts/metadata/documentation-platform.json": "e173e121e9ee0740d25855d6ab2606bb78bde640aaa3d60aa5382fbabd32f03d",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4",
       "src/lib/liteApi.js": "f1b52dcdcfd481345813641edc286ff5f236aaaa2761c42abf715f5676bdf871",

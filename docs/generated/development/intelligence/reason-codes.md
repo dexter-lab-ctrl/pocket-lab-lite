@@ -250,6 +250,9 @@ confidence: generated
 | session_not_found | identity | warning | no | The requested human session is absent, expired, revoked, or no longer active. | Review the owning evidence and operator guidance before another action. |
 | shutdown | system | warning | yes | The process is shutting down. | Correct the prerequisite and retry through the owning backend workflow. |
 | shutdown_during_mailbox_backpressure | projections | warning | yes | Shutdown occurred while the bounded mailbox was under pressure. | Correct the prerequisite and retry through the owning backend workflow. |
+| source_fixture_expired | apps | warning | yes | The short-lived bounded acceptance fixture expired before admission. | Correct the prerequisite and retry through the owning backend workflow. |
+| source_fixture_invalid | apps | warning | no | The bounded acceptance selector is not a valid server-issued fixture for the fixed source scope. | Review the owning evidence and operator guidance before another action. |
+| source_fixture_unavailable | apps | warning | yes | The selected secondary device or its short-lived bounded acceptance fixture is not ready. | Correct the prerequisite and retry through the owning backend workflow. |
 | source_inventory_failed | validation | warning | yes | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | Correct the prerequisite and retry through the owning backend workflow. |
 | storage_pressure | security | warning | yes | Private free storage was below the backend scan threshold. | Correct the prerequisite and retry through the owning backend workflow. |
 | storage_reservation_conflict | apps | warning | yes | Another Photo Backup job currently holds the protected destination reservation. | Correct the prerequisite and retry through the owning backend workflow. |
