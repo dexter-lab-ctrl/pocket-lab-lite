@@ -15,6 +15,7 @@ import LiteIdentityEnterprise from './LiteIdentityEnterprise.jsx';
 import LiteHelp, { LiteHelpHeading } from './LiteHelp.jsx';
 import { LiteSheet } from './LiteOverlay.jsx';
 import LiteEvidenceGuide from './components/LiteEvidenceGuide.jsx';
+import { LiteField } from './components/LiteSafeForms.jsx';
 import {
   GlassCard,
   StatusBadge,
@@ -30,13 +31,7 @@ import {
 import { LiteConsequenceSummary, LiteFreshness, LiteHistoryTimeline } from './LiteUx.jsx';
 
 function IdentityField({ label, hint = '', ...props }) {
-  return (
-    <label className="lite-identity-form-field">
-      <span>{label}</span>
-      <input className="pocket-input" {...props} />
-      {hint ? <small>{hint}</small> : null}
-    </label>
-  );
+  return <LiteField label={label} hint={hint} className="lite-identity-form-field"><input className="pocket-input" {...props} /></LiteField>;
 }
 
 function ActionNotice({ notice, actionStage }) {

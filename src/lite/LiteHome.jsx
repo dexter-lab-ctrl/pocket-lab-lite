@@ -18,6 +18,10 @@ import { LiteDetailsPanel } from './LiteOverlay.jsx';
 import LiteReleaseUpdateCard from './LiteReleaseUpdateCard.jsx';
 import LiteNextSteps from './components/LiteNextSteps.jsx';
 import { prioritizeWorkspaceAttention } from './homeAttentionPriority.js';
+import { useLiteQuery } from '../hooks/useLiteQuery.js';
+import { liteApi } from '../lib/liteApi.js';
+import { selectHomeActivityEvidence } from './homeActivityEvidence.js';
+import './components/homeActivityEvidence.css';
 
 const HOME_WORKFLOW_STEPS = Object.freeze([
   { id: 'device', label: 'Device', icon: Smartphone },
@@ -126,6 +130,8 @@ export default function HomeScreen({
     [backendReachable, effectiveSavedStateOnly, lastUpdatedLabel, status],
   );
   const [workspaceDetailsOpen, setWorkspaceDetailsOpen] = useState(false);
+  const {data: activityData} = useLiteQuery({queryKey:['lite','system','activity-summary','home'],path:'/api/lite/system/activity-summary',queryFn:liteApi.activitySummary,enabled:backendReachable && !effectiveSavedStateOnly,pollingMode:'relaxed',staleTime:60000});
+  const activityEvidence = useMemo(()=>selectHomeActivityEvidence(activityData),[activityData]);
 
   const goTo = useCallback((screen) => {
     if (screen === 'home') {
@@ -162,6 +168,12 @@ export default function HomeScreen({
         backendReachable={backendReachable}
       />
 
+      {activityEvidence ? <section className="lite-home-activity-evidence" aria-label="Recent workspace activity">
+        <h2>Recent workspace activity</h2><p>{activityEvidence.summary}</p>
+        <dl><div><dt>Currently active</dt><dd>{activityEvidence.active}</dd></div><div><dt>Recently completed</dt><dd>{activityEvidence.completed}</dd></div><div><dt>Needs review</dt><dd>{activityEvidence.attention}</dd></div></dl>
+        <p>{activityEvidence.latestChange || 'No recent change details reported.'}</p>
+        {activityEvidence.saved ? <small>Activity projection may be stale. Check again when connected.</small> : null}
+      </section> : null}
       <LiteNextSteps
         title={overview.attentionCount ? "Review what needs attention" : "Your workspace at a glance"}
         description={effectiveSavedStateOnly ? "These details are saved, not verified live." : "Follow a known area to its current details."}
