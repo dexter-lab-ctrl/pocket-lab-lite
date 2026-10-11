@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: adbd3c19bd3e1d10392db1d447d5b84268c75ec504b7db7031d6aceff91bde95
+source_fingerprint: b620a12241f22a9c6abda141fd32cc09ac0b13cef3bf184bc04063b0393cb33f
 schema_revision: 1
 validation_status: generated
 ---
@@ -225,6 +225,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:storybook:screenshots`
 - `lite:test:a11y`
 - `lite:test:android`
+- `lite:test:app-governance`
 - `lite:test:backend`
 - `lite:test:contracts`
 - `lite:test:docs`
@@ -324,6 +325,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:storybook:screenshots` → `lite:playwright:preflight`
 - `lite:test:a11y` → `lite:dev:scratch:prepare`
 - `lite:test:a11y` → `lite:playwright:preflight`
+- `lite:test:app-governance` → `lite:dev:scratch:prepare`
 - `lite:test:backend` → `lite:dev:scratch:prepare`
 - `lite:test:docs` → `lite:dev:scratch:prepare`
 - `lite:test:docs` → `lite:playwright:preflight`

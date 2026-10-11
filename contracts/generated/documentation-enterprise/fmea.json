@@ -929,6 +929,7 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "exception_action_invalid",
         "exception_expiry_invalid",
         "exception_identity_unknown",
         "exception_not_found",

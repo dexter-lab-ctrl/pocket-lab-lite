@@ -102,6 +102,8 @@ Validates requests, owns safe read APIs, admits commands, and never delegates br
 - uses: `GET /api/lite/status`
 - verified_by: `tests/backend/test_architecture_contract.py`
 - verified_by: `tests/backend/test_lite_api.py`
+- verified_by: `tests/backend/test_lite_app_governance_integration.py`
+- verified_by: `tests/backend/test_lite_app_governance_source_guards.py`
 - verified_by: `tests/backend/test_lite_control_plane_sqlite_p3.py`
 - verified_by: `tests/backend/test_lite_device_health_d4.py`
 - verified_by: `tests/backend/test_lite_long_gate_submission_recovery.py`

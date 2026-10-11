@@ -6973,6 +6973,57 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
+        "PYTHONPATH=tests:pocket-lab-final-structure/runtime PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONFAULTHANDLER=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_app_registry.py tests/backend/test_lite_app_governance.py tests/backend/test_lite_app_governance_integration.py tests/backend/test_lite_app_governance_continuations.py tests/backend/test_lite_app_governance_source_guards.py tests/backend/test_lite_policy_approvals_p3_1.py",
+        "npm run test:unit -- src/lib/liteAppGovernance.test.js"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:app-governance",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "src/lib/liteAppGovernance.test.js",
+        "tests/backend/test_lite_app_governance.py",
+        "tests/backend/test_lite_app_governance_continuations.py",
+        "tests/backend/test_lite_app_governance_integration.py",
+        "tests/backend/test_lite_app_governance_source_guards.py",
+        "tests/backend/test_lite_app_registry.py",
+        "tests/backend/test_lite_policy_approvals_p3_1.py"
+      ],
+      "name": "lite:test:app-governance",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run focused Universal App Platform governance backend and frontend source contracts",
+      "related_tasks": [
+        "lite:dev:scratch:prepare"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Runtime-evidence loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
         "PYTHONPATH=tests:pocket-lab-final-structure/runtime PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONFAULTHANDLER=1 {{.PYTHON}} -m pytest -q -p pytest_timeout --timeout=60 --timeout-method=thread tests/backend/test_lite_api.py tests/backend/test_lite_recovery.py tests/backend/test_lite_security.py tests/backend/test_lite_ux_maturity_contract.py"
       ],
       "dependencies": [

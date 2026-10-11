@@ -33,6 +33,36 @@
       "writer": "App Catalog lifecycle and action services"
     },
     {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived apps persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "apps",
+      "id": "table:app_credential_metadata",
+      "indexes": [
+        "idx_app_credential_status",
+        "sqlite_autoindex_app_credential_metadata_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+      ],
+      "name": "app_credential_metadata",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/catalog",
+        "/api/lite/apps/{app_id}/actions"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "credential_id"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+      ],
+      "type": "table",
+      "writer": "App Catalog lifecycle and action services"
+    },
+    {
       "classification": "internal operational metadata",
       "confidence": "inferred",
       "description": "Source-derived apps persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
@@ -939,7 +969,8 @@
       "migration_sources": [
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "name": "enterprise_configuration",
       "owner": "not a prepared projection",
@@ -950,7 +981,8 @@
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -968,7 +1000,8 @@
       "migration_sources": [
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "name": "enterprise_memberships",
       "owner": "not a prepared projection",
@@ -979,7 +1012,8 @@
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -1181,7 +1215,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "name": "human_identities",
       "owner": "not a prepared projection",
@@ -1199,7 +1234,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -1428,7 +1464,8 @@
       "migration_sources": [
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "name": "policy_approvals",
       "owner": "not a prepared projection",
@@ -1441,7 +1478,8 @@
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -1621,7 +1659,8 @@
         "sqlite_autoindex_policy_temporary_exceptions_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "name": "policy_temporary_exceptions",
       "owner": "not a prepared projection",
@@ -1630,7 +1669,8 @@
       "sensitive_fields": [],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -2432,6 +2472,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "fba8d21c6e5b814033f9520b5812f960404da32daa1fea70db8d07c3fa48ce1b"
+    "source_fingerprint": "57dc1a953a0c376fe8373f465258fe7687915e34708fc1fbbbda58d21cd50ec8"
   }
 }

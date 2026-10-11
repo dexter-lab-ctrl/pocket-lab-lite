@@ -65,6 +65,7 @@ policy_temporary_exceptions
 webauthn_challenges
 enterprise_memberships
 policy_approvals
+app_credential_metadata
 audit_evidence_index
 backup_manifest_index
 command_lifecycle
