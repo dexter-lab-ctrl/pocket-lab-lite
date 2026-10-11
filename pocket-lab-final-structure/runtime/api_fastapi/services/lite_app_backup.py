@@ -568,9 +568,19 @@ def create_app_restore_preview(command: dict[str, Any]) -> dict[str, Any]:
     ]
     would_preserve = [
         {"id": "protected_user_data", "label": "Protected user data", "reason": "User data is excluded from app config backup by default."},
-        {"id": "generated_cache", "label": "Generated cache", "reason": f"{label} can rebuild generated data when supported."},
-        {"id": "raw_secrets", "label": "Raw secrets", "reason": "Secret values are not exposed or restored from this preview."},
     ]
+    excluded_labels = {
+        "android_shared_storage": ("Android shared storage", "Shared device media remains outside the app config backup."),
+        "original_media": ("Original media", "Original media remains outside the app config backup."),
+        "import_folder_media": ("Imported media", "Imported media remains outside the app config backup."),
+        "generated_cache": ("Generated cache", f"{label} can rebuild generated data when supported."),
+        "raw_secrets": ("Raw secrets", "Secret values are not exposed or restored from this preview."),
+    }
+    for excluded_set in policy.get("excluded_sets", []):
+        excluded_id = str(excluded_set or "").strip()
+        if excluded_id in excluded_labels and not any(item["id"] == excluded_id for item in would_preserve):
+            excluded_label, reason = excluded_labels[excluded_id]
+            would_preserve.append({"id": excluded_id, "label": excluded_label, "reason": reason})
     preview = {
         "app_id": app,
         "app_label": APP_LABELS[app],
