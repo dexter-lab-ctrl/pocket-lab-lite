@@ -1842,7 +1842,10 @@ function lifecycleAttentionItems(lifecycle) {
   return Array.isArray(items) ? items.slice(0, 3) : [];
 }
 
-function lifecycleMediaSummary(lifecycle) {
+function lifecycleMediaSummary(lifecycle, app) {
+  if (!appSupports(app, 'media_sources')) {
+    return lifecycle?.summary || `${app?.name || 'App'} actions are available.`;
+  }
   const media = lifecycle?.media || {};
   if (media?.operation_running) return 'Importing photos';
   if (media?.last_imported_at) return `Last import ${formatLiteTime(media.last_imported_at)}`;
@@ -2106,8 +2109,15 @@ function CatalogManagePortal({
   const isPhoneStorageConnected = Boolean(manageViewModel?.isPhoneStorageConnected);
   const isPhotosImported = Boolean(manageViewModel?.isPhotosImported);
   const appActionEntries = manageViewModel?.appActionEntries || [];
+  const appActionGroups = manageViewModel
+    ? groupAppActions(appActionEntries)
+    : [];
+  const availableManageSections = appActionGroups.map((group) => group.id);
+  const activeManageSection = availableManageSections.includes(manageSection)
+    ? manageSection
+    : availableManageSections[0] || '';
   const activeAppActionGroups = manageViewModel
-    ? groupAppActions(appActionEntries, manageSection)
+    ? groupAppActions(appActionEntries, activeManageSection)
     : [];
 
   return createPortal(
@@ -2197,8 +2207,8 @@ function CatalogManagePortal({
               <div className="lite-catalog-manage-quick-actions" aria-label="Quick app actions">
                 <LiteButton onClick={(event) => { stopGestureEvent(event); openAppFullScreen(app, event); }} disabled={!canOpen} tone="secondary"><ExternalLink className="h-4 w-4" />Open full screen</LiteButton>
               </div>
-              <div className="lite-catalog-manage-section-tabs" role="tablist" aria-label="Manage app sections">
-                {MANAGE_SECTION_ORDER.map((sectionId) => (
+              {availableManageSections.length ? <div className="lite-catalog-manage-section-tabs" role="tablist" aria-label="Manage app sections">
+                {MANAGE_SECTION_ORDER.filter((sectionId) => availableManageSections.includes(sectionId)).map((sectionId) => (
                   <LiteManageSectionTab
                     key={sectionId}
                     sectionId={sectionId}
@@ -2207,11 +2217,11 @@ function CatalogManagePortal({
                     onSelect={(event) => { stopGestureEvent(event); setManageSection(sectionId); closeActionDetails(); }}
                   />
                 ))}
-              </div>
-              <div className="lite-catalog-manage-section-viewport">
+              </div> : null}
+              {availableManageSections.length ? <div className="lite-catalog-manage-section-viewport">
                 <div className="lite-catalog-manage-section-hint" aria-live="polite">
-                  <strong>{MANAGE_SECTION_LABELS[manageSection] || 'Manage'}</strong>
-                  <span>{MANAGE_SECTION_SUMMARY[manageSection] || 'Swipe left or right to switch sections.'}</span>
+                  <strong>{MANAGE_SECTION_LABELS[activeManageSection] || 'Manage'}</strong>
+                  <span>{MANAGE_SECTION_SUMMARY[activeManageSection] || 'Swipe left or right to switch sections.'}</span>
                 </div>
                 <div className="lite-catalog-action-groups">
                   {activeAppActionGroups.map((group) => (
@@ -2265,7 +2275,7 @@ function CatalogManagePortal({
                     </AppActionGroup>
                   ))}
                 </div>
-              </div>
+              </div> : null}
               {manageExtrasReady && isPhotoPrismApp(app) ? (
                 <>
                   <div className="lite-catalog-action-reasons">
@@ -2898,13 +2908,15 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       const isPhotosImported = photosAlreadyImported(lifecycle, actionSnapshot, app, importPhotosAction);
       const declaredActions = app?.platform_contract?.actions || {};
       const snapshotActions = actionSnapshot?.actions || {};
+      const lifecycleActions = lifecycle?.actions || {};
       const supportedActionIds = new Set([
         ...Object.keys(declaredActions),
         ...Object.keys(snapshotActions),
+        ...Object.keys(lifecycleActions),
         ...(canOpen ? ['open', 'open_full_screen', 'install_to_phone'] : []),
       ]);
       return {
-        mediaSummary: lifecycleMediaSummary(lifecycle),
+        mediaSummary: lifecycleMediaSummary(lifecycle, app),
         hostLabel: appHostLabel(app, lifecycle, targetName),
         storageBackupLabel: verifiedStorageBackupLabel(backupToStorageAction),
         isPhoneStorageConnected,
@@ -3281,7 +3293,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             summary: 'Review the effect on this app before continuing.',
             will: [`Remove the ${removeConfirmApp.name || 'app'} service and its Pocket Lab access route when removal is available.`],
             willNot: [
-              appSupports(removeConfirmApp, 'media_sources') ? 'Delete connected media files by default.' : 'Delete protected user data by default.',
+              appSupports(removeConfirmApp, 'media_sources')
+                ? 'Connected media files are not deleted by default.'
+                : 'Protected user data is not deleted by default.',
               'Delete existing backups by default.',
             ],
             reversible: appSupports(removeConfirmApp, 'install')

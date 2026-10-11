@@ -7540,6 +7540,17 @@ def _app_proot_targets(rootfs: Path | None, app_id: str) -> list[tuple[Path, str
         )
     return targets
 
+
+def _photoprism_proot_targets(rootfs: Path | None) -> list[tuple[Path, str, bool, str, str, str]]:
+    """Retain the legacy full-scan helper while sharing the app contract.
+
+    The adapter-driven App Check path calls ``_app_proot_targets`` directly.
+    The full local scan still has a PhotoPrism-only compatibility surface and
+    older callers/tests use this helper name, so keep it as a thin alias with
+    no independent target definitions.
+    """
+    return _app_proot_targets(rootfs, "photoprism")
+
 def _backup_metadata_summary(root: Path) -> dict[str, Any]:
     candidates = policy.backup_metadata_candidates(root)
     present = []

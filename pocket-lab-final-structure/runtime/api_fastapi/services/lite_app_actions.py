@@ -469,7 +469,12 @@ def _merge_canonical_media(live_media: Any, saved_media: Any) -> dict[str, Any]:
         return merged
     return {**saved, **live}
 
-def _apply_import_photos_truth(actions: dict[str, Any], media: Any, *, app_id: str) -> None:
+def _apply_import_photos_truth(
+    actions: dict[str, Any],
+    media: Any,
+    *,
+    app_id: str = "photoprism",
+) -> None:
     """Keep current import readiness separate from historical completion."""
     action = actions.get("import_photos")
     if not isinstance(action, dict) or not isinstance(media, dict):
@@ -518,7 +523,7 @@ def _apply_import_photos_truth(actions: dict[str, Any], media: Any, *, app_id: s
 def _ensure_action_contract(
     actions: dict[str, Any],
     *,
-    app_id: str,
+    app_id: str = "photoprism",
     catalog: Any,
     media: Any,
     installed: bool,
@@ -674,7 +679,12 @@ def _details_payload(
     return details
 
 
-def _normalize_action(action_id: str, raw_action: Any, *, app_id: str) -> dict[str, Any]:
+def _normalize_action(
+    action_id: str,
+    raw_action: Any,
+    *,
+    app_id: str = "photoprism",
+) -> dict[str, Any]:
     action = raw_action if isinstance(raw_action, dict) else {}
     definition = _action_definition_for(app_id, action_id)
     label = _safe_text(action.get("label") or definition.get("label") or action_id.replace("_", " ").title(), "App action")
