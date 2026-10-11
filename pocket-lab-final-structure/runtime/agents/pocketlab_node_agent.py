@@ -875,6 +875,11 @@ class PocketLabNodeAgent:
                 )
                 if str(item) in {"camera", "pictures", "videos"}
             ],
+            source_fixture=(
+                payload.get("source_fixture")
+                if isinstance(payload.get("source_fixture"), dict)
+                else None
+            ),
         )
         # Re-post the terminal aggregate once so marker cleanup depends on
         # backend acknowledgement, not merely local subprocess completion.
@@ -964,6 +969,11 @@ class PocketLabNodeAgent:
                 backup_id = str(command_payload.get("backup_id") or command_id)
                 credential_ref = str(command_payload.get("credential_ref") or "")
                 requested_collections = command_payload.get("collections")
+                source_fixture = (
+                    command_payload.get("source_fixture")
+                    if isinstance(command_payload.get("source_fixture"), dict)
+                    else None
+                )
                 collections = (
                     [str(item) for item in requested_collections if str(item) in {"camera", "pictures", "videos"}]
                     if isinstance(requested_collections, list)
@@ -983,6 +993,7 @@ class PocketLabNodeAgent:
                                 "backup_id": backup_id,
                                 "credential_ref": credential_ref,
                                 "collections": collections,
+                                "source_fixture": source_fixture,
                             },
                         )
                     )

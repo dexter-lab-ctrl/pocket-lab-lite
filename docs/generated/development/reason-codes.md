@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 82282fd390e6de1514e97cc271565ae933987466b880cf462586077e4c7d6be5
+source_fingerprint: 26b0f930d45cfd7d86afccf231293e786a61f01537d52d271732fa72f3a3d1c8
 schema_revision: 1
 validation_status: generated
 ---
@@ -253,6 +253,9 @@ validation_status: generated
 | `session_not_found` | identity | The requested human session is absent, expired, revoked, or no longer active. | no | yes | 404 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `shutdown` | system | The process is shutting down. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `shutdown_during_mailbox_backpressure` | projections | Shutdown occurred while the bounded mailbox was under pressure. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `source_fixture_expired` | apps | The short-lived bounded acceptance fixture expired before admission. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py |
+| `source_fixture_invalid` | apps | The bounded acceptance selector is not a valid server-issued fixture for the fixed source scope. | no | yes | 422 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py |
+| `source_fixture_unavailable` | apps | The selected secondary device or its short-lived bounded acceptance fixture is not ready. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py |
 | `source_inventory_failed` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |
 | `storage_pressure` | security | Private free storage was below the backend scan threshold. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
 | `storage_reservation_conflict` | apps | Another Photo Backup job currently holds the protected destination reservation. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py |

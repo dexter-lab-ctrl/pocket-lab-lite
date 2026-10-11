@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "d1d973add9b2bd8ce20f4e452740013c4383cb4a4b70c93edfce81713a2243a9",
+    "aggregate_fingerprint": "2c29c121ca16b849df763d90c4bd243ac1051496d8f83f64ca2321b09373d267",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -10,7 +10,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/metadata/documentation-platform.json": "453f7fbc885f8dc67965a1004276152c8013c7aadfaa395b896091b740810f7d",
+      "contracts/metadata/documentation-platform.json": "e173e121e9ee0740d25855d6ab2606bb78bde640aaa3d60aa5382fbabd32f03d",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
       "pocket-lab-final-structure/runtime/api_fastapi/db/__init__.py": "526884a92d46e87f3a6c5ece60852976c4bf968476cf5e37767a345540fea946",
@@ -26,7 +26,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/routers/catalog.py": "b0cf578f5102bf4d284f4e895945ac3689bce2e324da5a083167d39530035cf5",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/drift.py": "3ffc8c5f37e40777c7cd9cc6da4a3f594308f187ea87d6f077ca283b407dff24",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py": "f8ac4edfc0ea3c00f37deca914f53c1852414bfac5f934035df0b570defae5c4",
-      "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py": "35b4dacf6e4e2e3f0e0fd337b836116a56fd0bc768c40b7c91b13c4ded1503f5",
+      "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py": "cf86d84cc07be79a4f03773883e97c70a8bf3c9b82f5677fc1a1f83881f0320d",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/gitops.py": "ebbdf1850a5d29caecb50a016d2533621e723f0c4b0554e12004a94ec6e8384e",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/harness.py": "506e9d125c76c347fea6d31d10e10e2b7de3fe4cd2ecf436c76c0339f4589795",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py": "df656e61d4d78e6ee9b95348a839118a85995edbaa449c23dd075aaaacf86e6d",
@@ -99,7 +99,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_lifecycle_diagnostics.py": "6ca0ea3cdac825a7b91f517fef90e77dca515e96e7ab96006421131d24237c7c",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_phase3b_projections.py": "0ca0448ae5ead1f92e3dbeefb23c8293e91de6885b2cbbb119be500c968b6267",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_phase3c_projections.py": "cab9a59573ab61e16ae4af62176ee7ddf24416104eb0bd78ee37d6a45a0b39c2",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py": "1b802e0e67826958e2a73f9a3a944fbb08682e878ceec095d677da81479d0463",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py": "f4b1045ade0848a73bcec859d6900242e7eb3cf17ce51245c33d60c02718dc05",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup_destinations.py": "62019cc526fac23851634cbdd8771f651f0e6eace4c98a8d086ddb5361e8e50d",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_backup.py": "c66e1ebc3bcd8cedc9e95fbe0b005481bcb2c616533bca55f23a3d887f5b82f6",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_lifecycle.py": "dffed3d8cbbd745ad27f9681037bce477e38b5fe59da8197fca8b3cd64ba5853",
@@ -330,6 +330,9 @@
       "session_not_found",
       "shutdown",
       "shutdown_during_mailbox_backpressure",
+      "source_fixture_expired",
+      "source_fixture_invalid",
+      "source_fixture_unavailable",
       "source_inventory_failed",
       "storage_reservation_conflict",
       "storage_unavailable",
@@ -3951,6 +3954,53 @@
         "terminal": false,
         "ui_mapping": [],
         "user_message": "Shutdown occurred while the bounded mailbox was under pressure."
+      },
+      {
+        "audit_severity": "warning",
+        "code": "source_fixture_expired",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 409,
+        "meaning": "The short-lived bounded acceptance fixture expired before admission.",
+        "projection_mapping": [],
+        "retryable": true,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": false,
+        "ui_mapping": [],
+        "user_message": "The bounded acceptance photo selector expired. Request a new selector."
+      },
+      {
+        "audit_severity": "warning",
+        "code": "source_fixture_invalid",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [],
+        "http_status": 422,
+        "meaning": "The bounded acceptance selector is not a valid server-issued fixture for the fixed source scope.",
+        "projection_mapping": [],
+        "retryable": false,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": true,
+        "ui_mapping": [],
+        "user_message": "The bounded acceptance photo selector is invalid. Request a new server-issued selector."
+      },
+      {
+        "audit_severity": "warning",
+        "code": "source_fixture_unavailable",
+        "deprecated_aliases": [],
+        "domain": "apps",
+        "event_mapping": [
+          "lite.photo_backup.acceptance_fixture.prepared"
+        ],
+        "http_status": 409,
+        "meaning": "The selected secondary device or its short-lived bounded acceptance fixture is not ready.",
+        "projection_mapping": [],
+        "retryable": true,
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py",
+        "terminal": false,
+        "ui_mapping": [],
+        "user_message": "The secondary device is not ready for a bounded acceptance photo."
       },
       {
         "audit_severity": "warning",

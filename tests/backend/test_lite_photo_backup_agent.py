@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 from pocket_lab_test_utils import ensure_runtime_path
 
 
@@ -76,6 +78,70 @@ def test_agent_inventory_is_media_only_and_skips_nomedia(tmp_path, monkeypatch):
     assert not any("Documents" in relative for _, relative in keys)
     assert not any("HiddenAlbum" in relative for _, relative in keys)
     assert not any(relative.endswith(".txt") for _, relative in keys)
+
+
+def test_bounded_acceptance_fixture_is_fixed_and_never_overwrites(tmp_path, monkeypatch):
+    module = _module()
+    pictures = tmp_path / "Pictures"
+    pictures.mkdir()
+    monkeypatch.setattr(module, "_collection_path", lambda _collection: pictures)
+    fixture_id = "fixture-" + ("a" * 20)
+    source_fixture = {
+        "fixture_id": fixture_id,
+        "scope": module.ACCEPTANCE_FIXTURE_SCOPE,
+        "collection": module.ACCEPTANCE_FIXTURE_COLLECTION,
+    }
+
+    provider = module.PhotoPrismWebDAVProvider(
+        node_id="secondary-phone8-test",
+        agent_token="token",
+        control_origin="https://pocket.test.ts.net",
+    )
+    item = module._acceptance_fixture_item(source_fixture)
+    target = pictures / module.ACCEPTANCE_FIXTURE_DIRECTORY / f"{fixture_id}.jpg"
+
+    assert item["collection"] == "pictures"
+    assert item["relative"] == f"PocketLabAcceptance/{fixture_id}.jpg"
+    assert target.read_bytes() == module.ACCEPTANCE_FIXTURE_JPEG
+    assert target.stat().st_mode & 0o777 == 0o660
+
+    target.write_bytes(b"different content")
+    with pytest.raises(RuntimeError, match="source_fixture_invalid"):
+        provider._write_inventory_spool(
+            ["pictures"],
+            tmp_path / "inventory.jsonl",
+            source_fixture=source_fixture,
+        )
+
+
+def test_bounded_acceptance_fixture_spools_exactly_one_item(tmp_path, monkeypatch):
+    module = _module()
+    pictures = tmp_path / "Pictures"
+    pictures.mkdir()
+    (pictures / "unrelated.jpg").write_bytes(b"user media")
+    monkeypatch.setattr(module, "_collection_path", lambda _collection: pictures)
+    fixture_id = "fixture-" + ("b" * 20)
+    source_fixture = {
+        "fixture_id": fixture_id,
+        "scope": module.ACCEPTANCE_FIXTURE_SCOPE,
+        "collection": module.ACCEPTANCE_FIXTURE_COLLECTION,
+    }
+    provider = module.PhotoPrismWebDAVProvider(
+        node_id="secondary-phone8-test",
+        agent_token="token",
+        control_origin="https://pocket.test.ts.net",
+    )
+    inventory_path = tmp_path / "inventory.jsonl"
+
+    assert provider._write_inventory_spool(
+        ["camera", "pictures", "videos"],
+        inventory_path,
+        source_fixture=source_fixture,
+    ) == 1
+    records = list(provider._iter_spool(inventory_path))
+    assert len(records) == 1
+    assert records[0]["relative"] == f"PocketLabAcceptance/{fixture_id}.jpg"
+    assert str(pictures / "unrelated.jpg") not in inventory_path.read_text()
 
 
 def test_same_name_conflict_gets_deterministic_version_suffix():
@@ -554,6 +620,95 @@ def test_incremental_run_skips_matching_remote_and_copies_only_new_media(monkeyp
     assert result["items_skipped"] == 1
     assert result["items_transferred"] == 1
     assert transfers == ["new.jpg"]
+
+
+def test_bounded_acceptance_transfer_is_single_item_and_idempotent(monkeypatch, tmp_path):
+    module = _module()
+    pictures = tmp_path / "Pictures"
+    pictures.mkdir()
+    monkeypatch.setattr(module, "_collection_path", lambda _name: pictures)
+    monkeypatch.setattr(
+        module.shutil,
+        "which",
+        lambda name: "/usr/bin/rclone" if name == "rclone" else None,
+    )
+
+    provider = module.PhotoPrismWebDAVProvider(
+        node_id="secondary-phone8-test",
+        agent_token="token",
+        control_origin="https://pocket.test.ts.net",
+    )
+    credential = {
+        "capacity": {
+            "safe_upload_budget_bytes": 10_000_000,
+            "hard_upload_budget_bytes": 10_000_000,
+        },
+        "password": "one-time",
+        "username": "admin",
+        "webdav_url": "https://pocket.test.ts.net/apps/photoprism/originals/",
+        "destination_id": "server-photoprism-originals",
+        "destination_prefix": "PocketLab/Devices/secondary-phone8-test",
+    }
+    monkeypatch.setattr(provider, "_credential", lambda *_args: credential)
+    remote = {}
+    monkeypatch.setattr(provider, "_remote_listing", lambda *_args: remote)
+    monkeypatch.setattr(
+        provider,
+        "_make_config",
+        lambda *_args: tmp_path / "rclone.conf",
+    )
+    monkeypatch.setattr(
+        provider,
+        "_capacity",
+        lambda *_args: {
+            "safe_upload_budget_bytes": 10_000_000,
+            "hard_upload_budget_bytes": 10_000_000,
+        },
+    )
+    ledger = {}
+    monkeypatch.setattr(provider, "_ledger_load", lambda *_args: dict(ledger))
+    monkeypatch.setattr(
+        provider,
+        "_ledger_save",
+        lambda entries, *_args: ledger.update(entries),
+    )
+    transfers = []
+
+    def fake_transfer(_rclone, _config, item, remote_relative, _prefix):
+        transfers.append((item["relative"], remote_relative))
+
+    monkeypatch.setattr(provider, "_transfer_one", fake_transfer)
+    monkeypatch.setattr(provider, "_post_progress", lambda *_args, **_kwargs: True)
+    fixture_id = "fixture-" + ("e" * 20)
+    source_fixture = {
+        "fixture_id": fixture_id,
+        "scope": module.ACCEPTANCE_FIXTURE_SCOPE,
+        "collection": module.ACCEPTANCE_FIXTURE_COLLECTION,
+    }
+
+    first = provider.backup(
+        backup_id="photo-bounded-first",
+        credential_ref="cred-ref",
+        collections=["camera", "videos"],
+        source_fixture=source_fixture,
+    )
+    second = provider.backup(
+        backup_id="photo-bounded-repeat",
+        credential_ref="cred-ref",
+        collections=["camera", "videos"],
+        source_fixture=source_fixture,
+    )
+
+    assert first["status"] == "completed"
+    assert first["items_total"] == 1
+    assert first["items_transferred"] == 1
+    assert second["status"] == "completed"
+    assert second["items_total"] == 1
+    assert second["items_skipped"] == 1
+    assert second["items_transferred"] == 0
+    assert len(transfers) == 1
+    assert transfers[0][0] == f"PocketLabAcceptance/{fixture_id}.jpg"
+    assert transfers[0][1] == f"Pictures/PocketLabAcceptance/{fixture_id}.jpg"
 
 
 
