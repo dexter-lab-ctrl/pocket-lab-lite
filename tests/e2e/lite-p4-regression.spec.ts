@@ -55,7 +55,7 @@ for (const [id, scenario, title] of GUIDANCE) {
     // Do not fabricate information solely to satisfy an assertion.
     if (await section.count()) {
       await expect(section).toBeVisible();
-      await expect(section.locator('li, dt').count()).toBeLessThanOrEqual(5);
+      expect(await section.locator('li, dt').count()).toBeLessThanOrEqual(5);
     }
   });
 }
