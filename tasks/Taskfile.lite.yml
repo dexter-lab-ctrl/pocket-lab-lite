@@ -2,6 +2,13 @@ version: '3'
 
 tasks:
 
+  lite:ui:shared-home-apps:unit:
+    desc: Validate shared fields, prepared Home activity and generic Apps registry contracts
+    cmds:
+      - npm run test -- src/lite/components/LiteSafeForms.test.jsx src/lite/homeAttentionPriority.test.js src/lite/homeActivityEvidence.test.js src/lite/catalog/catalogPresentation.test.js
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_app_registry_contract.py'
+
+
   lite:ui:p4:unit:
     desc: Run P0-P3 shared UI contract unit tests; no runtime mutation
     cmds:
