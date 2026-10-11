@@ -1,5 +1,7 @@
 import pytest
-from runtime.api_fastapi.services.lite_app_registry import load_app_registry, validate_app_definition, project_registered_catalog
+from pocket_lab_test_utils import ensure_runtime_path
+ensure_runtime_path()
+from api_fastapi.services.lite_app_registry import load_app_registry, validate_app_definition, project_registered_catalog
 
 BASE = {"schema_version":1,"id":"example-app","name":"Example","adapter":"example","route":"/apps/example-app/","platforms":["termux"],"capabilities":["open"]}
 
