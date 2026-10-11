@@ -1,0 +1,14 @@
+/* P3: desktop productivity, responsive navigation; preserve existing overlay ownership. */
+.lite-p3-command-surface { width:min(100%,34rem); max-width:34rem; }
+.lite-p3-command-body { display:grid; gap:.75rem; }
+.lite-p3-command-label { display:block; font-size:.875rem; font-weight:700; }
+#lite-p3-command-search { display:block; width:100%; box-sizing:border-box; min-height:44px; padding:.7rem .9rem; border:1px solid var(--pocket-border-strong, #64748b); border-radius:.875rem; background:var(--pocket-bg-soft,#0b1120); color:var(--pocket-text,#fff); }
+.lite-p3-command-options { display:grid; gap:.375rem; max-height:min(50dvh,26rem); overflow-y:auto; overscroll-behavior:contain; }
+.lite-p3-command-options button { width:100%; min-height:44px; display:flex; align-items:center; text-align:left; gap:.75rem; border-radius:.75rem; padding:.625rem .75rem; border:1px solid transparent; }
+.lite-p3-command-options button:hover,.lite-p3-command-options button:focus-visible { border-color:var(--lite-p0-focus-ring,#2563eb); background:rgba(99,102,241,.12); }
+.lite-p3-command-options button small { margin-inline-start:auto; opacity:.75; }
+.lite-p3-command-options p { padding:1rem .5rem; overflow-wrap:anywhere; }
+.lite-p3-launcher { min-height:44px; min-width:44px; border-radius:.875rem; border:1px solid rgba(148,163,184,.25); padding:.55rem .8rem; font-size:.8125rem; color:inherit; }
+.lite-p3-launcher:focus-visible { outline:2px solid var(--lite-p0-focus-ring,#2563eb); outline-offset:3px; }
+@media(max-width:640px) { .lite-p3-command-surface { max-width:100%; } .lite-p3-launcher-shortcut { display:none; } }
+@media(prefers-reduced-motion:reduce) { .lite-p3-command-options button { transition:none; animation:none; } }

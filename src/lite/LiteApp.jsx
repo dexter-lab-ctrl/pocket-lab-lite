@@ -35,6 +35,7 @@ import {
   startLiteViewTransition,
 } from './liteNavigationRuntime.js';
 import LiteToastHost from './LiteToastHost.jsx';
+import LiteQuickNavigate, { shouldOpenLiteQuickNavigate } from './components/LiteQuickNavigate.jsx';
 import LiteServiceWorkerUpdateNotice from './LiteServiceWorkerUpdateNotice.jsx';
 import LiteNativeInstallSurface from './LiteNativeInstallSurface.jsx';
 import LiteRevisionSyncBridge from './LiteRevisionSyncBridge.jsx';
@@ -434,6 +435,7 @@ function LiteAppShell() {
   const menuOpen = useLiteUiStore((state) => state.mobileMenuOpen);
   const setMenuOpen = useLiteUiStore((state) => state.setMobileMenuOpen);
   const [workspaceApp, setWorkspaceApp] = useState(() => currentWorkspaceFromLocation());
+  const [quickNavigateOpen, setQuickNavigateOpen] = useState(false);
   const [screenRetryGeneration, setScreenRetryGeneration] = useState({});
   const online = useOnlineStatus();
   const {
@@ -586,6 +588,23 @@ function LiteAppShell() {
     }
   }, [setActiveTab, setMenuOpen, workspaceApp]);
 
+  useEffect(() => {
+    if (workspaceApp) return undefined;
+    const handleShortcut = (event) => {
+      if (!shouldOpenLiteQuickNavigate(event)) return;
+      // Other dialogs and native focus owners have priority.
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
+      event.preventDefault();
+      setQuickNavigateOpen(true);
+    };
+    document.addEventListener('keydown', handleShortcut);
+    return () => document.removeEventListener('keydown', handleShortcut);
+  }, [workspaceApp]);
+
+  useEffect(() => {
+    if (workspaceApp) setQuickNavigateOpen(false);
+  }, [workspaceApp]);
+
   const openWorkspace = useCallback((app, openUrl) => {
     const appId = app?.id || app?.app_id;
     if (!appId || !resolveSafeAppOpenPath(openUrl || app)) return;
@@ -711,10 +730,13 @@ function LiteAppShell() {
           </div>
           <div className="flex items-center gap-2">
             <LiteNativeInstallSurface />
+            <button type="button" className="lite-p3-launcher" onClick={() => setQuickNavigateOpen(true)} aria-label="Find a Pocket Lab section" aria-haspopup="dialog" aria-expanded={quickNavigateOpen}>Find <span className="lite-p3-launcher-shortcut">⌘/Ctrl K</span></button>
             <button type="button" onClick={() => setMenuOpen(true)} className="rounded-2xl border border-white/10 bg-white/5 p-3 text-slate-100 md:hidden" aria-label="Open navigation"><Menu className="h-5 w-5" /></button>
           </div>
         </div>
       </header>
+
+      <LiteQuickNavigate open={quickNavigateOpen && !workspaceApp} onClose={() => setQuickNavigateOpen(false)} onNavigate={(id) => commitScreenNavigation(id)} items={NAV_ITEMS} activeId={activeScreenId} />
 
       <nav className="pocket-nav-dock scrollbar-none" aria-label="Pocket Lab sections" data-lite-perf-primitive="navigation">
         {NAV_ITEMS.map((item) => {

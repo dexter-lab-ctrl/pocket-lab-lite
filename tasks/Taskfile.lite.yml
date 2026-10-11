@@ -2,6 +2,19 @@ version: '3'
 
 tasks:
 
+  lite:ui:p3:unit:
+    desc: Run P3 responsive navigation and keyboard safety component tests
+    cmds:
+      - npm run test -- src/lite/components/LiteQuickNavigate.test.jsx
+
+  lite:ui:p3:regression:
+    desc: Run existing mocked desktop/mobile, accessibility and bundle-budget gates
+    cmds:
+      - npm run test:mock-regression
+      - npm run test:a11y:states
+      - npm run build:budget
+
+
   lite:ui:p2:unit:
     desc: Run read-only Safety, Access and Rules evidence guidance unit tests
     cmds:
