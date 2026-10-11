@@ -14,6 +14,7 @@ import { useLiteUiStore } from '../stores/liteUiStore.js';
 import LiteIdentityEnterprise from './LiteIdentityEnterprise.jsx';
 import LiteHelp, { LiteHelpHeading } from './LiteHelp.jsx';
 import { LiteSheet } from './LiteOverlay.jsx';
+import LiteEvidenceGuide from './components/LiteEvidenceGuide.jsx';
 import {
   GlassCard,
   StatusBadge,
@@ -335,6 +336,18 @@ export default function IdentityScreen() {
         backendReachable={backendReachable}
       />
 
+      <LiteEvidenceGuide
+        title="Your current access"
+        saved={identityReadOnly || isExpired}
+        description="Sign-in identity, current role and access mode are separate facts. Changes to access may require signing in again."
+        facts={[
+          { id: "session", label: "Sign-in", value: data?.authenticated ? "Signed in" : "Not signed in" },
+          { id: "role", label: "Current role", value: data?.authenticated ? currentRoleLabel : "Not available" },
+          { id: "mode", label: "Workspace mode", value: data?.enterprise?.enabled ? "Enterprise Mode" : "Personal Mode" },
+          { id: "passkey", label: "Passkey on this device", value: passkeyEligible ? "Supported by browser" : "Not available in this browser" },
+        ]}
+        caution="A displayed role is informational. Only the server can authorize account changes; switching workspace modes can end the current session."
+      />
       {loading ? <LoadingCard label="Checking access and sign-in protection…" /> : null}
       {error && !data ? <StateSurface tone="degraded" title="Access information is temporarily unavailable" description="Pocket Lab could not confirm the latest access information. Saved access information remains visible when available." className="mb-5" /> : null}
       {backendDegraded && backendReachable ? <StateSurface tone="degraded" title="Identity needs attention" description="Pocket Lab is reachable, but it could not confirm all current access information. Protected changes stay unavailable until current access is confirmed." className="mb-5" /> : null}

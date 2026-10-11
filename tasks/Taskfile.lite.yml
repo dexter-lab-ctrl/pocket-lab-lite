@@ -2,6 +2,19 @@ version: '3'
 
 tasks:
 
+  lite:ui:p2:unit:
+    desc: Run read-only Safety, Access and Rules evidence guidance unit tests
+    cmds:
+      - npm run test -- src/lite/components/LiteEvidenceGuide.test.jsx
+
+  lite:ui:p2:regression:
+    desc: Run existing Safety, Access and Rules mocked accessibility and UI regression lanes
+    cmds:
+      - npm run test:mock-regression
+      - npm run test:a11y:states
+      - npm run build:budget
+
+
   lite:ui:p1:unit:
     desc: Run Home, Devices, Apps and Recovery P1 guidance component tests
     cmds:
