@@ -207,7 +207,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:878",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:889",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:72",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1653",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:1012"
@@ -840,7 +840,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3081",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3352",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1404",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605"
       ],
@@ -863,7 +863,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:622",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:640",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:137"
       ],
       "stream": "incomplete",
@@ -887,7 +887,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:684"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:695"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -967,7 +967,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:575"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:586"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -986,7 +986,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:622"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:640"
       ],
       "stream": "incomplete",
       "subscribers": [
@@ -1682,7 +1682,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3094"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3365"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1956,7 +1956,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:554"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:572"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1977,7 +1977,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1003"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1041"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1999,8 +1999,8 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:296",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:592",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:692"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:603",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:703"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2021,9 +2021,9 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1051",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1065",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:897"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1089",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1103",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:920"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2044,7 +2044,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:696"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:714"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2065,8 +2065,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:577",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:661"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:595",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:679"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2087,7 +2087,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1094"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1132"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2108,7 +2108,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:546"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:564"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2129,7 +2129,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:531"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:549"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -2171,7 +2171,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:687"
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:705"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -4638,6 +4638,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e8285a41bf517edfe51c0fe763dc098c2457f53c1db5e9497b694b51b1b323ce"
+    "source_fingerprint": "9428680fa8e2428b6ab03a1c9153cf83601b2cf1a7b07f08e07c5ee04b89a94a"
   }
 }

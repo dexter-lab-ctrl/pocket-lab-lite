@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 3049db02abb6414de3d34771f8c7a94cc287872405eccd8918e30550d865506b
+source_fingerprint: 14f158451c10fa5a184bdd0945d51b0134bf323c4fa6d08db97c5bc2dc77fd78
 schema_revision: 1
 validation_status: generated
 ---
@@ -750,6 +750,29 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-devices-node-id-photo-backup-acceptance-fixture"></a>
+## POST `/api/lite/devices/{node_id}/photo-backup/acceptance-fixture`
+
+- Operation ID: `prepare_lite_photo_backup_acceptance_fixture_api_lite_devices__node_id__photo_backup_acceptance_fixture_post`
+- Summary: Prepare Lite Photo Backup Acceptance Fixture
+- Deprecated: no
+- Tags: `fleet`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| node_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 201 | Successful Response | application/json: `object` |
 | 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |

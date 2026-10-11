@@ -327,6 +327,16 @@ def lite_photo_backup_device_status(node_id: str, request: Request) -> dict:
     return lite_photo_backup.status(node_id, request)
 
 
+@router.post("/api/lite/devices/{node_id}/photo-backup/acceptance-fixture", status_code=201)
+def prepare_lite_photo_backup_acceptance_fixture(
+    node_id: str,
+    request: Request,
+) -> dict:
+    """Prepare a server-issued, fixed-scope disposable source selector."""
+    deps.require_auth(request, write=True)
+    return lite_photo_backup.prepare_acceptance_fixture(node_id)
+
+
 @router.post("/api/lite/devices/{node_id}/photo-backup", status_code=202)
 async def start_lite_photo_backup(
     node_id: str,
@@ -341,6 +351,7 @@ async def start_lite_photo_backup(
         reason=str(payload.get("reason") or "manual photo backup"),
         request=request,
         destination_id=payload.get("destination_id"),
+        acceptance_fixture_id=payload.get("acceptance_fixture_id"),
     )
     if command.get("idempotent"):
         return {

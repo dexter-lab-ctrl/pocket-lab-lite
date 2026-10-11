@@ -1191,6 +1191,12 @@
           "type": "owns"
         }
       ],
+      "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture": [
+        {
+          "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
       "api:post:/api/lite/devices/{node_id}/photo-backup/cancel": [
         {
           "source": "domain:devices",
@@ -4812,6 +4818,24 @@
       "reason:shutdown_during_mailbox_backpressure": [
         {
           "source": "domain:projections",
+          "type": "owns"
+        }
+      ],
+      "reason:source_fixture_expired": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "reason:source_fixture_invalid": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "reason:source_fixture_unavailable": [
+        {
+          "source": "domain:apps",
           "type": "owns"
         }
       ],
@@ -9285,6 +9309,18 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:source_fixture_expired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:source_inventory_failed",
           "type": "verified_by"
         },
@@ -10076,6 +10112,10 @@
         },
         {
           "source": "api:post:/api/lite/devices/{node_id}/photo-backup",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
           "type": "verified_by"
         },
         {
@@ -11251,6 +11291,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:source_fixture_expired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:unsafe_live_media_import",
           "type": "verified_by"
         },
@@ -11266,6 +11314,10 @@
         },
         {
           "source": "reason:interrupted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_invalid",
           "type": "verified_by"
         }
       ],
@@ -14553,6 +14605,18 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:source_fixture_expired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:source_inventory_failed",
           "type": "verified_by"
         },
@@ -15731,6 +15795,18 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:source_fixture_expired",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:source_inventory_failed",
           "type": "verified_by"
         },
@@ -16700,6 +16776,10 @@
         },
         {
           "source": "api:post:/api/lite/devices/{node_id}/photo-backup",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
           "type": "verified_by"
         },
         {
@@ -19442,6 +19522,16 @@
         }
       ],
       "api:post:/api/lite/devices/{node_id}/photo-backup": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -24447,6 +24537,18 @@
           "type": "owns"
         },
         {
+          "target": "reason:source_fixture_expired",
+          "type": "owns"
+        },
+        {
+          "target": "reason:source_fixture_invalid",
+          "type": "owns"
+        },
+        {
+          "target": "reason:source_fixture_unavailable",
+          "type": "owns"
+        },
+        {
           "target": "reason:storage_reservation_conflict",
           "type": "owns"
         },
@@ -24748,6 +24850,10 @@
         },
         {
           "target": "api:post:/api/lite/devices/{node_id}/photo-backup",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
           "type": "owns"
         },
         {
@@ -33487,6 +33593,60 @@
           "type": "verified_by"
         }
       ],
+      "reason:source_fixture_expired": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:source_fixture_invalid": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup_agent.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:source_fixture_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_photo_backup.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:source_inventory_failed": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -34609,6 +34769,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e8285a41bf517edfe51c0fe763dc098c2457f53c1db5e9497b694b51b1b323ce"
+    "source_fingerprint": "9428680fa8e2428b6ab03a1c9153cf83601b2cf1a7b07f08e07c5ee04b89a94a"
   }
 }

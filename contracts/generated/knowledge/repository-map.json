@@ -513,6 +513,7 @@
         "api:post:/api/lite/catalog/install",
         "api:post:/api/lite/catalog/remove",
         "api:post:/api/lite/devices/{node_id}/photo-backup",
+        "api:post:/api/lite/devices/{node_id}/photo-backup/acceptance-fixture",
         "api:post:/api/lite/devices/{node_id}/photo-backup/cancel",
         "api:post:/api/lite/devices/{node_id}/photo-backup/repair",
         "api:post:/api/lite/diagnostics/frontend-lifecycle",
@@ -1027,6 +1028,9 @@
         "reason:session_not_found",
         "reason:shutdown",
         "reason:shutdown_during_mailbox_backpressure",
+        "reason:source_fixture_expired",
+        "reason:source_fixture_invalid",
+        "reason:source_fixture_unavailable",
         "reason:source_inventory_failed",
         "reason:storage_pressure",
         "reason:storage_reservation_conflict",
@@ -1385,6 +1389,9 @@
         "reason:session_not_found",
         "reason:shutdown",
         "reason:shutdown_during_mailbox_backpressure",
+        "reason:source_fixture_expired",
+        "reason:source_fixture_invalid",
+        "reason:source_fixture_unavailable",
         "reason:source_inventory_failed",
         "reason:storage_pressure",
         "reason:storage_reservation_conflict",
@@ -4363,6 +4370,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e8285a41bf517edfe51c0fe763dc098c2457f53c1db5e9497b694b51b1b323ce"
+    "source_fingerprint": "9428680fa8e2428b6ab03a1c9153cf83601b2cf1a7b07f08e07c5ee04b89a94a"
   }
 }

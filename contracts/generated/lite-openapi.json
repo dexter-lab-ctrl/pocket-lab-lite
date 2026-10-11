@@ -4558,6 +4558,81 @@
         ]
       }
     },
+    "/api/lite/devices/{node_id}/photo-backup/acceptance-fixture": {
+      "post": {
+        "description": "Prepare a server-issued, fixed-scope disposable source selector.",
+        "operationId": "prepare_lite_photo_backup_acceptance_fixture_api_lite_devices__node_id__photo_backup_acceptance_fixture_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "node_id",
+            "required": true,
+            "schema": {
+              "title": "Node Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Prepare Lite Photo Backup Acceptance Fixture Api Lite Devices  Node Id  Photo Backup Acceptance Fixture Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Prepare Lite Photo Backup Acceptance Fixture",
+        "tags": [
+          "fleet"
+        ]
+      }
+    },
     "/api/lite/devices/{node_id}/photo-backup/cancel": {
       "post": {
         "operationId": "cancel_lite_photo_backup_api_lite_devices__node_id__photo_backup_cancel_post",

@@ -5,12 +5,13 @@
     "add qualification-only target-device binding across synthetic principals, challenges, sessions, and audit events so a qualification session cannot authorize another device",
     "add the fail-closed isolated candidate qualification context, synthetic enrollment route, and loopback control-origin binding without changing production destination defaults",
     "add one-use recovery authorization receipts bound to the selected backup, preview, target schema, target runtime, issued runtime identity, and expiry for the offline main-database promotion handoff",
-    "promote the exact generated multi-role fleet and target-bound recovery OpenAPI contract after DEV-PC focused/full gates and exact-feature-runtime qualification; secondary-device media transfer remains outside this change and unvalidated"
+    "promote the exact generated multi-role fleet and target-bound recovery OpenAPI contract after DEV-PC focused/full gates and exact-feature-runtime qualification; secondary-device media transfer remains outside this change and unvalidated",
+    "add a server-owned, short-lived bounded Photo Backup acceptance fixture with fixed Pictures scope and no client source path; live production transfer remains pending release and operational acceptance"
   ],
   "baseline": "contracts/parity/openapi-baseline.json",
   "contract": "contracts/generated/lite-openapi.json",
-  "previous_sha256": "324a72a7a5b784ff42518e96913f9a96fd4f8f59e84e3095c23259652cf51769",
-  "promoted_sha256": "d7571194d848b19a5a21343c682e5bb659a2e1c2da7e465ac5a5b3eb09deb58d",
+  "previous_sha256": "d7571194d848b19a5a21343c682e5bb659a2e1c2da7e465ac5a5b3eb09deb58d",
+  "promoted_sha256": "515e939d9da2ea7ad29889b58396b8c9b1a3aa353c73738ecbe22ec35ba92b68",
   "sanitized": true,
   "schema_version": "1.0.0",
   "security_review": {
@@ -19,7 +20,7 @@
     "runtime_routes_removed": false,
     "write_operations_added": true
   },
-  "source_revision": "feat/isolated-runtime-qualification-lane@f37742c8d415d701011d2a54647d621dcfa84a59",
+  "source_revision": "fix/photo-backup-production-activation@623b00c508c6914c07c8688b4ba0fe67da58efaa",
   "status": "promoted",
-  "validation_status": "dev-pc-focused-and-full-gates-passed; exact-candidate-isolated-runtime-qualification-validated; physical-android-candidate-blocked-by-missing-authorized-private-transport-and-isolated-destination"
+  "validation_status": "dev-pc-focused-and-full-gates-passed; exact-candidate-isolated-runtime-qualification-validated; physical-android-candidate-blocked-by-missing-authorized-private-transport-and-isolated-destination; live-production-transfer-pending-reviewed-release"
 }

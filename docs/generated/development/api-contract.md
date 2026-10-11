@@ -19,7 +19,7 @@ validation_status: generated
 <span class="pl-status pl-status--patch-provided">Development guidance</span>
 </div>
 
-FastAPI OpenAPI is the canonical HTTP contract. This generated Lite view contains **217 paths** and **229 operations**.
+FastAPI OpenAPI is the canonical HTTP contract. This generated Lite view contains **218 paths** and **230 operations**.
 
 - Source: `pocket-lab-final-structure/runtime/api_fastapi/main.py`
 - Contract: `contracts/generated/lite-openapi.json`

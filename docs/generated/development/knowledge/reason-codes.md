@@ -245,6 +245,9 @@ generator_version: 3
 | `session_not_found` | identity | The requested human session is absent, expired, revoked, or no longer active. | warning | no | yes | That session is no longer active. |
 | `shutdown` | system | The process is shutting down. | warning | yes | no | The process is shutting down. |
 | `shutdown_during_mailbox_backpressure` | projections | Shutdown occurred while the bounded mailbox was under pressure. | warning | yes | no | Shutdown occurred while the bounded mailbox was under pressure. |
+| `source_fixture_expired` | apps | The short-lived bounded acceptance fixture expired before admission. | warning | yes | no | The bounded acceptance photo selector expired. Request a new selector. |
+| `source_fixture_invalid` | apps | The bounded acceptance selector is not a valid server-issued fixture for the fixed source scope. | warning | no | yes | The bounded acceptance photo selector is invalid. Request a new server-issued selector. |
+| `source_fixture_unavailable` | apps | The selected secondary device or its short-lived bounded acceptance fixture is not ready. | warning | yes | no | The secondary device is not ready for a bounded acceptance photo. |
 | `source_inventory_failed` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | warning | yes | no | Runtime Security Assurance could not continue safely. |
 | `storage_pressure` | security | Private free storage was below the backend scan threshold. | warning | yes | no | The remaining safety targets were deferred because private storage is constrained. |
 | `storage_reservation_conflict` | apps | Another Photo Backup job currently holds the protected destination reservation. | warning | yes | no | Wait for the active photo backup to finish before starting another one. |

@@ -151,6 +151,7 @@ generator_version: 3
 | POST /api/lite/catalog/install | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/catalog/remove | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/devices/{node_id}/photo-backup | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/devices/{node_id}/photo-backup/acceptance-fixture | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/devices/{node_id}/photo-backup/cancel | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/devices/{node_id}/photo-backup/repair | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/diagnostics/frontend-lifecycle | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |

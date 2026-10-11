@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+import base64
 import hashlib
 import fcntl
 import json
 import os
+import re
 import signal
 import shutil
 import stat as stat_module
@@ -61,6 +63,19 @@ MAX_LEDGER_ITEMS = MAX_INVENTORY_ITEMS
 PHOTO_BACKUP_DESTINATION_ID = "server-photoprism-originals"
 PHOTO_BACKUP_DESTINATION_SCHEMA_VERSION = 2
 PHOTO_BACKUP_DESTINATION_TRANSPORT = "https_webdav"
+ACCEPTANCE_FIXTURE_SCOPE = "bounded_acceptance_fixture"
+ACCEPTANCE_FIXTURE_COLLECTION = "pictures"
+ACCEPTANCE_FIXTURE_DIRECTORY = "PocketLabAcceptance"
+ACCEPTANCE_FIXTURE_ID_RE = re.compile(r"fixture-[a-f0-9]{20}")
+ACCEPTANCE_FIXTURE_JPEG = base64.b64decode(
+    "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////"
+    "2wBDAf//////////////////////////////////////////////////////////////////////////////////////wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/"
+    "xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIQAxAAAAH/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAEFAqf/"
+    "xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oACAEDAQE/AX//xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oACAECAQE/AX//"
+    "xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAY/Aqf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAE/IV//"
+    "2gAMAwEAAgADAAAAEP/EABQRAQAAAAAAAAAAAAAAAAAAABD/2gAIAQMBAT8QH//EABQRAQAAAAAAAAAAAAAAAAAA"
+    "ABD/2gAIAQIBAT8QH//EABQQAQAAAAAAAAAAAAAAAAAAABD/2gAIAQEAAT8QH//Z"
+)
 
 
 def _now() -> str:
@@ -88,6 +103,110 @@ def _safe_version(text: str) -> str:
 def _collection_path(collection: str) -> Path:
     parts = COLLECTION_ROOTS[collection]
     return Path.home().joinpath("storage", *parts)
+
+
+def _acceptance_fixture_id(value: Any) -> str:
+    fixture_id = str(value or "").strip().lower()
+    if not ACCEPTANCE_FIXTURE_ID_RE.fullmatch(fixture_id):
+        raise RuntimeError("source_fixture_invalid")
+    return fixture_id
+
+
+def _acceptance_fixture_item(source_fixture: dict[str, Any]) -> dict[str, Any]:
+    """Create or validate one fixed, metadata-free operator fixture.
+
+    The server sends only an opaque fixture ID.  The agent derives the one
+    permitted source location and refuses to follow links or overwrite an
+    existing object with different content.
+    """
+    if not isinstance(source_fixture, dict):
+        raise RuntimeError("source_fixture_invalid")
+    fixture_id = _acceptance_fixture_id(source_fixture.get("fixture_id"))
+    if (
+        source_fixture.get("scope") != ACCEPTANCE_FIXTURE_SCOPE
+        or source_fixture.get("collection") != ACCEPTANCE_FIXTURE_COLLECTION
+    ):
+        raise RuntimeError("source_fixture_invalid")
+    root = _collection_path(ACCEPTANCE_FIXTURE_COLLECTION)
+    if root.is_symlink() or not root.is_dir() or not os.access(root, os.R_OK | os.W_OK | os.X_OK):
+        raise RuntimeError("source_fixture_unavailable")
+    directory = root / ACCEPTANCE_FIXTURE_DIRECTORY
+    if directory.exists() and directory.is_symlink():
+        raise RuntimeError("source_fixture_invalid")
+    try:
+        directory.mkdir(mode=0o770, exist_ok=True)
+    except OSError as exc:
+        raise RuntimeError("source_fixture_unavailable") from exc
+    if directory.is_symlink() or not directory.is_dir():
+        raise RuntimeError("source_fixture_invalid")
+    path = directory / f"{fixture_id}.jpg"
+    created = False
+    if path.exists() or os.path.lexists(path):
+        if path.is_symlink() or not path.is_file():
+            raise RuntimeError("source_fixture_invalid")
+        try:
+            if path.read_bytes() != ACCEPTANCE_FIXTURE_JPEG:
+                raise RuntimeError("source_fixture_invalid")
+        except OSError as exc:
+            raise RuntimeError("source_fixture_unavailable") from exc
+    else:
+        descriptor = -1
+        try:
+            descriptor = os.open(
+                path,
+                os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0),
+                0o660,
+            )
+            written = 0
+            while written < len(ACCEPTANCE_FIXTURE_JPEG):
+                progress = os.write(
+                    descriptor,
+                    ACCEPTANCE_FIXTURE_JPEG[written:],
+                )
+                if progress <= 0:
+                    raise OSError("fixture_write_no_progress")
+                written += progress
+            os.fsync(descriptor)
+            created = True
+        except FileExistsError:
+            # A concurrent run may have won creation.  Validate it below; it
+            # is never overwritten or silently adopted if its bytes differ.
+            created = False
+        except OSError as exc:
+            raise RuntimeError("source_fixture_unavailable") from exc
+        finally:
+            if descriptor >= 0:
+                os.close(descriptor)
+        if created:
+            try:
+                path.chmod(0o660)
+            except OSError as exc:
+                try:
+                    path.unlink()
+                except OSError:
+                    pass
+                raise RuntimeError("source_fixture_unavailable") from exc
+        if path.is_symlink() or not path.is_file():
+            raise RuntimeError("source_fixture_invalid")
+        try:
+            if path.read_bytes() != ACCEPTANCE_FIXTURE_JPEG:
+                raise RuntimeError("source_fixture_invalid")
+        except OSError as exc:
+            raise RuntimeError("source_fixture_unavailable") from exc
+    try:
+        stat_result = path.stat()
+    except OSError as exc:
+        raise RuntimeError("source_fixture_unavailable") from exc
+    if not stat_module.S_ISREG(stat_result.st_mode) or stat_result.st_size != len(ACCEPTANCE_FIXTURE_JPEG):
+        raise RuntimeError("source_fixture_invalid")
+    return {
+        "collection": ACCEPTANCE_FIXTURE_COLLECTION,
+        "path": path,
+        "relative": f"{ACCEPTANCE_FIXTURE_DIRECTORY}/{path.name}",
+        "size": int(stat_result.st_size),
+        "mtime": float(stat_result.st_mtime),
+        "mtime_ns": int(getattr(stat_result, "st_mtime_ns", 0)),
+    }
 
 
 def collect_photo_backup_capabilities() -> dict[str, Any]:
@@ -1431,11 +1550,17 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
         self,
         collections: list[str],
         destination: Path,
+        source_fixture: dict[str, Any] | None = None,
     ) -> int:
         count = 0
         with destination.open("w", encoding="utf-8", buffering=1024 * 1024) as stream:
             os.chmod(destination, 0o600)
-            for item in self._inventory(collections):
+            items = (
+                (_acceptance_fixture_item(source_fixture),)
+                if source_fixture is not None
+                else self._inventory(collections)
+            )
+            for item in items:
                 encoded = json.dumps(
                     self._spool_record(item),
                     ensure_ascii=False,
@@ -1464,6 +1589,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
         backup_id: str,
         credential_ref: str,
         collections: list[str],
+        source_fixture: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         self.cancel_event.clear()
         self._active_backup_id = backup_id
@@ -1489,6 +1615,8 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
             for item in collections
             if item in COLLECTION_ROOTS
         ]
+        if source_fixture is not None:
+            selected_collections = [ACCEPTANCE_FIXTURE_COLLECTION]
         if not selected_collections:
             selected_collections = list(
                 COLLECTION_ROOTS
@@ -1539,6 +1667,8 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                     )
                 )
             ]
+            if source_fixture is not None and ACCEPTANCE_FIXTURE_COLLECTION not in readable_collections:
+                raise RuntimeError("source_fixture_unavailable")
             if not readable_collections:
                 result = {
                     "status": "source_offline",
@@ -1564,6 +1694,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
             inventory_count = self._write_inventory_spool(
                 readable_collections,
                 inventory_path,
+                source_fixture=source_fixture,
             )
             if inventory_count == 0:
                 result = {
@@ -1956,7 +2087,7 @@ class PhotoPrismWebDAVProvider(MediaBackupProvider):
                 reason = "source_changed"
             if reason in {"destination_storage_unavailable", "destination_identity_mismatch"}:
                 final_status = "destination_unavailable"
-            elif reason == "source_offline":
+            elif reason in {"source_offline", "source_fixture_invalid", "source_fixture_unavailable", "source_fixture_expired"}:
                 final_status = "source_offline"
             else:
                 final_status = "interrupted"

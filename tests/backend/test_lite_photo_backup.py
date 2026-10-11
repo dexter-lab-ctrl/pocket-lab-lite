@@ -111,6 +111,108 @@ def test_repeated_start_returns_existing_active_backup(photo_backup, monkeypatch
     assert command["backup_id"] == "photo-existing"
 
 
+def test_bounded_acceptance_fixture_is_server_issued_and_pathless(photo_backup, monkeypatch):
+    agent = {
+        "node_id": "storage-phone",
+        "name": "Storage Phone",
+        "connection": "online",
+        "photo_backup": {
+            "rclone_available": True,
+            "photo_storage_access": True,
+            "collections": ["camera", "pictures", "videos"],
+        },
+    }
+    monkeypatch.setattr(photo_backup, "_agent", lambda _node_id: agent)
+    monkeypatch.setattr(photo_backup, "_source_fresh", lambda _agent: True)
+
+    prepared = photo_backup.prepare_acceptance_fixture("storage-phone")
+
+    assert prepared["status"] == "prepared"
+    assert prepared["source_scope"] == photo_backup.ACCEPTANCE_FIXTURE_SCOPE
+    assert prepared["collection"] == "pictures"
+    assert photo_backup.ACCEPTANCE_FIXTURE_ID_RE.fullmatch(prepared["fixture_id"])
+    record = photo_backup._state()["acceptance_fixtures"][prepared["fixture_id"]]
+    assert "path" not in record
+    assert "source_path" not in record
+    evidence = photo_backup._read_json(photo_backup._evidence_path(), {})
+    assert evidence["events"][0]["event_type"] == (
+        "lite.photo_backup.acceptance_fixture.prepared"
+    )
+    assert "path" not in json.dumps(evidence["events"][0])
+
+    monkeypatch.setattr(
+        photo_backup,
+        "status",
+        lambda *_args, **_kwargs: {"ready": True, "latest_backup": None},
+    )
+    monkeypatch.setattr(
+        photo_backup,
+        "readiness",
+        lambda *_args, **_kwargs: {
+            "backup_admissible": True,
+            "destination_operational": True,
+            "rclone_available": True,
+            "photo_storage_access": True,
+            "storage": {
+                "status": "ready",
+                "safe_upload_budget_bytes": 8_000_000,
+                "hard_upload_budget_bytes": 10_000_000,
+                "sanitized": True,
+            },
+        },
+    )
+    command = photo_backup.make_start_command(
+        "storage-phone",
+        ["camera", "videos"],
+        acceptance_fixture_id=prepared["fixture_id"],
+    )
+
+    assert command["collections"] == ["pictures"]
+    assert command["source_scope"] == photo_backup.ACCEPTANCE_FIXTURE_SCOPE
+    assert command["source_fixture"] == {
+        "fixture_id": prepared["fixture_id"],
+        "collection": "pictures",
+        "scope": photo_backup.ACCEPTANCE_FIXTURE_SCOPE,
+    }
+    assert "path" not in json.dumps(command)
+    public = photo_backup._public_job(
+        photo_backup._state()["jobs"][command["backup_id"]]
+    )
+    assert public["source_scope"] == photo_backup.ACCEPTANCE_FIXTURE_SCOPE
+    assert public["source_fixture_id"] == prepared["fixture_id"]
+
+
+def test_bounded_acceptance_fixture_rejects_unknown_and_expired_ids(photo_backup):
+    with pytest.raises(photo_backup.HTTPException) as unknown:
+        photo_backup.make_start_command(
+            "storage-phone",
+            ["pictures"],
+            acceptance_fixture_id="fixture-" + ("c" * 20),
+        )
+    assert unknown.value.status_code == 409
+    assert unknown.value.detail["reason_code"] == "source_fixture_unavailable"
+
+    fixture_id = "fixture-" + ("d" * 20)
+    state = photo_backup._state()
+    state["acceptance_fixtures"][fixture_id] = {
+        "fixture_id": fixture_id,
+        "node_id": "storage-phone",
+        "collection": "pictures",
+        "scope": photo_backup.ACCEPTANCE_FIXTURE_SCOPE,
+        "status": "prepared",
+        "expires_at_epoch": 0,
+    }
+    photo_backup._save_state(state)
+    with pytest.raises(photo_backup.HTTPException) as expired:
+        photo_backup.make_start_command(
+            "storage-phone",
+            ["pictures"],
+            acceptance_fixture_id=fixture_id,
+        )
+    assert expired.value.status_code == 409
+    assert expired.value.detail["reason_code"] == "source_fixture_expired"
+
+
 def test_server_owned_admission_rejects_unsupported_destination(photo_backup):
     with pytest.raises(photo_backup.HTTPException) as exc:
         photo_backup.make_start_command(
@@ -682,6 +784,7 @@ def test_photo_backup_api_status_and_internal_endpoints_are_semantic_only(monkey
     paths = openapi.get("paths", {})
     assert "/api/lite/media-backup" in paths
     assert "/api/lite/devices/{node_id}/photo-backup" in paths
+    assert "/api/lite/devices/{node_id}/photo-backup/acceptance-fixture" in paths
     assert not any("/internal/photo-backup/" in path for path in paths)
 
 

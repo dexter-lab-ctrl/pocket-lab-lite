@@ -45,6 +45,10 @@ NODE_START_COMMAND = "media.backup.photoprism.start"
 NODE_CANCEL_COMMAND = "media.backup.photoprism.cancel"
 NODE_REPAIR_COMMAND = "media.backup.tools.repair"
 SUPPORTED_COLLECTIONS = ("camera", "pictures", "videos")
+ACCEPTANCE_FIXTURE_SCOPE = "bounded_acceptance_fixture"
+ACCEPTANCE_FIXTURE_COLLECTION = "pictures"
+ACCEPTANCE_FIXTURE_ID_RE = re.compile(r"fixture-[a-f0-9]{20}")
+ACCEPTANCE_FIXTURE_TTL_SECONDS = 30 * 60
 TERMINAL_STATES = {
     "completed",
     "partial_storage_limit",
@@ -397,6 +401,7 @@ def _state() -> dict[str, Any]:
     payload.setdefault("jobs", {})
     payload.setdefault("latest_by_node", {})
     payload.setdefault("placements", {})
+    payload.setdefault("acceptance_fixtures", {})
     payload.setdefault("updated_at", None)
     if not isinstance(payload["jobs"], dict):
         payload["jobs"] = {}
@@ -404,6 +409,8 @@ def _state() -> dict[str, Any]:
         payload["latest_by_node"] = {}
     if not isinstance(payload["placements"], dict):
         payload["placements"] = {}
+    if not isinstance(payload["acceptance_fixtures"], dict):
+        payload["acceptance_fixtures"] = {}
     return payload
 
 
@@ -411,6 +418,48 @@ def _save_state(payload: dict[str, Any]) -> None:
     payload["schema_version"] = STATE_SCHEMA_VERSION
     payload["updated_at"] = _now()
     _write_json(_state_path(), payload)
+
+
+def _append_acceptance_fixture_evidence(
+    record: dict[str, Any],
+    event_type: str,
+) -> None:
+    """Persist a sanitized bounded-fixture lifecycle event.
+
+    The fixture record intentionally contains no source path. Keep this
+    evidence separate from job projection so preparation is auditable even
+    before a backup job exists.
+    """
+    payload = _read_json(
+        _evidence_path(),
+        {"events": []},
+    )
+    if not isinstance(payload, dict):
+        payload = {"events": []}
+    events = payload.get("events")
+    if not isinstance(events, list):
+        events = []
+    events.insert(
+        0,
+        {
+            "event_type": event_type,
+            "captured_at": _now(),
+            "status": str(record.get("status") or "prepared"),
+            "node_id": str(record.get("node_id") or "")[:120],
+            "source_scope": ACCEPTANCE_FIXTURE_SCOPE,
+            "source_fixture_id": str(record.get("fixture_id") or "")[:64],
+            "collection": ACCEPTANCE_FIXTURE_COLLECTION,
+            "expires_at": str(
+                record.get("expires_at")
+                or record.get("expires_at_epoch")
+                or ""
+            )[:64],
+            "sanitized": True,
+        },
+    )
+    payload["events"] = events[:200]
+    payload["updated_at"] = _now()
+    _write_json(_evidence_path(), payload)
 
 
 def _safe_text(
@@ -463,6 +512,159 @@ def _collections(value: Any) -> list[str]:
     return normalized or list(SUPPORTED_COLLECTIONS)
 
 
+def _acceptance_fixture_id(value: Any) -> str:
+    fixture_id = str(value or "").strip().lower()
+    if not ACCEPTANCE_FIXTURE_ID_RE.fullmatch(fixture_id):
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "status": "invalid_source_fixture",
+                "reason_code": "source_fixture_invalid",
+                "summary": "The bounded test-photo selection is invalid.",
+                "sanitized": True,
+            },
+        )
+    return fixture_id
+
+
+def _resolve_acceptance_fixture(
+    node_id: str,
+    fixture_id: Any,
+) -> dict[str, Any]:
+    """Resolve only a server-issued fixture, never a client source path."""
+    normalized = _acceptance_fixture_id(fixture_id)
+    state = _state()
+    record = state["acceptance_fixtures"].get(normalized)
+    if not isinstance(record, dict):
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "source_fixture_unavailable",
+                "reason_code": "source_fixture_unavailable",
+                "summary": "The bounded test photo is no longer available.",
+                "retryable": True,
+                "sanitized": True,
+            },
+        )
+    if str(record.get("node_id") or "") != node_id:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "source_fixture_unavailable",
+                "reason_code": "source_fixture_unavailable",
+                "summary": "The bounded test photo belongs to another device.",
+                "retryable": False,
+                "sanitized": True,
+            },
+        )
+    try:
+        expired = float(record.get("expires_at_epoch") or 0) <= _epoch()
+    except (TypeError, ValueError, OverflowError):
+        expired = True
+    if expired or record.get("status") != "prepared":
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "source_fixture_expired",
+                "reason_code": "source_fixture_expired",
+                "summary": "The bounded test-photo selection has expired.",
+                "retryable": True,
+                "sanitized": True,
+            },
+        )
+    return {
+        "fixture_id": normalized,
+        "collection": ACCEPTANCE_FIXTURE_COLLECTION,
+        "scope": ACCEPTANCE_FIXTURE_SCOPE,
+    }
+
+
+def prepare_acceptance_fixture(node_id: str) -> dict[str, Any]:
+    """Issue a short-lived, fixed-scope source selector for operator acceptance."""
+    node_id = _safe_node_id(node_id)
+    agent = _agent(node_id)
+    if _is_protected_server(agent):
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "not_eligible",
+                "reason_code": "source_fixture_unavailable",
+                "summary": "Choose an enrolled secondary device.",
+                "sanitized": True,
+            },
+        )
+    capability = _photo_capability(agent)
+    if (
+        not _agent_online(agent)
+        or not _source_fresh(agent)
+        or not capability.get("rclone_available")
+        or not capability.get("photo_storage_access")
+        or ACCEPTANCE_FIXTURE_COLLECTION not in capability.get("collections", [])
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "source_fixture_unavailable",
+                "reason_code": "source_fixture_unavailable",
+                "summary": "The secondary device is not ready for a bounded test photo.",
+                "retryable": True,
+                "sanitized": True,
+            },
+        )
+
+    with _admission_lock(), _LOCK:
+        state = _state()
+        now = _epoch()
+        for record in state["acceptance_fixtures"].values():
+            if not isinstance(record, dict) or record.get("node_id") != node_id:
+                continue
+            try:
+                active = (
+                    record.get("status") == "prepared"
+                    and float(record.get("expires_at_epoch") or 0) > now
+                )
+            except (TypeError, ValueError, OverflowError):
+                active = False
+            if active:
+                return {
+                    "status": "prepared",
+                    "source_scope": ACCEPTANCE_FIXTURE_SCOPE,
+                    "fixture_id": str(record.get("fixture_id") or ""),
+                    "collection": ACCEPTANCE_FIXTURE_COLLECTION,
+                    "expires_in_seconds": max(
+                        0,
+                        int(float(record.get("expires_at_epoch") or 0) - now),
+                    ),
+                    "sanitized": True,
+                }
+
+        fixture_id = f"fixture-{uuid.uuid4().hex[:20]}"
+        expires_at_epoch = now + ACCEPTANCE_FIXTURE_TTL_SECONDS
+        record = {
+            "fixture_id": fixture_id,
+            "node_id": node_id,
+            "collection": ACCEPTANCE_FIXTURE_COLLECTION,
+            "scope": ACCEPTANCE_FIXTURE_SCOPE,
+            "status": "prepared",
+            "created_at": _now(),
+            "expires_at_epoch": expires_at_epoch,
+        }
+        state["acceptance_fixtures"][fixture_id] = record
+        _save_state(state)
+        _append_acceptance_fixture_evidence(
+            record,
+            "lite.photo_backup.acceptance_fixture.prepared",
+        )
+    return {
+        "status": "prepared",
+        "source_scope": ACCEPTANCE_FIXTURE_SCOPE,
+        "fixture_id": fixture_id,
+        "collection": ACCEPTANCE_FIXTURE_COLLECTION,
+        "expires_in_seconds": ACCEPTANCE_FIXTURE_TTL_SECONDS,
+        "sanitized": True,
+    }
+
+
 def _public_job(job: dict[str, Any] | None) -> dict[str, Any] | None:
     if not isinstance(job, dict):
         return None
@@ -474,6 +676,8 @@ def _public_job(job: dict[str, Any] | None) -> dict[str, Any] | None:
         "status",
         "summary",
         "collections",
+        "source_scope",
+        "source_fixture_id",
         "items_total",
         "items_transferred",
         "items_skipped",
@@ -984,6 +1188,7 @@ P0_REASONS = frozenset({
     "unknown_internal_error", "rclone_repair_interrupted",
     "rclone_repair_in_progress", "rclone_unsupported_platform",
     "rclone_repair_state_unavailable",
+    "source_fixture_invalid", "source_fixture_unavailable", "source_fixture_expired",
 })
 _P0_REMEDIATION = {
     "source_offline": "device", "source_agent_unavailable": "device",
@@ -992,6 +1197,8 @@ _P0_REMEDIATION = {
     "rclone_verification_failed": "repair", "rclone_repair_interrupted": "repair",
     "rclone_repair_in_progress": "repair", "rclone_unsupported_platform": "repair",
     "rclone_repair_state_unavailable": "repair",
+    "source_fixture_invalid": "source", "source_fixture_unavailable": "source",
+    "source_fixture_expired": "source",
     "photo_storage_access_missing": "permissions",
     "photoprism_not_running": "app", "photoprism_unreachable": "app",
     "secure_route_unavailable": "remote_access",
@@ -1389,6 +1596,7 @@ def make_start_command(
     reason: str = "manual photo backup",
     request: Request | None = None,
     destination_id: Any = None,
+    acceptance_fixture_id: Any = None,
 ) -> dict[str, Any]:
     node_id = _safe_node_id(node_id)
     if destination_id is not None and destination_id != lite_photo_backup_destinations.CURRENT_DESTINATION_ID:
@@ -1401,6 +1609,11 @@ def make_start_command(
                 "sanitized": True,
             },
         )
+    source_fixture = (
+        _resolve_acceptance_fixture(node_id, acceptance_fixture_id)
+        if acceptance_fixture_id is not None
+        else None
+    )
     # Read the current projection once first so an active request can be
     # answered idempotently without making another network/runtime probe.
     current = status(node_id, request)
@@ -1417,6 +1630,34 @@ def make_start_command(
         and str(latest.get("status") or "")
         in ACTIVE_STATES
     ):
+        latest_fixture_id = str(
+            latest.get("source_fixture_id") or ""
+        )
+        requested_fixture_id = (
+            str(source_fixture.get("fixture_id") or "")
+            if source_fixture
+            else ""
+        )
+        if (
+            requested_fixture_id
+            and latest_fixture_id != requested_fixture_id
+        ) or (
+            not requested_fixture_id
+            and latest_fixture_id
+        ):
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "status": "photo_backup_busy",
+                    "reason_code": "storage_reservation_conflict",
+                    "summary": (
+                        "Another photo backup is already running "
+                        "for this device."
+                    ),
+                    "retryable": True,
+                    "sanitized": True,
+                },
+            )
         return {
             "idempotent": True,
             "command_id": str(
@@ -1428,7 +1669,17 @@ def make_start_command(
             "node_id": node_id,
             "collections": (
                 latest.get("collections")
-                or _collections(collections)
+                or (
+                    [ACCEPTANCE_FIXTURE_COLLECTION]
+                    if source_fixture
+                    else _collections(collections)
+                )
+            ),
+            "source_scope": latest.get("source_scope") or (
+                ACCEPTANCE_FIXTURE_SCOPE if source_fixture else "collection"
+            ),
+            "source_fixture_id": latest.get("source_fixture_id") or (
+                source_fixture.get("fixture_id") if source_fixture else None
             ),
             "reason": (
                 "Existing photo backup is still active."
@@ -1469,7 +1720,14 @@ def make_start_command(
         "command_id": backup_id,
         "backup_id": backup_id,
         "node_id": node_id,
-        "collections": _collections(collections),
+        "collections": (
+            [ACCEPTANCE_FIXTURE_COLLECTION]
+            if source_fixture
+            else _collections(collections)
+        ),
+        "source_scope": ACCEPTANCE_FIXTURE_SCOPE if source_fixture else "collection",
+        "source_fixture": source_fixture,
+        "source_fixture_id": source_fixture.get("fixture_id") if source_fixture else None,
         "reason": _safe_text(
             reason,
             "manual photo backup",
@@ -1508,6 +1766,8 @@ def make_start_command(
                         locked_active.get("collections")
                         or command["collections"]
                     ),
+                    "source_scope": locked_active.get("source_scope") or "collection",
+                    "source_fixture_id": locked_active.get("source_fixture_id"),
                     "reason": (
                         "Existing photo backup is still active."
                     ),
@@ -1536,6 +1796,15 @@ def make_start_command(
                     "sanitized": True,
                 },
             )
+        if source_fixture:
+            # Re-read the server-issued selector while holding the same lock
+            # used for job admission so expiry or state replacement cannot
+            # race the durable job record.
+            source_fixture = _resolve_acceptance_fixture(
+                node_id,
+                source_fixture["fixture_id"],
+            )
+            command["source_fixture"] = source_fixture
         agent = _agent(node_id)
         payload["jobs"][backup_id] = {
             "backup_id": backup_id,
@@ -1553,6 +1822,8 @@ def make_start_command(
             "status": "queued",
             "summary": "Photo backup request queued.",
             "collections": command["collections"],
+            "source_scope": command["source_scope"],
+            "source_fixture_id": command.get("source_fixture_id"),
             "items_total": 0,
             "items_transferred": 0,
             "items_skipped": 0,
@@ -3388,6 +3659,11 @@ async def execute_start(
                             SUPPORTED_COLLECTIONS
                         )
                     ),
+                    "source_fixture": (
+                        command.get("source_fixture")
+                        if isinstance(command.get("source_fixture"), dict)
+                        else None
+                    ),
                 },
             )
         )
@@ -3410,6 +3686,7 @@ async def execute_start(
                     )
                     or []
                 ),
+                "source_scope": command.get("source_scope") or "collection",
             },
             trace_id=backup_id,
         )
