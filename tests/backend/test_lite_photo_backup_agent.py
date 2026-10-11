@@ -212,6 +212,44 @@ def test_provider_rejects_non_https_control_origin():
         raise AssertionError("HTTP control origin must fail closed")
 
 
+def test_node_agent_rejects_malformed_bounded_source_fixture():
+    ensure_runtime_path()
+    from agents.pocketlab_node_agent import _photo_backup_source_fixture
+    from lite_photo_backup_agent import ACCEPTANCE_FIXTURE_SCOPE
+
+    valid_fixture = {
+        "fixture_id": "fixture-" + ("a" * 20),
+        "scope": ACCEPTANCE_FIXTURE_SCOPE,
+        "collection": "pictures",
+    }
+    assert _photo_backup_source_fixture(
+        {
+            "source_scope": ACCEPTANCE_FIXTURE_SCOPE,
+            "source_fixture": valid_fixture,
+        }
+    ) == valid_fixture
+    for payload in (
+        {
+            "source_scope": ACCEPTANCE_FIXTURE_SCOPE,
+            "source_fixture": None,
+        },
+        {
+            "source_scope": ACCEPTANCE_FIXTURE_SCOPE,
+            "source_fixture": "/arbitrary/path.jpg",
+        },
+        {
+            "source_scope": "collection",
+            "source_fixture": valid_fixture,
+        },
+        {
+            "source_scope": "unrecognized_scope",
+            "source_fixture": None,
+        },
+    ):
+        with pytest.raises(ValueError, match="source_fixture_invalid"):
+            _photo_backup_source_fixture(payload)
+
+
 def test_agent_credential_contract_rejects_arbitrary_destination(monkeypatch):
     module = _module()
     provider = module.PhotoPrismWebDAVProvider(

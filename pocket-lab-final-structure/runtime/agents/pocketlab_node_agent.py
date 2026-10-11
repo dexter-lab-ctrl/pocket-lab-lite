@@ -31,6 +31,7 @@ if str(AGENTS_DIR) not in sys.path:
 from resource_telemetry import collect_resource_telemetry
 from lite_system_profile import collect_system_health, collect_system_profile, unavailable_system_profile
 from lite_photo_backup_agent import (
+    ACCEPTANCE_FIXTURE_SCOPE,
     PhotoPrismWebDAVProvider,
     collect_photo_backup_capabilities,
     repair_rclone,
@@ -80,6 +81,23 @@ def token_hash(token: str) -> str:
 def telemetry_snapshot() -> Dict[str, Any]:
     """Collect the same canonical resource semantics used by the Server Host."""
     return collect_resource_telemetry(Path.home())
+
+
+def _photo_backup_source_fixture(payload: Dict[str, Any]) -> dict[str, Any] | None:
+    """Validate the source scope before scheduling any backup work.
+
+    A malformed bounded command must never be normalized to ``None`` because
+    the provider treats ``None`` as the legacy collection-wide inventory.
+    """
+    source_scope = str(payload.get("source_scope") or "collection").strip()
+    source_fixture = payload.get("source_fixture")
+    if source_scope == ACCEPTANCE_FIXTURE_SCOPE:
+        if not isinstance(source_fixture, dict):
+            raise ValueError("source_fixture_invalid")
+        return source_fixture
+    if source_scope != "collection" or source_fixture is not None:
+        raise ValueError("source_fixture_invalid")
+    return None
 
 
 
@@ -969,11 +987,12 @@ class PocketLabNodeAgent:
                 backup_id = str(command_payload.get("backup_id") or command_id)
                 credential_ref = str(command_payload.get("credential_ref") or "")
                 requested_collections = command_payload.get("collections")
-                source_fixture = (
-                    command_payload.get("source_fixture")
-                    if isinstance(command_payload.get("source_fixture"), dict)
-                    else None
-                )
+                source_fixture_error = ""
+                try:
+                    source_fixture = _photo_backup_source_fixture(command_payload)
+                except ValueError as exc:
+                    source_fixture = None
+                    source_fixture_error = str(exc)
                 collections = (
                     [str(item) for item in requested_collections if str(item) in {"camera", "pictures", "videos"}]
                     if isinstance(requested_collections, list)
@@ -981,6 +1000,14 @@ class PocketLabNodeAgent:
                 )
                 if not backup_id or not credential_ref:
                     result = {"message": "Photo backup request was incomplete.", "accepted": False}
+                    status = "failed"
+                elif source_fixture_error:
+                    result = {
+                        "message": "Photo backup source scope was invalid.",
+                        "accepted": False,
+                        "reason_code": source_fixture_error,
+                        "sanitized": True,
+                    }
                     status = "failed"
                 elif self.photo_backup_task and not self.photo_backup_task.done():
                     result = {"message": "Photo backup is already running.", "accepted": True, "backup_id": backup_id}
