@@ -6040,8 +6040,8 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_adapters.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog_live.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py",
         "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
         "scripts/docs/runtime/termux_runtime_probe.sh"

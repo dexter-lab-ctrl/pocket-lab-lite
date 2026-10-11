@@ -560,6 +560,13 @@
           "resolved": true,
           "source_module": "src/mocks/handlers.js",
           "usage": "mock"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
         }
       ],
       "id": "api:get:/api/lite/apps/{app_id}/actions",
@@ -20957,7 +20964,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4509",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4594",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1664"
       ],
       "stream": "incomplete",
@@ -20977,7 +20984,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4126",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4211",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1665"
       ],
       "stream": "incomplete",
@@ -20997,7 +21004,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4156",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4241",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1667"
       ],
       "stream": "incomplete",
@@ -21017,7 +21024,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4139",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4224",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1666"
       ],
       "stream": "incomplete",
@@ -21037,7 +21044,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4596",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4681",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1677"
       ],
       "stream": "incomplete",
@@ -21077,7 +21084,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4196",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4281",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1680"
       ],
       "stream": "incomplete",
@@ -21097,7 +21104,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4239",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4324",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1681"
       ],
       "stream": "incomplete",
@@ -21117,7 +21124,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4297",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4382",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1683"
       ],
       "stream": "incomplete",
@@ -21137,7 +21144,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4257",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4342",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1682"
       ],
       "stream": "incomplete",
@@ -21179,7 +21186,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4365",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4450",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1685"
       ],
       "stream": "incomplete",
@@ -21199,7 +21206,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4339",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4424",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1684"
       ],
       "stream": "incomplete",
@@ -21279,7 +21286,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4758",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4843",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1679"
       ],
       "stream": "incomplete",
@@ -21299,7 +21306,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4631",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4716",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1678"
       ],
       "stream": "incomplete",
@@ -21364,7 +21371,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1659",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py:11",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py:13",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:545"
       ],
       "stream": "POCKETLAB_COMMANDS",
@@ -21458,7 +21465,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3524"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3609"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22337,7 +22344,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3535"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3620"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22827,7 +22834,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:578",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:345"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:375"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22870,7 +22877,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:553",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:344"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:374"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -27823,6 +27830,16 @@
       "name": "tests/backend/test_lite_app_projection_deadline.py",
       "source_refs": [
         "tests/backend/test_lite_app_projection_deadline.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_app_registry.py",
+      "name": "tests/backend/test_lite_app_registry.py",
+      "source_refs": [
+        "tests/backend/test_lite_app_registry.py"
       ],
       "type": "test"
     },
@@ -33138,6 +33155,7 @@
         "test:tests/backend/test_lite_app_catalog_runtime_truth.py",
         "test:tests/backend/test_lite_app_lifecycle_none_operation_regression.py",
         "test:tests/backend/test_lite_app_projection_deadline.py",
+        "test:tests/backend/test_lite_app_registry.py",
         "test:tests/backend/test_lite_app_runtime_reconciliation.py",
         "test:tests/backend/test_lite_backup_locations.py",
         "test:tests/backend/test_lite_boot_recovery.py",
@@ -34583,6 +34601,7 @@
         "test:tests/backend/test_lite_app_catalog_runtime_truth.py",
         "test:tests/backend/test_lite_app_lifecycle_none_operation_regression.py",
         "test:tests/backend/test_lite_app_projection_deadline.py",
+        "test:tests/backend/test_lite_app_registry.py",
         "test:tests/backend/test_lite_app_runtime_reconciliation.py",
         "test:tests/backend/test_lite_backup_locations.py",
         "test:tests/backend/test_lite_boot_recovery.py",
@@ -43278,6 +43297,16 @@
       "test:tests/backend/test_lite_app_projection_deadline.py": [
         {
           "source": "reason:read_degraded",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_app_registry.py": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
           "type": "verified_by"
         }
       ],
@@ -57737,6 +57766,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_app_registry.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
           "type": "verified_by"
         },
@@ -65507,6 +65540,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_app_registry.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_app_runtime_reconciliation.py",
           "type": "verified_by"
         },
@@ -70019,7 +70056,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4239"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4324"
       ],
       "id": "rel:01d5bcfc59eaef09",
       "source": "component:lite-api",
@@ -80351,7 +80388,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4596"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4681"
       ],
       "id": "rel:4961dd30cdec3c93",
       "source": "component:lite-api",
@@ -80585,7 +80622,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4509"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4594"
       ],
       "id": "rel:4ae2f2e7982d1c97",
       "source": "component:lite-api",
@@ -83021,7 +83058,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3524"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3609"
       ],
       "id": "rel:5c6a7e8f20afd0c5",
       "source": "component:lite-api",
@@ -90719,7 +90756,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4156"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4241"
       ],
       "id": "rel:9622c3144190ef74",
       "source": "component:lite-api",
@@ -91111,7 +91148,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4297"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4382"
       ],
       "id": "rel:99ba9e8682cf6f1f",
       "source": "component:lite-api",
@@ -92921,6 +92958,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_app_registry.py"
+      ],
+      "id": "rel:a6a29636bb35d900",
+      "source": "component:photoprism",
+      "target": "test:tests/backend/test_lite_app_registry.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:a6b271a36683cc43",
@@ -92975,7 +93021,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4758"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4843"
       ],
       "id": "rel:a718626a5b5f2425",
       "source": "component:lite-api",
@@ -93966,7 +94012,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py:11"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py:13"
       ],
       "id": "rel:ae15a342f2429b56",
       "source": "component:scanner-adapters",
@@ -94038,7 +94084,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3535"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3620"
       ],
       "id": "rel:aeaad974edcf7064",
       "source": "component:lite-api",
@@ -94308,7 +94354,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4196"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4281"
       ],
       "id": "rel:b0e17c2e06af2e29",
       "source": "component:lite-api",
@@ -95932,7 +95978,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4339"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4424"
       ],
       "id": "rel:bd798d574b62754a",
       "source": "component:lite-api",
@@ -96483,7 +96529,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4257"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4342"
       ],
       "id": "rel:c146c302df54058b",
       "source": "component:lite-api",
@@ -98530,7 +98576,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4126"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4211"
       ],
       "id": "rel:d0ac21c0cffa28c9",
       "source": "component:lite-api",
@@ -99526,7 +99572,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4631"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4716"
       ],
       "id": "rel:d7a4bd398a93f098",
       "source": "component:lite-api",
@@ -103476,7 +103522,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4139"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4224"
       ],
       "id": "rel:f38477f0420ebc7b",
       "source": "component:lite-api",
@@ -104896,7 +104942,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4365"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4450"
       ],
       "id": "rel:fe30f428c2df7938",
       "source": "component:lite-api",
@@ -104965,6 +105011,15 @@
       "source": "component:api-domain-surfaces",
       "target": "api:get:/api/lite/security/summary",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_app_registry.py"
+      ],
+      "id": "rel:fe97c263e64c006d",
+      "source": "reason:disabled",
+      "target": "test:tests/backend/test_lite_app_registry.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -105094,9 +105149,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "9428680fa8e2428b6ab03a1c9153cf83601b2cf1a7b07f08e07c5ee04b89a94a",
+  "source_fingerprint": "fba8d21c6e5b814033f9520b5812f960404da32daa1fea70db8d07c3fa48ce1b",
   "statistics": {
-    "entity_count": 1362,
+    "entity_count": 1363,
     "entity_type_counts": {
       "adr": 6,
       "api": 230,
@@ -105113,14 +105168,14 @@
       "runtime-topology": 9,
       "subject": 220,
       "table": 81,
-      "test": 257,
+      "test": 258,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3903,
-    "source_count": 294
+    "relation_count": 3905,
+    "source_count": 295
   }
 }
