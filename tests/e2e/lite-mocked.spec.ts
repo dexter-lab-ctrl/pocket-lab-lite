@@ -842,7 +842,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     expect((resource.authority?.actions || []).map((item) => item.action_id)).toEqual(['app.open']);
   });
 
-  test('Identity app-resource authority and Apps Manage use the shared Enterprise projection', async ({ page }) => {
+  test('Identity app-resource authority and Apps Manage use the shared Enterprise projection', async ({ page, browser }) => {
     await installScenario(page, 'identity-enterprise-owner');
     await page.goto('/?screen=identity');
     const identity = page.locator('[data-lite-screen-id="identity"]');
@@ -852,11 +852,21 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(identity).toContainText('PhotoPrism');
     await expect(identity).toContainText(/You can manage this app|Shared authority/i);
 
-    await page.evaluate(() => window.localStorage.setItem('POCKETLAB_MOCK_SCENARIO', 'app-governance-full-access'));
-    await page.goto('/?screen=catalog');
-    const card = page.locator('[data-lite-screen-id="catalog"] .lite-catalog-app-card').filter({ hasText: 'PhotoPrism' }).first();
-    await card.getByRole('button', { name: 'Manage', exact: true }).click();
-    await expect(page.getByRole('dialog', { name: /Manage PhotoPrism/i })).toContainText('You can manage this app');
+    const catalogContext = await browser.newContext({
+      baseURL: new URL(page.url()).origin,
+      viewport: page.viewportSize(),
+    });
+    try {
+      const catalogPage = await catalogContext.newPage();
+      await installScenario(catalogPage, 'app-governance-full-access');
+      await catalogPage.goto('/?screen=catalog');
+      const catalog = catalogPage.locator('[data-lite-screen-id="catalog"]');
+      const card = catalog.locator('.lite-catalog-app-card').filter({ hasText: 'PhotoPrism' }).first();
+      await card.getByRole('button', { name: 'Manage', exact: true }).click();
+      await expect(catalogPage.getByRole('dialog', { name: /Manage PhotoPrism/i })).toContainText('You can manage this app');
+    } finally {
+      await catalogContext.close();
+    }
   });
 
   test('Rules app simulation stays what-if only and app recovery blocker projects in Recovery', async ({ page }) => {
@@ -884,7 +894,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     expect(executedAppMutations).toEqual([]);
 
     await page.evaluate(() => window.localStorage.setItem('POCKETLAB_MOCK_SCENARIO', 'app-governance-recovery-blocker'));
-    await page.goto('/?screen=recovery');
+    await page.getByRole('button', { name: 'Recovery', exact: true }).click();
     const recovery = page.locator('[data-lite-screen-id="recovery"]');
     await recovery.getByRole('button', { name: 'Manage backups and recovery' }).click();
     const sheet = page.getByRole('dialog', { name: 'Manage backups and recovery' });
