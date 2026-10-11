@@ -764,7 +764,7 @@ function LiteAppShell() {
       </nav>
 
       {menuOpen && <div className="mobile-more-backdrop" onClick={() => setMenuOpen(false)} aria-hidden="true" />}
-      <aside className={`mobile-more-sheet ${menuOpen ? 'mobile-more-sheet-open' : ''}`} aria-hidden={!menuOpen} aria-label="Pocket Lab Lite sections" data-lite-perf-primitive="navigation">
+      <aside className={`mobile-more-sheet ${menuOpen ? 'mobile-more-sheet-open' : ''}`} aria-hidden={!menuOpen} inert={!menuOpen ? true : undefined} aria-label="Pocket Lab Lite sections" data-lite-perf-primitive="navigation">
         <div className="flex items-center justify-between gap-3 border-b border-white/10 p-4">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-200">Sections</p>
