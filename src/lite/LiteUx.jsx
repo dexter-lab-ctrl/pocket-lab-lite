@@ -110,7 +110,7 @@ export function LiteActionOutcome({ result, className = '' }) {
 export function LiteConsequenceSummary({ value, className = '' }) {
   const info = confirmationPresentation(value || {});
   return (
-    <section className={`lite-ux-consequence-summary ${className}`.trim()}>
+    <section className={`lite-ux-consequence-summary ${className}`.trim()} aria-label="Action consequences" data-lite-design-primitive="consequence-summary">
       <div className="lite-ux-consequence-head"><ShieldCheck className="h-5 w-5" aria-hidden="true" /><div><strong>{info.title}</strong><p>{info.summary}</p></div></div>
       {info.will.length ? <div><span>This will</span><ul>{info.will.map((item) => <li key={item}>{item}</li>)}</ul></div> : null}
       {info.willNot.length ? <div><span>This will not</span><ul>{info.willNot.map((item) => <li key={item}>{item}</li>)}</ul></div> : null}

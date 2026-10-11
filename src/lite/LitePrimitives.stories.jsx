@@ -131,3 +131,11 @@ export const DetailsPanelOpen = {
     await expect(await body.findByRole('dialog', { name: 'Action details' })).toBeInTheDocument();
   },
 };
+
+export const P0BusyAction = {
+  render: () => shell(<LiteActionRow label="Backup" value="Waiting" summary="A backend operation is in progress." action={{ label: 'Back up now', busy: true, onClick: () => {} }} />),
+};
+
+export const P0UncertainOutcome = {
+  render: () => shell(<LiteOutcomeNotice outcome={{ tone: 'unknown', headline: 'Result not confirmed', summary: 'Pocket Lab has not confirmed completion.', nextAction: 'Reconnect and check current status before retrying.' }} />),
+};

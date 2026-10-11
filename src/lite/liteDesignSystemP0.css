@@ -1,0 +1,52 @@
+/* Pocket Lab Lite P0 shared design contract. Additive: existing light/dark themes retain authority. */
+:root {
+  --lite-p0-radius-card: 1.25rem;
+  --lite-p0-radius-control: .875rem;
+  --lite-p0-space-xs: .375rem;
+  --lite-p0-space-sm: .75rem;
+  --lite-p0-space-md: 1rem;
+  --lite-p0-space-lg: 1.5rem;
+  --lite-p0-touch-target: 44px;
+  --lite-p0-focus-ring: #2563eb;
+}
+.theme-pocket-lite-daylight {
+  --lite-p0-focus-ring: #1d4ed8;
+}
+.pocket-button, .lite-action-row button {
+  min-height: var(--lite-p0-touch-target);
+  border-radius: var(--lite-p0-radius-control);
+}
+.pocket-button:focus-visible,
+.lite-action-row :is(button, a):focus-visible,
+.lite-overlay-surface :is(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--lite-p0-focus-ring);
+  outline-offset: 3px;
+}
+.pocket-button[data-lite-button-state="busy"] {
+  cursor: progress;
+}
+.lite-action-row {
+  min-width: 0;
+}
+.lite-action-row :is(strong, p, small) {
+  overflow-wrap: anywhere;
+}
+.lite-action-row-trailing {
+  min-width: 0;
+}
+.lite-overlay-surface {
+  max-height: min(100dvh, var(--lite-visual-viewport-height, 100dvh));
+  overscroll-behavior: contain;
+}
+.lite-ux-consequence-summary {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 520px) {
+  .lite-action-row-trailing button { min-height: var(--lite-p0-touch-target); }
+  .lite-overlay-surface { max-width: 100vw; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pocket-button,
+  .lite-action-row,
+  .lite-ux-consequence-summary { scroll-behavior: auto; transition-duration: 0.01ms; animation-duration: 0.01ms; }
+}

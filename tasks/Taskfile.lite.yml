@@ -2,6 +2,18 @@ version: '3'
 
 tasks:
 
+  lite:ui:p0:unit:
+    desc: Run P0 shared design-system and safety component tests
+    cmds:
+      - npm run test -- src/lite/LiteDesignSystemP0.test.jsx
+
+  lite:ui:p0:regression:
+    desc: Run existing shared UI regression suites and component build checks
+    cmds:
+      - npm run test:mock-regression
+      - npm run build:budget
+
+
   lite:photo-backup:backend:
     desc: Run Photo Backup service and reliability backend tests
     cmds:

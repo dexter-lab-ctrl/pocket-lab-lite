@@ -43,6 +43,11 @@ const STATUS_LANGUAGE = {
   blocked: { label: 'Blocked', tone: 'danger' },
   offline: { label: 'Offline', tone: 'neutral' },
   unknown: { label: 'Unknown', tone: 'neutral' },
+  accepted: { label: 'Request accepted', tone: 'info' },
+  verifying: { label: 'Verifying', tone: 'info' },
+  uncertain: { label: 'Needs confirmation', tone: 'warning' },
+  saved: { label: 'Saved state', tone: 'neutral' },
+  stale: { label: 'May be outdated', tone: 'warning' },
 };
 
 function normalizeStatus(status) {
@@ -98,6 +103,11 @@ const STATUS_CLASS = {
   error: 'pocket-badge pocket-badge-danger',
   offline: 'pocket-badge pocket-badge-neutral',
   unknown: 'pocket-badge pocket-badge-neutral',
+  accepted: 'pocket-badge pocket-badge-info',
+  verifying: 'pocket-badge pocket-badge-info',
+  uncertain: 'pocket-badge pocket-badge-warning',
+  saved: 'pocket-badge pocket-badge-neutral',
+  stale: 'pocket-badge pocket-badge-warning',
 };
 
 export function PageShell({ eyebrow, title, description, actions, children, className = '' }) {
@@ -130,7 +140,7 @@ export function StatusBadge({ status = 'unknown', children, className = '', simp
   const normalized = normalizeStatus(status);
   const language = statusLanguage(normalized, { simpleMode });
   return (
-    <span className={`${STATUS_CLASS[normalized] || STATUS_CLASS[language.tone] || STATUS_CLASS.unknown} ${className}`} data-lite-perf-primitive="status-badge">
+    <span className={`${STATUS_CLASS[normalized] || STATUS_CLASS[language.tone] || STATUS_CLASS.unknown} ${className}`} data-lite-perf-primitive="status-badge" data-lite-status={normalized}>
       {children || language.label}
     </span>
   );
