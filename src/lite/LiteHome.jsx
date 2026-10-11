@@ -17,6 +17,7 @@ import { LiteFreshness, LiteTechnicalFacts } from './LiteUx.jsx';
 import { LiteDetailsPanel } from './LiteOverlay.jsx';
 import LiteReleaseUpdateCard from './LiteReleaseUpdateCard.jsx';
 import LiteNextSteps from './components/LiteNextSteps.jsx';
+import { prioritizeWorkspaceAttention } from './homeAttentionPriority.js';
 
 const HOME_WORKFLOW_STEPS = Object.freeze([
   { id: 'device', label: 'Device', icon: Smartphone },
@@ -165,7 +166,7 @@ export default function HomeScreen({
         title={overview.attentionCount ? "Review what needs attention" : "Your workspace at a glance"}
         description={effectiveSavedStateOnly ? "These details are saved, not verified live." : "Follow a known area to its current details."}
         saved={effectiveSavedStateOnly}
-        items={overview.keyAreas.filter((item) => item.tone !== "ready").slice(0, 3).map((item) => ({
+        items={prioritizeWorkspaceAttention(overview.keyAreas).slice(0, 3).map((item) => ({
           id: item.key, label: item.label, description: item.summary,
           actionLabel: "Open", onClick: item.screen && item.screen !== "home" ? () => goTo(item.screen) : undefined,
         }))}
