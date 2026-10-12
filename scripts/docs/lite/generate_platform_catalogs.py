@@ -30,7 +30,14 @@ SOURCE_GENERATED_AT = os.environ.get("SOURCE_GENERATED_AT", "").strip() or "unco
 SOURCE_COMMIT = os.environ.get("SOURCE_COMMIT", "").strip() or "uncommitted"
 GENERATOR = "scripts/docs/lite/generate_platform_catalogs.py"
 SCHEMA_REVISION = 1
-ABSOLUTE_PATH = re.compile(r"(?:/home/[^/\s]+|/tmp/|/mnt/[a-zA-Z]/|[A-Za-z]:\\Users\\)")
+# Require a path boundary before machine paths.  Without the boundary, an API
+# route such as ``/api/lite/home/activity-cursor`` is misclassified because it
+# contains the URL path segment ``/home/``.  The boundary still catches paths
+# at the start of a value or after normal Markdown/JSON delimiters while
+# excluding URL/path segments embedded in repository-relative strings.
+ABSOLUTE_PATH = re.compile(
+    r"(?<![A-Za-z0-9._/-])(?:/home/[^/\s]+|/tmp/|/mnt/[a-zA-Z]/|[A-Za-z]:\\Users\\)"
+)
 SECRET_VALUE = re.compile(
     r"(?:Bearer\s+[A-Za-z0-9._~+/=-]{8,}|-----BEGIN [^-]+PRIVATE KEY-----|"
     r"nats://[^\s/@:]+:[^\s/@]+@|tskey-[A-Za-z0-9_-]+)", re.I

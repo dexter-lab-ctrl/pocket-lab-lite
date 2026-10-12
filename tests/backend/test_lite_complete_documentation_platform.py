@@ -66,6 +66,23 @@ def test_frontend_api_mapping_resolves_active_calls_and_tracks_unused_backend_ro
     assert payload["frontend_api_usage"]["unsupported_frontend_routes"] == []
 
 
+def test_absolute_path_safety_does_not_reject_home_api_routes():
+    platform = load_module("platform_absolute_path_test", PLATFORM_PATH)
+    output_path = ROOT / "docs/reference/api/lite-api.md"
+    safe_route = '{"route": "/api/lite/home/activity-cursor"}'
+    assert platform.validate_output_safety({output_path: safe_route}) == []
+
+    unsafe_values = (
+        "/home/dj/pocket-lab-lite",
+        "/tmp/pocket-lab-lite",
+        "/mnt/c/Users/DJ/pocket-lab-lite",
+        r"C:\Users\DJ\pocket-lab-lite",
+    )
+    for value in unsafe_values:
+        errors = platform.validate_output_safety({output_path: value})
+        assert errors == ["absolute machine path in docs/reference/api/lite-api.md"], value
+
+
 def test_field_level_compatibility_detects_breaking_and_non_breaking_changes():
     platform = load_module("platform_compat_test", PLATFORM_PATH)
     baseline = {
