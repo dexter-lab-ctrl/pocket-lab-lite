@@ -1,3 +1,4 @@
+import { LiteProtectedConfirmation } from './components/LiteSafeForms.jsx';
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LiteField } from './components/LiteSafeForms.jsx';
 import {
@@ -1402,7 +1403,7 @@ export default function DevicesScreen() {
                   <div><span>Last seen</span><strong>{formatLiteTime(removeCandidate.last_seen)}</strong></div>
                 </div>
 
-                <LiteConsequenceSummary value={{
+                <LiteProtectedConfirmation value={{
                   title: 'Before this device is removed',
                   summary: 'Pocket Lab removes only this device relationship after the safety check passes.',
                   will: ['Remove the saved device relationship from this Pocket Lab.', 'Stop Pocket Lab from sending new actions to this device.'],
