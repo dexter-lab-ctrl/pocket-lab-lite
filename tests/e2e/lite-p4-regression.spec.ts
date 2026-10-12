@@ -31,6 +31,8 @@ for (const [id, title] of SCREENS) {
       return box.right > document.documentElement.clientWidth + 2 || box.left < -2;
     });
     expect(overflow, `${id} page container should fit viewport`).toBe(false);
+    const documentOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 2);
+    expect(documentOverflow, `${id} must not scroll horizontally`).toBe(false);
   });
 }
 
@@ -51,12 +53,8 @@ for (const [id, scenario, title] of GUIDANCE) {
     await waitForLiteScreenToSettle(page, id);
     const root = page.locator(`[data-lite-screen-id="${id}"]`);
     const section = root.getByRole('region', { name: title });
-    // Some guidance components omit the container when no findings exist.
-    // Do not fabricate information solely to satisfy an assertion.
-    if (await section.count()) {
-      await expect(section).toBeVisible();
-      expect(await section.locator('li, dt').count()).toBeLessThanOrEqual(5);
-    }
+    await expect(section).toBeVisible();
+    expect(await section.locator('li, dt').count()).toBeLessThanOrEqual(5);
   });
 }
 
@@ -92,10 +90,9 @@ test('P4: saved Home guidance cannot navigate from stale evidence', async ({ pag
   await page.goto('/?screen=home');
   await waitForLiteScreenToSettle(page, 'home');
   const guidance = page.locator('[data-lite-p1-guidance="true"]');
-  if (await guidance.count()) {
-    await expect(guidance).toHaveAttribute('data-lite-information', 'saved');
-    await expect(guidance.getByRole('button')).toHaveCount(0);
-  }
+  await expect(guidance).toBeVisible();
+  await expect(guidance).toHaveAttribute('data-lite-information', 'saved');
+  await expect(guidance.getByRole('button')).toHaveCount(0);
 });
 
 test('P4: narrow viewport and 200% text retain usable navigation', async ({ page }) => {
