@@ -2,6 +2,12 @@ version: '3'
 
 tasks:
 
+  lite:ui:p4:visual-review:
+    desc: Compare committed P4 visual contracts against manually approved reference snapshots
+    cmds:
+      - npm exec playwright test tests/e2e/lite-p4-visual-contract.spec.ts -- --project=mocked-desktop --project=mocked-mobile
+
+
   lite:ui:personal-history:backend:
     desc: Validate durable per-human reviewed revision, source projection and authenticated routes
     cmds:
