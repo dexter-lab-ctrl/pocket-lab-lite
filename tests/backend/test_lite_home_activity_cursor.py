@@ -20,7 +20,7 @@ def test_review_cursor_is_durable_per_person(tmp_path, monkeypatch):
     state=isolated_state_dir(tmp_path)
     monkeypatch.setenv("POCKETLAB_LITE_DB_PATH",str(state / "lite.sqlite3"))
     monkeypatch.setenv("POCKETLAB_STATE_DIR",str(state))
-    SQLITE_READS.close_all()
+    SQLITE_READS.close()
     try:
         assert cursor.read_cursor("human-a")["history_revision"] == 0
         assert cursor.mark_reviewed("human-a",7)["history_revision"] == 7
@@ -28,4 +28,4 @@ def test_review_cursor_is_durable_per_person(tmp_path, monkeypatch):
         assert cursor.mark_reviewed("human-a",3)["history_revision"] == 7
         assert cursor.read_cursor("human-a")["last_reviewed_at"]
     finally:
-        SQLITE_READS.close_all()
+        SQLITE_READS.close()
