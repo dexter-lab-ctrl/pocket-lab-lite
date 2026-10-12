@@ -2,6 +2,26 @@ version: '3'
 
 tasks:
 
+  lite:ui:p4:unit:
+    cmds:
+      - npm run test -- src/lite/LiteDesignSystemP0.test.jsx src/lite/components/LiteNextSteps.test.jsx src/lite/components/LiteEvidenceGuide.test.jsx src/lite/components/LiteQuickNavigate.test.jsx
+
+  lite:ui:p4:mocked:
+    cmds:
+      - npm run test:ui:p4:mocked
+
+  lite:ui:p4:full-mocked:
+    cmds:
+      - npm run test:ui:p4:mocked
+      - npm run test:mock-regression
+      - npm run test:perf:mocked
+      - npm run build:budget
+
+  lite:ui:shared-home-apps:unit:
+    cmds:
+      - npm run test -- src/lite/components/LiteSafeForms.test.jsx src/lite/homeAttentionPriority.test.js src/lite/homeActivityEvidence.test.js src/lite/catalog/catalogPresentation.test.js
+
+
   lite:photo-backup:backend:
     desc: Run Photo Backup service and reliability backend tests
     cmds:
