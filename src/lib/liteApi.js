@@ -253,6 +253,8 @@ export const liteApi = {
   storagePressure: conditionalGet('/api/lite/system/storage-pressure'),
   sqliteHealth: conditionalGet('/api/lite/system/sqlite-health'),
   activitySummary: conditionalGet('/api/lite/system/activity-summary'),
+  homeActivityCursor: () => readJson('/api/lite/home/activity-cursor'),
+  reviewHomeActivityCursor: () => postJson('/api/lite/home/activity-cursor/review', {}),
   lifecycleDiagnosticsChallenge: () => readJson('/api/lite/diagnostics/frontend-lifecycle/challenge'),
   recordLifecycleDiagnostics: (challengeId, report = {}) => postJson('/api/lite/diagnostics/frontend-lifecycle', { challenge_id: challengeId, report }),
   catalog: safeGet('/api/lite/catalog'),
