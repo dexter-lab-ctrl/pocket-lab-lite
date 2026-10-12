@@ -1,3 +1,4 @@
+import { LiteProtectedConfirmation } from '../components/LiteSafeForms.jsx';
 import LiteNextSteps from '../components/LiteNextSteps.jsx';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { filterCatalogApps, sortCatalogApps } from './catalogPresentation.js';
@@ -3348,7 +3349,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
               Protected user data and existing backups are preserved by default.
             </p>
           </div>
-          <LiteConsequenceSummary value={{
+          <LiteProtectedConfirmation value={{
             title: `Before ${removeConfirmApp.name || 'this app'} is removed`,
             summary: 'Review the effect on this app before continuing.',
             will: [`Remove the ${removeConfirmApp.name || 'app'} service and its Pocket Lab access route when removal is available.`],
