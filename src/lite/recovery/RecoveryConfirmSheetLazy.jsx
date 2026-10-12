@@ -2,7 +2,7 @@ import React from 'react';
 import { ArchiveRestore, Database, ShieldCheck } from 'lucide-react';
 import { formatLiteTime } from '../../lib/liteApi.js';
 import { LiteButton, StatusBadge } from '../LiteUi.jsx';
-import { LiteProtectedConfirmation } from '../components/LiteSafeForms.jsx';
+import { LiteConsequenceSummary } from '../LiteUx.jsx';
 
 function formatSize(bytes) {
   const value = Number(bytes || 0);
@@ -47,7 +47,8 @@ export default function RecoveryConfirmSheetLazy({
         {!databaseRestore ? <span>Restore to: This Server Phone</span> : null}
       </section>
 
-      <LiteProtectedConfirmation value={{
+      <div className="lite-safe-protected-confirmation" data-lite-confirmation-contract="server-owned">
+        <LiteConsequenceSummary value={{
         title: 'Before Pocket Lab restores anything',
         summary: 'Pocket Lab will create a safety checkpoint first and check the workspace again afterward.',
         will: [
@@ -61,7 +62,8 @@ export default function RecoveryConfirmSheetLazy({
         ],
         reversible: 'The pre-restore checkpoint is kept so recovery has a known safe point.',
         availability: 'Pocket Lab may briefly restart protected services while the restore is verified.',
-      }} />
+        }} />
+      </div>
 
       {includedComponents.length || excludedComponents.length ? (
         <section className="lite-recovery-native-confirm-section" aria-label="Restore scope">

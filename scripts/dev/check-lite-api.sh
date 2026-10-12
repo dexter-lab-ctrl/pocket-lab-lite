@@ -126,10 +126,17 @@ try:
             f"after {attempts} attempts"
         )
 
-    remove = c.post("/api/lite/catalog/remove", json={"name": "demo"})
-    assert remove.status_code == 501, (
-        "catalog remove should fail closed with 501, "
+    remove = c.post(
+        "/api/lite/catalog/remove",
+        json={"app_id": "demo", "confirm": True},
+    )
+    assert remove.status_code == 404, (
+        "catalog remove should fail closed for an unregistered app with 404, "
         f"got {remove.status_code}: {remove.text}"
+    )
+    assert "not registered" in remove.text.lower(), (
+        "catalog remove should identify an unregistered app, "
+        f"got {remove.text}"
     )
 
     restore = c.post(

@@ -4,6 +4,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('./LiteReleaseUpdateCard.jsx', () => ({ default: () => null }));
+vi.mock('../hooks/useLiteQuery.js', () => ({ useLiteQuery: () => ({ data: null }) }));
 
 import HomeScreen from './LiteHome.jsx';
 

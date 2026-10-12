@@ -57,9 +57,9 @@ export function LiteRefreshButton({
       <LiteButton
         onClick={handleClick}
         tone={tone}
-        disabled={disabled || isRefreshing}
+        disabled={disabled}
+        busy={isRefreshing}
         ariaLabel={isRefreshing ? 'Refreshing…' : label}
-        aria-busy={isRefreshing}
         aria-live="polite"
         className="lite-refresh-button"
         data-lite-refresh-state={isRefreshing ? 'refreshing' : 'idle'}
@@ -847,7 +847,7 @@ export function LiteButton({ children, onClick, disabled = false, busy = false, 
       onClick={handleClick}
       disabled={disabled || busy}
       aria-disabled={disabled || busy ? 'true' : undefined}
-      aria-busy={busy || undefined}
+      aria-busy={busy ? 'true' : 'false'}
       aria-label={ariaLabel}
       title={disabledReason || title || ariaLabel}
       className={`pocket-button ${toneClass} ${className}`.trim()}

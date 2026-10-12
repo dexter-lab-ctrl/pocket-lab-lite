@@ -175,7 +175,7 @@ function DeviceRelationshipMap({ devices = [] }) {
       <div className="lite-device-relationship-head">
         <span>Your device connections</span>
         <strong>{connectionSummary}</strong>
-        <p>Each line shows the backend-reported connection to the protected Pocket Lab Server. Status text remains available without relying on color or motion.</p>
+        <p>Each line shows the Pocket Lab-reported connection to the protected Pocket Lab Server. Status text remains available without relying on color or motion.</p>
       </div>
       {peers.length ? (
         <div className="lite-device-relationship-summary" aria-label="Connection state summary">
@@ -570,7 +570,7 @@ function remoteAccessDetailRows(remoteAccess = {}, remoteAccessView = {}, savedS
   const hasAddress = Boolean(remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip);
   const checkedAt = remoteAccess.checked_at || remoteAccess.updated_at || remoteAccessView.checked_at || remoteAccessView.updated_at;
   return [
-    { label: 'Evidence', value: savedStateOnly ? 'Saved backend snapshot' : 'Current backend check' },
+    { label: 'Evidence', value: savedStateOnly ? 'Saved workspace snapshot' : 'Current connection check' },
     { label: 'Tailscale service', value: running === true ? 'Running' : running === false ? 'Not running' : 'Not reported' },
     { label: 'Tailscale IP', value: hasAddress ? `Available · ${remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip}` : remoteAccessView.tailnet_ip_ready ? 'Ready' : 'Not ready' },
     { label: 'Private command path', value: natsReachable === true ? 'Reachable' : natsReachable === false ? 'Not reachable' : 'Not reported' },
