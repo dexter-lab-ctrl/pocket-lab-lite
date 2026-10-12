@@ -1117,6 +1117,37 @@ export const handlers = [
       },
     });
   }),
+  http.get('/api/lite/system/activity-summary', ({ request }) => {
+    const savedScenario = scenario() === 'nats-down';
+    return HttpResponse.json({
+      status: savedScenario ? 'degraded' : 'healthy',
+      summary: savedScenario ? 'Saved activity information is available while the workspace reconnects.' : 'Recent workspace activity is prepared for review.',
+      active_operations: 0,
+      attention_required: 0,
+      recent_completed: 1,
+      latest_change: { summary: 'Workspace activity projection is current.' },
+      recent_events: savedScenario ? [] : [{ domain: 'apps', status: 'completed', occurred_at_epoch_ms: Date.parse(mockIso(-5 * 60 * 1000)) }],
+      history_available: true,
+      read_degraded: savedScenario,
+      projection_only: true,
+      sanitized: true,
+      source_revision: 1,
+      projection_revision: 1,
+      updated_at: mockIso(),
+    }, { headers: liteSafeReadHeaders(request) });
+  }),
+  http.get('/api/lite/home/activity-cursor', () => HttpResponse.json({
+    history_revision: 1,
+    reviewed_revision: 1,
+    changed_since_review: false,
+    last_reviewed_at: mockIso(-60 * 60 * 1000),
+  }, { headers: { 'Cache-Control': 'private, no-store' } })),
+  http.post('/api/lite/home/activity-cursor/review', () => HttpResponse.json({
+    history_revision: 1,
+    reviewed_revision: 1,
+    changed_since_review: false,
+    last_reviewed_at: mockIso(),
+  }, { headers: { 'Cache-Control': 'private, no-store' } })),
   http.get('/api/lite/catalog', ({ request }) => {
     const currentScenario = rawScenario();
     const multiApp = currentScenario === 'catalog-multi-app';
