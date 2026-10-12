@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 50502985437b45636d8baab7275cfd3e099f16882aae52ae8cfb5408256ef0be
+source_fingerprint: 0ed20f92fb3be6d72ff1ff0c61f98a05ac203fe5dbb6ae0979973d1531b275b6
 schema_revision: 1
 validation_status: generated
 ---
@@ -2944,6 +2944,37 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-home-activity-cursor"></a>
+## GET `/api/lite/home/activity-cursor`
+
+- Operation ID: `get_lite_home_activity_cursor_api_lite_home_activity_cursor_get`
+- Summary: Get Lite Home Activity Cursor
+- Deprecated: no
+- Tags: `lite`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-home-activity-cursor-review"></a>
+## POST `/api/lite/home/activity-cursor/review`
+
+- Operation ID: `review_lite_home_activity_api_lite_home_activity_cursor_review_post`
+- Summary: Review Lite Home Activity
+- Deprecated: no
+- Tags: `lite`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-identity"></a>

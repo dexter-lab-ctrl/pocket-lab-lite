@@ -1,4 +1,6 @@
+import { LiteProtectedConfirmation } from './components/LiteSafeForms.jsx';
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { LiteField } from './components/LiteSafeForms.jsx';
 import {
   Activity,
   CheckCircle2,
@@ -99,6 +101,7 @@ import LiteVirtualList from './components/LiteVirtualList.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 import { loadDeviceCard } from './devices/devicesPreload.js';
 import { isLitePerformanceMode } from './liteNavigationRuntime.js';
+import LiteNextSteps from './components/LiteNextSteps.jsx';
 
 const MemoLiteVirtualList = React.memo(LiteVirtualList);
 const DeviceCardLazy = React.lazy(loadDeviceCard);
@@ -172,7 +175,7 @@ function DeviceRelationshipMap({ devices = [] }) {
       <div className="lite-device-relationship-head">
         <span>Your device connections</span>
         <strong>{connectionSummary}</strong>
-        <p>Each line shows the backend-reported connection to the protected Pocket Lab Server. Status text remains available without relying on color or motion.</p>
+        <p>Each line shows the Pocket Lab-reported connection to the protected Pocket Lab Server. Status text remains available without relying on color or motion.</p>
       </div>
       {peers.length ? (
         <div className="lite-device-relationship-summary" aria-label="Connection state summary">
@@ -567,7 +570,7 @@ function remoteAccessDetailRows(remoteAccess = {}, remoteAccessView = {}, savedS
   const hasAddress = Boolean(remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip);
   const checkedAt = remoteAccess.checked_at || remoteAccess.updated_at || remoteAccessView.checked_at || remoteAccessView.updated_at;
   return [
-    { label: 'Evidence', value: savedStateOnly ? 'Saved backend snapshot' : 'Current backend check' },
+    { label: 'Evidence', value: savedStateOnly ? 'Saved workspace snapshot' : 'Current connection check' },
     { label: 'Tailscale service', value: running === true ? 'Running' : running === false ? 'Not running' : 'Not reported' },
     { label: 'Tailscale IP', value: hasAddress ? `Available · ${remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip}` : remoteAccessView.tailnet_ip_ready ? 'Ready' : 'Not ready' },
     { label: 'Private command path', value: natsReachable === true ? 'Reachable' : natsReachable === false ? 'Not reachable' : 'Not reported' },
@@ -1072,6 +1075,19 @@ export default function DevicesScreen() {
         lastUpdatedLabel={lastUpdatedLabel}
         backendReachable={backendReachable}
       />
+      <LiteNextSteps
+        title="Connection review"
+        description="Connection and remote access are separate checks. Review the affected device before sending a command."
+        saved={savedStateOnly || isExpired}
+        items={[
+          ...devices.filter((device) => deviceLinkState(device) !== "joined" && deviceLinkState(device) !== "server").map((device) => ({
+            id: String(device.id || device.name), label: device.name || "Device",
+            description: deviceLinkState(device) === "repairing" ? "Connection is being repaired." : "Device connection is not confirmed.",
+            actionLabel: "Review device", onClick: () => toggleDeviceDetails(String(device.id || device.name)),
+          })),
+          ...(!remoteAccessReady ? [{ id: "remote-access", label: "Remote access not ready", description: remoteAccessView.summary || "Review Tailnet connectivity below." }] : []),
+        ]}
+      />
       <DeviceRelationshipMap devices={devices} />
 
       <section className={`lite-remote-access-panel ${remoteAccessReady ? 'lite-remote-access-ready' : 'lite-remote-access-not-ready'}`} aria-live="polite">
@@ -1130,9 +1146,7 @@ export default function DevicesScreen() {
             Create a simple invite for another phone, tablet, or small server you want to connect.
           </p>
 
-          <label className="lite-devices-field-label" htmlFor="device-name">
-            Device name
-          </label>
+          <LiteField label="Device name" id="device-name" hint="Use a recognizable name for this device." error={activeNameConflict ? 'A device with this name already exists.' : ''}>
           <input
             id="device-name"
             className="pocket-input lite-devices-input"
@@ -1145,6 +1159,7 @@ export default function DevicesScreen() {
             placeholder="Optional, for example: Kitchen tablet"
             aria-label="Device name"
           />
+          </LiteField>
 
           {activeNameConflict ? (
             <div className="lite-devices-name-conflict" role="alert">
@@ -1388,7 +1403,7 @@ export default function DevicesScreen() {
                   <div><span>Last seen</span><strong>{formatLiteTime(removeCandidate.last_seen)}</strong></div>
                 </div>
 
-                <LiteConsequenceSummary value={{
+                <LiteProtectedConfirmation value={{
                   title: 'Before this device is removed',
                   summary: 'Pocket Lab removes only this device relationship after the safety check passes.',
                   will: ['Remove the saved device relationship from this Pocket Lab.', 'Stop Pocket Lab from sending new actions to this device.'],

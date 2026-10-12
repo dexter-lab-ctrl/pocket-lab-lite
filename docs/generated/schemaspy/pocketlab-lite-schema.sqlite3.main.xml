@@ -1528,6 +1528,18 @@
             <column ascending="true" name="event_id"/>
          </index>
       </table>
+      <table name="lite_home_activity_read_cursors" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="1" name="history_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="last_reviewed_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="human_id" sequenceNumberInPK="1"/>
+         <index name="lite_home_activity_read_cursors_s_pk" unique="true">
+            <column ascending="true" name="human_id"/>
+         </index>
+         <index name="sqlite_autoindex_lite_home_activity_read_cursors_1" unique="true">
+            <column ascending="true" name="human_id"/>
+         </index>
+      </table>
       <table name="lite_installed_release_identity" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="owner" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="1" digits="0" id="1" name="schema_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">

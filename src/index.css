@@ -2197,6 +2197,14 @@ textarea {
   transition: transform 150ms ease, box-shadow 150ms ease, filter 150ms ease;
 }
 
+/* Lite uses the daylight ink palette while the shared field token defaults to
+   a dark surface. Keep form controls readable in the rendered theme and in
+   automated contrast checks. */
+.theme-pocket-lite-daylight .lite-safe-field :is(input, textarea, select) {
+  background: var(--lite-surface-strong, #ffffff);
+  color: var(--lite-ink, #0f172a);
+}
+
 .theme-pocket-lite-daylight .pocket-button::after {
   content: "";
   position: absolute;

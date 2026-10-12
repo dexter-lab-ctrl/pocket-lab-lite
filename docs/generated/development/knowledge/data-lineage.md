@@ -23,6 +23,7 @@ Verified relationships are generated from frontend API usage, parity field mappi
 | `GET /api/lite/devices/{device_id}/removal-assessment` | ui:litedevices | — | unvalidated |
 | `GET /api/lite/fleet` | ui:litedevices, ui:literulesenterprise | table:device_awareness_state, table:device_enrollment_registry, table:device_health_attention, table:device_health_current, table:device_health_transitions, table:device_heartbeats, table:device_identity_guards, table:device_invite_lifecycle, table:device_lifecycle_events, table:device_lifecycle_transactions, table:device_recovery_history, table:device_removal_receipts, table:device_role_assignments, table:device_role_change_operations, table:device_supervisor_state, table:device_system_profiles | contract-derived |
 | `GET /api/lite/fleet/devices/{node_id}/restart-agent/status` | ui:litedevices | — | unvalidated |
+| `GET /api/lite/home/activity-cursor` | ui:litehome | — | unvalidated |
 | `GET /api/lite/identity/owner-claim/status` | ui:liteidentity | — | unvalidated |
 | `GET /api/lite/policy` | ui:literules | — | unvalidated |
 | `GET /api/lite/recovery/apps` | ui:literecovery | — | unvalidated |
@@ -39,10 +40,12 @@ Verified relationships are generated from frontend API usage, parity field mappi
 | `GET /api/lite/security/profiles/{profile}` | ui:litesecurity | table:security_database_backups, table:security_database_restores, table:security_maintenance_runs, table:security_profile_snapshots, table:security_scan_evidence_refs, table:security_scan_findings, table:security_scan_progress_events, table:security_scan_tool_runs, table:security_store_metadata | contract-derived |
 | `GET /api/lite/security/progress` | ui:litesecurity | — | unvalidated |
 | `GET /api/lite/security/summary` | ui:litesecurity | table:security_database_backups, table:security_database_restores, table:security_maintenance_runs, table:security_profile_snapshots, table:security_scan_evidence_refs, table:security_scan_findings, table:security_scan_progress_events, table:security_scan_tool_runs, table:security_store_metadata | contract-derived |
+| `GET /api/lite/system/activity-summary` | ui:litehome | — | unvalidated |
 | `POST /api/lite/apps/{app_id}/backup` | ui:literecovery | — | unvalidated |
 | `POST /api/lite/fleet/add-device` | ui:litedevices | — | unvalidated |
 | `POST /api/lite/fleet/devices/{node_id}/restart-agent` | ui:litedevices | — | unvalidated |
 | `POST /api/lite/fleet/remove-device` | ui:litedevices | — | unvalidated |
+| `POST /api/lite/home/activity-cursor/review` | ui:litehome | — | unvalidated |
 | `POST /api/lite/identity/login` | ui:liteidentity | — | unvalidated |
 | `POST /api/lite/identity/logout` | ui:liteidentity | — | unvalidated |
 | `POST /api/lite/identity/owner-claim/consume` | ui:liteidentity | — | unvalidated |

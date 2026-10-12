@@ -1,0 +1,18 @@
+/* P2: safe semantic summaries across Safety, Access and Rules. */
+.lite-p2-evidence-guide { display:grid; gap:1rem; margin:1rem 0; padding:clamp(1rem,2vw,1.5rem); border-radius:var(--lite-p0-radius-card,1.25rem); border:1px solid var(--pocket-border,rgba(148,163,184,.2)); color:var(--pocket-text,inherit); background:var(--pocket-surface,rgba(15,23,42,.75)); }
+.lite-p2-evidence-header { display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:.5rem 1rem; }
+.lite-p2-evidence-header span { font-size:.75rem; text-transform:uppercase; letter-spacing:.04em; opacity:.75; }
+.lite-p2-evidence-header h2 { font-size:1.125rem; font-weight:750; margin:.125rem 0; }
+.lite-p2-evidence-header p,.lite-p2-evidence-caution { margin:.25rem 0 0; line-height:1.5; font-size:.875rem; overflow-wrap:anywhere; }
+.lite-p2-evidence-header small { font-size:.75rem; max-width:21rem; }
+.lite-p2-evidence-facts { margin:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr)); gap:.65rem; }
+.lite-p2-evidence-facts>div { min-width:0; padding:.8rem; border:1px solid var(--pocket-border,rgba(148,163,184,.2)); border-radius:.875rem; }
+.lite-p2-evidence-facts dt { font-size:.75rem; opacity:.76; }
+.lite-p2-evidence-facts dd { margin:.25rem 0; font-weight:700; overflow-wrap:anywhere; }
+.lite-p2-evidence-facts small { display:block; font-size:.75rem; opacity:.8; overflow-wrap:anywhere; }
+.lite-p2-evidence-caution { padding:.75rem; border-inline-start:3px solid var(--pocket-warning,#d97706); background:rgba(217,119,6,.08); }
+.lite-p2-evidence-guide[data-lite-information="saved"] { border-style:dashed; }
+@media(max-width:520px){ .lite-p2-evidence-guide { gap:.75rem; } .lite-p2-evidence-facts { grid-template-columns:1fr; } }
+@media(prefers-reduced-motion:reduce){ .lite-p2-evidence-guide * { animation:none !important; transition:none !important; } }
+
+.lite-p2-evidence-more{min-height:44px;padding:.6rem .9rem;border:1px solid currentColor;border-radius:.7rem;justify-self:start;font-weight:650}.lite-p2-evidence-more:focus-visible{outline:2px solid var(--lite-p0-focus-ring,#2563eb);outline-offset:3px}.lite-p2-evidence-source{font-size:.8rem;opacity:.85;line-height:1.5;overflow-wrap:anywhere}

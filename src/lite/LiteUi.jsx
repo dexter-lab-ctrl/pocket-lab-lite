@@ -57,9 +57,9 @@ export function LiteRefreshButton({
       <LiteButton
         onClick={handleClick}
         tone={tone}
-        disabled={disabled || isRefreshing}
+        disabled={disabled}
+        busy={isRefreshing}
         ariaLabel={isRefreshing ? 'Refreshing…' : label}
-        aria-busy={isRefreshing}
         aria-live="polite"
         className="lite-refresh-button"
         data-lite-refresh-state={isRefreshing ? 'refreshing' : 'idle'}
@@ -825,7 +825,7 @@ export function PageHeader({ eyebrow = 'Pocket Lab Lite', title, description, ac
   );
 }
 
-export function LiteButton({ children, onClick, disabled = false, tone = 'primary', type = 'button', haptic = false, ariaLabel, title, className = '', buttonRef = null, ...buttonProps }) {
+export function LiteButton({ children, onClick, disabled = false, busy = false, disabledReason = '', tone = 'primary', type = 'button', haptic = false, ariaLabel, title, className = '', buttonRef = null, ...buttonProps }) {
   const toneClass = {
     primary: 'pocket-button-primary',
     secondary: 'pocket-button-secondary',
@@ -834,7 +834,7 @@ export function LiteButton({ children, onClick, disabled = false, tone = 'primar
   }[tone] || 'pocket-button-secondary';
 
   function handleClick(event) {
-    if (disabled) return;
+    if (disabled || busy) return;
     if (haptic) triggerLiteHaptic('accepted');
     if (onClick) onClick(event);
   }
@@ -845,14 +845,18 @@ export function LiteButton({ children, onClick, disabled = false, tone = 'primar
       ref={buttonRef}
       type={type}
       onClick={handleClick}
-      disabled={disabled}
+      disabled={disabled || busy}
+      aria-disabled={disabled || busy ? 'true' : undefined}
+      aria-busy={busy ? 'true' : 'false'}
       aria-label={ariaLabel}
-      title={title || ariaLabel}
+      title={disabledReason || title || ariaLabel}
       className={`pocket-button ${toneClass} ${className}`.trim()}
       data-lite-perf-primitive="button"
+      data-lite-button-state={busy ? 'busy' : disabled ? 'disabled' : 'ready'}
       data-lite-perf-motion="compositor"
     >
       {children}
+      {disabledReason && disabled ? <span className="sr-only"> — {disabledReason}</span> : null}
     </button>
   );
 }
@@ -964,7 +968,7 @@ export function LiteOperationalStory({ story, primaryAction, manageAction, class
 
 export function LiteActionRow({ label, value = '', summary = '', action, disabledReason = '', attention = false, className = '' }) {
   return (
-    <div className={`lite-action-row ${attention ? 'is-attention' : ''} ${className}`.trim()}>
+    <div className={`lite-action-row ${attention ? 'is-attention' : ''} ${className}`.trim()} data-lite-design-primitive="action-row">
       <div>
         <strong>{friendlyLiteText(label)}</strong>
         {summary ? <p>{friendlyLiteText(summary)}</p> : null}
@@ -972,7 +976,7 @@ export function LiteActionRow({ label, value = '', summary = '', action, disable
       </div>
       <div className="lite-action-row-trailing">
         {value ? <span>{friendlyLiteText(value)}</span> : null}
-        {action?.label ? <LiteButton onClick={action.onClick} disabled={Boolean(action.disabled)} tone={action.tone || 'secondary'} ariaLabel={action.ariaLabel || action.label}>{action.label}</LiteButton> : null}
+        {action?.label ? <LiteButton onClick={action.onClick} disabled={Boolean(action.disabled)} busy={Boolean(action.busy)} disabledReason={disabledReason || action.disabledReason || ''} tone={action.tone || 'secondary'} ariaLabel={action.ariaLabel || action.label}>{action.label}</LiteButton> : null}
       </div>
     </div>
   );
@@ -1014,7 +1018,7 @@ export function LiteFlowStatusPanel({ title = 'Guided step', label = 'Getting re
   if (!safeSteps.length && !label && !note) return null;
 
   return (
-    <div className={`lite-flow-status-panel lite-flow-status-${tone} ${className}`.trim()} aria-live="polite">
+    <div className={`lite-flow-status-panel lite-flow-status-${tone} ${className}`.trim()} aria-live="polite" aria-label={title} data-lite-design-primitive="operation-progress">
       <div className="lite-flow-status-head">
         <span>{title}</span>
         <strong>{label}</strong>

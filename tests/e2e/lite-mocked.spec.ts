@@ -734,7 +734,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(devices.locator('.lite-remote-access-details')).not.toHaveAttribute('open', '');
     await devices.locator('.lite-remote-access-details > summary').click();
     const remoteDetails = devices.locator('.lite-remote-access-details');
-    await expect(remoteDetails).toContainText('Current backend check');
+    await expect(remoteDetails).toContainText('Current connection check');
     await expect(remoteDetails).toContainText('Tailscale service');
     await expect(remoteDetails).toContainText('Running');
     await expect(remoteDetails).toContainText('100.64.0.10');

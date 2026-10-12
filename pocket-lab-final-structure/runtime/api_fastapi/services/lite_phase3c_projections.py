@@ -490,6 +490,7 @@ _ACTIVITY_CURRENT_SEMANTIC_KEYS = (
 _ACTIVITY_HISTORY_SEMANTIC_KEYS = (
     "recent_completed",
     "latest_change",
+    "recent_events",
     "workflows",
     "audit_reference_count",
     "item_count",
@@ -689,6 +690,14 @@ def collect_activity_history() -> dict[str, Any]:
                 "summary": workflows[domain]["latest_summary"],
                 "order": int(latest.get("updated_at_epoch_ms") or 0),
             })
+    # Bounded, sanitized timeline: no IDs, paths, credentials, raw evidence or user text.
+    recent_events = sorted((
+        {"domain": domain, "status": _safe_status(item.get("status")),
+         "occurred_at_epoch_ms": max(0, int(item.get("updated_at_epoch_ms") or 0))}
+        for domain, items in domain_rows.items()
+        for item in items
+        if int(item.get("updated_at_epoch_ms") or 0) > 0
+    ), key=lambda event: (-event["occurred_at_epoch_ms"], event["domain"]))[:12]
     latest_change = (
         max(latest_candidates, key=lambda item: (item["order"], item["domain"]))
         if latest_candidates
@@ -698,6 +707,7 @@ def collect_activity_history() -> dict[str, Any]:
         "status": "available",
         "summary": "Recent activity is available." if latest_change else "No recent activity.",
         "recent_completed": completed_count,
+        "recent_events": recent_events,
         "latest_change": (
             {key: value for key, value in latest_change.items() if key != "order"}
             if latest_change
@@ -747,6 +757,7 @@ def compose_activity_summary(
         "attention_required": int(current.get("attention_required") or 0),
         "recent_completed": int(history.get("recent_completed") or 0),
         "latest_change": history.get("latest_change"),
+        "recent_events": list(history.get("recent_events") or [])[:12],
         "workflows": workflows,
         "audit_reference_count": int(history.get("audit_reference_count") or 0),
         "policy_mode": current.get("policy_mode") or "lite_personal",

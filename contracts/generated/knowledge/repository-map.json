@@ -451,6 +451,7 @@
         "api:get:/api/lite/harness/security-assurance/suites",
         "api:get:/api/lite/harness/session/{session_id}",
         "api:get:/api/lite/harness/status",
+        "api:get:/api/lite/home/activity-cursor",
         "api:get:/api/lite/identity",
         "api:get:/api/lite/identity/owner-claim/status",
         "api:get:/api/lite/media-backup",
@@ -564,6 +565,7 @@
         "api:post:/api/lite/harness/security-assurance/runs/{run_id}/cancel",
         "api:post:/api/lite/harness/security-assurance/runs/{run_id}/resume",
         "api:post:/api/lite/harness/session",
+        "api:post:/api/lite/home/activity-cursor/review",
         "api:post:/api/lite/identity/login",
         "api:post:/api/lite/identity/logout",
         "api:post:/api/lite/identity/owner-claim",
@@ -733,6 +735,7 @@
         "table:human_enrollment_claims",
         "table:human_identities",
         "table:identity_audit_events",
+        "table:lite_home_activity_read_cursors",
         "table:lite_installed_release_identity",
         "table:lite_revision_events",
         "table:owner_claims",
@@ -2011,6 +2014,12 @@
     },
     {
       "entities": [
+        "table:lite_home_activity_read_cursors"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0040_home_activity_read_cursors.sql"
+    },
+    {
+      "entities": [
         "subject:pocketlab.events.api.started",
         "subject:pocketlab.events.api.stopped"
       ],
@@ -2778,6 +2787,12 @@
     },
     {
       "entities": [
+        "ui:litehome"
+      ],
+      "source": "src/lite/LiteHome.jsx"
+    },
+    {
+      "entities": [
         "journey:change-password",
         "journey:enterprise-identity",
         "ui:liteidentity"
@@ -3168,6 +3183,12 @@
         "test:tests/backend/test_lite_harness.py"
       ],
       "source": "tests/backend/test_lite_harness.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_home_activity_cursor.py"
+      ],
+      "source": "tests/backend/test_lite_home_activity_cursor.py"
     },
     {
       "entities": [
@@ -4227,6 +4248,18 @@
     },
     {
       "entities": [
+        "test:tests/e2e/lite-p4-regression.spec.ts"
+      ],
+      "source": "tests/e2e/lite-p4-regression.spec.ts"
+    },
+    {
+      "entities": [
+        "test:tests/e2e/lite-p4-visual-contract.spec.ts"
+      ],
+      "source": "tests/e2e/lite-p4-visual-contract.spec.ts"
+    },
+    {
+      "entities": [
         "test:tests/e2e/lite-parity.spec.ts"
       ],
       "source": "tests/e2e/lite-parity.spec.ts"
@@ -4418,6 +4451,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "50c98900f9c11c07f676e67e243ab014608f230ec0d31e4a63ba3a73f568f817"
+    "source_fingerprint": "1b6afc93494e6e8a7d78fbb42cb9727bedc8292d164fbf0caf5909b5a5e3da78"
   }
 }

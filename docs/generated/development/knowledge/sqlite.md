@@ -629,6 +629,21 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | Indexes | idx_identity_audit_recent |
 | Confidence | inferred |
 
+## `lite_home_activity_read_cursors`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | sqlite_autoindex_lite_home_activity_read_cursors_1 |
+| Confidence | inferred |
+
 ## `lite_installed_release_identity`
 
 Source-derived release persistence object; detailed ownership is conservatively inferred from its migration-defined name.

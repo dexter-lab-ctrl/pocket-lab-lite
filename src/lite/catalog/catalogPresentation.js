@@ -1,0 +1,2 @@
+export function sortCatalogApps(items) {return (Array.isArray(items)?[...items]:[]).filter(x=>x&&typeof x==='object').sort((a,b)=>String(a.name||a.title||a.id||'').localeCompare(String(b.name||b.title||b.id||''))||String(a.id||'').localeCompare(String(b.id||'')));}
+export function filterCatalogApps(items,q) {const query=String(q||'').trim().toLocaleLowerCase();return sortCatalogApps(items).filter(x=>!query||[x.name,x.title,x.id,x.description].some(v=>String(v||'').toLocaleLowerCase().includes(query)));}

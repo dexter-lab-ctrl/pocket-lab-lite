@@ -1,4 +1,8 @@
+import { LiteProtectedConfirmation } from '../components/LiteSafeForms.jsx';
+import LiteNextSteps from '../components/LiteNextSteps.jsx';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { filterCatalogApps, sortCatalogApps } from './catalogPresentation.js';
+import '../components/liteSafeForms.css';
 import { createPortal } from 'react-dom';
 import { useDrag } from '@use-gesture/react';
 import { animated, config, useSpring } from '@react-spring/web';
@@ -2415,8 +2419,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   });
 
   const apps = data?.apps || data?.items || [];
+  const [catalogSearch, setCatalogSearch] = useState('');
   const access = data?.access || {};
-  const featuredApp = apps[0];
+  const featuredApp = sortCatalogApps(apps)[0];
   const featuredAppId = String(featuredApp?.id || '').trim().toLowerCase();
   const appActionsLive = useCallback((payload) => Boolean(actionBusyKey) || isLiteAppActionsViewLive(payload) || hasLivePhotoPrismAppActionsPayload(payload), [actionBusyKey]);
   const {
@@ -2494,7 +2499,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     || hasLivePhotoPrismAppActionsPayload(appActionsData)
   ));
 
-  const displayedApps = apps;
+  const displayedApps = filterCatalogApps(apps, catalogSearch);
+  const visibleFeaturedApp = displayedApps.find((app) => String(app.id) === String(featuredApp?.id)) || null;
   useEffect(() => {
     return () => {
       clearLongPress();
@@ -3292,13 +3298,24 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         lastUpdatedLabel={lastUpdatedLabel || ''}
         backendReachable={backendReachable}
       />
+      <LiteNextSteps
+        title="App readiness"
+        saved={catalogSaved}
+        description="Open and Manage remain available on each app card. These checks reflect the current catalog projection."
+        items={[
+          ...(insecureAppCount > 0 ? [{ id: "access", label: "App access needs attention", description: "Review the affected app’s access and health before opening it." }] : []),
+          ...(setupNeededCount > 0 ? [{ id: "setup", label: "App setup needs attention", description: "Use Manage on the relevant app to review available setup actions." }] : []),
+          ...(!isCatalogSecure && insecureAppCount === 0 ? [{ id: "remote", label: "Protected access is not confirmed", description: "Review local and Tailnet HTTPS readiness before relying on remote access." }] : []),
+        ]}
+      />
       <div className="lite-catalog-toolbar lite-catalog-toolbar--simple">
+        <label htmlFor="lite-catalog-app-search" className="lite-safe-field">Find an app<input id="lite-catalog-app-search" type="search" value={catalogSearch} onChange={(event) => setCatalogSearch(event.target.value)} placeholder="Search apps" autoComplete="off" /></label>
         <p>{displayedApps.length} {displayedApps.length === 1 ? 'app available' : 'apps available'}</p>
       </div>
 
-      {featuredApp ? (
+      {visibleFeaturedApp ? (
         <section className="lite-catalog-featured" aria-label="Featured app">
-          {renderAppCard(featuredApp, true)}
+          {renderAppCard(visibleFeaturedApp, true)}
         </section>
       ) : null}
 
@@ -3311,15 +3328,15 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       {loading ? <LoadingCard label="Checking your apps…" /> : null}
 
       <div className="lite-catalog-grid lite-render-containment lite-render-containment--catalog">
-        {displayedApps.filter((app) => app.id !== featuredApp?.id).map((app) => renderAppCard(app))}
+        {displayedApps.filter((app) => app.id !== visibleFeaturedApp?.id).map((app) => renderAppCard(app))}
       </div>
 
       {!loading && displayedApps.length === 0 ? (
         <LiteEmptyState
           className="lite-catalog-empty-state"
-          title={apps.length ? 'No apps available' : 'No apps installed yet'}
-          description={apps.length ? 'Pocket Lab did not find an app it can show right now.' : 'Install your first self-hosted app when you are ready.'}
-          action={{ label: apps.length ? 'Check again' : 'Refresh Apps', onClick: refresh }}
+          title={catalogSearch ? 'No matching apps' : apps.length ? 'No apps available' : 'No apps installed yet'}
+          description={catalogSearch ? 'Try another app name or clear your search.' : apps.length ? 'Pocket Lab did not find an app it can show right now.' : 'Install your first self-hosted app when you are ready.'}
+          action={{ label: catalogSearch ? 'Clear search' : apps.length ? 'Check again' : 'Refresh Apps', onClick: catalogSearch ? () => setCatalogSearch('') : refresh }}
         />
       ) : null}
       {removeConfirmApp ? (
@@ -3332,7 +3349,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
               Protected user data and existing backups are preserved by default.
             </p>
           </div>
-          <LiteConsequenceSummary value={{
+          <LiteProtectedConfirmation value={{
             title: `Before ${removeConfirmApp.name || 'this app'} is removed`,
             summary: 'Review the effect on this app before continuing.',
             will: [`Remove the ${removeConfirmApp.name || 'app'} service and its Pocket Lab access route when removal is available.`],

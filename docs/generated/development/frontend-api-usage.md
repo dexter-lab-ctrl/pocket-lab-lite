@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: d8dc403374877d737e18446a5122d9bf49d8d9cc1af5fcba51e25b5f5eb3c36a
+source_fingerprint: f7b35e71fde1ba9337fee839e506c1871c8ec47dce1e83dbc51d81e51b540a69
 schema_revision: 1
 validation_status: generated
 ---
@@ -34,6 +34,9 @@ validation_status: generated
 | src/lite/LiteDevices.jsx | liteApi.restartDeviceAgent | POST | `/api/lite/fleet/devices/{param}/restart-agent` | mutation | no | dynamic |
 | src/lite/LiteDevices.jsx | liteApi.restartDeviceAgentStatus | GET | `/api/lite/fleet/devices/{param}/restart-agent/status` | query | no | dynamic |
 | src/lite/LiteDevices.jsx | liteApi.removeDevice | POST | `/api/lite/fleet/remove-device` | mutation | no | static |
+| src/lite/LiteHome.jsx | liteApi.homeActivityCursor | GET | `/api/lite/home/activity-cursor` | query | no | static |
+| src/lite/LiteHome.jsx | liteApi.reviewHomeActivityCursor | POST | `/api/lite/home/activity-cursor/review` | mutation | no | static |
+| src/lite/LiteHome.jsx | liteApi.activitySummary | GET | `/api/lite/system/activity-summary` | query | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.loginIdentity | POST | `/api/lite/identity/login` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.logoutIdentity | POST | `/api/lite/identity/logout` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.consumeOwnerClaim | POST | `/api/lite/identity/owner-claim/consume` | mutation | no | static |
@@ -152,6 +155,8 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/fleet/devices/:nodeId/roles` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | PUT | `/api/lite/fleet/devices/:nodeId/roles` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/fleet/remove-device` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/home/activity-cursor` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/home/activity-cursor/review` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/identity` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/identity/login` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/identity/logout` | mock | yes | static |
@@ -202,6 +207,7 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/security/scan` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/security/summary` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/status` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/system/activity-summary` | mock | yes | static |
 | src/mocks/identityRulesCompatibilityHandlers.js | MSW handler | GET | `/api/lite/policy/decisions/:decisionId` | mock | yes | static |
 | src/mocks/identityRulesCompatibilityHandlers.js | MSW handler | GET | `/api/lite/policy/templates` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | DELETE | `/api/lite/enterprise/access` | mock | yes | static |
@@ -397,7 +403,6 @@ validation_status: generated
 - `/api/lite/security/evidence/{run_id}`
 - `/api/lite/security/runs/{run_id}`
 - `/api/lite/security/scan`
-- `/api/lite/system/activity-summary`
 - `/api/lite/system/agent`
 - `/api/lite/system/health`
 - `/api/lite/system/nats-readiness`

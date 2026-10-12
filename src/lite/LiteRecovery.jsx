@@ -1,3 +1,4 @@
+import LiteNextSteps from './components/LiteNextSteps.jsx';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Activity,
@@ -698,6 +699,18 @@ export default function RecoveryScreen() {
         actions={<LiteRefreshButton scope="recovery" refresh={refreshSummary} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
+      
+      <LiteNextSteps
+        title="Protection readiness"
+        saved={savedStateOnly || projectionStale || isExpired}
+        description="Verify recovery evidence before making changes. Restore still requires the existing protected preview and confirmation flow."
+        items={[
+          ...(!latestBackup ? [{ id: "backup", label: "Create a protected backup", description: "No backup is recorded yet.", actionLabel: "Manage backups", onClick: () => openRecoveryManage("backup") }] : []),
+          ...(latestBackup && !latestBackupVerified ? [{ id: "verify", label: "Verify the latest backup", description: "A saved backup is not yet a verified restore point.", actionLabel: "Manage backups", onClick: () => openRecoveryManage("backup") }] : []),
+          ...(latestBackupVerified && !latestPreviewReady ? [{ id: "preview", label: "Review restore readiness", description: "A verified backup does not by itself confirm a safe restore preview.", actionLabel: "Review restore", onClick: () => openRecoveryManage("restore") }] : []),
+          ...(recoveryWriteBlocked ? [{ id: "blocked", label: "Recovery actions are paused", description: recoveryWriteBlockedReason || "Review current connectivity and readiness before continuing." }] : []),
+        ]}
+      />
       <div className="lite-recovery-native-announcer" role="status" aria-live="polite" aria-atomic="true">
         {recoveryAnnouncement}
       </div>

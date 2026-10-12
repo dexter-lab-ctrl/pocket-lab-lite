@@ -17,6 +17,9 @@
       "api:get:/api/lite/fleet/devices/{node_id}/restart-agent/status": [
         "ui:litedevices"
       ],
+      "api:get:/api/lite/home/activity-cursor": [
+        "ui:litehome"
+      ],
       "api:get:/api/lite/identity/owner-claim/status": [
         "ui:liteidentity"
       ],
@@ -65,6 +68,9 @@
       "api:get:/api/lite/security/summary": [
         "ui:litesecurity"
       ],
+      "api:get:/api/lite/system/activity-summary": [
+        "ui:litehome"
+      ],
       "api:post:/api/lite/apps/{app_id}/backup": [
         "ui:literecovery"
       ],
@@ -76,6 +82,9 @@
       ],
       "api:post:/api/lite/fleet/remove-device": [
         "ui:litedevices"
+      ],
+      "api:post:/api/lite/home/activity-cursor/review": [
+        "ui:litehome"
       ],
       "api:post:/api/lite/identity/login": [
         "ui:liteidentity"
@@ -187,6 +196,11 @@
         "api:post:/api/lite/fleet/devices/{node_id}/restart-agent",
         "api:post:/api/lite/fleet/remove-device"
       ],
+      "ui:litehome": [
+        "api:get:/api/lite/home/activity-cursor",
+        "api:get:/api/lite/system/activity-summary",
+        "api:post:/api/lite/home/activity-cursor/review"
+      ],
       "ui:liteidentity": [
         "api:get:/api/lite/identity/owner-claim/status",
         "api:post:/api/lite/identity/login",
@@ -265,6 +279,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "50c98900f9c11c07f676e67e243ab014608f230ec0d31e4a63ba3a73f568f817"
+    "source_fingerprint": "1b6afc93494e6e8a7d78fbb42cb9727bedc8292d164fbf0caf5909b5a5e3da78"
   }
 }

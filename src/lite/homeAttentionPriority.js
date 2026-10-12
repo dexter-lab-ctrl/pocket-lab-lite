@@ -1,0 +1,1 @@
+export function prioritizeWorkspaceAttention(areas) { const priority={danger:0,review:1,unknown:2}; return (Array.isArray(areas)?areas:[]).filter(x=>x&&x.tone!=='ready').map((item,index)=>({item,index})).sort((a,b)=>(priority[a.item.tone]??2)-(priority[b.item.tone]??2)||a.index-b.index).map(x=>x.item); }

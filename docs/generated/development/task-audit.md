@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: b620a12241f22a9c6abda141fd32cc09ac0b13cef3bf184bc04063b0393cb33f
+source_fingerprint: 1f7558299edb6b35ba0042c78d5e818f2a4c4cdfcafd785a0c9e510bff3808bc
 schema_revision: 1
 validation_status: generated
 ---
@@ -349,10 +349,20 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:test:ux:maturity`
 - `lite:test:visual`
 - `lite:test:visual:update`
+- `lite:ui:p4:android`
+- `lite:ui:p4:full-mocked`
+- `lite:ui:p4:live`
+- `lite:ui:p4:mocked`
+- `lite:ui:p4:unit`
+- `lite:ui:p4:visual-review`
 - `lite:ui:perf:android:baseline`
 - `lite:ui:perf:android:baseline:analyze`
 - `lite:ui:perf:android:baseline:check`
 - `lite:ui:perf:qualified`
+- `lite:ui:personal-history:backend`
+- `lite:ui:protected-confirmation:unit`
+- `lite:ui:shared-home-apps:registry`
+- `lite:ui:shared-home-apps:unit`
 - `lite:validation:check`
 - `lite:validation:evidence`
 - `lite:validation:record`

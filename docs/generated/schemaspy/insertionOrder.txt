@@ -72,6 +72,7 @@ command_lifecycle
 device_heartbeats
 device_identity_guards
 domain_revisions
+lite_home_activity_read_cursors
 phase3b_current_state
 phase3b_revision_events
 policy_continuation_events

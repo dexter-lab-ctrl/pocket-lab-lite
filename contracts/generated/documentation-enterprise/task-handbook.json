@@ -7279,6 +7279,245 @@
       "audience": "developer/operator",
       "captures_runtime": false,
       "commands": [
+        "npm run test:perf:android-cdp"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:ui:p4:android",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:ui:p4:android",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run existing physical Android/CDP qualification with external preflight",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:ui:p4:mocked",
+        "npm run test:mock-regression",
+        "npm run test:perf:mocked",
+        "npm run build:budget"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:ui:p4:full-mocked",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:ui:p4:full-mocked",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "No canonical description declared.",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:e2e:live",
+        "npm run test:perf:live"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:ui:p4:live",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:ui:p4:live",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run existing read-only live UI and performance qualification after authorization",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:ui:p4:mocked"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:ui:p4:mocked",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:ui:p4:mocked",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "No canonical description declared.",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test -- src/lite/LiteDesignSystemP0.test.jsx src/lite/components/LiteNextSteps.test.jsx src/lite/components/LiteEvidenceGuide.test.jsx src/lite/components/LiteQuickNavigate.test.jsx"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:ui:p4:unit",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "src/lite/LiteDesignSystemP0.test.jsx",
+        "src/lite/components/LiteEvidenceGuide.test.jsx",
+        "src/lite/components/LiteNextSteps.test.jsx",
+        "src/lite/components/LiteQuickNavigate.test.jsx"
+      ],
+      "name": "lite:ui:p4:unit",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "No canonical description declared.",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm exec playwright test tests/e2e/lite-p4-visual-contract.spec.ts -- --project=mocked-desktop --project=mocked-mobile"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:ui:p4:visual-review",
+      "expected_runtime_class": "heavy-dev",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "tests/e2e/lite-p4-visual-contract.spec.ts"
+      ],
+      "name": "lite:ui:p4:visual-review",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Compare committed P4 visual contracts against manually approved reference snapshots",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": true,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": true,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer/operator",
+      "captures_runtime": false,
+      "commands": [
         "npm run test:perf:android-baseline"
       ],
       "dependencies": [],
@@ -7415,6 +7654,171 @@
       "outputs": [],
       "promotes_evidence": false,
       "purpose": "Run renewable synthetic qualification-owner UI performance with bounded between-interaction session/bridge rotation",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_home_activity_cursor.py tests/backend/test_lite_phase3c_system_aggregates.py"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:ui:personal-history:backend",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "tests/backend/test_lite_home_activity_cursor.py",
+        "tests/backend/test_lite_phase3c_system_aggregates.py"
+      ],
+      "name": "lite:ui:personal-history:backend",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Validate durable per-human reviewed revision, source projection and authenticated routes",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test -- src/lite/components/LiteSafeForms.test.jsx src/lite/homeActivityEvidence.test.js"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:ui:protected-confirmation:unit",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "src/lite/components/LiteSafeForms.test.jsx",
+        "src/lite/homeActivityEvidence.test.js"
+      ],
+      "name": "lite:ui:protected-confirmation:unit",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Validate reusable form error and protected confirmation contracts",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_app_registry.py"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:ui:shared-home-apps:registry",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "tests/backend/test_lite_app_registry.py"
+      ],
+      "name": "lite:ui:shared-home-apps:registry",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run canonical UAP registry and contract tests against integrated main foundation",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test -- src/lite/components/LiteSafeForms.test.jsx src/lite/homeAttentionPriority.test.js src/lite/homeActivityEvidence.test.js src/lite/catalog/catalogPresentation.test.js"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:ui:shared-home-apps:unit",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "src/lite/catalog/catalogPresentation.test.js",
+        "src/lite/components/LiteSafeForms.test.jsx",
+        "src/lite/homeActivityEvidence.test.js",
+        "src/lite/homeAttentionPriority.test.js"
+      ],
+      "name": "lite:ui:shared-home-apps:unit",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "No canonical description declared.",
       "related_tasks": [],
       "repository_mutation": false,
       "requires_termux": false,

@@ -1092,7 +1092,9 @@ export const handlers = [
     expires_at: '',
   })),
   http.get('/api/lite/status', ({ request }) => {
+    const currentScenario = rawScenario();
     const savedScenario = scenario() === 'nats-down';
+    const appCatalogNeedsReview = savedScenario || currentScenario === 'lifecycle-attention';
     return HttpResponse.json({
       overall: savedScenario ? 'degraded' : 'healthy',
       checked_at: mockIso(),
@@ -1105,7 +1107,7 @@ export const handlers = [
         { name: 'Control API', status: 'healthy', summary: 'Pocket Lab Lite API is serving local workspace requests' },
         { name: 'Command Bus', status: 'healthy', summary: 'Pocket Lab connection is ready for protected operations' },
         { name: 'Worker Execution', status: 'healthy', summary: 'Workspace service heartbeat is active' },
-        { name: 'App Catalog', status: 'healthy', summary: 'PhotoPrism is available for the Server Host' },
+        { name: 'App Catalog', status: appCatalogNeedsReview ? 'review' : 'healthy', summary: appCatalogNeedsReview ? (savedScenario ? 'Saved app readiness is available while the workspace reconnects' : 'PhotoPrism needs attention before the next protected action') : 'PhotoPrism is available for the Server Host' },
         { name: 'Identity & Access', status: 'healthy', summary: 'Access protection is ready' },
         { name: 'Device Fleet', status: 'healthy', summary: '1 device record known to Pocket Lab Lite' },
       ],
@@ -1115,10 +1117,43 @@ export const handlers = [
       },
     });
   }),
+  http.get('/api/lite/system/activity-summary', ({ request }) => {
+    const savedScenario = scenario() === 'nats-down';
+    return HttpResponse.json({
+      status: savedScenario ? 'degraded' : 'healthy',
+      summary: savedScenario ? 'Saved activity information is available while the workspace reconnects.' : 'Recent workspace activity is prepared for review.',
+      active_operations: 0,
+      attention_required: 0,
+      recent_completed: 1,
+      latest_change: { summary: 'Workspace activity projection is current.' },
+      recent_events: savedScenario ? [] : [{ domain: 'apps', status: 'completed', occurred_at_epoch_ms: Date.parse(mockIso(-5 * 60 * 1000)) }],
+      history_available: true,
+      read_degraded: savedScenario,
+      projection_only: true,
+      sanitized: true,
+      source_revision: 1,
+      projection_revision: 1,
+      updated_at: mockIso(),
+    }, { headers: liteSafeReadHeaders(request) });
+  }),
+  http.get('/api/lite/home/activity-cursor', () => HttpResponse.json({
+    history_revision: 1,
+    reviewed_revision: 1,
+    changed_since_review: false,
+    last_reviewed_at: mockIso(-60 * 60 * 1000),
+  }, { headers: { 'Cache-Control': 'private, no-store' } })),
+  http.post('/api/lite/home/activity-cursor/review', () => HttpResponse.json({
+    history_revision: 1,
+    reviewed_revision: 1,
+    changed_since_review: false,
+    last_reviewed_at: mockIso(),
+  }, { headers: { 'Cache-Control': 'private, no-store' } })),
   http.get('/api/lite/catalog', ({ request }) => {
-    const multiApp = rawScenario() === 'catalog-multi-app';
-    const ready = scenario() === 'catalog-ready' || multiApp || rawScenario().startsWith('app-governance-');
-    const installing = scenario() === 'catalog-installing';
+    const currentScenario = rawScenario();
+    const multiApp = currentScenario === 'catalog-multi-app';
+    const installAvailable = currentScenario === 'catalog-install-available';
+    const ready = !installAvailable && (scenario() === 'catalog-ready' || multiApp || currentScenario.startsWith('app-governance-'));
+    const installing = currentScenario === 'catalog-installing' || scenario() === 'catalog-installing';
     const app = {
       id: 'photoprism', name: 'PhotoPrism', category: 'Photos',
       summary: 'Private photo library for your self-hosted workspace.',
@@ -1627,26 +1662,35 @@ export const handlers = [
     updated_at: mockIso(),
     sanitized: true,
   })),
-  http.get('/api/lite/recovery/summary', ({ request }) => HttpResponse.json({
-    status: scenario() === 'nats-down' ? 'degraded' : 'healthy',
-    summary: scenario() === 'nats-down' ? 'Showing saved Recovery state while the backend reconnects.' : 'Recovery Ready',
-    projection_status: scenario() === 'nats-down' ? 'stale' : 'fresh',
-    saved_state: scenario() === 'nats-down',
+  http.get('/api/lite/recovery/summary', ({ request }) => {
+    const currentScenario = rawScenario();
+    const savedScenario = scenario() === 'nats-down';
+    const restoreBlocked = currentScenario === 'recovery-restore-blocked';
+    return HttpResponse.json({
+    status: savedScenario ? 'degraded' : restoreBlocked ? 'review' : 'healthy',
+    summary: savedScenario ? 'Showing saved Recovery state while the backend reconnects.' : restoreBlocked ? 'Restore is blocked until the current protection issue is resolved.' : 'Recovery Ready',
+    projection_status: savedScenario ? 'stale' : 'fresh',
+    saved_state: savedScenario,
     checked_at: mockIso(),
     repository_readiness: { ready: true, engine: 'restic', repository_initialized: true },
     last_backup: { backup_id: 'backup-mock-001', verification_status: 'verified', created_at: mockIso(-3600000), location_id: 'default-private', location: { location_id: 'default-private', display_name: 'Pocket Lab private backup folder', status: 'ready', available: true } },
-    latest_restore_preview: { status: 'ready', restore_allowed: true, preview_id: 'preview-mock-001' },
+    latest_restore_preview: { status: restoreBlocked ? 'blocked' : 'ready', restore_allowed: !restoreBlocked, preview_id: 'preview-mock-001', summary: restoreBlocked ? 'Restore preview is blocked by current recovery protection.' : 'Preview ready.' },
     pre_restore_checkpoint: { status: 'created', checkpoint_id: 'checkpoint-mock-001' },
     last_restore: null,
     active_operation: null,
     revision: 1,
-  }, { headers: liteSafeReadHeaders(request) })),
-  http.get('/api/lite/recovery/details', ({ request }) => HttpResponse.json({
-    status: scenario() === 'nats-down' ? 'degraded' : 'healthy',
-    summary: scenario() === 'nats-down' ? 'Showing saved Recovery details while the backend reconnects.' : 'Recovery details ready.',
+  }, { headers: liteSafeReadHeaders(request) });
+  }),
+  http.get('/api/lite/recovery/details', ({ request }) => {
+    const currentScenario = rawScenario();
+    const savedScenario = scenario() === 'nats-down';
+    const restoreBlocked = currentScenario === 'recovery-restore-blocked';
+    return HttpResponse.json({
+    status: savedScenario ? 'degraded' : restoreBlocked ? 'review' : 'healthy',
+    summary: savedScenario ? 'Showing saved Recovery details while the backend reconnects.' : restoreBlocked ? 'Restore preview is blocked by current recovery protection.' : 'Recovery details ready.',
     repository: { type: 'local', engine: 'restic', encrypted: true, ready: true, location: '~/pocket-lab-lite-backups' },
     last_backup: { backup_id: 'backup-mock-001', verification_status: 'verified', created_at: mockIso(-3600000), location_id: 'default-private' },
-    latest_restore_preview: { status: 'ready', restore_allowed: true, preview_id: 'preview-mock-001', backup_id: 'backup-mock-001', change_count: 2 },
+    latest_restore_preview: { status: restoreBlocked ? 'blocked' : 'ready', restore_allowed: !restoreBlocked, preview_id: 'preview-mock-001', backup_id: 'backup-mock-001', change_count: 2, summary: restoreBlocked ? 'Restore preview is blocked by current recovery protection.' : 'Preview ready.' },
     pre_restore_checkpoint: { status: 'created', checkpoint_id: 'checkpoint-mock-001' },
     last_restore: null,
     backup_history: [{ backup_id: 'backup-mock-001', verification_status: 'verified', created_at: mockIso(-3600000), summary: 'Backup verified.' }],
@@ -1659,7 +1703,8 @@ export const handlers = [
     what_will_be_backed_up: ['Lite runtime state', 'Device records and heartbeats', 'Rules/protection state', 'App catalog/install metadata'],
     what_will_not_be_backed_up: ['raw API tokens', 'raw invite tokens', 'NATS passwords', 'private SSH keys'],
     updated_at: mockIso(),
-  }, { headers: liteSafeReadHeaders(request) })),
+  }, { headers: liteSafeReadHeaders(request) });
+  }),
   http.get('/api/lite/recovery/locations', ({ request }) => HttpResponse.json({
     status: 'ready',
     summary: 'Backup location is backend-managed on this protected Server Host.',
@@ -1707,11 +1752,13 @@ export const handlers = [
   }, { headers: liteSafeReadHeaders(request) })),
   http.get('/api/lite/recovery/backups/:backupId', ({ params }) => HttpResponse.json({ backup_id: params.backupId, engine: 'restic', verification_status: 'not_verified', included_file_count: 6 })),
   http.get('/api/lite/recovery/receipts/:backupId', ({ params }) => HttpResponse.json({ backup_id: params.backupId, status: 'succeeded', summary: 'Evidence saved', engine: 'restic', evidence_saved: true })),
-  http.get('/api/lite/recovery/restore/previews/:previewId', ({ params }) => HttpResponse.json({
+  http.get('/api/lite/recovery/restore/previews/:previewId', ({ params }) => {
+    const restoreBlocked = rawScenario() === 'recovery-restore-blocked';
+    return HttpResponse.json({
     preview_id: params.previewId,
     backup_id: 'mock-backup-001',
-    status: 'ready',
-    restore_allowed: true,
+    status: restoreBlocked ? 'blocked' : 'ready',
+    restore_allowed: !restoreBlocked,
     restore_supported: true,
     verification_status: 'verified',
     change_count: 2,
@@ -1719,8 +1766,9 @@ export const handlers = [
       { relative_path: 'state/fleet_agents.json', action: 'would_overwrite', target: 'Lite state' },
       { relative_path: 'backup-metadata/scope.json', action: 'metadata_only', target: 'Backup metadata' }
     ],
-    summary: 'Preview ready. Restore execution remains disabled until Increment 4.',
-  })),
+    summary: restoreBlocked ? 'Restore preview is blocked by current recovery protection.' : 'Preview ready. Restore execution remains disabled until Increment 4.',
+  });
+  }),
   http.post('/api/lite/catalog/install', async ({ request }) => {
     const body = await request.json().catch(() => ({}));
     return HttpResponse.json({ accepted: true, status: 'queued', operation_id: 'app-photoprism-mock', app_id: body.app_id || 'photoprism', target_node_id: body.target_node_id || 'pocket-lab-lite-server', message: 'PhotoPrism install started.' }, { status: 202 });

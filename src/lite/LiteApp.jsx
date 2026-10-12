@@ -1,3 +1,4 @@
+import './liteDesignSystemP0.css';
 import React, { Suspense, startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -34,6 +35,7 @@ import {
   startLiteViewTransition,
 } from './liteNavigationRuntime.js';
 import LiteToastHost from './LiteToastHost.jsx';
+import LiteQuickNavigate, { shouldOpenLiteQuickNavigate } from './components/LiteQuickNavigate.jsx';
 import LiteServiceWorkerUpdateNotice from './LiteServiceWorkerUpdateNotice.jsx';
 import LiteNativeInstallSurface from './LiteNativeInstallSurface.jsx';
 import LiteRevisionSyncBridge from './LiteRevisionSyncBridge.jsx';
@@ -433,6 +435,7 @@ function LiteAppShell() {
   const menuOpen = useLiteUiStore((state) => state.mobileMenuOpen);
   const setMenuOpen = useLiteUiStore((state) => state.setMobileMenuOpen);
   const [workspaceApp, setWorkspaceApp] = useState(() => currentWorkspaceFromLocation());
+  const [quickNavigateOpen, setQuickNavigateOpen] = useState(false);
   const [screenRetryGeneration, setScreenRetryGeneration] = useState({});
   const online = useOnlineStatus();
   const {
@@ -585,6 +588,29 @@ function LiteAppShell() {
     }
   }, [setActiveTab, setMenuOpen, workspaceApp]);
 
+  const openQuickNavigation = useCallback(() => {
+    if (workspaceApp || quickNavigateOpen || menuOpen) return;
+    if (document.querySelector('[role="dialog"][aria-modal="true"], [role="alertdialog"][aria-modal="true"], [data-lite-overlay-layer]')) return;
+    setQuickNavigateOpen(true);
+  }, [workspaceApp, quickNavigateOpen, menuOpen]);
+
+  useEffect(() => {
+    if (workspaceApp) return undefined;
+    const handleShortcut = (event) => {
+      if (!shouldOpenLiteQuickNavigate(event)) return;
+      // Other dialogs and native focus owners have priority.
+      if (quickNavigateOpen || menuOpen || document.querySelector('[role="dialog"][aria-modal="true"], [role="alertdialog"][aria-modal="true"]')) return;
+      event.preventDefault();
+      openQuickNavigation();
+    };
+    document.addEventListener('keydown', handleShortcut);
+    return () => document.removeEventListener('keydown', handleShortcut);
+  }, [workspaceApp, menuOpen, quickNavigateOpen, openQuickNavigation]);
+
+  useEffect(() => {
+    if (workspaceApp) setQuickNavigateOpen(false);
+  }, [workspaceApp]);
+
   const openWorkspace = useCallback((app, openUrl) => {
     const appId = app?.id || app?.app_id;
     if (!appId || !resolveSafeAppOpenPath(openUrl || app)) return;
@@ -710,10 +736,13 @@ function LiteAppShell() {
           </div>
           <div className="flex items-center gap-2">
             <LiteNativeInstallSurface />
+            <button type="button" className="lite-p3-launcher" onClick={openQuickNavigation} aria-label="Find a Pocket Lab section" aria-haspopup="dialog" aria-expanded={quickNavigateOpen}>Find <span className="lite-p3-launcher-shortcut">⌘/Ctrl K</span></button>
             <button type="button" onClick={() => setMenuOpen(true)} className="rounded-2xl border border-white/10 bg-white/5 p-3 text-slate-100 md:hidden" aria-label="Open navigation"><Menu className="h-5 w-5" /></button>
           </div>
         </div>
       </header>
+
+      <LiteQuickNavigate open={quickNavigateOpen && !workspaceApp} onClose={() => setQuickNavigateOpen(false)} onNavigate={(id) => commitScreenNavigation(id)} items={NAV_ITEMS} activeId={activeScreenId} />
 
       <nav className="pocket-nav-dock scrollbar-none" aria-label="Pocket Lab sections" data-lite-perf-primitive="navigation">
         {NAV_ITEMS.map((item) => {
@@ -741,7 +770,7 @@ function LiteAppShell() {
       </nav>
 
       {menuOpen && <div className="mobile-more-backdrop" onClick={() => setMenuOpen(false)} aria-hidden="true" />}
-      <aside className={`mobile-more-sheet ${menuOpen ? 'mobile-more-sheet-open' : ''}`} aria-hidden={!menuOpen} aria-label="Pocket Lab Lite sections" data-lite-perf-primitive="navigation">
+      <aside className={`mobile-more-sheet ${menuOpen ? 'mobile-more-sheet-open' : ''}`} aria-hidden={!menuOpen} inert={!menuOpen ? true : undefined} aria-label="Pocket Lab Lite sections" data-lite-perf-primitive="navigation">
         <div className="flex items-center justify-between gap-3 border-b border-white/10 p-4">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-200">Sections</p>

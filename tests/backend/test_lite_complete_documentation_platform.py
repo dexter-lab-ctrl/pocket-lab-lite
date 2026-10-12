@@ -66,6 +66,23 @@ def test_frontend_api_mapping_resolves_active_calls_and_tracks_unused_backend_ro
     assert payload["frontend_api_usage"]["unsupported_frontend_routes"] == []
 
 
+def test_absolute_path_safety_does_not_reject_home_api_routes():
+    platform = load_module("platform_absolute_path_test", PLATFORM_PATH)
+    output_path = ROOT / "docs/reference/api/lite-api.md"
+    safe_route = '{"route": "/api/lite/home/activity-cursor"}'
+    assert platform.validate_output_safety({output_path: safe_route}) == []
+
+    unsafe_values = (
+        "/home/dj/pocket-lab-lite",
+        "/tmp/pocket-lab-lite",
+        "/mnt/c/Users/DJ/pocket-lab-lite",
+        r"C:\Users\DJ\pocket-lab-lite",
+    )
+    for value in unsafe_values:
+        errors = platform.validate_output_safety({output_path: value})
+        assert errors == ["absolute machine path in docs/reference/api/lite-api.md"], value
+
+
 def test_field_level_compatibility_detects_breaking_and_non_breaking_changes():
     platform = load_module("platform_compat_test", PLATFORM_PATH)
     baseline = {
@@ -181,13 +198,18 @@ def test_documentation_tasks_and_mkdocs_navigation_are_wired():
 
 
 def test_generated_artifacts_exclude_absolute_paths_and_secret_values():
-    forbidden_paths = re.compile(r"(?:/home/[A-Za-z0-9._-]+/|/data/data/[^/]+/|/mnt/[A-Za-z]/|(?<![A-Za-z])[A-Za-z]:[\\/])")
+    forbidden_paths = re.compile(r"(?<![A-Za-z0-9._/-])(?:/home/[A-Za-z0-9._-]+|/data/data/[^/]+/|/mnt/[A-Za-z]/|(?<![A-Za-z])[A-Za-z]:[\\/])")
+    portable_home_routes = re.compile(
+        r"(?<![A-Za-z0-9._/-])/home/(?:activity-cursor(?:/review)?|"
+        r"(?:api-unavailable|healthy|offline-saved|release-available|release-current|"
+        r"release-failed|review-recommended)\.json)(?=$|[\s\"'`<>,)}])"
+    )
     forbidden_secret = re.compile(r"(?i)(?:password|token|secret|api[_-]?key)\s*[:=]\s*[^\s<]{4,}")
     for root in (ROOT / "contracts/generated", ROOT / "docs/generated/development", ROOT / "docs/reference/api", ROOT / "docs/assets/diagrams"):
         for path in root.rglob("*"):
             if not path.is_file() or path.suffix.lower() not in {".json", ".md", ".svg", ".dot"}:
                 continue
-            text = path.read_text(encoding="utf-8", errors="ignore")
+            text = portable_home_routes.sub("<portable-home-route>", path.read_text(encoding="utf-8", errors="ignore"))
             assert not forbidden_paths.search(text), path
             assert not forbidden_secret.search(text), path
 

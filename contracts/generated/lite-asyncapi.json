@@ -330,7 +330,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4803",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4845",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1664"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -346,7 +346,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4386",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4428",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1665"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -362,7 +362,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4416",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4458",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1667"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -378,7 +378,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4399",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4441",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1666"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -394,7 +394,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4890",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4932",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1677"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -426,7 +426,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4456",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4498",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1680"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -442,7 +442,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4499",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4541",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1681"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -458,7 +458,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4557",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4599",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1683"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -474,7 +474,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4517",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4559",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1682"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -510,7 +510,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4625",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4667",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1685"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -526,7 +526,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4599",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4641",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1684"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -590,7 +590,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:5052",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:5094",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1679"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -606,7 +606,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4925",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4967",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1678"
       ],
       "x-pocketlab-stream": "incomplete"
@@ -741,7 +741,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3784"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3826"
       ],
       "x-pocketlab-stream": "incomplete"
     },
@@ -1456,7 +1456,7 @@
       "x-pocketlab-retry": "incomplete",
       "x-pocketlab-security-classification": "internal metadata",
       "x-pocketlab-source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3795"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3837"
       ],
       "x-pocketlab-stream": "incomplete"
     },

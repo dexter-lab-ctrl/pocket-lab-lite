@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 9d0f0cd248ca525487caf9e2ec680ca05c7e64a5fd55ba0c76c2f5470afd46f3
+source_fingerprint: 84135b8e75a8dd8780aef98816b665616ed058dc7addeeaec4f64dc20d33f152
 schema_revision: 1
 validation_status: generated
 ---
@@ -69,6 +69,7 @@ Semantic rows marked **inferred** are conservative source-derived ownership hint
 | `human_enrollment_claims` | table | 16 | 2 | 5 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql |
 | `human_identities` | table | 8 | 0 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql |
 | `identity_audit_events` | table | 8 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql |
+| `lite_home_activity_read_cursors` | table | 3 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0040_home_activity_read_cursors.sql |
 | `lite_installed_release_identity` | table | 18 | 0 | 2 | release | release runtime and identity services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0021_lite_native_release.sql |
 | `lite_revision_events` | table | 10 | 0 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0009_lite_revision_events.sql |
 | `owner_claims` | table | 12 | 0 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql |
@@ -1051,6 +1052,17 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | `reason_code` | TEXT | no | — | 0 |
 | `summary` | TEXT | no | — | 0 |
 | `correlation_id` | TEXT | no | — | 0 |
+
+<a id="lite-home-activity-read-cursors"></a>
+## `lite_home_activity_read_cursors`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `human_id` | TEXT | no | — | 1 |
+| `history_revision` | INTEGER | no | 0 | 0 |
+| `last_reviewed_at` | TEXT | no | — | 0 |
 
 <a id="lite-installed-release-identity"></a>
 ## `lite_installed_release_identity`

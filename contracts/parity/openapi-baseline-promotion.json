@@ -6,12 +6,13 @@
     "add the fail-closed isolated candidate qualification context, synthetic enrollment route, and loopback control-origin binding without changing production destination defaults",
     "add one-use recovery authorization receipts bound to the selected backup, preview, target schema, target runtime, issued runtime identity, and expiry for the offline main-database promotion handoff",
     "promote the exact generated multi-role fleet and target-bound recovery OpenAPI contract after DEV-PC focused/full gates and exact-feature-runtime qualification; secondary-device media transfer remains outside this change and unvalidated",
-    "add a server-owned, short-lived bounded Photo Backup acceptance fixture with fixed Pictures scope and no client source path; live production transfer remains pending release and operational acceptance"
+    "add a server-owned, short-lived bounded Photo Backup acceptance fixture with fixed Pictures scope and no client source path; live production transfer remains pending release and operational acceptance",
+    "add durable, per-human Home activity review cursor reads and monotonic review writes backed by the prepared projection"
   ],
   "baseline": "contracts/parity/openapi-baseline.json",
   "contract": "contracts/generated/lite-openapi.json",
-  "previous_sha256": "d7571194d848b19a5a21343c682e5bb659a2e1c2da7e465ac5a5b3eb09deb58d",
-  "promoted_sha256": "adc9d8e4bee083e2ca69fb9c5d541fdc8f22cd4f20f368349f37d7f524152dae",
+  "previous_sha256": "adc9d8e4bee083e2ca69fb9c5d541fdc8f22cd4f20f368349f37d7f524152dae",
+  "promoted_sha256": "f7a353f013d30e7a0d5d98bd8682218cca973992abe03408c29a19078b4cc5d0",
   "sanitized": true,
   "schema_version": "1.0.0",
   "security_review": {
@@ -20,7 +21,7 @@
     "runtime_routes_removed": false,
     "write_operations_added": true
   },
-  "source_revision": "fix/photo-backup-production-activation@623b00c508c6914c07c8688b4ba0fe67da58efaa",
+  "source_revision": "feat/lite-p0-design-system-safety@38e98f0892d5d8c2924ffb46b6a5c641652ba8d1",
   "status": "promoted",
   "validation_status": "dev-pc-focused-and-full-gates-passed; exact-candidate-isolated-runtime-qualification-validated; physical-android-candidate-blocked-by-missing-authorized-private-transport-and-isolated-destination; live-production-transfer-pending-reviewed-release"
 }

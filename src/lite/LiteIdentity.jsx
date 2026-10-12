@@ -1,3 +1,4 @@
+import { LiteProtectedConfirmation } from './components/LiteSafeForms.jsx';
 import './identityRules.css';
 import './identityRulesGovernance.css';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -14,6 +15,8 @@ import { useLiteUiStore } from '../stores/liteUiStore.js';
 import LiteIdentityEnterprise from './LiteIdentityEnterprise.jsx';
 import LiteHelp, { LiteHelpHeading } from './LiteHelp.jsx';
 import { LiteSheet } from './LiteOverlay.jsx';
+import LiteEvidenceGuide from './components/LiteEvidenceGuide.jsx';
+import { LiteField } from './components/LiteSafeForms.jsx';
 import {
   GlassCard,
   StatusBadge,
@@ -29,13 +32,7 @@ import {
 import { LiteConsequenceSummary, LiteFreshness, LiteHistoryTimeline } from './LiteUx.jsx';
 
 function IdentityField({ label, hint = '', ...props }) {
-  return (
-    <label className="lite-identity-form-field">
-      <span>{label}</span>
-      <input className="pocket-input" {...props} />
-      {hint ? <small>{hint}</small> : null}
-    </label>
-  );
+  return <LiteField label={label} hint={hint} className="lite-identity-form-field"><input className="pocket-input" {...props} /></LiteField>;
 }
 
 function ActionNotice({ notice, actionStage }) {
@@ -335,6 +332,18 @@ export default function IdentityScreen() {
         backendReachable={backendReachable}
       />
 
+      <LiteEvidenceGuide
+        title="Your current access"
+        saved={identityReadOnly || isExpired}
+        description="Sign-in identity, current role and access mode are separate facts. Changes to access may require signing in again."
+        facts={[
+          { id: "session", label: "Sign-in", value: data?.authenticated ? "Signed in" : "Not signed in" },
+          { id: "role", label: "Current role", value: data?.authenticated ? currentRoleLabel : "Not available" },
+          { id: "mode", label: "Workspace mode", value: data?.enterprise?.enabled ? "Enterprise Mode" : "Personal Mode" },
+          { id: "passkey", label: "Passkey on this device", value: passkeyEligible ? "Supported by browser" : "Not available in this browser" },
+        ]}
+        caution="A displayed role is informational. Only the server can authorize account changes; switching workspace modes can end the current session."
+      />
       {loading ? <LoadingCard label="Checking access and sign-in protection…" /> : null}
       {error && !data ? <StateSurface tone="degraded" title="Access information is temporarily unavailable" description="Pocket Lab could not confirm the latest access information. Saved access information remains visible when available." className="mb-5" /> : null}
       {backendDegraded && backendReachable ? <StateSurface tone="degraded" title="Identity needs attention" description="Pocket Lab is reachable, but it could not confirm all current access information. Protected changes stay unavailable until current access is confirmed." className="mb-5" /> : null}
@@ -417,7 +426,7 @@ export default function IdentityScreen() {
 
       <LiteSheet open={Boolean(renameTarget)} onClose={() => setRenameTarget(null)} title="Rename passkey" eyebrow="Passkey" description="Choose a friendly name. The credential identifier stays hidden from normal UI." className="lite-identity-sheet"><form className="lite-identity-form" onSubmit={confirmRenamePasskey}><IdentityField label="Passkey name" value={renameName} onChange={(event) => setRenameName(event.target.value)} autoFocus maxLength="80" /><div className="lite-identity-sheet-actions"><LiteButton type="button" variant="secondary" onClick={() => setRenameTarget(null)}>Cancel</LiteButton><LiteButton type="submit" disabled={!renameName.trim()}>Save Name</LiteButton></div></form></LiteSheet>
 
-      <LiteSheet open={Boolean(confirmation)} onClose={() => setConfirmation(null)} title={confirmation?.title || 'Confirm change'} eyebrow="Confirm" description={confirmation?.description || ''} className="lite-identity-sheet"><div className="lite-identity-confirmation"><LiteConsequenceSummary value={{ title: confirmation?.title, summary: confirmation?.description, will: confirmation?.will?.length ? confirmation.will : ['Apply only the access change shown here.'], willNot: confirmation?.willNot?.length ? confirmation.willNot : ['Show the change as completed until Pocket Lab confirms it.'], reversible: confirmation?.reversible || 'You can review the resulting access state after the change.', availability: confirmation?.availability || 'Your current access stays available unless this confirmation explicitly says otherwise.' }} /><div className="lite-identity-sheet-actions"><LiteButton variant="secondary" onClick={() => setConfirmation(null)}>Cancel</LiteButton><LiteButton onClick={confirmRequestedAction}>{confirmation?.confirmLabel || 'Confirm'}</LiteButton></div></div></LiteSheet>
+      <LiteSheet open={Boolean(confirmation)} onClose={() => setConfirmation(null)} title={confirmation?.title || 'Confirm change'} eyebrow="Confirm" description={confirmation?.description || ''} className="lite-identity-sheet"><div className="lite-identity-confirmation"><LiteProtectedConfirmation value={{ title: confirmation?.title, summary: confirmation?.description, will: confirmation?.will?.length ? confirmation.will : ['Apply only the access change shown here.'], willNot: confirmation?.willNot?.length ? confirmation.willNot : ['Show the change as completed until Pocket Lab confirms it.'], reversible: confirmation?.reversible || 'You can review the resulting access state after the change.', availability: confirmation?.availability || 'Your current access stays available unless this confirmation explicitly says otherwise.' }} /><div className="lite-identity-sheet-actions"><LiteButton variant="secondary" onClick={() => setConfirmation(null)}>Cancel</LiteButton><LiteButton onClick={confirmRequestedAction}>{confirmation?.confirmLabel || 'Confirm'}</LiteButton></div></div></LiteSheet>
     </>
   );
 }

@@ -4682,7 +4682,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 492,
+  "page_count": 499,
   "page_types": [
     "overview",
     "guide",
@@ -4788,6 +4788,167 @@
       "source_or_generator": "architecture/universal-app-platform.md",
       "title": "Universal App Platform",
       "url": "/architecture/universal-app-platform/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-home-personal-history-shared-confirmations.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:development/lite-home-personal-history-shared-confirmations",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-home-personal-history-shared-confirmations.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-home-personal-history-shared-confirmations.md",
+      "title": "Home personal history and shared confirmation hardening",
+      "url": "/development/lite-home-personal-history-shared-confirmations/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-p0-design-system-safety.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:development/lite-p0-design-system-safety",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-p0-design-system-safety.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-p0-design-system-safety.md",
+      "title": "P0 — Shared Design System and Action Safety",
+      "url": "/development/lite-p0-design-system-safety/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-p1-home-devices-apps-recovery.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "recovery",
+      "generated": false,
+      "id": "page:development/lite-p1-home-devices-apps-recovery",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-p1-home-devices-apps-recovery.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-p1-home-devices-apps-recovery.md",
+      "title": "P1 — Home, Devices, Apps and Recovery UI enhancements",
+      "url": "/development/lite-p1-home-devices-apps-recovery/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-p2-safety-access-rules.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:development/lite-p2-safety-access-rules",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-p2-safety-access-rules.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-p2-safety-access-rules.md",
+      "title": "P2 — Safety, Identity & Access and Rules UI",
+      "url": "/development/lite-p2-safety-access-rules/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-p3-responsive-productivity.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:development/lite-p3-responsive-productivity",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-p3-responsive-productivity.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-p3-responsive-productivity.md",
+      "title": "P3 — Responsive productivity and premium interaction",
+      "url": "/development/lite-p3-responsive-productivity/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-p4-regression-qualification-coverage.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:development/lite-p4-regression-qualification-coverage",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-p4-regression-qualification-coverage.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-p4-regression-qualification-coverage.md",
+      "title": "P4 — Production regression and qualification coverage",
+      "url": "/development/lite-p4-regression-qualification-coverage/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-ui-completeness-4-to-6.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "apps",
+      "generated": false,
+      "id": "page:development/lite-ui-completeness-4-to-6",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-ui-completeness-4-to-6.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-ui-completeness-4-to-6.md",
+      "title": "Sections 4–6 — shared controls, Home, Apps",
+      "url": "/development/lite-ui-completeness-4-to-6/"
     },
     {
       "additional_audiences": [
@@ -17666,7 +17827,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "4b87f73ffd88c0fe33b6807313fab2032ed4b6af717dcddb6a8b391097efe714",
+  "source_fingerprint": "26400990aa27ef463812602fbaaa4065e2bb4ffaf05cafc73a4de17156dd434e",
   "top_level": [
     "start-here",
     "use",

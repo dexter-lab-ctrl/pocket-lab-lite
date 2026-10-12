@@ -567,8 +567,8 @@
     },
     {
       "path": "columns.html",
-      "sha256": "d670e1291dcc70a289cf85f56e949b63e7bf18931226647dc3a42a18cf60d733",
-      "size_bytes": 491280
+      "sha256": "7743b66089c399e323103c85e6532072709af1501978382d089b43d553db74e7",
+      "size_bytes": 492565
     },
     {
       "path": "constraint.js",
@@ -582,18 +582,18 @@
     },
     {
       "path": "deletionOrder.txt",
-      "sha256": "f011b595776aa71cb450dfd7af11425aaa4de20f8c4f5fd230b9c6c56662c36d",
-      "size_bytes": 1861
+      "sha256": "747b3d548c102a4258058257892692839a0c4009e09fc0d80d139af5f8721352",
+      "size_bytes": 1893
     },
     {
       "path": "diagrams/orphans/orphans.dot",
-      "sha256": "c2e6aeeb866a4b0838410f8cf1656cd640645cc88c7645577d9409160946b75e",
-      "size_bytes": 177392
+      "sha256": "7b64056df3581d6a0215c3925e695f152d7834ec16c71aabfab493863a0c40bf",
+      "size_bytes": 179137
     },
     {
       "path": "diagrams/orphans/orphans.png",
-      "sha256": "b4d77680bf5d3b0a472d27a1e1cad023cdbd3fd6361b70c3f9fafb7bf4135ad8",
-      "size_bytes": 1531733
+      "sha256": "5acd7172386d47b04b3dc74f65dfc048a99cdf0de9a51cb3d35beafce6978730",
+      "size_bytes": 1548514
     },
     {
       "path": "diagrams/summary/relationships.implied.compact.dot",
@@ -1834,6 +1834,16 @@
       "path": "diagrams/tables/identity_audit_events.implied2degrees.png",
       "sha256": "7298c3abcb43ede055b765c64d0ab45eee6b20bae0434d419927097c42d10a57",
       "size_bytes": 84226
+    },
+    {
+      "path": "diagrams/tables/lite_home_activity_read_cursors.1degree.dot",
+      "sha256": "f279532ca911772f3748a6f8fd9816bf8438979a2d435583c7c8fbcd7f585bbd",
+      "size_bytes": 2089
+    },
+    {
+      "path": "diagrams/tables/lite_home_activity_read_cursors.1degree.png",
+      "sha256": "a5f7ba879e2b920bd433009f6e7bd3cbb097bce6950a17047c4b694d2a41e429",
+      "size_bytes": 18299
     },
     {
       "path": "diagrams/tables/lite_installed_release_identity.1degree.dot",
@@ -3237,8 +3247,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "71d041695f424b176971e7e50f51bd5ff2d59169366d78b1213a69393de3e2dc",
-      "size_bytes": 70220
+      "sha256": "e2f74b496bca8538679225fc6e11bd8e41c9b6d5bc4ed5b6b68890260ded5dfc",
+      "size_bytes": 70913
     },
     {
       "path": "info-html.txt",
@@ -3247,8 +3257,8 @@
     },
     {
       "path": "insertionOrder.txt",
-      "sha256": "2c3d096b8673178e2282a8046abe37bf303233215c54f6a3991f05c644b6bf76",
-      "size_bytes": 1861
+      "sha256": "2ee258566445223936bf987703fcf3a1026c03944774b724f4688cfd1432b73b",
+      "size_bytes": 1893
     },
     {
       "path": "main.js",
@@ -3257,13 +3267,13 @@
     },
     {
       "path": "orphans.html",
-      "sha256": "c862d6a52c332efb424fc4d736db4abadc749cb7d62aec997cc46503584767d0",
-      "size_bytes": 13207
+      "sha256": "27c5afad4bf9106b0720e8dab2a649282cf482e6b72618d4d5b946b2ae2ffab8",
+      "size_bytes": 13379
     },
     {
       "path": "pocketlab-lite-schema.sqlite3.main.xml",
-      "sha256": "2e87b56f00f06b16547ebe7e0a1dd18070591de6e483b2ac9ad81f440fe0e9dc",
-      "size_bytes": 297174
+      "sha256": "b86cd57701587708fc297980d161d4948ed917eb565b45101033a7a0e80faad6",
+      "size_bytes": 298150
     },
     {
       "path": "relationships.html",
@@ -3302,8 +3312,8 @@
     },
     {
       "path": "source-metadata.json",
-      "sha256": "e2b0567d5756e95de367d96fa972c03221cc2263351190e9774887efde26d2d9",
-      "size_bytes": 11080
+      "sha256": "3725d007ca526475c496ecd85f07a9ec66f9df244757a05b02fe48c3f9a296e6",
+      "size_bytes": 11348
     },
     {
       "path": "tables/app_action_lifecycle.html",
@@ -3509,6 +3519,11 @@
       "path": "tables/identity_audit_events.html",
       "sha256": "bfbd64e4a2fb7da26667aea6f4ad3dd93215f4e2ed2e35ac78ced2c6214c8e8a",
       "size_bytes": 25244
+    },
+    {
+      "path": "tables/lite_home_activity_read_cursors.html",
+      "sha256": "d44458fb8f0dbb90efa121014c844ef251536b9f8b16bc675933d59c3dcfac74",
+      "size_bytes": 17467
     },
     {
       "path": "tables/lite_installed_release_identity.html",

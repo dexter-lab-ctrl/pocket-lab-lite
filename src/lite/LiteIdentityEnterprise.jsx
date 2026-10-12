@@ -1,3 +1,4 @@
+import { LiteField } from './components/LiteSafeForms.jsx';
 import './identityRulesGovernance.css';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Activity, ShieldCheck, UserPlus, UsersRound } from 'lucide-react';
@@ -226,9 +227,9 @@ export default function LiteIdentityEnterprise({ enterprise, access: initialAcce
             <p>Every person gets a separate identity, passkeys, sessions, recovery state and role. Add Person creates only the server-owned identity; Set up passkey uses the platform WebAuthn ceremony and never prints a Pocket Lab enrollment token.</p>
             {!canManagePeople ? <StateSurface tone="neutral" title="People management is not available to this role" description="Owner and Admin roles can manage people. Admin cannot create or change Owner/Admin authority." /> : (
               <form className="lite-governance-form" onSubmit={addPerson}>
-                <label><span>Sign-in name</span><input required maxLength="64" value={draft.username} onChange={(event) => setDraft((value) => ({ ...value, username: event.target.value }))} placeholder="alex" autoComplete="off" /></label>
-                <label><span>Display name</span><input required maxLength="120" value={draft.display_name} onChange={(event) => setDraft((value) => ({ ...value, display_name: event.target.value }))} placeholder="Alex" autoComplete="off" /></label>
-                <label><span>Initial role</span><select value={draft.role} onChange={(event) => setDraft((value) => ({ ...value, role: event.target.value }))}>{roleIds.filter((role) => currentRole === 'Owner' || !['Owner', 'Admin'].includes(role)).map((role) => <option key={role} value={role}>{role}</option>)}</select></label>
+                <LiteField label="Sign-in name" required><input required maxLength="64" value={draft.username} onChange={(event) => setDraft((value) => ({ ...value, username: event.target.value }))} placeholder="alex" autoComplete="off" /></LiteField>
+                <LiteField label="Display name" required><input required maxLength="120" value={draft.display_name} onChange={(event) => setDraft((value) => ({ ...value, display_name: event.target.value }))} placeholder="Alex" autoComplete="off" /></LiteField>
+                <LiteField label="Initial role"><select value={draft.role} onChange={(event) => setDraft((value) => ({ ...value, role: event.target.value }))}>{roleIds.filter((role) => currentRole === 'Owner' || !['Owner', 'Admin'].includes(role)).map((role) => <option key={role} value={role}>{role}</option>)}</select></LiteField>
                 <div className="lite-governance-actions"><LiteButton type="submit" disabled={Boolean(busy)}><UserPlus className="h-4 w-4" /> {busy === 'person:create' ? 'Creating…' : 'Add person'}</LiteButton></div>
               </form>
             )}

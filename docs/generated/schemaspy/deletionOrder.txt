@@ -6,6 +6,7 @@ projection_dirty_signals
 policy_continuation_events
 phase3b_revision_events
 phase3b_current_state
+lite_home_activity_read_cursors
 domain_revisions
 device_identity_guards
 device_heartbeats

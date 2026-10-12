@@ -46,6 +46,12 @@ ARCH = ROOT / "architecture/metadata/pocket-lab-architecture.json"
 TASKFILES = (ROOT / "Taskfile.yml", *sorted((ROOT / "tasks").glob("Taskfile*.yml")))
 
 PRIVATE_PATH = re.compile(r"(?:^|[\s\"\'])((?:/home/[^/\s]+|/data/data/com\.termux/files/(?:home|usr)|/mnt/[a-zA-Z]/|[A-Za-z]:\\Users\\))")
+ROUTE_VALUE = re.compile(r'("route"\s*:\s*")[^"]*(")')
+PORTABLE_HOME_ROUTE = re.compile(
+    r"(?<![A-Za-z0-9._/-])/home/(?:activity-cursor(?:/review)?|"
+    r"(?:api-unavailable|healthy|offline-saved|release-available|release-current|"
+    r"release-failed|review-recommended)\.json)(?=$|[\s\"'`<>,)}])"
+)
 SECRET = re.compile(
     r"(?:-----BEGIN [A-Z ]*PRIVATE KEY-----|Bearer\s+[A-Za-z0-9._~+/-]{12,}|"
     r"(?:password|passwd|token|secret|api[_-]?key|credential|authorization)\s*[=:]\s*[^\s,}\]]{6,}|"
@@ -93,9 +99,15 @@ def digest(value: Any) -> str:
 
 
 def safe_text(label: str, text: str) -> None:
-    if PRIVATE_PATH.search(text):
+    # Python router decorators expose route suffixes such as
+    # ``/home/activity-cursor`` without the application prefix.  They are
+    # portable API contracts, not filesystem paths; inspect other emitted
+    # fields for private paths.
+    non_route_text = ROUTE_VALUE.sub(r'\1<portable-route>\2', text)
+    non_route_text = PORTABLE_HOME_ROUTE.sub("<portable-home-route>", non_route_text)
+    if PRIVATE_PATH.search(non_route_text):
         raise ValueError(f"{label}: private host path leaked")
-    if SECRET.search(text):
+    if SECRET.search(non_route_text):
         raise ValueError(f"{label}: secret-like content leaked")
 
 

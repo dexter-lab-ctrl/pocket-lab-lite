@@ -2396,6 +2396,43 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Get Lite Home Activity Cursor",
+      "domain": "home",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.homeActivityCursor",
+          "resolved": true,
+          "source_module": "src/lite/LiteHome.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/home/activity-cursor",
+      "method": "GET",
+      "name": "GET /api/lite/home/activity-cursor",
+      "operation_id": "get_lite_home_activity_cursor_api_lite_home_activity_cursor_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/home/activity-cursor",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Get Lite Identity",
       "domain": "identity",
       "frontend_clients": [
@@ -3815,6 +3852,22 @@
       "confidence": "contract-derived",
       "description": "Get Lite Activity Summary",
       "domain": "system",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.activitySummary",
+          "resolved": true,
+          "source_module": "src/lite/LiteHome.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:get:/api/lite/system/activity-summary",
       "method": "GET",
       "name": "GET /api/lite/system/activity-summary",
@@ -5632,6 +5685,44 @@
       ],
       "tags": [
         "lite-harness"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Review Lite Home Activity",
+      "domain": "home",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.reviewHomeActivityCursor",
+          "resolved": true,
+          "source_module": "src/lite/LiteHome.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/home/activity-cursor/review",
+      "method": "POST",
+      "name": "POST /api/lite/home/activity-cursor/review",
+      "operation_id": "review_lite_home_activity_api_lite_home_activity_cursor_review_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "503"
+      ],
+      "route": "/api/lite/home/activity-cursor/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
       ],
       "type": "api"
     },
@@ -21117,7 +21208,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4803",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4845",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1664"
       ],
       "stream": "incomplete",
@@ -21137,7 +21228,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4386",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4428",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1665"
       ],
       "stream": "incomplete",
@@ -21157,7 +21248,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4416",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4458",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1667"
       ],
       "stream": "incomplete",
@@ -21177,7 +21268,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4399",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4441",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1666"
       ],
       "stream": "incomplete",
@@ -21197,7 +21288,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4890",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4932",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1677"
       ],
       "stream": "incomplete",
@@ -21237,7 +21328,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4456",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4498",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1680"
       ],
       "stream": "incomplete",
@@ -21257,7 +21348,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4499",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4541",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1681"
       ],
       "stream": "incomplete",
@@ -21277,7 +21368,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4557",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4599",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1683"
       ],
       "stream": "incomplete",
@@ -21297,7 +21388,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4517",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4559",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1682"
       ],
       "stream": "incomplete",
@@ -21339,7 +21430,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4625",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4667",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1685"
       ],
       "stream": "incomplete",
@@ -21359,7 +21450,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4599",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4641",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1684"
       ],
       "stream": "incomplete",
@@ -21439,7 +21530,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:5052",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:5094",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1679"
       ],
       "stream": "incomplete",
@@ -21459,7 +21550,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4925",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4967",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1678"
       ],
       "stream": "incomplete",
@@ -21618,7 +21709,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3784"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3826"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22497,7 +22588,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3795"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3837"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -26606,6 +26697,30 @@
       "writer": "source-defined control-plane service"
     },
     {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_home_activity_read_cursors",
+      "indexes": [
+        "sqlite_autoindex_lite_home_activity_read_cursors_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0040_home_activity_read_cursors.sql"
+      ],
+      "name": "lite_home_activity_read_cursors",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0040_home_activity_read_cursors.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
       "classification": "restricted operational metadata",
       "confidence": "inferred",
       "description": "Source-derived release persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
@@ -28353,6 +28468,16 @@
       "name": "tests/backend/test_lite_harness.py",
       "source_refs": [
         "tests/backend/test_lite_harness.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_home_activity_cursor.py",
+      "name": "tests/backend/test_lite_home_activity_cursor.py",
+      "source_refs": [
+        "tests/backend/test_lite_home_activity_cursor.py"
       ],
       "type": "test"
     },
@@ -30119,6 +30244,26 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-p4-regression.spec.ts",
+      "name": "tests/e2e/lite-p4-regression.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-p4-regression.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-p4-visual-contract.spec.ts",
+      "name": "tests/e2e/lite-p4-visual-contract.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-p4-visual-contract.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-parity.spec.ts",
       "name": "tests/e2e/lite-parity.spec.ts",
       "source_refs": [
@@ -31510,6 +31655,17 @@
     },
     {
       "confidence": "source-derived",
+      "domain": "home",
+      "id": "ui:litehome",
+      "name": "LiteHome",
+      "source_refs": [
+        "src/lite/LiteHome.jsx"
+      ],
+      "state_owner": "TanStack Query for live server state; Dexie safe snapshots; Zustand UI coordination; XState guided workflows where applicable",
+      "type": "ui"
+    },
+    {
+      "confidence": "source-derived",
       "domain": "identity",
       "id": "ui:liteidentity",
       "name": "LiteIdentity",
@@ -32484,6 +32640,7 @@
         "table:human_enrollment_claims",
         "table:human_identities",
         "table:identity_audit_events",
+        "table:lite_home_activity_read_cursors",
         "table:lite_revision_events",
         "table:owner_claims",
         "table:policy_activation_operations",
@@ -32744,11 +32901,14 @@
         "subject:pocketlab.events.health.service_changed"
       ],
       "home": [
+        "api:get:/api/lite/home/activity-cursor",
         "api:get:/api/lite/revisions",
         "api:get:/api/lite/status",
+        "api:post:/api/lite/home/activity-cursor/review",
         "domain:home",
         "limitation:home:accepted-1",
-        "limitation:home:gap-1"
+        "limitation:home:gap-1",
+        "ui:litehome"
       ],
       "identity": [
         "api:delete:/api/lite/identity/passkeys/{credential_id}",
@@ -33427,6 +33587,7 @@
         "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
         "test:tests/backend/test_lite_fleet_multi_role_invites_governance.py",
         "test:tests/backend/test_lite_harness.py",
+        "test:tests/backend/test_lite_home_activity_cursor.py",
         "test:tests/backend/test_lite_home_capacity_contract.py",
         "test:tests/backend/test_lite_hot_path_profiler.py",
         "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
@@ -33603,6 +33764,8 @@
         "test:tests/e2e/lite-device-facts.spec.ts",
         "test:tests/e2e/lite-live.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
+        "test:tests/e2e/lite-p4-regression.spec.ts",
+        "test:tests/e2e/lite-p4-visual-contract.spec.ts",
         "test:tests/e2e/lite-parity.spec.ts",
         "test:tests/e2e/lite-performance-contract.ts",
         "test:tests/e2e/lite-performance-helpers.ts",
@@ -33864,6 +34027,7 @@
         "api:get:/api/lite/harness/security-assurance/suites",
         "api:get:/api/lite/harness/session/{session_id}",
         "api:get:/api/lite/harness/status",
+        "api:get:/api/lite/home/activity-cursor",
         "api:get:/api/lite/identity",
         "api:get:/api/lite/identity/owner-claim/status",
         "api:get:/api/lite/media-backup",
@@ -33977,6 +34141,7 @@
         "api:post:/api/lite/harness/security-assurance/runs/{run_id}/cancel",
         "api:post:/api/lite/harness/security-assurance/runs/{run_id}/resume",
         "api:post:/api/lite/harness/session",
+        "api:post:/api/lite/home/activity-cursor/review",
         "api:post:/api/lite/identity/login",
         "api:post:/api/lite/identity/logout",
         "api:post:/api/lite/identity/owner-claim",
@@ -34785,6 +34950,7 @@
         "table:human_enrollment_claims",
         "table:human_identities",
         "table:identity_audit_events",
+        "table:lite_home_activity_read_cursors",
         "table:lite_installed_release_identity",
         "table:lite_revision_events",
         "table:owner_claims",
@@ -34883,6 +35049,7 @@
         "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
         "test:tests/backend/test_lite_fleet_multi_role_invites_governance.py",
         "test:tests/backend/test_lite_harness.py",
+        "test:tests/backend/test_lite_home_activity_cursor.py",
         "test:tests/backend/test_lite_home_capacity_contract.py",
         "test:tests/backend/test_lite_hot_path_profiler.py",
         "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
@@ -35059,6 +35226,8 @@
         "test:tests/e2e/lite-device-facts.spec.ts",
         "test:tests/e2e/lite-live.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
+        "test:tests/e2e/lite-p4-regression.spec.ts",
+        "test:tests/e2e/lite-p4-visual-contract.spec.ts",
         "test:tests/e2e/lite-parity.spec.ts",
         "test:tests/e2e/lite-performance-contract.ts",
         "test:tests/e2e/lite-performance-helpers.ts",
@@ -35145,6 +35314,7 @@
       "ui": [
         "ui:liteapp",
         "ui:litedevices",
+        "ui:litehome",
         "ui:liteidentity",
         "ui:liteidentityenterprise",
         "ui:literecovery",
@@ -35843,6 +36013,16 @@
           "type": "owns"
         }
       ],
+      "api:get:/api/lite/home/activity-cursor": [
+        {
+          "source": "ui:litehome",
+          "type": "calls"
+        },
+        {
+          "source": "domain:home",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/identity": [
         {
           "source": "domain:identity",
@@ -36254,6 +36434,10 @@
         }
       ],
       "api:get:/api/lite/system/activity-summary": [
+        {
+          "source": "ui:litehome",
+          "type": "calls"
+        },
         {
           "source": "domain:system",
           "type": "owns"
@@ -36758,6 +36942,16 @@
       "api:post:/api/lite/harness/session": [
         {
           "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/home/activity-cursor/review": [
+        {
+          "source": "ui:litehome",
+          "type": "calls"
+        },
+        {
+          "source": "domain:home",
           "type": "owns"
         }
       ],
@@ -42867,6 +43061,12 @@
           "type": "owns"
         }
       ],
+      "table:lite_home_activity_read_cursors": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:lite_installed_release_identity": [
         {
           "source": "component:atomic-promotion",
@@ -45217,6 +45417,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/home/activity-cursor",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/identity",
           "type": "verified_by"
         },
@@ -45666,6 +45870,10 @@
         },
         {
           "source": "api:post:/api/lite/harness/session",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/home/activity-cursor/review",
           "type": "verified_by"
         },
         {
@@ -51517,6 +51725,26 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-p4-regression.spec.ts": [
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:recovery",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-p4-visual-contract.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-performance-live.spec.ts": [
         {
           "source": "component:photoprism",
@@ -51910,6 +52138,10 @@
         },
         {
           "source": "api:get:/api/lite/harness/status",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/home/activity-cursor",
           "type": "verified_by"
         },
         {
@@ -52362,6 +52594,10 @@
         },
         {
           "source": "api:post:/api/lite/harness/session",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/home/activity-cursor/review",
           "type": "verified_by"
         },
         {
@@ -53194,6 +53430,12 @@
       "ui:litedevices": [
         {
           "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "ui:litehome": [
+        {
+          "source": "domain:home",
           "type": "owns"
         }
       ],
@@ -54148,6 +54390,16 @@
         }
       ],
       "api:get:/api/lite/harness/status": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/home/activity-cursor": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -55438,6 +55690,16 @@
         }
       ],
       "api:post:/api/lite/harness/session": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/home/activity-cursor/review": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -60215,6 +60477,10 @@
           "type": "owns"
         },
         {
+          "target": "table:lite_home_activity_read_cursors",
+          "type": "owns"
+        },
+        {
           "target": "table:lite_revision_events",
           "type": "owns"
         },
@@ -61187,11 +61453,23 @@
           "type": "observed_by"
         },
         {
+          "target": "api:get:/api/lite/home/activity-cursor",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/revisions",
           "type": "owns"
         },
         {
           "target": "api:get:/api/lite/status",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/home/activity-cursor/review",
+          "type": "owns"
+        },
+        {
+          "target": "ui:litehome",
           "type": "owns"
         },
         {
@@ -61698,6 +61976,10 @@
         },
         {
           "target": "test:tests/e2e/lite-mocked.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-p4-regression.spec.ts",
           "type": "verified_by"
         },
         {
@@ -62514,6 +62796,10 @@
         },
         {
           "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-p4-regression.spec.ts",
           "type": "verified_by"
         },
         {
@@ -66214,6 +66500,14 @@
         },
         {
           "target": "test:tests/e2e/lite-mocked.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-p4-regression.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-p4-visual-contract.spec.ts",
           "type": "verified_by"
         },
         {
@@ -70117,6 +70411,20 @@
           "type": "calls"
         }
       ],
+      "ui:litehome": [
+        {
+          "target": "api:get:/api/lite/home/activity-cursor",
+          "type": "calls"
+        },
+        {
+          "target": "api:get:/api/lite/system/activity-summary",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/home/activity-cursor/review",
+          "type": "calls"
+        }
+      ],
       "ui:liteidentity": [
         {
           "target": "api:get:/api/lite/identity/owner-claim/status",
@@ -70692,7 +71000,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4499"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4541"
       ],
       "id": "rel:01d5bcfc59eaef09",
       "source": "component:lite-api",
@@ -71675,6 +71983,15 @@
       "source": "component:last-known-good",
       "target": "table:release_runtime_projection",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:092afe7e6d7514de",
+      "source": "api:get:/api/lite/home/activity-cursor",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -80218,6 +80535,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:426eaa29cd4326fa",
+      "source": "api:post:/api/lite/home/activity-cursor/review",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:42800179e5ba7036",
@@ -81168,7 +81494,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4890"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4932"
       ],
       "id": "rel:4961dd30cdec3c93",
       "source": "component:lite-api",
@@ -81402,7 +81728,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4803"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4845"
       ],
       "id": "rel:4ae2f2e7982d1c97",
       "source": "component:lite-api",
@@ -82332,6 +82658,15 @@
       "source": "domain:apps",
       "target": "reason:source_fixture_expired",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-p4-regression.spec.ts"
+      ],
+      "id": "rel:5183a9ee05f47365",
+      "source": "domain:recovery",
+      "target": "test:tests/e2e/lite-p4-regression.spec.ts",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -83856,7 +84191,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3784"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3826"
       ],
       "id": "rel:5c6a7e8f20afd0c5",
       "source": "component:lite-api",
@@ -86288,6 +86623,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteHome.jsx"
+      ],
+      "id": "rel:6e86ba366082cd67",
+      "source": "ui:litehome",
+      "target": "api:get:/api/lite/home/activity-cursor",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:6e889a04a2d9fcb7",
@@ -87877,6 +88221,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteHome.jsx"
+      ],
+      "id": "rel:794b88b76362875d",
+      "source": "domain:home",
+      "target": "ui:litehome",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:796ae5b986ee7079",
@@ -88835,6 +89188,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-p4-visual-contract.spec.ts"
+      ],
+      "id": "rel:80bfa9ccc45a6321",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-p4-visual-contract.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:80c8df7d1780667a",
@@ -89685,6 +90047,15 @@
       "source": "component:identity-access-controls",
       "target": "troubleshooting:identity-passkey-or-step-up-refused",
       "type": "recovers_with"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:87bad78866800df1",
+      "source": "api:post:/api/lite/home/activity-cursor/review",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -91635,7 +92006,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4416"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4458"
       ],
       "id": "rel:9622c3144190ef74",
       "source": "component:lite-api",
@@ -92036,7 +92407,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4557"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4599"
       ],
       "id": "rel:99ba9e8682cf6f1f",
       "source": "component:lite-api",
@@ -92546,6 +92917,15 @@
       "source": "component:app-recovery-update",
       "target": "table:backup_manifest_index",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "src/lite/LiteHome.jsx"
+      ],
+      "id": "rel:9d9b71260ad022a8",
+      "source": "ui:litehome",
+      "target": "api:get:/api/lite/system/activity-summary",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -93189,6 +93569,15 @@
       "source": "api:post:/api/lite/recovery/restore",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:a22f5d809fdf756d",
+      "source": "domain:control_plane",
+      "target": "table:lite_home_activity_read_cursors",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -93945,7 +94334,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:5052"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:5094"
       ],
       "id": "rel:a718626a5b5f2425",
       "source": "component:lite-api",
@@ -94575,6 +94964,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:ab8c96497887da19",
+      "source": "domain:home",
+      "target": "api:get:/api/lite/home/activity-cursor",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:ab8cf8dc5274955c",
@@ -95017,7 +95415,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3795"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3837"
       ],
       "id": "rel:aeaad974edcf7064",
       "source": "component:lite-api",
@@ -95287,7 +95685,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4456"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4498"
       ],
       "id": "rel:b0e17c2e06af2e29",
       "source": "component:lite-api",
@@ -95375,6 +95773,15 @@
       "source": "journey:restore-execution",
       "target": "test:tests/backend/test_lite_security_s8_recovery.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:b186d086d67a7d6d",
+      "source": "domain:home",
+      "target": "api:post:/api/lite/home/activity-cursor/review",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -96153,6 +96560,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteHome.jsx"
+      ],
+      "id": "rel:b7bc9ee81bb46bc1",
+      "source": "ui:litehome",
+      "target": "api:post:/api/lite/home/activity-cursor/review",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:b7fc73984b68994d",
@@ -96920,7 +97336,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4599"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4641"
       ],
       "id": "rel:bd798d574b62754a",
       "source": "component:lite-api",
@@ -97480,7 +97896,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4517"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4559"
       ],
       "id": "rel:c146c302df54058b",
       "source": "component:lite-api",
@@ -98432,6 +98848,15 @@
       "id": "rel:c9b7d869f5283abd",
       "source": "api:post:/api/lite/enterprise/identity/people/{human_id}/passkey/options",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-p4-regression.spec.ts"
+      ],
+      "id": "rel:c9d639f6582d9c1f",
+      "source": "domain:identity",
+      "target": "test:tests/e2e/lite-p4-regression.spec.ts",
       "type": "verified_by"
     },
     {
@@ -99491,6 +99916,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:d04765148fd9a6a7",
+      "source": "api:get:/api/lite/home/activity-cursor",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:d05f2ebfe6a10cf5",
@@ -99536,7 +99970,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4386"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4428"
       ],
       "id": "rel:d0ac21c0cffa28c9",
       "source": "component:lite-api",
@@ -100532,7 +100966,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4925"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4967"
       ],
       "id": "rel:d7a4bd398a93f098",
       "source": "component:lite-api",
@@ -104509,7 +104943,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4399"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4441"
       ],
       "id": "rel:f38477f0420ebc7b",
       "source": "component:lite-api",
@@ -104676,6 +105110,15 @@
       "id": "rel:f4bc2eaf4ddb3741",
       "source": "reason:harness_transport_rejected",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-p4-regression.spec.ts"
+      ],
+      "id": "rel:f4c3aad12197425d",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-p4-regression.spec.ts",
       "type": "verified_by"
     },
     {
@@ -105947,7 +106390,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4625"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4667"
       ],
       "id": "rel:fe30f428c2df7938",
       "source": "component:lite-api",
@@ -106163,12 +106606,12 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "50c98900f9c11c07f676e67e243ab014608f230ec0d31e4a63ba3a73f568f817",
+  "source_fingerprint": "1b6afc93494e6e8a7d78fbb42cb9727bedc8292d164fbf0caf5909b5a5e3da78",
   "statistics": {
-    "entity_count": 1373,
+    "entity_count": 1380,
     "entity_type_counts": {
       "adr": 6,
-      "api": 234,
+      "api": 236,
       "capability": 5,
       "component": 58,
       "domain": 49,
@@ -106181,15 +106624,15 @@
       "runbook": 5,
       "runtime-topology": 9,
       "subject": 220,
-      "table": 82,
-      "test": 262,
+      "table": 83,
+      "test": 265,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
-      "ui": 10,
+      "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 3948,
-    "source_count": 299
+    "relation_count": 3963,
+    "source_count": 302
   }
 }

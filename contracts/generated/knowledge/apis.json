@@ -2198,6 +2198,43 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Get Lite Home Activity Cursor",
+      "domain": "home",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.homeActivityCursor",
+          "resolved": true,
+          "source_module": "src/lite/LiteHome.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/home/activity-cursor",
+      "method": "GET",
+      "name": "GET /api/lite/home/activity-cursor",
+      "operation_id": "get_lite_home_activity_cursor_api_lite_home_activity_cursor_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/home/activity-cursor",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Get Lite Identity",
       "domain": "identity",
       "frontend_clients": [
@@ -3617,6 +3654,22 @@
       "confidence": "contract-derived",
       "description": "Get Lite Activity Summary",
       "domain": "system",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.activitySummary",
+          "resolved": true,
+          "source_module": "src/lite/LiteHome.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:get:/api/lite/system/activity-summary",
       "method": "GET",
       "name": "GET /api/lite/system/activity-summary",
@@ -5439,6 +5492,44 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Review Lite Home Activity",
+      "domain": "home",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.reviewHomeActivityCursor",
+          "resolved": true,
+          "source_module": "src/lite/LiteHome.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/home/activity-cursor/review",
+      "method": "POST",
+      "name": "POST /api/lite/home/activity-cursor/review",
+      "operation_id": "review_lite_home_activity_api_lite_home_activity_cursor_review_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "503"
+      ],
+      "route": "/api/lite/home/activity-cursor/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Login Lite Identity",
       "domain": "identity",
       "frontend_clients": [
@@ -7081,6 +7172,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "50c98900f9c11c07f676e67e243ab014608f230ec0d31e4a63ba3a73f568f817"
+    "source_fingerprint": "1b6afc93494e6e8a7d78fbb42cb9727bedc8292d164fbf0caf5909b5a5e3da78"
   }
 }

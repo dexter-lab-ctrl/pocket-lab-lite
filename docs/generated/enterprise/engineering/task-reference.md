@@ -15,7 +15,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 | Workflow | Task count |
 | --- | --- |
-| Development loop | 60 |
+| Development loop | 70 |
 | Documentation loop | 55 |
 | API-validation loop | 12 |
 | Runtime-evidence loop | 35 |
@@ -6092,6 +6092,214 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Example:** `task lite:test:ux:maturity`
 
+## `lite:ui:p4:android`
+
+**Purpose:** Run existing physical Android/CDP qualification with external preflight
+
+**Audience:** developer/operator
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:perf:android-cdp`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:ui:p4:android`
+
+## `lite:ui:p4:full-mocked`
+
+**Purpose:** No canonical description declared.
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:ui:p4:mocked`
+- `npm run test:mock-regression`
+- `npm run test:perf:mocked`
+- `npm run build:budget`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:ui:p4:full-mocked`
+
+## `lite:ui:p4:live`
+
+**Purpose:** Run existing read-only live UI and performance qualification after authorization
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:e2e:live`
+- `npm run test:perf:live`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:ui:p4:live`
+
+## `lite:ui:p4:mocked`
+
+**Purpose:** No canonical description declared.
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:ui:p4:mocked`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:ui:p4:mocked`
+
+## `lite:ui:p4:unit`
+
+**Purpose:** No canonical description declared.
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test -- src/lite/LiteDesignSystemP0.test.jsx src/lite/components/LiteNextSteps.test.jsx src/lite/components/LiteEvidenceGuide.test.jsx src/lite/components/LiteQuickNavigate.test.jsx`
+
+**Environment:** None source-discovered
+
+**Inputs:** src/lite/LiteDesignSystemP0.test.jsx, src/lite/components/LiteEvidenceGuide.test.jsx, src/lite/components/LiteNextSteps.test.jsx, src/lite/components/LiteQuickNavigate.test.jsx
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:ui:p4:unit`
+
+## `lite:ui:p4:visual-review`
+
+**Purpose:** Compare committed P4 visual contracts against manually approved reference snapshots
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm exec playwright test tests/e2e/lite-p4-visual-contract.spec.ts -- --project=mocked-desktop --project=mocked-mobile`
+
+**Environment:** None source-discovered
+
+**Inputs:** tests/e2e/lite-p4-visual-contract.spec.ts
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=True; safe local=True; class=heavy-dev
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:ui:p4:visual-review`
+
 ## `lite:ui:perf:android:baseline`
 
 **Purpose:** Run repeated exact-SHA physical Android qualification with contemporaneous platform controls and normalized attribution
@@ -6227,6 +6435,142 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:ui:perf:qualified`
+
+## `lite:ui:personal-history:backend`
+
+**Purpose:** Validate durable per-human reviewed revision, source projection and authenticated routes
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_home_activity_cursor.py tests/backend/test_lite_phase3c_system_aggregates.py`
+
+**Environment:** None source-discovered
+
+**Inputs:** tests/backend/test_lite_home_activity_cursor.py, tests/backend/test_lite_phase3c_system_aggregates.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:ui:personal-history:backend`
+
+## `lite:ui:protected-confirmation:unit`
+
+**Purpose:** Validate reusable form error and protected confirmation contracts
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test -- src/lite/components/LiteSafeForms.test.jsx src/lite/homeActivityEvidence.test.js`
+
+**Environment:** None source-discovered
+
+**Inputs:** src/lite/components/LiteSafeForms.test.jsx, src/lite/homeActivityEvidence.test.js
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:ui:protected-confirmation:unit`
+
+## `lite:ui:shared-home-apps:registry`
+
+**Purpose:** Run canonical UAP registry and contract tests against integrated main foundation
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_app_registry.py`
+
+**Environment:** None source-discovered
+
+**Inputs:** tests/backend/test_lite_app_registry.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:ui:shared-home-apps:registry`
+
+## `lite:ui:shared-home-apps:unit`
+
+**Purpose:** No canonical description declared.
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test -- src/lite/components/LiteSafeForms.test.jsx src/lite/homeAttentionPriority.test.js src/lite/homeActivityEvidence.test.js src/lite/catalog/catalogPresentation.test.js`
+
+**Environment:** None source-discovered
+
+**Inputs:** src/lite/catalog/catalogPresentation.test.js, src/lite/components/LiteSafeForms.test.jsx, src/lite/homeActivityEvidence.test.js, src/lite/homeAttentionPriority.test.js
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:ui:shared-home-apps:unit`
 
 ## `lite:validation:check`
 

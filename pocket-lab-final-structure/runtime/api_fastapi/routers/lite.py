@@ -18,7 +18,7 @@ from .. import deps
 from ..db.connection import database_path
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_adapters, lite_app_registry, lite_app_governance, lite_app_credentials, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_backup_locations, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_photo_backup, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_core_projections, lite_phase3b_projections, lite_phase3c_projections, lite_identity_auth, lite_policy_opa, lite_policy_approvals, lite_device_roles
+from ..services import lite_home_activity_cursor, fleet_registry, lite_app_actions, lite_app_adapters, lite_app_registry, lite_app_governance, lite_app_credentials, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_backup_locations, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_photo_backup, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_core_projections, lite_phase3b_projections, lite_phase3c_projections, lite_identity_auth, lite_policy_opa, lite_policy_approvals, lite_device_roles
 from ..services.lite_control_plane_store import (
     CONTROL_PLANE,
     DeviceAwarenessError,
@@ -1567,6 +1567,48 @@ def get_lite_sqlite_health(request: Request) -> Response:
 def get_lite_activity_summary(request: Request) -> Response:
     deps.require_auth(request)
     return _phase3c_activity_summary_read(request)
+
+
+def _home_activity_human(request: Request, *, write: bool = False) -> str:
+    context = deps.require_auth(request, write=write)
+    actor = (context or {}).get("actor") or {}
+    human_id = str(actor.get("identity_id") or "").strip()
+    if actor.get("type") != "human" or not human_id or not ((context or {}).get("session") or {}).get("session_id"):
+        raise HTTPException(status_code=403, detail="A signed-in human session is required.")
+    return human_id
+
+
+def _home_activity_history_revision() -> int:
+    history = lite_phase3c_projections.snapshot("system.activity_history")
+    if not isinstance(history, dict):
+        raise HTTPException(status_code=503, detail="Prepared activity history not ready.")
+    return max(0, int(history.get("projection_revision") or 0))
+
+
+@router.get("/home/activity-cursor")
+def get_lite_home_activity_cursor(request: Request) -> Response:
+    human_id = _home_activity_human(request)
+    cursor = lite_home_activity_cursor.read_cursor(human_id)
+    current = _home_activity_history_revision()
+    return JSONResponse(content={
+        "history_revision": current,
+        "reviewed_revision": cursor["history_revision"],
+        "changed_since_review": current > cursor["history_revision"],
+        "last_reviewed_at": cursor["last_reviewed_at"],
+    }, headers={"Cache-Control": "private, no-store"})
+
+
+@router.post("/home/activity-cursor/review")
+def review_lite_home_activity(request: Request) -> Response:
+    human_id = _home_activity_human(request, write=True)
+    current = _home_activity_history_revision()
+    cursor = lite_home_activity_cursor.mark_reviewed(human_id, current)
+    return JSONResponse(content={
+        "history_revision": current,
+        "reviewed_revision": cursor["history_revision"],
+        "changed_since_review": False,
+        "last_reviewed_at": cursor["last_reviewed_at"],
+    }, headers={"Cache-Control": "private, no-store"})
 
 
 @router.get("/catalog")
