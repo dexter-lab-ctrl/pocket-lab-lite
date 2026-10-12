@@ -588,18 +588,24 @@ function LiteAppShell() {
     }
   }, [setActiveTab, setMenuOpen, workspaceApp]);
 
+  const openQuickNavigation = useCallback(() => {
+    if (workspaceApp || quickNavigateOpen || menuOpen) return;
+    if (document.querySelector('[role="dialog"][aria-modal="true"], [role="alertdialog"][aria-modal="true"], [data-lite-overlay-layer]')) return;
+    setQuickNavigateOpen(true);
+  }, [workspaceApp, quickNavigateOpen, menuOpen]);
+
   useEffect(() => {
     if (workspaceApp) return undefined;
     const handleShortcut = (event) => {
       if (!shouldOpenLiteQuickNavigate(event)) return;
       // Other dialogs and native focus owners have priority.
-      if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
+      if (quickNavigateOpen || menuOpen || document.querySelector('[role="dialog"][aria-modal="true"], [role="alertdialog"][aria-modal="true"]')) return;
       event.preventDefault();
-      setQuickNavigateOpen(true);
+      openQuickNavigation();
     };
     document.addEventListener('keydown', handleShortcut);
     return () => document.removeEventListener('keydown', handleShortcut);
-  }, [workspaceApp]);
+  }, [workspaceApp, menuOpen, quickNavigateOpen, openQuickNavigation]);
 
   useEffect(() => {
     if (workspaceApp) setQuickNavigateOpen(false);
@@ -730,7 +736,7 @@ function LiteAppShell() {
           </div>
           <div className="flex items-center gap-2">
             <LiteNativeInstallSurface />
-            <button type="button" className="lite-p3-launcher" onClick={() => setQuickNavigateOpen(true)} aria-label="Find a Pocket Lab section" aria-haspopup="dialog" aria-expanded={quickNavigateOpen}>Find <span className="lite-p3-launcher-shortcut">⌘/Ctrl K</span></button>
+            <button type="button" className="lite-p3-launcher" onClick={openQuickNavigation} aria-label="Find a Pocket Lab section" aria-haspopup="dialog" aria-expanded={quickNavigateOpen}>Find <span className="lite-p3-launcher-shortcut">⌘/Ctrl K</span></button>
             <button type="button" onClick={() => setMenuOpen(true)} className="rounded-2xl border border-white/10 bg-white/5 p-3 text-slate-100 md:hidden" aria-label="Open navigation"><Menu className="h-5 w-5" /></button>
           </div>
         </div>
