@@ -219,8 +219,12 @@ def test_phase3c_activity_summary_is_bounded_and_excludes_payloads(tmp_path, mon
         conn.close()
     payload = phase3c.collect_activity_summary()
     encoded = json.dumps(payload, sort_keys=True).lower()
-    assert payload["active_operations"] == 1
-    assert payload["attention_required"] == 1
+    # Historical fixture timestamps are too old to count as live running.
+    assert payload["active_operations"] == 0
+    assert payload["stale_operations"] == 1
+    assert payload["attention_required"] == 0
+    assert payload["running_window_minutes"] == 30
+    assert payload["history_window_days"] == 7
     assert payload["audit_reference_count"] == 1
     assert "must-not-appear" not in encoded
     assert "private/path" not in encoded

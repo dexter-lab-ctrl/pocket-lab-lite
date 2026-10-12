@@ -9,7 +9,7 @@ export default function HomeActivityDetails({ activity, cursor, cursorBusy, curs
   const [section, setSection] = useState('attention');
   const events = activity?.events || [];
   const lists = {
-    attention: events.filter((event) => failures.has(event.status)),
+    attention: events.filter((event) => event.needsAttention),
     running: events.filter((event) => running.has(event.status)),
     recent: events.slice(0, 4),
     history: events,
@@ -36,6 +36,7 @@ export default function HomeActivityDetails({ activity, cursor, cursorBusy, curs
           <p>Unresolved issue classification is not available from this source.</p> : null}
         {section === 'history' && activity.historicalFailures !== null ?
           <p>Historical failures in the last 7 days: {formatActivityCount(activity.historicalFailures)}. A failed record does not prove an issue is still unresolved.</p> : null}
+        {section === 'attention' && activity.grouped.length ? <p>Historical patterns to review — not automatically unresolved incidents.</p> : null}
         {section === 'attention' && activity.grouped.length ?
           <ol className="lite-home-activity-timeline">
             {activity.grouped.map((group, index) => <li key={group.domain + '-' + group.at + '-' + index}>

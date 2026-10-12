@@ -604,7 +604,7 @@ def _read_activity_rows() -> dict[str, Any]:
         }
         running_counts, queued_counts, stale_counts = {}, {}, {}
         completed_counts, historical_failures = {}, {}
-        terminal = ("succeeded", "completed", "failed", "cancelled", "undeliverable", "timed_out", "degraded", "error", "blocked")
+        terminal = ("succeeded", "completed")
         failures = ("failed", "undeliverable", "timed_out", "error", "blocked")
         for domain, table in tables.items():
             timestamp_col = "COALESCE(updated_at_epoch_ms,requested_at_epoch_ms)" if domain == "security" else "updated_at_epoch_ms"
@@ -776,6 +776,14 @@ def collect_activity_history() -> dict[str, Any]:
                 "status": _safe_status(item.get("status")),
                 "occurred_at_epoch_ms": timestamp,
                 "label": label,
+                "needs_attention": bool(
+                    domain == "devices" and item.get("attention_status") == "active"
+                    and _safe_status(item.get("status")) in _FAILED
+                ),
+                "is_fresh_running": bool(
+                    _safe_status(item.get("status")) in {"running", "working", "in_progress"}
+                    and timestamp >= int(time.time() * 1000) - _ACTIVITY_ACTIVE_FRESHNESS_MS
+                ),
                 "_family": family,
                 "_entity": str(item.get("entity_id") or item.get("app_id") or item.get("operation_type") or item.get("profile") or ""),
             })

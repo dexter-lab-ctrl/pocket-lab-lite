@@ -2,6 +2,7 @@
 const DOMAINS = { devices: 'Devices', apps: 'Apps', recovery: 'Recovery', security: 'Safety' };
 const STATUS = {
   queued: 'Queued', published: 'Queued', received: 'Queued', accepted: 'Waiting',
+  stale: 'Not confirmed running',
   running: 'Running', working: 'Running', in_progress: 'Running',
   succeeded: 'Completed', completed: 'Completed', failed: 'Failed',
   timed_out: 'Timed out', undeliverable: 'Could not deliver',
@@ -20,9 +21,12 @@ function selectEvent(raw) {
   if (!DOMAINS[raw?.domain]) return null;
   const at = readTime(raw.occurred_at_epoch_ms);
   if (at === null) return null;
-  const status = String(raw.status || 'unknown').slice(0, 32);
+  const rawStatus = String(raw.status || 'unknown').slice(0, 32);
+  const status = ['running', 'working', 'in_progress'].includes(rawStatus) && raw.is_fresh_running !== true
+    ? 'stale' : rawStatus;
   return {
     domain: raw.domain, at, status,
+    needsAttention: raw.needs_attention === true,
     statusLabel: STATUS[status] || 'Status not available',
     label: LABELS.has(raw.label) ? raw.label : (raw.domain === 'security' ? 'Safety check' : raw.domain === 'devices' ? 'Device command' : raw.domain === 'apps' ? 'App operation' : 'Recovery operation'),
   };
