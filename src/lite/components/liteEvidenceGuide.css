@@ -14,3 +14,5 @@
 .lite-p2-evidence-guide[data-lite-information="saved"] { border-style:dashed; }
 @media(max-width:520px){ .lite-p2-evidence-guide { gap:.75rem; } .lite-p2-evidence-facts { grid-template-columns:1fr; } }
 @media(prefers-reduced-motion:reduce){ .lite-p2-evidence-guide * { animation:none !important; transition:none !important; } }
+
+.lite-p2-evidence-more{min-height:44px;padding:.6rem .9rem;border:1px solid currentColor;border-radius:.7rem;justify-self:start;font-weight:650}.lite-p2-evidence-more:focus-visible{outline:2px solid var(--lite-p0-focus-ring,#2563eb);outline-offset:3px}.lite-p2-evidence-source{font-size:.8rem;opacity:.85;line-height:1.5;overflow-wrap:anywhere}
