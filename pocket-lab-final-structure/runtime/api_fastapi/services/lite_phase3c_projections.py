@@ -753,7 +753,7 @@ def collect_activity_history() -> dict[str, Any]:
                 (_ACTIVITY_DOMAIN_LABELS[domain], ""),
             )[0],
         }
-        if latest:
+        if latest and int(latest.get("updated_at_epoch_ms") or 0) >= int(time.time() * 1000) - _ACTIVITY_HISTORY_WINDOW_MS:
             latest_candidates.append({
                 "domain": domain,
                 "status": _safe_status(latest.get("status")),
@@ -766,7 +766,7 @@ def collect_activity_history() -> dict[str, Any]:
     for domain, items in domain_rows.items():
         for item in items:
             timestamp = int(item.get("updated_at_epoch_ms") or 0)
-            if timestamp <= 0:
+            if timestamp < int(time.time() * 1000) - _ACTIVITY_HISTORY_WINDOW_MS:
                 continue
             kind = str(item.get("operation_type") or item.get("action_id") or item.get("profile") or "")
             family = kind if kind in _ACTIVITY_FAMILIES else ""
