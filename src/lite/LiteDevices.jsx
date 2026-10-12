@@ -1,4 +1,5 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { LiteField } from './components/LiteSafeForms.jsx';
 import {
   Activity,
   CheckCircle2,
@@ -1144,9 +1145,7 @@ export default function DevicesScreen() {
             Create a simple invite for another phone, tablet, or small server you want to connect.
           </p>
 
-          <label className="lite-devices-field-label" htmlFor="device-name">
-            Device name
-          </label>
+          <LiteField label="Device name" id="device-name" hint="Use a recognizable name for this device." error={activeNameConflict ? 'A device with this name already exists.' : ''}>
           <input
             id="device-name"
             className="pocket-input lite-devices-input"
@@ -1159,6 +1158,7 @@ export default function DevicesScreen() {
             placeholder="Optional, for example: Kitchen tablet"
             aria-label="Device name"
           />
+          </LiteField>
 
           {activeNameConflict ? (
             <div className="lite-devices-name-conflict" role="alert">
