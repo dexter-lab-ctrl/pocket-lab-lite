@@ -198,6 +198,13 @@ export default function HomeScreen({
         <dl><div><dt>Currently active</dt><dd>{activityEvidence.active}</dd></div><div><dt>Recently completed</dt><dd>{activityEvidence.completed}</dd></div><div><dt>Needs review</dt><dd>{activityEvidence.attention}</dd></div></dl>
         <p>{activityEvidence.latestChange || 'No recent change details reported.'}</p>
         {activityEvidence.saved ? <small>Activity projection may be stale. Check again when connected.</small> : null}
+        {activityEvidence.events?.length ? <ol className="lite-home-activity-timeline" aria-label="Recent activity events">
+          {activityEvidence.events.map((event,index)=><li key={`${event.domain}-${event.at}-${index}`}>
+            <strong>{({devices:'Devices',apps:'Apps',recovery:'Recovery',security:'Safety'})[event.domain]}</strong>
+            <span>{event.status.replace(/_/g,' ')}</span>
+            <time dateTime={new Date(event.at).toISOString()}>{new Date(event.at).toLocaleString()}</time>
+          </li>)}
+        </ol> : null}
         {activityCursor?.last_reviewed_at ? <small>Last reviewed: {new Date(activityCursor.last_reviewed_at).toLocaleString()}</small> : null}
         {activityCursor?.changed_since_review ? <button type="button" disabled={cursorBusy || effectiveSavedStateOnly} onClick={markActivityReviewed}>{cursorBusy ? 'Saving review…' : 'Mark activity reviewed'}</button> : null}
         {cursorError ? <small role="status">{cursorError}</small> : null}
