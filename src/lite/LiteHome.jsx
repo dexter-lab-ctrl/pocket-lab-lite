@@ -141,6 +141,7 @@ export default function HomeScreen({
       setActivityCursor(null);
       return ()=>{cancelled=true;};
     }
+    setActivityCursor(null);
     liteApi.homeActivityCursor().then(value=>{
       if(!cancelled){setActivityCursor(value);setCursorError('');}
     }).catch(()=>{
