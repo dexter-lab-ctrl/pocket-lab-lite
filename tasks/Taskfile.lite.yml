@@ -2,6 +2,17 @@ version: '3'
 
 tasks:
 
+  lite:ui:personal-history:backend:
+    desc: Validate durable per-human reviewed revision, source projection and authenticated routes
+    cmds:
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_home_activity_cursor.py tests/backend/test_lite_phase3c_system_aggregates.py'
+
+  lite:ui:protected-confirmation:unit:
+    desc: Validate reusable form error and protected confirmation contracts
+    cmds:
+      - npm run test -- src/lite/components/LiteSafeForms.test.jsx src/lite/homeActivityEvidence.test.js
+
+
   lite:ui:shared-home-apps:registry:
     desc: Run canonical UAP registry and contract tests against integrated main foundation
     cmds:
