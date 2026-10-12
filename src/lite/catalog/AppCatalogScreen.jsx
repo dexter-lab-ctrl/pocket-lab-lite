@@ -3333,9 +3333,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       {!loading && displayedApps.length === 0 ? (
         <LiteEmptyState
           className="lite-catalog-empty-state"
-          title={apps.length ? 'No apps available' : 'No apps installed yet'}
-          description={apps.length ? 'Pocket Lab did not find an app it can show right now.' : 'Install your first self-hosted app when you are ready.'}
-          action={{ label: apps.length ? 'Check again' : 'Refresh Apps', onClick: refresh }}
+          title={catalogSearch ? 'No matching apps' : apps.length ? 'No apps available' : 'No apps installed yet'}
+          description={catalogSearch ? 'Try another app name or clear your search.' : apps.length ? 'Pocket Lab did not find an app it can show right now.' : 'Install your first self-hosted app when you are ready.'}
+          action={{ label: catalogSearch ? 'Clear search' : apps.length ? 'Check again' : 'Refresh Apps', onClick: catalogSearch ? () => setCatalogSearch('') : refresh }}
         />
       ) : null}
       {removeConfirmApp ? (
