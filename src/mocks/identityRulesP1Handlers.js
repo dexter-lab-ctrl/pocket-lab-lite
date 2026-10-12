@@ -71,10 +71,11 @@ function actionMode(action, role) {
   if (role === 'Owner') return ['rules.activate', 'rules.rollback', 'enterprise.mode.change'].includes(action) ? 'step_up' : 'allow';
   if (role === 'Admin') {
     if (action === 'device.remove') return 'approval';
-    return ['people.manage','catalog.install','rules.draft','rules.simulate','approvals.review','exceptions.manage','evidence.read'].includes(action) ? 'allow' : 'deny';
+    return ['people.manage','catalog.install','app.install','rules.draft','rules.simulate','approvals.review','exceptions.manage','evidence.read'].includes(action) ? 'allow' : 'deny';
   }
   if (role === 'Operator') {
     if (action === 'device.remove') return 'approval';
+    if (action === 'app.install') return 'temporary_access';
     return ['catalog.install','rules.simulate','evidence.read'].includes(action) ? 'allow' : 'deny';
   }
   if (role === 'Auditor') return ['rules.simulate','evidence.read'].includes(action) ? 'allow' : 'deny';
@@ -86,6 +87,7 @@ const ACTIONS = [
   ['enterprise.mode.change','Change workspace mode','Switch between Personal and Enterprise Mode.'],
   ['device.remove','Remove devices','Retire a confirmed non-server device from Pocket Lab.'],
   ['catalog.install','Install apps','Install an approved app through the server-owned execution path.'],
+  ['app.install','Install app resource','Install a registered app through server-owned execution.'],
   ['rules.draft','Draft Rules','Create a typed immutable Rules candidate for review.'],
   ['rules.activate','Activate Rules','Activate a validated Rules revision through the supervisor-owned lifecycle.'],
   ['rules.rollback','Restore known-good Rules','Request restoration of the proved known-good Rules revision.'],
@@ -106,6 +108,7 @@ function accessPayload() {
     capabilities[`${action}.requires_approval`] = mode === 'approval';
     capabilities[`${action}.requires_step_up`] = mode === 'step_up';
   }
+  const appMode = role === 'Owner' || role === 'Admin' ? 'allow' : role === 'Operator' ? 'temporary_access' : 'deny';
   return {
     mode: enterpriseEnabled() ? 'enterprise' : 'personal', enterprise_enabled: enterpriseEnabled(), current_role: role, owner_authority: role === 'Owner',
     role: { id: role, label: role, summary: ROLE_SUMMARIES[role] },
@@ -113,6 +116,19 @@ function accessPayload() {
     capabilities,
     policy_parameters: { admin_device_remove_approval: 1, operator_device_remove_approval: 1 },
     action_matrix: ACTIONS.map(([action_id,label,summary]) => ({ action_id, label, summary, roles: Object.fromEntries(roles.map((candidate) => [candidate, actionMode(action_id, candidate)])) })),
+    app_resources: [{
+      resource_type: 'app',
+      app_id: 'photoprism',
+      app_label: 'PhotoPrism',
+      role,
+      mode: 'enterprise',
+      summary: role === 'Owner' ? 'You can manage this app.' : role === 'Viewer' ? 'Read-only access.' : 'Access follows current Safety Rules.',
+      actions: [
+        { action_id: 'app.open', mode: 'allow', allowed: true },
+        { action_id: 'app.install', mode: appMode, allowed: appMode === 'allow', requires_temporary_access: appMode === 'temporary_access', temporary_access_supported: true },
+        { action_id: 'app.remove', mode: role === 'Owner' ? 'allow' : role === 'Viewer' ? 'deny' : 'approval', allowed: role === 'Owner', requires_approval: !['Owner', 'Viewer'].includes(role) },
+      ],
+    }],
     topology: { active_people: 5, invited_people: 1, active_owners: 1, active_admins: 1, active_operators: 1, active_auditors: 1, active_viewers: 1, independent_approvers: 2 },
     summary: role === 'Owner' ? 'Owner has complete supported Pocket Lab authority without peer approval.' : 'Your server-resolved role and current Safety Rules determine what you can do.',
     updated_at: now(),
@@ -123,9 +139,9 @@ function policyPayload() {
   return {
     status: 'ready', summary: 'Safety Rules are active and ready for protected changes.',
     engine: { name: 'Open Policy Agent', version: '1.19.0', healthy: true, loopback_only: true, endpoint_exposed_to_browser: false, reason_code: '' },
-    active_policy: { revision: 'mock-policy-revision', bundle_ready: true, package_status: 'active', protected_actions: ['catalog.install','device.remove','identity.passkey.revoke'], activation_model: 'supervisor_proved_revision', last_known_good: true },
+    active_policy: { revision: 'mock-policy-revision', bundle_ready: true, package_status: 'active', protected_actions: ['catalog.install','app.install','device.remove','identity.passkey.revoke'], activation_model: 'supervisor_proved_revision', last_known_good: true },
     degraded_reason: '', last_decision_at: now(),
-    policy_groups: [{ id: 'apps', label: 'Apps', actions: ['catalog.install'] }, { id: 'devices', label: 'Devices', actions: ['device.remove'] }, { id: 'identity', label: 'Identity', actions: ['identity.passkey.revoke'] }],
+    policy_groups: [{ id: 'apps', label: 'Apps', actions: ['catalog.install','app.install'] }, { id: 'devices', label: 'Devices', actions: ['device.remove'] }, { id: 'identity', label: 'Identity', actions: ['identity.passkey.revoke'] }],
     templates: [{ id: 'passkey_step_up', label: 'Passkey confirmation for sensitive Identity changes', summary: 'Requires recent server-verified passkey confirmation before removing a passkey.', status: 'active', enforcement: 'server-derived assurance', actions: ['identity.passkey.revoke'] }],
     recent_decisions: [{ decision_id: 'decision-recent', action_id: 'device.remove', target_type: 'device', target_id: 'old-phone', allow: enterpriseRole() === 'Owner', reason_code: enterpriseRole() === 'Owner' ? 'owner_authority_device_removal' : 'approval_required', policy_revision: 'mock-policy-revision', evaluation_ms: 0.4, occurred_at: now() }],
   };
@@ -198,8 +214,8 @@ export const identityRulesP1Handlers = [
   http.delete('/api/lite/enterprise/identity/people/:humanId', ({ params }) => HttpResponse.json({ person: { ...(peoplePayload().people.find((person) => person.human_id === params.humanId) || {}), status: 'removed' }, summary: 'Person removed from active access.' })),
 
   http.get('/api/lite/enterprise/rules/templates', () => HttpResponse.json({ templates: [{ template_id: 'enterprise_governance', label: 'Enterprise governance', summary: 'Typed role behavior for protected device removal.', parameters: { admin_device_remove_approval: { type: 'boolean', default: true, label: 'Require review for Admin device removal' }, operator_device_remove_approval: { type: 'boolean', default: true, label: 'Require review for Operator device removal' } } }], effective_parameters: { admin_device_remove_approval: 1, operator_device_remove_approval: 1 }, free_form_rego: false })),
-  http.get('/api/lite/enterprise/rules/health', () => HttpResponse.json({ consistency_state: 'ready', db_active_revision: 'mock-policy-revision', filesystem_active_revision: 'mock-policy-revision', known_good_revision: 'mock-policy-revision', opa_observed_revision: 'mock-policy-revision', activation_operation_state: null, opa_loopback_configured: true, opa_reachable: true, manifest_integrity: true, analysis_status: ['Owner','Admin','Auditor'].includes(enterpriseRole()) ? 'complete' : 'not_authorized', deterministic_findings_count: 0, registered_protected_actions: ['catalog.install','device.remove','identity.passkey.revoke'], represented_protected_actions: ['catalog.install','device.remove','identity.passkey.revoke'], raw_input_exposed: false })),
-  http.get('/api/lite/enterprise/rules/analysis', () => HttpResponse.json({ status: 'complete', proof_rule: 'Only direct registered-action coverage is provable.', registered_protected_actions: ['catalog.install','device.remove','identity.passkey.revoke'], represented_actions: ['catalog.install','device.remove','identity.passkey.revoke'], unmapped_actions: [], unsupported_categories: ['contradiction','shadowing','unreachable_rule'], findings: [] })),
+  http.get('/api/lite/enterprise/rules/health', () => HttpResponse.json({ consistency_state: 'ready', db_active_revision: 'mock-policy-revision', filesystem_active_revision: 'mock-policy-revision', known_good_revision: 'mock-policy-revision', opa_observed_revision: 'mock-policy-revision', activation_operation_state: null, opa_loopback_configured: true, opa_reachable: true, manifest_integrity: true, analysis_status: ['Owner','Admin','Auditor'].includes(enterpriseRole()) ? 'complete' : 'not_authorized', deterministic_findings_count: 0, registered_protected_actions: ['catalog.install','app.install','device.remove','identity.passkey.revoke'], represented_protected_actions: ['catalog.install','app.install','device.remove','identity.passkey.revoke'], raw_input_exposed: false })),
+  http.get('/api/lite/enterprise/rules/analysis', () => HttpResponse.json({ status: 'complete', proof_rule: 'Only direct registered-action coverage is provable.', registered_protected_actions: ['catalog.install','app.install','device.remove','identity.passkey.revoke'], represented_actions: ['catalog.install','app.install','device.remove','identity.passkey.revoke'], unmapped_actions: [], unsupported_categories: ['contradiction','shadowing','unreachable_rule'], findings: [] })),
   http.get('/api/lite/enterprise/rules/revisions', () => HttpResponse.json({ revisions: [{ revision_id: 'mock-policy-revision', template_id: 'enterprise_governance', template_version: '1', validation_status: 'valid', lifecycle_status: 'active', change_summary: 'Require independent review for delegated device retirement.', created_at: now() }, { revision_id: 'mock-candidate-revision', template_id: 'enterprise_governance', template_version: '1', validation_status: 'valid', lifecycle_status: 'draft', change_summary: 'Candidate delegated-review adjustment.', created_at: now() }] })),
   http.post('/api/lite/enterprise/rules/revisions', ({ request }) => request.json().then((payload) => HttpResponse.json({ revision: { revision_id: 'mock-created-revision', template_id: payload.template_id, template_version: '1', validation_status: 'pending', lifecycle_status: 'draft', change_summary: payload.change_summary, created_at: now() }, created: true }, { status: 201 }))),
   http.get('/api/lite/enterprise/rules/revisions/:revisionId', ({ params }) => HttpResponse.json({ revision: { revision_id: params.revisionId, template_id: 'enterprise_governance', template_version: '1', validation_status: 'valid', lifecycle_status: 'draft', change_summary: 'Mock revision', created_at: now() } })),
@@ -213,8 +229,8 @@ export const identityRulesP1Handlers = [
   http.get('/api/lite/enterprise/rules/approvals', () => HttpResponse.json(approvalPayload())),
   http.get('/api/lite/enterprise/rules/approvals/:approvalId', ({ params }) => HttpResponse.json({ approval: { approval_id: params.approvalId, status: 'pending' }, history: [{ occurred_at: now(), event_type: 'approval.requested', reason_code: 'approval_required', summary: 'Independent approval requested for delegated device removal.' }] })),
   http.post('/api/lite/enterprise/rules/approvals/:approvalId', ({ params, request }) => request.json().then((payload) => HttpResponse.json({ approval: { approval_id: params.approvalId, status: payload.action === 'approve' ? 'approved' : payload.action === 'reject' ? 'rejected' : 'cancelled' }, message: 'Request state updated.' }))),
-  http.get('/api/lite/enterprise/rules/exceptions', () => EXCEPTION_READ_ROLES.has(enterpriseRole()) ? HttpResponse.json({ exceptions: [{ exception_id: 'exc-mock', action_id: 'catalog.install', app_id: 'photoprism', device_id: 'mock-device', reason: 'Maintenance window', status: 'active', policy_revision: 'mock-policy-revision', expires_at: future(60 * 60 * 1000) }], eligible_people: peoplePayload().people.filter((person) => person.status === 'active').map((person) => ({ human_id: person.human_id, display_name: person.display_name, role: person.role })) }) : HttpResponse.json({ detail: { reason_code: 'enterprise_rules_role_required', message: 'Your Enterprise role is not authorized.' } }, { status: 403 })),
-  http.post('/api/lite/enterprise/rules/exceptions', ({ request }) => request.json().then((payload) => HttpResponse.json({ exception: { exception_id: 'exc-created', action_id: 'catalog.install', ...payload, status: 'active', policy_revision: 'mock-policy-revision', expires_at: future(15 * 60 * 1000) } }, { status: 201 }))),
+  http.get('/api/lite/enterprise/rules/exceptions', () => EXCEPTION_READ_ROLES.has(enterpriseRole()) ? HttpResponse.json({ exceptions: [{ exception_id: 'exc-mock', action_id: 'app.install', app_id: 'photoprism', device_id: 'mock-device', reason: 'Maintenance window', status: 'active', policy_revision: 'mock-policy-revision', expires_at: future(60 * 60 * 1000) }], eligible_people: peoplePayload().people.filter((person) => person.status === 'active').map((person) => ({ human_id: person.human_id, display_name: person.display_name, role: person.role })) }) : HttpResponse.json({ detail: { reason_code: 'enterprise_rules_role_required', message: 'Your Enterprise role is not authorized.' } }, { status: 403 })),
+  http.post('/api/lite/enterprise/rules/exceptions', ({ request }) => request.json().then((payload) => HttpResponse.json({ exception: { exception_id: 'exc-created', action_id: 'app.install', ...payload, status: 'active', policy_revision: 'mock-policy-revision', expires_at: future(15 * 60 * 1000) } }, { status: 201 }))),
   http.post('/api/lite/enterprise/rules/exceptions/:exceptionId/revoke', ({ params }) => HttpResponse.json({ exception: { exception_id: params.exceptionId, status: 'revoked' } })),
 ];
 

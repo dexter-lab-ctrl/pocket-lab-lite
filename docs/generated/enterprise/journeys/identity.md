@@ -101,6 +101,8 @@ Execution ownership: use the component/API ownership links above; no additional 
 ## Tests and validation
 
 - `test:tests/backend/test_lite_api.py`
+- `test:tests/backend/test_lite_app_governance_integration.py`
+- `test:tests/backend/test_lite_app_governance_source_guards.py`
 - `test:tests/backend/test_lite_control_plane_sqlite_p3.py`
 - `test:tests/backend/test_lite_development_documentation_platform.py`
 - `test:tests/backend/test_lite_device_health_d4.py`

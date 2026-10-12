@@ -38,13 +38,10 @@ Primary architecture: [open architecture](../../production/architecture/backup-r
 
 - `component:app-lifecycle-worker`
 - `component:backup-engine`
-- `component:command-lifecycle`
 - `component:completion-evidence`
 - `component:prepared-state`
 - `component:recovery-state`
-- `component:release-subprocess`
 - `component:restore-preview`
-- `component:security-coordinator`
 - `component:sqlite`
 - `component:worker`
 - `component:workflow-execution`
@@ -115,6 +112,8 @@ Execution ownership: FastAPI → NATS/JetStream → worker.
 ## Tests and validation
 
 - `test:tests/backend/test_lite_api.py`
+- `test:tests/backend/test_lite_app_governance_integration.py`
+- `test:tests/backend/test_lite_app_governance_source_guards.py`
 - `test:tests/backend/test_lite_database_restore_reconciliation.py`
 - `test:tests/backend/test_lite_development_documentation_platform.py`
 - `test:tests/backend/test_lite_premium_tab_polish.py`

@@ -187,7 +187,25 @@
           "type": "owns"
         }
       ],
+      "api:get:/api/lite/apps/{app_id}/credentials": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/apps/{app_id}/evidence": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/apps/{app_id}/recovery": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/apps/{app_id}/resource": [
         {
           "source": "domain:apps",
           "type": "owns"
@@ -689,6 +707,10 @@
       ],
       "api:get:/api/lite/recovery/apps": [
         {
+          "source": "ui:literecovery",
+          "type": "calls"
+        },
+        {
           "source": "domain:recovery",
           "type": "owns"
         }
@@ -1140,6 +1162,12 @@
         }
       ],
       "api:post:/api/lite/apps/{app_id}/backup/storage-device": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/apps/{app_id}/credentials": [
         {
           "source": "domain:apps",
           "type": "owns"
@@ -3886,6 +3914,12 @@
         }
       ],
       "reason:enterprise_rules_role_required": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:exception_action_invalid": [
         {
           "source": "domain:rules",
           "type": "owns"
@@ -7109,6 +7143,20 @@
           "type": "reads"
         }
       ],
+      "table:app_credential_metadata": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        },
+        {
+          "source": "api:get:/api/lite/apps/{app_id}/actions",
+          "type": "reads"
+        },
+        {
+          "source": "api:get:/api/lite/catalog",
+          "type": "reads"
+        }
+      ],
       "table:app_current_state": [
         {
           "source": "component:app-catalog",
@@ -8351,9 +8399,111 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_app_governance.py": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:protected_server_host",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_app_governance_continuations.py": [
+        {
+          "source": "reason:approval_continuation_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:approval_required",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_app_governance_integration.py": [
+        {
+          "source": "component:lite-api",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:pwa",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:backup-create",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:restore-execution",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:restore-preview",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:metadata_only",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:protected_server_host",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_app_governance_source_guards.py": [
+        {
+          "source": "component:lite-api",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:pwa",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:backup-create",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:restore-execution",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:restore-preview",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_app_projection_deadline.py": [
         {
           "source": "reason:read_degraded",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_app_registry.py": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
           "type": "verified_by"
         }
       ],
@@ -8686,6 +8836,10 @@
         },
         {
           "source": "reason:enterprise_rules_role_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:exception_action_invalid",
           "type": "verified_by"
         },
         {
@@ -9627,7 +9781,19 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/apps/{app_id}/credentials",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/apps/{app_id}/evidence",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/apps/{app_id}/recovery",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/apps/{app_id}/resource",
           "type": "verified_by"
         },
         {
@@ -10092,6 +10258,10 @@
         },
         {
           "source": "api:post:/api/lite/apps/{app_id}/backup/storage-device",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/apps/{app_id}/credentials",
           "type": "verified_by"
         },
         {
@@ -11006,6 +11176,10 @@
         },
         {
           "source": "reason:policy_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:protected_server_host",
           "type": "verified_by"
         }
       ],
@@ -13985,6 +14159,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:exception_action_invalid",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:exception_expiry_invalid",
           "type": "verified_by"
         },
@@ -15175,6 +15353,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:exception_action_invalid",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:exception_expiry_invalid",
           "type": "verified_by"
         },
@@ -16063,6 +16245,10 @@
       ],
       "test:tests/e2e/lite-accessibility-states.spec.ts": [
         {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
           "source": "domain:security",
           "type": "verified_by"
         }
@@ -16291,7 +16477,19 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/apps/{app_id}/credentials",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/apps/{app_id}/evidence",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/apps/{app_id}/recovery",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/apps/{app_id}/resource",
           "type": "verified_by"
         },
         {
@@ -16756,6 +16954,10 @@
         },
         {
           "source": "api:post:/api/lite/apps/{app_id}/backup/storage-device",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/apps/{app_id}/credentials",
           "type": "verified_by"
         },
         {
@@ -17965,6 +18167,10 @@
           "type": "reads"
         },
         {
+          "target": "table:app_credential_metadata",
+          "type": "reads"
+        },
+        {
           "target": "table:app_current_state",
           "type": "reads"
         },
@@ -18007,7 +18213,37 @@
           "type": "verified_by"
         }
       ],
+      "api:get:/api/lite/apps/{app_id}/credentials": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:get:/api/lite/apps/{app_id}/evidence": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/apps/{app_id}/recovery": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/apps/{app_id}/resource": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -18050,6 +18286,10 @@
       "api:get:/api/lite/catalog": [
         {
           "target": "table:app_action_lifecycle",
+          "type": "reads"
+        },
+        {
+          "target": "table:app_credential_metadata",
           "type": "reads"
         },
         {
@@ -19472,6 +19712,16 @@
         }
       ],
       "api:post:/api/lite/apps/{app_id}/backup/storage-device": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/apps/{app_id}/credentials": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -22385,6 +22635,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
           "type": "verified_by"
         },
@@ -22813,6 +23071,18 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_app_governance.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_registry.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
           "type": "verified_by"
         },
@@ -22886,6 +23156,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-accessibility-states.spec.ts",
           "type": "verified_by"
         },
         {
@@ -23222,6 +23496,14 @@
         },
         {
           "target": "test:tests/backend/test_lite_api.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
           "type": "verified_by"
         },
         {
@@ -24445,7 +24727,19 @@
           "type": "owns"
         },
         {
+          "target": "api:get:/api/lite/apps/{app_id}/credentials",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/apps/{app_id}/evidence",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/apps/{app_id}/recovery",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/apps/{app_id}/resource",
           "type": "owns"
         },
         {
@@ -24478,6 +24772,10 @@
         },
         {
           "target": "api:post:/api/lite/apps/{app_id}/backup/storage-device",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/apps/{app_id}/credentials",
           "type": "owns"
         },
         {
@@ -24574,6 +24872,10 @@
         },
         {
           "target": "table:app_action_lifecycle",
+          "type": "owns"
+        },
+        {
+          "target": "table:app_credential_metadata",
           "type": "owns"
         },
         {
@@ -26131,6 +26433,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
         },
@@ -27238,6 +27548,10 @@
         },
         {
           "target": "reason:enterprise_rules_role_required",
+          "type": "owns"
+        },
+        {
+          "target": "reason:exception_action_invalid",
           "type": "owns"
         },
         {
@@ -28593,6 +28907,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_database_restore_reconciliation.py",
           "type": "verified_by"
         },
@@ -28688,6 +29010,14 @@
         },
         {
           "target": "test:tests/backend/test_lite_api.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
           "type": "verified_by"
         },
         {
@@ -29183,6 +29513,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_database_restore_reconciliation.py",
           "type": "verified_by"
         },
@@ -29218,6 +29556,14 @@
         },
         {
           "target": "test:tests/backend/test_lite_api.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
           "type": "verified_by"
         },
         {
@@ -29673,6 +30019,10 @@
       ],
       "reason:approval_continuation_unavailable": [
         {
+          "target": "test:tests/backend/test_lite_app_governance_continuations.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
         },
@@ -29760,6 +30110,10 @@
         }
       ],
       "reason:approval_required": [
+        {
+          "target": "test:tests/backend/test_lite_app_governance_continuations.py",
+          "type": "verified_by"
+        },
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -30583,6 +30937,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_app_registry.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_app_runtime_reconciliation.py",
           "type": "verified_by"
         },
@@ -30926,6 +31284,20 @@
         }
       ],
       "reason:enterprise_rules_role_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:exception_action_invalid": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -31882,6 +32254,10 @@
         }
       ],
       "reason:metadata_only": [
+        {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -33093,6 +33469,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_app_governance.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
         },
@@ -33126,6 +33510,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
           "type": "verified_by"
         },
         {
@@ -34611,6 +34999,10 @@
       ],
       "ui:literecovery": [
         {
+          "target": "api:get:/api/lite/recovery/apps",
+          "type": "calls"
+        },
+        {
           "target": "api:get:/api/lite/recovery/backups",
           "type": "calls"
         },
@@ -34769,6 +35161,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "9428680fa8e2428b6ab03a1c9153cf83601b2cf1a7b07f08e07c5ee04b89a94a"
+    "source_fingerprint": "50c98900f9c11c07f676e67e243ab014608f230ec0d31e4a63ba3a73f568f817"
   }
 }

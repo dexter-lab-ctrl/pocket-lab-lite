@@ -85,6 +85,7 @@ Execution ownership: use the component/API ownership links above; no additional 
 ## SQLite / data ownership
 
 - `table:app_action_lifecycle`
+- `table:app_credential_metadata`
 - `table:app_current_state`
 - `table:device_awareness_state`
 - `table:device_enrollment_registry`

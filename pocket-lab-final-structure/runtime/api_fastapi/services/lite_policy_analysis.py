@@ -12,14 +12,27 @@ from typing import Any
 
 from ..db.connection import connection
 from ..db.migrations import apply_migrations
-from . import lite_enterprise_identity, lite_policy_lifecycle, lite_policy_opa, lite_policy_source_sync
+from . import lite_app_governance, lite_enterprise_identity, lite_policy_lifecycle, lite_policy_opa, lite_policy_source_sync
 
 # Simulation is non-executing policy analysis. Auditor may use it as a read-only
 # governance tool; Viewer remains limited to already-recorded evidence.
 SIMULATE_ROLES = frozenset({"Owner", "Admin", "Operator", "Auditor"})
 ANALYZE_ROLES = frozenset({"Owner", "Admin", "Auditor"})
 SYNTHETIC_FIELDS = frozenset({"confirmed", "revision_validated", "protected_server_host", "assurance_recent"})
-ACTION_TARGETS = {"catalog.install": "app", "device.remove": "device", "identity.passkey.revoke": "passkey"}
+ACTION_TARGETS = {
+    "catalog.install": "app",
+    "app.install": "app",
+    "app.security_check": "app",
+    "app.repair": "app",
+    "app.backup.create": "app",
+    "app.backup.to_storage": "app",
+    "app.restore.preview": "app",
+    "app.update.check": "app",
+    "app.remove": "app",
+    "app.credentials.manage": "app",
+    "device.remove": "device",
+    "identity.passkey.revoke": "passkey",
+}
 
 
 class PolicyAnalysisError(RuntimeError):
@@ -69,14 +82,37 @@ def _input(auth: dict[str, Any], action_id: str, target_id: str, synthetic: dict
     if not target_type:
         raise PolicyAnalysisError("policy_simulation_invalid", "Select a registered protected action.", status_code=422)
     target_state: dict[str, Any] = {}
+    target_revision = "simulation"
     assurance = ((auth.get("session") or {}).get("assurance") or [])
+    if target_type == "app":
+        try:
+            contract = lite_app_governance.resource_contract(
+                target_id,
+                action_id,
+                require_placement=False,
+                operation_id="policy-simulation",
+            )
+        except Exception as exc:
+            raise PolicyAnalysisError(
+                "policy_simulation_invalid",
+                "Select a registered app that supports this protected operation.",
+                status_code=422,
+            ) from exc
+        target_state = lite_app_governance.policy_target(contract)
+        target_revision = str(contract["contract_revision"])
     if synthetic is not None:
-        target_state = {key: value for key, value in synthetic.items() if key != "assurance_recent"}
+        target_state.update({key: value for key, value in synthetic.items() if key != "assurance_recent"})
         assurance = ([{"purpose": "identity.passkey.revoke", "credential_id": "synthetic", "satisfied_at": "synthetic", "expires_at": "synthetic"}] if synthetic.get("assurance_recent") else [])
     derived = dict(auth)
     derived["session"] = {**(auth.get("session") or {}), "assurance": assurance}
-    return lite_policy_opa.build_authorization_input(auth_context=derived, action_id=action_id, target_type=target_type, target_id=target_id, target_revision="simulation", target=target_state)
-
+    return lite_policy_opa.build_authorization_input(
+        auth_context=derived,
+        action_id=action_id,
+        target_type=target_type,
+        target_id=target_id,
+        target_revision=target_revision,
+        target=target_state,
+    )
 
 def _candidate_decision(revision: dict[str, Any], input_doc: dict[str, Any]) -> dict[str, Any]:
     parameters = json.loads(revision["canonical_parameters_json"])

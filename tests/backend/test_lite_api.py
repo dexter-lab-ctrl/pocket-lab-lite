@@ -118,6 +118,28 @@ def client():
     return _PreparedTestClient()
 
 
+def _patch_verified_server_host(monkeypatch, *, extra_devices=()):
+    """Provide the server-derived placement proof required by governed app actions."""
+    ensure_runtime_path()
+    from api_fastapi.services import lite_status
+
+    server = {
+        "id": "pocket-lab-lite-server",
+        "name": "Pocket Lab Lite Server",
+        "role": "server_host",
+        "protected_server_host": True,
+        "is_current": True,
+        "connection": "online",
+        "status": "healthy",
+        "capabilities": ["app_host", "compute"],
+    }
+    monkeypatch.setattr(
+        lite_status,
+        "lite_fleet",
+        lambda: {"status": "healthy", "devices": [server, *list(extra_devices)]},
+    )
+
+
 def _lite_ui_source() -> str:
     lite_files = list(Path("src/lite").glob("Lite*.jsx"))
     lite_files.extend(Path("src/lite/catalog").glob("*.jsx"))
@@ -289,8 +311,8 @@ def test_lite_catalog_endpoint_registered():
 
 def test_lite_catalog_install_validates_app_and_target_before_queue():
     unknown = client().post("/api/lite/catalog/install", json={"app_id": "vault"})
-    assert unknown.status_code == 400
-    assert "PhotoPrism" in unknown.text
+    assert unknown.status_code == 404
+    assert "not registered" in unknown.text.lower()
 
     remote = client().post("/api/lite/catalog/install", json={"app_id": "photoprism", "target_node_id": "other-device"})
     assert remote.status_code == 409
@@ -422,9 +444,8 @@ def test_lite_restore_requires_confirmation():
 
 def test_lite_catalog_remove_does_not_overclaim():
     response = client().post("/api/lite/catalog/remove", json={"app_id": "demo", "confirm": True})
-    assert response.status_code == 501
-    payload = response.json()
-    assert payload["status"] == "not_implemented"
+    assert response.status_code == 404
+    assert "not registered" in response.text.lower()
 
 
 def test_lite_add_device_invite_ready_or_queued_for_compute_role():
@@ -2219,6 +2240,7 @@ def test_lite_app_security_check_queues_backend_owned_app_check(monkeypatch):
     ensure_runtime_path()
     from api_fastapi.services.nats_bus import BUS
 
+    _patch_verified_server_host(monkeypatch)
     published: list[tuple[str, str, dict]] = []
     BUS.connected = True
     BUS.js = object()
@@ -2268,6 +2290,7 @@ def test_lite_app_backup_profiles_are_sanitized_and_photoprism_aware():
 
 
 def test_lite_app_backup_queues_existing_worker_owned_backup(monkeypatch):
+    _patch_verified_server_host(monkeypatch)
     from api_fastapi.services.nats_bus import BUS
 
     published: list[tuple[str, str, dict]] = []
@@ -3048,13 +3071,13 @@ def test_lite_storage_backup_targets_rejects_offline_target(monkeypatch):
     )
 
     response = client().post(
-        "/api/lite/apps/photoprism/actions/backup_to_storage",
+        "/api/lite/recovery/apps/photoprism/backup-to-target",
         json={"target_device_id": "storage-phone-1", "reason": "test transfer"},
     )
     assert response.status_code == 409
     payload = response.json().get("detail") or response.json()
-    assert payload["status"] == "target_not_ready"
-    assert "offline" in payload["summary"].lower()
+    assert payload["status"] == "app_placement_not_ready"
+    assert payload["reason_code"] in {"target_device_unavailable", "required_device_capability_unverified"}
 
 
 def test_lite_photoprism_action_center_includes_storage_and_lifecycle_actions(monkeypatch):
@@ -3118,7 +3141,7 @@ def test_lite_storage_and_app_lifecycle_ui_source_is_present():
     assert "Saved to Storage Phone" in ui
     assert "Remove app" in ui
     assert "Confirm remove" in ui
-    assert "Delete your photo files." in ui
+    assert "Connected media files are not deleted by default." in ui
     assert "Delete existing backups by default." in ui
     assert "Repair" in ui
     assert "Update" in ui
@@ -3768,7 +3791,7 @@ def test_lite_app_update_apply_stays_disabled(monkeypatch):
 def test_lite_app_update_unknown_app_is_safe():
     response = client().get("/api/lite/apps/vault/update")
     assert response.status_code == 404
-    assert "PhotoPrism is the first app" in response.text
+    assert "not registered" in response.text.lower()
 
 
 def test_lite_app_update_frontend_source_is_readiness_only():
@@ -4350,7 +4373,7 @@ def test_lite_app_catalog_details_selection_is_action_specific():
     ui = _lite_ui_source()
     css = Path("src/index.css").read_text()
     assert "detailsActionId" in ui
-    assert "openActionDetails(entry.actionId, app.id || 'photoprism')" in ui
+    assert "openActionDetails(entry.actionId, app.id)" in ui
     assert "detailsActionId === entry.actionId" in ui
     assert "lite-catalog-action-details-anchor" in ui
     assert "AppActionDetailsPanel" in ui
@@ -4799,7 +4822,7 @@ def test_lite_safe_reads_use_query_backed_resource_source():
     assert "useState" not in status_hook
     assert "setInterval" not in status_hook
     assert "useLiteQuery" in catalog
-    assert "liteQueryPaths.appActions('photoprism')" in catalog
+    assert "liteQueryPaths.appActions(featuredAppId)" in catalog
     assert "useLiteMutation" in catalog
     assert "getLiteAppActionInvalidations" in catalog
     assert "liteMutationInvalidations" not in catalog
@@ -7258,6 +7281,7 @@ def test_lite_security_check_accepts_default_and_rejects_unknown_profile(monkeyp
     from api_fastapi.services import lite_security
     from api_fastapi.services.nats_bus import BUS
 
+    _patch_verified_server_host(monkeypatch)
     published: list[tuple[str, str, dict]] = []
     BUS.connected = True
     BUS.js = object()
@@ -7389,13 +7413,13 @@ def test_lite_security_app_check_profile_source_contract():
     assert "PhotoPrism database" in app_plan["skipped_targets"]
     assert "PhotoPrism thumbnails, cache, sidecars, and database" in app_plan["excluded_groups"]
     assert "photoprism.env" in policy_source
-    assert "target-photoprism-route-posture.json" in security
-    assert "target-photoprism-trivy.json" in security
+    assert 'f"target-{prefix}-route-posture.json"' in security
+    assert 'f"target-{prefix}-trivy.json"' in security
     assert "target-{target_id}-sbom.cdx.json" in security
-    assert '"photoprism_app_files", "PhotoPrism", policy.SCAN_PROFILE_APP' in security
-    assert "target-photoprism-config-secret.json" in security
-    assert "target-photoprism-backup-metadata.json" in security
-    assert "target-photoprism-action-state.json" in security
+    assert 'f"{app_label} app files"' in security
+    assert 'f"target-{prefix}-config-secret.json"' in security
+    assert 'f"target-{prefix}-backup-metadata.json"' in security
+    assert 'f"target-{prefix}-action-state.json"' in security
     assert "App route checked" in security
     assert "App files checked" in security
     assert "App settings checked" in security
@@ -7405,7 +7429,7 @@ def test_lite_security_app_check_profile_source_contract():
     assert "profile=profile" in router
     assert "app_id=app_id" in router
     assert "App Check requires an app_id." in router
-    assert "security_app_check" in app_actions
+    assert "check_app" in app_actions
     assert "profile" in app_actions and "app" in app_actions
     assert "SECURITY_PROFILE3_APP_CHECK_GUARDS" in ui
     assert "Check PhotoPrism" in ui
@@ -7551,7 +7575,7 @@ def test_lite_security_enterprise_scanner_profile_history_contract():
     assert "target-aware" not in security.lower()
     assert "_photoprism_proot_targets" in security
     assert "binary_path.exists()" in security
-    assert "PhotoPrism app binary" in security
+    assert 'f"{app_label} app binary"' in security
     assert "POCKETLAB_LITE_BACKUP_ROOT" in policy_source
     assert "pocket-lab-lite-backups" in policy_source
     assert "scanner_quality" in security

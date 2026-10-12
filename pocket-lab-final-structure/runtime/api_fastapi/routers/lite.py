@@ -18,7 +18,7 @@ from .. import deps
 from ..db.connection import database_path
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_backup_locations, lite_catalog, lite_app_registry, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_photo_backup, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_core_projections, lite_phase3b_projections, lite_phase3c_projections, lite_identity_auth, lite_policy_opa, lite_policy_approvals, lite_device_roles
+from ..services import fleet_registry, lite_app_actions, lite_app_adapters, lite_app_registry, lite_app_governance, lite_app_credentials, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_backup_locations, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_photo_backup, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_core_projections, lite_phase3b_projections, lite_phase3c_projections, lite_identity_auth, lite_policy_opa, lite_policy_approvals, lite_device_roles
 from ..services.lite_control_plane_store import (
     CONTROL_PLANE,
     DeviceAwarenessError,
@@ -240,6 +240,82 @@ async def _enforce_lite_policy(
                 "approval": decision.get("approval"),
             },
         ) from exc
+
+
+async def _authorize_app_resource(
+    *,
+    auth_context: dict[str, Any],
+    app_id: str,
+    action_id: str,
+    target_device_id: str | None = None,
+    operation_id: str | None = None,
+    require_placement: bool | None = None,
+) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    contract = lite_app_governance.resource_contract(
+        app_id,
+        action_id,
+        target_device_id=target_device_id,
+        operation_id=operation_id,
+        require_placement=require_placement,
+        enforce_placement=True,
+    )
+    actor = auth_context.get("actor") if isinstance(auth_context.get("actor"), dict) else {}
+    contract["requested_actor"] = {
+        "type": str(actor.get("type") or "")[:32],
+        "id": str(actor.get("identity_id") or actor.get("id") or "")[:120],
+    }
+    if not contract.get("governed"):
+        return contract, None
+    decision = await _enforce_lite_policy(
+        auth_context=auth_context,
+        action_id=str(contract["semantic_action"]),
+        target_type="app",
+        target_id=str(contract["app_id"]),
+        target_revision=str(contract["contract_revision"]),
+        target=lite_app_governance.policy_target(contract),
+        correlation_id=str(contract["operation_id"]),
+    )
+    continuation_id = str(decision.get("continuation_approval_id") or "")
+    if continuation_id:
+        try:
+            await asyncio.to_thread(
+                lite_policy_approvals.consume_matching,
+                auth_context=auth_context,
+                approval_id=continuation_id,
+                action_id=str(contract["semantic_action"]),
+                target_type="app",
+                target_id=str(contract["app_id"]),
+                target_revision=str(contract["contract_revision"]),
+                policy_revision=str(decision.get("policy_revision") or ""),
+                request_fingerprint=str(contract["request_fingerprint"]),
+            )
+        except lite_policy_approvals.ApprovalError as exc:
+            raise HTTPException(
+                status_code=exc.status_code,
+                headers={"Cache-Control": "no-store"},
+                detail={
+                    "status": "blocked",
+                    "accepted": False,
+                    "reason_code": exc.reason_code,
+                    "message": exc.message,
+                },
+            ) from exc
+    return contract, decision
+
+
+def _app_authorization_summary(contract: dict[str, Any], decision: dict[str, Any] | None) -> dict[str, Any]:
+    decision = decision if isinstance(decision, dict) else {}
+    return {
+        "resource_type": "app",
+        "app_id": contract.get("app_id"),
+        "semantic_action": contract.get("semantic_action"),
+        "contract_revision": contract.get("contract_revision"),
+        "decision_id": decision.get("decision_id"),
+        "reason_code": decision.get("reason_code"),
+        "policy_revision": decision.get("policy_revision"),
+        "temporary_exception_id": decision.get("continuation_exception_id"),
+        "governed": bool(contract.get("governed")),
+    }
 
 
 def _safe_recovery_actor(auth_context: dict[str, Any]) -> dict[str, str | bool]:
@@ -1006,6 +1082,15 @@ class LiteAppActionRequest(BaseModel):
     preserve_storage_mappings: bool = True
 
 
+class LiteAppCredentialMetadataRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    credential_id: str = Field(min_length=1, max_length=64)
+    status: Literal["configured", "missing", "needs_rotation", "invalid", "external_manual", "not_required"]
+    management: Literal["external_or_manual"] = "external_or_manual"
+    last_verified_at: str | None = Field(default=None, max_length=40)
+
+
 class LiteAddDeviceRequest(BaseModel):
     device_roles: list[Literal["compute", "storage"]] | None = Field(
         default=None,
@@ -1449,9 +1534,9 @@ def get_lite_nats_readiness(request: Request) -> Response:
 
 
 def _build_lite_catalog_projection() -> dict[str, Any]:
-    return lite_app_registry.project_registered_catalog(lite_app_lifecycle.hydrate_catalog_lifecycle(
+    return lite_app_lifecycle.hydrate_catalog_lifecycle(
         lite_catalog_live.hydrate_catalog(lite_catalog.catalog_payload(None))
-    ))
+    )
 
 
 @router.get("/system/telemetry-thresholds")
@@ -1582,14 +1667,45 @@ def get_lite_app_lifecycle_profile(app_id: str, request: Request) -> Response:
     return _control_plane_prepared_response(request, selected, view_model=view_model)
 
 
-def _require_supported_app_id(app_id: str) -> str:
-    normalized = str(app_id or "").strip().lower()
-    if normalized not in lite_app_actions.SUPPORTED_APP_IDS:
+def _require_app_service(app_id: str, service: str) -> str:
+    try:
+        definition = lite_app_registry.app_definition(app_id)
+    except HTTPException as exc:
         raise HTTPException(
             status_code=404,
-            detail={"status": "not_found", "summary": "PhotoPrism is the first app supported by Pocket Lab Lite."},
+            detail={"status": "not_found", "summary": "This app is not registered in Pocket Lab Lite."},
+        ) from exc
+    if not lite_app_adapters.supports_service(definition.id, service):
+        raise HTTPException(
+            status_code=409,
+            detail={"status": "not_supported", "summary": f"This app does not support {service.replace('_', ' ')}."},
         )
-    return normalized
+    if not lite_app_registry.platform_supported(definition.id):
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "unsupported_platform",
+                "summary": "This app is not available on this device platform.",
+                "platform": lite_app_registry.current_platform_id(),
+            },
+        )
+    return definition.id
+
+
+def _require_supported_app_id(app_id: str) -> str:
+    try:
+        definition = lite_app_registry.app_definition(app_id)
+    except HTTPException as exc:
+        raise HTTPException(
+            status_code=404,
+            detail={"status": "not_found", "summary": "This app is not registered in Pocket Lab Lite."},
+        ) from exc
+    if definition.id not in lite_app_actions.SUPPORTED_APP_IDS:
+        raise HTTPException(
+            status_code=409,
+            detail={"status": "not_supported", "summary": "This registered app has no action adapter."},
+        )
+    return definition.id
 
 
 def _saved_app_actions(app_id: str) -> dict[str, Any] | None:
@@ -1623,6 +1739,62 @@ def get_lite_app_actions(app_id: str, request: Request) -> Response:
     except PreparedProjectionUnavailable:
         return _projection_warming_response(domain="apps", view_model=view_model)
     return _control_plane_prepared_response(request, prepared, view_model=view_model)
+
+
+@router.get("/apps/{app_id}/resource")
+def get_lite_app_resource(app_id: str, request: Request) -> dict[str, Any]:
+    auth_context = deps.require_auth(request)
+    definition = lite_app_registry.app_definition(app_id)
+    authority = lite_app_governance.authority_projection(auth_context, app_id=definition.id)
+    return {
+        "resource_type": "app",
+        "app_id": definition.id,
+        "app_label": definition.name,
+        "registry": definition.public_contract(),
+        "authority": authority.get("resources", [{}])[0],
+        "recovery": lite_app_governance.recovery_projection(definition.id),
+        "credentials": lite_app_credentials.credential_status(definition.id),
+        "updated_at": deps.now_utc_iso(),
+    }
+
+
+@router.get("/apps/{app_id}/credentials")
+def get_lite_app_credentials(app_id: str, request: Request) -> dict[str, Any]:
+    auth_context = deps.require_auth(request)
+    projection = lite_app_governance.authority_projection(auth_context, app_id=app_id)
+    resource = (projection.get("resources") or [{}])[0]
+    read = next((item for item in resource.get("actions") or [] if item.get("action_id") == "app.credentials.read_status"), None)
+    if not read or not read.get("allowed"):
+        raise HTTPException(status_code=403, detail={"status": "blocked", "summary": "Your current app authority does not allow credential status access."})
+    return lite_app_credentials.credential_status(app_id)
+
+
+@router.post("/apps/{app_id}/credentials")
+async def update_lite_app_credentials(app_id: str, payload: LiteAppCredentialMetadataRequest, request: Request) -> dict[str, Any]:
+    auth_context = deps.require_auth(request, write=True)
+    contract, decision = await _authorize_app_resource(
+        auth_context=auth_context,
+        app_id=app_id,
+        action_id="app.credentials.manage",
+        operation_id="app-credential-" + uuid.uuid4().hex,
+        require_placement=False,
+    )
+    result = lite_app_credentials.update_metadata(
+        contract["app_id"],
+        credential_id=payload.credential_id,
+        status=payload.status,
+        management=payload.management,
+        last_verified_at=payload.last_verified_at,
+    )
+    result["authorization"] = _app_authorization_summary(contract, decision)
+    result["secrets_accepted"] = False
+    return result
+
+
+@router.get("/apps/{app_id}/recovery")
+def get_lite_app_recovery_contract(app_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_app_governance.recovery_projection(app_id)
 
 
 @router.get("/apps/{app_id}/evidence")
@@ -1664,13 +1836,14 @@ def _saved_app_subprojection(app_id: str, name: str) -> dict[str, Any] | None:
 @router.get("/apps/{app_id}/update")
 def get_lite_app_update_status(app_id: str, request: Request) -> Response:
     deps.require_auth(request)
-    app_id = _require_supported_app_id(app_id)
+    app_id = _require_app_service(app_id, "update_readiness")
+    adapter = lite_app_adapters.adapter_for(app_id)
     view_model = "app-update-prepared-e3-v1"
     try:
         prepared = CONTROL_PLANE.prepared_only_read(
             domain="apps", key=f"update:{app_id}",
             snapshot_builder=lambda: _saved_app_subprojection(app_id, "update"),
-            builder=lambda: lite_app_update.update_status(app_id),
+            builder=adapter.update_status,
             projector=lambda payload: CONTROL_PLANE.update_app_subprojection(app_id, "update", payload),
             stale_after_ms=30_000, max_stale_ms=180_000,
             deadline_seconds=6.0, priority=45, work_class="io",
@@ -1683,7 +1856,8 @@ def get_lite_app_update_status(app_id: str, request: Request) -> Response:
 @router.get("/apps/{app_id}/update/receipts/{operation_id}")
 def get_lite_app_update_receipt(app_id: str, operation_id: str, request: Request) -> dict[str, Any]:
     deps.require_auth(request)
-    receipt = lite_app_update.update_receipt(app_id, operation_id)
+    app_id = _require_app_service(app_id, "update_readiness")
+    receipt = lite_app_adapters.adapter_for(app_id).update_receipt(operation_id)
     if not receipt:
         raise HTTPException(status_code=404, detail={"status": "not_found", "summary": "Update readiness receipt was not found."})
     return receipt
@@ -1692,7 +1866,8 @@ def get_lite_app_update_receipt(app_id: str, operation_id: str, request: Request
 @router.post("/apps/{app_id}/update/apply", status_code=409)
 def apply_lite_app_update(app_id: str, payload: LiteAppUpdateRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
-    return lite_app_update.apply_update_disabled(app_id)
+    app_id = _require_app_service(app_id, "update_readiness")
+    return lite_app_adapters.adapter_for(app_id).update_apply_disabled()
 
 
 @router.get("/apps/{app_id}/backup")
@@ -1716,8 +1891,15 @@ def get_lite_app_backup_status(app_id: str, request: Request) -> Response:
 
 @router.post("/apps/{app_id}/backup", status_code=202)
 async def start_lite_app_backup(app_id: str, payload: LiteAppBackupRequest, request: Request) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
+    auth_context = deps.require_auth(request, write=True)
     command = lite_app_backup.app_backup_command(app_id, mode=payload.mode, reason=payload.reason)
+    contract, decision = await _authorize_app_resource(
+        auth_context=auth_context,
+        app_id=app_id,
+        action_id="app.backup.create",
+        operation_id=str(command.get("command_id") or command.get("backup_id") or uuid.uuid4().hex),
+    )
+    command["governance"] = lite_app_governance.sanitized_evidence_link(contract, decision)
     try:
         submitted = await submit_domain_command(
             lite_app_backup.APP_BACKUP_CREATE_SUBJECT,
@@ -1739,14 +1921,15 @@ async def start_lite_app_backup(app_id: str, payload: LiteAppBackupRequest, requ
     submitted.update({
         "accepted": True,
         "status": submitted.get("status") or "queued",
-        "app_id": "photoprism",
+        "app_id": command["app_id"],
         "action_id": "backup_app",
         "backup_id": command["backup_id"],
         "mode": command["app_backup_mode"],
         "pending_backup": pending,
-        "summary": "Backing up PhotoPrism app settings.",
+        "summary": f"Backing up {command.get('app_label') or command['app_id']} app settings.",
         "progress": {"phase": "queued", "step": "Backup queued.", "bounded": True},
         "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
+        "authorization": _app_authorization_summary(contract, decision),
     })
     return submitted
 
@@ -1768,8 +1951,15 @@ def get_lite_app_backup_receipt(app_id: str, backup_id: str, request: Request) -
 
 @router.post("/apps/{app_id}/restore/preview", status_code=202)
 async def start_lite_app_restore_preview(app_id: str, payload: LiteAppRestorePreviewRequest, request: Request) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
+    auth_context = deps.require_auth(request, write=True)
     command = lite_app_backup.app_restore_preview_command(app_id, backup_id=payload.backup_id or "latest", reason=payload.reason)
+    contract, decision = await _authorize_app_resource(
+        auth_context=auth_context,
+        app_id=app_id,
+        action_id="app.restore.preview",
+        operation_id=str(command.get("command_id") or command.get("preview_id") or uuid.uuid4().hex),
+    )
+    command["governance"] = lite_app_governance.sanitized_evidence_link(contract, decision)
     try:
         submitted = await submit_domain_command(
             lite_app_backup.APP_RESTORE_PREVIEW_SUBJECT,
@@ -1791,14 +1981,15 @@ async def start_lite_app_restore_preview(app_id: str, payload: LiteAppRestorePre
     submitted.update({
         "accepted": True,
         "status": submitted.get("status") or "queued",
-        "app_id": "photoprism",
+        "app_id": command["app_id"],
         "action_id": "preview_restore",
         "backup_id": command["backup_id"],
         "preview_id": command["preview_id"],
         "pending_restore_preview": pending,
-        "summary": "Preparing PhotoPrism restore preview.",
+        "summary": f"Preparing {command.get('app_label') or app_id} restore preview.",
         "progress": {"phase": "queued", "step": "Restore preview queued.", "bounded": True},
         "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
+        "authorization": _app_authorization_summary(contract, decision),
     })
     return submitted
 
@@ -1813,19 +2004,51 @@ def get_lite_app_restore_preview(app_id: str, preview_id: str, request: Request)
 
 
 @router.post("/apps/{app_id}/backup/storage-device")
-def start_lite_app_backup_to_storage_device(app_id: str, payload: LiteAppActionRequest, request: Request) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
-    return lite_app_backup.backup_to_storage_readiness(app_id, payload.target_device_id, reason=payload.reason)
+async def start_lite_app_backup_to_storage_device(app_id: str, payload: LiteAppActionRequest, request: Request) -> dict[str, Any]:
+    auth_context = deps.require_auth(request, write=True)
+    contract, decision = await _authorize_app_resource(
+        auth_context=auth_context,
+        app_id=app_id,
+        action_id="app.backup.to_storage",
+        target_device_id=payload.target_device_id,
+        operation_id="app-backup-target-" + uuid.uuid4().hex,
+    )
+    result = lite_app_backup.backup_to_storage_readiness(app_id, payload.target_device_id, reason=payload.reason)
+    result["authorization"] = _app_authorization_summary(contract, decision)
+    return result
 
 
 @router.post("/apps/{app_id}/actions/{action_id}")
 async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActionRequest, request: Request) -> dict[str, Any]:
     auth_context = deps.require_auth(request, write=True)
     action = lite_app_actions.prepare_action(app_id, action_id, payload=_lite_payload_dict(payload))
+    app_id = lite_app_registry.app_definition(app_id).id
+    adapter = lite_app_adapters.adapter_for(app_id)
     kind = action.get("kind")
+    semantic = lite_app_governance.semantic_action(action_id) if action_id in lite_app_governance.REGISTRY_ACTION_TO_SEMANTIC else None
+    command_hint = action.get("command") if isinstance(action.get("command"), dict) else {}
+    governance_contract = None
+    governance_decision = None
+    non_executing_kinds = {"url", "guidance", "already_installed", "remove_not_implemented", "repair_not_implemented", "backup_to_storage_not_implemented"}
+    if semantic in lite_app_governance.GOVERNED_ACTIONS and kind not in non_executing_kinds:
+        governance_contract, governance_decision = await _authorize_app_resource(
+            auth_context=auth_context,
+            app_id=app_id,
+            action_id=semantic,
+            target_device_id=str(command_hint.get("target_node_id") or payload.target_device_id or "") or None,
+            operation_id=str(command_hint.get("operation_id") or command_hint.get("command_id") or uuid.uuid4().hex),
+        )
+        if command_hint is not None:
+            command_hint["governance"] = lite_app_governance.sanitized_evidence_link(governance_contract, governance_decision)
 
     if kind in {"url", "guidance"}:
         return {key: value for key, value in action.items() if key != "kind"}
+
+    if kind == "already_installed":
+        response = action.get("response")
+        if isinstance(response, dict):
+            return response
+        raise HTTPException(status_code=500, detail={"status": "invalid_adapter_contract", "summary": "App adapter returned an invalid already-installed response."})
 
     if kind == "backup":
         command = action["command"]
@@ -1850,14 +2073,15 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
         submitted.update({
             "accepted": True,
             "status": submitted.get("status") or "queued",
-            "app_id": "photoprism",
+            "app_id": command["app_id"],
             "action_id": "backup_app",
             "backup_id": command["backup_id"],
             "mode": command["app_backup_mode"],
             "pending_backup": pending,
-            "summary": "Backing up PhotoPrism app settings.",
+            "summary": action.get("summary") or f"Backing up {command.get('app_label') or app_id} app settings.",
             "progress": {"phase": "queued", "step": "Backup queued.", "bounded": True},
             "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
+            "authorization": _app_authorization_summary(governance_contract, governance_decision) if governance_contract else None,
         })
         return submitted
 
@@ -1884,71 +2108,77 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
         submitted.update({
             "accepted": True,
             "status": submitted.get("status") or "queued",
-            "app_id": "photoprism",
+            "app_id": command.get("app_id") or app_id,
             "action_id": "preview_restore",
             "backup_id": command["backup_id"],
             "preview_id": command["preview_id"],
             "pending_restore_preview": pending,
-            "summary": "Preparing PhotoPrism restore preview.",
+            "summary": f"Preparing {lite_app_registry.app_definition(command.get('app_id') or app_id).name} restore preview.",
             "progress": {"phase": "queued", "step": "Restore preview queued.", "bounded": True},
             "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
+            "authorization": _app_authorization_summary(governance_contract, governance_decision) if governance_contract else None,
         })
         return submitted
 
     if kind == "update_check":
         command = action["command"]
-        subject = action.get("subject") or lite_app_update.APP_UPDATE_CHECK_SUBJECT
+        subject = action.get("subject")
+        event = action.get("event") or "lite.app.update.check_queued"
+        if not subject:
+            raise HTTPException(status_code=500, detail={"status": "invalid_adapter_contract", "summary": "Update handler did not provide a command subject."})
         await ensure_worker_execution_ready()
-        pending = lite_app_update.record_update_request(command)
+        pending = adapter.record_special_action_queued(kind, command) or {}
         try:
             submitted = await submit_domain_command(
                 subject,
-                "lite.app.update.check_queued",
+                event,
                 command,
                 trace_id=command.get("command_id"),
             )
         except Exception:
-            state = lite_app_update._read_state()
-            if isinstance(state.get("pending_update_check"), dict) and state["pending_update_check"].get("command_id") == command.get("command_id"):
-                state["pending_update_check"] = None
-                lite_app_update._write_state(state)
+            adapter.discard_special_action_queued(kind, command)
             raise
         submitted.update({
             "accepted": True,
             "status": submitted.get("status") or "queued",
-            "app_id": "photoprism",
+            "app_id": command.get("app_id") or app_id,
             "action_id": "update_app",
             "operation_id": command["operation_id"],
             "command_id": command["command_id"],
             "pending_update_check": pending,
-            "summary": "Checking PhotoPrism update readiness.",
+            "summary": action.get("summary") or "Checking app update readiness.",
             "progress": pending.get("progress") or {"phase": "queued", "step": "Update check queued.", "bounded": True},
             "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
+            "authorization": _app_authorization_summary(governance_contract, governance_decision) if governance_contract else None,
         })
         return submitted
 
     if kind == "security_app_check":
         command = action["command"]
+        subject = action.get("subject")
+        event = action.get("event") or "lite.security.app_check.requested"
+        if not subject:
+            raise HTTPException(status_code=500, detail={"status": "invalid_adapter_contract", "summary": "App Check handler did not provide a command subject."})
         await ensure_worker_execution_ready()
-        lite_security.record_queued_run(command)
+        adapter.record_special_action_queued(kind, command)
         try:
             submitted = await submit_domain_command(
-                lite_security.policy.COMMAND_SUBJECT,
-                "lite.security.app_check.requested",
+                subject,
+                event,
                 command,
                 trace_id=command.get("command_id"),
             )
         except Exception:
-            lite_security.discard_queued_run(command.get("run_id") or command.get("command_id"))
+            adapter.discard_special_action_queued(kind, command)
             raise
         submitted.update({
             "accepted": True,
             "status": submitted.get("status") or "queued",
-            "app_id": "photoprism",
+            "app_id": command.get("app_id") or app_id,
             "action_id": "check_app",
             "run_id": command.get("run_id"),
             "scan_profile": lite_security.policy.SCAN_PROFILE_APP,
-            "summary": "Checking PhotoPrism safety.",
+            "summary": action.get("summary") or "Checking app safety.",
             "progress": {"phase": "queued", "step": "App Check queued.", "bounded": True},
             "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend App Check record pending."},
         })
@@ -1956,60 +2186,67 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
 
     if kind == "media":
         command = action["command"]
+        subject = action.get("subject")
+        event = action.get("event") or "lite.app.media.queued"
+        if not subject:
+            raise HTTPException(status_code=500, detail={"status": "invalid_adapter_contract", "summary": "Media handler did not provide a command subject."})
+        operation = adapter.record_special_action_queued(kind, command) or {}
         try:
-            submitted = await submit_domain_command(
-                lite_photoprism_media.MEDIA_COMMAND_SUBJECT,
-                "lite.app.media.queued",
-                command,
-            )
+            submitted = await submit_domain_command(subject, event, command)
         except HTTPException:
+            adapter.discard_special_action_queued(kind, command)
             raise
         except Exception as exc:
+            adapter.discard_special_action_queued(kind, command)
             raise HTTPException(
                 status_code=503,
                 detail={
                     "status": "media_action_queue_unavailable",
-                    "summary": "PhotoPrism media action could not be queued because the local command bus is not reachable.",
+                    "summary": "App media action could not be queued because the local command bus is not reachable.",
                     "detail": str(exc),
                 },
             ) from exc
-        operation = lite_photoprism_media.record_operation(command, status="queued")
         submitted.update({
             "accepted": True,
             "status": submitted.get("status") or "queued",
-            "app_id": "photoprism",
+            "app_id": command.get("app_id") or app_id,
             "action_id": command["action_id"],
             "media_operation": operation,
-            "summary": action.get("summary") or operation.get("summary") or "PhotoPrism media action queued.",
-            "progress": operation.get("progress") or {"phase": "queued", "step": "Import photos queued.", "bounded": True},
+            "summary": action.get("summary") or operation.get("summary") or "App media action queued.",
+            "progress": operation.get("progress") or {"phase": "queued", "step": "Media action queued.", "bounded": True},
             "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend media record pending."},
+            "authorization": _app_authorization_summary(governance_contract, governance_decision) if governance_contract else None,
         })
         return submitted
 
     if kind == "app_operation":
         command = action["command"]
-        subject = action.get("subject") or lite_app_operations.subject_for_action(command.get("action_id"))
+        subject = action.get("subject")
+        event = action.get("event") or "lite.app.operation.queued"
+        if not subject:
+            raise HTTPException(status_code=500, detail={"status": "invalid_adapter_contract", "summary": "App operation handler did not provide a command subject."})
         await ensure_worker_execution_ready()
-        operation = lite_app_operations.record_queued_operation(command)
+        operation = adapter.record_special_action_queued(kind, command) or {}
         try:
             submitted = await submit_domain_command(
                 subject,
-                "lite.app.operation.queued",
+                event,
                 command,
                 trace_id=command.get("command_id"),
             )
-        except Exception as exc:
-            lite_app_operations.mark_operation_failed(command, "App action could not be queued safely.")
+        except Exception:
+            adapter.discard_special_action_queued(kind, command)
             raise
         submitted.update({
             "accepted": True,
             "status": submitted.get("status") or "queued",
-            "app_id": "photoprism",
+            "app_id": command.get("app_id") or app_id,
             "action_id": command["action_id"],
             "operation": operation,
             "summary": action.get("summary") or operation.get("summary") or "App action queued.",
             "progress": operation.get("progress") or {"phase": "queued", "step": "Request queued.", "bounded": True},
             "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
+            "authorization": _app_authorization_summary(governance_contract, governance_decision) if governance_contract else None,
         })
         return submitted
 
@@ -2017,7 +2254,7 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
         response = action.get("response") if isinstance(action.get("response"), dict) else {}
         response.setdefault("accepted", True)
         response.setdefault("status", "skipped")
-        response.setdefault("app_id", "photoprism")
+        response.setdefault("app_id", app_id)
         response.setdefault("action_id", "index_photos")
         response.setdefault("fast_forwarded", True)
         return response
@@ -2032,55 +2269,46 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
 
     if kind == "install_app":
         command = action["command"]
-        policy_revision = hashlib.sha256(
-            json.dumps(
-                {
-                    "app_id": command.get("app_id"),
-                    "target_node_id": command.get("target_node_id"),
-                    "action_id": "install_app",
-                },
-                sort_keys=True,
-                separators=(",", ":"),
-            ).encode("utf-8")
-        ).hexdigest()[:24]
-        policy_decision = await _enforce_lite_policy(
-            auth_context=auth_context,
-            action_id="catalog.install",
-            target_type="app",
-            target_id=str(command.get("app_id") or app_id),
-            target_revision=policy_revision,
-            target={
-                "target_node_id": command.get("target_node_id"),
-                "dry_run": bool(command.get("dry_run")),
-                "already_installed": False,
-            },
-            correlation_id=str(command.get("operation_id") or uuid.uuid4().hex),
-        )
+        if governance_contract is None or governance_decision is None:
+            governance_contract, governance_decision = await _authorize_app_resource(
+                auth_context=auth_context,
+                app_id=app_id,
+                action_id="app.install",
+                target_device_id=str(command.get("target_node_id") or "") or None,
+                operation_id=str(command.get("operation_id") or uuid.uuid4().hex),
+            )
+        command["governance"] = lite_app_governance.sanitized_evidence_link(governance_contract, governance_decision)
         await ensure_worker_execution_ready()
-        lite_catalog.record_install_queued(command)
+        adapter.record_special_action_queued(kind, command)
         try:
+            subject = action.get("subject")
+            event = action.get("event") or "lite.catalog.install.requested"
+            if not subject:
+                raise HTTPException(status_code=500, detail={"status": "invalid_adapter_contract", "summary": "Install handler did not provide a command subject."})
             queued = await submit_domain_command(
-                lite_catalog.COMMAND_SUBJECT,
-                "lite.catalog.install.requested",
+                subject,
+                event,
                 command,
                 trace_id=command["operation_id"],
             )
         except Exception:
-            lite_catalog.discard_operation(command["operation_id"])
+            adapter.discard_special_action_queued(kind, command)
             raise
         queued.update({
             "accepted": True,
             "status": "queued",
-            "app_id": "photoprism",
+            "app_id": command.get("app_id") or app_id,
             "action_id": "install_app",
             "operation_id": command["operation_id"],
-            "summary": "PhotoPrism install started.",
+            "summary": action.get("summary") or "App install started.",
             "progress": {"phase": "queued", "step": "Install queued.", "bounded": True},
             "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend install record pending."},
             "authorization": {
-                "decision_id": policy_decision.get("decision_id"),
-                "reason_code": policy_decision.get("reason_code"),
-                "policy_revision": policy_decision.get("policy_revision"),
+                "decision_id": governance_decision.get("decision_id"),
+                "reason_code": governance_decision.get("reason_code"),
+                "policy_revision": governance_decision.get("policy_revision"),
+                "contract_revision": governance_contract.get("contract_revision"),
+                "semantic_action": governance_contract.get("semantic_action"),
             },
         })
         return queued
@@ -2136,70 +2364,85 @@ async def install_lite_catalog_item(payload: LiteCatalogInstallRequest, request:
     app_ref = (payload.app_id or "").strip()
     if not app_ref:
         raise HTTPException(status_code=400, detail="Choose an app to install.")
+
+    app_id = _require_app_service(app_ref, "install")
+    adapter = lite_app_adapters.adapter_for(app_id)
     params = {**payload.params}
     if payload.version:
         params["version"] = payload.version
 
-    command = lite_catalog.install_command(
-        app_ref,
-        payload.target_node_id,
-        requested_by=payload.requested_by,
-        dry_run=payload.dry_run,
-        params=params,
-    )
-    if command.get("already_installed"):
-        return lite_catalog.already_installed_response(command)
-
-    policy_revision = hashlib.sha256(
-        json.dumps(
-            {
-                "app_id": command.get("app_id"),
-                "target_node_id": command.get("target_node_id"),
-                "version": params.get("version"),
-                "dry_run": bool(payload.dry_run),
-            },
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode("utf-8")
-    ).hexdigest()[:24]
-    policy_decision = await _enforce_lite_policy(
-        auth_context=auth_context,
-        action_id="catalog.install",
-        target_type="app",
-        target_id=str(command.get("app_id") or app_ref),
-        target_revision=policy_revision,
-        target={
-            "target_node_id": command.get("target_node_id"),
-            "dry_run": bool(payload.dry_run),
-            "already_installed": False,
+    prepared = adapter.prepare_special_action(
+        "install_app",
+        {
+            "target_node_id": payload.target_node_id,
+            "requested_by": payload.requested_by,
+            "dry_run": payload.dry_run,
+            "params": params,
+            "version": payload.version,
         },
-        correlation_id=str(command.get("operation_id") or uuid.uuid4().hex),
+        reason=str(params.get("reason") or "").strip() or None,
     )
+    if not isinstance(prepared, dict):
+        raise HTTPException(
+            status_code=501,
+            detail={"status": "not_implemented", "app_id": app_id, "summary": "This app has no install handler."},
+        )
+    if prepared.get("kind") == "already_installed":
+        response = prepared.get("response")
+        if isinstance(response, dict):
+            return response
+        raise HTTPException(status_code=500, detail={"status": "invalid_adapter_contract", "summary": "Install adapter returned an invalid already-installed response."})
+    if prepared.get("kind") != "install_app":
+        raise HTTPException(
+            status_code=500,
+            detail={"status": "invalid_adapter_contract", "summary": "Install adapter returned an invalid action kind."},
+        )
+
+    command = prepared.get("command") if isinstance(prepared.get("command"), dict) else None
+    subject = prepared.get("subject")
+    event = prepared.get("event") or "lite.catalog.install.requested"
+    if not command or not subject:
+        raise HTTPException(
+            status_code=500,
+            detail={"status": "invalid_adapter_contract", "summary": "Install adapter did not provide a command and subject."},
+        )
+
+    governance_contract, policy_decision = await _authorize_app_resource(
+        auth_context=auth_context,
+        app_id=app_id,
+        action_id="app.install",
+        target_device_id=str(command.get("target_node_id") or "") or None,
+        operation_id=str(command.get("operation_id") or uuid.uuid4().hex),
+    )
+    command["governance"] = lite_app_governance.sanitized_evidence_link(governance_contract, policy_decision)
 
     await ensure_worker_execution_ready()
-    lite_catalog.record_install_queued(command)
+    adapter.record_special_action_queued("install_app", command)
     try:
         queued = await submit_domain_command(
-            lite_catalog.COMMAND_SUBJECT,
-            "lite.catalog.install.requested",
+            subject,
+            event,
             command,
-            trace_id=command["operation_id"],
+            trace_id=command.get("operation_id") or command.get("command_id"),
         )
     except Exception:
-        lite_catalog.discard_operation(command["operation_id"])
+        adapter.discard_special_action_queued("install_app", command)
         raise
+
     queued.update(
         {
             "accepted": True,
-            "status": "queued",
-            "operation_id": command["operation_id"],
-            "app_id": lite_catalog.PHOTOPRISM_APP_ID,
-            "target_node_id": command["target_node_id"],
-            "message": "PhotoPrism install started.",
+            "status": queued.get("status") or "queued",
+            "operation_id": command.get("operation_id"),
+            "app_id": command.get("app_id") or app_id,
+            "target_node_id": command.get("target_node_id"),
+            "message": prepared.get("summary") or "App install started.",
             "authorization": {
                 "decision_id": policy_decision.get("decision_id"),
                 "reason_code": policy_decision.get("reason_code"),
                 "policy_revision": policy_decision.get("policy_revision"),
+                "contract_revision": governance_contract.get("contract_revision"),
+                "semantic_action": governance_contract.get("semantic_action"),
             },
         }
     )
@@ -2209,13 +2452,14 @@ async def install_lite_catalog_item(payload: LiteCatalogInstallRequest, request:
 @router.post("/catalog/remove", status_code=501)
 def remove_lite_catalog_item(payload: LiteCatalogRemoveRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
+    definition = lite_app_registry.app_definition(payload.app_id)
     # The uploaded source does not currently prove a remove_blueprint/remove_app typed operation.
     # Keep the endpoint explicit and friendly instead of pretending removal is implemented.
     return {
         "status": "not_implemented",
         "accepted": False,
         "summary": "Remove is not enabled yet because the lite operation contract has not been added.",
-        "app_id": payload.app_id,
+        "app_id": definition.id,
         "next_step": "Add and validate a remove_blueprint typed operation before enabling this action.",
     }
 
@@ -2714,6 +2958,16 @@ async def check_lite_security(
             headers={"Cache-Control": "no-store", "Retry-After": "30"},
         )
     run_id = lite_security.new_run_id()
+    app_governance_contract = None
+    app_governance_decision = None
+    if app_id:
+        app_governance_contract, app_governance_decision = await _authorize_app_resource(
+            auth_context=auth_context,
+            app_id=app_id,
+            action_id="app.security_check",
+            operation_id=run_id,
+            require_placement=True,
+        )
     reason = payload.reason or (
         "manual app check"
         if profile == lite_security.policy.SCAN_PROFILE_APP
@@ -2735,6 +2989,11 @@ async def check_lite_security(
     except WorkloadAdmissionError as exc:
         await _raise_admission_http_error(exc, "security_scan")
     command = prepared["command"]
+    if app_governance_contract is not None:
+        command["governance"] = lite_app_governance.sanitized_evidence_link(
+            app_governance_contract,
+            app_governance_decision,
+        )
     reservation = prepared["reservation"]
     reservation_timing.update({
         f"stage_{key}": value
@@ -2848,7 +3107,8 @@ async def check_lite_security(
             "scan_profile": profile,
             "lifecycle_pending": lifecycle_pending,
             "compatibility_pending": compatibility_pending,
-            **({"app_id": app_id, "app_label": "PhotoPrism"} if app_id else {}),
+            **({"app_id": app_id, "app_label": lite_app_registry.app_definition(app_id).name} if app_id else {}),
+            **({"authorization": _app_authorization_summary(app_governance_contract, app_governance_decision)} if app_governance_contract else {}),
         }
     )
     _record_security_submission_timing(
@@ -4389,30 +4649,55 @@ def get_lite_recovery_app_backup_targets(app_id: str, request: Request) -> dict[
 
 
 @router.post("/recovery/apps/{app_id}/backup-to-target")
-def backup_lite_app_to_target(app_id: str, payload: LiteAppActionRequest, request: Request) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
-    return lite_app_backup.backup_to_storage_readiness(
+async def backup_lite_app_to_target(app_id: str, payload: LiteAppActionRequest, request: Request) -> dict[str, Any]:
+    auth_context = deps.require_auth(request, write=True)
+    contract, decision = await _authorize_app_resource(
+        auth_context=auth_context,
+        app_id=app_id,
+        action_id="app.backup.to_storage",
+        target_device_id=payload.target_device_id,
+        operation_id="app-backup-target-" + uuid.uuid4().hex,
+    )
+    result = lite_app_backup.backup_to_storage_readiness(
         app_id,
         payload.target_device_id,
         reason=payload.reason,
     )
+    result["authorization"] = _app_authorization_summary(contract, decision)
+    return result
 
 @router.get("/recovery/apps")
 def get_lite_recovery_apps(request: Request) -> dict[str, Any]:
     deps.require_auth(request)
-    return lite_app_profiles.app_backup_profiles()
+    payload = lite_app_profiles.app_backup_profiles()
+    apps = payload.get("apps") if isinstance(payload, dict) and isinstance(payload.get("apps"), list) else []
+    if isinstance(payload, dict):
+        payload["apps"] = [
+            {**item, "recovery": lite_app_governance.recovery_projection(item.get("app_id"))}
+            for item in apps
+            if isinstance(item, dict) and item.get("app_id")
+        ]
+    return payload
 
 
 @router.get("/recovery/apps/{app_id}")
 def get_lite_recovery_app(app_id: str, request: Request) -> dict[str, Any]:
     deps.require_auth(request)
-    return lite_app_profiles.app_backup_profile(app_id)
+    profile = lite_app_profiles.app_backup_profile(app_id)
+    return {**profile, "recovery": lite_app_governance.recovery_projection(app_id)}
 
 
 @router.post("/recovery/apps/{app_id}/backup", status_code=202)
 async def backup_lite_app(app_id: str, payload: LiteAppBackupRequest, request: Request) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
+    auth_context = deps.require_auth(request, write=True)
     command = lite_app_backup.app_backup_command(app_id, mode=payload.mode, reason=payload.reason)
+    contract, decision = await _authorize_app_resource(
+        auth_context=auth_context,
+        app_id=app_id,
+        action_id="app.backup.create",
+        operation_id=str(command.get("command_id") or command.get("backup_id") or uuid.uuid4().hex),
+    )
+    command["governance"] = lite_app_governance.sanitized_evidence_link(contract, decision)
     try:
         submitted = await submit_domain_command(
             lite_app_backup.APP_BACKUP_CREATE_SUBJECT,
@@ -4434,19 +4719,27 @@ async def backup_lite_app(app_id: str, payload: LiteAppBackupRequest, request: R
     submitted.update({
         "accepted": True,
         "status": submitted.get("status") or "queued",
-        "app_id": "photoprism",
+        "app_id": command["app_id"],
         "backup_id": command["backup_id"],
         "mode": command["app_backup_mode"],
         "pending_backup": pending,
-        "summary": "PhotoPrism app backup queued. Config and app metadata are included; media remains excluded unless a supported media backup mode is enabled.",
+        "summary": f"{command.get('app_label') or command['app_id']} app backup queued. Adapter-approved safe app records are included; protected user data remains excluded by default.",
+        "authorization": _app_authorization_summary(contract, decision),
     })
     return submitted
 
 
 @router.post("/recovery/apps/{app_id}/restore/preview", status_code=202)
 async def preview_lite_app_restore(app_id: str, payload: LiteAppRestorePreviewRequest, request: Request) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
+    auth_context = deps.require_auth(request, write=True)
     command = lite_app_backup.app_restore_preview_command(app_id, backup_id=payload.backup_id or "latest", reason=payload.reason)
+    contract, decision = await _authorize_app_resource(
+        auth_context=auth_context,
+        app_id=app_id,
+        action_id="app.restore.preview",
+        operation_id=str(command.get("command_id") or command.get("preview_id") or uuid.uuid4().hex),
+    )
+    command["governance"] = lite_app_governance.sanitized_evidence_link(contract, decision)
     submitted = await submit_domain_command(
         lite_app_backup.APP_RESTORE_PREVIEW_SUBJECT,
         "lite.app.restore.preview_queued",
@@ -4456,14 +4749,15 @@ async def preview_lite_app_restore(app_id: str, payload: LiteAppRestorePreviewRe
     submitted.update({
         "accepted": True,
         "status": submitted.get("status") or "queued",
-        "app_id": "photoprism",
+        "app_id": command["app_id"],
         "action_id": "preview_restore",
         "backup_id": command["backup_id"],
         "preview_id": command["preview_id"],
         "pending_restore_preview": pending,
-        "summary": "Preparing PhotoPrism restore preview.",
+        "summary": f"Preparing {command.get('app_label') or app_id} restore preview.",
         "progress": {"phase": "queued", "step": "Restore preview queued.", "bounded": True},
         "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
+        "authorization": _app_authorization_summary(contract, decision),
     })
     return submitted
 

@@ -166,8 +166,41 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:get:/api/lite/apps/{app_id}/credentials",
+      "name": "GET /api/lite/apps/{app_id}/credentials",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:get:/api/lite/apps/{app_id}/evidence",
       "name": "GET /api/lite/apps/{app_id}/evidence",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/apps/{app_id}/recovery",
+      "name": "GET /api/lite/apps/{app_id}/recovery",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/apps/{app_id}/resource",
+      "name": "GET /api/lite/apps/{app_id}/resource",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -1446,6 +1479,17 @@
     {
       "entity": "api:post:/api/lite/apps/{app_id}/backup/storage-device",
       "name": "POST /api/lite/apps/{app_id}/backup/storage-device",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/apps/{app_id}/credentials",
+      "name": "POST /api/lite/apps/{app_id}/credentials",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -2945,6 +2989,8 @@
       "tests": [
         "test:tests/backend/test_architecture_contract.py",
         "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_app_governance_integration.py",
+        "test:tests/backend/test_lite_app_governance_source_guards.py",
         "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
         "test:tests/backend/test_lite_device_health_d4.py",
         "test:tests/backend/test_lite_long_gate_submission_recovery.py",
@@ -3048,6 +3094,9 @@
       "tests": [
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_app_catalog_runtime_truth.py",
+        "test:tests/backend/test_lite_app_governance.py",
+        "test:tests/backend/test_lite_app_governance_integration.py",
+        "test:tests/backend/test_lite_app_registry.py",
         "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
         "test:tests/backend/test_lite_device_health_d4.py",
         "test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py",
@@ -3067,6 +3116,7 @@
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/e2e/lite-accessibility-states.spec.ts",
         "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-performance-live.spec.ts",
@@ -3158,6 +3208,8 @@
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_app_governance_integration.py",
+        "test:tests/backend/test_lite_app_governance_source_guards.py",
         "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
         "test:tests/backend/test_lite_device_system_profile.py",
         "test:tests/backend/test_lite_devices_d2_d3.py",
@@ -3622,6 +3674,8 @@
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_app_governance_integration.py",
+        "test:tests/backend/test_lite_app_governance_source_guards.py",
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/backend/test_lite_enterprise_identity_p2.py",
         "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
@@ -4012,6 +4066,8 @@
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_app_governance_integration.py",
+        "test:tests/backend/test_lite_app_governance_source_guards.py",
         "test:tests/backend/test_lite_database_restore_reconciliation.py",
         "test:tests/backend/test_lite_premium_tab_polish.py",
         "test:tests/backend/test_lite_security_s8_recovery.py",
@@ -4026,6 +4082,8 @@
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_app_governance_integration.py",
+        "test:tests/backend/test_lite_app_governance_source_guards.py",
         "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
         "test:tests/backend/test_lite_device_health_d4.py",
         "test:tests/backend/test_lite_identity_passkeys_rules_p1.py",
@@ -4187,6 +4245,8 @@
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_app_governance_integration.py",
+        "test:tests/backend/test_lite_app_governance_source_guards.py",
         "test:tests/backend/test_lite_database_restore_reconciliation.py",
         "test:tests/backend/test_lite_premium_tab_polish.py",
         "test:tests/backend/test_lite_security_s8_recovery.py",
@@ -4201,6 +4261,8 @@
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_app_governance_integration.py",
+        "test:tests/backend/test_lite_app_governance_source_guards.py",
         "test:tests/backend/test_lite_database_restore_reconciliation.py",
         "test:tests/backend/test_lite_premium_tab_polish.py",
         "test:tests/backend/test_lite_security_s8_recovery.py",
@@ -4452,6 +4514,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "9428680fa8e2428b6ab03a1c9153cf83601b2cf1a7b07f08e07c5ee04b89a94a"
+    "source_fingerprint": "50c98900f9c11c07f676e67e243ab014608f230ec0d31e4a63ba3a73f568f817"
   }
 }

@@ -1116,7 +1116,8 @@ export const handlers = [
     });
   }),
   http.get('/api/lite/catalog', ({ request }) => {
-    const ready = scenario() === 'catalog-ready';
+    const multiApp = rawScenario() === 'catalog-multi-app';
+    const ready = scenario() === 'catalog-ready' || multiApp || rawScenario().startsWith('app-governance-');
     const installing = scenario() === 'catalog-installing';
     const app = {
       id: 'photoprism', name: 'PhotoPrism', category: 'Photos',
@@ -1144,10 +1145,77 @@ export const handlers = [
       lifecycle: mockAppLifecycleProfiles()[0],
       lifecycle_summary: { status: 'ready', summary: 'PhotoPrism is ready, protected, and recoverable.', host: 'Runs on Server Phone', storage: 'Media connected', security: 'Protected app', backup: 'Backup ready', attention_count: 0 },
     };
-    return HttpResponse.json({ status: 'healthy', access: { https_ready: true, secure_origin: 'https://pocket-lab-lite.example.ts.net', route_mode: 'tailscale_caddy', pwa_ready: true, message: 'Secure access is ready.' }, apps: [app], items: [app], count: 1, updated_at: mockIso() }, { headers: liteSafeReadHeaders(request) });
+    const syntheticLifecycle = {
+      ...(app.lifecycle || {}),
+      app_id: 'example-app',
+      name: 'Example App',
+      status: 'ready',
+      summary: 'Example App is ready.',
+      media: {},
+      storage: {},
+      security: { status: 'not_supported', summary: 'Safety check is not supported.' },
+      backup: { status: 'not_supported', summary: 'Backup is not supported.' },
+      actions: {
+        open: { id: 'open', label: 'Open', category: 'access', enabled: true, status: 'ready' },
+        open_full_screen: { id: 'open_full_screen', label: 'Open full screen', category: 'access', enabled: true, status: 'ready' },
+      },
+    };
+    const synthetic = {
+      id: 'example-app',
+      name: 'Example App',
+      category: 'Utilities',
+      summary: 'Synthetic test-only application.',
+      status: 'ready',
+      install_state: 'installed',
+      installed: true,
+      target: app.target,
+      actions: { install: false, open: true, details: true, retry: false, remove: false },
+      runtime: { route: '/apps/example-app/', url: '/apps/example-app/', health: 'healthy', version: 'test-only' },
+      access: { https_ready: true, route_ready: true, open_url: '/apps/example-app/', message: 'Example App is ready over secure access.' },
+      host_device_id: app.host_device_id,
+      host_device_name: app.host_device_name,
+      storage: {},
+      media: {},
+      security_profile: {},
+      backup_profile: {},
+      lifecycle: syntheticLifecycle,
+      lifecycle_summary: { status: 'ready', summary: 'Example App is ready.', attention_count: 0 },
+      platform_contract: {
+        schema_version: 1,
+        id: 'example-app',
+        name: 'Example App',
+        category: 'Utilities',
+        summary: 'Synthetic test-only application.',
+        platforms: ['android-termux-arm64'],
+        capabilities: { open: true },
+        actions: {
+          open: { label: 'Open', category: 'access', summary: 'Open Example App.', risk: 'low' },
+          open_full_screen: { label: 'Open full screen', category: 'access', summary: 'Open Example App full screen.', risk: 'low' },
+        },
+      },
+    };
+    const apps = multiApp ? [synthetic, app] : [app];
+    return HttpResponse.json({ status: 'healthy', access: { https_ready: true, secure_origin: 'https://pocket-lab-lite.example.ts.net', route_mode: 'tailscale_caddy', pwa_ready: true, message: 'Secure access is ready.' }, apps, items: apps, count: apps.length, updated_at: mockIso() }, { headers: liteSafeReadHeaders(request) });
   }),
   http.get('/api/lite/apps/lifecycle', ({ request }) => HttpResponse.json({ status: 'healthy', summary: 'Unified App Lifecycle profiles are available.', apps: mockAppLifecycleProfiles(), items: mockAppLifecycleProfiles(), count: mockAppLifecycleProfiles().length, ready_count: 1, attention_count: 0, updated_at: mockIso() }, { headers: liteSafeReadHeaders(request) })),
   http.get('/api/lite/apps/lifecycle/photoprism', () => HttpResponse.json(mockAppLifecycleProfiles()[0])),
+  http.get('/api/lite/apps/example-app/actions', ({ request }) => {
+    const actions = {
+      open: { id: 'open', app_id: 'example-app', label: 'Open', category: 'access', enabled: true, status: 'ready', summary: 'Open Example App.' },
+      open_full_screen: { id: 'open_full_screen', app_id: 'example-app', label: 'Open full screen', category: 'access', enabled: true, status: 'ready', summary: 'Open Example App full screen.' },
+    };
+    return HttpResponse.json({
+      status: 'healthy',
+      app_id: 'example-app',
+      name: 'Example App',
+      summary: 'Example App Action Center is available.',
+      actions,
+      items: actions,
+      action_list: Object.values(actions),
+      action_groups: [{ id: 'access', label: 'Open', actions: ['open', 'open_full_screen'] }],
+      media: {},
+    }, { headers: liteSafeReadHeaders(request) });
+  }),
   http.get('/api/lite/apps/photoprism/actions', ({ request }) => {
     const actions = mockUnifiedAppActions();
     return HttpResponse.json({
@@ -1169,6 +1237,102 @@ export const handlers = [
       media: mockAppLifecycleProfiles()[0].media,
     }, { headers: liteSafeReadHeaders(request) });
   }),
+  http.get('/api/lite/apps/:appId/resource', ({ request, params }) => {
+    const appId = String(params.appId || '').toLowerCase();
+    const selected = rawScenario();
+    const example = appId === 'example-app';
+    const label = example ? 'Example App' : 'PhotoPrism';
+    const baseActions = example
+      ? [{ action_id: 'app.open', label: 'Open app', mode: 'allow', allowed: true, requires_approval: false, requires_temporary_access: false, temporary_access_supported: false, required_capability: 'open' }]
+      : [
+          { action_id: 'app.open', label: 'Open app', mode: 'allow', allowed: true, requires_approval: false, requires_temporary_access: false, temporary_access_supported: false, required_capability: 'open' },
+          { action_id: 'app.install', label: 'Install app', mode: 'allow', allowed: true, requires_approval: false, requires_temporary_access: false, temporary_access_supported: true, required_capability: 'install' },
+          { action_id: 'app.security_check', label: 'Run App Check', mode: 'allow', allowed: true, requires_approval: false, requires_temporary_access: false, temporary_access_supported: false, required_capability: 'security_check' },
+          { action_id: 'app.backup.create', label: 'Back up app', mode: 'allow', allowed: true, requires_approval: false, requires_temporary_access: false, temporary_access_supported: false, required_capability: 'backup' },
+          { action_id: 'app.remove', label: 'Remove app', mode: 'allow', allowed: true, requires_approval: false, requires_temporary_access: false, temporary_access_supported: false, required_capability: 'remove' },
+        ];
+    let role = 'Owner';
+    let summary = 'You can manage this app.';
+    let actions = baseActions;
+    if (selected === 'app-governance-read-only') {
+      role = 'Viewer';
+      summary = 'Read-only access.';
+      actions = baseActions.map((item) => ({ ...item, mode: item.action_id === 'app.open' ? 'allow' : 'deny', allowed: item.action_id === 'app.open' }));
+    } else if (selected === 'app-governance-approval-required') {
+      role = 'Admin';
+      summary = 'You can manage this app.';
+      actions = baseActions.map((item) => item.action_id === 'app.remove' ? { ...item, mode: 'approval', allowed: false, requires_approval: true } : item);
+    } else if (selected === 'app-governance-temporary-allowed') {
+      role = 'Operator';
+      summary = 'Temporary access until 11:45 PM.';
+      actions = baseActions.map((item) => item.action_id === 'app.install' ? { ...item, mode: 'temporary_active', allowed: true, requires_temporary_access: false, temporary_access_supported: true, temporary_access_active: true, temporary_access_expires_at: '2026-10-04T00:15:00Z' } : item);
+    } else if (selected === 'app-governance-blocked') {
+      role = 'Viewer';
+      summary = 'Access is blocked by Rules.';
+      actions = baseActions.map((item) => ({ ...item, mode: 'deny', allowed: false, requires_approval: false, requires_temporary_access: false }));
+    }
+    const missingCredential = selected === 'app-governance-missing-credential';
+    const recoveryBlocked = selected === 'app-governance-recovery-blocker';
+    return HttpResponse.json({
+      resource_type: 'app',
+      app_id: appId,
+      app_label: label,
+      registry: {
+        schema_version: 1,
+        id: appId,
+        name: label,
+        capabilities: example ? { open: true } : { open: true, install: true, security_check: true, backup: true, restore_preview: true, remove: true, credentials: true },
+      },
+      authority: { resource_type: 'app', app_id: appId, app_label: label, role, mode: 'enterprise', summary, actions },
+      credentials: {
+        app_id: appId,
+        credential_required: missingCredential,
+        configured: !missingCredential,
+        missing: missingCredential,
+        needs_rotation: false,
+        secret_values_stored_here: false,
+        secret_values_exposed: false,
+        summary: missingCredential ? 'Credential status needs attention.' : 'Credential status is available.',
+        credentials: missingCredential ? [{ credential_id: 'app_sign_in', label: 'App sign-in', purpose: 'interactive_app_access', required: true, management: 'external_or_manual', status: 'missing' }] : [],
+      },
+      recovery: {
+        app_id: appId,
+        app_label: label,
+        backup_supported: !example,
+        restore_preview_supported: !example,
+        restore_apply_supported: false,
+        protected_user_data_excluded: true,
+        credential_rebinding_required: missingCredential,
+        recovery_ready: !recoveryBlocked,
+        recovery_blockers: recoveryBlocked ? ['Required storage device is unavailable.'] : [],
+        credential_backup_policy: { app_backup: 'neither', workspace_database: 'metadata_only', secret_material: 'not_stored' },
+        summary: recoveryBlocked ? 'Required storage device is unavailable.' : example ? 'Recovery is not supported for this app.' : 'App recovery is ready.',
+      },
+      updated_at: mockIso(),
+    }, { headers: liteSafeReadHeaders(request) });
+  }),
+  http.get('/api/lite/apps/:appId/credentials', ({ params }) => HttpResponse.json({
+    app_id: String(params.appId || ''),
+    credential_required: false,
+    configured: true,
+    missing: false,
+    needs_rotation: false,
+    credentials: [],
+    secret_values_stored_here: false,
+    secret_values_exposed: false,
+    summary: 'Credential status is available.',
+  })),
+  http.get('/api/lite/apps/:appId/recovery', ({ params }) => HttpResponse.json({
+    app_id: String(params.appId || ''),
+    backup_supported: String(params.appId || '') === 'photoprism',
+    restore_preview_supported: String(params.appId || '') === 'photoprism',
+    restore_apply_supported: false,
+    protected_user_data_excluded: true,
+    credential_rebinding_required: false,
+    recovery_ready: true,
+    recovery_blockers: [],
+    summary: 'App recovery is ready.',
+  })),
   http.get('/api/lite/apps/photoprism/evidence', () => HttpResponse.json(mockAppEvidence())),
   http.get('/api/lite/apps/photoprism/update', () => HttpResponse.json(mockAppUpdateState())),
   http.get('/api/lite/apps/photoprism/update/receipts/:operationId', () => HttpResponse.json(mockAppUpdateReceipt())),
@@ -1281,7 +1445,24 @@ export const handlers = [
       { action_id: 'device.restart', label: 'Restart device agent', roles: { Owner: 'allow', Admin: 'allow', Operator: 'allow', Auditor: 'deny', Viewer: 'deny' } },
       { action_id: 'device.repair', label: 'Repair device agent', roles: { Owner: 'allow', Admin: 'allow', Operator: 'allow', Auditor: 'deny', Viewer: 'deny' } },
       { action_id: 'device.capabilities.read', label: 'Review device capabilities', roles: { Owner: 'allow', Admin: 'allow', Operator: 'allow', Auditor: 'allow', Viewer: 'allow' } },
+      { action_id: 'app.install', label: 'Install app resource', roles: { Owner: 'allow', Admin: 'allow', Operator: 'temporary_access', Auditor: 'deny', Viewer: 'deny' } },
+      { action_id: 'app.security_check', label: 'Run App Check', roles: { Owner: 'allow', Admin: 'allow', Operator: 'allow', Auditor: 'deny', Viewer: 'deny' } },
+      { action_id: 'app.remove', label: 'Remove app', roles: { Owner: 'allow', Admin: 'approval', Operator: 'approval', Auditor: 'deny', Viewer: 'deny' } },
+      { action_id: 'app.credentials.manage', label: 'Manage app credential status', roles: { Owner: 'allow', Admin: 'allow', Operator: 'deny', Auditor: 'deny', Viewer: 'deny' } },
     ],
+    app_resources: [{
+      resource_type: 'app',
+      app_id: 'photoprism',
+      app_label: 'PhotoPrism',
+      role: humanRole,
+      mode: 'enterprise',
+      summary: humanRole === 'Owner' ? 'You can manage this app.' : humanRole === 'Viewer' ? 'Read-only access.' : 'Access follows current Safety Rules.',
+      actions: [
+        { action_id: 'app.open', mode: 'allow', allowed: true },
+        { action_id: 'app.install', mode: humanRole === 'Operator' ? 'temporary_access' : humanRole === 'Viewer' ? 'deny' : 'allow', allowed: humanRole === 'Owner' },
+        { action_id: 'app.remove', mode: humanRole === 'Owner' ? 'allow' : humanRole === 'Viewer' ? 'deny' : 'approval', allowed: humanRole === 'Owner', requires_approval: humanRole !== 'Owner' && humanRole !== 'Viewer' },
+      ],
+    }],
     });
   }),
   http.get('/api/lite/fleet', ({ request }) => HttpResponse.json({
@@ -1739,7 +1920,26 @@ export const handlers = [
   http.get('/api/lite/recovery/backup-targets', () => HttpResponse.json({ status: 'healthy', summary: 'Backup targets are available.', targets: [{ device_id: 'storage-phone', name: 'Storage Phone', status: 'ready', ready: true, available: true, label: 'Storage device', summary: 'Storage Phone can save app backups.' }], items: [{ device_id: 'storage-phone', name: 'Storage Phone', status: 'ready', ready: true, available: true, label: 'Storage device', summary: 'Storage Phone can save app backups.' }], count: 1, ready_count: 1 })),
   http.get('/api/lite/recovery/apps/photoprism/backup-targets', () => HttpResponse.json({ status: 'healthy', app_id: 'photoprism', name: 'PhotoPrism', targets: [{ device_id: 'storage-phone', name: 'Storage Phone', status: 'ready', ready: true, available: true, label: 'Storage device', summary: 'Storage Phone can save app backups.' }], count: 1, ready_count: 1 })),
   http.post('/api/lite/recovery/apps/photoprism/backup-to-target', () => HttpResponse.json({ status: 'not_implemented', accepted: false, app_id: 'photoprism', action_id: 'backup_to_storage', summary: 'Backup target transfer is prepared, but the storage-device transfer worker is not enabled yet.' }, { status: 501 })),
-  http.get('/api/lite/recovery/apps', () => HttpResponse.json({ status: 'healthy', apps: mockAppBackups(), items: mockAppBackups(), count: mockAppBackups().length })),
+  http.get('/api/lite/recovery/apps', () => {
+    const selected = rawScenario();
+    const apps = mockAppBackups().map((app) => ({
+      ...app,
+      recovery: {
+        app_id: app.app_id,
+        app_label: app.name || app.label || app.app_id,
+        backup_supported: true,
+        restore_preview_supported: true,
+        restore_apply_supported: false,
+        protected_user_data_excluded: true,
+        credential_rebinding_required: false,
+        recovery_ready: selected !== 'app-governance-recovery-blocker',
+        recovery_blockers: selected === 'app-governance-recovery-blocker' ? ['Required storage device is unavailable.'] : [],
+        credential_backup_policy: { app_backup: 'neither', workspace_database: 'metadata_only', secret_material: 'not_stored' },
+        summary: selected === 'app-governance-recovery-blocker' ? 'Required storage device is unavailable.' : 'App recovery is ready.',
+      },
+    }));
+    return HttpResponse.json({ status: 'healthy', apps, items: apps, count: apps.length });
+  }),
   http.get('/api/lite/recovery/apps/photoprism', () => HttpResponse.json(mockAppBackups()[0])),
   http.post('/api/lite/recovery/apps/photoprism/backup', () => HttpResponse.json({ accepted: true, status: 'queued', app_id: 'photoprism', backup_id: 'app-backup-photoprism-mock', mode: 'config_only', summary: 'PhotoPrism app backup queued. Config and app metadata are included; media remains excluded unless a supported media backup mode is enabled.' }, { status: 202 })),
   http.post('/api/lite/recovery/apps/photoprism/restore/preview', () => HttpResponse.json({ status: 'not_implemented', accepted: false, app_id: 'photoprism', summary: 'Restore preview coming soon for app-specific recovery.' }, { status: 501 })),

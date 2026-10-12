@@ -18,7 +18,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 | Development loop | 60 |
 | Documentation loop | 55 |
 | API-validation loop | 12 |
-| Runtime-evidence loop | 34 |
+| Runtime-evidence loop | 35 |
 | Security-analysis loop | 34 |
 | Release loop | 19 |
 | Recovery-diagnostics loop | 16 |
@@ -5851,6 +5851,41 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** gate-defined
 
 **Example:** `task lite:test:android`
+
+## `lite:test:app-governance`
+
+**Purpose:** Run focused Universal App Platform governance backend and frontend source contracts
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare
+
+**Aliases:** None
+
+**Commands:**
+
+- `PYTHONPATH=tests:pocket-lab-final-structure/runtime PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONFAULTHANDLER=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_app_registry.py tests/backend/test_lite_app_governance.py tests/backend/test_lite_app_governance_integration.py tests/backend/test_lite_app_governance_continuations.py tests/backend/test_lite_app_governance_source_guards.py tests/backend/test_lite_policy_approvals_p3_1.py`
+- `npm run test:unit -- src/lib/liteAppGovernance.test.js`
+
+**Environment:** None source-discovered
+
+**Inputs:** src/lib/liteAppGovernance.test.js, tests/backend/test_lite_app_governance.py, tests/backend/test_lite_app_governance_continuations.py, tests/backend/test_lite_app_governance_integration.py, tests/backend/test_lite_app_governance_source_guards.py, tests/backend/test_lite_app_registry.py, tests/backend/test_lite_policy_approvals_p3_1.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:app-governance`
 
 ## `lite:test:backend`
 

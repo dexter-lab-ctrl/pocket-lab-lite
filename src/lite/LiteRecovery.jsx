@@ -16,7 +16,6 @@ import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { liteQueryClient, liteQueryKeys } from '../lib/liteQueryClient.js';
 import { createLiteFeedbackDeduper, triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import { LiteSheet } from './LiteOverlay.jsx';
-import LiteNextSteps from './components/LiteNextSteps.jsx';
 import { LiteElevationSurface, LiteMotionReveal } from './LiteMotion.jsx';
 import { selectRecoveryOperationalStoryView, selectRecoveryScreenView, selectRecoverySummaryView, isLiteRecoveryViewLive } from '../lib/liteViewModels.js';
 import {
@@ -143,6 +142,13 @@ export default function RecoveryScreen() {
     pollingMode: 'slow',
     staleTime: 45_000,
   });
+  const {
+    data: appRecoveryProfiles,
+  } = useLiteResource(liteApi.recoveryApps, [], {
+    enabled: detailsNeeded,
+    pollingMode: 'relaxed',
+    staleTime: 30_000,
+  });
 
 
   const data = summaryData || {};
@@ -257,11 +263,13 @@ export default function RecoveryScreen() {
   const busy = recoveryActions.busyKey || (recoveryFlow.isBusy ? flowBusyKey : '');
   const actionError = recoveryActions.errorMessage || recoveryFlow.error || null;
 
-  const appBackups = Array.isArray(details?.app_backups)
-    ? details.app_backups
-    : Array.isArray(details?.app_backup_profiles?.apps)
-      ? details.app_backup_profiles.apps
-      : [];
+  const appBackups = Array.isArray(appRecoveryProfiles?.apps)
+    ? appRecoveryProfiles.apps
+    : Array.isArray(details?.app_backups)
+      ? details.app_backups
+      : Array.isArray(details?.app_backup_profiles?.apps)
+        ? details.app_backup_profiles.apps
+        : [];
   const lifecycleProfiles = Array.isArray(details?.app_lifecycle_profiles?.apps) ? details.app_lifecycle_profiles.apps : [];
   const lifecycleByApp = new Map(lifecycleProfiles.map((item) => [item.app_id, item]));
   const backupTargets = Array.isArray(details?.backup_targets) ? details.backup_targets : [];
@@ -706,18 +714,6 @@ export default function RecoveryScreen() {
         refreshing={refreshing}
         lastUpdatedLabel={lastUpdatedLabel}
         backendReachable={backendReachable}
-      />
-
-      <LiteNextSteps
-        title="Protection readiness"
-        saved={savedStateOnly || projectionStale || isExpired}
-        description="Verify recovery evidence before making changes. Restore still requires the existing protected preview and confirmation flow."
-        items={[
-          ...(!latestBackup ? [{ id: "backup", label: "Create a protected backup", description: "No backup is recorded yet.", actionLabel: "Manage backups", onClick: () => openRecoveryManage("backup") }] : []),
-          ...(latestBackup && !latestBackupVerified ? [{ id: "verify", label: "Verify the latest backup", description: "A saved backup is not yet a verified restore point.", actionLabel: "Manage backups", onClick: () => openRecoveryManage("backup") }] : []),
-          ...(latestBackupVerified && !latestPreviewReady ? [{ id: "preview", label: "Review restore readiness", description: "A verified backup does not by itself confirm a safe restore preview.", actionLabel: "Review restore", onClick: () => openRecoveryManage("restore") }] : []),
-          ...(recoveryWriteBlocked ? [{ id: "blocked", label: "Recovery actions are paused", description: recoveryWriteBlockedReason || "Review current connectivity and readiness before continuing." }] : []),
-        ]}
       />
 
       <LiteActionRow

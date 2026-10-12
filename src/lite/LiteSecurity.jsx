@@ -51,7 +51,6 @@ import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy
 import { acceptSecurityProgressEvent } from '../lib/securityProgressEvents.js';
 import { shouldUseLiteSecurityProgressStream } from '../lib/liteSecurityProgressPolicy.js';
 import { LiteSheet } from './LiteOverlay.jsx';
-import LiteEvidenceGuide from './components/LiteEvidenceGuide.jsx';
 import { isLitePerformanceMode } from './liteNavigationRuntime.js';
 import {
   GlassCard,
@@ -2183,9 +2182,13 @@ export default function SecurityScreen() {
     const invalidateSecurityQuery = (profile) => invalidate(
       liteQueryKeys.securityProfile(profile, profile === 'app' ? 'photoprism' : ''),
     );
-    if (previousProfiles.quick !== currentProfiles.quick) invalidateSecurityQuery('quick');
-    if (previousProfiles.full !== currentProfiles.full) invalidateSecurityQuery('full');
-    if (previousProfiles.app !== currentProfiles.app) invalidateSecurityQuery('app');
+    ['quick', 'full', 'app'].forEach((profile) => {
+      if (previousProfiles[profile] !== currentProfiles[profile]) {
+        if (profile === 'quick') invalidateSecurityQuery('quick');
+        if (profile === 'full') invalidateSecurityQuery('full');
+        if (profile === 'app') invalidateSecurityQuery('app');
+      }
+    });
 
     if (previous.history_revision !== securityFreshnessData.history_revision) {
       invalidate(liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20));
@@ -2999,19 +3002,6 @@ export default function SecurityScreen() {
             refreshing={summaryRefreshing}
             lastUpdatedLabel={lastUpdatedLabel || lastCheckedLabel}
             backendReachable={backendReachable}
-          />
-          <LiteEvidenceGuide
-            title="Safety result and coverage"
-            saved={savedStateOnly || isExpired}
-            description="A score describes the latest reported check, not a guarantee that every app or device was examined."
-            facts={[
-              { id: "profile", label: "Check profile", value: activeProfileMeta.label },
-              { id: "score", label: "Reported score", value: safetyScoreReported ? String(safetyScore) : "Not reported" },
-              { id: "findings", label: "Items to review", value: String(findings) },
-              { id: "checks", label: "Checks reviewed", value: checks > 0 ? String(checks) : "Not confirmed" },
-              { id: "freshness", label: "Last result", value: lastCheckedLabel || "Not available" },
-            ]}
-            caution="Coverage and result freshness matter. Open Manage Safety to inspect missing, partial or timed-out checks before acting on findings."
           />
           <LiteActionRow
             className="lite-security-latest-check-row"

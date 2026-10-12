@@ -469,6 +469,20 @@
           "src/lite/LiteRecovery.jsx",
           "src/lib/liteApi.js"
         ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.recoveryApps",
+        "resolved": true,
+        "route": "/api/lite/recovery/apps",
+        "source_module": "src/lite/LiteRecovery.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteRecovery.jsx",
+          "src/lib/liteApi.js"
+        ],
         "method": "POST",
         "mocked": false,
         "owner": "liteApi.backupNow",
@@ -1052,6 +1066,20 @@
         "usage": "mutation"
       },
       {
+        "dynamic": true,
+        "import_chain": [
+          "src/lite/catalog/AppCatalogScreen.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.appResource",
+        "resolved": true,
+        "route": "/api/lite/apps/{param}/resource",
+        "source_module": "src/lite/catalog/AppCatalogScreen.jsx",
+        "usage": "query"
+      },
+      {
         "dynamic": false,
         "import_chain": [
           "src/lite/catalog/AppCatalogScreen.jsx",
@@ -1365,6 +1393,58 @@
         "resolved": true,
         "route": "/api/lite/status",
         "source_module": "src/mocks/deviceFactsScenarios.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/apps/:appId/credentials",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/apps/:appId/recovery",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/apps/:appId/resource",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/apps/example-app/actions",
+        "source_module": "src/mocks/handlers.js",
         "usage": "mock"
       },
       {
@@ -3225,7 +3305,6 @@
       "/api/lite/policy/decisions/{decision_id}",
       "/api/lite/policy/templates",
       "/api/lite/recovery",
-      "/api/lite/recovery/apps",
       "/api/lite/recovery/apps/{app_id}",
       "/api/lite/recovery/apps/{app_id}/backup",
       "/api/lite/recovery/apps/{app_id}/backup-targets",
@@ -3267,7 +3346,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "c953f0a0d7f1d2e98ece1d33493bd66ebe3c78eeada2ad5443ebaa1747f1f49b",
+    "aggregate_fingerprint": "c1190f4f32c1915d551e024db1d6f689c78b2c8851cd1f39fc15e2a437891640",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3277,15 +3356,15 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "515e939d9da2ea7ad29889b58396b8c9b1a3aa353c73738ecbe22ec35ba92b68",
-      "contracts/metadata/documentation-platform.json": "e173e121e9ee0740d25855d6ab2606bb78bde640aaa3d60aa5382fbabd32f03d",
+      "contracts/generated/lite-openapi.json": "adc9d8e4bee083e2ca69fb9c5d541fdc8f22cd4f20f368349f37d7f524152dae",
+      "contracts/metadata/documentation-platform.json": "50a2ba3bf86579e0e816cfe8da1a9ca12ba8eaab777d10d38941d142e1c219ce",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4",
-      "src/lib/liteApi.js": "f1b52dcdcfd481345813641edc286ff5f236aaaa2761c42abf715f5676bdf871",
+      "src/lib/liteApi.js": "de327a66185a53a47f64f8f491cc749aac3c4581cd70eb08323d1947c1b890da",
       "src/lite/LiteActionProgress.jsx": "880d1bf891c3f76ef42e4565c01b0d2a39a9660a6f2d0ac9f909f0fce458f5a5",
       "src/lite/LiteApp.jsx": "6ad063fee08205550b76f75d080e3838cb3ff0b8cf661d4ba0ecf35ae27c56cc",
       "src/lite/LiteCatalog.jsx": "8e58b8d66a504532ae3a8f97a63b4cb5b058e172f11c167bb11c2484e02e4902",
-      "src/lite/LiteCatalog.stories.jsx": "d15cc614846f6c01c5e3d577fe5e747919ae4de80ec8189341a2ed13dac80c05",
+      "src/lite/LiteCatalog.stories.jsx": "7bca071d95d610bf6c8f3d33aafcc202392afc3b5b3fe6394c3395679fa2ff1f",
       "src/lite/LiteDevices.jsx": "6629b068100aba5832942de0bde7b16bb1e41b254caeff676fd4aef6d1d0e544",
       "src/lite/LiteDevices.stories.jsx": "a7a5332db1f1b64a1da6beedbd30891ac3ad83c123dadb749ee909e8d5236d33",
       "src/lite/LiteHelp.jsx": "06af915a9e7f9781ac852804a5d7ab40f5a061c12c8b80b3c888b11b94167a4c",
@@ -3295,21 +3374,21 @@
       "src/lite/LiteHomeScreen.test.jsx": "7b08dbbae553ef676a0a4bb5fefc6939a21c2859db078f42ad249c61e0fb9971",
       "src/lite/LiteIdentity.jsx": "678920bd13b1d065a8892bf307b66ce609b255297610df1d48a1c24040faacdb",
       "src/lite/LiteIdentity.stories.jsx": "e50a10161b3e12eca92c19100bfb076531a0e772595b23c30f5ea8d3d9880fc0",
-      "src/lite/LiteIdentityEnterprise.jsx": "75d58bc7e44a4b994360670701a077e3fc0ee4be4d4106149608721f051d68ac",
+      "src/lite/LiteIdentityEnterprise.jsx": "08eebcb89c4515187239684d81dc3632366e78d03919e4b47923ec6b5f5e9b6a",
       "src/lite/LiteMotion.jsx": "cc27a120e0e2ddcc986bb137776d1e2a586df7bee3569f4662e513b571d43b45",
       "src/lite/LiteNativeInstallSurface.jsx": "27366c82bfe0a8e99ddfc87f62fb9960f72d8a50eb48f5dbb2c89a94a1fcae61",
       "src/lite/LiteOverlay.jsx": "f42b87e3ffd859a399d53a1fcd9ac3c82dbd2715b6690dbcc63dba2e7710d277",
       "src/lite/LitePrimitives.stories.jsx": "33809a7f2d1038c9e757b160834913d358afa055a7e6d9bd5dd5114f789f3cf5",
-      "src/lite/LiteRecovery.jsx": "d5baf56c22641756d221158c0b3bb1d8433deb0af4a5eefbc2c19e58759fb620",
+      "src/lite/LiteRecovery.jsx": "2bf46d234357c1e3a931873149af4cce1df86f83ff58504e2ca185e212290376",
       "src/lite/LiteRecovery.stories.jsx": "c52888ba8f51947de64807d83c320488b64e23375fbe3abf9bc909fe3b0a71c6",
       "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
       "src/lite/LiteReleaseUpdateCard.jsx": "c42cd0646545ddd7107a1321e9f565fb70ea8a1215bafb23cbf9dd4a413acf89",
       "src/lite/LiteRevisionSyncBridge.jsx": "f4eb52b13ea61c36fbe428836ec43f7c2df6e09eccd62e85230723dd2389309f",
-      "src/lite/LiteRules.jsx": "6be3fa9150e886729b55c987f4851a60b20702ca96d8bbb964679762a83098ab",
+      "src/lite/LiteRules.jsx": "a400d14885c783440480dd379af1d6ec4441c7ea9d7fe72d49b6e336fe22902c",
       "src/lite/LiteRules.stories.jsx": "44b78ac3977a1f1a7837310d7aa7b760235673ee1ddfb7fd1005606a11602666",
-      "src/lite/LiteRulesEnterprise.jsx": "885e665de09dc55919d7e344490298490fa251db1da7a84802f92778dac2457a",
+      "src/lite/LiteRulesEnterprise.jsx": "6bb198abb84cd1f11189b73e03908d91e68e78adad7cd4a520f708ba11ca534d",
       "src/lite/LiteScreenBoundary.jsx": "933ae31bc9100302cbce4a037093a2fc876338571d6c104941b4826de365bc95",
-      "src/lite/LiteSecurity.jsx": "3936bb427b751e15871a5a6890572733987f8819d3cbbc3a34cae782cbcb3fc5",
+      "src/lite/LiteSecurity.jsx": "e2e309a2113992add4e104742cb9ccf006e1030f58f9b487a309e10cfb3018e4",
       "src/lite/LiteSecurity.stories.jsx": "79f05679742bc975fca3e92795870e4d425415c83c83096a380c58467e74f2d5",
       "src/lite/LiteServiceWorkerUpdateNotice.jsx": "450c8d4f9d858bcfd2781e55ae52101c8f37bc57deceb1dbe847c775ffc2288a",
       "src/lite/LiteToastHost.jsx": "4f06f72d896b56b05e9e4e9bded54c077128cff3a52bb6a3ecf2a52a83214995",
@@ -3317,7 +3396,7 @@
       "src/lite/LiteUi.test.jsx": "d09ad1e06cf21773a1d8ed93dc8071ef7516d872ebd3e3f44eafed0644ee8c50",
       "src/lite/LiteUx.jsx": "a915f121a438003fb3af973b7087f7e1d3f108e1ceaa30ad2ab0de02c5f6d6e3",
       "src/lite/LiteUx.stories.jsx": "a45605c9460b371143058035f733beab232d1374d4fa4eb77a9c4b3704843e5f",
-      "src/mocks/handlers.js": "f87041013b19fa868aea59fa4d9e4ffaa276be3e7cff0858442743f1f24d646d"
+      "src/mocks/handlers.js": "f77b159901fcd3fade75067d10896f6bb1570c6770c6f54b3c2cf376a91bb3f0"
     },
     "validation_state": "generated"
   }

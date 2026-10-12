@@ -23,6 +23,15 @@ OPA_REVISION_PATH = "/v1/data/pocketlab/meta/revision"
 PROTECTED_ACTIONS = frozenset(
     {
         "catalog.install",
+        "app.install",
+        "app.security_check",
+        "app.repair",
+        "app.backup.create",
+        "app.backup.to_storage",
+        "app.restore.preview",
+        "app.update.check",
+        "app.remove",
+        "app.credentials.manage",
         "device.remove",
         "device.invite",
         "device.roles.change",
@@ -337,36 +346,43 @@ def _server_continuation_facts(input_doc: dict[str, Any]) -> tuple[str | None, s
         from . import lite_policy_approvals
 
         revision = _safe_revision()
-        fleet_approval_actions = {"device.remove", "device.invite", "device.roles.change"}
+        approval_actions = {"device.remove", "device.invite", "device.roles.change", "app.remove"}
+        action_id = str(input_doc["action"]["id"])
+        target = input_doc.get("target") or {}
+        target_type = str(target.get("type") or "")
+        state = target.get("state") if isinstance(target.get("state"), dict) else {}
         if (
-            input_doc["action"]["id"] in fleet_approval_actions
-            and input_doc["target"]["type"] == "device"
+            action_id in approval_actions
+            and target_type in {"device", "app"}
             and actor.get("enterprise_enabled") is True
             and actor.get("role") in {"Admin", "Operator"}
         ):
-            target = input_doc.get("target") or {}
-            state = target.get("state") if isinstance(target.get("state"), dict) else {}
             return lite_policy_approvals.matching_approved(
                 initiating_human_id=str(actor["id"]),
-                action_id=str(input_doc["action"]["id"]),
-                target_type="device",
+                action_id=action_id,
+                target_type=target_type,
                 target_id=str(target.get("id") or ""),
                 target_revision=str(target.get("revision") or ""),
                 policy_revision=revision,
                 authorization_version=int(actor.get("authorization_version") or 1),
                 request_fingerprint=str(state.get("request_fingerprint") or target.get("revision") or ""),
             ), None
-        if input_doc["action"]["id"] == "catalog.install" and input_doc["target"]["type"] == "app":
-            device_id = str((input_doc["target"].get("state") or {}).get("target_node_id") or "").strip()
+        if action_id in {"catalog.install", "app.install"} and target_type == "app":
+            device_id = str(state.get("target_device_id") or state.get("target_node_id") or "").strip()
             if device_id:
                 return None, lite_policy_approvals.matching_exception(
-                    human_id=str(actor["id"]), app_id=str(input_doc["target"]["id"]), device_id=device_id, policy_revision=revision,
+                    human_id=str(actor["id"]),
+                    action_id="app.install",
+                    app_id=str(target.get("id") or ""),
+                    device_id=device_id,
+                    required_capability=str(state.get("required_capability") or "install"),
+                    target_revision=str(target.get("revision") or ""),
+                    policy_revision=revision,
                 )
     except Exception:
         # An unavailable continuation store must not become a grant.
         pass
     return None, None
-
 
 def _record_decision(*, input_doc: dict[str, Any], decision: dict[str, Any], evaluation_ms: float, correlation_id: str) -> dict[str, Any]:
     apply_migrations()
@@ -406,21 +422,21 @@ def _approval_requirement_is_valid(input_doc: dict[str, Any], decision: dict[str
     actor = input_doc.get("actor") or {}
     action_id = str(input_doc.get("action", {}).get("id") or "")
     requirements = decision.get("requirements") if isinstance(decision.get("requirements"), dict) else {}
-    expected_assurance = {
-        "device.remove": "policy.approval.device.remove",
-        "device.invite": "policy.approval.device.invite",
-        "device.roles.change": "policy.approval.device.roles.change",
+    expected = {
+        "device.remove": ("device", "policy.approval.device.remove"),
+        "device.invite": ("device", "policy.approval.device.invite"),
+        "device.roles.change": ("device", "policy.approval.device.roles.change"),
+        "app.remove": ("app", "policy.approval.app.remove"),
     }.get(action_id)
     return bool(
-        expected_assurance
-        and input_doc.get("target", {}).get("type") == "device"
+        expected
+        and input_doc.get("target", {}).get("type") == expected[0]
         and actor.get("type") == "human"
         and actor.get("enterprise_enabled") is True
         and actor.get("role") in {"Admin", "Operator"}
-        and requirements.get("required_assurance") == expected_assurance
+        and requirements.get("required_assurance") == expected[1]
         and requirements.get("required_approver_roles")
     )
-
 
 def evaluate_authorization(
     *,
@@ -520,14 +536,14 @@ def evaluate_authorization(
             except Exception as exc:
                 raise PolicyDecisionError(
                     "approval_record_unavailable",
-                    "Independent approval could not be recorded, so the protected fleet change remains blocked.",
+                    "Independent approval could not be recorded, so the protected resource change remains blocked.",
                     status_code=503,
                     decision=recorded,
                 ) from exc
             recorded["approval"] = approval
             raise PolicyDecisionError(
                 "approval_required",
-                "An independent active Enterprise Owner or Admin must approve this protected fleet change. Nothing has been applied.",
+                "An independent active Enterprise Owner or Admin must approve this protected resource change. Nothing has been applied.",
                 status_code=409,
                 decision=recorded,
             )
@@ -736,7 +752,11 @@ def policy_status() -> dict[str, Any]:
         },
         "last_decision_at": last_decision_at,
         "policy_groups": [
-            {"id": "apps", "label": "Apps", "actions": ["catalog.install"]},
+            {"id": "apps", "label": "Apps", "actions": [
+                "app.install", "app.security_check", "app.repair", "app.backup.create",
+                "app.backup.to_storage", "app.restore.preview", "app.update.check",
+                "app.remove", "app.credentials.manage", "catalog.install"
+            ]},
             {"id": "devices", "label": "Devices", "actions": ["device.remove"]},
             {"id": "identity", "label": "Identity", "actions": ["identity.passkey.revoke"]},
         ],

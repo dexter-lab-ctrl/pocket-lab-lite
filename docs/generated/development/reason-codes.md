@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 26b0f930d45cfd7d86afccf231293e786a61f01537d52d271732fa72f3a3d1c8
+source_fingerprint: 9391137ccc4cfeeacf4e25a20bfcc6e85bbdad1bec651cf883775b7f2bf6a2d9
 schema_revision: 1
 validation_status: generated
 ---
@@ -98,6 +98,7 @@ validation_status: generated
 | `enterprise_role_forbidden` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `enterprise_role_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `enterprise_rules_role_required` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
+| `exception_action_invalid` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `exception_expiry_invalid` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `exception_identity_unknown` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `exception_not_found` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |

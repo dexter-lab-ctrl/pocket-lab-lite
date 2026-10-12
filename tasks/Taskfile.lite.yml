@@ -2,94 +2,6 @@ version: '3'
 
 tasks:
 
-  lite:ui:shared-home-apps:unit:
-    desc: Validate shared fields, prepared Home activity and generic Apps registry contracts
-    cmds:
-      - npm run test -- src/lite/components/LiteSafeForms.test.jsx src/lite/homeAttentionPriority.test.js src/lite/homeActivityEvidence.test.js src/lite/catalog/catalogPresentation.test.js
-      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_app_registry_contract.py'
-
-
-  lite:ui:p4:unit:
-    desc: Run P0-P3 shared UI contract unit tests; no runtime mutation
-    cmds:
-      - npm run test -- src/lite/LiteDesignSystemP0.test.jsx src/lite/components/LiteNextSteps.test.jsx src/lite/components/LiteEvidenceGuide.test.jsx src/lite/components/LiteQuickNavigate.test.jsx
-
-  lite:ui:p4:mocked:
-    desc: Run P4 mocked desktop/mobile regressions and scoped accessibility checks
-    cmds:
-      - npm run test:ui:p4:mocked
-
-  lite:ui:p4:full-mocked:
-    desc: Run full established mocked UI, visual, accessibility, and performance lanes
-    cmds:
-      - npm run test:ui:p4:mocked
-      - npm run test:mock-regression
-      - npm run test:perf:mocked
-      - npm run build:budget
-
-  lite:ui:p4:live:
-    desc: Explicitly qualified read-only live UI lane; requires separately approved runtime setup
-    cmds:
-      - npm run test:e2e:live
-      - npm run test:perf:live
-
-  lite:ui:p4:android:
-    desc: Physical Android performance lane; requires external device preflight and authorization
-    cmds:
-      - npm run test:perf:android-cdp
-
-
-  lite:ui:p3:unit:
-    desc: Run P3 responsive navigation and keyboard safety component tests
-    cmds:
-      - npm run test -- src/lite/components/LiteQuickNavigate.test.jsx
-
-  lite:ui:p3:regression:
-    desc: Run existing mocked desktop/mobile, accessibility and bundle-budget gates
-    cmds:
-      - npm run test:mock-regression
-      - npm run test:a11y:states
-      - npm run build:budget
-
-
-  lite:ui:p2:unit:
-    desc: Run read-only Safety, Access and Rules evidence guidance unit tests
-    cmds:
-      - npm run test -- src/lite/components/LiteEvidenceGuide.test.jsx
-
-  lite:ui:p2:regression:
-    desc: Run existing Safety, Access and Rules mocked accessibility and UI regression lanes
-    cmds:
-      - npm run test:mock-regression
-      - npm run test:a11y:states
-      - npm run build:budget
-
-
-  lite:ui:p1:unit:
-    desc: Run Home, Devices, Apps and Recovery P1 guidance component tests
-    cmds:
-      - npm run test -- src/lite/components/LiteNextSteps.test.jsx
-
-  lite:ui:p1:regression:
-    desc: Run existing desktop and mobile mocked UI regression for the P1 screens
-    cmds:
-      - npm run test:mock-regression
-      - npm run test:a11y:states
-      - npm run build:budget
-
-
-  lite:ui:p0:unit:
-    desc: Run P0 shared design-system and safety component tests
-    cmds:
-      - npm run test -- src/lite/LiteDesignSystemP0.test.jsx
-
-  lite:ui:p0:regression:
-    desc: Run existing shared UI regression suites and component build checks
-    cmds:
-      - npm run test:mock-regression
-      - npm run build:budget
-
-
   lite:photo-backup:backend:
     desc: Run Photo Backup service and reliability backend tests
     cmds:
@@ -591,6 +503,25 @@ tasks:
     desc: Run all frontend unit tests
     cmds:
       - npm run test:unit
+
+
+  lite:test:app-governance:
+    desc: Run focused Universal App Platform governance backend and frontend source contracts
+    deps: [lite:dev:scratch:prepare]
+    cmds:
+      - >-
+        PYTHONPATH=tests:pocket-lab-final-structure/runtime
+        PYTEST_DISABLE_PLUGIN_AUTOLOAD=1
+        PYTHONFAULTHANDLER=1
+        {{.PYTHON}} -m pytest -q
+        tests/backend/test_lite_app_registry.py
+        tests/backend/test_lite_app_governance.py
+        tests/backend/test_lite_app_governance_integration.py
+        tests/backend/test_lite_app_governance_continuations.py
+        tests/backend/test_lite_app_governance_source_guards.py
+        tests/backend/test_lite_policy_approvals_p3_1.py
+      - npm run test:unit -- src/lib/liteAppGovernance.test.js
+
 
   lite:test:ux:maturity:
     desc: Run the repository-owned Pocket Lab Lite UX maturity contract and mocked cross-tab qualification

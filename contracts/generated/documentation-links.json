@@ -113,9 +113,21 @@
         "title": "GET /api/lite/apps/{app_id}/backups/{backup_id}/receipt",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-apps-app-id-backups-backup-id-receipt"
       },
+      "endpoint:GET:/api/lite/apps/{app_id}/credentials": {
+        "title": "GET /api/lite/apps/{app_id}/credentials",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-apps-app-id-credentials"
+      },
       "endpoint:GET:/api/lite/apps/{app_id}/evidence": {
         "title": "GET /api/lite/apps/{app_id}/evidence",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-apps-app-id-evidence"
+      },
+      "endpoint:GET:/api/lite/apps/{app_id}/recovery": {
+        "title": "GET /api/lite/apps/{app_id}/recovery",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-apps-app-id-recovery"
+      },
+      "endpoint:GET:/api/lite/apps/{app_id}/resource": {
+        "title": "GET /api/lite/apps/{app_id}/resource",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-apps-app-id-resource"
       },
       "endpoint:GET:/api/lite/apps/{app_id}/restore/previews/{preview_id}": {
         "title": "GET /api/lite/apps/{app_id}/restore/previews/{preview_id}",
@@ -580,6 +592,10 @@
       "endpoint:POST:/api/lite/apps/{app_id}/backup/storage-device": {
         "title": "POST /api/lite/apps/{app_id}/backup/storage-device",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-apps-app-id-backup-storage-device"
+      },
+      "endpoint:POST:/api/lite/apps/{app_id}/credentials": {
+        "title": "POST /api/lite/apps/{app_id}/credentials",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-apps-app-id-credentials"
       },
       "endpoint:POST:/api/lite/apps/{app_id}/restore/preview": {
         "title": "POST /api/lite/apps/{app_id}/restore/preview",
@@ -2185,6 +2201,10 @@
         "title": "enterprise_rules_role_required",
         "url": "../../docs/generated/development/reason-codes.md#enterprise-rules-role-required"
       },
+      "reason:exception_action_invalid": {
+        "title": "exception_action_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#exception-action-invalid"
+      },
       "reason:exception_expiry_invalid": {
         "title": "exception_expiry_invalid",
         "url": "../../docs/generated/development/reason-codes.md#exception-expiry-invalid"
@@ -3022,6 +3042,11 @@
         "schema_url": "../../docs/generated/schemaspy/tables/app_action_lifecycle.html",
         "title": "app_action_lifecycle"
       },
+      "table:app_credential_metadata": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#app-credential-metadata",
+        "schema_url": "../../docs/generated/schemaspy/tables/app_credential_metadata.html",
+        "title": "app_credential_metadata"
+      },
       "table:app_current_state": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#app-current-state",
         "schema_url": "../../docs/generated/schemaspy/tables/app_current_state.html",
@@ -3425,7 +3450,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "1ea574c5d99390ece8d8cb729e04ddee6a5bc504c7d01e5533afd3d9740eea42",
+    "aggregate_fingerprint": "c4fb899abc891af24d0c4ca33b27e23ef1be6d8d2111500f3f0a4022a9493280",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3435,8 +3460,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "515e939d9da2ea7ad29889b58396b8c9b1a3aa353c73738ecbe22ec35ba92b68",
-      "contracts/metadata/documentation-platform.json": "e173e121e9ee0740d25855d6ab2606bb78bde640aaa3d60aa5382fbabd32f03d",
+      "contracts/generated/lite-openapi.json": "adc9d8e4bee083e2ca69fb9c5d541fdc8f22cd4f20f368349f37d7f524152dae",
+      "contracts/metadata/documentation-platform.json": "50a2ba3bf86579e0e816cfe8da1a9ca12ba8eaab777d10d38941d142e1c219ce",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -3476,6 +3501,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0036_assurance_execution_lifecycle.sql": "1421ef805eba817feaff7f963ceaa0a14fe8534e1c4956eae4e846ef70e6ef80",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql": "1f16d2afda6a3dc88b2d94e2cc567b046a2adf88153dfc7af4a81e2317ecc930",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql": "dcaedcf9d44d99fb07895ab314852157b4f41cbf465bad674a6c78af22bd849e",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql": "c84441cc13c352773b69c1aedbd585907ea96643e5a777929da03251e676342c",
       "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4"
     },
     "validation_state": "generated"

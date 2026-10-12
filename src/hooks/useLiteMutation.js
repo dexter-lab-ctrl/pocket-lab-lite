@@ -60,7 +60,7 @@ function uniqueQueryKeys(keys = []) {
 export function getLiteAppActionInvalidations(appId = 'photoprism', actionId = '', result = {}) {
   const normalizedAppId = String(appId || 'photoprism').toLowerCase();
   const normalizedActionId = normalizeActionId(actionId || result?.action_id || result?.actionId);
-  const keys = [liteQueryKeys.appActions(normalizedAppId)];
+  const keys = [liteQueryKeys.appActions(normalizedAppId), liteQueryKeys.appResource(normalizedAppId)];
 
   const routeOrCatalogChanged = actionResultHint(result, [
     'catalog_changed',
@@ -87,10 +87,30 @@ export function getLiteAppActionInvalidations(appId = 'photoprism', actionId = '
     recoverySummaryChanged
     || ['backup_app', 'backup_to_storage', 'preview_restore'].includes(normalizedActionId)
   ) {
-    keys.push(liteQueryKeys.recoverySummary(), liteQueryKeys.recoveryDetails(), liteQueryKeys.recoveryHistory());
+    keys.push(
+      liteQueryKeys.recoverySummary(),
+      liteQueryKeys.recoveryDetails(),
+      liteQueryKeys.recoveryHistory(),
+      liteQueryKeys.appRecovery(normalizedAppId),
+    );
+  }
+
+  if (normalizedActionId === 'check_app') {
+    keys.push(liteQueryKeys.security(), liteQueryKeys.securityProfile('app', normalizedAppId), liteQueryKeys.securityHistory());
   }
 
   return uniqueQueryKeys(keys);
+}
+
+
+export function getLiteAppCredentialInvalidations(appId = '') {
+  const normalizedAppId = String(appId || '').trim().toLowerCase();
+  return uniqueQueryKeys([
+    liteQueryKeys.appResource(normalizedAppId),
+    liteQueryKeys.appCredentials(normalizedAppId),
+    liteQueryKeys.appRecovery(normalizedAppId),
+    liteQueryKeys.recoveryDetails(),
+  ]);
 }
 
 

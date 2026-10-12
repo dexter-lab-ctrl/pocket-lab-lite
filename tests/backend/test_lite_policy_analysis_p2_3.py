@@ -45,7 +45,7 @@ def test_real_and_synthetic_simulation_are_bounded_and_non_mutating(runtime, mon
         for table in ("policy_runtime_state", "policy_activation_operations", "enterprise_memberships", "auth_sessions"):
             before[table] = [tuple(row) for row in conn.execute(f"SELECT * FROM {table}")]
     monkeypatch.setattr(lite_policy_opa, "_http_json", lambda *_args, **_kwargs: (200, {"result": {"allow": True, "reason_code": "authenticated_app_install", "constraints": ["authenticated_actor"]}}))
-    real = analysis.simulate(auth_context=auth, revision_id=revision, action_id="catalog.install", target_id="app-1", mode="real_derived")
+    real = analysis.simulate(auth_context=auth, revision_id=revision, action_id="catalog.install", target_id="photoprism", mode="real_derived")
     synthetic = analysis.simulate(auth_context=auth, revision_id=revision, action_id="device.remove", target_id="device-1", mode="synthetic", scenario={"confirmed": True, "revision_validated": True, "protected_server_host": False})
     assert real["input_mode"] == "real_derived" and real["outcome"] == "allow"
     assert synthetic["input_mode"] == "synthetic" and synthetic["synthetic_fields"] == ["confirmed", "protected_server_host", "revision_validated"]
@@ -54,7 +54,7 @@ def test_real_and_synthetic_simulation_are_bounded_and_non_mutating(runtime, mon
         for table, prior in before.items():
             assert [tuple(row) for row in conn.execute(f"SELECT * FROM {table}")] == prior
     with pytest.raises(analysis.PolicyAnalysisError) as invalid:
-        analysis.simulate(auth_context=auth, revision_id=revision, action_id="catalog.install", target_id="app-1", mode="synthetic", scenario={"role": True})
+        analysis.simulate(auth_context=auth, revision_id=revision, action_id="catalog.install", target_id="photoprism", mode="synthetic", scenario={"role": True})
     assert invalid.value.reason_code == "policy_simulation_invalid"
 
 

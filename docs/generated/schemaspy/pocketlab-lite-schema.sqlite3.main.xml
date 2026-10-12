@@ -37,6 +37,30 @@
             <column ascending="true" name="operation_id"/>
          </index>
       </table>
+      <table name="app_credential_metadata" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="app_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="credential_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="purpose" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="management" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="last_verified_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="app_id" sequenceNumberInPK="1"/>
+         <primaryKey column="credential_id" sequenceNumberInPK="2"/>
+         <index name="app_credential_metadata_s_pk" unique="true">
+            <column ascending="true" name="app_id"/>
+            <column ascending="true" name="credential_id"/>
+         </index>
+         <index name="idx_app_credential_status" unique="false">
+            <column ascending="true" name="app_id"/>
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="updated_at"/>
+         </index>
+         <index name="sqlite_autoindex_app_credential_metadata_1" unique="true">
+            <column ascending="true" name="app_id"/>
+            <column ascending="true" name="credential_id"/>
+         </index>
+      </table>
       <table name="app_current_state" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="app_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <child column="app_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="app_action_lifecycle"/>
@@ -1756,6 +1780,7 @@
          <index name="idx_policy_approvals_scope" unique="false">
             <column ascending="true" name="initiating_human_id"/>
             <column ascending="true" name="action_id"/>
+            <column ascending="true" name="target_type"/>
             <column ascending="true" name="target_id"/>
             <column ascending="true" name="target_revision"/>
             <column ascending="true" name="policy_revision"/>
@@ -1938,16 +1963,18 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="policy_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="created_by_human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+         <column autoUpdated="false" defaultValue="''" digits="0" id="5" name="required_capability" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="6" name="target_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="policy_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="created_by_human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="revoked_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="revoked_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="revoked_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="revoked_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <primaryKey column="exception_id" sequenceNumberInPK="1"/>
          <index name="policy_temporary_exceptions_s_pk" unique="true">
             <column ascending="true" name="exception_id"/>
@@ -1957,6 +1984,8 @@
             <column ascending="true" name="action_id"/>
             <column ascending="true" name="app_id"/>
             <column ascending="true" name="device_id"/>
+            <column ascending="true" name="required_capability"/>
+            <column ascending="true" name="target_revision"/>
             <column ascending="true" name="policy_revision"/>
             <column ascending="true" name="status"/>
             <column ascending="true" name="expires_at"/>

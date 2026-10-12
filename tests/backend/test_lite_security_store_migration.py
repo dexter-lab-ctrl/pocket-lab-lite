@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -565,7 +566,7 @@ def test_security_db_compare_cli_uses_canonical_source(
     )
     completed = subprocess.run(
         [
-            "python3",
+            sys.executable,
             "scripts/lite/security-db-compare.py",
             "--source-root",
             str(security),

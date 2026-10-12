@@ -17,6 +17,28 @@ def _reason_code(response):
     return body.get("reason_code")
 
 
+def _patch_verified_server_host(monkeypatch):
+    from api_fastapi.services import lite_status
+
+    monkeypatch.setattr(
+        lite_status,
+        "lite_fleet",
+        lambda: {
+            "status": "healthy",
+            "devices": [{
+                "id": "pocket-lab-lite-server",
+                "name": "Pocket Lab Lite Server",
+                "role": "server_host",
+                "protected_server_host": True,
+                "is_current": True,
+                "connection": "online",
+                "status": "healthy",
+                "capabilities": ["app_host", "compute"],
+            }],
+        },
+    )
+
+
 @pytest.fixture()
 def auth_runtime(tmp_path, monkeypatch):
     ensure_runtime_path()
@@ -174,6 +196,7 @@ def test_catalog_policy_unavailable_fails_closed_before_nats(auth_runtime, monke
     monkeypatch.setenv("POCKETLAB_TEST_AUTH_BYPASS", "0")
     monkeypatch.setenv("POCKETLAB_API_TOKEN", "service-test-token")
     deps.core.SETTINGS = deps.core.Settings(state_dir=auth_runtime)
+    _patch_verified_server_host(monkeypatch)
 
     monkeypatch.setattr(
         lite.lite_catalog,
@@ -205,7 +228,7 @@ def test_catalog_policy_unavailable_fails_closed_before_nats(auth_runtime, monke
         row = conn.execute("SELECT allow,reason_code,action_id FROM policy_decisions ORDER BY decision_row_id DESC LIMIT 1").fetchone()
     assert row["allow"] == 0
     assert row["reason_code"] == "policy_unavailable"
-    assert row["action_id"] == "catalog.install"
+    assert row["action_id"] == "app.install"
 
 
 def test_device_policy_denial_preserves_device_and_stops_before_retirement(auth_runtime, monkeypatch):
@@ -557,6 +580,7 @@ def test_authenticated_allowed_catalog_install_reaches_submit_boundary(auth_runt
     monkeypatch.setenv("POCKETLAB_TEST_AUTH_BYPASS", "0")
     monkeypatch.setenv("POCKETLAB_API_TOKEN", "service-test-token")
     deps.core.SETTINGS = deps.core.Settings(state_dir=auth_runtime)
+    _patch_verified_server_host(monkeypatch)
     monkeypatch.setattr(
         lite.lite_catalog,
         "install_command",

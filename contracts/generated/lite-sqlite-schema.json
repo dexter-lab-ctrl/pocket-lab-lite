@@ -1,7 +1,7 @@
 {
   "lite_sqlite_schema": {
     "database": "temporary data-free SQLite",
-    "migration_count": 38,
+    "migration_count": 39,
     "objects": [
       {
         "checks": [],
@@ -140,6 +140,107 @@
         "semantic_status": "inferred",
         "sensitive_fields": [],
         "sql": "CREATE TABLE app_action_lifecycle (\n    operation_id TEXT PRIMARY KEY,\n    app_id TEXT NOT NULL,\n    action_id TEXT NOT NULL,\n    status TEXT NOT NULL,\n    created_at TEXT NOT NULL,\n    updated_at TEXT NOT NULL,\n    updated_at_epoch_ms INTEGER NOT NULL,\n    source_ref TEXT NOT NULL DEFAULT '',\n    summary TEXT NOT NULL DEFAULT '',\n    metadata_json TEXT NOT NULL DEFAULT '{}'\n)",
+        "type": "table",
+        "writer": "App Catalog lifecycle and action services"
+      },
+      {
+        "checks": [
+          "status IN ('configured','missing','needs_rotation','invalid','external_manual','not_required'",
+          "management IN ('pocket_lab_metadata','external_or_manual'"
+        ],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "app_id",
+            "nullable": false,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "credential_id",
+            "nullable": false,
+            "primary_key_position": 2
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "purpose",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "management",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "last_verified_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "updated_at",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "apps",
+        "foreign_keys": [],
+        "indexes": [
+          {
+            "columns": [
+              "app_id",
+              "status",
+              "updated_at"
+            ],
+            "name": "idx_app_credential_status",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "app_id",
+              "credential_id"
+            ],
+            "name": "sqlite_autoindex_app_credential_metadata_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+        ],
+        "name": "app_credential_metadata",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived apps persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [
+          "/api/lite/catalog",
+          "/api/lite/apps/{app_id}/actions"
+        ],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "credential_id"
+        ],
+        "sql": "CREATE TABLE app_credential_metadata (\n    app_id TEXT NOT NULL,\n    credential_id TEXT NOT NULL,\n    purpose TEXT NOT NULL,\n    status TEXT NOT NULL CHECK(status IN ('configured','missing','needs_rotation','invalid','external_manual','not_required')),\n    management TEXT NOT NULL CHECK(management IN ('pocket_lab_metadata','external_or_manual')),\n    last_verified_at TEXT,\n    updated_at TEXT NOT NULL,\n    PRIMARY KEY(app_id,credential_id)\n)",
         "type": "table",
         "writer": "App Catalog lifecycle and action services"
       },
@@ -5566,7 +5667,8 @@
         "migration_sources": [
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
         ],
         "name": "enterprise_configuration",
         "projection_owner": "not a prepared projection",
@@ -5698,7 +5800,8 @@
         "migration_sources": [
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
         ],
         "name": "enterprise_memberships",
         "projection_owner": "not a prepared projection",
@@ -6870,7 +6973,8 @@
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
         ],
         "name": "human_identities",
         "projection_owner": "not a prepared projection",
@@ -7938,8 +8042,8 @@
       },
       {
         "checks": [
-          "action_id IN ('device.remove','device.invite','device.roles.change'",
-          "target_type='device'",
+          "action_id IN ('device.remove','device.invite','device.roles.change','app.remove'",
+          "target_type IN ('device','app'",
           "initiating_authorization_version >= 1",
           "status IN ('pending','approved','rejected','cancelled','expired','consumed','invalidated'"
         ],
@@ -8154,6 +8258,7 @@
             "columns": [
               "initiating_human_id",
               "action_id",
+              "target_type",
               "target_id",
               "target_revision",
               "policy_revision",
@@ -8197,7 +8302,8 @@
         "migration_sources": [
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
         ],
         "name": "policy_approvals",
         "projection_owner": "not a prepared projection",
@@ -8208,7 +8314,7 @@
         "sensitive_fields": [
           "evidence_ref"
         ],
-        "sql": "CREATE TABLE policy_approvals (\n    approval_id TEXT PRIMARY KEY,\n    originating_decision_id TEXT NOT NULL UNIQUE,\n    correlation_id TEXT NOT NULL,\n    action_id TEXT NOT NULL CHECK(action_id IN ('device.remove','device.invite','device.roles.change')),\n    target_type TEXT NOT NULL CHECK(target_type='device'),\n    target_id TEXT NOT NULL,\n    target_revision TEXT NOT NULL DEFAULT '',\n    initiating_human_id TEXT NOT NULL,\n    initiating_role TEXT NOT NULL,\n    initiating_authorization_version INTEGER NOT NULL DEFAULT 1 CHECK(initiating_authorization_version >= 1),\n    request_fingerprint TEXT NOT NULL DEFAULT '',\n    required_approver_roles_json TEXT NOT NULL,\n    required_assurance TEXT NOT NULL,\n    policy_revision TEXT NOT NULL,\n    status TEXT NOT NULL CHECK(status IN ('pending','approved','rejected','cancelled','expired','consumed','invalidated')),\n    created_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    approved_at TEXT, approved_by_human_id TEXT,\n    rejected_at TEXT, rejected_by_human_id TEXT,\n    cancelled_at TEXT, cancelled_by_human_id TEXT,\n    consumed_at TEXT,\n    reason_code TEXT NOT NULL DEFAULT '',\n    evidence_ref TEXT NOT NULL DEFAULT '',\n    FOREIGN KEY(initiating_human_id) REFERENCES human_identities(human_id),\n    FOREIGN KEY(approved_by_human_id) REFERENCES human_identities(human_id)\n)",
+        "sql": "CREATE TABLE policy_approvals (\n    approval_id TEXT PRIMARY KEY,\n    originating_decision_id TEXT NOT NULL UNIQUE,\n    correlation_id TEXT NOT NULL,\n    action_id TEXT NOT NULL CHECK(action_id IN ('device.remove','device.invite','device.roles.change','app.remove')),\n    target_type TEXT NOT NULL CHECK(target_type IN ('device','app')),\n    target_id TEXT NOT NULL,\n    target_revision TEXT NOT NULL DEFAULT '',\n    initiating_human_id TEXT NOT NULL,\n    initiating_role TEXT NOT NULL,\n    initiating_authorization_version INTEGER NOT NULL DEFAULT 1 CHECK(initiating_authorization_version >= 1),\n    request_fingerprint TEXT NOT NULL DEFAULT '',\n    required_approver_roles_json TEXT NOT NULL,\n    required_assurance TEXT NOT NULL,\n    policy_revision TEXT NOT NULL,\n    status TEXT NOT NULL CHECK(status IN ('pending','approved','rejected','cancelled','expired','consumed','invalidated')),\n    created_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    approved_at TEXT, approved_by_human_id TEXT,\n    rejected_at TEXT, rejected_by_human_id TEXT,\n    cancelled_at TEXT, cancelled_by_human_id TEXT,\n    consumed_at TEXT,\n    reason_code TEXT NOT NULL DEFAULT '',\n    evidence_ref TEXT NOT NULL DEFAULT '',\n    FOREIGN KEY(initiating_human_id) REFERENCES human_identities(human_id),\n    FOREIGN KEY(approved_by_human_id) REFERENCES human_identities(human_id)\n)",
         "type": "table",
         "writer": "source-defined control-plane service"
       },
@@ -8950,7 +9056,7 @@
       },
       {
         "checks": [
-          "action_id = 'catalog.install'",
+          "action_id IN ('catalog.install','app.install'",
           "status IN ('active','revoked','expired','consumed'"
         ],
         "classification": "internal operational metadata",
@@ -8987,6 +9093,20 @@
             "declared_type": "TEXT",
             "default": null,
             "name": "human_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "required_capability",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "target_revision",
             "nullable": false,
             "primary_key_position": 0
           },
@@ -9075,6 +9195,8 @@
               "action_id",
               "app_id",
               "device_id",
+              "required_capability",
+              "target_revision",
               "policy_revision",
               "status",
               "expires_at"
@@ -9095,7 +9217,8 @@
           }
         ],
         "migration_sources": [
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
         ],
         "name": "policy_temporary_exceptions",
         "projection_owner": "not a prepared projection",
@@ -9104,7 +9227,7 @@
         "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
         "semantic_status": "inferred",
         "sensitive_fields": [],
-        "sql": "CREATE TABLE policy_temporary_exceptions (\n    exception_id TEXT PRIMARY KEY,\n    action_id TEXT NOT NULL CHECK (action_id = 'catalog.install'),\n    app_id TEXT NOT NULL,\n    device_id TEXT NOT NULL,\n    human_id TEXT NOT NULL,\n    policy_revision TEXT NOT NULL,\n    reason TEXT NOT NULL,\n    created_by_human_id TEXT NOT NULL,\n    status TEXT NOT NULL CHECK (status IN ('active','revoked','expired','consumed')),\n    created_at TEXT NOT NULL, expires_at TEXT NOT NULL,\n    revoked_at TEXT, revoked_by_human_id TEXT,\n    FOREIGN KEY(human_id) REFERENCES human_identities(human_id),\n    FOREIGN KEY(created_by_human_id) REFERENCES human_identities(human_id)\n)",
+        "sql": "CREATE TABLE policy_temporary_exceptions (\n    exception_id TEXT PRIMARY KEY,\n    action_id TEXT NOT NULL CHECK(action_id IN ('catalog.install','app.install')),\n    app_id TEXT NOT NULL,\n    device_id TEXT NOT NULL,\n    human_id TEXT NOT NULL,\n    required_capability TEXT NOT NULL DEFAULT '',\n    target_revision TEXT NOT NULL DEFAULT '',\n    policy_revision TEXT NOT NULL,\n    reason TEXT NOT NULL,\n    created_by_human_id TEXT NOT NULL,\n    status TEXT NOT NULL CHECK(status IN ('active','revoked','expired','consumed')),\n    created_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    revoked_at TEXT,\n    revoked_by_human_id TEXT,\n    FOREIGN KEY(human_id) REFERENCES human_identities(human_id),\n    FOREIGN KEY(created_by_human_id) REFERENCES human_identities(human_id)\n)",
         "type": "table",
         "writer": "source-defined control-plane service"
       },
@@ -13327,7 +13450,7 @@
     "row_count_enforced": 0
   },
   "metadata": {
-    "aggregate_fingerprint": "a529fc613bdb815fdccda96c1ca46ed4fc92864e768562ff14980bb30b39eeb2",
+    "aggregate_fingerprint": "1bc9938901149f48a2943f6d4297cb5bb42f3571beed7851c4d0c2bf61753f23",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -13337,7 +13460,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/metadata/documentation-platform.json": "e173e121e9ee0740d25855d6ab2606bb78bde640aaa3d60aa5382fbabd32f03d",
+      "contracts/metadata/documentation-platform.json": "50a2ba3bf86579e0e816cfe8da1a9ca12ba8eaab777d10d38941d142e1c219ce",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -13377,6 +13500,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0036_assurance_execution_lifecycle.sql": "1421ef805eba817feaff7f963ceaa0a14fe8534e1c4956eae4e846ef70e6ef80",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql": "1f16d2afda6a3dc88b2d94e2cc567b046a2adf88153dfc7af4a81e2317ecc930",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql": "dcaedcf9d44d99fb07895ab314852157b4f41cbf465bad674a6c78af22bd849e",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql": "c84441cc13c352773b69c1aedbd585907ea96643e5a777929da03251e676342c",
       "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4"
     },
     "validation_state": "generated"

@@ -415,6 +415,19 @@ def test_key_bound_ui_performance_bootstrap_projects_synthetic_owner_without_des
     assert session["session"]["capability_profile"] == "qualification-owner"
     assert session["session"]["destructive_allowed"] is False
     assert "qualification.cleanup" in session["session"]["capabilities"]
+    assert "app.credentials.manage" in session["session"]["capabilities"]
+
+    from api_fastapi import deps
+    from api_fastapi.services import lite_harness
+
+    owner_context = deps.resolve_auth_context(_request({HARNESS_HEADER: session["session_token"]}))
+    lite_harness.enforce_capability(
+        owner_context,
+        action_id="app.credentials.manage",
+        target_type="app",
+        target_id="photoprism",
+        operation_id="owner-credential-metadata-regression",
+    )
 
     access = client.get(
         "/api/lite/enterprise/access",

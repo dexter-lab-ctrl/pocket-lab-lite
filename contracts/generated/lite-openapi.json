@@ -490,6 +490,53 @@
         "title": "LiteAppBackupRequest",
         "type": "object"
       },
+      "LiteAppCredentialMetadataRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "credential_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Credential Id",
+            "type": "string"
+          },
+          "last_verified_at": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Verified At"
+          },
+          "management": {
+            "const": "external_or_manual",
+            "default": "external_or_manual",
+            "title": "Management",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "configured",
+              "missing",
+              "needs_rotation",
+              "invalid",
+              "external_manual",
+              "not_required"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "credential_id",
+          "status"
+        ],
+        "title": "LiteAppCredentialMetadataRequest",
+        "type": "object"
+      },
       "LiteAppRestorePreviewRequest": {
         "properties": {
           "backup_id": {
@@ -2120,6 +2167,13 @@
       },
       "TemporaryExceptionRequest": {
         "properties": {
+          "action_id": {
+            "default": "app.install",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Action Id",
+            "type": "string"
+          },
           "app_id": {
             "maxLength": 160,
             "minLength": 1,
@@ -3213,6 +3267,162 @@
         ]
       }
     },
+    "/api/lite/apps/{app_id}/credentials": {
+      "get": {
+        "operationId": "get_lite_app_credentials_api_lite_apps__app_id__credentials_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite App Credentials Api Lite Apps  App Id  Credentials Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested resource is not available."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get Lite App Credentials",
+        "tags": [
+          "lite"
+        ]
+      },
+      "post": {
+        "operationId": "update_lite_app_credentials_api_lite_apps__app_id__credentials_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteAppCredentialMetadataRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Update Lite App Credentials Api Lite Apps  App Id  Credentials Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Update Lite App Credentials",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
     "/api/lite/apps/{app_id}/evidence": {
       "get": {
         "operationId": "get_lite_app_evidence_api_lite_apps__app_id__evidence_get",
@@ -3282,6 +3492,154 @@
           }
         },
         "summary": "Get Lite App Evidence",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/apps/{app_id}/recovery": {
+      "get": {
+        "operationId": "get_lite_app_recovery_contract_api_lite_apps__app_id__recovery_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite App Recovery Contract Api Lite Apps  App Id  Recovery Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested resource is not available."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get Lite App Recovery Contract",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/apps/{app_id}/resource": {
+      "get": {
+        "operationId": "get_lite_app_resource_api_lite_apps__app_id__resource_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite App Resource Api Lite Apps  App Id  Resource Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested resource is not available."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get Lite App Resource",
         "tags": [
           "lite"
         ]

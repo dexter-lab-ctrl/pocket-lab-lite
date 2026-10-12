@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 14f158451c10fa5a184bdd0945d51b0134bf323c4fa6d08db97c5bc2dc77fd78
+source_fingerprint: 50502985437b45636d8baab7275cfd3e099f16882aae52ae8cfb5408256ef0be
 schema_revision: 1
 validation_status: generated
 ---
@@ -343,11 +343,109 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
+<a id="get-api-lite-apps-app-id-credentials"></a>
+## GET `/api/lite/apps/{app_id}/credentials`
+
+- Operation ID: `get_lite_app_credentials_api_lite_apps__app_id__credentials_get`
+- Summary: Get Lite App Credentials
+- Deprecated: no
+- Tags: `lite`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| app_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-apps-app-id-credentials"></a>
+## POST `/api/lite/apps/{app_id}/credentials`
+
+- Operation ID: `update_lite_app_credentials_api_lite_apps__app_id__credentials_post`
+- Summary: Update Lite App Credentials
+- Deprecated: no
+- Tags: `lite`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| app_id | path | yes | `string` |
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `LiteAppCredentialMetadataRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
 <a id="get-api-lite-apps-app-id-evidence"></a>
 ## GET `/api/lite/apps/{app_id}/evidence`
 
 - Operation ID: `get_lite_app_evidence_api_lite_apps__app_id__evidence_get`
 - Summary: Get Lite App Evidence
+- Deprecated: no
+- Tags: `lite`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| app_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-apps-app-id-recovery"></a>
+## GET `/api/lite/apps/{app_id}/recovery`
+
+- Operation ID: `get_lite_app_recovery_contract_api_lite_apps__app_id__recovery_get`
+- Summary: Get Lite App Recovery Contract
+- Deprecated: no
+- Tags: `lite`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| app_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-apps-app-id-resource"></a>
+## GET `/api/lite/apps/{app_id}/resource`
+
+- Operation ID: `get_lite_app_resource_api_lite_apps__app_id__resource_get`
+- Summary: Get Lite App Resource
 - Deprecated: no
 - Tags: `lite`
 

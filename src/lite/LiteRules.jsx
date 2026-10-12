@@ -22,7 +22,6 @@ import {
 import LiteRulesEnterprise from './LiteRulesEnterprise.jsx';
 import LiteHelp, { LiteHelpHeading } from './LiteHelp.jsx';
 import { LiteSheet } from './LiteOverlay.jsx';
-import LiteEvidenceGuide from './components/LiteEvidenceGuide.jsx';
 import { LiteFreshness, LiteHistoryTimeline, LiteTechnicalFacts } from './LiteUx.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 
@@ -256,18 +255,6 @@ export default function RulesScreen() {
         backendReachable={backendReachable}
       />
 
-      <LiteEvidenceGuide
-        title="How protection decisions work"
-        saved={rulesReadOnly || isExpired}
-        description="Rules decide whether a request is permitted. A permitted request is not the same as a completed action."
-        facts={[
-          { id: "mode", label: "Rules mode", value: enterpriseEnabled ? "Enterprise Mode" : "Personal Mode" },
-          { id: "engine", label: "Protection engine", value: ready ? "Healthy and locally restricted" : "Readiness not confirmed" },
-          { id: "activation", label: "Update state", value: activationBusy ? "Change in progress" : "No active update reported" },
-          { id: "decisions", label: "Recent decisions", value: overview.recentDecisionSummary || "Not available" },
-        ]}
-        caution="A Rules simulation is hypothetical; it never grants permission or activates a policy. Policy updates and rollback remain protected backend operations."
-      />
       {loading ? <LoadingCard label="Checking your Safety Rules…" /> : null}
       {error && !data ? <StateSurface tone="degraded" title="Safety Rules are temporarily unavailable" description="Pocket Lab could not confirm the latest protection state. Saved information remains visible when available." className="mb-5" /> : null}
       {backendDegraded && backendReachable && !sourceUpdateRequired && !activationInProgress ? <StateSurface tone="degraded" title="Safety Rules need attention" description={degraded.message} className="mb-5" /> : null}
@@ -344,15 +331,16 @@ export default function RulesScreen() {
 
               <section aria-labelledby="rules-manage-templates">
                 <div className="lite-rules-card-head"><LiteHelpHeading title="Safe protection templates" helpKey="rules.policies" as="h2" /><span className="lite-rules-soft-badge">Server owned</span></div>
-                <p>These templates explain the safeguards that are available without exposing internal rule definitions.</p>
+                <p>These templates explain the safeguards that are available without exposing internal rule definitions. Normal UI describes safeguards rather than exposing policy source. The browser cannot grant itself a role, approval, exception or assurance.</p>
                 <div className="lite-rules-template-grid">{templates.map((template) => <div key={template.id} className="lite-rules-template-card"><div><strong>{template.label}</strong><StatusBadge status={template.status === 'active' ? 'healthy' : 'neutral'}>{template.status === 'active' ? 'Active' : 'Available'}</StatusBadge></div><p>{template.summary}</p></div>)}{!templates.length ? <StateSurface tone="neutral" title="No safeguard summaries" description="Pocket Lab will show current safe templates here when the server returns them." /> : null}</div>
               </section>
 
               <LiteTechnicalFacts
-                title="Technical details"
+                title="Technical status"
                 description="Safe operational facts about the current Safety Rules."
                 facts={[
                   { id: 'protection', label: 'Protection service', value: ready ? 'Ready' : 'Needs attention', tone: ready ? 'ready' : 'review' },
+                  { id: 'policy-engine', label: 'Policy engine', value: ready ? 'Ready' : 'Needs attention', tone: ready ? 'ready' : 'review' },
                   { id: 'scope', label: 'Runs on', value: data?.engine?.loopback_only ? 'This Pocket Lab only' : 'Needs attention' },
                   { id: 'rules-package', label: 'Safety Rules set', value: data?.active_policy?.bundle_ready ? 'Ready' : 'Not ready' },
                   { id: 'information', label: 'Information', value: savedStateOnly ? 'Saved information' : 'Current information' },

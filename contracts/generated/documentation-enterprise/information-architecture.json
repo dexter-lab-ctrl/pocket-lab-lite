@@ -22,7 +22,7 @@
     "derived",
     "human-review"
   ],
-  "cross_link_count": 910,
+  "cross_link_count": 912,
   "extensions": {
     "security_assurance_correlation": {
       "contract": "contracts/generated/documentation-enterprise/security-assurance-correlation.json",
@@ -66,6 +66,7 @@
       "confidence": "source-derived",
       "data_tables": [
         "table:app_action_lifecycle",
+        "table:app_credential_metadata",
         "table:app_current_state"
       ],
       "domain": "apps",
@@ -186,6 +187,12 @@
           "relation_type": "reads",
           "source": "api:get:/api/lite/catalog",
           "target": "table:app_action_lifecycle"
+        },
+        {
+          "depth": 2,
+          "relation_type": "reads",
+          "source": "api:get:/api/lite/catalog",
+          "target": "table:app_credential_metadata"
         },
         {
           "depth": 2,
@@ -558,12 +565,6 @@
           "relation_type": "verified_by",
           "source": "component:app-lifecycle-worker",
           "target": "test:tests/backend/test_lite_projection_semantic_hardening.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:app-lifecycle-worker",
-          "target": "test:tests/backend/test_lite_security_s8_recovery.py"
         }
       ],
       "expansion": {
@@ -600,7 +601,6 @@
         "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/backend/test_lite_projection_semantic_hardening.py",
-        "test:tests/backend/test_lite_security_s8_recovery.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/backend/test_lite_ux_maturity_contract.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
@@ -1375,6 +1375,18 @@
           "depth": 1,
           "relation_type": "verified_by",
           "source": "journey:change-password",
+          "target": "test:tests/backend/test_lite_app_governance_integration.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:change-password",
+          "target": "test:tests/backend/test_lite_app_governance_source_guards.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:change-password",
           "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py"
         },
         {
@@ -1718,18 +1730,6 @@
           "relation_type": "verified_by",
           "source": "api:post:/api/lite/identity/step-up/options",
           "target": "test:tests/parity/test_api_contract_fences.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "api:post:/api/lite/identity/step-up/verify",
-          "target": "test:tests/backend/test_lite_development_documentation_platform.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "api:post:/api/lite/identity/step-up/verify",
-          "target": "test:tests/parity/test_api_contract_fences.py"
         }
       ],
       "expansion": {
@@ -1757,6 +1757,8 @@
       ],
       "tests": [
         "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_app_governance_integration.py",
+        "test:tests/backend/test_lite_app_governance_source_guards.py",
         "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/backend/test_lite_device_health_d4.py",
@@ -1799,13 +1801,10 @@
       "components": [
         "component:app-lifecycle-worker",
         "component:backup-engine",
-        "component:command-lifecycle",
         "component:completion-evidence",
         "component:prepared-state",
         "component:recovery-state",
-        "component:release-subprocess",
         "component:restore-preview",
-        "component:security-coordinator",
         "component:sqlite",
         "component:worker",
         "component:workflow-execution"
@@ -1868,6 +1867,18 @@
           "relation_type": "verified_by",
           "source": "journey:backup-create",
           "target": "test:tests/backend/test_lite_api.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:backup-create",
+          "target": "test:tests/backend/test_lite_app_governance_integration.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:backup-create",
+          "target": "test:tests/backend/test_lite_app_governance_source_guards.py"
         },
         {
           "depth": 1,
@@ -1969,6 +1980,18 @@
           "depth": 1,
           "relation_type": "verified_by",
           "source": "journey:restore-execution",
+          "target": "test:tests/backend/test_lite_app_governance_integration.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:restore-execution",
+          "target": "test:tests/backend/test_lite_app_governance_source_guards.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:restore-execution",
           "target": "test:tests/backend/test_lite_database_restore_reconciliation.py"
         },
         {
@@ -2018,6 +2041,18 @@
           "relation_type": "verified_by",
           "source": "journey:restore-preview",
           "target": "test:tests/backend/test_lite_api.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:restore-preview",
+          "target": "test:tests/backend/test_lite_app_governance_integration.py"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:restore-preview",
+          "target": "test:tests/backend/test_lite_app_governance_source_guards.py"
         },
         {
           "depth": 1,
@@ -2276,42 +2311,6 @@
           "relation_type": "depends_on",
           "source": "component:worker",
           "target": "component:backup-engine"
-        },
-        {
-          "depth": 2,
-          "relation_type": "depends_on",
-          "source": "component:worker",
-          "target": "component:command-lifecycle"
-        },
-        {
-          "depth": 2,
-          "relation_type": "depends_on",
-          "source": "component:worker",
-          "target": "component:release-subprocess"
-        },
-        {
-          "depth": 2,
-          "relation_type": "depends_on",
-          "source": "component:worker",
-          "target": "component:security-coordinator"
-        },
-        {
-          "depth": 2,
-          "relation_type": "depends_on",
-          "source": "component:worker",
-          "target": "component:workflow-execution"
-        },
-        {
-          "depth": 2,
-          "relation_type": "depends_on",
-          "source": "component:worker",
-          "target": "table:command_lifecycle"
-        },
-        {
-          "depth": 2,
-          "relation_type": "protected_by",
-          "source": "component:worker",
-          "target": "boundary:messaging-execution"
         }
       ],
       "expansion": {
@@ -2350,6 +2349,8 @@
       ],
       "tests": [
         "test:tests/backend/test_lite_api.py",
+        "test:tests/backend/test_lite_app_governance_integration.py",
+        "test:tests/backend/test_lite_app_governance_source_guards.py",
         "test:tests/backend/test_lite_database_restore_reconciliation.py",
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/backend/test_lite_premium_tab_polish.py",
@@ -3518,6 +3519,7 @@
       "confidence": "source-derived",
       "data_tables": [
         "table:app_action_lifecycle",
+        "table:app_credential_metadata",
         "table:app_current_state",
         "table:device_awareness_state",
         "table:device_enrollment_registry",
@@ -4680,7 +4682,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 491,
+  "page_count": 492,
   "page_types": [
     "overview",
     "guide",
@@ -4762,6 +4764,30 @@
       "source_or_generator": "architecture/lite-security-sqlite-design-lock.md",
       "title": "Pocket Lab Lite Security SQLite Design Lock — S0–S2",
       "url": "/architecture/lite-security-sqlite-design-lock/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "architecture/universal-app-platform.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "apps",
+      "generated": false,
+      "id": "page:architecture/universal-app-platform",
+      "intents": [
+        "learn",
+        "reference"
+      ],
+      "page_type": "architecture",
+      "path": "architecture/universal-app-platform.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "understand",
+      "related_pages": [],
+      "source_or_generator": "architecture/universal-app-platform.md",
+      "title": "Universal App Platform",
+      "url": "/architecture/universal-app-platform/"
     },
     {
       "additional_audiences": [
@@ -17640,7 +17666,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "0aaf798bd8cce5c04f2c08fa3045f1c03f35b3640f04c2c49ade044dc5f376dd",
+  "source_fingerprint": "4b87f73ffd88c0fe33b6807313fab2032ed4b6af717dcddb6a8b391097efe714",
   "top_level": [
     "start-here",
     "use",
