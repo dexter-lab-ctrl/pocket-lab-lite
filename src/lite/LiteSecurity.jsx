@@ -1,3 +1,4 @@
+import LiteEvidenceGuide from './components/LiteEvidenceGuide.jsx';
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { animated, useSpring } from '@react-spring/web';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -3003,7 +3004,21 @@ export default function SecurityScreen() {
             lastUpdatedLabel={lastUpdatedLabel || lastCheckedLabel}
             backendReachable={backendReachable}
           />
-          <LiteActionRow
+          
+      <LiteEvidenceGuide
+            title="Safety result and coverage"
+            saved={savedStateOnly || isExpired}
+            description="A score describes the latest reported check, not a guarantee that every app or device was examined."
+            facts={[
+              { id: "profile", label: "Check profile", value: activeProfileMeta.label },
+              { id: "score", label: "Reported score", value: safetyScoreReported ? String(safetyScore) : "Not reported" },
+              { id: "findings", label: "Items to review", value: String(findings) },
+              { id: "checks", label: "Checks reviewed", value: checks > 0 ? String(checks) : "Not confirmed" },
+              { id: "freshness", label: "Last result", value: lastCheckedLabel || "Not available" },
+            ]}
+            caution="Coverage and result freshness matter. Open Manage Safety to inspect missing, partial or timed-out checks before acting on findings."
+          />
+      <LiteActionRow
             className="lite-security-latest-check-row"
             label="Latest check"
             value={activeProfileMeta.label}
