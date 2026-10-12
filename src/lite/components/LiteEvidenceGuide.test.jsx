@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import LiteEvidenceGuide from './LiteEvidenceGuide.jsx';
 
 describe('P2 Safety Access Rules evidence guidance', () => {
@@ -22,6 +22,7 @@ describe('P2 Safety Access Rules evidence guidance', () => {
   it('keeps bounded responsive facts with no browser-side actions', () => {
     render(<LiteEvidenceGuide title="Rules" facts={Array.from({ length: 9 }, (_, k) => ({ id: String(k), label: 'Fact '+k, value: k }))} />);
     expect(screen.getAllByRole('term')).toHaveLength(5);
-    expect(screen.queryByRole('button')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Show all 9 facts' }));
+    expect(screen.getAllByRole('term')).toHaveLength(9);
   });
 });
