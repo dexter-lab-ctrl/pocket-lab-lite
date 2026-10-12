@@ -4,7 +4,6 @@ import {
   Server,
   ShieldCheck,
   Smartphone,
-  Database,
   HardDrive,
   ArrowUpRight,
   Activity,
@@ -196,10 +195,10 @@ export default function HomeScreen({
     staleTime: 60000, pollingMode: 'relaxed',
   });
   const activity = useMemo(() => selectHomeActivityEvidence(activityData), [activityData]);
-  const history = useMemo(
-    () => selectHomeActivityEvidence(historyData?.history_available === false ? null : historyData) || activity,
-    [historyData, activity],
-  );
+  const history = useMemo(() => historyData?.history_available !== false && historyData
+    ? selectHomeActivityEvidence({ ...activityData, ...historyData,
+        counts_available: activityData?.counts_available !== false && historyData.counts_available !== false }) || activity
+    : activity, [historyData, activityData, activity]);
 
   useEffect(() => {
     if (!activityOpen || effectiveSavedStateOnly || !backendReachable) return;
