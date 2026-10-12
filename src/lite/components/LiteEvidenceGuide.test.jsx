@@ -1,7 +1,11 @@
+// @vitest-environment jsdom
+import '@testing-library/jest-dom/vitest';
 import React from 'react';
-import { describe, expect, it } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import LiteEvidenceGuide from './LiteEvidenceGuide.jsx';
+
+afterEach(cleanup);
 
 describe('P2 Safety Access Rules evidence guidance', () => {
   it('does not imply success or render an empty guide', () => {

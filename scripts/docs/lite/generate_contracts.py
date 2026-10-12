@@ -49,7 +49,9 @@ ALIASES = {
     "devices-agent-stopped": "worker-down",
     "devices-repairing": "worker-down",
     "devices-remote-not-ready": "nats-down",
-    "catalog-install-available": "catalog-ready",
+    # Keep the install-available fixture distinct from an installed catalog
+    # so mocked UI qualification exercises setup guidance.
+    "catalog-install-available": "catalog-install-available",
     "app-stopped": "lifecycle-attention",
     "app-action-failed": "lifecycle-attention",
     "app-media-not-ready": "lifecycle-attention",
@@ -58,6 +60,9 @@ ALIASES = {
     "recovery-projection-too-old": "nats-down",
     "recovery-backup-failed": "worker-down",
     "recovery-repository-unavailable": "nats-down",
+    # A verified backup with a blocked restore preview is a distinct safe
+    # read state, not the healthy preview-ready fixture.
+    "recovery-restore-blocked": "recovery-restore-blocked",
     "security-quick-healthy": "healthy",
     "security-full-running": "security-partial",
     "security-app-check-healthy": "healthy",

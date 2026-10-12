@@ -1,7 +1,11 @@
+// @vitest-environment jsdom
+import '@testing-library/jest-dom/vitest';
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import LiteNextSteps from './LiteNextSteps.jsx';
+
+afterEach(cleanup);
 
 describe('P1 evidence-only guidance', () => {
   it('does not render an empty recommendations container', () => {

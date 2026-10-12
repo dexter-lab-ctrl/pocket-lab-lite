@@ -1,7 +1,11 @@
+// @vitest-environment jsdom
+import '@testing-library/jest-dom/vitest';
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import LiteQuickNavigate, { filterLiteNavigation, shouldOpenLiteQuickNavigate } from './LiteQuickNavigate.jsx';
+
+afterEach(cleanup);
 
 const items = [{id:'home',label:'Home'}, {id:'catalog',label:'Apps'}, {id:'devices',label:'Devices'}];
 describe('P3 responsive navigation productivity', () => {

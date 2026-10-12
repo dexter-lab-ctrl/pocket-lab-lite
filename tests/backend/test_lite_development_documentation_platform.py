@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import re
 from pathlib import Path
@@ -72,6 +73,17 @@ def test_generated_fixture_metadata_and_recovery_security_scenarios_are_current(
         assert item in inventory
     partial = json.loads((ROOT / "src/test/fixtures/generated/identity/identity-role-aware-fixture.json").read_text())
     assert partial["metadata"]["implementation_status"] == "partial"
+
+
+def test_p4_fixture_aliases_preserve_readiness_states():
+    generator_path = ROOT / "scripts/docs/lite/generate_contracts.py"
+    spec = importlib.util.spec_from_file_location("lite_contract_generator", generator_path)
+    assert spec and spec.loader
+    generator = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(generator)
+
+    assert generator.ALIASES["catalog-install-available"] == "catalog-install-available"
+    assert generator.ALIASES["recovery-restore-blocked"] == "recovery-restore-blocked"
 
 
 def test_openapi_and_frontend_route_usage_outputs_exist():

@@ -1,9 +1,13 @@
+// @vitest-environment jsdom
+import '@testing-library/jest-dom/vitest';
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { StatusBadge, statusLanguage } from '../components/ui.jsx';
 import { LiteButton, LiteActionRow } from './LiteUi.jsx';
 import { LiteConsequenceSummary } from './LiteUx.jsx';
+
+afterEach(cleanup);
 
 describe('Lite P0 shared interaction safety', () => {
   it('distinguishes accepted, verifying, uncertain and stale from success', () => {
