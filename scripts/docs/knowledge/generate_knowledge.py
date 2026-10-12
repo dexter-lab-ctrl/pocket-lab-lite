@@ -94,7 +94,17 @@ REL_TYPES = {
     "documented_by", "protected_by", "recovers_with", "related_to", "produced_by", "consumed_by",
     "changed_in",
 }
-PRIVATE_PATH = re.compile(r"(?:/home/[^/\s]+|/data/data/com\.termux/files/(?:home|usr)|/mnt/[a-zA-Z]/|[A-Za-z]:\\Users\\)")
+# Require a value boundary before machine paths.  Portable home-shaped API and
+# fixture routes are removed by ``safe_text`` below; development paths such as
+# ``/home/dj/pocket-lab-lite`` and even ``/home/dj`` remain rejected.
+PRIVATE_PATH = re.compile(
+    r"(?<![A-Za-z0-9._/-])(?:/home/[^/\s]+|/data/data/com\.termux/files/(?:home|usr)|/mnt/[a-zA-Z]/|[A-Za-z]:\\Users\\)"
+)
+PORTABLE_HOME_ROUTE = re.compile(
+    r"(?<![A-Za-z0-9._/-])/home/(?:activity-cursor(?:/review)?|"
+    r"(?:api-unavailable|healthy|offline-saved|release-available|release-current|"
+    r"release-failed|review-recommended)\.json)(?=$|[\s\"'`<>,)}])"
+)
 SECRET = re.compile(
     r"(?:-----BEGIN [A-Z ]*PRIVATE KEY-----|Bearer\s+[A-Za-z0-9._~+/-]{12,}|"
     r"(?:password|passwd|token|secret|api[_-]?key|credential|authorization)\s*[=:]\s*[^\s,}\]]{6,}|"
@@ -859,9 +869,10 @@ def validate_graph(graph: Graph) -> list[str]:
 
 
 def safe_text(label: str, text: str) -> None:
-    if SECRET.search(text):
+    portable_text = PORTABLE_HOME_ROUTE.sub("<portable-home-route>", text)
+    if SECRET.search(portable_text):
         raise ValueError(f"secret-like value detected in {label}")
-    if PRIVATE_PATH.search(text):
+    if PRIVATE_PATH.search(portable_text):
         raise ValueError(f"private absolute path detected in {label}")
     # Documentation may contain symbolic loopback references in existing sources, but knowledge export should not contain deployment IPv4s.
     for match in IPV4.findall(text):

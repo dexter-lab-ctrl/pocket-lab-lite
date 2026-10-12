@@ -92,6 +92,19 @@
       ]
     },
     {
+      "api": "api:get:/api/lite/home/activity-cursor",
+      "confidence": "unvalidated",
+      "method": "GET",
+      "route": "/api/lite/home/activity-cursor",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:litehome"
+      ]
+    },
+    {
       "api": "api:get:/api/lite/identity/owner-claim/status",
       "confidence": "unvalidated",
       "method": "GET",
@@ -334,6 +347,19 @@
       ]
     },
     {
+      "api": "api:get:/api/lite/system/activity-summary",
+      "confidence": "unvalidated",
+      "method": "GET",
+      "route": "/api/lite/system/activity-summary",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:litehome"
+      ]
+    },
+    {
       "api": "api:post:/api/lite/apps/{app_id}/backup",
       "confidence": "unvalidated",
       "method": "POST",
@@ -383,6 +409,19 @@
       "sqlite": [],
       "ui": [
         "ui:litedevices"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/home/activity-cursor/review",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/home/activity-cursor/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:litehome"
       ]
     },
     {
@@ -788,6 +827,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "50c98900f9c11c07f676e67e243ab014608f230ec0d31e4a63ba3a73f568f817"
+    "source_fingerprint": "1b6afc93494e6e8a7d78fbb42cb9727bedc8292d164fbf0caf5909b5a5e3da78"
   }
 }

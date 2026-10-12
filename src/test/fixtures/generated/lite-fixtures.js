@@ -7,7 +7,7 @@ export const generatedLiteFixtureManifest = {
     "app-projection-stale": "lifecycle-attention",
     "app-route-not-ready": "lifecycle-attention",
     "app-stopped": "lifecycle-attention",
-    "catalog-install-available": "catalog-ready",
+    "catalog-install-available": "catalog-install-available",
     "catalog-installing": "catalog-installing",
     "catalog-ready": "catalog-ready",
     "devices-agent-stopped": "worker-down",
@@ -38,7 +38,7 @@ export const generatedLiteFixtureManifest = {
     "recovery-projection-too-old": "nats-down",
     "recovery-ready": "healthy",
     "recovery-repository-unavailable": "nats-down",
-    "recovery-restore-blocked": "healthy",
+    "recovery-restore-blocked": "recovery-restore-blocked",
     "recovery-verified": "healthy",
     "release-available": "healthy",
     "release-current": "healthy",
@@ -411,7 +411,7 @@ export const generatedLiteFixtureManifest = {
     "generator": "scripts/docs/lite/generate_contracts.py",
     "schema_revision": 1,
     "source_commit": "uncommitted",
-    "source_fingerprint": "6be22d148a6ecc9769efe6ce22cf3fde158293fa2b83a67c839a387e1cfc768f",
+    "source_fingerprint": "553b32446d8d60b6458999e0fbead84c0f3dc7b6395efbb07a7537250b2d3627",
     "validation_status": "generated"
   }
 };

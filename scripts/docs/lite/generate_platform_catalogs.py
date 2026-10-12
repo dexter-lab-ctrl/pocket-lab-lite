@@ -32,9 +32,8 @@ GENERATOR = "scripts/docs/lite/generate_platform_catalogs.py"
 SCHEMA_REVISION = 1
 # Require a path boundary before machine paths.  Without the boundary, an API
 # route such as ``/api/lite/home/activity-cursor`` is misclassified because it
-# contains the URL path segment ``/home/``.  The boundary still catches paths
-# at the start of a value or after normal Markdown/JSON delimiters while
-# excluding URL/path segments embedded in repository-relative strings.
+# contains the URL path segment ``/home/``.  A development path such as
+# ``/home/dj/pocket-lab-lite`` remains rejected.
 ABSOLUTE_PATH = re.compile(
     r"(?<![A-Za-z0-9._/-])(?:/home/[^/\s]+|/tmp/|/mnt/[a-zA-Z]/|[A-Za-z]:\\Users\\)"
 )

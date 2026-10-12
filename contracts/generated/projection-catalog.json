@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "8acef0ecb2ac2213b0f672d89fae64e38f2b1c97e343dbab875cf36a29b43fe3",
+    "aggregate_fingerprint": "70e9acc9121df6b926b6718991ea03e176190a7a2314c74e6c23d1f3055aba96",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -14,7 +14,7 @@
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_core_projections.py": "62b30d29d5aac1071f242258592263dd195222d04d5014fd6a12d97b6b010538",
       "pocket-lab-final-structure/runtime/api_fastapi/services/projection_scheduler.py": "d28f52760555788c05461d4725a67b89997140cf981e43eec643075b54ac3f34",
-      "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4"
+      "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a"
     },
     "validation_state": "generated"
   },

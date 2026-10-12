@@ -198,13 +198,18 @@ def test_documentation_tasks_and_mkdocs_navigation_are_wired():
 
 
 def test_generated_artifacts_exclude_absolute_paths_and_secret_values():
-    forbidden_paths = re.compile(r"(?:/home/[A-Za-z0-9._-]+/|/data/data/[^/]+/|/mnt/[A-Za-z]/|(?<![A-Za-z])[A-Za-z]:[\\/])")
+    forbidden_paths = re.compile(r"(?<![A-Za-z0-9._/-])(?:/home/[A-Za-z0-9._-]+|/data/data/[^/]+/|/mnt/[A-Za-z]/|(?<![A-Za-z])[A-Za-z]:[\\/])")
+    portable_home_routes = re.compile(
+        r"(?<![A-Za-z0-9._/-])/home/(?:activity-cursor(?:/review)?|"
+        r"(?:api-unavailable|healthy|offline-saved|release-available|release-current|"
+        r"release-failed|review-recommended)\.json)(?=$|[\s\"'`<>,)}])"
+    )
     forbidden_secret = re.compile(r"(?i)(?:password|token|secret|api[_-]?key)\s*[:=]\s*[^\s<]{4,}")
     for root in (ROOT / "contracts/generated", ROOT / "docs/generated/development", ROOT / "docs/reference/api", ROOT / "docs/assets/diagrams"):
         for path in root.rglob("*"):
             if not path.is_file() or path.suffix.lower() not in {".json", ".md", ".svg", ".dot"}:
                 continue
-            text = path.read_text(encoding="utf-8", errors="ignore")
+            text = portable_home_routes.sub("<portable-home-route>", path.read_text(encoding="utf-8", errors="ignore"))
             assert not forbidden_paths.search(text), path
             assert not forbidden_secret.search(text), path
 

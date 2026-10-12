@@ -31888,7 +31888,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4803",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4845",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1664"
         ],
         "tests": [],
@@ -31926,7 +31926,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4386",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4428",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1665"
         ],
         "tests": [],
@@ -31964,7 +31964,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4416",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4458",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1667"
         ],
         "tests": [],
@@ -32002,7 +32002,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4399",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4441",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1666"
         ],
         "tests": [],
@@ -32040,7 +32040,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4890",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4932",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1677"
         ],
         "tests": [],
@@ -32116,7 +32116,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4456",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4498",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1680"
         ],
         "tests": [],
@@ -32154,7 +32154,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4499",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4541",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1681"
         ],
         "tests": [],
@@ -32192,7 +32192,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4557",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4599",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1683"
         ],
         "tests": [],
@@ -32230,7 +32230,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4517",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4559",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1682"
         ],
         "tests": [],
@@ -32308,7 +32308,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4625",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4667",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1685"
         ],
         "tests": [],
@@ -32346,7 +32346,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4599",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4641",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1684"
         ],
         "tests": [],
@@ -32498,7 +32498,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:5052",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:5094",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1679"
         ],
         "tests": [],
@@ -32536,7 +32536,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4925",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4967",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1678"
         ],
         "tests": [],
@@ -32811,7 +32811,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3784"
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3826"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -34368,7 +34368,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3795"
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3837"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -40509,7 +40509,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 492,
+      "page_count": 499,
       "top_level": [
         "start-here",
         "use",
@@ -48392,10 +48392,10 @@
       "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
-        "asyncapi": "bb3c67118a45aab801efb2e1a020ca71b3fce06a1c0d226ceabf76632dd8742c",
-        "documentation": "ba964e48ec042caaa2a31ef8ba984702faeee5241c4bf2cbbbed2ba6b2b89e2a",
-        "openapi": "adc9d8e4bee083e2ca69fb9c5d541fdc8f22cd4f20f368349f37d7f524152dae",
-        "operational_health": "eb60c90a92b9e867223bccad933285c6ddaeaeb3381d01b45e0d8e9f60775a2b"
+        "asyncapi": "2874c26112808f0bc6087f59fb0e7d3073c4c2d20472f05e99d46a6052f00baa",
+        "documentation": "a789623add6bd940ef703263ccdc2686a9af7d2470d2af1f1d35cbaadbbb457e",
+        "openapi": "f7a353f013d30e7a0d5d98bd8682218cca973992abe03408c29a19078b4cc5d0",
+        "operational_health": "b0a93c614e4761d13726c3b06ce55d1f0ab7f8da3a99e213c159f63101d21370"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -50329,7 +50329,7 @@
         },
         {
           "path": "package.json",
-          "sha256": "6781fedb3d4eb63c9f93bbe4cc25ce37b4bc759afad3984fbca692948598791a"
+          "sha256": "fd69252a6ecae4cf045139e0705cace36d1b2e08fe13c797b8e20575bd8e0705"
         },
         {
           "path": "requirements-dev.txt",
@@ -97925,6 +97925,245 @@
         "audience": "developer/operator",
         "captures_runtime": false,
         "commands": [
+          "npm run test:perf:android-cdp"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:p4:android",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:ui:p4:android",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run existing physical Android/CDP qualification with external preflight",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:ui:p4:mocked",
+          "npm run test:mock-regression",
+          "npm run test:perf:mocked",
+          "npm run build:budget"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:p4:full-mocked",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:ui:p4:full-mocked",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "No canonical description declared.",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:e2e:live",
+          "npm run test:perf:live"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:p4:live",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:ui:p4:live",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run existing read-only live UI and performance qualification after authorization",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:ui:p4:mocked"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:p4:mocked",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:ui:p4:mocked",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "No canonical description declared.",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test -- src/lite/LiteDesignSystemP0.test.jsx src/lite/components/LiteNextSteps.test.jsx src/lite/components/LiteEvidenceGuide.test.jsx src/lite/components/LiteQuickNavigate.test.jsx"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:p4:unit",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "src/lite/LiteDesignSystemP0.test.jsx",
+          "src/lite/components/LiteEvidenceGuide.test.jsx",
+          "src/lite/components/LiteNextSteps.test.jsx",
+          "src/lite/components/LiteQuickNavigate.test.jsx"
+        ],
+        "name": "lite:ui:p4:unit",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "No canonical description declared.",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm exec playwright test tests/e2e/lite-p4-visual-contract.spec.ts -- --project=mocked-desktop --project=mocked-mobile"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:p4:visual-review",
+        "expected_runtime_class": "heavy-dev",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "tests/e2e/lite-p4-visual-contract.spec.ts"
+        ],
+        "name": "lite:ui:p4:visual-review",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Compare committed P4 visual contracts against manually approved reference snapshots",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": true,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": true,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer/operator",
+        "captures_runtime": false,
+        "commands": [
           "npm run test:perf:android-baseline"
         ],
         "dependencies": [],
@@ -98061,6 +98300,171 @@
         "outputs": [],
         "promotes_evidence": false,
         "purpose": "Run renewable synthetic qualification-owner UI performance with bounded between-interaction session/bridge rotation",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_home_activity_cursor.py tests/backend/test_lite_phase3c_system_aggregates.py"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:personal-history:backend",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "tests/backend/test_lite_home_activity_cursor.py",
+          "tests/backend/test_lite_phase3c_system_aggregates.py"
+        ],
+        "name": "lite:ui:personal-history:backend",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Validate durable per-human reviewed revision, source projection and authenticated routes",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test -- src/lite/components/LiteSafeForms.test.jsx src/lite/homeActivityEvidence.test.js"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:protected-confirmation:unit",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "src/lite/components/LiteSafeForms.test.jsx",
+          "src/lite/homeActivityEvidence.test.js"
+        ],
+        "name": "lite:ui:protected-confirmation:unit",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Validate reusable form error and protected confirmation contracts",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_app_registry.py"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:shared-home-apps:registry",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "tests/backend/test_lite_app_registry.py"
+        ],
+        "name": "lite:ui:shared-home-apps:registry",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run canonical UAP registry and contract tests against integrated main foundation",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test -- src/lite/components/LiteSafeForms.test.jsx src/lite/homeAttentionPriority.test.js src/lite/homeActivityEvidence.test.js src/lite/catalog/catalogPresentation.test.js"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:shared-home-apps:unit",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "src/lite/catalog/catalogPresentation.test.js",
+          "src/lite/components/LiteSafeForms.test.jsx",
+          "src/lite/homeActivityEvidence.test.js",
+          "src/lite/homeAttentionPriority.test.js"
+        ],
+        "name": "lite:ui:shared-home-apps:unit",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "No canonical description declared.",
         "related_tasks": [],
         "repository_mutation": false,
         "requires_termux": false,
@@ -119340,5 +119744,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "ffe33f705928fceefe97d7db7f10d522467f7783eff0bf1cda5b6a6c5f866c60"
+  "source_fingerprint": "f6812cf7b478cfda866484472e9e9813fd22de7a420a5b8c92689c5b4270303d"
 }

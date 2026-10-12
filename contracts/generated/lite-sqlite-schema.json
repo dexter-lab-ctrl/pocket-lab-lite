@@ -1,7 +1,7 @@
 {
   "lite_sqlite_schema": {
     "database": "temporary data-free SQLite",
-    "migration_count": 39,
+    "migration_count": 40,
     "objects": [
       {
         "checks": [],
@@ -7077,6 +7077,61 @@
       },
       {
         "checks": [
+          "history_revision >= 0"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "human_id",
+            "nullable": false,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "history_revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "last_reviewed_at",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [],
+        "indexes": [
+          {
+            "columns": [
+              "human_id"
+            ],
+            "name": "sqlite_autoindex_lite_home_activity_read_cursors_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0040_home_activity_read_cursors.sql"
+        ],
+        "name": "lite_home_activity_read_cursors",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE lite_home_activity_read_cursors (\n human_id TEXT PRIMARY KEY NOT NULL,\n history_revision INTEGER NOT NULL DEFAULT 0 CHECK (history_revision >= 0),\n last_reviewed_at TEXT NOT NULL\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
           "verified IN (0, 1"
         ],
         "classification": "restricted operational metadata",
@@ -13450,7 +13505,7 @@
     "row_count_enforced": 0
   },
   "metadata": {
-    "aggregate_fingerprint": "1bc9938901149f48a2943f6d4297cb5bb42f3571beed7851c4d0c2bf61753f23",
+    "aggregate_fingerprint": "3a92277521a58d7d4fc29d7d9b7b91394469c314ccf56f3943a2bff7b1c9718b",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -13501,7 +13556,8 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql": "1f16d2afda6a3dc88b2d94e2cc567b046a2adf88153dfc7af4a81e2317ecc930",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql": "dcaedcf9d44d99fb07895ab314852157b4f41cbf465bad674a6c78af22bd849e",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql": "c84441cc13c352773b69c1aedbd585907ea96643e5a777929da03251e676342c",
-      "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4"
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0040_home_activity_read_cursors.sql": "af84425c0179761b47ab078dec5d27fec1696742145b80c9b2148ed4c7276dc2",
+      "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a"
     },
     "validation_state": "generated"
   }

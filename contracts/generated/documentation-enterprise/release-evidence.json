@@ -402,10 +402,10 @@
   "exact_tag": "lite-2026.08.12.2",
   "fingerprints": {
     "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
-    "asyncapi": "bb3c67118a45aab801efb2e1a020ca71b3fce06a1c0d226ceabf76632dd8742c",
-    "documentation": "ba964e48ec042caaa2a31ef8ba984702faeee5241c4bf2cbbbed2ba6b2b89e2a",
-    "openapi": "adc9d8e4bee083e2ca69fb9c5d541fdc8f22cd4f20f368349f37d7f524152dae",
-    "operational_health": "eb60c90a92b9e867223bccad933285c6ddaeaeb3381d01b45e0d8e9f60775a2b"
+    "asyncapi": "2874c26112808f0bc6087f59fb0e7d3073c4c2d20472f05e99d46a6052f00baa",
+    "documentation": "a789623add6bd940ef703263ccdc2686a9af7d2470d2af1f1d35cbaadbbb457e",
+    "openapi": "f7a353f013d30e7a0d5d98bd8682218cca973992abe03408c29a19078b4cc5d0",
+    "operational_health": "b0a93c614e4761d13726c3b06ce55d1f0ab7f8da3a99e213c159f63101d21370"
   },
   "frontend_version": "1.0.0",
   "implementation_status": "implemented",

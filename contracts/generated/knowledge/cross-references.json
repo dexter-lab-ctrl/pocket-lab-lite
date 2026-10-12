@@ -647,6 +647,16 @@
           "type": "owns"
         }
       ],
+      "api:get:/api/lite/home/activity-cursor": [
+        {
+          "source": "ui:litehome",
+          "type": "calls"
+        },
+        {
+          "source": "domain:home",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/identity": [
         {
           "source": "domain:identity",
@@ -1058,6 +1068,10 @@
         }
       ],
       "api:get:/api/lite/system/activity-summary": [
+        {
+          "source": "ui:litehome",
+          "type": "calls"
+        },
         {
           "source": "domain:system",
           "type": "owns"
@@ -1562,6 +1576,16 @@
       "api:post:/api/lite/harness/session": [
         {
           "source": "domain:harness",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/home/activity-cursor/review": [
+        {
+          "source": "ui:litehome",
+          "type": "calls"
+        },
+        {
+          "source": "domain:home",
           "type": "owns"
         }
       ],
@@ -7671,6 +7695,12 @@
           "type": "owns"
         }
       ],
+      "table:lite_home_activity_read_cursors": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:lite_installed_release_identity": [
         {
           "source": "component:atomic-promotion",
@@ -10021,6 +10051,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/home/activity-cursor",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/identity",
           "type": "verified_by"
         },
@@ -10470,6 +10504,10 @@
         },
         {
           "source": "api:post:/api/lite/harness/session",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/home/activity-cursor/review",
           "type": "verified_by"
         },
         {
@@ -16321,6 +16359,26 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-p4-regression.spec.ts": [
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:recovery",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-p4-visual-contract.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-performance-live.spec.ts": [
         {
           "source": "component:photoprism",
@@ -16714,6 +16772,10 @@
         },
         {
           "source": "api:get:/api/lite/harness/status",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/home/activity-cursor",
           "type": "verified_by"
         },
         {
@@ -17166,6 +17228,10 @@
         },
         {
           "source": "api:post:/api/lite/harness/session",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/home/activity-cursor/review",
           "type": "verified_by"
         },
         {
@@ -17998,6 +18064,12 @@
       "ui:litedevices": [
         {
           "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "ui:litehome": [
+        {
+          "source": "domain:home",
           "type": "owns"
         }
       ],
@@ -18952,6 +19024,16 @@
         }
       ],
       "api:get:/api/lite/harness/status": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/home/activity-cursor": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -20242,6 +20324,16 @@
         }
       ],
       "api:post:/api/lite/harness/session": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/home/activity-cursor/review": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -25019,6 +25111,10 @@
           "type": "owns"
         },
         {
+          "target": "table:lite_home_activity_read_cursors",
+          "type": "owns"
+        },
+        {
           "target": "table:lite_revision_events",
           "type": "owns"
         },
@@ -25991,11 +26087,23 @@
           "type": "observed_by"
         },
         {
+          "target": "api:get:/api/lite/home/activity-cursor",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/revisions",
           "type": "owns"
         },
         {
           "target": "api:get:/api/lite/status",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/home/activity-cursor/review",
+          "type": "owns"
+        },
+        {
+          "target": "ui:litehome",
           "type": "owns"
         },
         {
@@ -26502,6 +26610,10 @@
         },
         {
           "target": "test:tests/e2e/lite-mocked.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-p4-regression.spec.ts",
           "type": "verified_by"
         },
         {
@@ -27318,6 +27430,10 @@
         },
         {
           "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-p4-regression.spec.ts",
           "type": "verified_by"
         },
         {
@@ -31018,6 +31134,14 @@
         },
         {
           "target": "test:tests/e2e/lite-mocked.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-p4-regression.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-p4-visual-contract.spec.ts",
           "type": "verified_by"
         },
         {
@@ -34921,6 +35045,20 @@
           "type": "calls"
         }
       ],
+      "ui:litehome": [
+        {
+          "target": "api:get:/api/lite/home/activity-cursor",
+          "type": "calls"
+        },
+        {
+          "target": "api:get:/api/lite/system/activity-summary",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/home/activity-cursor/review",
+          "type": "calls"
+        }
+      ],
       "ui:liteidentity": [
         {
           "target": "api:get:/api/lite/identity/owner-claim/status",
@@ -35161,6 +35299,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "50c98900f9c11c07f676e67e243ab014608f230ec0d31e4a63ba3a73f568f817"
+    "source_fingerprint": "1b6afc93494e6e8a7d78fbb42cb9727bedc8292d164fbf0caf5909b5a5e3da78"
   }
 }

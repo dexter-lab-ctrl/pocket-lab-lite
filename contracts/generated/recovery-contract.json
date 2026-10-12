@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "79a4df478e14901f2c6ab6d8e446b2af8468002d6af7614447f4794626046f04",
+    "aggregate_fingerprint": "a7e95204c71d564dde90702e7cf3ca1e05d4070d71fd39784986ee2711043f0f",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -10,15 +10,15 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "adc9d8e4bee083e2ca69fb9c5d541fdc8f22cd4f20f368349f37d7f524152dae",
+      "contracts/generated/lite-openapi.json": "f7a353f013d30e7a0d5d98bd8682218cca973992abe03408c29a19078b4cc5d0",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0033_recovery_backup_locations.sql": "91d8e0a76a7e5ec9d3781e495bfe18e0bc4b8aefffa2f529dac111a2afac72c5",
-      "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py": "abcc85264b325014271bac59117c745cd93cc4fabf6a486b44378c2d3f9aa6b6",
+      "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py": "56c630d77469c30ab0ecaa1c5d251858d07d6c128295d83e3fcf05beeb429006",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py": "faadf8fbe9398894efdc577cba72f6a635310e69e7cd2f32c48bb2fb72baa5b4",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup_locations.py": "608e28b8b7ab93eaf3d52b41a314ffdcdec9743829b36248eff46a8f6ef297e9",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup_manifest.py": "2ae0e0c1e1ed9503955e6e8481f51b92d4f843ba702d418a9f15dd1c6ac68332",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_restore_planner.py": "d582006b8a4fc9e5123952e3e2f3334c8661d1720f54934e8c434daf95cb0d7e",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_restore_transaction.py": "a9e8359daed1956e8c600a87158de7b286db22370090da846cfb4ceff9c7c4a2",
-      "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4"
+      "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a"
     },
     "validation_state": "generated"
   },

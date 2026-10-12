@@ -427,7 +427,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "443da25fee0505104381bc37b2fcc65fc545613e6ab8276815ecd82a11295864",
+    "aggregate_fingerprint": "c9e6f2fee301bd9088c9e8def43eac4269ce0d43a823d37a806bfff63240dbaf",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -451,7 +451,7 @@
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/smoke-test.sh": "7fbb8e7bb70c7105703e0336480ebdf24703eb5da91739df605455a1eeb0bc3f",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh": "b582b2cea9a6c0141c8cd7b8b422b993b49f940754bf85e1c0d612e62104796c",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-gitea.sh": "129b2a066ceb0c10c67a29938cc9b06b901f6b31923415db1684782a2460d805",
-      "scripts/docs/lite/generate_platform_catalogs.py": "fcab4baa3f4e12e3024973b0bd23e965d7b74b8bc367df7fcc7c0228417914e4"
+      "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a"
     },
     "validation_state": "generated"
   }
