@@ -2,6 +2,24 @@ version: '3'
 
 tasks:
 
+  lite:ui:shared-home-apps:registry:
+    desc: Run canonical UAP registry and contract tests against integrated main foundation
+    cmds:
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_app_registry.py'
+
+
+  lite:ui:p4:live:
+    desc: Run existing read-only live UI and performance qualification after authorization
+    cmds:
+      - npm run test:e2e:live
+      - npm run test:perf:live
+
+  lite:ui:p4:android:
+    desc: Run existing physical Android/CDP qualification with external preflight
+    cmds:
+      - npm run test:perf:android-cdp
+
+
   lite:ui:p4:unit:
     cmds:
       - npm run test -- src/lite/LiteDesignSystemP0.test.jsx src/lite/components/LiteNextSteps.test.jsx src/lite/components/LiteEvidenceGuide.test.jsx src/lite/components/LiteQuickNavigate.test.jsx
