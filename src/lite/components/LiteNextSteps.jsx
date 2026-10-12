@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './liteNextSteps.css';
 
 /**
  * P1 read-only operational guidance. Callers must supply already projected,
  * sanitized facts. No polling, authority inference, or commands live here.
  */
-export function LiteNextSteps({ title = 'What to do next', description = '', items = [], saved = false, className = '' }) {
-  const visible = (Array.isArray(items) ? items : []).filter((item) => item && item.label).slice(0, 4);
+export function LiteNextSteps({ title = 'What to do next', description = '', items = [], saved = false, className = '', initialCount = 4 }) {
+  const [expanded, setExpanded] = useState(false);
+  const all = (Array.isArray(items) ? items : []).filter((item) => item && item.label);
+  const visible = expanded ? all : all.slice(0, Math.max(1, initialCount));
   if (!visible.length) return null;
   return (
     <section className={`lite-p1-next-steps ${className}`.trim()} aria-label={title} data-lite-p1-guidance="true" data-lite-information={saved ? 'saved' : 'current'}>
@@ -28,6 +30,7 @@ export function LiteNextSteps({ title = 'What to do next', description = '', ite
           </li>
         ))}
       </ol>
+      {all.length > initialCount ? <button type="button" className="lite-p1-next-steps-more" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{expanded ? 'Show fewer' : `Show all ${all.length} items`}</button> : null}
     </section>
   );
 }
