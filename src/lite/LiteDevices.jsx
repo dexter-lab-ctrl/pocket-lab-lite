@@ -1080,7 +1080,7 @@ export default function DevicesScreen() {
         description="Connection and remote access are separate checks. Review the affected device before sending a command."
         saved={savedStateOnly || isExpired}
         items={[
-          ...devices.filter((device) => deviceLinkState(device) !== "joined" && deviceLinkState(device) !== "server").slice(0, 2).map((device) => ({
+          ...devices.filter((device) => deviceLinkState(device) !== "joined" && deviceLinkState(device) !== "server").map((device) => ({
             id: String(device.id || device.name), label: device.name || "Device",
             description: deviceLinkState(device) === "repairing" ? "Connection is being repaired." : "Device connection is not confirmed.",
             actionLabel: "Review device", onClick: () => toggleDeviceDetails(String(device.id || device.name)),
