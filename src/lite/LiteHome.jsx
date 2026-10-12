@@ -214,7 +214,7 @@ export default function HomeScreen({
         title={overview.attentionCount ? "Review what needs attention" : "Your workspace at a glance"}
         description={effectiveSavedStateOnly ? "These details are saved, not verified live." : "Follow a known area to its current details."}
         saved={effectiveSavedStateOnly}
-        items={prioritizeWorkspaceAttention(overview.keyAreas).slice(0, 3).map((item) => ({
+        items={prioritizeWorkspaceAttention(overview.keyAreas).map((item) => ({
           id: item.key, label: item.label, description: item.summary,
           actionLabel: "Open", onClick: item.screen && item.screen !== "home" ? () => goTo(item.screen) : undefined,
         }))}
