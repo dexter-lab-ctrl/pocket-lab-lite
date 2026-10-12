@@ -1,1 +1,10 @@
-import {describe,it,expect} from 'vitest';import {prioritizeWorkspaceAttention} from './homeAttentionPriority.js';describe('Home priority',()=>{it('puts danger before review without mutating the source',()=>{const a=[{key:'one',tone:'review'},{key:'two',tone:'danger'},{key:'three',tone:'ready'}];expect(prioritizeWorkspaceAttention(a).map(x=>x.key)).toEqual(['two','one']);expect(a).toHaveLength(3)})});
+import { describe, it, expect } from 'vitest';
+import { prioritizeWorkspaceAttention } from './homeAttentionPriority.js';
+describe('Home attention ordering', () => {
+  it('sorts severity first and removes healthy and duplicate service issues without source mutation', () => {
+    const items = [{ key: 'safety', tone: 'review' }, { key: 'devices', tone: 'danger' },
+      { key: 'safety', tone: 'danger' }, { key: 'healthy', tone: 'ready' }];
+    expect(prioritizeWorkspaceAttention(items).map((item) => item.key)).toEqual(['devices', 'safety']);
+    expect(items).toHaveLength(4);
+  });
+});
