@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   LayoutGrid,
   Server,
@@ -132,6 +132,30 @@ export default function HomeScreen({
   const [workspaceDetailsOpen, setWorkspaceDetailsOpen] = useState(false);
   const {data: activityData} = useLiteQuery({queryKey:['lite','system','activity-summary','home'],path:'/api/lite/system/activity-summary',queryFn:liteApi.activitySummary,enabled:backendReachable && !effectiveSavedStateOnly,pollingMode:'relaxed',staleTime:60000});
   const activityEvidence = useMemo(()=>selectHomeActivityEvidence(activityData),[activityData]);
+  const [activityCursor,setActivityCursor]=useState(null);
+  const [cursorBusy,setCursorBusy]=useState(false);
+  const [cursorError,setCursorError]=useState('');
+  useEffect(()=>{
+    let cancelled=false;
+    if (!backendReachable || effectiveSavedStateOnly || !activityEvidence) {
+      setActivityCursor(null);
+      return ()=>{cancelled=true;};
+    }
+    liteApi.homeActivityCursor().then(value=>{
+      if(!cancelled){setActivityCursor(value);setCursorError('');}
+    }).catch(()=>{
+      if(!cancelled){setActivityCursor(null);setCursorError('Personal activity review is unavailable.');}
+    });
+    return ()=>{cancelled=true;};
+  },[backendReachable,effectiveSavedStateOnly,activityEvidence?.completed,activityEvidence?.latestChange]);
+  const markActivityReviewed=useCallback(async()=>{
+    if(cursorBusy || effectiveSavedStateOnly || !backendReachable || !activityCursor?.changed_since_review)return;
+    setCursorBusy(true);setCursorError('');
+    try{setActivityCursor(await liteApi.reviewHomeActivityCursor());}
+    catch{setCursorError('Could not confirm your review. Try again.');}
+    finally{setCursorBusy(false);}
+  },[cursorBusy,effectiveSavedStateOnly,backendReachable,activityCursor]);
+
 
   const goTo = useCallback((screen) => {
     if (screen === 'home') {
@@ -170,9 +194,13 @@ export default function HomeScreen({
 
       {activityEvidence ? <section className="lite-home-activity-evidence" aria-label="Recent workspace activity">
         <h2>Recent workspace activity</h2><p>{activityEvidence.summary}</p>
+        {activityCursor?.changed_since_review ? <p role="status">Something changed since you last reviewed this workspace.</p> : null}
         <dl><div><dt>Currently active</dt><dd>{activityEvidence.active}</dd></div><div><dt>Recently completed</dt><dd>{activityEvidence.completed}</dd></div><div><dt>Needs review</dt><dd>{activityEvidence.attention}</dd></div></dl>
         <p>{activityEvidence.latestChange || 'No recent change details reported.'}</p>
         {activityEvidence.saved ? <small>Activity projection may be stale. Check again when connected.</small> : null}
+        {activityCursor?.last_reviewed_at ? <small>Last reviewed: {new Date(activityCursor.last_reviewed_at).toLocaleString()}</small> : null}
+        {activityCursor?.changed_since_review ? <button type="button" disabled={cursorBusy || effectiveSavedStateOnly} onClick={markActivityReviewed}>{cursorBusy ? 'Saving review…' : 'Mark activity reviewed'}</button> : null}
+        {cursorError ? <small role="status">{cursorError}</small> : null}
       </section> : null}
       <LiteNextSteps
         title={overview.attentionCount ? "Review what needs attention" : "Your workspace at a glance"}
