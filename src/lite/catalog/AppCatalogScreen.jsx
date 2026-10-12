@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { filterCatalogApps, sortCatalogApps } from './catalogPresentation.js';
+import '../components/liteSafeForms.css';
 import { createPortal } from 'react-dom';
 import { useDrag } from '@use-gesture/react';
 import { animated, config, useSpring } from '@react-spring/web';
@@ -2415,8 +2417,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   });
 
   const apps = data?.apps || data?.items || [];
+  const [catalogSearch, setCatalogSearch] = useState('');
   const access = data?.access || {};
-  const featuredApp = apps[0];
+  const featuredApp = sortCatalogApps(apps)[0];
   const featuredAppId = String(featuredApp?.id || '').trim().toLowerCase();
   const appActionsLive = useCallback((payload) => Boolean(actionBusyKey) || isLiteAppActionsViewLive(payload) || hasLivePhotoPrismAppActionsPayload(payload), [actionBusyKey]);
   const {
@@ -2494,7 +2497,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     || hasLivePhotoPrismAppActionsPayload(appActionsData)
   ));
 
-  const displayedApps = apps;
+  const displayedApps = filterCatalogApps(apps, catalogSearch);
+  const visibleFeaturedApp = displayedApps.find((app) => String(app.id) === String(featuredApp?.id)) || null;
   useEffect(() => {
     return () => {
       clearLongPress();
@@ -3293,12 +3297,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         backendReachable={backendReachable}
       />
       <div className="lite-catalog-toolbar lite-catalog-toolbar--simple">
+        <label htmlFor="lite-catalog-app-search" className="lite-safe-field">Find an app<input id="lite-catalog-app-search" type="search" value={catalogSearch} onChange={(event) => setCatalogSearch(event.target.value)} placeholder="Search apps" autoComplete="off" /></label>
         <p>{displayedApps.length} {displayedApps.length === 1 ? 'app available' : 'apps available'}</p>
       </div>
 
-      {featuredApp ? (
+      {visibleFeaturedApp ? (
         <section className="lite-catalog-featured" aria-label="Featured app">
-          {renderAppCard(featuredApp, true)}
+          {renderAppCard(visibleFeaturedApp, true)}
         </section>
       ) : null}
 
@@ -3311,7 +3316,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       {loading ? <LoadingCard label="Checking your apps…" /> : null}
 
       <div className="lite-catalog-grid lite-render-containment lite-render-containment--catalog">
-        {displayedApps.filter((app) => app.id !== featuredApp?.id).map((app) => renderAppCard(app))}
+        {displayedApps.filter((app) => app.id !== visibleFeaturedApp?.id).map((app) => renderAppCard(app))}
       </div>
 
       {!loading && displayedApps.length === 0 ? (
