@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 3ccc63d2bd138946b20862a852e338c8e2a0b12abe8269477c660db49322de0a
+source_fingerprint: d8dc403374877d737e18446a5122d9bf49d8d9cc1af5fcba51e25b5f5eb3c36a
 schema_revision: 1
 validation_status: generated
 ---
@@ -55,6 +55,7 @@ validation_status: generated
 | src/lite/LiteIdentityEnterprise.jsx | liteApi.passkeyStepUpOptions | POST | `/api/lite/identity/step-up/options` | mutation | no | static |
 | src/lite/LiteIdentityEnterprise.jsx | liteApi.verifyPasskeyStepUp | POST | `/api/lite/identity/step-up/verify` | mutation | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.backupApp | POST | `/api/lite/apps/{param}/backup` | mutation | no | dynamic |
+| src/lite/LiteRecovery.jsx | liteApi.recoveryApps | GET | `/api/lite/recovery/apps` | query | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.backupNow | POST | `/api/lite/recovery/backup` | mutation | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.recoveryHistory | GET | `/api/lite/recovery/backups` | query | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.verifyBackup | POST | `/api/lite/recovery/backups/{param}/verify` | mutation | no | dynamic |
@@ -97,6 +98,7 @@ validation_status: generated
 | src/lite/catalog/AppCatalogScreen.jsx | liteApi.photoprismStoragePreview | GET | `/api/lite/apps/photoprism/storage-preview` | query | no | static |
 | src/lite/catalog/AppCatalogScreen.jsx | liteApi.appActions | GET | `/api/lite/apps/{param}/actions` | query | no | dynamic |
 | src/lite/catalog/AppCatalogScreen.jsx | liteApi.runAppAction | POST | `/api/lite/apps/{param}/actions/{param}` | mutation | no | dynamic |
+| src/lite/catalog/AppCatalogScreen.jsx | liteApi.appResource | GET | `/api/lite/apps/{param}/resource` | query | no | dynamic |
 | src/lite/catalog/AppCatalogScreen.jsx | liteApi.catalog | GET | `/api/lite/catalog` | query | no | static |
 | src/lite/catalog/AppCatalogScreen.jsx | liteApi.installApp | POST | `/api/lite/catalog/install` | mutation | no | static |
 | src/lite/catalog/AppCatalogScreen.jsx | liteApi.mediaBackup | GET | `/api/lite/media-backup` | query | no | static |
@@ -120,6 +122,9 @@ validation_status: generated
 | src/mocks/deviceFactsScenarios.js | MSW handler | GET | `/api/lite/devices/:deviceId/history` | mock | yes | static |
 | src/mocks/deviceFactsScenarios.js | MSW handler | GET | `/api/lite/fleet` | mock | yes | static |
 | src/mocks/deviceFactsScenarios.js | MSW handler | GET | `/api/lite/status` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/apps/:appId/credentials` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/apps/:appId/recovery` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/apps/:appId/resource` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/apps/example-app/actions` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/apps/lifecycle` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/apps/lifecycle/photoprism` | mock | yes | static |
@@ -363,7 +368,6 @@ validation_status: generated
 - `/api/lite/policy/decisions/{decision_id}`
 - `/api/lite/policy/templates`
 - `/api/lite/recovery`
-- `/api/lite/recovery/apps`
 - `/api/lite/recovery/apps/{app_id}`
 - `/api/lite/recovery/apps/{app_id}/backup`
 - `/api/lite/recovery/apps/{app_id}/backup-targets`

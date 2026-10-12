@@ -82,6 +82,8 @@ Renders Lite screens and sends same-origin requests only to FastAPI through Cadd
 - recovers_with: `Caddy unavailable`
 - recovers_with: `Pocket Lab UI unavailable`
 - verified_by: `tests/backend/test_lite_api.py`
+- verified_by: `tests/backend/test_lite_app_governance_integration.py`
+- verified_by: `tests/backend/test_lite_app_governance_source_guards.py`
 - verified_by: `tests/backend/test_lite_control_plane_sqlite_p3.py`
 - verified_by: `tests/backend/test_lite_device_system_profile.py`
 - verified_by: `tests/backend/test_lite_devices_d2_d3.py`

@@ -12,6 +12,7 @@ device_heartbeats
 command_lifecycle
 backup_manifest_index
 audit_evidence_index
+app_credential_metadata
 policy_approvals
 enterprise_memberships
 webauthn_challenges

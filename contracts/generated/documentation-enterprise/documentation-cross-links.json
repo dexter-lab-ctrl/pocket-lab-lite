@@ -1089,17 +1089,6 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:apps:081943b88072e370",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/apps",
-      "target": "test:tests/backend/test_lite_security_s8_recovery.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
       "id": "link:journey:apps:0a778aad26920145",
       "relation_type": "publishes",
       "source": "page:generated/enterprise/journeys/apps",
@@ -1237,6 +1226,17 @@
       "source": "page:generated/enterprise/journeys/apps",
       "target": "subject:pocketlab.events.command.failed",
       "target_type": "subject"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:apps:4a6c4e7c5455a9e8",
+      "relation_type": "reads",
+      "source": "page:generated/enterprise/journeys/apps",
+      "target": "table:app_credential_metadata",
+      "target_type": "table"
     },
     {
       "depth": 2,
@@ -1909,6 +1909,16 @@
       "source": "page:generated/enterprise/journeys/apps",
       "target": "subject:pocketlab.events.worker.maintenance_deferred",
       "target_type": "subject"
+    },
+    {
+      "evidence": [
+        "contracts/generated/knowledge/data-lineage.json"
+      ],
+      "id": "link:journey:apps:data:6d2f1c37e46ff329",
+      "relation_type": "owns-or-projects-data",
+      "source": "page:generated/enterprise/journeys/apps",
+      "target": "table:app_credential_metadata",
+      "target_type": "table"
     },
     {
       "evidence": [
@@ -3539,6 +3549,17 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:identity:324e86e8a8fd3203",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/identity",
+      "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:identity:341e48b85054d812",
       "relation_type": "calls",
       "source": "page:generated/enterprise/journeys/identity",
@@ -3788,25 +3809,14 @@
       "target_type": "test"
     },
     {
-      "depth": 2,
+      "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:identity:938032ceb63f83ec",
+      "id": "link:journey:identity:87eea77da9b900d1",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/parity/test_api_contract_fences.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:identity:9595851e0f22d009",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/identity",
-      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "target": "test:tests/backend/test_lite_app_governance_integration.py",
       "target_type": "test"
     },
     {
@@ -4241,6 +4251,17 @@
       "target_type": "page"
     },
     {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:recovery:003d4d6d43025891",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/recovery",
+      "target": "test:tests/backend/test_lite_app_governance_integration.py",
+      "target_type": "test"
+    },
+    {
       "depth": 2,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
@@ -4250,6 +4271,17 @@
       "source": "page:generated/enterprise/journeys/recovery",
       "target": "subject:pocketlab.events.lite.restore.service_restart_checked",
       "target_type": "subject"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:recovery:05bd57016eb84e97",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/recovery",
+      "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
+      "target_type": "test"
     },
     {
       "depth": 1,
@@ -4333,6 +4365,17 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:recovery:1abd61e1262b6523",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/recovery",
+      "target": "test:tests/backend/test_lite_app_governance_integration.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:recovery:1cce132b2f141373",
       "relation_type": "uses",
       "source": "page:generated/enterprise/journeys/recovery",
@@ -4382,17 +4425,6 @@
       "source": "page:generated/enterprise/journeys/recovery",
       "target": "test:tests/backend/test_lite_security_s8_recovery.py",
       "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:recovery:2960aee225f298e9",
-      "relation_type": "protected_by",
-      "source": "page:generated/enterprise/journeys/recovery",
-      "target": "boundary:messaging-execution",
-      "target_type": "boundary"
     },
     {
       "depth": 1,
@@ -4525,17 +4557,6 @@
       "source": "page:generated/enterprise/journeys/recovery",
       "target": "subject:pocketlab.events.lite.restore.checkpoint_created",
       "target_type": "subject"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:recovery:5025df68df1d3964",
-      "relation_type": "depends_on",
-      "source": "page:generated/enterprise/journeys/recovery",
-      "target": "component:workflow-execution",
-      "target_type": "component"
     },
     {
       "depth": 1,
@@ -4681,17 +4702,6 @@
       "target_type": "component"
     },
     {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:recovery:817c4fea2ccb0a0d",
-      "relation_type": "depends_on",
-      "source": "page:generated/enterprise/journeys/recovery",
-      "target": "component:command-lifecycle",
-      "target_type": "component"
-    },
-    {
       "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
@@ -4762,17 +4772,6 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:recovery:9a27c267720ed5f5",
-      "relation_type": "depends_on",
-      "source": "page:generated/enterprise/journeys/recovery",
-      "target": "component:security-coordinator",
-      "target_type": "component"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
       "id": "link:journey:recovery:9c649fe1aa824696",
       "relation_type": "publishes",
       "source": "page:generated/enterprise/journeys/recovery",
@@ -4800,6 +4799,17 @@
       "source": "page:generated/enterprise/journeys/recovery",
       "target": "table:recovery_operations",
       "target_type": "table"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:recovery:a9059d9e1132c52c",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/recovery",
+      "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
+      "target_type": "test"
     },
     {
       "depth": 2,
@@ -5126,17 +5136,6 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:recovery:d21834c803e0a927",
-      "relation_type": "depends_on",
-      "source": "page:generated/enterprise/journeys/recovery",
-      "target": "table:command_lifecycle",
-      "target_type": "table"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
       "id": "link:journey:recovery:d2d5ea113ced4c80",
       "relation_type": "recovers_with",
       "source": "page:generated/enterprise/journeys/recovery",
@@ -5174,6 +5173,17 @@
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/recovery",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:recovery:dfd0222f62d86fd2",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/recovery",
+      "target": "test:tests/backend/test_lite_app_governance_integration.py",
       "target_type": "test"
     },
     {
@@ -5397,15 +5407,15 @@
       "target_type": "component"
     },
     {
-      "depth": 2,
+      "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:recovery:fe3862e056e06a09",
-      "relation_type": "depends_on",
+      "id": "link:journey:recovery:ff47d0300f440d12",
+      "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/recovery",
-      "target": "component:release-subprocess",
-      "target_type": "component"
+      "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
+      "target_type": "test"
     },
     {
       "evidence": [
@@ -8515,6 +8525,16 @@
       "relation_type": "owns-or-projects-data",
       "source": "page:generated/enterprise/journeys/rules",
       "target": "table:device_invite_lifecycle",
+      "target_type": "table"
+    },
+    {
+      "evidence": [
+        "contracts/generated/knowledge/data-lineage.json"
+      ],
+      "id": "link:journey:rules:data:6d2f1c37e46ff329",
+      "relation_type": "owns-or-projects-data",
+      "source": "page:generated/enterprise/journeys/rules",
+      "target": "table:app_credential_metadata",
       "target_type": "table"
     },
     {

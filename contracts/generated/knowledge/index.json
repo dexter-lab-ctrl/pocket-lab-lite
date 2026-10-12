@@ -659,6 +659,38 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Get Lite App Credentials",
+      "domain": "apps",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/apps/{app_id}/credentials",
+      "method": "GET",
+      "name": "GET /api/lite/apps/{app_id}/credentials",
+      "operation_id": "get_lite_app_credentials_api_lite_apps__app_id__credentials_get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/apps/{app_id}/credentials",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Get Lite App Evidence",
       "domain": "apps",
       "frontend_clients": [
@@ -681,6 +713,77 @@
         "503"
       ],
       "route": "/api/lite/apps/{app_id}/evidence",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Get Lite App Recovery Contract",
+      "domain": "apps",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/apps/{app_id}/recovery",
+      "method": "GET",
+      "name": "GET /api/lite/apps/{app_id}/recovery",
+      "operation_id": "get_lite_app_recovery_contract_api_lite_apps__app_id__recovery_get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/apps/{app_id}/recovery",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Get Lite App Resource",
+      "domain": "apps",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.appResource",
+          "resolved": true,
+          "source_module": "src/lite/catalog/AppCatalogScreen.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/apps/{app_id}/resource",
+      "method": "GET",
+      "name": "GET /api/lite/apps/{app_id}/resource",
+      "operation_id": "get_lite_app_resource_api_lite_apps__app_id__resource_get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/apps/{app_id}/resource",
       "source_refs": [
         "contracts/generated/lite-openapi.json"
       ],
@@ -2544,6 +2647,13 @@
       "domain": "recovery",
       "frontend_clients": [
         {
+          "mocked": false,
+          "owner": "liteApi.recoveryApps",
+          "resolved": true,
+          "source_module": "src/lite/LiteRecovery.jsx",
+          "usage": "query"
+        },
+        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -4048,6 +4158,29 @@
         "503"
       ],
       "route": "/api/lite/apps/{app_id}/backup/storage-device",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Update Lite App Credentials",
+      "domain": "apps",
+      "id": "api:post:/api/lite/apps/{app_id}/credentials",
+      "method": "POST",
+      "name": "POST /api/lite/apps/{app_id}/credentials",
+      "operation_id": "update_lite_app_credentials_api_lite_apps__app_id__credentials_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/apps/{app_id}/credentials",
       "source_refs": [
         "contracts/generated/lite-openapi.json"
       ],
@@ -15245,6 +15378,26 @@
       "domain": "rules",
       "event_mapping": [],
       "http_status": 403,
+      "id": "reason:exception_action_invalid",
+      "name": "exception_action_invalid",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
       "id": "reason:exception_expiry_invalid",
       "name": "exception_expiry_invalid",
       "projection_mapping": [],
@@ -20964,7 +21117,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4594",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4803",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1664"
       ],
       "stream": "incomplete",
@@ -20984,7 +21137,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4211",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4386",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1665"
       ],
       "stream": "incomplete",
@@ -21004,7 +21157,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4241",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4416",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1667"
       ],
       "stream": "incomplete",
@@ -21024,7 +21177,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4224",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4399",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1666"
       ],
       "stream": "incomplete",
@@ -21044,7 +21197,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4681",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4890",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1677"
       ],
       "stream": "incomplete",
@@ -21084,7 +21237,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4281",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4456",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1680"
       ],
       "stream": "incomplete",
@@ -21104,7 +21257,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4324",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4499",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1681"
       ],
       "stream": "incomplete",
@@ -21124,7 +21277,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4382",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4557",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1683"
       ],
       "stream": "incomplete",
@@ -21144,7 +21297,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4342",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4517",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1682"
       ],
       "stream": "incomplete",
@@ -21186,7 +21339,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4450",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4625",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1685"
       ],
       "stream": "incomplete",
@@ -21206,7 +21359,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4424",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4599",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1684"
       ],
       "stream": "incomplete",
@@ -21286,7 +21439,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4843",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:5052",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1679"
       ],
       "stream": "incomplete",
@@ -21306,7 +21459,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4716",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4925",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1678"
       ],
       "stream": "incomplete",
@@ -21465,7 +21618,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3609"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3784"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22344,7 +22497,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3620"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3795"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22834,7 +22987,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:578",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:375"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:389"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22877,7 +23030,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:553",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:374"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:388"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -25221,6 +25374,36 @@
       "writer": "App Catalog lifecycle and action services"
     },
     {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived apps persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "apps",
+      "id": "table:app_credential_metadata",
+      "indexes": [
+        "idx_app_credential_status",
+        "sqlite_autoindex_app_credential_metadata_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+      ],
+      "name": "app_credential_metadata",
+      "owner": "not a prepared projection",
+      "readers": [
+        "/api/lite/catalog",
+        "/api/lite/apps/{app_id}/actions"
+      ],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "credential_id"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+      ],
+      "type": "table",
+      "writer": "App Catalog lifecycle and action services"
+    },
+    {
       "classification": "internal operational metadata",
       "confidence": "inferred",
       "description": "Source-derived apps persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
@@ -26127,7 +26310,8 @@
       "migration_sources": [
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "name": "enterprise_configuration",
       "owner": "not a prepared projection",
@@ -26138,7 +26322,8 @@
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -26156,7 +26341,8 @@
       "migration_sources": [
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "name": "enterprise_memberships",
       "owner": "not a prepared projection",
@@ -26167,7 +26353,8 @@
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -26369,7 +26556,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "name": "human_identities",
       "owner": "not a prepared projection",
@@ -26387,7 +26575,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -26616,7 +26805,8 @@
       "migration_sources": [
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "name": "policy_approvals",
       "owner": "not a prepared projection",
@@ -26629,7 +26819,8 @@
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -26809,7 +27000,8 @@
         "sqlite_autoindex_policy_temporary_exceptions_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "name": "policy_temporary_exceptions",
       "owner": "not a prepared projection",
@@ -26818,7 +27010,8 @@
       "sensitive_fields": [],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -27810,6 +28003,46 @@
       "name": "tests/backend/test_lite_app_catalog_runtime_truth.py",
       "source_refs": [
         "tests/backend/test_lite_app_catalog_runtime_truth.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_app_governance.py",
+      "name": "tests/backend/test_lite_app_governance.py",
+      "source_refs": [
+        "tests/backend/test_lite_app_governance.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_app_governance_continuations.py",
+      "name": "tests/backend/test_lite_app_governance_continuations.py",
+      "source_refs": [
+        "tests/backend/test_lite_app_governance_continuations.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_app_governance_integration.py",
+      "name": "tests/backend/test_lite_app_governance_integration.py",
+      "source_refs": [
+        "tests/backend/test_lite_app_governance_integration.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_app_governance_source_guards.py",
+      "name": "tests/backend/test_lite_app_governance_source_guards.py",
+      "source_refs": [
+        "tests/backend/test_lite_app_governance_source_guards.py"
       ],
       "type": "test"
     },
@@ -32148,7 +32381,10 @@
         "api:get:/api/lite/apps/{app_id}/backup",
         "api:get:/api/lite/apps/{app_id}/backups",
         "api:get:/api/lite/apps/{app_id}/backups/{backup_id}/receipt",
+        "api:get:/api/lite/apps/{app_id}/credentials",
         "api:get:/api/lite/apps/{app_id}/evidence",
+        "api:get:/api/lite/apps/{app_id}/recovery",
+        "api:get:/api/lite/apps/{app_id}/resource",
         "api:get:/api/lite/apps/{app_id}/restore/previews/{preview_id}",
         "api:get:/api/lite/apps/{app_id}/update",
         "api:get:/api/lite/apps/{app_id}/update/receipts/{operation_id}",
@@ -32157,6 +32393,7 @@
         "api:post:/api/lite/apps/{app_id}/actions/{action_id}",
         "api:post:/api/lite/apps/{app_id}/backup",
         "api:post:/api/lite/apps/{app_id}/backup/storage-device",
+        "api:post:/api/lite/apps/{app_id}/credentials",
         "api:post:/api/lite/apps/{app_id}/restore/preview",
         "api:post:/api/lite/apps/{app_id}/update/apply",
         "api:post:/api/lite/catalog/install",
@@ -32184,6 +32421,7 @@
         "subject:pocketlab.events.catalog.refresh_started",
         "subject:pocketlab.events.catalog.refreshed",
         "table:app_action_lifecycle",
+        "table:app_credential_metadata",
         "table:app_current_state"
       ],
       "architecture": [
@@ -32943,6 +33181,7 @@
         "reason:enterprise_mode_required",
         "reason:enterprise_role_forbidden",
         "reason:enterprise_rules_role_required",
+        "reason:exception_action_invalid",
         "reason:exception_expiry_invalid",
         "reason:exception_identity_unknown",
         "reason:exception_not_found",
@@ -33153,6 +33392,10 @@
         "test:tests/backend/test_lite_android_performance_baseline.py",
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_app_catalog_runtime_truth.py",
+        "test:tests/backend/test_lite_app_governance.py",
+        "test:tests/backend/test_lite_app_governance_continuations.py",
+        "test:tests/backend/test_lite_app_governance_integration.py",
+        "test:tests/backend/test_lite_app_governance_source_guards.py",
         "test:tests/backend/test_lite_app_lifecycle_none_operation_regression.py",
         "test:tests/backend/test_lite_app_projection_deadline.py",
         "test:tests/backend/test_lite_app_registry.py",
@@ -33561,7 +33804,10 @@
         "api:get:/api/lite/apps/{app_id}/backup",
         "api:get:/api/lite/apps/{app_id}/backups",
         "api:get:/api/lite/apps/{app_id}/backups/{backup_id}/receipt",
+        "api:get:/api/lite/apps/{app_id}/credentials",
         "api:get:/api/lite/apps/{app_id}/evidence",
+        "api:get:/api/lite/apps/{app_id}/recovery",
+        "api:get:/api/lite/apps/{app_id}/resource",
         "api:get:/api/lite/apps/{app_id}/restore/previews/{preview_id}",
         "api:get:/api/lite/apps/{app_id}/update",
         "api:get:/api/lite/apps/{app_id}/update/receipts/{operation_id}",
@@ -33678,6 +33924,7 @@
         "api:post:/api/lite/apps/{app_id}/actions/{action_id}",
         "api:post:/api/lite/apps/{app_id}/backup",
         "api:post:/api/lite/apps/{app_id}/backup/storage-device",
+        "api:post:/api/lite/apps/{app_id}/credentials",
         "api:post:/api/lite/apps/{app_id}/restore/preview",
         "api:post:/api/lite/apps/{app_id}/update/apply",
         "api:post:/api/lite/catalog/install",
@@ -34036,6 +34283,7 @@
         "reason:enterprise_role_forbidden",
         "reason:enterprise_role_invalid",
         "reason:enterprise_rules_role_required",
+        "reason:exception_action_invalid",
         "reason:exception_expiry_invalid",
         "reason:exception_identity_unknown",
         "reason:exception_not_found",
@@ -34497,6 +34745,7 @@
       ],
       "table": [
         "table:app_action_lifecycle",
+        "table:app_credential_metadata",
         "table:app_current_state",
         "table:assurance_execution_checkpoints",
         "table:assurance_findings",
@@ -34599,6 +34848,10 @@
         "test:tests/backend/test_lite_android_performance_baseline.py",
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_app_catalog_runtime_truth.py",
+        "test:tests/backend/test_lite_app_governance.py",
+        "test:tests/backend/test_lite_app_governance_continuations.py",
+        "test:tests/backend/test_lite_app_governance_integration.py",
+        "test:tests/backend/test_lite_app_governance_source_guards.py",
         "test:tests/backend/test_lite_app_lifecycle_none_operation_regression.py",
         "test:tests/backend/test_lite_app_projection_deadline.py",
         "test:tests/backend/test_lite_app_registry.py",
@@ -35130,7 +35383,25 @@
           "type": "owns"
         }
       ],
+      "api:get:/api/lite/apps/{app_id}/credentials": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/apps/{app_id}/evidence": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/apps/{app_id}/recovery": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/apps/{app_id}/resource": [
         {
           "source": "domain:apps",
           "type": "owns"
@@ -35632,6 +35903,10 @@
       ],
       "api:get:/api/lite/recovery/apps": [
         {
+          "source": "ui:literecovery",
+          "type": "calls"
+        },
+        {
           "source": "domain:recovery",
           "type": "owns"
         }
@@ -36083,6 +36358,12 @@
         }
       ],
       "api:post:/api/lite/apps/{app_id}/backup/storage-device": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/apps/{app_id}/credentials": [
         {
           "source": "domain:apps",
           "type": "owns"
@@ -38829,6 +39110,12 @@
         }
       ],
       "reason:enterprise_rules_role_required": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:exception_action_invalid": [
         {
           "source": "domain:rules",
           "type": "owns"
@@ -42052,6 +42339,20 @@
           "type": "reads"
         }
       ],
+      "table:app_credential_metadata": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        },
+        {
+          "source": "api:get:/api/lite/apps/{app_id}/actions",
+          "type": "reads"
+        },
+        {
+          "source": "api:get:/api/lite/catalog",
+          "type": "reads"
+        }
+      ],
       "table:app_current_state": [
         {
           "source": "component:app-catalog",
@@ -43294,6 +43595,98 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_app_governance.py": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:protected_server_host",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_app_governance_continuations.py": [
+        {
+          "source": "reason:approval_continuation_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:approval_required",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_app_governance_integration.py": [
+        {
+          "source": "component:lite-api",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:pwa",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:backup-create",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:restore-execution",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:restore-preview",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:metadata_only",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:protected_server_host",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_app_governance_source_guards.py": [
+        {
+          "source": "component:lite-api",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:pwa",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:backup-create",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:change-password",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:restore-execution",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:restore-preview",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_app_projection_deadline.py": [
         {
           "source": "reason:read_degraded",
@@ -43639,6 +44032,10 @@
         },
         {
           "source": "reason:enterprise_rules_role_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:exception_action_invalid",
           "type": "verified_by"
         },
         {
@@ -44580,7 +44977,19 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/apps/{app_id}/credentials",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/apps/{app_id}/evidence",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/apps/{app_id}/recovery",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/apps/{app_id}/resource",
           "type": "verified_by"
         },
         {
@@ -45045,6 +45454,10 @@
         },
         {
           "source": "api:post:/api/lite/apps/{app_id}/backup/storage-device",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/apps/{app_id}/credentials",
           "type": "verified_by"
         },
         {
@@ -45959,6 +46372,10 @@
         },
         {
           "source": "reason:policy_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:protected_server_host",
           "type": "verified_by"
         }
       ],
@@ -48938,6 +49355,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:exception_action_invalid",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:exception_expiry_invalid",
           "type": "verified_by"
         },
@@ -50128,6 +50549,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:exception_action_invalid",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:exception_expiry_invalid",
           "type": "verified_by"
         },
@@ -51016,6 +51441,10 @@
       ],
       "test:tests/e2e/lite-accessibility-states.spec.ts": [
         {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
           "source": "domain:security",
           "type": "verified_by"
         }
@@ -51244,7 +51673,19 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/apps/{app_id}/credentials",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/apps/{app_id}/evidence",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/apps/{app_id}/recovery",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/apps/{app_id}/resource",
           "type": "verified_by"
         },
         {
@@ -51709,6 +52150,10 @@
         },
         {
           "source": "api:post:/api/lite/apps/{app_id}/backup/storage-device",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/apps/{app_id}/credentials",
           "type": "verified_by"
         },
         {
@@ -52918,6 +53363,10 @@
           "type": "reads"
         },
         {
+          "target": "table:app_credential_metadata",
+          "type": "reads"
+        },
+        {
           "target": "table:app_current_state",
           "type": "reads"
         },
@@ -52960,7 +53409,37 @@
           "type": "verified_by"
         }
       ],
+      "api:get:/api/lite/apps/{app_id}/credentials": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:get:/api/lite/apps/{app_id}/evidence": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/apps/{app_id}/recovery": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/apps/{app_id}/resource": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -53003,6 +53482,10 @@
       "api:get:/api/lite/catalog": [
         {
           "target": "table:app_action_lifecycle",
+          "type": "reads"
+        },
+        {
+          "target": "table:app_credential_metadata",
           "type": "reads"
         },
         {
@@ -54425,6 +54908,16 @@
         }
       ],
       "api:post:/api/lite/apps/{app_id}/backup/storage-device": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/apps/{app_id}/credentials": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -57338,6 +57831,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
           "type": "verified_by"
         },
@@ -57766,6 +58267,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_app_governance.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_app_registry.py",
           "type": "verified_by"
         },
@@ -57843,6 +58352,10 @@
         },
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-accessibility-states.spec.ts",
           "type": "verified_by"
         },
         {
@@ -58179,6 +58692,14 @@
         },
         {
           "target": "test:tests/backend/test_lite_api.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
           "type": "verified_by"
         },
         {
@@ -59402,7 +59923,19 @@
           "type": "owns"
         },
         {
+          "target": "api:get:/api/lite/apps/{app_id}/credentials",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/apps/{app_id}/evidence",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/apps/{app_id}/recovery",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/apps/{app_id}/resource",
           "type": "owns"
         },
         {
@@ -59435,6 +59968,10 @@
         },
         {
           "target": "api:post:/api/lite/apps/{app_id}/backup/storage-device",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/apps/{app_id}/credentials",
           "type": "owns"
         },
         {
@@ -59531,6 +60068,10 @@
         },
         {
           "target": "table:app_action_lifecycle",
+          "type": "owns"
+        },
+        {
+          "target": "table:app_credential_metadata",
           "type": "owns"
         },
         {
@@ -61088,6 +61629,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
         },
@@ -62195,6 +62744,10 @@
         },
         {
           "target": "reason:enterprise_rules_role_required",
+          "type": "owns"
+        },
+        {
+          "target": "reason:exception_action_invalid",
           "type": "owns"
         },
         {
@@ -63550,6 +64103,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_database_restore_reconciliation.py",
           "type": "verified_by"
         },
@@ -63645,6 +64206,14 @@
         },
         {
           "target": "test:tests/backend/test_lite_api.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
           "type": "verified_by"
         },
         {
@@ -64140,6 +64709,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_database_restore_reconciliation.py",
           "type": "verified_by"
         },
@@ -64175,6 +64752,14 @@
         },
         {
           "target": "test:tests/backend/test_lite_api.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
           "type": "verified_by"
         },
         {
@@ -64630,6 +65215,10 @@
       ],
       "reason:approval_continuation_unavailable": [
         {
+          "target": "test:tests/backend/test_lite_app_governance_continuations.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
         },
@@ -64717,6 +65306,10 @@
         }
       ],
       "reason:approval_required": [
+        {
+          "target": "test:tests/backend/test_lite_app_governance_continuations.py",
+          "type": "verified_by"
+        },
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -65900,6 +66493,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:exception_action_invalid": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:exception_expiry_invalid": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -66843,6 +67450,10 @@
         }
       ],
       "reason:metadata_only": [
+        {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -68054,6 +68665,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_app_governance.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_app_governance_integration.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
         },
@@ -68087,6 +68706,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
           "type": "verified_by"
         },
         {
@@ -69572,6 +70195,10 @@
       ],
       "ui:literecovery": [
         {
+          "target": "api:get:/api/lite/recovery/apps",
+          "type": "calls"
+        },
+        {
           "target": "api:get:/api/lite/recovery/backups",
           "type": "calls"
         },
@@ -69792,6 +70419,15 @@
       "source": "domain:security",
       "target": "reason:battery_policy_threshold",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:009acd9ffb274107",
+      "source": "reason:exception_action_invalid",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -70056,7 +70692,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4324"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4499"
       ],
       "id": "rel:01d5bcfc59eaef09",
       "source": "component:lite-api",
@@ -70309,6 +70945,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:042867562f75c9d3",
+      "source": "api:get:/api/lite/catalog",
+      "target": "table:app_credential_metadata",
+      "type": "reads"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_photo_backup.py"
       ],
       "id": "rel:044d914c45d1b442",
@@ -70387,6 +71032,15 @@
       "id": "rel:04f0887eb74990d0",
       "source": "component:photoprism",
       "target": "test:tests/e2e/lite-visual-overlays.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_app_governance_source_guards.py"
+      ],
+      "id": "rel:050629b117b81c4f",
+      "source": "component:lite-api",
+      "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
       "type": "verified_by"
     },
     {
@@ -70717,6 +71371,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:06a02c202fedc930",
+      "source": "api:get:/api/lite/apps/{app_id}/resource",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:06ad386c49d06af4",
@@ -70767,6 +71430,15 @@
       "id": "rel:075437b0c4a0b47c",
       "source": "api:post:/api/lite/apps/photoprism/storage-mappings",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_app_governance_integration.py"
+      ],
+      "id": "rel:07575521d17865db",
+      "source": "journey:restore-execution",
+      "target": "test:tests/backend/test_lite_app_governance_integration.py",
       "type": "verified_by"
     },
     {
@@ -71267,6 +71939,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_app_governance_source_guards.py"
+      ],
+      "id": "rel:0b7153668fc5ad81",
+      "source": "journey:restore-preview",
+      "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "runbooks/release_rollback.yaml"
       ],
       "id": "rel:0b775fefd1fa35da",
@@ -71690,6 +72371,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:0e23a077855e0bea",
+      "source": "api:get:/api/lite/apps/{app_id}/actions",
+      "target": "table:app_credential_metadata",
+      "type": "reads"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:889"
       ],
       "id": "rel:0e23b8d8e8a8c375",
@@ -72041,6 +72731,15 @@
       "id": "rel:10af4484ddc26564",
       "source": "reason:disabled",
       "target": "test:tests/backend/test_lite_isolated_qualification_lane.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_app_governance_integration.py"
+      ],
+      "id": "rel:10b040813f42b72f",
+      "source": "journey:restore-preview",
+      "target": "test:tests/backend/test_lite_app_governance_integration.py",
       "type": "verified_by"
     },
     {
@@ -72708,6 +73407,15 @@
       "source": "domain:devices",
       "target": "reason:device_role_change_identity_mismatch",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_app_governance_source_guards.py"
+      ],
+      "id": "rel:145bedc5a6ce6e3f",
+      "source": "journey:backup-create",
+      "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -74327,6 +75035,15 @@
       "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
+      "id": "rel:1f77c9d4235b6ae1",
+      "source": "domain:apps",
+      "target": "api:post:/api/lite/apps/{app_id}/credentials",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
       "id": "rel:1f95aa1b31e74632",
       "source": "domain:enterprise",
       "target": "api:get:/api/lite/enterprise/identity/enrollment/status",
@@ -75717,6 +76434,15 @@
       "source": "domain:validation",
       "target": "reason:security_scan_conflict",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:28f1e9694a8fec87",
+      "source": "api:get:/api/lite/apps/{app_id}/recovery",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -77570,6 +78296,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_app_governance_integration.py"
+      ],
+      "id": "rel:3703003021382a11",
+      "source": "component:pwa",
+      "target": "test:tests/backend/test_lite_app_governance_integration.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:3721ff872cb3a3d9",
@@ -77611,6 +78346,15 @@
       "id": "rel:37332896b249ad06",
       "source": "component:caddy",
       "target": "test:tests/backend/test_lite_qualification_owner.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_app_governance.py"
+      ],
+      "id": "rel:373b71b554360755",
+      "source": "reason:protected_server_host",
+      "target": "test:tests/backend/test_lite_app_governance.py",
       "type": "verified_by"
     },
     {
@@ -77692,6 +78436,15 @@
       "id": "rel:377a904f33ad0d49",
       "source": "reason:identity_unavailable",
       "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_app_governance_integration.py"
+      ],
+      "id": "rel:378968beab119251",
+      "source": "component:lite-api",
+      "target": "test:tests/backend/test_lite_app_governance_integration.py",
       "type": "verified_by"
     },
     {
@@ -78306,6 +79059,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_app_governance_continuations.py"
+      ],
+      "id": "rel:3b00b29495197580",
+      "source": "reason:approval_required",
+      "target": "test:tests/backend/test_lite_app_governance_continuations.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "runbooks/backup_restore_verify.yaml",
         "src/lite/LiteRecovery.jsx"
       ],
@@ -78465,6 +79227,15 @@
       "id": "rel:3c1d2c5db4e95314",
       "source": "reason:exception_unusable",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_app_governance_integration.py"
+      ],
+      "id": "rel:3c3262fb0fb67ca9",
+      "source": "reason:protected_server_host",
+      "target": "test:tests/backend/test_lite_app_governance_integration.py",
       "type": "verified_by"
     },
     {
@@ -78885,6 +79656,15 @@
       "source": "api:get:/api/lite/apps/lifecycle",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:3f47eca925d41a67",
+      "source": "domain:apps",
+      "target": "api:get:/api/lite/apps/{app_id}/credentials",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -80388,7 +81168,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4681"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4890"
       ],
       "id": "rel:4961dd30cdec3c93",
       "source": "component:lite-api",
@@ -80622,7 +81402,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4594"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4803"
       ],
       "id": "rel:4ae2f2e7982d1c97",
       "source": "component:lite-api",
@@ -81673,6 +82453,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:52649daa09be06ac",
+      "source": "domain:apps",
+      "target": "api:get:/api/lite/apps/{app_id}/resource",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_device_facts_api_contract.py"
       ],
       "id": "rel:527fa2a510f37e84",
@@ -81903,6 +82692,15 @@
       "id": "rel:54684ed516e942b5",
       "source": "api:get:/api/lite/devices/{device_id}/health/history",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_app_governance_source_guards.py"
+      ],
+      "id": "rel:54799139ab9885b9",
+      "source": "journey:change-password",
+      "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
       "type": "verified_by"
     },
     {
@@ -83058,7 +83856,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3609"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3784"
       ],
       "id": "rel:5c6a7e8f20afd0c5",
       "source": "component:lite-api",
@@ -83581,6 +84379,15 @@
       "source": "reason:nats_probe_failed",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:60280239b05267d9",
+      "source": "domain:apps",
+      "target": "table:app_credential_metadata",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -85675,6 +86482,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteRecovery.jsx"
+      ],
+      "id": "rel:6fa6adc55b296707",
+      "source": "ui:literecovery",
+      "target": "api:get:/api/lite/recovery/apps",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_identity_rules_enterprise_governance.py"
       ],
       "id": "rel:6fab833ef19dd0c8",
@@ -85969,6 +86785,15 @@
       "source": "domain:devices",
       "target": "api:get:/api/lite/devices/{device_id}",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_app_governance_integration.py"
+      ],
+      "id": "rel:711e394884a4731a",
+      "source": "journey:change-password",
+      "target": "test:tests/backend/test_lite_app_governance_integration.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -87025,6 +87850,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_app_governance_integration.py"
+      ],
+      "id": "rel:78ea50118d5a56ea",
+      "source": "component:photoprism",
+      "target": "test:tests/backend/test_lite_app_governance_integration.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:889"
       ],
       "id": "rel:78f31924ee59c8c1",
@@ -87255,6 +88089,15 @@
       "id": "rel:7b5bca4ce3c68a03",
       "source": "api:get:/api/lite/enterprise/rules/source-sync/status",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_identity_rules_authorization.py"
+      ],
+      "id": "rel:7bba6edaeb0b0dcc",
+      "source": "reason:protected_server_host",
+      "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
       "type": "verified_by"
     },
     {
@@ -89743,6 +90586,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_app_governance_integration.py"
+      ],
+      "id": "rel:8e3f6cb6782ebd12",
+      "source": "journey:backup-create",
+      "target": "test:tests/backend/test_lite_app_governance_integration.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:8e5062912c914a70",
@@ -89932,6 +90784,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:8f63d51205b7479a",
+      "source": "reason:exception_action_invalid",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/parity/parity-model.json"
       ],
       "id": "rel:8f9712c88d9aeebd",
@@ -90076,6 +90937,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:90e37692b82981ef",
+      "source": "api:post:/api/lite/apps/{app_id}/credentials",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_production_architecture_platform.py"
       ],
       "id": "rel:90e3acb93ec1f826",
@@ -90217,6 +91087,15 @@
       "source": "component:release-artifacts",
       "target": "component:release-staging",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:9195665e7196fdd2",
+      "source": "domain:apps",
+      "target": "api:get:/api/lite/apps/{app_id}/recovery",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -90756,7 +91635,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4241"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4416"
       ],
       "id": "rel:9622c3144190ef74",
       "source": "component:lite-api",
@@ -91030,6 +91909,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_app_governance_continuations.py"
+      ],
+      "id": "rel:98d32bcb902bd9bd",
+      "source": "reason:approval_continuation_unavailable",
+      "target": "test:tests/backend/test_lite_app_governance_continuations.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:98d8c56e6f431559",
@@ -91148,7 +92036,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4382"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4557"
       ],
       "id": "rel:99ba9e8682cf6f1f",
       "source": "component:lite-api",
@@ -91589,6 +92477,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-accessibility-states.spec.ts"
+      ],
+      "id": "rel:9d559aa89a8ace74",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-accessibility-states.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:9d5bf0246ea2bd49",
@@ -91896,6 +92793,15 @@
       "source": "domain:security",
       "target": "subject:pocketlab.events.security.finding",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_app_governance_integration.py"
+      ],
+      "id": "rel:9edf1b00e53c738d",
+      "source": "reason:metadata_only",
+      "target": "test:tests/backend/test_lite_app_governance_integration.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -92845,6 +93751,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:a5f4a96a22b25b76",
+      "source": "api:get:/api/lite/apps/{app_id}/credentials",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:a5fc78d1b216a15b",
@@ -93021,7 +93936,16 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4843"
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:a709b665ef5c758f",
+      "source": "api:get:/api/lite/apps/{app_id}/credentials",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:5052"
       ],
       "id": "rel:a718626a5b5f2425",
       "source": "component:lite-api",
@@ -93419,6 +94343,15 @@
       "source": "domain:control_plane",
       "target": "table:lite_revision_events",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:aa3de30e7743ec7e",
+      "source": "api:get:/api/lite/apps/{app_id}/resource",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -94084,7 +95017,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3620"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3795"
       ],
       "id": "rel:aeaad974edcf7064",
       "source": "component:lite-api",
@@ -94354,7 +95287,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4281"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4456"
       ],
       "id": "rel:b0e17c2e06af2e29",
       "source": "component:lite-api",
@@ -95006,6 +95939,15 @@
       "id": "rel:b5cb2f9bbbb316fe",
       "source": "reason:owner_claim_invalid",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:b5de3d6670ce42d2",
+      "source": "api:post:/api/lite/apps/{app_id}/credentials",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -95978,7 +96920,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4424"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4599"
       ],
       "id": "rel:bd798d574b62754a",
       "source": "component:lite-api",
@@ -96172,6 +97114,15 @@
       "id": "rel:bef4160170fdeeb9",
       "source": "reason:source_fixture_expired",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_app_governance_source_guards.py"
+      ],
+      "id": "rel:bef7a1c4ded8dc6a",
+      "source": "journey:restore-execution",
+      "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
       "type": "verified_by"
     },
     {
@@ -96529,7 +97480,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4342"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4517"
       ],
       "id": "rel:c146c302df54058b",
       "source": "component:lite-api",
@@ -96737,6 +97688,15 @@
       "id": "rel:c36a60a653997e49",
       "source": "reason:protected_server_host",
       "target": "test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_app_governance_source_guards.py"
+      ],
+      "id": "rel:c3846a58930ff806",
+      "source": "domain:identity",
+      "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
       "type": "verified_by"
     },
     {
@@ -98576,7 +99536,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4211"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4386"
       ],
       "id": "rel:d0ac21c0cffa28c9",
       "source": "component:lite-api",
@@ -99572,7 +100532,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4716"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4925"
       ],
       "id": "rel:d7a4bd398a93f098",
       "source": "component:lite-api",
@@ -101776,6 +102736,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_app_governance_source_guards.py"
+      ],
+      "id": "rel:e6fca86fb5507ddd",
+      "source": "component:pwa",
+      "target": "test:tests/backend/test_lite_app_governance_source_guards.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:e6fd28e00abd3602",
@@ -102716,6 +103685,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:edb114172aecb4ec",
+      "source": "api:get:/api/lite/apps/{app_id}/recovery",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:edb255ebc7dc16b3",
@@ -102767,6 +103745,15 @@
       "source": "reason:owner_approval_policy_inconsistent",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:edf689060961112d",
+      "source": "domain:rules",
+      "target": "reason:exception_action_invalid",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -103522,7 +104509,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4224"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4399"
       ],
       "id": "rel:f38477f0420ebc7b",
       "source": "component:lite-api",
@@ -104339,6 +105326,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_app_governance.py"
+      ],
+      "id": "rel:f91a4cce358ec089",
+      "source": "component:photoprism",
+      "target": "test:tests/backend/test_lite_app_governance.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:f91d0cee2a133a81",
@@ -104753,6 +105749,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_app_governance_integration.py"
+      ],
+      "id": "rel:fc411c27e9330718",
+      "source": "domain:identity",
+      "target": "test:tests/backend/test_lite_app_governance_integration.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:fc4a65e1acaa025b",
@@ -104942,7 +105947,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4450"
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4625"
       ],
       "id": "rel:fe30f428c2df7938",
       "source": "component:lite-api",
@@ -105140,6 +106145,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:ffd436f33332768f",
+      "source": "reason:exception_action_invalid",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:ffd552f3c1382f15",
@@ -105149,33 +106163,33 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "fba8d21c6e5b814033f9520b5812f960404da32daa1fea70db8d07c3fa48ce1b",
+  "source_fingerprint": "50c98900f9c11c07f676e67e243ab014608f230ec0d31e4a63ba3a73f568f817",
   "statistics": {
-    "entity_count": 1363,
+    "entity_count": 1373,
     "entity_type_counts": {
       "adr": 6,
-      "api": 230,
+      "api": 234,
       "capability": 5,
       "component": 58,
       "domain": 49,
       "glossary": 16,
       "journey": 24,
       "limitation": 18,
-      "reason-code": 277,
+      "reason-code": 278,
       "release": 3,
       "requirement": 10,
       "runbook": 5,
       "runtime-topology": 9,
       "subject": 220,
-      "table": 81,
-      "test": 258,
+      "table": 82,
+      "test": 262,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 10,
       "vocabulary": 39
     },
-    "relation_count": 3905,
-    "source_count": 295
+    "relation_count": 3948,
+    "source_count": 299
   }
 }

@@ -72,6 +72,8 @@ Provides the verified managed photo application under a same-origin Caddy path.
 - recovers_with: `PhotoPrism unavailable`
 - verified_by: `tests/backend/test_lite_api.py`
 - verified_by: `tests/backend/test_lite_app_catalog_runtime_truth.py`
+- verified_by: `tests/backend/test_lite_app_governance.py`
+- verified_by: `tests/backend/test_lite_app_governance_integration.py`
 - verified_by: `tests/backend/test_lite_app_registry.py`
 - verified_by: `tests/backend/test_lite_control_plane_sqlite_p3.py`
 - verified_by: `tests/backend/test_lite_device_health_d4.py`
@@ -92,6 +94,7 @@ Provides the verified managed photo application under a same-origin Caddy path.
 - verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_enterprise_completion.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`
+- verified_by: `tests/e2e/lite-accessibility-states.spec.ts`
 - verified_by: `tests/e2e/lite-content-stress.spec.ts`
 - verified_by: `tests/e2e/lite-mocked.spec.ts`
 - verified_by: `tests/e2e/lite-performance-live.spec.ts`

@@ -2182,9 +2182,13 @@ export default function SecurityScreen() {
     const invalidateSecurityQuery = (profile) => invalidate(
       liteQueryKeys.securityProfile(profile, profile === 'app' ? 'photoprism' : ''),
     );
-    if (previousProfiles.quick !== currentProfiles.quick) invalidateSecurityQuery('quick');
-    if (previousProfiles.full !== currentProfiles.full) invalidateSecurityQuery('full');
-    if (previousProfiles.app !== currentProfiles.app) invalidateSecurityQuery('app');
+    ['quick', 'full', 'app'].forEach((profile) => {
+      if (previousProfiles[profile] !== currentProfiles[profile]) {
+        if (profile === 'quick') invalidateSecurityQuery('quick');
+        if (profile === 'full') invalidateSecurityQuery('full');
+        if (profile === 'app') invalidateSecurityQuery('app');
+      }
+    });
 
     if (previous.history_revision !== securityFreshnessData.history_revision) {
       invalidate(liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20));

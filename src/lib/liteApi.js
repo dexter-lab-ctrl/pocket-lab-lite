@@ -268,6 +268,10 @@ export const liteApi = {
     return readJson(path);
   }, { safeSnapshotPath: '/api/lite/apps/photoprism/actions' }),
   appEvidence: (appId = 'photoprism') => readJson(`/api/lite/apps/${encodeURIComponent(appId)}/evidence`),
+  appResource: (appId) => readJson(`/api/lite/apps/${encodeURIComponent(appId || '')}/resource`),
+  appCredentials: (appId) => readJson(`/api/lite/apps/${encodeURIComponent(appId || '')}/credentials`),
+  updateAppCredentialMetadata: (appId, payload = {}) => postJson(`/api/lite/apps/${encodeURIComponent(appId || '')}/credentials`, payload),
+  appRecoveryContract: (appId) => readJson(`/api/lite/apps/${encodeURIComponent(appId || '')}/recovery`),
   appBackupStatus: (appId = 'photoprism') => readJson(`/api/lite/apps/${encodeURIComponent(appId)}/backup`),
   appBackups: (appId = 'photoprism') => readJson(`/api/lite/apps/${encodeURIComponent(appId)}/backups`),
   appBackupReceipt: (appId = 'photoprism', backupId = 'latest') => readJson(`/api/lite/apps/${encodeURIComponent(appId)}/backups/${encodeURIComponent(backupId || 'latest')}/receipt`),

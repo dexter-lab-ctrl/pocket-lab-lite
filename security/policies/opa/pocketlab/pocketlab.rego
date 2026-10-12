@@ -124,28 +124,239 @@ decision := {
 	not (input.actor.role == "Owner")
 }
 
+# Legacy catalog.install remains registered for compatibility, but follows the
+# same Enterprise role boundary as app.install so old endpoints cannot bypass
+# app-resource governance.
 decision := {
 	"allow": true,
-	"constraints": ["authenticated_actor"],
-	"reason_code": "authenticated_app_install",
+	"constraints": ["owner_authority", "legacy_action_compatibility"],
+	"reason_code": "owner_authority_app_install",
 } if {
 	input.action.id == "catalog.install"
 	authorized_actor
 	input.target.type == "app"
 	input.target.id != ""
-	not input.continuation.matching_temporary_exception
+	not input.actor.enterprise_enabled
+	input.actor.owner_authority == true
 }
 
 decision := {
 	"allow": true,
-	"constraints": ["authenticated_actor", "exact_temporary_exception"],
-	"reason_code": "authenticated_app_install_exception_scoped",
+	"constraints": ["enterprise_role_authority", "legacy_action_compatibility"],
+	"reason_code": "enterprise_app_install_allowed",
 } if {
 	input.action.id == "catalog.install"
 	authorized_actor
 	input.target.type == "app"
 	input.target.id != ""
+	input.actor.enterprise_enabled == true
+	input.actor.role in {"Owner", "Admin"}
+}
+
+decision := {
+	"allow": true,
+	"constraints": ["exact_temporary_exception", "legacy_action_compatibility"],
+	"reason_code": "app_temporary_exception_satisfied",
+} if {
+	input.action.id == "catalog.install"
+	authorized_actor
+	input.target.type == "app"
+	input.target.id != ""
+	input.actor.enterprise_enabled == true
+	input.actor.role == "Operator"
 	input.continuation.matching_temporary_exception == true
+}
+
+decision := {
+	"allow": false,
+	"constraints": ["exact_temporary_exception"],
+	"reason_code": "temporary_exception_required",
+} if {
+	input.action.id == "catalog.install"
+	authorized_actor
+	input.target.type == "app"
+	input.actor.enterprise_enabled == true
+	input.actor.role == "Operator"
+	not input.continuation.matching_temporary_exception
+}
+
+decision := {
+	"allow": false,
+	"constraints": ["enterprise_role_not_eligible"],
+	"reason_code": "enterprise_role_forbidden",
+} if {
+	input.action.id == "catalog.install"
+	authorized_actor
+	input.target.type == "app"
+	input.actor.enterprise_enabled == true
+	input.actor.role in {"Viewer", "Auditor"}
+}
+
+# Canonical app-resource governance.  Every protected semantic action must be
+# bound to registry-derived capability/platform/placement truth.
+semantic_app_action if {
+	input.action.id in {
+		"app.install",
+		"app.security_check",
+		"app.repair",
+		"app.backup.create",
+		"app.backup.to_storage",
+		"app.restore.preview",
+		"app.update.check",
+		"app.remove",
+		"app.credentials.manage",
+	}
+}
+
+app_placement_requirement_satisfied if {
+	input.target.state.placement_required == false
+}
+
+app_placement_requirement_satisfied if {
+	input.target.state.placement_required == true
+	input.target.state.placement_ready == true
+}
+
+app_resource_ready if {
+	semantic_app_action
+	authorized_actor
+	input.target.type == "app"
+	input.target.id != ""
+	input.target.state.resource_type == "app"
+	input.target.state.app_id == input.target.id
+	input.target.state.semantic_action == input.action.id
+	input.target.state.required_capability != ""
+	input.target.state.capability_supported == true
+	input.target.state.platform_supported == true
+	app_placement_requirement_satisfied
+	input.target.state.contract_revision == input.target.revision
+	input.target.state.request_fingerprint == input.target.revision
+}
+
+decision := {
+	"allow": false,
+	"constraints": ["canonical_app_resource", "declared_capability", "verified_placement"],
+	"reason_code": "app_resource_invalid",
+} if {
+	semantic_app_action
+	authorized_actor
+	not app_resource_ready
+}
+
+decision := {
+	"allow": true,
+	"constraints": ["canonical_app_resource", "owner_authority", "declared_capability", "verified_placement"],
+	"reason_code": "owner_authority_app_operation",
+} if {
+	app_resource_ready
+	not input.actor.enterprise_enabled
+	input.actor.owner_authority == true
+}
+
+decision := {
+	"allow": true,
+	"constraints": ["canonical_app_resource", "owner_authority", "declared_capability", "verified_placement"],
+	"reason_code": "owner_authority_app_operation",
+} if {
+	app_resource_ready
+	input.actor.enterprise_enabled == true
+	input.actor.role == "Owner"
+}
+
+decision := {
+	"allow": true,
+	"constraints": ["canonical_app_resource", "delegated_app_authority"],
+	"reason_code": "enterprise_app_operation_allowed",
+} if {
+	app_resource_ready
+	input.actor.enterprise_enabled == true
+	input.actor.role == "Admin"
+	input.action.id != "app.remove"
+}
+
+operator_app_action if {
+	input.action.id in {
+		"app.security_check",
+		"app.repair",
+		"app.backup.create",
+		"app.backup.to_storage",
+		"app.restore.preview",
+		"app.update.check",
+	}
+}
+
+decision := {
+	"allow": true,
+	"constraints": ["canonical_app_resource", "delegated_app_authority"],
+	"reason_code": "enterprise_app_operation_allowed",
+} if {
+	app_resource_ready
+	input.actor.enterprise_enabled == true
+	input.actor.role == "Operator"
+	operator_app_action
+}
+
+decision := {
+	"allow": true,
+	"constraints": ["canonical_app_resource", "exact_temporary_exception"],
+	"reason_code": "app_temporary_exception_satisfied",
+} if {
+	app_resource_ready
+	input.actor.enterprise_enabled == true
+	input.actor.role == "Operator"
+	input.action.id == "app.install"
+	input.continuation.matching_temporary_exception == true
+}
+
+decision := {
+	"allow": false,
+	"constraints": ["exact_temporary_exception"],
+	"reason_code": "temporary_exception_required",
+} if {
+	app_resource_ready
+	input.actor.enterprise_enabled == true
+	input.actor.role == "Operator"
+	input.action.id == "app.install"
+	not input.continuation.matching_temporary_exception
+}
+
+decision := {
+	"allow": false,
+	"constraints": ["enterprise_role_not_eligible"],
+	"reason_code": "enterprise_role_forbidden",
+} if {
+	app_resource_ready
+	input.actor.enterprise_enabled == true
+	input.actor.role in {"Viewer", "Auditor"}
+}
+
+decision := {
+	"allow": false,
+	"constraints": ["independent_approval", "active_owner_or_admin"],
+	"reason_code": "approval_required",
+	"requirements": {
+		"required_approver_roles": ["Owner", "Admin"],
+		"required_assurance": "policy.approval.app.remove",
+		"approval_lifetime_seconds": 900,
+	},
+} if {
+	app_resource_ready
+	input.actor.enterprise_enabled == true
+	input.actor.role in {"Admin", "Operator"}
+	input.action.id == "app.remove"
+	not input.continuation.matching_independent_approval
+}
+
+decision := {
+	"allow": true,
+	"constraints": ["canonical_app_resource", "independent_approval_consumed"],
+	"reason_code": "independent_approval_satisfied",
+} if {
+	app_resource_ready
+	input.actor.enterprise_enabled == true
+	input.actor.role in {"Admin", "Operator"}
+	input.action.id == "app.remove"
+	input.continuation.matching_independent_approval == true
 }
 
 fleet_mutation if {

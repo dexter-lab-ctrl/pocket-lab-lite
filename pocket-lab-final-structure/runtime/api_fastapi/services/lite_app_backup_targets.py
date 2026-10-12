@@ -6,7 +6,7 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import fleet_registry, lite_app_adapters, lite_app_registry, lite_device_capabilities
+from . import fleet_registry, lite_app_adapters, lite_app_registry, lite_device_capabilities, lite_device_roles
 
 SUPPORTED_APP_IDS = frozenset(app_id for app_id in lite_app_adapters.app_ids_for_service("backup_to_storage") if lite_app_registry.supports(app_id, "backup_to_storage"))
 BACKUP_TO_STORAGE_SUBJECT = "pocketlab.commands.lite.app.backup.transfer"
@@ -99,12 +99,13 @@ def _device_ready(device: dict[str, Any]) -> bool:
 
 
 def _capabilities(device: dict[str, Any]) -> list[str]:
-    caps = device.get("capabilities") if isinstance(device.get("capabilities"), list) else None
-    if caps is None:
-        caps = lite_device_capabilities.capability_ids_for_role(device.get("role"))
+    """Return only authorized, observed and verified effective capabilities."""
+    enriched = lite_device_roles.enrich_device_projection(device)
     normalized: list[str] = []
-    for item in caps or []:
-        value = str(item or "").strip().lower()
+    for item in enriched.get("capability_states") or []:
+        if not isinstance(item, dict) or item.get("effective") is not True or item.get("verification") != "verified":
+            continue
+        value = str(item.get("id") or "").strip().lower()
         if value and value not in normalized:
             normalized.append(value)
     return normalized

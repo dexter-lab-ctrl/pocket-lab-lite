@@ -118,6 +118,28 @@ def client():
     return _PreparedTestClient()
 
 
+def _patch_verified_server_host(monkeypatch, *, extra_devices=()):
+    """Provide the server-derived placement proof required by governed app actions."""
+    ensure_runtime_path()
+    from api_fastapi.services import lite_status
+
+    server = {
+        "id": "pocket-lab-lite-server",
+        "name": "Pocket Lab Lite Server",
+        "role": "server_host",
+        "protected_server_host": True,
+        "is_current": True,
+        "connection": "online",
+        "status": "healthy",
+        "capabilities": ["app_host", "compute"],
+    }
+    monkeypatch.setattr(
+        lite_status,
+        "lite_fleet",
+        lambda: {"status": "healthy", "devices": [server, *list(extra_devices)]},
+    )
+
+
 def _lite_ui_source() -> str:
     lite_files = list(Path("src/lite").glob("Lite*.jsx"))
     lite_files.extend(Path("src/lite/catalog").glob("*.jsx"))
@@ -422,9 +444,8 @@ def test_lite_restore_requires_confirmation():
 
 def test_lite_catalog_remove_does_not_overclaim():
     response = client().post("/api/lite/catalog/remove", json={"app_id": "demo", "confirm": True})
-    assert response.status_code == 501
-    payload = response.json()
-    assert payload["status"] == "not_implemented"
+    assert response.status_code == 404
+    assert "not registered" in response.text.lower()
 
 
 def test_lite_add_device_invite_ready_or_queued_for_compute_role():
@@ -2219,6 +2240,7 @@ def test_lite_app_security_check_queues_backend_owned_app_check(monkeypatch):
     ensure_runtime_path()
     from api_fastapi.services.nats_bus import BUS
 
+    _patch_verified_server_host(monkeypatch)
     published: list[tuple[str, str, dict]] = []
     BUS.connected = True
     BUS.js = object()
@@ -2268,6 +2290,7 @@ def test_lite_app_backup_profiles_are_sanitized_and_photoprism_aware():
 
 
 def test_lite_app_backup_queues_existing_worker_owned_backup(monkeypatch):
+    _patch_verified_server_host(monkeypatch)
     from api_fastapi.services.nats_bus import BUS
 
     published: list[tuple[str, str, dict]] = []
@@ -3048,13 +3071,13 @@ def test_lite_storage_backup_targets_rejects_offline_target(monkeypatch):
     )
 
     response = client().post(
-        "/api/lite/apps/photoprism/actions/backup_to_storage",
+        "/api/lite/recovery/apps/photoprism/backup-to-target",
         json={"target_device_id": "storage-phone-1", "reason": "test transfer"},
     )
     assert response.status_code == 409
     payload = response.json().get("detail") or response.json()
-    assert payload["status"] == "target_not_ready"
-    assert "offline" in payload["summary"].lower()
+    assert payload["status"] == "app_placement_not_ready"
+    assert payload["reason_code"] in {"target_device_unavailable", "required_device_capability_unverified"}
 
 
 def test_lite_photoprism_action_center_includes_storage_and_lifecycle_actions(monkeypatch):
@@ -7258,6 +7281,7 @@ def test_lite_security_check_accepts_default_and_rejects_unknown_profile(monkeyp
     from api_fastapi.services import lite_security
     from api_fastapi.services.nats_bus import BUS
 
+    _patch_verified_server_host(monkeypatch)
     published: list[tuple[str, str, dict]] = []
     BUS.connected = True
     BUS.js = object()

@@ -391,7 +391,10 @@
         "api:get:/api/lite/apps/{app_id}/backup",
         "api:get:/api/lite/apps/{app_id}/backups",
         "api:get:/api/lite/apps/{app_id}/backups/{backup_id}/receipt",
+        "api:get:/api/lite/apps/{app_id}/credentials",
         "api:get:/api/lite/apps/{app_id}/evidence",
+        "api:get:/api/lite/apps/{app_id}/recovery",
+        "api:get:/api/lite/apps/{app_id}/resource",
         "api:get:/api/lite/apps/{app_id}/restore/previews/{preview_id}",
         "api:get:/api/lite/apps/{app_id}/update",
         "api:get:/api/lite/apps/{app_id}/update/receipts/{operation_id}",
@@ -508,6 +511,7 @@
         "api:post:/api/lite/apps/{app_id}/actions/{action_id}",
         "api:post:/api/lite/apps/{app_id}/backup",
         "api:post:/api/lite/apps/{app_id}/backup/storage-device",
+        "api:post:/api/lite/apps/{app_id}/credentials",
         "api:post:/api/lite/apps/{app_id}/restore/preview",
         "api:post:/api/lite/apps/{app_id}/update/apply",
         "api:post:/api/lite/catalog/install",
@@ -689,6 +693,7 @@
         "domain:worker",
         "domain:workflow",
         "table:app_action_lifecycle",
+        "table:app_credential_metadata",
         "table:app_current_state",
         "table:assurance_execution_checkpoints",
         "table:assurance_findings",
@@ -873,6 +878,7 @@
         "reason:enterprise_role_forbidden",
         "reason:enterprise_role_invalid",
         "reason:enterprise_rules_role_required",
+        "reason:exception_action_invalid",
         "reason:exception_expiry_invalid",
         "reason:exception_identity_unknown",
         "reason:exception_not_found",
@@ -1234,6 +1240,7 @@
         "reason:enterprise_role_forbidden",
         "reason:enterprise_role_invalid",
         "reason:enterprise_rules_role_required",
+        "reason:exception_action_invalid",
         "reason:exception_expiry_invalid",
         "reason:exception_identity_unknown",
         "reason:exception_not_found",
@@ -1990,6 +1997,17 @@
         "table:synthetic_principals"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql"
+    },
+    {
+      "entities": [
+        "table:app_credential_metadata",
+        "table:enterprise_configuration",
+        "table:enterprise_memberships",
+        "table:human_identities",
+        "table:policy_approvals",
+        "table:policy_temporary_exceptions"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
     },
     {
       "entities": [
@@ -2940,6 +2958,30 @@
         "test:tests/backend/test_lite_app_catalog_runtime_truth.py"
       ],
       "source": "tests/backend/test_lite_app_catalog_runtime_truth.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_app_governance.py"
+      ],
+      "source": "tests/backend/test_lite_app_governance.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_app_governance_continuations.py"
+      ],
+      "source": "tests/backend/test_lite_app_governance_continuations.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_app_governance_integration.py"
+      ],
+      "source": "tests/backend/test_lite_app_governance_integration.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_app_governance_source_guards.py"
+      ],
+      "source": "tests/backend/test_lite_app_governance_source_guards.py"
     },
     {
       "entities": [
@@ -4376,6 +4418,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "fba8d21c6e5b814033f9520b5812f960404da32daa1fea70db8d07c3fa48ce1b"
+    "source_fingerprint": "50c98900f9c11c07f676e67e243ab014608f230ec0d31e4a63ba3a73f568f817"
   }
 }

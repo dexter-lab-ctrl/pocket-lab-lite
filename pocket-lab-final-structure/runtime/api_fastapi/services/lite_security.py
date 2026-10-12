@@ -7972,6 +7972,15 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
 
 def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     app_id = _scan_app_id(command) or "photoprism"
+    governance_input = command.get("governance") if isinstance(command.get("governance"), dict) else {}
+    governance = {
+        key: governance_input.get(key)
+        for key in (
+            "app_id", "semantic_action", "operation_id", "authorization_decision_id",
+            "policy_revision", "contract_revision", "target_device_id", "initiating_actor", "sanitized",
+        )
+        if governance_input.get(key) not in (None, "")
+    }
     target_contract = policy.app_check_target(app_id)
     app_label = _app_label(app_id) or str(target_contract.get("app_label") or lite_app_registry.app_definition(app_id).name)
     prefix = app_id.replace("-", "_")
@@ -7999,6 +8008,7 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         "app_label": app_label,
         "tools": ["trivy", "app-posture"],
         "target_statuses": target_statuses,
+        "governance": governance,
     })
     run["coverage_summary"] = build_coverage_summary(
         plan, tool_results, target_statuses=target_statuses, evidence_refs=evidence_refs
@@ -8171,7 +8181,12 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     run["execution_timeline"] = execution_timeline_for_phase(run, "settings_running")
     _write_intermediate_running_state(run, findings, evidence_refs)
 
-    config_path = Path.home() / str(target_contract["config_relative"])
+    # Resolve the adapter-owned configuration path through the policy service
+    # just like the full scan does. This keeps App Check bounded to the
+    # canonical backend path and allows isolated qualification runtimes to
+    # provide their own disposable configuration root without changing the
+    # app contract or exposing raw settings.
+    config_path = policy.photoprism_config_dir() if app_id == "photoprism" else Path.home() / str(target_contract["config_relative"])
     config_findings, config_status, _ = _run_trivy_target_job(
         trivy=trivy,
         run_id=run_id,
@@ -8344,6 +8359,7 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             "scan_profile": state.get("scan_profile"),
             "app_id": app_id,
             "app_label": app_label,
+            "governance": governance,
             "evidence_refs": evidence_refs,
         },
     )

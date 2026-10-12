@@ -15,7 +15,7 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_profiles, lite_app_storage, lite_catalog, lite_catalog_live, lite_photoprism_media
+from . import lite_app_governance, lite_app_profiles, lite_app_storage, lite_catalog, lite_catalog_live, lite_photoprism_media
 
 PHOTOPRISM_APP_ID = "photoprism"
 CHECK_APP_ACTION = "check_app"
@@ -265,6 +265,7 @@ def record_queued_operation(command: dict[str, Any]) -> dict[str, Any]:
         "repair_steps": [],
         "proofs": [],
         "evidence_ref": f"apps/photoprism/{'safety' if action_id == CHECK_APP_ACTION else 'repair'}/{_safe_ref(command_id, 'latest')}.json",
+        "governance": lite_app_governance.sanitize_governance_reference(command.get("governance")),
         "redaction": _redaction(),
     }
     state = _read_state()

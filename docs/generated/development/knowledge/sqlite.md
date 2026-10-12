@@ -29,6 +29,21 @@ Source-derived apps persistence object; detailed ownership is conservatively inf
 | Indexes | idx_phase3c_app_actions_status_latest, idx_app_actions_active, idx_app_actions_history, sqlite_autoindex_app_action_lifecycle_1 |
 | Confidence | inferred |
 
+## `app_credential_metadata`
+
+Source-derived apps persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | apps |
+| Owner | not a prepared projection |
+| Writer | App Catalog lifecycle and action services |
+| Readers | /api/lite/catalog, /api/lite/apps/{app_id}/actions |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | restricted operational metadata |
+| Indexes | idx_app_credential_status, sqlite_autoindex_app_credential_metadata_1 |
+| Confidence | inferred |
+
 ## `app_current_state`
 
 Source-derived apps persistence object; detailed ownership is conservatively inferred from its migration-defined name.

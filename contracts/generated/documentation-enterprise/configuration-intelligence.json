@@ -17192,7 +17192,7 @@
         "src/mocks/handlers.js",
         "src/mocks/identityRulesP1Handlers.js",
         "src/stories/pocketlabTier9MockApi.js",
-        "tests/e2e/lite-test-helpers.ts"
+        "tests/e2e/lite-mocked.spec.ts"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

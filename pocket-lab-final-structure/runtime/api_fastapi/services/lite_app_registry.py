@@ -45,6 +45,8 @@ class AppDefinition:
     platforms: tuple[str, ...]
     capabilities: frozenset[str]
     actions: Mapping[str, Mapping[str, Any]]
+    placement: Mapping[str, Any]
+    credentials: tuple[Mapping[str, Any], ...]
     presentation: Mapping[str, Any]
 
     def public_contract(self) -> dict[str, Any]:
@@ -64,6 +66,19 @@ class AppDefinition:
                 }
                 for action_id, action in self.actions.items()
             },
+            "placement": {
+                key: value
+                for key, value in self.placement.items()
+                if key in {"kind", "server_host_only", "required_device_capabilities", "backup_target_capabilities"}
+            },
+            "credentials": [
+                {
+                    key: value
+                    for key, value in item.items()
+                    if key in {"id", "label", "purpose", "required", "management"}
+                }
+                for item in self.credentials
+            ] if "credentials" in self.capabilities else [],
         }
 
 
@@ -107,8 +122,24 @@ _DEFINITIONS = (
             "remove",
             "media_sources",
             "media_import",
+            "credentials",
         }),
         actions=_PHOTOPRISM_ACTIONS,
+        placement={
+            "kind": "server_host",
+            "server_host_only": True,
+            "required_device_capabilities": ["app_host", "compute"],
+            "backup_target_capabilities": ["backup_target", "restore_target"],
+        },
+        credentials=(
+            {
+                "id": "app_sign_in",
+                "label": "App sign-in",
+                "purpose": "interactive_app_access",
+                "required": False,
+                "management": "external_or_manual",
+            },
+        ),
         presentation={
             "security_label_ready": "Protected app",
             "backup_label_ready": "Backup ready",
@@ -143,6 +174,24 @@ def _validate_definition(definition: AppDefinition) -> None:
     for capability in definition.capabilities:
         if not _CAPABILITY_RE.fullmatch(capability):
             raise RuntimeError(f"App {definition.id!r} has invalid capability {capability!r}")
+    placement_kind = str(definition.placement.get("kind") or "")
+    if placement_kind not in {"server_host", "compute", "any_verified_host"}:
+        raise RuntimeError(f"App {definition.id!r} has invalid placement kind")
+    for capability in definition.placement.get("required_device_capabilities") or ():
+        if not _CAPABILITY_RE.fullmatch(str(capability)):
+            raise RuntimeError(f"App {definition.id!r} has invalid placement capability")
+    for capability in definition.placement.get("backup_target_capabilities") or ():
+        if not _CAPABILITY_RE.fullmatch(str(capability)):
+            raise RuntimeError(f"App {definition.id!r} has invalid backup-target capability")
+    if definition.credentials and "credentials" not in definition.capabilities:
+        raise RuntimeError(f"App {definition.id!r} declares credentials without the credentials capability")
+    for credential in definition.credentials:
+        if not isinstance(credential, Mapping):
+            raise RuntimeError(f"App {definition.id!r} credential metadata must be declarative")
+        if not _BINDING_ID_RE.fullmatch(str(credential.get("id") or "")):
+            raise RuntimeError(f"App {definition.id!r} has invalid credential id")
+        if not _CAPABILITY_RE.fullmatch(str(credential.get("purpose") or "").replace("-", "_")):
+            raise RuntimeError(f"App {definition.id!r} has invalid credential purpose")
     for action_id, action in definition.actions.items():
         if not _APP_ID_RE.fullmatch(action_id.replace("_", "-")):
             raise RuntimeError(f"App {definition.id!r} has invalid action id {action_id!r}")
