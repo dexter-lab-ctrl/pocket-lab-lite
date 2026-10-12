@@ -33,6 +33,8 @@ for (const [id, title] of SCREENS) {
     expect(overflow, `${id} page container should fit viewport`).toBe(false);
     const documentOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 2);
     expect(documentOverflow, `${id} must not scroll horizontally`).toBe(false);
+    const offenders = await root.locator('input, button, [role="dialog"], .lite-p1-next-steps, .lite-p2-evidence-guide').evaluateAll((nodes) => nodes.filter((el) => { const r = el.getBoundingClientRect(); return r.width && (r.left < -2 || r.right > innerWidth + 2); }).map(el => el.tagName + '.' + el.className).slice(0, 5));
+    expect(offenders, `${id} nested interactive surfaces must fit the viewport`).toEqual([]);
   });
 }
 
