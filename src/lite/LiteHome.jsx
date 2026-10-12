@@ -154,13 +154,14 @@ function HomeOverviewGrid({ services, onNavigate, saved }) {
 }
 
 function HomeActivityPreview({ activity, onOpen }) {
+  const latest = activity?.grouped?.[0] || activity?.latestEvent;
   return <section className="lite-home-activity-preview" aria-labelledby="lite-home-activity-preview-heading">
     <div className="lite-home-section-title"><h2 id="lite-home-activity-preview-heading">Recent activity</h2>
       <p>{activity?.summary || 'Activity information is not available yet.'}</p></div>
-    {activity?.latestEvent ? <div className="lite-home-activity-latest">
+    {latest ? <div className="lite-home-activity-latest">
       <Activity size={19} aria-hidden="true" />
-      <span><strong>{activity.latestEvent.label}</strong>
-        <small>{activity.latestEvent.statusLabel}{activity.lastActivityAt ? ' · ' + new Date(activity.lastActivityAt).toLocaleString() : ''}</small></span>
+      <span><strong>{latest.label}</strong>
+        <small>{latest.summary || latest.statusLabel}{latest.at ? ' · ' + new Date(latest.at).toLocaleString() : ''}</small></span>
     </div> : <p className="lite-home-muted">No recent activity to display.</p>}
     <button type="button" className="lite-home-text-action" onClick={onOpen}>View activity <ArrowUpRight size={16} aria-hidden="true" /></button>
   </section>;
@@ -242,7 +243,7 @@ export default function HomeScreen({
     {attentionItems.length ? <LiteNextSteps title="Needs your attention"
       description={effectiveSavedStateOnly ? 'Last saved status — verify before acting.' : 'A few things to check.'}
       saved={effectiveSavedStateOnly} initialCount={3}
-      items={attentionItems.map((item) => ({
+      items={(effectiveSavedStateOnly ? attentionItems.slice(0, 3) : attentionItems).map((item) => ({
         id: item.key, label: item.label, description: item.summary,
         actionLabel: 'Review ' + item.label,
         onClick: item.screen ? () => goTo(item.screen) : undefined,
