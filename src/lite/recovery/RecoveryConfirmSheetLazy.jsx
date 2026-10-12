@@ -2,7 +2,7 @@ import React from 'react';
 import { ArchiveRestore, Database, ShieldCheck } from 'lucide-react';
 import { formatLiteTime } from '../../lib/liteApi.js';
 import { LiteButton, StatusBadge } from '../LiteUi.jsx';
-import { LiteConsequenceSummary } from '../LiteUx.jsx';
+import { LiteProtectedConfirmation } from '../components/LiteSafeForms.jsx';
 
 function formatSize(bytes) {
   const value = Number(bytes || 0);
@@ -47,7 +47,7 @@ export default function RecoveryConfirmSheetLazy({
         {!databaseRestore ? <span>Restore to: This Server Phone</span> : null}
       </section>
 
-      <LiteConsequenceSummary value={{
+      <LiteProtectedConfirmation value={{
         title: 'Before Pocket Lab restores anything',
         summary: 'Pocket Lab will create a safety checkpoint first and check the workspace again afterward.',
         will: [
