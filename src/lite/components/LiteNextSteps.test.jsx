@@ -22,7 +22,9 @@ describe('P1 evidence-only guidance', () => {
     const items = Array.from({ length: 10 }, (_, i) => ({ id: String(i), label: 'Area ' + i }));
     render(<LiteNextSteps items={items} />);
     expect(screen.getAllByRole('listitem')).toHaveLength(4);
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Show all 10 items' })).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Show all 10 items' }));
+    expect(screen.getAllByRole('listitem')).toHaveLength(10);
   });
   it('keeps unavailable review controls disabled and explained', () => {
     render(<LiteNextSteps items={[{ label: 'Protected host', onClick: vi.fn(), disabled: true, disabledReason: 'Host cannot be removed' }]} />);
