@@ -1922,30 +1922,62 @@ function shouldRefreshCatalogAfterAppAction(actionId = '', response = {}) {
   ].some(changed);
 }
 
-function PhotoBackupTruthCard({ devices = [], summary = '' }) {
-  const rows = (Array.isArray(devices) ? devices : []).slice(0, 3);
-  const latest = rows
-    .map((item) => item?.latest_backup)
-    .filter(Boolean)
-    .sort((left, right) => String(right?.updated_at || '').localeCompare(String(left?.updated_at || '')))[0] || null;
-  const live = ['queued', 'planning', 'waiting_for_credentials', 'starting', 'transferring', 'cancelling']
-    .includes(String(latest?.status || '').toLowerCase());
+const PHOTO_BACKUP_LIVE_STATUSES = new Set(['queued', 'planning', 'waiting_for_credentials', 'starting', 'transferring', 'cancelling']);
+const PHOTO_BACKUP_PRESENTATION = {
+  queued: 'Queued', planning: 'Planning', waiting_for_credentials: 'Waiting for credentials',
+  starting: 'Starting', transferring: 'Transferring', cancelling: 'Cancelling',
+  completed: 'Completed', partial: 'Partial', partial_storage_limit: 'Partial',
+  failed: 'Failed', error: 'Failed', ready: 'Ready', not_ready: 'Not ready',
+  unavailable: 'Unavailable', cancelled: 'Cancelled',
+};
+
+function PhotoBackupTruthCard({ devices = [], summary = '', saved = false, onGoToDevices }) {
+  const rows = Array.isArray(devices) ? devices : [];
+  const latest = rows.map((item) => item?.latest_backup).filter(Boolean)
+    .sort((a, b) => String(b?.updated_at || b?.completed_at || '').localeCompare(String(a?.updated_at || a?.completed_at || '')))[0] || null;
+  const rawStatus = String(latest?.status || '').toLowerCase().replace(/[\s-]+/g, '_');
+  const live = PHOTO_BACKUP_LIVE_STATUSES.has(rawStatus);
+  const ready = rows.some((item) => item?.ready === true);
+  const statusLabel = saved ? 'Saved / offline' : PHOTO_BACKUP_PRESENTATION[rawStatus] || (rawStatus ? rawStatus.replace(/_/g, ' ') : ready ? 'Ready' : 'Not ready');
+  const statusTone = saved ? 'saved' : ['failed', 'error', 'partial', 'partial_storage_limit'].includes(rawStatus) ? 'review'
+    : live ? 'working' : rawStatus === 'completed' ? 'completed' : ready ? 'ready' : 'neutral';
+  // A missing transferred count is unknown; a reported zero is an actual zero.
+  const transferred = latest?.items_transferred;
+  const count = transferred !== null && transferred !== undefined && Number.isFinite(Number(transferred))
+    ? Number(transferred).toLocaleString() + ' items' : 'Not reported';
+  const timestamp = latest?.completed_at || latest?.updated_at || null;
+  const guidance = saved ? 'Showing saved information. Reconnect before starting a backup.'
+    : live ? latest?.summary || 'Pocket Lab is handling this backup.'
+    : rawStatus === 'completed' ? latest?.summary || 'Latest backup completed.'
+    : rawStatus === 'partial' || rawStatus === 'partial_storage_limit' ? latest?.summary || 'Backup completed only partially. Review the device.'
+    : ['failed', 'error'].includes(rawStatus) ? latest?.summary || 'Latest backup needs review in Devices.'
+    : ready ? 'Backup is ready to start from Devices.'
+    : latest?.summary || 'Backup destination is not ready. Review readiness in Devices.';
   return (
-    <section className="lite-catalog-photo-backup-truth" aria-label="Photo backup">
-      <div>
-        <span><Camera className="h-4 w-4" />Photo backup</span>
-        <strong>{live ? 'Backing up photos' : summary || 'Photo backup status'}</strong>
-        <p>Managed by Pocket Lab on enrolled devices. PhotoPrism receives completed files through its protected WebDAV originals path.</p>
+    <section className="lite-catalog-photo-backup-truth lite-catalog-premium-backup" aria-label="Photo backup">
+      <div className="lite-catalog-premium-backup-header">
+        <div><span><Camera className="h-4 w-4" aria-hidden="true" />Photo backup</span><p>Managed by Pocket Lab</p></div>
+        <span className={`lite-catalog-premium-state is-${statusTone}`} role="status">{statusLabel}</span>
       </div>
-      {latest ? (
-        <dl>
-          <div><dt>Latest</dt><dd>{latest.summary || latest.status || 'Checked'}</dd></div>
-          <div><dt>Backed up</dt><dd>{Number(latest.items_transferred || 0)} item{Number(latest.items_transferred || 0) === 1 ? '' : 's'}</dd></div>
-          <div><dt>Last update</dt><dd>{formatLiteTime(latest.completed_at || latest.updated_at)}</dd></div>
-        </dl>
-      ) : (
-        <small>Open a device in Devices to choose folders, start a backup, retry, or stop it.</small>
-      )}
+      <div className="lite-catalog-premium-backup-path" aria-label="Backup path: enrolled device to Pocket Lab transfer to PhotoPrism protected destination">
+        <span><Smartphone aria-hidden="true" />Device</span><i aria-hidden="true">→</i>
+        <span><RefreshCw aria-hidden="true" />Transfer</span><i aria-hidden="true">→</i>
+        <span><ImageIcon aria-hidden="true" />PhotoPrism</span>
+      </div>
+      <p className="lite-catalog-premium-backup-destination">Protected WebDAV destination · conceptual path, not live transfer progress</p>
+      <dl className="lite-catalog-premium-backup-metrics">
+        <div><dt>Backed up</dt><dd>{count}</dd></div>
+        <div><dt>Last update</dt><dd>{timestamp ? formatLiteTime(timestamp) : 'Not recorded'}</dd></div>
+      </dl>
+      <p className="lite-catalog-premium-backup-guidance" role={statusTone === 'review' ? 'alert' : 'status'}>{guidance}</p>
+      <div className="lite-catalog-premium-backup-actions">
+        {onGoToDevices ? <button type="button" onClick={onGoToDevices}>Review in Devices</button> : null}
+        <details className="lite-catalog-premium-disclosure">
+          <summary>How photo backup works</summary>
+          <p>Pocket Lab manages photo backups from enrolled devices. PhotoPrism receives completed files through its protected WebDAV originals destination. Connect folders and start, retry, or stop backups in Devices. An app-record backup is different from a photo backup.</p>
+          {summary ? <p>{summary}</p> : null}
+        </details>
+      </div>
     </section>
   );
 }
@@ -1974,6 +2006,7 @@ function CatalogManagePortal({
   setStoragePreviewNotice,
   photoBackupDevices,
   photoBackupSummary,
+  savedStateOnly = false,
   appResource,
 }) {
   const appKey = catalogAppKey(app);
@@ -2031,7 +2064,7 @@ function CatalogManagePortal({
   useEffect(() => {
     if (!manageAppOpen) return undefined;
     const onKeyDown = (event) => {
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && !detailsActionId) {
         closeManageSheet();
       }
     };
@@ -2060,7 +2093,7 @@ function CatalogManagePortal({
       window.removeEventListener('resize', updateLiteCatalogVisualViewportVar);
       if (lockBodyScroll) document.body.style.overflow = previousOverflow;
     };
-  }, [app, closeManageSheet, manageAppOpen]);
+  }, [app, closeManageSheet, detailsActionId, manageAppOpen]);
 
   if (!app || !lifecycle || !manageAppOpen || typeof document === 'undefined') return null;
 
@@ -2084,6 +2117,7 @@ function CatalogManagePortal({
   const activeAppActionGroups = manageViewModel
     ? groupAppActions(appActionEntries, activeManageSection)
     : [];
+  const selectedDetailsEntry = appActionEntries.find((entry) => entry.actionId === detailsActionId) || null;
   const appAuthority = appResource?.authority || {};
   const credentialStatus = appResource?.credential_status || {};
   const appRecovery = appResource?.recovery || {};
@@ -2184,9 +2218,9 @@ function CatalogManagePortal({
         <div className="lite-catalog-manage-scroll" ref={manageScrollRef}>
           {manageBodyReady ? (
             <>
-              {isPhotoPrismApp(app) ? <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} /> : null}
-              {isPhotoPrismApp(app) ? (
-                <PhotoBackupTruthCard devices={photoBackupDevices} summary={photoBackupSummary} />
+              {isPhotoPrismApp(app) && activeManageSection === 'media' ? <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} onViewDetails={() => openActionDetails('import_photos', app.id)} /> : null}
+              {isPhotoPrismApp(app) && activeManageSection === 'media' ? (
+                <PhotoBackupTruthCard devices={photoBackupDevices} summary={photoBackupSummary} saved={savedStateOnly} onGoToDevices={() => { closeManageSheet(); useLiteUiStore.getState().setActiveTab('devices'); }} />
               ) : null}
               <div className="lite-catalog-manage-quick-actions" aria-label="Quick app actions">
                 <LiteButton onClick={(event) => { stopGestureEvent(event); openAppFullScreen(app, event); }} disabled={!canOpen} tone="secondary"><ExternalLink className="h-4 w-4" />Open full screen</LiteButton>
@@ -2254,17 +2288,6 @@ function CatalogManagePortal({
                               </div>
                             ) : null}
                             {entry.actionId === 'import_photos' && isPhotosImported ? <p className="lite-catalog-media-note">Photos imported. PhotoPrism will handle new photos.</p> : null}
-                            {entry.actionId !== 'connect_photos' && detailsActionId === entry.actionId ? (
-                              <div className="lite-catalog-action-details-anchor">
-                                <React.Suspense fallback={<div className="lite-app-action-details-loading">Loading details…</div>}>
-                                  <AppActionDetailsLazy
-                                    details={detailsForAction(entry.actionId, entry.action, tileResultForAction(entry.actionId, entry.action, entry.result))}
-                                    actionId={entry.actionId}
-                                    onClose={closeActionDetails}
-                                  />
-                                </React.Suspense>
-                              </div>
-                            ) : null}
                           </React.Fragment>
                         ))}
                     </AppActionGroup>
@@ -2309,6 +2332,22 @@ function CatalogManagePortal({
           ) : <div className="lite-catalog-manage-section-loading" aria-busy="true">Preparing app actions…</div>}
         </div>
       </section>
+      <LiteDetailsPanel
+        open={Boolean(selectedDetailsEntry)}
+        onClose={closeActionDetails}
+        title={selectedDetailsEntry ? actionCopy(selectedDetailsEntry.actionId, selectedDetailsEntry.action).label : 'Action details'}
+        description={selectedDetailsEntry?.action?.summary || ''}
+        bodyClassName="lite-apps-premium-details-scroll"
+      >
+        {selectedDetailsEntry ? (
+          <React.Suspense fallback={<p className="lite-app-action-details-loading" role="status">Loading details…</p>}>
+            <AppActionDetailsLazy
+              actionId={selectedDetailsEntry.actionId}
+              details={detailsForAction(selectedDetailsEntry.actionId, selectedDetailsEntry.action, tileResultForAction(selectedDetailsEntry.actionId, selectedDetailsEntry.action, selectedDetailsEntry.result))}
+            />
+          </React.Suspense>
+        ) : null}
+      </LiteDetailsPanel>
     </div>,
     document.body,
   );
@@ -2433,8 +2472,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const photoBackupReadyCount = photoBackupDevices.filter((device) => device?.ready).length;
   const photoBackupSummary = photoBackupLive
     ? 'Photo backup is running'
-    : ['completed', 'partial_storage_limit'].includes(String(photoBackupLatest?.status || '').toLowerCase())
-      ? `Photos protected by Pocket Lab · Last backup ${formatLiteTime(photoBackupLatest?.completed_at || photoBackupLatest?.updated_at)}`
+    : String(photoBackupLatest?.status || '').toLowerCase() === 'completed'
+      ? `Latest photo backup completed · ${formatLiteTime(photoBackupLatest?.completed_at || photoBackupLatest?.updated_at)}`
       : photoBackupReadyCount
         ? `Photo backup ready on ${photoBackupReadyCount} device${photoBackupReadyCount === 1 ? '' : 's'}`
         : 'Photo backup not ready yet';
@@ -3168,6 +3207,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             setStoragePreviewNotice={setStoragePreviewNotice}
             photoBackupDevices={photoBackupDevices}
             photoBackupSummary={photoBackupSummary}
+            savedStateOnly={savedStateOnly}
             appResource={manageAppId === catalogAppKey(app) ? managedAppResource : null}
           />
         ) : null}
