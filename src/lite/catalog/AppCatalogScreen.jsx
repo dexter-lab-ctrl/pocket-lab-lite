@@ -2336,7 +2336,6 @@ function CatalogManagePortal({
         open={Boolean(selectedDetailsEntry)}
         onClose={closeActionDetails}
         title={selectedDetailsEntry ? actionCopy(selectedDetailsEntry.actionId, selectedDetailsEntry.action).label : 'Action details'}
-        description={selectedDetailsEntry?.action?.summary || ''}
         bodyClassName="lite-apps-premium-details-scroll"
       >
         {selectedDetailsEntry ? (
