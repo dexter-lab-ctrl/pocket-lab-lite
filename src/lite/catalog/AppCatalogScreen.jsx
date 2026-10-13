@@ -2412,21 +2412,21 @@ function CatalogManagePortal({
           ) : <div className="lite-catalog-manage-section-loading" aria-busy="true">Preparing app actions…</div>}
         </div>
       </section>
-      <LiteDetailsPanel
-        open={Boolean(selectedDetailsEntry)}
-        onClose={closeActionDetails}
-        title={selectedDetailsEntry ? actionCopy(selectedDetailsEntry.actionId, selectedDetailsEntry.action).label : 'Action details'}
-        bodyClassName="lite-apps-premium-details-scroll"
-      >
-        {selectedDetailsEntry ? (
+      {selectedDetailsEntry ? (
+        <LiteDetailsPanel
+          open
+          onClose={closeActionDetails}
+          title={actionCopy(selectedDetailsEntry.actionId, selectedDetailsEntry.action).label}
+          bodyClassName="lite-apps-premium-details-scroll"
+        >
           <React.Suspense fallback={<p className="lite-app-action-details-loading" role="status">Loading details…</p>}>
             <AppActionDetailsLazy
               actionId={selectedDetailsEntry.actionId}
               details={detailsForAction(selectedDetailsEntry.actionId, selectedDetailsEntry.action, tileResultForAction(selectedDetailsEntry.actionId, selectedDetailsEntry.action, selectedDetailsEntry.result))}
             />
           </React.Suspense>
-        ) : null}
-      </LiteDetailsPanel>
+        </LiteDetailsPanel>
+      ) : null}
     </div>,
     document.body,
   );

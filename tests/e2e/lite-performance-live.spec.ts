@@ -229,7 +229,7 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
           'live-deep:catalog-action-details',
           async () => {
             await detailsButton.click();
-            await expect(sheet.locator('.lite-app-action-details-panel:visible').first()).toBeVisible();
+            await expect(page.locator('.lite-details-panel:visible .lite-app-action-details-panel').first()).toBeVisible();
           },
           {
             settleMs: 480,
