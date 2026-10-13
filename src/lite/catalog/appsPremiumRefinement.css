@@ -55,8 +55,24 @@
 }
 .theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-app-action-row-result > span {flex: 1 1 12rem;min-width:0;}
 /* This remains a secondary, actionable result: never hide disabled explanations. */
-.theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-action-reasons {
-  display: none; /* Each action already owns its complete disabled reason and Details. */
+.theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-premium-action-notices {
+  margin-top: .8rem;
+  padding: .2rem .7rem;
+  border-top: 1px solid var(--apps-premium-border);
+}
+.theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-premium-action-notices .lite-catalog-action-reasons {
+  display: grid;
+  margin: 0;
+  padding: .3rem 0;
+  gap: .4rem;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-premium-action-notices .lite-catalog-action-reasons > span {
+  display:block;
+  max-width:100%;
+  overflow-wrap:anywhere;
 }
 .theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-storage-panel--sheet {
   margin-top: .7rem;
@@ -331,4 +347,39 @@
   .theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-premium-flow *,
   .theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-premium-backup *,
   .theme-pocket-lite-daylight.lite-details-overlay-layer * {animation:none !important;transition:none !important;}
+}
+
+.theme-pocket-lite-daylight .lite-catalog-screen .lite-catalog-premium-app-status {
+  margin: .5rem 0 .75rem;
+  font-size: .84rem;
+  line-height: 1.45;
+  color: var(--lite-muted, #64748b);
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-premium-storage-details {
+  margin-top: .65rem;
+  border-top: 1px solid var(--apps-premium-border);
+  padding:.25rem .65rem;
+}
+.theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-premium-storage-details .lite-catalog-storage-panel {
+  margin: 0;
+  padding:.65rem;
+  max-width:100%;
+}
+.theme-pocket-lite-daylight.lite-catalog-manage-layer :is(.lite-catalog-manage-head,.lite-catalog-manage-head > div,.lite-catalog-action-groups,.lite-catalog-manage-section-tabs) {
+  min-width: 0;
+  max-width: 100%;
+}
+.theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-manage-section-tabs {
+  scroll-padding-inline:.5rem;
+}
+@media (max-width: 375px) {
+  .theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-premium-backup-metrics {
+    grid-template-columns:minmax(0,1fr);
+  }
+  .theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-premium-flow-step:not(:last-child)::after {
+    width:calc(100% - 2.5rem);
+    left:calc(50% + 1.25rem);
+  }
 }
