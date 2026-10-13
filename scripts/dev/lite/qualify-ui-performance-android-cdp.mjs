@@ -402,17 +402,17 @@ async function waitForVisibleWithReload(locator, label, screenId) {
   fail(`Could not find visible ${label} after bounded screen reload retries: ${lastError?.message || 'unknown error'}`);
 }
 
-async function settleOrResetRefreshPopover() {
-  const popover = page.locator('.lite-refresh-status-popover');
+async function settleOrResetRefreshIndicator() {
+  const indicator = page.locator('.lite-refresh-progress-ring');
   try {
-    await popover.waitFor({ state: 'hidden', timeout: 7_000 });
+    await indicator.waitFor({ state: 'hidden', timeout: 7_000 });
     return;
   } catch {
-    // The read-only refresh request may outlive its visual status window on a
+    // The read-only refresh request may outlive its visual progress indicator on a
     // slow qualification runtime. The interaction sample is already closed;
     // reset the page only between measurements so the next interaction starts
     // from a truthful clean Home state rather than failing the whole matrix.
-    console.warn('[ui-performance-android] refresh popover did not settle within 7s; resetting Home between measurements.');
+    console.warn('[ui-performance-android] refresh progress indicator did not settle within 7s; resetting Home between measurements.');
   }
   await page.goto(new URL('?screen=home&pocketlab_qualification_refresh_reset=1', base).toString(), {
     waitUntil: 'domcontentloaded',
@@ -958,7 +958,22 @@ await measureNestedInteraction({
 // the live read-only qualification boundary. The physical renderer therefore maps
 // progress-update, toast-settle, and refresh-feedback onto the real Home refresh
 // lifecycle. Evidence records this exact surface instead of claiming a write-backed
-// completion toast was exercised.
+// completion toast was exercised. A bounded status-response delay makes the
+// transient in-control progress state observable without changing the candidate
+// application or issuing a write action.
+await page.addInitScript(() => {
+  const nativeFetch = window.fetch.bind(window);
+  window.fetch = async (input, init) => {
+    const rawUrl = typeof input === 'string' ? input : input?.url || '';
+    let pathname = '';
+    try { pathname = new URL(rawUrl, window.location.origin).pathname; } catch {}
+    if (pathname === '/api/lite/status' && window.sessionStorage.getItem('POCKETLAB_ANDROID_CDP_DELAY_NEXT_STATUS') === '1') {
+      window.sessionStorage.removeItem('POCKETLAB_ANDROID_CDP_DELAY_NEXT_STATUS');
+      await new Promise((resolve) => window.setTimeout(resolve, 250));
+    }
+    return nativeFetch(input, init);
+  };
+});
 await gotoScreen('home');
 const refreshControl = page.locator('.lite-refresh-control').first();
 const refreshButton = await firstVisible(refreshControl.getByRole('button'), 'Home Refresh button');
@@ -968,44 +983,47 @@ await measurePhase4Interaction({
   scope: 'home-refresh',
   surface: 'Home read-only refresh status lifecycle',
   action: async () => {
+    await page.evaluate(() => window.sessionStorage.setItem('POCKETLAB_ANDROID_CDP_DELAY_NEXT_STATUS', '1'));
     await refreshButton.click();
-    await page.locator('.lite-refresh-status-popover:visible').waitFor({ state: 'visible', timeout: 10_000 });
+    await refreshButton.locator('.lite-refresh-progress-ring').waitFor({ state: 'visible', timeout: 10_000 });
     await page.waitForTimeout(760);
   },
   settleMs: 120,
 });
 
-await settleOrResetRefreshPopover();
+await settleOrResetRefreshIndicator();
 
 await measurePhase4Interaction({
   interaction: 'toast-settle',
   scope: 'home-transient-feedback',
-  surface: 'Home refresh transient status popover (read-only physical analogue)',
+  surface: 'Home refresh progress indicator (read-only physical analogue)',
   action: async () => {
+    await page.evaluate(() => window.sessionStorage.setItem('POCKETLAB_ANDROID_CDP_DELAY_NEXT_STATUS', '1'));
     await refreshButton.click();
-    const feedback = page.locator('.lite-refresh-status-popover');
+    const feedback = refreshButton.locator('.lite-refresh-progress-ring');
     await feedback.waitFor({ state: 'visible', timeout: 10_000 });
     try {
       await feedback.waitFor({ state: 'hidden', timeout: 7_000 });
     } catch {
       // Keep the measured interaction complete even when the backend-owned
-      // read-only refresh status outlives its normal visual lifetime. The
+      // read-only refresh progress indicator outlives its normal visual lifetime. The
       // following boundary resets Home before the next measurement.
-      console.warn('[ui-performance-android] toast-settle popover did not settle within 7s; recording the bounded sample.');
+      console.warn('[ui-performance-android] toast-settle progress indicator did not settle within 7s; recording the bounded sample.');
     }
   },
   settleMs: 0,
 });
 
-await settleOrResetRefreshPopover();
+await settleOrResetRefreshIndicator();
 
 await measurePhase4Interaction({
   interaction: 'refresh-feedback',
   scope: 'home',
-  surface: 'Home refresh status popover',
+  surface: 'Home refresh progress indicator',
   action: async () => {
+    await page.evaluate(() => window.sessionStorage.setItem('POCKETLAB_ANDROID_CDP_DELAY_NEXT_STATUS', '1'));
     await refreshButton.click();
-    await page.locator('.lite-refresh-status-popover:visible').waitFor({ state: 'visible', timeout: 10_000 });
+    await refreshButton.locator('.lite-refresh-progress-ring').waitFor({ state: 'visible', timeout: 10_000 });
   },
   settleMs: 420,
 });
