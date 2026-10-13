@@ -2296,7 +2296,7 @@ function CatalogManagePortal({
               </div> : null}
               {manageExtrasReady && isPhotoPrismApp(app) ? (
                 <>
-                  <div className="lite-catalog-action-reasons">
+                  <details className="lite-catalog-premium-disclosure lite-catalog-premium-action-notices"><summary>Other action notices</summary><div className="lite-catalog-action-reasons">
                     {[
                       lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'import_photos')?.action, 'Import photos'),
                       lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'preview_restore')?.action, 'Preview restore'),
@@ -2304,8 +2304,8 @@ function CatalogManagePortal({
                       lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'update_app')?.action, 'Update'),
                       lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'repair_app')?.action, 'Repair'),
                     ].filter(Boolean).map((warning) => <span key={warning}>{warning}</span>)}
-                  </div>
-                  <div className="lite-catalog-storage-panel lite-catalog-storage-panel--sheet">
+                  </div></details>
+                  {activeManageSection === 'media' ? <details className="lite-catalog-premium-disclosure lite-catalog-premium-storage-details"><summary>Storage and device details</summary><div className="lite-catalog-storage-panel lite-catalog-storage-panel--sheet">
                     <div className="lite-catalog-storage-head">
                       <div>
                         <span>Media folders</span>
@@ -2325,7 +2325,7 @@ function CatalogManagePortal({
                       </div>
                     ) : <p className="lite-catalog-storage-empty">No media folders connected yet. Connect a photo folder to start using PhotoPrism.</p>}
                     {storageDeviceCount(app) < 1 ? <p className="lite-catalog-storage-hint">Join a storage device to use remote media folders.</p> : null}
-                  </div>
+                  </div></details> : null}
                 </>
               ) : null}
             </>
@@ -3130,7 +3130,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <h2>{app.name}</h2>
           </div>
         </div>
-        <p>{app.summary}</p>
+        {!(installed && lifecycle) && app.summary ? <p>{app.summary}</p> : null}
         {quickActionsOpen ? (
           <div className="lite-catalog-quick-actions" role="menu" aria-label={`${app.name} quick actions`}>
             <button type="button" onClick={(event) => { event.stopPropagation(); openApp(app, event); setQuickActionsAppId(null); }} disabled={!canOpen}>Open</button>
@@ -3138,50 +3138,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <button type="button" onClick={(event) => { event.stopPropagation(); setQuickActionsAppId(null); refresh(); refreshAppActions(app.id); }}>Refresh</button>
           </div>
         ) : null}
-        {installed ? (
-          <div className="lite-catalog-trust-marker" aria-label="Self-hosted app">
-            <ShieldCheck className="h-4 w-4" />
-            <span>Self-hosted app</span>
-          </div>
-        ) : null}
-        {installed && (
-          appSupports(app, 'security_check')
-          || appSupports(app, 'backup')
-          || appSupports(app, 'media_sources')
-        ) ? (
-          <div className="lite-catalog-profile-markers" aria-label="App protection and backup readiness">
-            {appSupports(app, 'security_check') ? <span><ShieldCheck className="h-4 w-4" />{app?.security_profile?.label || 'Safety check available'}</span> : null}
-            {appSupports(app, 'backup') ? <span><FileCheck className="h-4 w-4" />{app?.backup_profile?.config || app?.backup_profile?.label || 'Backup available'}</span> : null}
-            {appSupports(app, 'media_sources') && app?.backup_profile?.media ? <span><FileCheck className="h-4 w-4" />{app.backup_profile.media}</span> : null}
-            {isPhotoPrismApp(app) ? <span><Camera className="h-4 w-4" />{photoBackupSummary}</span> : null}
-          </div>
-        ) : null}
-        {installed && lifecycle ? (
-          <div className="lite-catalog-summary-panel" aria-label="App summary">
-            <div className="lite-catalog-summary-head">
-              <div>
-                <span>App status</span>
-                <strong>{lifecycle.status === 'ready' ? 'Running' : lifecycle.status === 'review' ? 'Needs attention' : lifecycle.summary || 'Checking'}</strong>
-              </div>
-              <StatusBadge status={backendBadgeStatus(lifecycle.status)}>
-                {backendLabel(lifecycle.status, { ready: 'Ready', review: 'Needs attention', danger: 'Needs attention', checking: 'Checking' })}
-              </StatusBadge>
-            </div>
-            <div className="lite-catalog-summary-chips" aria-label="App health summary">
-              <span><Server className="h-4 w-4" />Route</span>
-              {appSupports(app, 'media_sources') ? <span><FolderOpen className="h-4 w-4" />{lifecycleStorageLabel(lifecycle, app)}</span> : null}
-              {appSupports(app, 'security_check') ? <span><ShieldCheck className="h-4 w-4" />{lifecycleSecurityLabel(lifecycle, app)}</span> : null}
-              {appSupports(app, 'backup') ? <span><FileCheck className="h-4 w-4" />{lifecycleBackupLabel(lifecycle, app)}</span> : null}
-            </div>
-            {lifecycleAttention.length ? (
-              <div className="lite-catalog-summary-attention">
-                {lifecycleAttention.slice(0, 2).map((item) => (
-                  <span key={item.id || item.title}><strong>{item.title || 'Needs attention'}</strong>{item.summary || 'Check again.'}</span>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        ) : null}
+        <p className="lite-catalog-premium-app-status" role="status">
+          {installed && lifecycle ? lifecycle.summary || canonical.statusSummary || 'App status is not available.'
+            : app?.status_summary || app?.summary || 'Install to set up this app.'}
+        </p>
         {installed && lifecycle ? (
           <CatalogManagePortal
             app={app}
@@ -3211,11 +3171,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             appResource={manageAppId === catalogAppKey(app) ? managedAppResource : null}
           />
         ) : null}
-        <div className="lite-catalog-meta lite-catalog-meta-grid">
-          <span><Server className="h-4 w-4" /> {targetName}</span>
-          <span><CheckCircle2 className="h-4 w-4" /> {installed ? (canOpen ? 'Ready to open' : 'Installed') : 'Setup needed'}</span>
-          <span><HeartPulse className="h-4 w-4" /> {canonical.statusSummary}</span>
-        </div>
         {reason ? (
           <div className="lite-catalog-attention-reason">
             <strong>{installed ? (canOpen ? 'Status note' : 'Attention') : 'Setup'}</strong>
@@ -3229,7 +3184,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <div className="lite-catalog-progress-bar"><span style={{ width: `${percent}%` }} /></div>
           </div>
         ) : null}
-        <div className="lite-catalog-last-op"><strong>Latest status</strong><p>{lastOperationText(app, actionSnapshot)}</p></div>
         <div className={actionsClassName}>
           {!installed ? (
             <LiteButton onClick={(event) => { stopGestureEvent(event); install(app, event); }} disabled={!canInstall} tone={canInstall ? 'primary' : 'secondary'}>{installing ? 'Installing...' : app?.actions?.retry ? 'Retry' : 'Install'}</LiteButton>
