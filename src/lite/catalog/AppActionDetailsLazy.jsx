@@ -175,7 +175,7 @@ export default function AppActionDetailsLazy({ details, actionId = '' }) {
     : { saved: false, backend_only: true, summary: 'No troubleshooting record was saved because this action did not run.' };
   const detailsTone = actionDetailsTone(details, saved);
   const runLabels = actionDetailRunHistoryLabels(actionId);
-  const display = getActionDisplayState(details.status || 'ready');
+  const display = getActionDisplayState(details.status || 'unknown');
 
   return (
     <section className={`lite-app-action-details-panel lite-app-premium-details is-${detailsTone}`} role="region" aria-label={`${details.title || 'Action'} details`}>
