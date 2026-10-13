@@ -3130,7 +3130,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <h2>{app.name}</h2>
           </div>
         </div>
-        {!(installed && lifecycle) && app.summary ? <p>{app.summary}</p> : null}
         {quickActionsOpen ? (
           <div className="lite-catalog-quick-actions" role="menu" aria-label={`${app.name} quick actions`}>
             <button type="button" onClick={(event) => { event.stopPropagation(); openApp(app, event); setQuickActionsAppId(null); }} disabled={!canOpen}>Open</button>
