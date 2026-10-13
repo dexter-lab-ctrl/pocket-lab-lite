@@ -163,3 +163,56 @@ export const GovernedUnsupportedCapability = {
     await expect(within(dialog).queryByText(/Back up app|Preview restore|Check app|Repair app/i)).not.toBeInTheDocument();
   },
 };
+
+/* Source-only premium Apps stories: not executed or baselined in this implementation PR. */
+export const PremiumPhotosManage = {
+  ...createLiteStory('catalog', 'catalog-ready', { viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => {
+    await openManage(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+    const manage = await body.findByRole('dialog', { name: /Manage PhotoPrism/i });
+    const photos = within(manage).getByRole('tab', { name: 'Photos' });
+    await userEvent.click(photos);
+    await expect(await within(manage).findByRole('region', { name: 'Photo workflow' })).toBeInTheDocument();
+    await expect(await within(manage).findByRole('region', { name: 'Photo backup' })).toBeInTheDocument();
+  },
+};
+
+export const PremiumSharedImportDetails = {
+  ...createLiteStory('catalog', 'catalog-ready', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => {
+    await openManage(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+    const manage = await body.findByRole('dialog', { name: /Manage PhotoPrism/i });
+    await userEvent.click(within(manage).getByRole('tab', { name: 'Photos' }));
+    const workflow = await within(manage).findByRole('region', { name: 'Photo workflow' });
+    await userEvent.click(within(workflow).getByRole('button', { name: 'View details' }));
+    const details = await body.findByRole('dialog', { name: /Import photos/i });
+    await expect(within(details).getByText('What happened')).toBeInTheDocument();
+    await expect(within(details).getByText('What changed')).toBeInTheDocument();
+  },
+};
+
+export const PremiumPhotosNotReady = {
+  ...createLiteStory('catalog', 'app-media-not-ready', { viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => {
+    await openManage(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+    const manage = await body.findByRole('dialog', { name: /Manage PhotoPrism/i });
+    await userEvent.click(within(manage).getByRole('tab', { name: 'Photos' }));
+    await expect(await within(manage).findByRole('region', { name: 'Photo workflow' })).toBeInTheDocument();
+  },
+};
+
+export const PremiumBackupExplanation = {
+  ...createLiteStory('catalog', 'catalog-ready', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => {
+    await openManage(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+    const manage = await body.findByRole('dialog', { name: /Manage PhotoPrism/i });
+    await userEvent.click(within(manage).getByRole('tab', { name: 'Photos' }));
+    const backup = await within(manage).findByRole('region', { name: 'Photo backup' });
+    await userEvent.click(within(backup).getByText('How photo backup works'));
+    await expect(within(backup).getByText(/protected WebDAV originals/i)).toBeInTheDocument();
+  },
+};
