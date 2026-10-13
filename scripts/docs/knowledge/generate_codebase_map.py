@@ -48,7 +48,7 @@ TASKFILES = (ROOT / "Taskfile.yml", *sorted((ROOT / "tasks").glob("Taskfile*.yml
 PRIVATE_PATH = re.compile(r"(?:^|[\s\"\'])((?:/home/[^/\s]+|/data/data/com\.termux/files/(?:home|usr)|/mnt/[a-zA-Z]/|[A-Za-z]:\\Users\\))")
 ROUTE_VALUE = re.compile(r'("route"\s*:\s*")[^"]*(")')
 PORTABLE_HOME_ROUTE = re.compile(
-    r"(?<![A-Za-z0-9._/-])/home/(?:activity-cursor(?:/review)?|"
+    r"(?<![A-Za-z0-9._/-])/home/(?:activity-cursor(?:/review)?|activity-history|"
     r"(?:api-unavailable|healthy|offline-saved|release-available|release-current|"
     r"release-failed|review-recommended)\.json)(?=$|[\s\"'`<>,)}])"
 )

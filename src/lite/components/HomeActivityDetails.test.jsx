@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { cleanup, render, screen, fireEvent } from '@testing-library/react';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import HomeActivityDetails from './HomeActivityDetails.jsx';
+
+afterEach(cleanup);
 
 const activity = {
   active: 1, queued: 2, completed: 3, attention: 0, stale: 5, historicalFailures: 2,
@@ -28,5 +30,15 @@ describe('Activity details progressive disclosure', () => {
     fireEvent.click(screen.getByRole('button', { name: 'History' }));
     fireEvent.click(screen.getByRole('button', { name: 'Mark activity reviewed' }));
     expect(onMarkReviewed).toHaveBeenCalledTimes(1);
+  });
+  it('does not allow a saved snapshot to acknowledge a review', () => {
+    const onMarkReviewed = vi.fn();
+    render(<HomeActivityDetails activity={activity} saved cursor={{ changed_since_review: true }}
+      onNavigate={vi.fn()} onMarkReviewed={onMarkReviewed} />);
+    fireEvent.click(screen.getByRole('button', { name: 'History' }));
+    const button = screen.getByRole('button', { name: 'Mark activity reviewed' });
+    expect(button.disabled).toBe(true);
+    fireEvent.click(button);
+    expect(onMarkReviewed).not.toHaveBeenCalled();
   });
 });

@@ -25,8 +25,11 @@
  font-weight:650;min-height:44px;padding:.5rem .65rem;border-radius:.6rem}
 .lite-home-details-nav{display:flex;flex-wrap:wrap;gap:.4rem;position:sticky;top:0;z-index:2;
  padding:.5rem 0;background:var(--pocket-surface,inherit)}
-.lite-home-details-nav button{min-height:40px;padding:.45rem .75rem;border-radius:.65rem;border:1px solid var(--pocket-border,rgba(148,163,184,.2))}
+.lite-home-details-nav button{min-height:40px;padding:.45rem .75rem;border-radius:.65rem;border:1px solid var(--pocket-border,rgba(148,163,184,.2));background:var(--pocket-bg-soft,transparent);color:var(--pocket-text,inherit)}
 .lite-home-details-nav button[aria-current=page]{border-color:currentColor;font-weight:750}
+.theme-pocket-lite-daylight .lite-home-details-nav{background:var(--lite-surface-strong,#fff)}
+.theme-pocket-lite-daylight .lite-home-details-nav button{background:#fff;border-color:rgba(148,163,184,.32);color:var(--lite-ink,#0f172a)}
+.theme-pocket-lite-daylight .lite-home-details-nav button[aria-current=page]{border-color:var(--lite-blue,#2563eb);color:var(--lite-ink,#0f172a)}
 .lite-home-workspace-details,.lite-home-activity-details,.lite-home-activity-content{display:grid;gap:1rem;min-width:0}
 .lite-home-more-grid{display:grid;gap:.5rem}
 .lite-home-activity-counts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem}

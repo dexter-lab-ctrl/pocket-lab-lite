@@ -201,6 +201,8 @@ export default function HomeScreen({
         counts_available: activityData?.counts_available !== false && historyData.counts_available !== false }) || activity
     : activity, [historyData, activityData, activity]);
 
+  const attentionItems = useMemo(() => prioritizeWorkspaceAttention(overview.services), [overview.services]);
+
   useEffect(() => {
     if (!activityOpen || effectiveSavedStateOnly || !backendReachable) return;
     let alive = true;
@@ -226,18 +228,23 @@ export default function HomeScreen({
     onNavigate?.(screen);
   }, [onNavigate]);
 
-  const attentionItems = useMemo(() => prioritizeWorkspaceAttention(overview.services), [overview.services]);
   const details = overview.workspaceDetails;
   const sectionNames = { overview: 'Overview', 'service-health': 'Service health', updates: 'Updates', diagnostics: 'Diagnostics' };
+  const primaryAction = overview.nextAction
+    && overview.nextAction.screen !== 'home'
+    && !effectiveSavedStateOnly
+    && !attentionItems.some((item) => item.screen === overview.nextAction.screen)
+    ? {
+        label: overview.nextAction.label,
+        tone: overview.nextAction.tone === 'primary' ? 'primary' : 'secondary',
+        onClick: () => goTo(overview.nextAction.screen),
+      }
+    : null;
   return <div className="lite-home-premium-shell lite-home-refined" data-lite-home-premium="true" data-home-state-source="tanstack-dexie-fastapi">
     <PageHeader eyebrow="Self-hosted workspace" title="Home" description="Your workspace, at a glance."
       actions={<LiteRefreshButton scope="home" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />} />
     <LiteOperationalStory className="lite-home-operational-story" story={overview.workspaceStory}
-      primaryAction={overview.nextAction && overview.nextAction.screen !== 'home' && !effectiveSavedStateOnly ? {
-        label: overview.nextAction.label,
-        tone: overview.nextAction.tone === 'primary' ? 'primary' : 'secondary',
-        onClick: () => goTo(overview.nextAction.screen),
-      } : null}
+      primaryAction={primaryAction}
       manageAction={{ label: 'Workspace details', onClick: () => { setWorkspaceSection('overview'); setWorkspaceDetailsOpen(true); } }} />
     {loading && !overview.services.length ? <LoadingCard label="Checking workspace status…" /> : null}
     {attentionItems.length ? <LiteNextSteps title="Needs your attention"
@@ -275,7 +282,7 @@ export default function HomeScreen({
         </section> : null}
         {workspaceSection === 'updates' ? <section aria-label="Updates"><LiteReleaseUpdateCard /></section> : null}
         {workspaceSection === 'diagnostics' ? <section aria-label="Diagnostics">
-          <LiteTechnicalFacts title="Diagnostics" description="Sanitized status and projection information."
+          <LiteTechnicalFacts title="Technical details" description="Sanitized status and projection information."
             facts={[
               ...details.resources.filter((item) => item.key !== 'activity').map((item) => ({
                 id: item.key, label: item.key === 'database' ? 'System data' : item.label,

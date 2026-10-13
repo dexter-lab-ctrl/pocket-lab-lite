@@ -3,7 +3,6 @@ import { formatActivityCount } from '../homeActivityEvidence.js';
 const sections = [
   ['attention','Attention'],['running','Running'],['recent','Recent'],['history','History'],
 ];
-const failures = new Set(['failed','timed_out','error','blocked','undeliverable','degraded']);
 const running = new Set(['running','working','in_progress']);
 export default function HomeActivityDetails({ activity, cursor, cursorBusy, cursorError, saved, onMarkReviewed, onNavigate }) {
   const [section, setSection] = useState('attention');

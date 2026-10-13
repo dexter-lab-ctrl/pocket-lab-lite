@@ -66,3 +66,49 @@ def test_cursor_rejects_non_human_identity(monkeypatch):
     with pytest.raises(HTTPException) as exc:
         lite.get_lite_home_activity_cursor(request)
     assert exc.value.status_code==403
+
+
+def test_bounded_home_history_is_private_and_allow_listed(monkeypatch):
+    import json
+    from starlette.requests import Request
+    from api_fastapi.routers import lite
+
+    request = Request({"type": "http", "method": "GET", "path": "/api/lite/home/activity-history", "headers": []})
+    monkeypatch.setattr(lite.deps, "require_auth", lambda *_args, **_kwargs: {"actor": {"type": "human", "identity_id": "person-1"}})
+    calls = []
+    monkeypatch.setattr(lite.lite_phase3c_projections, "snapshot", lambda domain: calls.append(domain) or {
+        "summary": "Recent activity is available.",
+        "recent_completed": 472,
+        "historical_failures": 1,
+        "history_window_days": 7,
+        "counts_available": True,
+        "grouped_events": [],
+        "last_activity_at_epoch_ms": 1700000000000,
+        "recent_events": [{"domain": "apps", "status": "completed", "occurred_at_epoch_ms": 1700000000000, "label": "App safety check"}],
+        "latest_change": {"domain": "apps", "status": "completed", "summary": "App safety check"},
+        "operation_id": "must-not-appear",
+        "metadata_json": "secret=must-not-appear",
+    })
+
+    response = lite.get_lite_home_activity_history(request)
+    payload = json.loads(response.body)
+    assert response.status_code == 200
+    assert response.headers["cache-control"] == "private, no-store"
+    assert calls == ["system.activity_history"]
+    assert payload["recent_completed"] == 472
+    assert payload["history_available"] is True
+    assert "operation_id" not in json.dumps(payload)
+    assert "must-not-appear" not in json.dumps(payload)
+
+
+def test_bounded_home_history_fails_closed_when_prepared_snapshot_is_missing(monkeypatch):
+    from starlette.requests import Request
+    from api_fastapi.routers import lite
+
+    request = Request({"type": "http", "method": "GET", "path": "/api/lite/home/activity-history", "headers": []})
+    monkeypatch.setattr(lite.deps, "require_auth", lambda *_args, **_kwargs: {"actor": {"type": "human", "identity_id": "person-1"}})
+    monkeypatch.setattr(lite.lite_phase3c_projections, "snapshot", lambda _domain: None)
+
+    response = lite.get_lite_home_activity_history(request)
+    assert response.status_code == 503
+    assert response.headers["cache-control"] == "private, no-store"

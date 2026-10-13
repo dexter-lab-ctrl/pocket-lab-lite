@@ -14,6 +14,24 @@ describe('Home activity projection', () => {
     expect(view.attention).toBe(12054);
     expect(formatActivityCount(view.attention)).toBe(new Intl.NumberFormat().format(12054));
   });
+  it.each([0, 1, 472, 9999, 10000, 99999, 1000000])('keeps valid count %s exact', (count) => {
+    const view = selectHomeActivityEvidence({ history_available: true, counts_available: true,
+      attention_required: count });
+    expect(view.attention).toBe(count);
+    expect(formatActivityCount(view.attention)).toBe(new Intl.NumberFormat().format(count));
+  });
+  it.each([null, undefined, -1, 1.5, '10000', 'not-a-count'])('does not turn invalid count %s into zero', (count) => {
+    const view = selectHomeActivityEvidence({ history_available: true, counts_available: true,
+      attention_required: count });
+    expect(view.attention).toBeNull();
+    expect(formatActivityCount(count)).toBe('Not available');
+  });
+  it('does not expose exact source counts when the projection is unavailable', () => {
+    const view = selectHomeActivityEvidence({ history_available: true, counts_available: false,
+      active_operations: 1000000, attention_required: 9999 });
+    expect(view.active).toBeNull();
+    expect(view.attention).toBeNull();
+  });
   it('allow-lists labels, filters unrelated domains, and does not claim stale work is running', () => {
     const view = selectHomeActivityEvidence({ history_available: true, recent_events: [
       { domain: 'devices', status: 'running', is_fresh_running: false, occurred_at_epoch_ms: 1700000000000,
@@ -28,5 +46,12 @@ describe('Home activity projection', () => {
     expect(view.events[1].label).toBe('Media backup repair');
     expect(JSON.stringify(view.events)).not.toContain('never-display');
     expect(JSON.stringify(view.events)).not.toContain('internal.operation');
+  });
+  it('keeps explicit recovered status out of running and attention lists', () => {
+    const view = selectHomeActivityEvidence({ history_available: true, recent_events: [
+      { domain: 'apps', status: 'recovered', occurred_at_epoch_ms: 1700000000000, needs_attention: false },
+    ] });
+    expect(view.events[0].statusLabel).toBe('Recovered');
+    expect(view.events[0].needsAttention).toBe(false);
   });
 });

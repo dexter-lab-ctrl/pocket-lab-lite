@@ -7,7 +7,7 @@ const STATUS = {
   succeeded: 'Completed', completed: 'Completed', failed: 'Failed',
   timed_out: 'Timed out', undeliverable: 'Could not deliver',
   error: 'Failed', blocked: 'Blocked', cancelled: 'Cancelled',
-  degraded: 'Needs review', historical: 'Historical issues',
+  degraded: 'Needs review', recovered: 'Recovered', historical: 'Historical issues',
 };
 const LABELS = new Set(['Device restart','Backup','Media backup repair','Repair','App safety check',
   'Device command','App operation','Recovery operation','Safety check',
@@ -41,7 +41,7 @@ export function selectHomeActivityEvidence(payload) {
     .map((e) => ({
       domain: e.domain, label: e.label, count: e.count, at: readTime(e.occurred_at_epoch_ms),
       summary: e.count + ' related operations reported problems within an hour.',
-    }));
+    })).filter((e) => e.at !== null);
   const safe = (value) => available ? readCount(value) : null;
   const lastActivityAt = readTime(payload.last_activity_at_epoch_ms) || events[0]?.at || null;
   return {
