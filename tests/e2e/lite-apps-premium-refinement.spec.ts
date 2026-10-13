@@ -1,7 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
-// Implementation-only coverage. No screenshots, baseline updates or executions in this PR.
+// Deterministic mocked qualification coverage for shared Details, Photos,
+// backup truth, flow status and responsive layout contracts.
 async function openPhotos(page: Page, scenario = 'catalog-ready') {
   await installScenario(page, scenario);
   await page.goto('/?screen=catalog');

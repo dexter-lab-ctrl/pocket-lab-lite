@@ -340,8 +340,8 @@ def test_lite_catalog_ui_is_https_aware_and_server_owned():
     assert "lite-catalog-launcher" not in css
     assert "lite-catalog-drawer" not in ui
     assert "lite-catalog-drawer" not in css
-    assert "AppActionDetailsPanel" in _lite_catalog_source()
-    assert "Ready to open" in ui
+    assert "LiteDetailsPanel" in _lite_catalog_source()
+    assert "lite-catalog-premium-app-status" in ui
     assert "installed_running" in ui
     assert "Ready to open" not in css
     assert ">Ready<" in ui or "'Ready'" in ui
@@ -353,8 +353,8 @@ def test_lite_catalog_ui_is_https_aware_and_server_owned():
     assert "HeartPulse" in _lite_catalog_source()
     assert "Clock3" not in _lite_catalog_source()
     assert "lite-catalog-status-badge" in ui
-    assert "lite-catalog-trust-marker" in ui
-    assert "Self-hosted app" in ui
+    assert "lite-catalog-trust-marker" not in ui
+    assert "Self-hosted app" not in ui
     assert "/assets/apps/photoprism.svg" in ui
     assert Path("public/assets/apps/photoprism.svg").exists()
     assert "lite-catalog-hero-actions" in ui
@@ -2116,8 +2116,8 @@ def test_lite_photoprism_connect_photos_preview_ui_contract_is_present():
     assert "Connect photos" in ui
     assert "Use phone storage" in ui
     assert "Visible folders" in ui
-    assert "PhotoPrism will look for pictures in this phone’s storage" in ui
-    assert "These folders are shown for clarity" in ui
+    assert "backend-reported storage preview" in ui
+    assert "Only folder names reported by the backend preview are shown here." in ui
     assert "Photos are not moved by this step" in ui
     assert "Run Import photos" in ui
     assert "Index photos" not in ui
@@ -2129,8 +2129,7 @@ def test_lite_photoprism_connect_photos_preview_ui_contract_is_present():
     assert "lite-catalog-storage-preview-anchor" in ui
     assert "PhoneStorageConnectedFolders" in ui
     assert "Connected folders from Phone Storage" in ui
-    assert "Android shared storage" in ui
-    assert "Camera photos" in ui
+    assert "storageConnectedFolderLabels" in ui
     assert "lite-catalog-connected-folders" in css
     assert 'type="checkbox"' not in ui
     assert "selectedFolders" not in ui
@@ -2446,7 +2445,7 @@ def test_lite_unified_lifecycle_ui_source_is_present():
     ui = _lite_ui_source()
     css = Path("src/index.css").read_text()
     assert "apps/lifecycle" in Path("src/lib/liteApi.js").read_text()
-    assert "lite-catalog-summary-panel" in ui
+    assert "lite-catalog-premium-app-status" in ui
     assert "lite-catalog-manage-layer" in ui
     assert "lite-catalog-manage-backdrop" in ui
     assert "lite-catalog-manage-sheet" in ui
@@ -2951,7 +2950,7 @@ def test_lite_app_action_sheet_ui_source_is_present():
     assert "setManageAppId" not in ui
     assert "updateLiteCatalogVisualViewportVar" in ui
     assert "visualViewport" in ui
-    assert "lite-catalog-summary-panel" in ui
+    assert "lite-catalog-premium-app-status" in ui
     assert "lite-app-action-row" in ui
     assert "@use-gesture/react" in ui
     assert "@react-spring/web" in ui
@@ -3639,9 +3638,10 @@ def test_lite_app_evidence_unknown_app_returns_safe_404():
 def test_lite_app_catalog_ui_uses_lightweight_action_details():
     ui = _lite_ui_source()
     css = Path("src/index.css").read_text()
+    premium_css = Path("src/lite/catalog/appsPremiumRefinement.css").read_text()
     for marker in (
         "AppActionDetailsButton",
-        "AppActionDetailsPanel",
+        "LiteDetailsPanel",
         "Details",
         "Last result",
         "What happened",
@@ -3653,10 +3653,19 @@ def test_lite_app_catalog_ui_uses_lightweight_action_details():
         assert marker in ui
     for marker in (
         "lite-app-action-details-button",
-        "lite-app-action-details-panel",
-        "lite-catalog-action-details-anchor",
+        "lite-app-action-detail-section",
     ):
         assert marker in css
+    for marker in ("lite-details-overlay-layer", "lite-app-premium-details", "background-image:none !important"):
+        assert marker in premium_css
+    for removed_marker in (
+        "lite-catalog-action-details-anchor",
+        "lite-app-action-details-head",
+        "lite-app-action-details-status",
+        "lite-app-action-details-grid",
+        "lite-app-action-technical-details",
+    ):
+        assert removed_marker not in css
     for removed_marker in (
         "PhotoPrismEvidenceCard",
         "PhotoPrismEvidenceReceiptModal",
@@ -4032,7 +4041,7 @@ def test_lite_app_actions_phase5_unified_contract(monkeypatch):
         assert action["label"]
         assert action["category"] in {"access", "media", "safety", "recovery", "setup", "danger"}
         assert isinstance(action["enabled"], bool)
-        assert action["status"] in {"ready", "queued", "running", "succeeded", "review", "failed", "blocked", "not_ready", "not_supported", "connected", "imported", "installed"}
+        assert action["status"] in {"ready", "unknown", "queued", "running", "succeeded", "review", "failed", "blocked", "not_ready", "not_supported", "connected", "imported", "installed"}
         assert action["summary"]
         assert action["risk"] in {"low", "review", "high", "destructive"}
         assert action["execution_owner"] in {"browser_navigation", "fastapi", "backend_worker"}
@@ -4086,12 +4095,12 @@ def test_lite_app_catalog_phase5_unified_action_ui_source():
         "actionRowStateLabel",
         "AppActionResultCard",
         "AppActionDetailsButton",
-        "AppActionDetailsPanel",
+        "LiteDetailsPanel",
         "AppActionDisabledReason",
         "LiteActionProgress",
         "lite-catalog-action-groups",
         "lite-catalog-manage-sheet",
-        "lite-catalog-summary-panel",
+        "lite-catalog-premium-app-status",
         "Details",
         "No update was applied",
     ):
@@ -4160,13 +4169,9 @@ def test_lite_app_catalog_connect_photos_truthful_connected_state():
         "isPhoneStorageConnected",
         "PhoneStorageConnectedFolders",
         "Connected folders from Phone Storage",
-        "Android shared storage",
-        "Camera photos",
-        "Pictures",
-        "Videos",
-        "Downloads",
-        "Music",
-        "entry.actionId !== 'connect_photos' && detailsActionId === entry.actionId",
+        "storageConnectedFolderLabels",
+        "Folder names are not available in the current storage projection.",
+        "entry.actionId === 'connect_photos' && isPhoneStorageConnected",
         "!isSimpleMediaShortcut ? (",
         "category === 'access') return",
     ):
@@ -4375,8 +4380,10 @@ def test_lite_app_catalog_details_selection_is_action_specific():
     assert "detailsActionId" in ui
     assert "openActionDetails(entry.actionId, app.id)" in ui
     assert "detailsActionId === entry.actionId" in ui
-    assert "lite-catalog-action-details-anchor" in ui
-    assert "AppActionDetailsPanel" in ui
+    assert "LiteDetailsPanel" in ui
+    assert "lite-details-overlay-layer" in ui
+    assert "lite-app-premium-details" in ui
+    assert "lite-catalog-action-details-anchor" not in ui
     assert "Hide details" in ui
     assert "Saved for troubleshooting" in ui
     assert "lite-app-action-details-panel" in css
@@ -4572,7 +4579,7 @@ def test_lite_app_action_details_filters_hidden_placeholder():
     assert "item.toLowerCase() !== 'hidden'" in ui
     assert "No app login was changed." in Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py").read_text()
     assert "No app password was changed." not in Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py").read_text()
-    assert "lite-app-action-details-panel is-" in ui
+    assert "lite-app-premium-details is-${detailsTone}" in ui
 
 
 def test_lite_app_catalog_safe_micro_interaction_source_is_scoped():
@@ -4650,7 +4657,8 @@ def test_lite_app_catalog_flip_shared_continuity_source_is_scoped():
     assert "LiteSharedElementCue" in ui
     assert "data-lite-flip-key" in ui
     assert "card-to-sheet" in ui
-    assert "row-to-details" in ui
+    assert "row-to-details" not in ui
+    assert "card-to-sheet" in ui
     assert "export function useLiteFlipList" in motion
     assert "export function LiteFlipGroup" in motion
     assert "export function LiteSharedElementCue" in motion
@@ -4836,7 +4844,7 @@ def test_lite_tanstack_phase_preserves_app_catalog_safety_markers():
     assert "APP_CATALOG_MANAGE_SHEET_PORTAL_OVERLAY" in catalog
     assert "APP_CATALOG_PRIMARY_ACTIONS_OWN_CLICKS" in catalog
     assert "APP_CATALOG_ACTION_ROWS_OWN_CLICKS" in catalog
-    assert "AppActionDetailsPanel" in catalog
+    assert "LiteDetailsPanel" in catalog
     assert "resolveAppOpenUrl" in catalog
     assert "window.location.assign(target)" in catalog
     assert "LiteSavedStateBanner()" in ui
@@ -4972,7 +4980,7 @@ def test_lite_dexie_phase_preserves_no_browser_action_queue_and_pwa_denylist_sou
     assert "APP_CATALOG_MANAGE_SHEET_PORTAL_OVERLAY" in catalog
     assert "APP_CATALOG_PRIMARY_ACTIONS_OWN_CLICKS" in catalog
     assert "APP_CATALOG_ACTION_ROWS_OWN_CLICKS" in catalog
-    assert "AppActionDetailsPanel" in catalog
+    assert "LiteDetailsPanel" in catalog
     assert "window.location.assign(target)" in catalog
     assert "LiteSavedStateBanner()" in ui
     assert "return null;" in ui
@@ -5077,7 +5085,7 @@ def test_lite_zustand_app_catalog_manage_state_source():
     assert "data-lite-manage-portal=\"true\"" in catalog
     assert "onClick={closeManageSheet}" in catalog
     assert "openActionDetails" in catalog
-    assert "AppActionDetailsPanel" in catalog
+    assert "LiteDetailsPanel" in catalog
     assert "onClickCapture" not in catalog
     assert "browser action queue" not in catalog.lower()
 
@@ -5104,20 +5112,24 @@ def test_lite_app_catalog_safety_details_and_flow_panel_styling_source():
     catalog = _lite_catalog_source()
     hook = Path("src/hooks/useLiteAppActionFlow.js").read_text()
     css = Path("src/index.css").read_text()
+    premium_css = Path("src/lite/catalog/appsPremiumRefinement.css").read_text()
     assert "lite-catalog-flow-panel" not in catalog
     assert "visible: value !== 'idle' || writeBlocked" in hook
     for marker in (
+        ".lite-app-action-detail-section",
+    ):
+        assert marker in css
+    for marker in ("lite-details-overlay-layer", "lite-app-premium-details", "background-image:none !important"):
+        assert marker in premium_css
+    for removed_marker in (
         ".lite-catalog-action-details-anchor",
         ".lite-app-action-details-head",
         ".lite-app-action-details-status",
         ".lite-app-action-details-grid",
-        ".lite-app-action-detail-section",
         ".lite-app-action-technical-details",
-        ".lite-app-action-group.is-safety .lite-catalog-action-details-anchor .lite-app-action-details-panel",
-        ".lite-app-action-group.is-safety .lite-app-action-details-status strong",
-        "rgba(16, 185, 129",
+        ".lite-app-action-group.is-safety .lite-catalog-action-details-anchor",
     ):
-        assert marker in css
+        assert removed_marker not in css
 
 def test_lite_xstate_dependencies_are_declared_source():
     package = json.loads(Path("package.json").read_text())
@@ -5215,10 +5227,10 @@ def test_lite_app_catalog_progress_and_safety_details_followup_source():
     assert "TERMINAL_ACTION_STATES" in progress
     assert "state === \'evidence_saved\' ? 100 : 95" in progress
     assert "troubleshooting records stay backend-only" not in catalog.lower()
-    assert "actionId !== 'check_app' && actionId !== 'repair_app'" in catalog
-    assert 'kind="row-to-details"' in catalog
+    assert "!['check_app', 'repair_app'].includes(actionId)" in catalog
+    assert 'kind="row-to-details"' not in catalog
     assert 'kind="card-to-sheet"' in catalog
-    assert "lite-app-action-group.is-safety .lite-app-action-details-head .lite-shared-element-cue.is-row-to-details" in css
+    assert "lite-shared-element-cue.is-row-to-details" not in css
     assert "lite-catalog-flow-panel" not in css
     assert "Pocket Lab saved the approved PhotoPrism app records." in catalog
     assert "Private backup details stayed hidden." in catalog

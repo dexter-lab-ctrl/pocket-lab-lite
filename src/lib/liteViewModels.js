@@ -338,6 +338,7 @@ function normalizeActionDetails(details = null, fallback = {}) {
 export function isLiteAppActionLive(action = {}) {
   if (!isObject(action)) return false;
   const progress = action.progress || {};
+  if (action.progress_stale || action.stale || progress.progress_stale || progress.stale) return false;
   const values = [
     action.status,
     action.state,
@@ -357,6 +358,7 @@ export function normalizeLiteAppAction(action = {}, actionId = '') {
   if (!isObject(action)) return null;
   const id = safeString(action.id || action.action_id || actionId);
   if (!id) return null;
+  const enabled = action.enabled !== false;
   const normalized = {
     id,
     action_id: id,
@@ -365,9 +367,9 @@ export function normalizeLiteAppAction(action = {}, actionId = '') {
     category: actionCategory(id, action),
     category_label: safeString(action.category_label || ''),
     summary: safeString(action.summary || action.description || ''),
-    enabled: action.enabled !== false,
+    enabled,
     disabled_reason: safeString(action.disabled_reason || action.reason || ''),
-    status: normalizeStatus(action.status || action.state || 'ready'),
+    status: normalizeStatus(action.status || action.state || (enabled ? 'unknown' : 'not_ready')),
     risk: safeString(action.risk || ''),
     confirmation_required: Boolean(action.confirmation_required),
     destructive: Boolean(action.destructive),
@@ -439,19 +441,25 @@ function groupActions(actions = {}) {
 
 function normalizeMediaSummary(media = null) {
   if (!isObject(media)) return null;
+  const lastImport = isObject(media.last_import) ? media.last_import : null;
+  const lastImportProgress = isObject(lastImport?.progress) ? lastImport.progress : null;
   return {
     status: normalizeStatus(media.status || media.state || ''),
     summary: safeString(media.summary || ''),
     operation_running: Boolean(media.operation_running),
+    progress_stale: Boolean(media.progress_stale || media.stale || lastImport?.progress_stale || lastImport?.stale || lastImportProgress?.progress_stale || lastImportProgress?.stale),
     mapping_count: Number(media.mapping_count || 0),
     last_imported_at: media.last_imported_at || null,
-    last_import: isObject(media.last_import)
+    updated_at: media.updated_at || null,
+    last_import: lastImport
       ? {
-        status: normalizeStatus(media.last_import.status || media.last_import.phase || ''),
-        phase: normalizeStatus(media.last_import.phase || media.last_import.status || ''),
-        summary: safeString(media.last_import.summary || ''),
-        completed_at: media.last_import.completed_at || null,
-        progress: normalizeProgress(media.last_import.progress),
+        status: normalizeStatus(lastImport.status || lastImport.phase || ''),
+        phase: normalizeStatus(lastImport.phase || lastImport.status || ''),
+        summary: safeString(lastImport.summary || ''),
+        completed_at: lastImport.completed_at || null,
+        updated_at: lastImport.updated_at || null,
+        progress_stale: Boolean(lastImport.progress_stale || lastImport.stale || lastImportProgress?.progress_stale || lastImportProgress?.stale),
+        progress: normalizeProgress(lastImport.progress),
       }
       : null,
   };
@@ -617,7 +625,7 @@ export function selectCanonicalAppState(app = {}, actionSnapshot = {}) {
   const importStatus = safeString(
     currentOperation.action_id === 'import_photos' ? currentOperation.status : media?.last_import?.status || media?.last_import_status || ''
   ).toLowerCase();
-  const importRunning = Boolean(media.operation_running || ['queued', 'running', 'working', 'in_progress'].includes(importStatus));
+  const importRunning = Boolean(!media.progress_stale && (media.operation_running || ['queued', 'running', 'working', 'in_progress'].includes(importStatus)));
 
   const statusLabel = installationState === 'installed_running' || running
     ? 'Running'
@@ -772,7 +780,7 @@ export function isLiteAppActionsViewLive(payload = {}) {
   const actions = collectActions(payload);
   const actionLive = Object.values(actions).some(isLiteAppActionLive);
   const media = payload.media || {};
-  return Boolean(actionLive || media.operation_running || isLiteAppActionLive(media.last_import || {}));
+  return Boolean(actionLive || (!media.progress_stale && media.operation_running) || isLiteAppActionLive(media.last_import || {}));
 }
 
 export function selectAppManageView({ catalog, appActions, appId = '', recoverySummary = null, securitySummary = null } = {}) {

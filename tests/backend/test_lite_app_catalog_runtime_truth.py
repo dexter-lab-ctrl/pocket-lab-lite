@@ -458,7 +458,7 @@ def test_oversize_action_projection_degrades_to_essential_contract_not_empty():
     assert decoded["actions"]["action_1"]["status"] == "blocked"
 
 
-def test_saved_import_evidence_survives_deadline_degraded_live_media():
+def test_saved_import_evidence_alone_does_not_claim_completed_import():
     from api_fastapi.services import lite_app_actions
 
     merged = lite_app_actions._merge_canonical_media(
@@ -480,9 +480,24 @@ def test_saved_import_evidence_survives_deadline_degraded_live_media():
     actions = {"import_photos": {"enabled": True, "status": "ready"}}
     lite_app_actions._apply_import_photos_truth(actions, merged)
 
-    assert actions["import_photos"]["enabled"] is False
-    assert actions["import_photos"]["status"] == "imported"
-    assert "PhotoPrism will handle new photos" in actions["import_photos"]["disabled_reason"]
+    assert actions["import_photos"]["enabled"] is True
+    assert actions["import_photos"]["status"] == "ready"
+    assert "disabled_reason" not in actions["import_photos"]
+
+
+def test_unlabelled_media_mapping_does_not_claim_phone_storage_connected():
+    from api_fastapi.services import lite_app_actions
+
+    actions = {"connect_photos": {"enabled": True, "status": "unknown"}}
+    lite_app_actions._apply_connect_photos_truth(actions, {
+        "mapping_count": 1,
+        "status": "connected",
+        "labels": [],
+        "mappings": [{"mapping_id": "mapping-1", "source_type": "managed_media"}],
+    })
+
+    assert actions["connect_photos"]["enabled"] is True
+    assert actions["connect_photos"]["status"] == "unknown"
 
 
 def test_live_running_import_overrides_saved_terminal_evidence():

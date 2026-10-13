@@ -86,6 +86,13 @@ export async function waitForLiteScreenToSettle(page: Page, screenId: string, op
   const intervalMs = options.intervalMs ?? 250;
   const screen = page.locator(`[data-lite-screen-id="${screenId}"]`);
   await screen.waitFor({ state: 'visible', timeout: timeoutMs });
+  if (screenId === 'catalog') {
+    // The catalog's opening shell can be visually stable before its prepared
+    // app projection arrives and does not expose aria-busy. Require the
+    // authoritative heading and card before sampling layout stability.
+    await page.getByRole('heading', { name: 'Your Apps', exact: true }).waitFor({ state: 'visible', timeout: timeoutMs });
+    await screen.locator('.lite-catalog-app-card').first().waitFor({ state: 'visible', timeout: timeoutMs });
+  }
   await page.evaluate(async () => {
     if ('fonts' in document) await document.fonts.ready;
   });

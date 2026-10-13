@@ -2,12 +2,10 @@ import React from 'react';
 import { formatLiteTime } from '../../lib/liteApi.js';
 import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
 
-const APP_ACTION_DETAILS_PANEL_SOURCE_MARKER = 'AppActionDetailsPanel';
 const APP_ACTION_DETAILS_USES_PROGRESSIVE_FOUNDATION = true;
 const APP_ACTION_DETAILS_HISTORY_IS_LAZY = true;
 const APP_ACTION_DETAILS_BACKEND_EVIDENCE_BOUNDARY = 'normal App Catalog details do not fetch backend evidence endpoints';
 const APP_ACTION_DETAILS_VISIBLE_SUMMARY_MARKERS = ['Last result', 'Saved for troubleshooting'];
-void APP_ACTION_DETAILS_PANEL_SOURCE_MARKER;
 void APP_ACTION_DETAILS_USES_PROGRESSIVE_FOUNDATION;
 void APP_ACTION_DETAILS_HISTORY_IS_LAZY;
 void APP_ACTION_DETAILS_BACKEND_EVIDENCE_BOUNDARY;
