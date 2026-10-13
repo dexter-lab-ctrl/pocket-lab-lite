@@ -621,6 +621,7 @@ await measurePhase4Interaction({
   settleMs: 420,
 });
 const workspaceDialog = await firstVisible(page.getByRole('dialog', { name: /Workspace details/i }), 'Home Workspace details dialog');
+await workspaceDialog.getByRole('button', { name: 'Diagnostics', exact: true }).click();
 const workspaceTechnicalDetails = workspaceDialog.locator('details').filter({ hasText: 'Technical details' }).first();
 await measureNestedInteraction({
   screen: 'home',
