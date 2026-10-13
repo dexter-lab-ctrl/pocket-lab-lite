@@ -16,7 +16,7 @@ import {
   LiteActionRow,
   LiteOperationalStory,
 } from './LiteUi.jsx';
-import { LiteTechnicalFacts } from './LiteUx.jsx';
+import { LiteFreshness, LiteTechnicalFacts } from './LiteUx.jsx';
 import { LiteDetailsPanel } from './LiteOverlay.jsx';
 import LiteReleaseUpdateCard from './LiteReleaseUpdateCard.jsx';
 import LiteNextSteps from './components/LiteNextSteps.jsx';
@@ -246,6 +246,13 @@ export default function HomeScreen({
     <LiteOperationalStory className="lite-home-operational-story" story={overview.workspaceStory}
       primaryAction={primaryAction}
       manageAction={{ label: 'Workspace details', onClick: () => { setWorkspaceSection('overview'); setWorkspaceDetailsOpen(true); } }} />
+    <LiteFreshness
+      saved={effectiveSavedStateOnly}
+      stale={projectionStale}
+      refreshing={refreshing}
+      lastUpdatedLabel={lastUpdatedLabel}
+      backendReachable={backendReachable}
+    />
     {loading && !overview.services.length ? <LoadingCard label="Checking workspace status…" /> : null}
     {attentionItems.length ? <LiteNextSteps title="Needs your attention"
       description={effectiveSavedStateOnly ? 'Last saved status — verify before acting.' : 'A few things to check.'}
