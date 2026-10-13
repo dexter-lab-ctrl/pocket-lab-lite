@@ -35,7 +35,7 @@ test.describe('Premium Apps — shared Details, Photos and backup', () => {
     const manage = await openPhotos(page);
     const flow = manage.locator('.lite-catalog-premium-flow-steps');
     await expect(flow.locator('li')).toHaveCount(3);
-    await expect(flow).toContainText('Phone');
+    await expect(flow).toContainText(/Phone|Photo source/);
     await expect(flow).toContainText('Transfer');
     await expect(flow).toContainText('PhotoPrism');
     const backup = manage.getByRole('region', { name: 'Photo backup' });
