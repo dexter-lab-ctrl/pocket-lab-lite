@@ -1440,10 +1440,11 @@ function PhotoPrismStoragePreviewSheet({
   );
 }
 
-function PhotoPrismMediaFlowCard({ lifecycle, busyKey = '', onViewDetails }) {
-  const flow = photoPrismMediaFlowState(lifecycle, busyKey);
+function PhotoPrismMediaFlowCard({ lifecycle, busyKey = '', phoneSource = false, onViewDetails }) {
+  const flow = photoPrismMediaFlowState(lifecycle, busyKey, phoneSource);
   const icons = {
     phone: <Smartphone aria-hidden="true" />,
+    source: <FolderOpen aria-hidden="true" />,
     transfer: <RefreshCw aria-hidden="true" />,
     prism: <ImageIcon aria-hidden="true" />,
   };
@@ -1469,7 +1470,7 @@ function PhotoPrismMediaFlowCard({ lifecycle, busyKey = '', onViewDetails }) {
   );
 }
 
-function photoPrismMediaFlowState(lifecycle, busyKey = '') {
+function photoPrismMediaFlowState(lifecycle, busyKey = '', phoneSource = false) {
   const media = lifecycle?.media || {};
   const connected = Number(media.mapping_count ?? lifecycle?.storage?.mapping_count ?? 0) > 0
     || lifecycle?.storage?.status === 'connected';
@@ -1484,7 +1485,7 @@ function photoPrismMediaFlowState(lifecycle, busyKey = '') {
   const transferStatus = executing ? 'Running' : queued || active ? 'Waiting' : completed ? 'Completed' : failed ? 'Needs review' : 'Not running';
   const prismStatus = completed ? 'Updated' : failed ? 'Check readiness' : active ? 'Waiting' : 'Not checked';
   const steps = [
-    { id: 'phone', label: 'Phone', state: connected ? 'done' : 'idle', status: connected ? 'Connected' : 'Not connected' },
+    { id: phoneSource ? 'phone' : 'source', label: phoneSource ? 'Phone' : 'Photo source', state: connected ? 'done' : 'idle', status: connected ? 'Connected' : 'Not connected' },
     { id: 'transfer', label: 'Transfer', state: active ? 'running' : failed ? 'review' : completed ? 'done' : 'idle', status: transferStatus },
     { id: 'prism', label: 'PhotoPrism', state: completed ? 'done' : failed ? 'review' : 'idle', status: prismStatus },
   ];
@@ -1966,7 +1967,7 @@ function PhotoBackupTruthCard({ devices = [], summary = '', saved = false, onGoT
       </div>
       <p className="lite-catalog-premium-backup-destination">Protected WebDAV destination · conceptual path, not live transfer progress</p>
       <dl className="lite-catalog-premium-backup-metrics">
-        <div><dt>Backed up</dt><dd>{count}</dd></div>
+        <div><dt>Latest transfer</dt><dd>{count}</dd></div>
         <div><dt>Last update</dt><dd>{timestamp ? formatLiteTime(timestamp) : 'Not recorded'}</dd></div>
       </dl>
       <p className="lite-catalog-premium-backup-guidance" role={statusTone === 'review' ? 'alert' : 'status'}>{guidance}</p>
@@ -2218,7 +2219,7 @@ function CatalogManagePortal({
         <div className="lite-catalog-manage-scroll" ref={manageScrollRef}>
           {manageBodyReady ? (
             <>
-              {isPhotoPrismApp(app) && activeManageSection === 'media' ? <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} onViewDetails={() => openActionDetails('import_photos', app.id)} /> : null}
+              {isPhotoPrismApp(app) && activeManageSection === 'media' ? <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} phoneSource={storageMappings(app).some(isPhoneStorageMapping)} onViewDetails={() => openActionDetails('import_photos', app.id)} /> : null}
               {isPhotoPrismApp(app) && activeManageSection === 'media' ? (
                 <PhotoBackupTruthCard devices={photoBackupDevices} summary={photoBackupSummary} saved={savedStateOnly} onGoToDevices={() => { closeManageSheet(); useLiteUiStore.getState().setActiveTab('devices'); }} />
               ) : null}
