@@ -24,6 +24,22 @@ from .lite_semantic_bands import POLICY_VERSION, ThresholdPolicy, policy_materia
 PHASE3C_DOMAINS = prepared.PHASE3C_DOMAINS
 _MAX_DEVICES = 128
 _MAX_RECENT = 24
+_ACTIVITY_ACTIVE_FRESHNESS_MS = 30 * 60 * 1000
+_ACTIVITY_HISTORY_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
+_ACTIVITY_GROUP_WINDOW_MS = 60 * 60 * 1000
+_ACTIVITY_FAMILIES = {
+    "restart_agent": ("Device restart", "Device commands encountered problems"),
+    "backup": ("Backup", "Backup operations encountered problems"),
+    "backup_create": ("Backup", "Backup operations encountered problems"),
+    "media.backup.tools.repair": ("Media backup repair", "Media backup repairs encountered problems"),
+    "repair": ("Repair", "Repair operations encountered problems"),
+    "check_app": ("App safety check", "App safety checks encountered problems"),
+}
+_ACTIVITY_DOMAIN_LABELS = {
+    "devices": "Device command", "apps": "App operation",
+    "recovery": "Recovery operation", "security": "Safety check",
+}
+
 _ACTIVE = frozenset({"queued", "published", "received", "accepted", "running", "working", "in_progress"})
 _FAILED = frozenset({"failed", "undeliverable", "timed_out", "error", "blocked"})
 _TERMINAL = frozenset({"succeeded", "failed", "cancelled", "undeliverable", "timed_out", "degraded"})
@@ -481,7 +497,12 @@ _ACTIVITY_CURRENT_SEMANTIC_KEYS = (
     "status",
     "summary",
     "active_operations",
+    "queued_operations",
+    "stale_operations",
+    "counts_available",
     "attention_required",
+    "attention_scope",
+    "running_window_minutes",
     "workflows",
     "policy_mode",
     "item_count",
@@ -489,6 +510,11 @@ _ACTIVITY_CURRENT_SEMANTIC_KEYS = (
 
 _ACTIVITY_HISTORY_SEMANTIC_KEYS = (
     "recent_completed",
+    "historical_failures",
+    "history_window_days",
+    "counts_available",
+    "grouped_events",
+    "last_activity_at_epoch_ms",
     "latest_change",
     "recent_events",
     "workflows",
@@ -515,6 +541,11 @@ def _activity_semantic_material(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _read_activity_rows() -> dict[str, Any]:
+    # This collector runs through the existing prepared-projection scheduler.
+    now_ms = int(time.time() * 1000)
+    active_after = now_ms - _ACTIVITY_ACTIVE_FRESHNESS_MS
+    history_after = now_ms - _ACTIVITY_HISTORY_WINDOW_MS
+
     def read(conn: sqlite3.Connection) -> dict[str, Any]:
         commands = [dict(row) for row in conn.execute(
             "SELECT command_id,entity_type,entity_id,operation_type,status,attention_status,updated_at_epoch_ms "
@@ -557,33 +588,47 @@ def _read_activity_rows() -> dict[str, Any]:
             ).fetchall()]
         else:
             audit = []
-        active_counts = {
-            "devices": int(conn.execute(
-                "SELECT COUNT(*) FROM command_lifecycle WHERE status IN ('queued','published','received','accepted','running')"
-            ).fetchone()[0]),
-            "apps": int(conn.execute(
-                "SELECT COUNT(*) FROM app_action_lifecycle WHERE status IN ('queued','published','received','accepted','running','working','in_progress')"
-            ).fetchone()[0]),
-            "recovery": int(conn.execute(
-                "SELECT COUNT(*) FROM recovery_operations WHERE status IN ('queued','published','received','accepted','running','working','in_progress')"
-            ).fetchone()[0]),
-            "security": int(conn.execute(
-                "SELECT COUNT(*) FROM security_scan_runs WHERE status IN ('accepted','running')"
-            ).fetchone()[0]),
+        tables = {
+            "devices": "command_lifecycle", "apps": "app_action_lifecycle",
+            "recovery": "recovery_operations", "security": "security_scan_runs",
         }
+        running_states = {
+            "devices": ("running",), "apps": ("running", "working", "in_progress"),
+            "recovery": ("running", "working", "in_progress"), "security": ("running",),
+        }
+        waiting_states = {
+            "devices": ("queued", "published", "received", "accepted"),
+            "apps": ("queued", "published", "received", "accepted"),
+            "recovery": ("queued", "published", "received", "accepted"),
+            "security": ("accepted",),
+        }
+        running_counts, queued_counts, stale_counts = {}, {}, {}
+        completed_counts, historical_failures = {}, {}
+        terminal = ("succeeded", "completed")
+        failures = ("failed", "undeliverable", "timed_out", "error", "blocked")
+        for domain, table in tables.items():
+            timestamp_col = "COALESCE(updated_at_epoch_ms,requested_at_epoch_ms)" if domain == "security" else "updated_at_epoch_ms"
+            for target, states, comparison, cutoff in (
+                (running_counts, running_states[domain], ">=", active_after),
+                (queued_counts, waiting_states[domain], ">=", active_after),
+                (stale_counts, running_states[domain] + waiting_states[domain], "<", active_after),
+                (completed_counts, terminal, ">=", history_after),
+                (historical_failures, failures, ">=", history_after),
+            ):
+                placeholders = ",".join("?" for _ in states)
+                target[domain] = int(conn.execute(
+                    f"SELECT COUNT(*) FROM {table} WHERE status IN ({placeholders}) AND {timestamp_col} {comparison} ?",
+                    (*states, cutoff),
+                ).fetchone()[0])
+        # A failed historical action is NOT an unresolved current issue.
+        # Only the existing authoritative command attention_status explicitly
+        # records active unresolved attention. Other domains have no equivalent.
         attention_counts = {
             "devices": int(conn.execute(
-                "SELECT COUNT(*) FROM command_lifecycle WHERE status IN ('failed','undeliverable','timed_out','error','blocked') AND attention_status='active'"
+                "SELECT COUNT(*) FROM command_lifecycle WHERE status IN "
+                "('failed','undeliverable','timed_out','error','blocked') AND attention_status='active'"
             ).fetchone()[0]),
-            "apps": int(conn.execute(
-                "SELECT COUNT(*) FROM app_action_lifecycle WHERE status IN ('failed','undeliverable','timed_out','error','blocked')"
-            ).fetchone()[0]),
-            "recovery": int(conn.execute(
-                "SELECT COUNT(*) FROM recovery_operations WHERE status IN ('failed','undeliverable','timed_out','error','blocked')"
-            ).fetchone()[0]),
-            "security": int(conn.execute(
-                "SELECT COUNT(*) FROM security_scan_runs WHERE status IN ('failed','timed_out','error')"
-            ).fetchone()[0]),
+            "apps": 0, "recovery": 0, "security": 0,
         }
         return {
             "commands": commands,
@@ -591,8 +636,13 @@ def _read_activity_rows() -> dict[str, Any]:
             "recovery": recovery,
             "security": security,
             "audit": audit,
-            "active_counts": active_counts,
+            "active_counts": running_counts,
+            "queued_counts": queued_counts,
+            "stale_counts": stale_counts,
+            "completed_counts": completed_counts,
+            "historical_failures": historical_failures,
             "attention_counts": attention_counts,
+            "counts_available": True,
         }
 
     try:
@@ -605,7 +655,12 @@ def _read_activity_rows() -> dict[str, Any]:
             "security": [],
             "audit": [],
             "active_counts": {},
+            "queued_counts": {},
+            "stale_counts": {},
+            "completed_counts": {},
+            "historical_failures": {},
             "attention_counts": {},
+            "counts_available": False,
         }
 
 
@@ -622,22 +677,32 @@ def collect_activity_current() -> dict[str, Any]:
     started = time.monotonic()
     rows = _read_activity_rows()
     active_count = 0
+    queued_count = 0
+    stale_count = 0
     attention_count = 0
     workflows: dict[str, dict[str, Any]] = {}
     for domain in ("devices", "apps", "recovery", "security"):
         active = max(0, int((rows.get("active_counts") or {}).get(domain) or 0))
         attention = max(0, int((rows.get("attention_counts") or {}).get(domain) or 0))
+        queued = max(0, int((rows.get("queued_counts") or {}).get(domain) or 0))
+        stale = max(0, int((rows.get("stale_counts") or {}).get(domain) or 0))
         active_count += active
+        queued_count += queued
+        stale_count += stale
         attention_count += attention
         workflows[domain] = {
             "status": "attention" if attention else "active" if active else "idle",
             "active": active,
+            "queued": queued,
+            "stale": stale,
             "attention": attention,
-            "actionable": bool(active or attention),
+            "actionable": bool(attention),
         }
-    status = "attention" if attention_count else "active" if active_count else "healthy"
+    status = "unavailable" if not rows.get("counts_available") else "attention" if attention_count else "active" if active_count else "healthy"
     summary = (
-        "Action needs attention."
+        "Activity information could not be loaded."
+        if not rows.get("counts_available")
+        else "Device commands need review."
         if attention_count
         else "Something is running."
         if active_count
@@ -647,7 +712,12 @@ def collect_activity_current() -> dict[str, Any]:
         "status": status,
         "summary": summary,
         "active_operations": active_count,
+        "queued_operations": queued_count,
+        "stale_operations": stale_count,
+        "counts_available": bool(rows.get("counts_available")),
         "attention_required": attention_count,
+        "attention_scope": "explicit_active_flags_only",
+        "running_window_minutes": 30,
         "workflows": workflows,
         "policy_mode": "lite_personal",
         "item_count": len(workflows),
@@ -666,38 +736,78 @@ def collect_activity_history() -> dict[str, Any]:
     rows = _read_activity_rows()
     domain_rows = _activity_domain_rows(rows)
     completed_count = 0
+    failure_count = 0
     workflows: dict[str, dict[str, Any]] = {}
     latest_candidates: list[dict[str, Any]] = []
     for domain, items in domain_rows.items():
         statuses = Counter(_safe_status(item.get("status")) for item in items)
-        completed = sum(statuses.get(name, 0) for name in _TERMINAL)
+        completed = int((rows.get("completed_counts") or {}).get(domain) or 0)
         completed_count += completed
+        failure_count += int((rows.get("historical_failures") or {}).get(domain) or 0)
         latest = items[0] if items else {}
         workflows[domain] = {
             "recent_completed": completed,
             "latest_status": _safe_status(latest.get("status")),
-            "latest_summary": prepared._safe_text(
-                latest.get("operation_type")
-                or latest.get("action_id")
-                or latest.get("profile"),
-                160,
-            ),
+            "latest_summary": _ACTIVITY_FAMILIES.get(
+                str(latest.get("operation_type") or latest.get("action_id") or latest.get("profile") or ""),
+                (_ACTIVITY_DOMAIN_LABELS[domain], ""),
+            )[0],
         }
-        if latest:
+        if latest and int(latest.get("updated_at_epoch_ms") or 0) >= int(time.time() * 1000) - _ACTIVITY_HISTORY_WINDOW_MS:
             latest_candidates.append({
                 "domain": domain,
                 "status": _safe_status(latest.get("status")),
                 "summary": workflows[domain]["latest_summary"],
                 "order": int(latest.get("updated_at_epoch_ms") or 0),
             })
-    # Bounded, sanitized timeline: no IDs, paths, credentials, raw evidence or user text.
-    recent_events = sorted((
-        {"domain": domain, "status": _safe_status(item.get("status")),
-         "occurred_at_epoch_ms": max(0, int(item.get("updated_at_epoch_ms") or 0))}
-        for domain, items in domain_rows.items()
-        for item in items
-        if int(item.get("updated_at_epoch_ms") or 0) > 0
-    ), key=lambda event: (-event["occurred_at_epoch_ms"], event["domain"]))[:12]
+    # Public timeline is allow-listed; internal operation IDs and entity IDs
+    # are used transiently only for reliable clustering, never serialized.
+    samples: list[dict[str, Any]] = []
+    for domain, items in domain_rows.items():
+        for item in items:
+            timestamp = int(item.get("updated_at_epoch_ms") or 0)
+            if timestamp < int(time.time() * 1000) - _ACTIVITY_HISTORY_WINDOW_MS:
+                continue
+            kind = str(item.get("operation_type") or item.get("action_id") or item.get("profile") or "")
+            family = kind if kind in _ACTIVITY_FAMILIES else ""
+            label = _ACTIVITY_FAMILIES[family][0] if family else _ACTIVITY_DOMAIN_LABELS[domain]
+            samples.append({
+                "domain": domain,
+                "status": _safe_status(item.get("status")),
+                "occurred_at_epoch_ms": timestamp,
+                "label": label,
+                "needs_attention": bool(
+                    domain == "devices" and item.get("attention_status") == "active"
+                    and _safe_status(item.get("status")) in _FAILED
+                ),
+                "is_fresh_running": bool(
+                    _safe_status(item.get("status")) in {"running", "working", "in_progress"}
+                    and timestamp >= int(time.time() * 1000) - _ACTIVITY_ACTIVE_FRESHNESS_MS
+                ),
+                "_family": family,
+                "_entity": str(item.get("entity_id") or item.get("app_id") or item.get("operation_type") or item.get("profile") or ""),
+            })
+    samples.sort(key=lambda item: (-item["occurred_at_epoch_ms"], item["domain"]))
+    recent_events = [
+        {key: value for key, value in item.items() if not key.startswith("_")}
+        for item in samples[:12]
+    ]
+    clusters: dict[tuple[str, str, str, int], list[dict[str, Any]]] = {}
+    for event in samples:
+        if event["status"] not in _FAILED or not event["_family"] or not event["_entity"]:
+            continue
+        window = event["occurred_at_epoch_ms"] // _ACTIVITY_GROUP_WINDOW_MS
+        clusters.setdefault((event["domain"], event["_family"], event["_entity"], window), []).append(event)
+    grouped_events = [
+        {
+            "domain": key[0],
+            "label": _ACTIVITY_FAMILIES[key[1]][1],
+            "count": len(members),
+            "occurred_at_epoch_ms": max(item["occurred_at_epoch_ms"] for item in members),
+            "status": "historical",
+        }
+        for key, members in clusters.items() if len(members) > 1
+    ][:8]
     latest_change = (
         max(latest_candidates, key=lambda item: (item["order"], item["domain"]))
         if latest_candidates
@@ -707,6 +817,11 @@ def collect_activity_history() -> dict[str, Any]:
         "status": "available",
         "summary": "Recent activity is available." if latest_change else "No recent activity.",
         "recent_completed": completed_count,
+        "historical_failures": failure_count,
+        "history_window_days": 7,
+        "counts_available": bool(rows.get("counts_available")),
+        "grouped_events": grouped_events,
+        "last_activity_at_epoch_ms": samples[0]["occurred_at_epoch_ms"] if samples else None,
         "recent_events": recent_events,
         "latest_change": (
             {key: value for key, value in latest_change.items() if key != "order"}
@@ -754,8 +869,17 @@ def compose_activity_summary(
         "status": current.get("status") or "unknown",
         "summary": current.get("summary") or "Activity state is not available.",
         "active_operations": int(current.get("active_operations") or 0),
+        "queued_operations": int(current.get("queued_operations") or 0),
+        "stale_operations": int(current.get("stale_operations") or 0),
         "attention_required": int(current.get("attention_required") or 0),
+        "attention_scope": current.get("attention_scope") or "unknown",
+        "running_window_minutes": int(current.get("running_window_minutes") or 30),
         "recent_completed": int(history.get("recent_completed") or 0),
+        "historical_failures": int(history.get("historical_failures") or 0),
+        "history_window_days": int(history.get("history_window_days") or 7),
+        "counts_available": bool(current.get("counts_available") and history.get("counts_available")),
+        "grouped_events": list(history.get("grouped_events") or [])[:8],
+        "last_activity_at_epoch_ms": history.get("last_activity_at_epoch_ms"),
         "latest_change": history.get("latest_change"),
         "recent_events": list(history.get("recent_events") or [])[:12],
         "workflows": workflows,

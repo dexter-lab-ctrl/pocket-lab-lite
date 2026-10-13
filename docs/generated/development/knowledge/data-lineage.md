@@ -24,6 +24,7 @@ Verified relationships are generated from frontend API usage, parity field mappi
 | `GET /api/lite/fleet` | ui:litedevices, ui:literulesenterprise | table:device_awareness_state, table:device_enrollment_registry, table:device_health_attention, table:device_health_current, table:device_health_transitions, table:device_heartbeats, table:device_identity_guards, table:device_invite_lifecycle, table:device_lifecycle_events, table:device_lifecycle_transactions, table:device_recovery_history, table:device_removal_receipts, table:device_role_assignments, table:device_role_change_operations, table:device_supervisor_state, table:device_system_profiles | contract-derived |
 | `GET /api/lite/fleet/devices/{node_id}/restart-agent/status` | ui:litedevices | — | unvalidated |
 | `GET /api/lite/home/activity-cursor` | ui:litehome | — | unvalidated |
+| `GET /api/lite/home/activity-history` | ui:litehome | — | unvalidated |
 | `GET /api/lite/identity/owner-claim/status` | ui:liteidentity | — | unvalidated |
 | `GET /api/lite/policy` | ui:literules | — | unvalidated |
 | `GET /api/lite/recovery/apps` | ui:literecovery | — | unvalidated |

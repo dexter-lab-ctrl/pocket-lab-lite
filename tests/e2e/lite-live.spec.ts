@@ -300,6 +300,7 @@ test.describe('Pocket Lab Lite live read-only smoke', () => {
         const releasePayload = await releaseResponse.json();
         await home.getByRole('button', { name: 'Workspace details' }).click();
         const sheet = page.getByRole('dialog', { name: 'Workspace details' });
+        await sheet.getByRole('button', { name: 'Updates', exact: true }).click();
         const card = sheet.locator('[data-lite-release-native="true"]');
         await expect(card).toBeVisible();
         await expect(card).not.toContainText('Update failed');

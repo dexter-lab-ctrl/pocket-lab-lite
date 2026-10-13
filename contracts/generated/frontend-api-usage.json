@@ -205,6 +205,20 @@
         ],
         "method": "GET",
         "mocked": false,
+        "owner": "liteApi.homeActivityHistory",
+        "resolved": true,
+        "route": "/api/lite/home/activity-history",
+        "source_module": "src/lite/LiteHome.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteHome.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
         "owner": "liteApi.activitySummary",
         "resolved": true,
         "route": "/api/lite/system/activity-summary",
@@ -1862,6 +1876,19 @@
         "mocked": true,
         "owner": "MSW handler",
         "resolved": true,
+        "route": "/api/lite/home/activity-history",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
         "route": "/api/lite/identity",
         "source_module": "src/mocks/handlers.js",
         "usage": "mock"
@@ -3426,7 +3453,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "1d14f47d0fc66aa070a683bd1fe8471c0a791820929d92384bb45ba17063a87a",
+    "aggregate_fingerprint": "c9e9d9e65e4cb5a2b889d07978acaaef07c52f38c2e62a791fad6b408a49a97c",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3436,11 +3463,11 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "f7a353f013d30e7a0d5d98bd8682218cca973992abe03408c29a19078b4cc5d0",
+      "contracts/generated/lite-openapi.json": "21b10835554b759b2cc77c3a7b98b135519d45b2efbf24701020701ff1b071be",
       "contracts/metadata/documentation-platform.json": "50a2ba3bf86579e0e816cfe8da1a9ca12ba8eaab777d10d38941d142e1c219ce",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a",
-      "src/lib/liteApi.js": "cb2791dcadd595ead26ff8a263bb87acefd49684dfa74796783940340027e4b7",
+      "src/lib/liteApi.js": "65d4ed32b364a9a8c2d755dde49824b7582ae6cad2e8db111ea209309973e6af",
       "src/lite/LiteActionProgress.jsx": "880d1bf891c3f76ef42e4565c01b0d2a39a9660a6f2d0ac9f909f0fce458f5a5",
       "src/lite/LiteApp.jsx": "049db027fbb01321feb725128346e91a5fad123a0bf05a316a165509a0cf4295",
       "src/lite/LiteCatalog.jsx": "8e58b8d66a504532ae3a8f97a63b4cb5b058e172f11c167bb11c2484e02e4902",
@@ -3449,16 +3476,16 @@
       "src/lite/LiteDevices.jsx": "1c065eab8fac3c5be3bdf160bd6013ba9b642551886c066e55f26a8077174582",
       "src/lite/LiteDevices.stories.jsx": "a7a5332db1f1b64a1da6beedbd30891ac3ad83c123dadb749ee909e8d5236d33",
       "src/lite/LiteHelp.jsx": "06af915a9e7f9781ac852804a5d7ab40f5a061c12c8b80b3c888b11b94167a4c",
-      "src/lite/LiteHome.jsx": "6953a82552dfdf20f116c90dda00964f930bd2ae18744f76925eceef2f15f821",
+      "src/lite/LiteHome.jsx": "79bd989e054a414e52746a8e96b0f2886a8c9bbc2174d7c20d2dfa07f397c762",
       "src/lite/LiteHome.stories.jsx": "8a8cd6bcf833ad98d7140a1e7b6a82bb93419a848fb139d16037418ac61f8966",
       "src/lite/LiteHome.test.jsx": "e6237afada9b4dc68ed0abc9b115c63ca3daf41984ee4526d2cc720b5b5b388c",
-      "src/lite/LiteHomeScreen.test.jsx": "12909fa1d69a8204db15c300032de1a7562b663b93f7993ce0ea5d97d428026d",
+      "src/lite/LiteHomeScreen.test.jsx": "3a4f598b0a6c050c8f34f8160b34aeeaba5ae72a761542928554294deee8ef3d",
       "src/lite/LiteIdentity.jsx": "4f98c1ce8167b3b1d20d6865a6d0859ce6b1f4170cba7f5ed19c0401ccd91b83",
       "src/lite/LiteIdentity.stories.jsx": "e50a10161b3e12eca92c19100bfb076531a0e772595b23c30f5ea8d3d9880fc0",
       "src/lite/LiteIdentityEnterprise.jsx": "3b453b7b8d8ec90a07ed26bc3e89ea920855ea2284f216002088f7eb146e037b",
       "src/lite/LiteMotion.jsx": "cc27a120e0e2ddcc986bb137776d1e2a586df7bee3569f4662e513b571d43b45",
       "src/lite/LiteNativeInstallSurface.jsx": "27366c82bfe0a8e99ddfc87f62fb9960f72d8a50eb48f5dbb2c89a94a1fcae61",
-      "src/lite/LiteOverlay.jsx": "f42b87e3ffd859a399d53a1fcd9ac3c82dbd2715b6690dbcc63dba2e7710d277",
+      "src/lite/LiteOverlay.jsx": "d383a7f603f17f9ce40282ef902255413a4acd2ae03dd23ff938ae821da6e01a",
       "src/lite/LiteP2.stories.jsx": "f66e0f95c35fb98e41958542676821d9dfd89331e5ebfc3ba7de6a575ea47577",
       "src/lite/LiteP3.stories.jsx": "f6d4a3d8e0e3a6f2b97e3462098fc84c9f99ddbaddeae5844c1ed9eb0926005e",
       "src/lite/LitePrimitives.stories.jsx": "c4b0683344593c453a08ef2c79967c7b52b0d6fda1320dd6f8091452ad714751",
@@ -3479,7 +3506,7 @@
       "src/lite/LiteUi.test.jsx": "d09ad1e06cf21773a1d8ed93dc8071ef7516d872ebd3e3f44eafed0644ee8c50",
       "src/lite/LiteUx.jsx": "86028142a9f9b74b7defd17dbfc25eda92cb6f41acf79e5a9a7bc7bcff79c674",
       "src/lite/LiteUx.stories.jsx": "a45605c9460b371143058035f733beab232d1374d4fa4eb77a9c4b3704843e5f",
-      "src/mocks/handlers.js": "b7ab49b73734eda6ae5abf89b71c287ebcbb973b0b3b0c92ad1313ea8d2ed578"
+      "src/mocks/handlers.js": "62372f1d06d1d70e2e2cdfa46faa2e8c19edd1ab5290bdc3f093c519a19a6269"
     },
     "validation_state": "generated"
   }

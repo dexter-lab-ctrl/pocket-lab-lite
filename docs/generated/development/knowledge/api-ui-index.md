@@ -92,6 +92,7 @@ generator_version: 3
 | `GET /api/lite/harness/session/{session_id}` | harness | — | session_status_api_lite_harness_session__session_id__get | contract-derived |
 | `GET /api/lite/harness/status` | harness | — | status_api_lite_harness_status_get | contract-derived |
 | `GET /api/lite/home/activity-cursor` | home | LiteHome | get_lite_home_activity_cursor_api_lite_home_activity_cursor_get | contract-derived |
+| `GET /api/lite/home/activity-history` | home | LiteHome | get_lite_home_activity_history_api_lite_home_activity_history_get | contract-derived |
 | `GET /api/lite/identity` | identity | — | get_lite_identity_api_lite_identity_get | contract-derived |
 | `GET /api/lite/identity/owner-claim/status` | identity | LiteIdentity | owner_claim_status_api_lite_identity_owner_claim_status_get | contract-derived |
 | `GET /api/lite/media-backup` | media-backup | — | lite_photo_backup_fleet_status_api_lite_media_backup_get | contract-derived |
@@ -259,7 +260,7 @@ generator_version: 3
 | --- | --- |
 | LiteApp | GET /api/lite/apps/{app_id}/actions, GET /api/lite/catalog |
 | LiteDevices | GET /api/lite/devices/{device_id}/removal-assessment, GET /api/lite/fleet, GET /api/lite/fleet/devices/{node_id}/restart-agent/status, POST /api/lite/fleet/add-device, POST /api/lite/fleet/devices/{node_id}/restart-agent, POST /api/lite/fleet/remove-device |
-| LiteHome | GET /api/lite/home/activity-cursor, GET /api/lite/system/activity-summary, POST /api/lite/home/activity-cursor/review |
+| LiteHome | GET /api/lite/home/activity-cursor, GET /api/lite/home/activity-history, GET /api/lite/system/activity-summary, POST /api/lite/home/activity-cursor/review |
 | LiteIdentity | GET /api/lite/identity/owner-claim/status, POST /api/lite/identity/login, POST /api/lite/identity/logout, POST /api/lite/identity/owner-claim/consume, POST /api/lite/identity/owner-claim/passkey/options, POST /api/lite/identity/owner-claim/passkey/verify, POST /api/lite/identity/passkeys/registration/options, POST /api/lite/identity/passkeys/registration/verify, POST /api/lite/identity/password, POST /api/lite/identity/recover, POST /api/lite/identity/recovery/regenerate, POST /api/lite/identity/sessions/revoke-others, POST /api/lite/identity/setup, POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify, PUT /api/lite/identity/passkeys/{credential_id} |
 | LiteIdentityEnterprise | POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify |
 | LiteRecovery | GET /api/lite/recovery/apps, GET /api/lite/recovery/backups, GET /api/lite/recovery/database, GET /api/lite/recovery/details, GET /api/lite/recovery/locations, GET /api/lite/recovery/summary, POST /api/lite/apps/{app_id}/backup, POST /api/lite/recovery/backup, POST /api/lite/recovery/backups/{backup_id}/verify, POST /api/lite/recovery/database/backup, POST /api/lite/recovery/database/backups/{backup_id}/preview, POST /api/lite/recovery/database/backups/{backup_id}/restore, POST /api/lite/recovery/database/backups/{backup_id}/verify, POST /api/lite/recovery/locations/discover, POST /api/lite/recovery/locations/forget, POST /api/lite/recovery/locations/select, POST /api/lite/recovery/restore, POST /api/lite/recovery/restore/preview |

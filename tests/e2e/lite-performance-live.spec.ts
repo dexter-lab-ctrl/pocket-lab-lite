@@ -140,6 +140,7 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
       await page.getByRole('button', { name: 'Workspace details' }).click();
       const sheet = page.getByRole('dialog', { name: /Workspace details/i });
       await expect(sheet).toBeVisible();
+      await sheet.getByRole('button', { name: 'Diagnostics', exact: true }).click();
       const disclosure = sheet.locator('details').filter({ hasText: 'Technical details' }).first();
       await expect(disclosure).toBeVisible();
 

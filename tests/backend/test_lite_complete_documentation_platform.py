@@ -201,6 +201,7 @@ def test_generated_artifacts_exclude_absolute_paths_and_secret_values():
     forbidden_paths = re.compile(r"(?<![A-Za-z0-9._/-])(?:/home/[A-Za-z0-9._-]+|/data/data/[^/]+/|/mnt/[A-Za-z]/|(?<![A-Za-z])[A-Za-z]:[\\/])")
     portable_home_routes = re.compile(
         r"(?<![A-Za-z0-9._/-])/home/(?:activity-cursor(?:/review)?|"
+        r"activity-history|"
         r"(?:api-unavailable|healthy|offline-saved|release-available|release-current|"
         r"release-failed|review-recommended)\.json)(?=$|[\s\"'`<>,)}])"
     )

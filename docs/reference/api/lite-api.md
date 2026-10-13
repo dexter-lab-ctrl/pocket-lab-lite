@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 0ed20f92fb3be6d72ff1ff0c61f98a05ac203fe5dbb6ae0979973d1531b275b6
+source_fingerprint: 15153f73f01b004d4d65c89ca969da3a100ec4688b1965a21ea94183cd03948a
 schema_revision: 1
 validation_status: generated
 ---
@@ -2975,6 +2975,21 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
 | 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-home-activity-history"></a>
+## GET `/api/lite/home/activity-history`
+
+- Operation ID: `get_lite_home_activity_history_api_lite_home_activity_history_get`
+- Summary: Get Lite Home Activity History
+- Deprecated: no
+- Tags: `lite`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-identity"></a>

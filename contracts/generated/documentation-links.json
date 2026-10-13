@@ -357,6 +357,10 @@
         "title": "GET /api/lite/home/activity-cursor",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-home-activity-cursor"
       },
+      "endpoint:GET:/api/lite/home/activity-history": {
+        "title": "GET /api/lite/home/activity-history",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-home-activity-history"
+      },
       "endpoint:GET:/api/lite/identity": {
         "title": "GET /api/lite/identity",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-identity"
@@ -3463,7 +3467,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "6efee2fa07a73aac4e16298ae13e18ca4ab171ab309091a57139b032a9cb60cf",
+    "aggregate_fingerprint": "3a5b9b38bb615ba12afe79f928548eaf31e35874dd8e62b6bc23cb126daa87ec",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3473,7 +3477,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "f7a353f013d30e7a0d5d98bd8682218cca973992abe03408c29a19078b4cc5d0",
+      "contracts/generated/lite-openapi.json": "21b10835554b759b2cc77c3a7b98b135519d45b2efbf24701020701ff1b071be",
       "contracts/metadata/documentation-platform.json": "50a2ba3bf86579e0e816cfe8da1a9ca12ba8eaab777d10d38941d142e1c219ce",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",

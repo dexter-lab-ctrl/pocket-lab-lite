@@ -209,6 +209,20 @@ def test_android_qualifier_uses_a_fresh_candidate_target_and_bounded_foreground_
     assert "bounded retries" in source
 
 
+def test_android_qualifier_selects_home_diagnostics_before_technical_details():
+    source = Path("scripts/dev/lite/qualify-ui-performance-android-cdp.mjs").read_text(encoding="utf-8")
+    diagnostics = source.index("workspaceDialog.getByRole('button', { name: 'Diagnostics', exact: true }).click();")
+    technical_details = source.index("const workspaceTechnicalDetails", diagnostics)
+    assert diagnostics < technical_details
+
+
+def test_android_qualifier_uses_the_current_in_control_refresh_progress_surface():
+    source = Path("scripts/dev/lite/qualify-ui-performance-android-cdp.mjs").read_text(encoding="utf-8")
+    assert ".lite-refresh-progress-ring" in source
+    assert "POCKETLAB_ANDROID_CDP_DELAY_NEXT_STATUS" in source
+    assert ".lite-refresh-status-popover" not in source
+
+
 def test_candidate_ui_mode_supports_live_and_android_cdp_and_uses_checked_in_candidate_server():
     runner = _load_runner()
     source = Path("scripts/dev/lite/run-ui-performance-qualified.py").read_text(encoding="utf-8")

@@ -1585,6 +1585,31 @@ def _home_activity_history_revision() -> int:
     return max(0, int(history.get("projection_revision") or 0))
 
 
+@router.get("/home/activity-history")
+def get_lite_home_activity_history(request: Request) -> Response:
+    """Read only the existing bounded and sanitized prepared history snapshot."""
+    deps.require_auth(request)
+    history = lite_phase3c_projections.snapshot("system.activity_history")
+    if not isinstance(history, dict):
+        return JSONResponse(
+            content={"history_available": False, "counts_available": False},
+            status_code=503,
+            headers={"Cache-Control": "private, no-store"},
+        )
+    visible = {
+        key: history.get(key)
+        for key in (
+            "summary", "recent_completed", "historical_failures",
+            "history_window_days", "counts_available", "grouped_events",
+            "last_activity_at_epoch_ms", "recent_events", "latest_change",
+        )
+    }
+    visible["history_available"] = True
+    visible["projection_only"] = True
+    visible["sanitized"] = True
+    return JSONResponse(content=visible, headers={"Cache-Control": "private, no-store"})
+
+
 @router.get("/home/activity-cursor")
 def get_lite_home_activity_cursor(request: Request) -> Response:
     human_id = _home_activity_human(request)

@@ -1122,9 +1122,17 @@ export const handlers = [
     return HttpResponse.json({
       status: savedScenario ? 'degraded' : 'healthy',
       summary: savedScenario ? 'Saved activity information is available while the workspace reconnects.' : 'Recent workspace activity is prepared for review.',
-      active_operations: 0,
-      attention_required: 0,
-      recent_completed: 1,
+      active_operations: savedScenario ? null : 0,
+      queued_operations: savedScenario ? null : 0,
+      stale_operations: savedScenario ? null : 0,
+      attention_required: savedScenario ? null : 0,
+      recent_completed: savedScenario ? null : 1,
+      historical_failures: savedScenario ? null : 0,
+      counts_available: !savedScenario,
+      attention_scope: 'explicit_active_flags_only',
+      running_window_minutes: 30,
+      history_window_days: 7,
+      last_activity_at_epoch_ms: savedScenario ? null : Date.parse(mockIso(-5 * 60 * 1000)),
       latest_change: { summary: 'Workspace activity projection is current.' },
       recent_events: savedScenario ? [] : [{ domain: 'apps', status: 'completed', occurred_at_epoch_ms: Date.parse(mockIso(-5 * 60 * 1000)) }],
       history_available: true,
@@ -1135,6 +1143,35 @@ export const handlers = [
       projection_revision: 1,
       updated_at: mockIso(),
     }, { headers: liteSafeReadHeaders(request) });
+  }),
+  http.get('/api/lite/home/activity-history', ({ request }) => {
+    const savedScenario = scenario() === 'nats-down';
+    const occurredAt = Date.parse(mockIso(-5 * 60 * 1000));
+    return HttpResponse.json({
+      summary: savedScenario ? 'Saved activity information is available while the workspace reconnects.' : 'Recent workspace activity is prepared for review.',
+      recent_completed: 1,
+      historical_failures: 0,
+      history_window_days: 7,
+      counts_available: !savedScenario,
+      grouped_events: [],
+      last_activity_at_epoch_ms: savedScenario ? null : occurredAt,
+      recent_events: savedScenario ? [] : [{
+        domain: 'apps', status: 'completed', occurred_at_epoch_ms: occurredAt,
+        label: 'App safety check', needs_attention: false, is_fresh_running: false,
+      }],
+      latest_change: savedScenario ? null : {
+        domain: 'apps', status: 'completed', summary: 'App safety check',
+      },
+      history_available: true,
+      read_degraded: savedScenario,
+      projection_only: true,
+      sanitized: true,
+      source_revision: 1,
+      projection_revision: 1,
+      updated_at: mockIso(),
+    }, {
+      headers: { ...liteSafeReadHeaders(request), 'Cache-Control': 'private, no-store' },
+    });
   }),
   http.get('/api/lite/home/activity-cursor', () => HttpResponse.json({
     history_revision: 1,

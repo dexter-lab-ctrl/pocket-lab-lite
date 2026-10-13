@@ -95,11 +95,11 @@ const SERVICE_PRESENTATION = Object.freeze({
     danger: 'Workspace storage needs attention.',
   },
   database: {
-    label: 'Pocket Lab data',
+    label: 'System data',
     screen: 'recovery',
-    ready: 'Pocket Lab data services are available.',
-    review: 'Pocket Lab data services are being checked.',
-    danger: 'Pocket Lab data services need attention.',
+    ready: 'System data services are available.',
+    review: 'System data services are being checked.',
+    danger: 'System data services need attention.',
   },
 });
 
@@ -443,8 +443,8 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
         };
 
   const databaseResource = hasProjection(sqliteHealth)
-    ? semanticResourceMetric({ key: 'database', label: 'Pocket Lab data', status: sqliteHealth.status, summary: sqliteHealth.summary, screen: 'recovery' })
-    : semanticResourceMetric({ key: 'database', label: 'Pocket Lab data', status: 'unknown', summary: 'Database health has not been reported yet.', screen: 'recovery' });
+    ? semanticResourceMetric({ key: 'database', label: 'System data', status: sqliteHealth.status, summary: sqliteHealth.summary, screen: 'recovery' })
+    : semanticResourceMetric({ key: 'database', label: 'System data', status: 'unknown', summary: 'Database health has not been reported yet.', screen: 'recovery' });
 
   const activityResource = hasProjection(activitySummary)
     ? semanticResourceMetric({ key: 'activity', label: 'Recent activity', status: activitySummary.status, summary: activitySummary.summary, screen: 'home' })

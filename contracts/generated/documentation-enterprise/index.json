@@ -7661,6 +7661,29 @@
         "affects_release": false,
         "affects_runtime": true,
         "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_ANDROID_CDP_DELAY_NEXT_STATUS",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "tests/backend/test_lite_ui_performance_runner.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
         "name": "POCKETLAB_ANDROID_CDP_LOCAL_PORT",
         "owner": "repository tooling",
         "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -31888,7 +31911,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4845",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4870",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1664"
         ],
         "tests": [],
@@ -31926,7 +31949,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4428",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4453",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1665"
         ],
         "tests": [],
@@ -31964,7 +31987,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4458",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4483",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1667"
         ],
         "tests": [],
@@ -32002,7 +32025,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4441",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4466",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1666"
         ],
         "tests": [],
@@ -32040,7 +32063,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4932",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4957",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1677"
         ],
         "tests": [],
@@ -32116,7 +32139,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4498",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4523",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1680"
         ],
         "tests": [],
@@ -32154,7 +32177,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4541",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4566",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1681"
         ],
         "tests": [],
@@ -32192,7 +32215,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4599",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4624",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1683"
         ],
         "tests": [],
@@ -32230,7 +32253,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4559",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4584",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1682"
         ],
         "tests": [],
@@ -32308,7 +32331,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4667",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4692",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1685"
         ],
         "tests": [],
@@ -32346,7 +32369,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4641",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4666",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1684"
         ],
         "tests": [],
@@ -32498,7 +32521,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:5094",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:5119",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1679"
         ],
         "tests": [],
@@ -32536,7 +32559,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4967",
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:4992",
           "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1678"
         ],
         "tests": [],
@@ -32811,7 +32834,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3826"
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3851"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -34368,7 +34391,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3837"
+          "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3862"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -40509,7 +40532,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 499,
+      "page_count": 500,
       "top_level": [
         "start-here",
         "use",
@@ -48392,10 +48415,10 @@
       "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
-        "asyncapi": "2874c26112808f0bc6087f59fb0e7d3073c4c2d20472f05e99d46a6052f00baa",
-        "documentation": "a789623add6bd940ef703263ccdc2686a9af7d2470d2af1f1d35cbaadbbb457e",
-        "openapi": "f7a353f013d30e7a0d5d98bd8682218cca973992abe03408c29a19078b4cc5d0",
-        "operational_health": "b0a93c614e4761d13726c3b06ce55d1f0ab7f8da3a99e213c159f63101d21370"
+        "asyncapi": "90636d7095ffbae4c17bdac75b55cad9efde0e99d4a0810d8dd991fb0241f64d",
+        "documentation": "c5a3b4bc2d58ebc1df4a8e8b12ea79b488a75f1f600d2b1fbd530df9cdb9a4fa",
+        "openapi": "21b10835554b759b2cc77c3a7b98b135519d45b2efbf24701020701ff1b071be",
+        "operational_health": "56df089e9a116afc5f975f7be94f4bacb16cc498bbf66ff9596b2e82d09049f5"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -119744,5 +119767,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "f6812cf7b478cfda866484472e9e9813fd22de7a420a5b8c92689c5b4270303d"
+  "source_fingerprint": "3dea29982b16837e3b46c121cf5891065d99c1a4cda98495963d39ed82de868a"
 }

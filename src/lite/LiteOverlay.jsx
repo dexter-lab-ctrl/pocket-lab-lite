@@ -336,9 +336,9 @@ export function LiteSheet({
   );
 }
 
-export function LiteDetailsPanel({ open, onClose, title = 'Details', description = '', children }) {
+export function LiteDetailsPanel({ open, onClose, title = 'Details', description = '', bodyRef, bodyClassName = '', children }) {
   return (
-    <LiteSheet open={open} onClose={onClose} title={title} eyebrow="Action Details" description={description} layerClassName="lite-details-overlay-layer" className="lite-details-panel" bodyClassName="lite-details-panel-scroll" gripClassName="lite-details-panel-grip">
+    <LiteSheet open={open} onClose={onClose} title={title} eyebrow="Action Details" description={description} layerClassName="lite-details-overlay-layer" className="lite-details-panel" bodyRef={bodyRef} bodyClassName={`lite-details-panel-scroll ${bodyClassName}`.trim()} gripClassName="lite-details-panel-grip">
       {children}
     </LiteSheet>
   );

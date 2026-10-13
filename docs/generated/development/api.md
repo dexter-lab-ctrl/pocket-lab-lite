@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 1f7558299edb6b35ba0042c78d5e818f2a4c4cdfcafd785a0c9e510bff3808bc
+source_fingerprint: 8b219eb2ea1744fd9c85220961226d42089d4c6a9a955729a2626207d167f33e
 schema_revision: 1
 validation_status: generated
 ---
@@ -21,7 +21,7 @@ validation_status: generated
 
 FastAPI OpenAPI is the canonical browser/backend contract. Redocly validates the generated Lite-only view.
 
-## Lite paths (223)
+## Lite paths (224)
 
 - `/api/lite/apps/lifecycle`
 - `/api/lite/apps/lifecycle/{app_id}`
@@ -147,6 +147,7 @@ FastAPI OpenAPI is the canonical browser/backend contract. Redocly validates the
 - `/api/lite/harness/status`
 - `/api/lite/home/activity-cursor`
 - `/api/lite/home/activity-cursor/review`
+- `/api/lite/home/activity-history`
 - `/api/lite/identity`
 - `/api/lite/identity/login`
 - `/api/lite/identity/logout`
