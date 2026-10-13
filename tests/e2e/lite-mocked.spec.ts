@@ -140,6 +140,36 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(page.locator('[data-lite-screen-id="catalog"]')).toBeVisible();
   });
 
+  test('Home Workspace details reveals section tabs on upward scroll', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 568 });
+    await page.goto('/?screen=home');
+    const home = page.locator('[data-lite-screen-id="home"]');
+    await home.getByRole('button', { name: 'Workspace details' }).click();
+
+    const sheet = page.getByRole('dialog', { name: 'Workspace details' });
+    const scrollBody = sheet.locator('.lite-home-workspace-details-scroll');
+    await sheet.getByRole('button', { name: 'Service health', exact: true }).click();
+    await expect.poll(() => scrollBody.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
+
+    const tabs = sheet.getByRole('navigation', { name: 'Workspace details sections' });
+    await expect(tabs).toHaveAttribute('data-tabs-hidden', 'false');
+
+    await scrollBody.evaluate((element) => {
+      element.scrollTop = Math.min(160, element.scrollHeight - element.clientHeight);
+      element.dispatchEvent(new Event('scroll', { bubbles: true }));
+    });
+    await expect(tabs).toHaveAttribute('data-tabs-hidden', 'true');
+
+    await scrollBody.evaluate((element) => {
+      element.scrollTop = Math.max(32, element.scrollTop - 80);
+      element.dispatchEvent(new Event('scroll', { bubbles: true }));
+    });
+    await expect(tabs).toHaveAttribute('data-tabs-hidden', 'false');
+
+    await tabs.getByRole('button', { name: 'Overview', exact: true }).focus();
+    await expect(tabs).toHaveAttribute('data-tabs-hidden', 'false');
+  });
+
   test('Home opens bounded activity details and restores focus after dismissal', async ({ page }) => {
     await page.goto('/?screen=home');
     const home = page.locator('[data-lite-screen-id="home"]');

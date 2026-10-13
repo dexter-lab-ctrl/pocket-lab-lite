@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   LayoutGrid,
   Server,
@@ -179,6 +179,10 @@ export default function HomeScreen({
   );
   const [workspaceDetailsOpen, setWorkspaceDetailsOpen] = useState(false);
   const [workspaceSection, setWorkspaceSection] = useState('overview');
+  const workspaceDetailsScrollRef = useRef(null);
+  const workspaceTabsScrollStateRef = useRef({ lastTop: 0, hidden: false, scrolled: false });
+  const [workspaceTabsHidden, setWorkspaceTabsHidden] = useState(false);
+  const [workspaceDetailsScrolled, setWorkspaceDetailsScrolled] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
   const [cursor, setCursor] = useState(null);
   const [cursorBusy, setCursorBusy] = useState(false);
@@ -228,6 +232,55 @@ export default function HomeScreen({
     onNavigate?.(screen);
   }, [onNavigate]);
 
+  useEffect(() => {
+    if (!workspaceDetailsOpen) {
+      workspaceTabsScrollStateRef.current = { lastTop: 0, hidden: false, scrolled: false };
+      setWorkspaceTabsHidden(false);
+      setWorkspaceDetailsScrolled(false);
+      return undefined;
+    }
+    const scrollElement = workspaceDetailsScrollRef.current;
+    if (!(scrollElement instanceof HTMLElement)) return undefined;
+
+    const state = workspaceTabsScrollStateRef.current;
+    state.lastTop = Math.max(0, scrollElement.scrollTop || 0);
+    state.hidden = false;
+    state.scrolled = state.lastTop > 4;
+    setWorkspaceTabsHidden(false);
+    setWorkspaceDetailsScrolled(state.scrolled);
+
+    const onScroll = () => {
+      const nextTop = Math.max(0, scrollElement.scrollTop || 0);
+      const delta = nextTop - state.lastTop;
+      const atTop = nextTop <= 4;
+      const nextScrolled = nextTop > 4;
+      const nextHidden = atTop ? false : Math.abs(delta) >= 4 ? delta > 0 : state.hidden;
+      state.lastTop = nextTop;
+      if (state.scrolled !== nextScrolled) {
+        state.scrolled = nextScrolled;
+        setWorkspaceDetailsScrolled(nextScrolled);
+      }
+      if (state.hidden !== nextHidden) {
+        state.hidden = nextHidden;
+        setWorkspaceTabsHidden(nextHidden);
+      }
+    };
+
+    const onFocusIn = (event) => {
+      if (event.target.closest?.('.lite-home-workspace-tabs')) {
+        state.hidden = false;
+        setWorkspaceTabsHidden(false);
+      }
+    };
+
+    scrollElement.addEventListener('scroll', onScroll, { passive: true });
+    scrollElement.addEventListener('focusin', onFocusIn);
+    return () => {
+      scrollElement.removeEventListener('scroll', onScroll);
+      scrollElement.removeEventListener('focusin', onFocusIn);
+    };
+  }, [workspaceDetailsOpen]);
+
   const details = overview.workspaceDetails;
   const sectionNames = { overview: 'Overview', 'service-health': 'Service health', updates: 'Updates', diagnostics: 'Diagnostics' };
   const primaryAction = overview.nextAction
@@ -265,12 +318,16 @@ export default function HomeScreen({
     <HomeOverviewGrid services={overview.services} saved={effectiveSavedStateOnly} onNavigate={goTo} />
     <HomeActivityPreview activity={effectiveSavedStateOnly ? null : activity} onOpen={() => setActivityOpen(true)} />
     <LiteDetailsPanel open={workspaceDetailsOpen} onClose={() => setWorkspaceDetailsOpen(false)}
+      bodyRef={workspaceDetailsScrollRef} bodyClassName="lite-home-workspace-details-scroll"
       title="Workspace details" description="Current services and safe workspace information.">
       <div className="lite-home-workspace-details">
-        <nav className="lite-home-details-nav" aria-label="Workspace details sections">
+        <nav className="lite-home-details-nav lite-home-workspace-tabs"
+          aria-label="Workspace details sections"
+          data-tabs-hidden={workspaceTabsHidden ? 'true' : 'false'}
+          data-tabs-scrolled={workspaceDetailsScrolled ? 'true' : 'false'}>
           {Object.entries(sectionNames).map(([id, label]) =>
             <button key={id} type="button" aria-current={workspaceSection === id ? 'page' : undefined}
-              onClick={() => setWorkspaceSection(id)}>{label}</button>)}
+              onClick={() => { setWorkspaceTabsHidden(false); setWorkspaceSection(id); }}>{label}</button>)}
         </nav>
         {workspaceSection === 'overview' ? <section aria-label="Workspace overview details">
           {details.resources.filter((item) => item.key !== 'activity').map((item) =>
