@@ -2,6 +2,8 @@ import { LiteProtectedConfirmation } from '../components/LiteSafeForms.jsx';
 import LiteNextSteps from '../components/LiteNextSteps.jsx';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { filterCatalogApps, sortCatalogApps } from './catalogPresentation.js';
+import { LiteDetailsPanel } from '../LiteOverlay.jsx';
+import './appsPremiumRefinement.css';
 import '../components/liteSafeForms.css';
 import { createPortal } from 'react-dom';
 import { useDrag } from '@use-gesture/react';
@@ -221,15 +223,24 @@ const PHOTO_PRISM_STORAGE_COPY = {
   },
 };
 
-const PHONE_STORAGE_CONNECTED_FOLDERS = [
-  'Android shared storage',
-  'Camera photos',
-  'Pictures',
-  'Videos',
-  'Downloads',
-  'Music',
-];
-
+// Only backend-projected mapping or preview names are shown here.
+function storageConnectedFolderLabels(app, preview = null) {
+  const labels = [];
+  const add = (value) => {
+    if (typeof value !== 'string') return;
+    const label = value.trim();
+    if (label && !labels.includes(label)) labels.push(label);
+  };
+  for (const mapping of storageMappings(app).filter(isPhoneStorageMapping)) {
+    add(mapping.label || mapping.source_label);
+    for (const folder of Array.isArray(mapping.folders) ? mapping.folders : []) add(typeof folder === 'string' ? folder : folder?.name);
+    for (const folder of Array.isArray(mapping.subfolders) ? mapping.subfolders : []) add(typeof folder === 'string' ? folder : folder?.name);
+  }
+  if (['ready', 'connected'].includes(String(preview?.status || '').toLowerCase())) {
+    for (const folder of Array.isArray(preview?.subfolders) ? preview.subfolders : []) add(typeof folder === 'string' ? folder : folder?.name);
+  }
+  return labels;
+}
 
 function actionCopy(actionId, action = {}) {
   const category = appActionCategory(actionId, action);
@@ -655,7 +666,7 @@ function normalizeAppAction(entry) {
     progress,
     disabledReason: !enabled ? actionDisabledReason(action) || entry?.title || 'Action is not ready yet.' : '',
     risk: action?.risk || (category === 'danger' ? 'destructive' : category === 'recovery' || category === 'setup' ? 'review' : 'low'),
-    detailsAvailable: actionId !== 'connect_photos',
+    detailsAvailable: true,
     summary: action?.summary || copy.description,
   };
 }
@@ -1190,7 +1201,7 @@ const PhotoPrismActionTile = React.memo(function PhotoPrismActionTile({
   const showProgress = Boolean(!isSimpleMediaShortcut && progressState?.running && ['import_photos', 'check_app', 'repair_app', 'backup_app', 'preview_restore', 'backup_to_storage', 'update_app'].includes(actionId));
   const progressLabel = progressState?.running ? progressState.step || busyActionLabel(actionId) : '';
   const tileResult = isSimpleMediaShortcut ? null : tileResultForAction(actionId, action, result);
-  const detailsAvailable = !isSimpleMediaShortcut;
+  const detailsAvailable = true;
   const rowTone = actionRowTone(actionId, action, tileResult || result);
   const rowStateLabel = progressLabel || reason || actionRowStateLabel(actionId, action, tileResult || result);
   const actionButtonLabel = busy || progressState?.running ? 'Working' : copy.label;
@@ -1226,6 +1237,11 @@ const PhotoPrismActionTile = React.memo(function PhotoPrismActionTile({
       <span>{normalized.summary || copy.description}</span>
       <AppActionDetailsButton available={detailsAvailable} onClick={onViewDetails} expanded={detailsExpanded} />
     </div>
+  ) : isSimpleMediaShortcut ? (
+    <div className="lite-app-action-row-result is-neutral">
+      <span>{reason || normalized.summary || copy.description}</span>
+      <AppActionDetailsButton available onClick={onViewDetails} expanded={detailsExpanded} />
+    </div>
   ) : null;
 
   return (
@@ -1259,16 +1275,27 @@ const PhotoPrismActionTile = React.memo(function PhotoPrismActionTile({
   );
 });
 
-function PhoneStorageConnectedFolders() {
+function PhoneStorageConnectedFolders({ app, preview }) {
+  const folders = storageConnectedFolderLabels(app, preview);
   return (
-    <div className="lite-catalog-connected-folders" role="status" aria-live="polite">
-      <p>Connected folders from Phone Storage</p>
-      <div className="lite-catalog-connected-folder-list">
-        {storageConnectedFolderLabels().map((folder) => (
-          <span key={folder}>{folder}</span>
-        ))}
+    <section className="lite-catalog-connected-folders" aria-label="Connected phone storage">
+      <div className="lite-catalog-premium-connection-heading">
+        <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+        <div><strong>Phone storage connected</strong><p>Read-only access to shared storage.</p></div>
       </div>
-    </div>
+      {folders.length ? (
+        <>
+          <div className="lite-catalog-connected-folder-list" aria-label="Reported folders preview">
+            {folders.slice(0, 3).map((folder) => <span key={folder}>{folder}</span>)}
+            {folders.length > 3 ? <span>+{folders.length - 3} more</span> : null}
+          </div>
+          {folders.length > 3 ? <details className="lite-catalog-premium-disclosure">
+            <summary>View all {folders.length} reported folders</summary>
+            <ul>{folders.map((folder) => <li key={folder}>{folder}</li>)}</ul>
+          </details> : null}
+        </>
+      ) : <p className="lite-catalog-premium-muted">Folder names are not available in the current storage projection.</p>}
+    </section>
   );
 }
 
@@ -1413,126 +1440,63 @@ function PhotoPrismStoragePreviewSheet({
   );
 }
 
-function PhotoPrismMediaFlowCard({ lifecycle, busyKey = '' }) {
+function PhotoPrismMediaFlowCard({ lifecycle, busyKey = '', onViewDetails }) {
   const flow = photoPrismMediaFlowState(lifecycle, busyKey);
-  const steps = [
-    { id: 'phone', label: 'Phone photos', icon: <Smartphone className="h-4 w-4" /> },
-    { id: 'worker', label: 'Pocket Lab', icon: <RefreshCw className="h-4 w-4" /> },
-    { id: 'prism', label: 'PhotoPrism', icon: <ImageIcon className="h-4 w-4" /> },
-    { id: 'backup', label: 'Storage', icon: <HardDrive className="h-4 w-4" /> },
-  ];
-
+  const icons = {
+    phone: <Smartphone aria-hidden="true" />,
+    transfer: <RefreshCw aria-hidden="true" />,
+    prism: <ImageIcon aria-hidden="true" />,
+  };
   return (
-    <div className={`lite-catalog-media-flow-card is-${flow.state} motion-${flow.motion}`} aria-label={flow.ariaLabel}>
-      <div className="lite-catalog-media-flow-copy">
-        <span>{flow.eyebrow}</span>
-        <strong>{flow.title}</strong>
+    <section className={`lite-catalog-media-flow-card lite-catalog-premium-flow is-${flow.state}`} aria-label="Photo workflow">
+      <div className="lite-catalog-premium-flow-header">
+        <div><span>Photo workflow</span><strong>{flow.title}</strong></div>
+        <span className={`lite-catalog-premium-state is-${flow.state}`}>{flow.badge}</span>
+      </div>
+      <ol className="lite-catalog-premium-flow-steps" aria-label={flow.ariaLabel}>
+        {flow.steps.map((step) => (
+          <li key={step.id} className={`lite-catalog-premium-flow-step is-${step.state}`}>
+            <span className="lite-catalog-premium-flow-icon">{icons[step.id]}</span>
+            <strong>{step.label}</strong><small>{step.status}</small>
+          </li>
+        ))}
+      </ol>
+      <div className="lite-catalog-premium-flow-foot">
         <p>{flow.summary}</p>
+        {onViewDetails ? <button type="button" onClick={onViewDetails}>View details</button> : null}
       </div>
-      <div className="lite-catalog-media-flow-stage">
-        <div className="lite-catalog-media-flow-visual" aria-hidden="true">
-          {steps.map((step, index) => (
-            <React.Fragment key={step.id}>
-              {index > 0 ? <span className={`lite-catalog-media-flow-line is-${step.id}`}><i /></span> : null}
-              <span className={`lite-catalog-media-flow-node is-${step.id} ${flow.activeNodes.includes(step.id) ? 'is-active' : ''} ${flow.doneNodes.includes(step.id) ? 'is-done' : ''}`}>
-                {step.icon}
-                <small>{step.label}</small>
-              </span>
-            </React.Fragment>
-          ))}
-        </div>
-      </div>
-      <span className="lite-catalog-media-flow-badge">{flow.badge}</span>
-    </div>
+    </section>
   );
 }
 
 function photoPrismMediaFlowState(lifecycle, busyKey = '') {
   const media = lifecycle?.media || {};
-  const backup = lifecycle?.backup || {};
-  const backupTargets = lifecycle?.backup_targets || {};
-  const mappingCount = Number(media?.mapping_count || lifecycle?.storage?.mapping_count || 0);
-  const storageConnected = mappingCount > 0 || lifecycle?.storage?.status === 'connected';
-  const lastImport = media?.last_import || {};
-  const importStatus = String(lastImport?.status || '').toLowerCase();
-  const actionBusy = String(busyKey || '').includes('import_photos');
-  const operationRunning = Boolean(media?.operation_running || actionBusy);
-  const importing = operationRunning && ['queued', 'running'].includes(importStatus);
-  const failed = ['failed', 'timed_out'].includes(importStatus) || media?.status === 'review';
-  const succeeded = ['succeeded'].includes(importStatus) || media?.evidence?.status === 'saved';
-  const backupTargetReady = Boolean(backup?.target_ready || backupTargets?.ready_count > 0);
-  const backupMissing = storageConnected && !backupTargetReady;
-
-  if (!storageConnected) {
-    return {
-      state: 'idle',
-      eyebrow: 'PhotoPrism flow',
-      title: 'Connect photos to start',
-      summary: 'Choose phone photos or a storage device before importing.',
-      badge: 'Connect photos',
-      ariaLabel: 'PhotoPrism media flow idle. Connect photos to start.',
-      motion: 'calm',
-      activeNodes: [],
-      doneNodes: [],
-    };
-  }
-
-  if (importing) {
-    return {
-      state: 'importing',
-      eyebrow: 'PhotoPrism flow',
-      title: 'Importing photos',
-      summary: 'Pocket Lab is bringing connected photos into PhotoPrism.',
-      badge: 'Working',
-      ariaLabel: 'PhotoPrism media flow importing photos through Pocket Lab.',
-      motion: 'active',
-      activeNodes: ['phone', 'worker', 'prism'],
-      doneNodes: ['phone'],
-    };
-  }
-
-  if (failed) {
-    return {
-      state: 'review',
-      eyebrow: 'PhotoPrism flow',
-      title: 'Photo action needs review',
-      summary: 'Check the latest media action before running it again.',
-      badge: 'Needs review',
-      ariaLabel: 'PhotoPrism media flow needs review.',
-      motion: 'attention',
-      activeNodes: [],
-      doneNodes: ['phone'],
-    };
-  }
-
-  if (backupMissing) {
-    return {
-      state: succeeded ? 'succeeded' : 'connected',
-      eyebrow: 'PhotoPrism flow',
-      title: succeeded ? 'Photo library updated' : 'Phone photos connected',
-      summary: 'Add a storage device when you are ready to save app backups elsewhere.',
-      badge: succeeded ? 'Done' : 'Connected',
-      ariaLabel: 'PhotoPrism media flow connected. Backup target is not ready yet.',
-      motion: succeeded ? 'calm' : 'ready',
-      activeNodes: [],
-      doneNodes: succeeded ? ['phone', 'worker', 'prism'] : ['phone'],
-    };
-  }
-
-  return {
-    state: succeeded ? 'succeeded' : 'connected',
-    eyebrow: 'PhotoPrism flow',
-    title: succeeded ? 'Photo library updated' : 'Phone photos connected',
-    summary: succeeded ? 'PhotoPrism is ready with a saved troubleshooting record.' : 'PhotoPrism is ready to import connected media.',
-    badge: succeeded ? 'Done' : 'Connected',
-    ariaLabel: 'PhotoPrism media flow ready.',
-    motion: succeeded ? 'calm' : 'ready',
-    activeNodes: [],
-    doneNodes: succeeded ? ['phone', 'worker', 'prism', ...(backupTargetReady ? ['backup'] : [])] : ['phone'],
-  };
+  const connected = Number(media.mapping_count ?? lifecycle?.storage?.mapping_count ?? 0) > 0
+    || lifecycle?.storage?.status === 'connected';
+  const status = String(media?.last_import?.status || '').toLowerCase().replace(/[\s-]+/g, '_');
+  const queued = ['queued', 'accepted', 'pending', 'planning', 'waiting', 'waiting_for_credentials', 'starting'].includes(status);
+  const executing = ['running', 'working', 'executing', 'in_progress', 'transferring', 'cancelling'].includes(status);
+  const active = queued || executing || Boolean(media.operation_running) || String(busyKey).includes('import_photos');
+  const completed = ['succeeded', 'success', 'completed', 'done'].includes(status);
+  const failed = ['failed', 'error', 'timed_out', 'blocked', 'partial', 'needs_review'].includes(status) || media.status === 'review';
+  const state = failed ? 'review' : active ? (executing ? 'running' : 'waiting') : completed ? 'completed' : connected ? 'connected' : 'idle';
+  const badge = { review: 'Needs review', running: 'Running', waiting: 'Waiting', completed: 'Completed', connected: 'Connected', idle: 'Not connected' }[state];
+  const transferStatus = executing ? 'Running' : queued || active ? 'Waiting' : completed ? 'Completed' : failed ? 'Needs review' : 'Not running';
+  const prismStatus = completed ? 'Updated' : failed ? 'Check readiness' : active ? 'Waiting' : 'Not checked';
+  const steps = [
+    { id: 'phone', label: 'Phone', state: connected ? 'done' : 'idle', status: connected ? 'Connected' : 'Not connected' },
+    { id: 'transfer', label: 'Transfer', state: active ? 'running' : failed ? 'review' : completed ? 'done' : 'idle', status: transferStatus },
+    { id: 'prism', label: 'PhotoPrism', state: completed ? 'done' : failed ? 'review' : 'idle', status: prismStatus },
+  ];
+  const title = failed ? 'Latest photo action needs review' : active ? 'Photo action in progress'
+    : completed ? 'Latest photo import completed' : connected ? 'Phone storage connected' : 'Connect photos to start';
+  const summary = failed ? 'Review the latest import outcome before retrying.'
+    : active ? 'Waiting for the latest backend-reported photo action outcome.'
+    : completed ? 'The latest import was reported as completed.'
+    : connected ? 'A connected folder does not mean photos were transferred.'
+    : 'Connect a backend-approved photo source before importing.';
+  return { state, badge, title, summary, steps, ariaLabel: steps.map((step) => `${step.label}: ${step.status}`).join('. ') };
 }
-
-
 
 function safeDetailList(items, fallback = []) {
   const values = Array.isArray(items) ? items : fallback;
@@ -1797,10 +1761,6 @@ function photosAlreadyImported(lifecycle = null, actionSnapshot = null, app = nu
       || evidenceStatus === 'saved'
     );
   });
-}
-
-function storageConnectedFolderLabels() {
-  return PHONE_STORAGE_CONNECTED_FOLDERS;
 }
 
 function storageMediaSummary(app) {
@@ -2277,7 +2237,7 @@ function CatalogManagePortal({
                               disabled={entry.disabled}
                               title={entry.title}
                             />
-                            {entry.actionId === 'connect_photos' && isPhoneStorageConnected ? <PhoneStorageConnectedFolders /> : null}
+                            {entry.actionId === 'connect_photos' && isPhoneStorageConnected ? <PhoneStorageConnectedFolders app={app} preview={storagePreviewApp?.id === app.id ? storagePreview : null} /> : null}
                             {entry.actionId === 'connect_photos' && !isPhoneStorageConnected && storagePreviewApp?.id === app.id ? (
                               <div className="lite-catalog-storage-preview-anchor">
                                 <PhotoPrismStoragePreviewSheet
