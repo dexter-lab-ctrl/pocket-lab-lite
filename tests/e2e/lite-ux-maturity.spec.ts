@@ -50,6 +50,7 @@ test('Home Workspace details provide real technical facts only on demand', async
   await page.getByRole('button', { name: 'Workspace details' }).click();
   const dialog = page.getByRole('dialog').filter({ hasText: 'Workspace details' });
   await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Diagnostics', exact: true }).click();
   await expect(dialog.getByText('Technical details', { exact: true })).toBeVisible();
 });
 

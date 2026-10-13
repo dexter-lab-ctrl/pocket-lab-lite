@@ -140,6 +140,30 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(page.locator('[data-lite-screen-id="catalog"]')).toBeVisible();
   });
 
+  test('Home opens bounded activity details and restores focus after dismissal', async ({ page }) => {
+    await page.goto('/?screen=home');
+    const home = page.locator('[data-lite-screen-id="home"]');
+    const opener = home.getByRole('button', { name: 'View activity' });
+
+    await expect(opener).toBeVisible();
+    await opener.click();
+    const panel = page.getByRole('dialog', { name: 'Recent activity' });
+    await expect(panel).toBeVisible();
+    await expect(panel).toContainText('Running and waiting: updated within the last 30 minutes');
+    await expect(panel).toContainText('Completed recently');
+    await expect(panel.getByRole('button', { name: 'Attention', exact: true })).toHaveAttribute('aria-current', 'page');
+
+    await panel.getByRole('button', { name: 'History', exact: true }).click();
+    await expect(panel).toContainText('Historical failures in the last 7 days: 0');
+    await expect(panel).toContainText('App safety check');
+    await expect(panel).toContainText('Completed');
+    await expect(panel).not.toContainText('Mark activity reviewed');
+
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+    await expect(opener).toBeFocused();
+  });
+
   test('Home keeps primary controls inside the viewport across the responsive matrix', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'mocked-desktop', 'The exact Home matrix runs once in Chromium.');
     await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -163,6 +187,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     const home = page.locator('[data-lite-screen-id="home"]');
     await home.getByRole('button', { name: 'Workspace details' }).click();
     const sheet = page.getByRole('dialog', { name: 'Workspace details' });
+    await sheet.getByRole('button', { name: 'Updates', exact: true }).click();
     const card = sheet.locator('[data-lite-release-native="true"]');
     await expect(card).toBeVisible();
     await expect(card).toContainText('Updated successfully');
@@ -177,7 +202,9 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await page.goto('/?screen=home');
     const home = page.locator('[data-lite-screen-id="home"]');
     await home.getByRole('button', { name: 'Workspace details' }).click();
-    const card = page.getByRole('dialog', { name: 'Workspace details' }).locator('[data-lite-release-native="true"]');
+    const sheet = page.getByRole('dialog', { name: 'Workspace details' });
+    await sheet.getByRole('button', { name: 'Updates', exact: true }).click();
+    const card = sheet.locator('[data-lite-release-native="true"]');
     await expect(card).toContainText(/Update available/i);
     await expect(card).not.toContainText(/Check failed|Install failed/i);
   });
@@ -187,7 +214,9 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await page.goto('/?screen=home');
     const home = page.locator('[data-lite-screen-id="home"]');
     await home.getByRole('button', { name: 'Workspace details' }).click();
-    const card = page.getByRole('dialog', { name: 'Workspace details' }).locator('[data-lite-release-native="true"]');
+    const sheet = page.getByRole('dialog', { name: 'Workspace details' });
+    await sheet.getByRole('button', { name: 'Updates', exact: true }).click();
+    const card = sheet.locator('[data-lite-release-native="true"]');
     await expect(card).toContainText(/Downloading update/i);
     await expect(card.locator('.lite-release-update-progress')).toBeVisible();
   });
@@ -197,7 +226,9 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await page.goto('/?screen=home');
     const home = page.locator('[data-lite-screen-id="home"]');
     await home.getByRole('button', { name: 'Workspace details' }).click();
-    const card = page.getByRole('dialog', { name: 'Workspace details' }).locator('[data-lite-release-native="true"]');
+    const sheet = page.getByRole('dialog', { name: 'Workspace details' });
+    await sheet.getByRole('button', { name: 'Updates', exact: true }).click();
+    const card = sheet.locator('[data-lite-release-native="true"]');
     await expect(card).toContainText(/Check failed/i);
     await expect(card).not.toContainText('Update failed');
   });
@@ -461,6 +492,11 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
 
   test('premium surfaces stay within each required viewport', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'mocked-desktop', 'The exact matrix is run once in Chromium to avoid duplicating the suite.');
+    // This matrix deliberately opens four screens plus two bounded disclosure
+    // panels at six viewport sizes. Keep the deadline above the measured
+    // local runtime so the complete containment coverage is not cut off by
+    // the default single-test timeout.
+    test.setTimeout(120_000);
     await page.emulateMedia({ reducedMotion: 'reduce' });
 
     for (const viewport of PREMIUM_VIEWPORTS) {

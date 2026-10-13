@@ -39,7 +39,7 @@ for (const [id, title] of SCREENS) {
 }
 
 const GUIDANCE = [
-  ['home', 'lifecycle-attention', 'Review what needs attention'],
+  ['home', 'lifecycle-attention', 'Needs your attention'],
   ['devices', 'devices-repairing', 'Connection review'],
   ['catalog', 'catalog-install-available', 'App readiness'],
   ['recovery', 'recovery-restore-blocked', 'Protection readiness'],
