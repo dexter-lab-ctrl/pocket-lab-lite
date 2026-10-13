@@ -5503,6 +5503,29 @@
       "affects_release": false,
       "affects_runtime": true,
       "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_ANDROID_CDP_DELAY_NEXT_STATUS",
+      "owner": "repository tooling",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "tests/backend/test_lite_ui_performance_runner.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
       "name": "POCKETLAB_ANDROID_CDP_LOCAL_PORT",
       "owner": "repository tooling",
       "purpose": "Pocket Lab runtime/development configuration discovered from source",

@@ -7661,6 +7661,29 @@
         "affects_release": false,
         "affects_runtime": true,
         "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_ANDROID_CDP_DELAY_NEXT_STATUS",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "tests/backend/test_lite_ui_performance_runner.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
         "name": "POCKETLAB_ANDROID_CDP_LOCAL_PORT",
         "owner": "repository tooling",
         "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -48393,7 +48416,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "90636d7095ffbae4c17bdac75b55cad9efde0e99d4a0810d8dd991fb0241f64d",
-        "documentation": "cbf3a38c21f9fed535417ed1321722c80da839d711031e00de257980f22d55f1",
+        "documentation": "c5a3b4bc2d58ebc1df4a8e8b12ea79b488a75f1f600d2b1fbd530df9cdb9a4fa",
         "openapi": "21b10835554b759b2cc77c3a7b98b135519d45b2efbf24701020701ff1b071be",
         "operational_health": "56df089e9a116afc5f975f7be94f4bacb16cc498bbf66ff9596b2e82d09049f5"
       },
@@ -119744,5 +119767,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "8e378d81e57cbf5d028076cca6294f2a3a1c9994474f86353d4b7dd4b885f51d"
+  "source_fingerprint": "3dea29982b16837e3b46c121cf5891065d99c1a4cda98495963d39ed82de868a"
 }
