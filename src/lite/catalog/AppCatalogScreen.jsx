@@ -1938,7 +1938,7 @@ function PhotoBackupTruthCard({ devices = [], summary = '', saved = false, onGoT
   const rawStatus = String(latest?.status || '').toLowerCase().replace(/[\s-]+/g, '_');
   const live = PHOTO_BACKUP_LIVE_STATUSES.has(rawStatus);
   const ready = rows.some((item) => item?.ready === true);
-  const statusLabel = saved ? 'Saved / offline' : PHOTO_BACKUP_PRESENTATION[rawStatus] || (rawStatus ? rawStatus.replace(/_/g, ' ') : ready ? 'Ready' : 'Not ready');
+  const statusLabel = saved ? 'Saved / offline' : PHOTO_BACKUP_PRESENTATION[rawStatus] || (rawStatus ? rawStatus.replace(/_/g, ' ') : ready ? 'Ready' : rows.length ? 'Not ready' : 'No backup recorded');
   const statusTone = saved ? 'saved' : ['failed', 'error', 'partial', 'partial_storage_limit'].includes(rawStatus) ? 'review'
     : live ? 'working' : rawStatus === 'completed' ? 'completed' : ready ? 'ready' : 'neutral';
   // A missing transferred count is unknown; a reported zero is an actual zero.
