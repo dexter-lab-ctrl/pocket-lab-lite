@@ -4682,7 +4682,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 499,
+  "page_count": 500,
   "page_types": [
     "overview",
     "guide",
@@ -4811,6 +4811,29 @@
       "source_or_generator": "development/lite-home-personal-history-shared-confirmations.md",
       "title": "Home personal history and shared confirmation hardening",
       "url": "/development/lite-home-personal-history-shared-confirmations/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-home-premium-refinement.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:development/lite-home-premium-refinement",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-home-premium-refinement.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-home-premium-refinement.md",
+      "title": "Premium Home and activity intelligence — implementation handoff",
+      "url": "/development/lite-home-premium-refinement/"
     },
     {
       "additional_audiences": [],
@@ -17827,7 +17850,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "26400990aa27ef463812602fbaaa4065e2bb4ffaf05cafc73a4de17156dd434e",
+  "source_fingerprint": "6750a16efdcd230f2e270d8a6023afc2ca825e235aafc678263d88e616c2aa64",
   "top_level": [
     "start-here",
     "use",

@@ -11617,6 +11617,46 @@
         ]
       }
     },
+    "/api/lite/home/activity-history": {
+      "get": {
+        "description": "Read only the existing bounded and sanitized prepared history snapshot.",
+        "operationId": "get_lite_home_activity_history_api_lite_home_activity_history_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get Lite Home Activity History",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
     "/api/lite/identity": {
       "get": {
         "operationId": "get_lite_identity_api_lite_identity_get",

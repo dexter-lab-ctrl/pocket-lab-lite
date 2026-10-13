@@ -837,6 +837,17 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:get:/api/lite/home/activity-history",
+      "name": "GET /api/lite/home/activity-history",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:get:/api/lite/identity",
       "name": "GET /api/lite/identity",
       "note": "A test link does not by itself prove runtime verification.",
@@ -4538,6 +4549,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "1b6afc93494e6e8a7d78fbb42cb9727bedc8292d164fbf0caf5909b5a5e3da78"
+    "source_fingerprint": "e18009c5ab9cbd7d2625f836f67dc51b89d3f2d9f079537b2f9592e3264552de"
   }
 }

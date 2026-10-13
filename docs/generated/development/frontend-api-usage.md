@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: f7b35e71fde1ba9337fee839e506c1871c8ec47dce1e83dbc51d81e51b540a69
+source_fingerprint: 9f8a2652c1d09bf9acf2023a7ef9373cf96483284a07666926172b49585c9c11
 schema_revision: 1
 validation_status: generated
 ---
@@ -36,6 +36,7 @@ validation_status: generated
 | src/lite/LiteDevices.jsx | liteApi.removeDevice | POST | `/api/lite/fleet/remove-device` | mutation | no | static |
 | src/lite/LiteHome.jsx | liteApi.homeActivityCursor | GET | `/api/lite/home/activity-cursor` | query | no | static |
 | src/lite/LiteHome.jsx | liteApi.reviewHomeActivityCursor | POST | `/api/lite/home/activity-cursor/review` | mutation | no | static |
+| src/lite/LiteHome.jsx | liteApi.homeActivityHistory | GET | `/api/lite/home/activity-history` | query | no | static |
 | src/lite/LiteHome.jsx | liteApi.activitySummary | GET | `/api/lite/system/activity-summary` | query | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.loginIdentity | POST | `/api/lite/identity/login` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.logoutIdentity | POST | `/api/lite/identity/logout` | mutation | no | static |
@@ -157,6 +158,7 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/fleet/remove-device` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/home/activity-cursor` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/home/activity-cursor/review` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/home/activity-history` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/identity` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/identity/login` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/identity/logout` | mock | yes | static |

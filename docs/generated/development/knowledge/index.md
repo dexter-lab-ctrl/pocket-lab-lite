@@ -19,7 +19,7 @@ This generated layer joins architecture, contracts, runtime evidence, parity, da
 | Entity type | Count |
 | --- | --- |
 | adr | 6 |
-| api | 236 |
+| api | 237 |
 | capability | 5 |
 | component | 58 |
 | domain | 49 |

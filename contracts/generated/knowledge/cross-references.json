@@ -657,6 +657,16 @@
           "type": "owns"
         }
       ],
+      "api:get:/api/lite/home/activity-history": [
+        {
+          "source": "ui:litehome",
+          "type": "calls"
+        },
+        {
+          "source": "domain:home",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/identity": [
         {
           "source": "domain:identity",
@@ -10055,6 +10065,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/home/activity-history",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/identity",
           "type": "verified_by"
         },
@@ -16779,6 +16793,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/home/activity-history",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/identity",
           "type": "verified_by"
         },
@@ -19034,6 +19052,16 @@
         }
       ],
       "api:get:/api/lite/home/activity-cursor": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/home/activity-history": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -26088,6 +26116,10 @@
         },
         {
           "target": "api:get:/api/lite/home/activity-cursor",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/home/activity-history",
           "type": "owns"
         },
         {
@@ -35051,6 +35083,10 @@
           "type": "calls"
         },
         {
+          "target": "api:get:/api/lite/home/activity-history",
+          "type": "calls"
+        },
+        {
           "target": "api:get:/api/lite/system/activity-summary",
           "type": "calls"
         },
@@ -35299,6 +35335,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "1b6afc93494e6e8a7d78fbb42cb9727bedc8292d164fbf0caf5909b5a5e3da78"
+    "source_fingerprint": "e18009c5ab9cbd7d2625f836f67dc51b89d3f2d9f079537b2f9592e3264552de"
   }
 }

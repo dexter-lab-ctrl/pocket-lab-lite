@@ -2235,6 +2235,43 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Get Lite Home Activity History",
+      "domain": "home",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.homeActivityHistory",
+          "resolved": true,
+          "source_module": "src/lite/LiteHome.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/home/activity-history",
+      "method": "GET",
+      "name": "GET /api/lite/home/activity-history",
+      "operation_id": "get_lite_home_activity_history_api_lite_home_activity_history_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/home/activity-history",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Get Lite Identity",
       "domain": "identity",
       "frontend_clients": [
@@ -7172,6 +7209,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "1b6afc93494e6e8a7d78fbb42cb9727bedc8292d164fbf0caf5909b5a5e3da78"
+    "source_fingerprint": "e18009c5ab9cbd7d2625f836f67dc51b89d3f2d9f079537b2f9592e3264552de"
   }
 }
