@@ -30241,6 +30241,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
+      "name": "tests/e2e/lite-apps-premium-refinement.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-apps-premium-refinement.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-content-stress.spec.ts",
       "name": "tests/e2e/lite-content-stress.spec.ts",
       "source_refs": [
@@ -33798,6 +33808,7 @@
         "test:tests/e2e/global-setup.ts",
         "test:tests/e2e/lite-accessibility-states.spec.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
+        "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
         "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-device-facts.spec.ts",
         "test:tests/e2e/lite-live.spec.ts",
@@ -35261,6 +35272,7 @@
         "test:tests/e2e/global-setup.ts",
         "test:tests/e2e/lite-accessibility-states.spec.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
+        "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
         "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-device-facts.spec.ts",
         "test:tests/e2e/lite-live.spec.ts",
@@ -51710,6 +51722,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-apps-premium-refinement.spec.ts": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-content-stress.spec.ts": [
         {
           "source": "component:app-catalog",
@@ -58685,6 +58703,10 @@
         },
         {
           "target": "test:tests/e2e/lite-accessibility-states.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
           "type": "verified_by"
         },
         {
@@ -85796,6 +85818,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-apps-premium-refinement.spec.ts"
+      ],
+      "id": "rel:6803d2958ced2125",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:68159c07bb6e0ef0",
@@ -106717,9 +106748,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "7dfcad8ac4f87187c9f95c192d1a1ff8956d47557e0c718c4555307653ec2201",
+  "source_fingerprint": "87d62c67646283ed7d85a231a92e9032da5ede1a1f29a93abb0bdaaa1df7beb3",
   "statistics": {
-    "entity_count": 1381,
+    "entity_count": 1382,
     "entity_type_counts": {
       "adr": 6,
       "api": 237,
@@ -106736,14 +106767,14 @@
       "runtime-topology": 9,
       "subject": 220,
       "table": 83,
-      "test": 265,
+      "test": 266,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 3967,
-    "source_count": 302
+    "relation_count": 3968,
+    "source_count": 303
   }
 }

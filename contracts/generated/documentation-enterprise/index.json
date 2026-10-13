@@ -48044,15 +48044,15 @@
           },
           "local_staging": {
             "authority": "local-repository",
-            "confidence": "local-observation",
+            "confidence": "unvalidated",
             "freshness": "current",
             "observed_at": "unobserved",
             "sanitized": true,
             "source": "checksums.txt",
-            "status": "observed",
+            "status": "unobserved",
             "value": {
-              "bytes": 75,
-              "sha256": "a923b43510169752cd764931aeab3656a56184957fd104de88704bcae1b622e5"
+              "bytes": null,
+              "sha256": null
             }
           },
           "release_presence": {
@@ -48097,15 +48097,15 @@
           },
           "local_staging": {
             "authority": "local-repository",
-            "confidence": "local-observation",
+            "confidence": "unvalidated",
             "freshness": "current",
             "observed_at": "unobserved",
             "sanitized": true,
             "source": "dist.zip",
-            "status": "observed",
+            "status": "unobserved",
             "value": {
-              "bytes": 1080116,
-              "sha256": "ed7ab8a495e2525671d59ac606903539330759b0c6140829ac7d14b9cc23c83f"
+              "bytes": null,
+              "sha256": null
             }
           },
           "release_presence": {
@@ -48416,9 +48416,9 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "90636d7095ffbae4c17bdac75b55cad9efde0e99d4a0810d8dd991fb0241f64d",
-        "documentation": "c5a3b4bc2d58ebc1df4a8e8b12ea79b488a75f1f600d2b1fbd530df9cdb9a4fa",
+        "documentation": "38bae5330d34ad84ab45f2925de13ca38307181b3b315e84a1d4c8cae49b5b10",
         "openapi": "21b10835554b759b2cc77c3a7b98b135519d45b2efbf24701020701ff1b071be",
-        "operational_health": "56df089e9a116afc5f975f7be94f4bacb16cc498bbf66ff9596b2e82d09049f5"
+        "operational_health": "3c725c4c70c007c60a97a8f37e53c066767572ea45b6949a71d53a538b814432"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -119767,5 +119767,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "3dea29982b16837e3b46c121cf5891065d99c1a4cda98495963d39ed82de868a"
+  "source_fingerprint": "cc001f76c83b344e4d2f6286353a5a3f8e111bae8b4a0586c86630f5215171cf"
 }
