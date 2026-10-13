@@ -149,7 +149,13 @@ test.describe('Phase 1 Photo Backup mocked UX', () => {
     const truth = dialog.getByRole('region', { name: 'Photo backup' });
     await expect(truth).toBeVisible();
     await expect(truth).toContainText(/Managed by Pocket Lab/i);
-    await expect(truth).toContainText(/Open a device in Devices/i);
+    await expect(truth.getByRole('button', { name: 'Review in Devices' })).toBeVisible();
+    await expect(truth).toContainText(/Backup destination is not ready|Backup is ready|Latest backup|Not ready/i);
+    const how = truth.locator('details');
+    await expect(how).not.toHaveAttribute('open');
+    await how.locator('summary').click();
+    await expect(how).toHaveAttribute('open');
+    await expect(how).toContainText(/protected WebDAV originals/i);
     await expect(truth).not.toContainText(/password|token|credential|WebDAV URL/i);
   });
 });
