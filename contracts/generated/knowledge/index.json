@@ -30271,6 +30271,26 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-identity-premium-refinement.spec.ts",
+      "name": "tests/e2e/lite-identity-premium-refinement.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-identity-premium-refinement.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-identity-premium-visual.spec.ts",
+      "name": "tests/e2e/lite-identity-premium-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-identity-premium-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-live.spec.ts",
       "name": "tests/e2e/lite-live.spec.ts",
       "source_refs": [
@@ -33811,6 +33831,8 @@
         "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
         "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-device-facts.spec.ts",
+        "test:tests/e2e/lite-identity-premium-refinement.spec.ts",
+        "test:tests/e2e/lite-identity-premium-visual.spec.ts",
         "test:tests/e2e/lite-live.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-p4-regression.spec.ts",
@@ -35275,6 +35297,8 @@
         "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
         "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-device-facts.spec.ts",
+        "test:tests/e2e/lite-identity-premium-refinement.spec.ts",
+        "test:tests/e2e/lite-identity-premium-visual.spec.ts",
         "test:tests/e2e/lite-live.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-p4-regression.spec.ts",
@@ -51752,6 +51776,18 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-identity-premium-refinement.spec.ts": [
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-identity-premium-visual.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-live.spec.ts": [
         {
           "source": "reason:disabled",
@@ -62068,6 +62104,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-identity-premium-refinement.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-mocked.spec.ts",
           "type": "verified_by"
         },
@@ -66585,6 +66625,10 @@
         },
         {
           "target": "test:tests/docs/test_supply_chain_runner_hardening.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-identity-premium-visual.spec.ts",
           "type": "verified_by"
         },
         {
@@ -87085,6 +87129,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-identity-premium-refinement.spec.ts"
+      ],
+      "id": "rel:7054298be55eac6c",
+      "source": "domain:identity",
+      "target": "test:tests/e2e/lite-identity-premium-refinement.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:70601f75361db622",
@@ -102230,6 +102283,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-identity-premium-visual.spec.ts"
+      ],
+      "id": "rel:dfb023fc06dab85a",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-identity-premium-visual.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:dfbc67d7422ad210",
@@ -106748,9 +106810,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "16c4ac9d3b790619e85274d797dc96efca1bbab3c647b767426f4fedc3c98fe4",
+  "source_fingerprint": "ecc36cb414fe785ecbbf931c975720bf4394798c30a81e1480afbe7f7dd5fa50",
   "statistics": {
-    "entity_count": 1382,
+    "entity_count": 1384,
     "entity_type_counts": {
       "adr": 6,
       "api": 237,
@@ -106767,14 +106829,14 @@
       "runtime-topology": 9,
       "subject": 220,
       "table": 83,
-      "test": 266,
+      "test": 268,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 3968,
-    "source_count": 303
+    "relation_count": 3970,
+    "source_count": 305
   }
 }
