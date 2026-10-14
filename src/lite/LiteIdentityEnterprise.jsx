@@ -26,7 +26,7 @@ function roleTone(role) {
   return 'neutral';
 }
 
-function PersonRow({ person, currentPersonId, roles, currentRole, busy, onRole, onEnroll, onSuspend, onReactivate, onReset, onRemove }) {
+function PersonRow({ person, currentPersonId, roles, currentRole, busy, onRole, onEnroll, onSuspend, onReactivate, onReset, onRemove, onDetails }) {
   const [draftRole, setDraftRole] = useState(person.role || 'Viewer');
   useEffect(() => setDraftRole(person.role || 'Viewer'), [person.role]);
   const isCurrent = person.human_id === currentPersonId;
@@ -48,33 +48,23 @@ function PersonRow({ person, currentPersonId, roles, currentRole, busy, onRole, 
           ? 'This server-created identity is waiting for passkey setup. Pocket Lab does not print an enrollment token; an authorized Owner or Admin starts the platform WebAuthn ceremony.'
           : `${person.active_passkeys || 0} active passkey${Number(person.active_passkeys || 0) === 1 ? '' : 's'} · ${person.active_sessions || 0} active session${Number(person.active_sessions || 0) === 1 ? '' : 's'} · ${person.recovery_codes_remaining || 0} recovery code${Number(person.recovery_codes_remaining || 0) === 1 ? '' : 's'} remaining`}
       </p>
-      {person.status !== 'removed' && canManageTarget ? (
-        <div className="lite-governance-inline-actions">
-          <label className="lite-governance-field">
-            <span>Role</span>
-            <select value={draftRole} disabled={Boolean(busy)} onChange={(event) => setDraftRole(event.target.value)}>
-              {(visibleRoles.length ? visibleRoles : ROLE_ORDER).map((role) => <option key={role} value={role}>{role}</option>)}
-            </select>
-          </label>
-          <LiteButton variant="secondary" disabled={Boolean(busy) || draftRole === person.role} onClick={() => onRole(person, draftRole)}>Save role</LiteButton>
-        </div>
-      ) : null}
-      <div className="lite-governance-actions">
-        {person.status === 'invited' && canManageTarget ? <LiteButton onClick={() => onEnroll(person)} disabled={Boolean(busy)}>{busy === `enroll:${person.human_id}` ? 'Opening passkey…' : 'Set up passkey'}</LiteButton> : null}
-        {person.status === 'active' && !isCurrent && canManageTarget ? <LiteButton variant="secondary" onClick={() => onSuspend(person)} disabled={Boolean(busy)}>Suspend access</LiteButton> : null}
-        {person.status === 'suspended' && canManageTarget ? <LiteButton variant="secondary" onClick={() => onReactivate(person)} disabled={Boolean(busy)}>Reactivate</LiteButton> : null}
-        {person.status === 'active' && !isCurrent && canManageTarget ? <LiteButton variant="secondary" onClick={() => onReset(person)} disabled={Boolean(busy)}>Reset sign-in</LiteButton> : null}
-        {person.status !== 'removed' && !isCurrent && canManageTarget ? <LiteButton variant="secondary" onClick={() => onRemove(person)} disabled={Boolean(busy)}>Remove person</LiteButton> : null}
-      </div>
+      {onDetails ? <LiteButton variant="secondary" onClick={() => onDetails(person)} disabled={Boolean(busy)}>Open Details</LiteButton> : null}
+      {!onDetails ? <div className="lite-governance-actions">
+        {person.status === 'invited' && canManageTarget ? <LiteButton onClick={() => onEnroll(person)} disabled={Boolean(busy)}>Set up passkey</LiteButton> : null}
+        {person.status === 'active' && !isCurrent && canManageTarget ? <LiteButton onClick={() => onSuspend(person)} disabled={Boolean(busy)}>Suspend access</LiteButton> : null}
+        {person.status === 'suspended' && canManageTarget ? <LiteButton onClick={() => onReactivate(person)} disabled={Boolean(busy)}>Reactivate</LiteButton> : null}
+      </div> : null}
     </div>
   );
 }
 
-export default function LiteIdentityEnterprise({ enterprise, access: initialAccess = null, currentPerson = null, onIdentityRefresh, onModeChanged }) {
+export default function LiteIdentityEnterprise({ enterprise, access: initialAccess = null, currentPerson = null, onIdentityRefresh, onModeChanged, embedded = false, section: selectedSection = 'overview', onOpenDetails }) {
   const currentRole = enterprise?.current_membership?.role || initialAccess?.current_role || '';
   const canManagePeople = currentRole === 'Owner' || currentRole === 'Admin';
   const canChangeMode = currentRole === 'Owner';
-  const [section, setSection] = useState('overview');
+  const [standaloneSection, setStandaloneSection] = useState('overview');
+  const section = embedded ? selectedSection : standaloneSection;
+  const setSection = setStandaloneSection;
   const [busy, setBusy] = useState('');
   const [notice, setNotice] = useState(null);
   const [modePreview, setModePreview] = useState(null);
@@ -184,17 +174,17 @@ export default function LiteIdentityEnterprise({ enterprise, access: initialAcce
   const currentRoleInfo = roleCatalog.find((item) => item.id === currentRole);
 
   return (
-    <section className="lite-identity-enterprise lite-governance-section" aria-labelledby="identity-enterprise-heading">
-      <div className="lite-governance-title-row">
+    <section className="lite-identity-enterprise lite-governance-section" aria-label="Enterprise access governance">
+      {!embedded ? <div className="lite-governance-title-row">
         <div><span>Enterprise Mode</span><h2 id="identity-enterprise-heading">Identity & Access governance</h2><p>People, roles and Safety Rules use the same server-owned authority model.</p></div>
         <div className="lite-governance-inline-actions"><StatusBadge status="healthy">Enabled</StatusBadge><LiteHelp helpKey="identity.overview" /></div>
-      </div>
+      </div> : null}
 
       {notice ? <StateSurface tone={notice.error ? 'degraded' : 'neutral'} title={notice.title} description={notice.message} className="mt-4" /> : null}
 
-      <nav className="lite-governance-nav" aria-label="Identity governance sections">
+      {!embedded ? <nav className="lite-governance-nav" aria-label="Identity governance sections">
         {[['overview', 'Overview'], ['people', 'People'], ['roles', 'Roles & access'], ['mode', 'Mode']].map(([id, label]) => <button key={id} type="button" className={section === id ? 'is-active' : ''} aria-current={section === id ? 'page' : undefined} onClick={() => setSection(id)}>{label}</button>)}
-      </nav>
+      </nav> : null}
 
       {section === 'overview' ? (
         <div className="lite-governance-stack">
@@ -251,6 +241,17 @@ export default function LiteIdentityEnterprise({ enterprise, access: initialAcce
               onReactivate={(item) => execute(`reactivate:${item.human_id}`, () => liteEnterpriseApi.reactivatePerson(item.human_id), 'Access reactivated.')}
               onReset={(item) => setConfirm({ title: `Reset sign-in for ${item.display_name}?`, description: 'Existing passkeys, password credentials, recovery codes, sessions and continuations are invalidated. The person returns to Waiting to join, where an authorized Owner/Admin can run Set up passkey again.', confirmLabel: 'Reset sign-in', action: () => execute(`reset:${item.human_id}`, () => liteEnterpriseApi.resetPersonAccess(item.human_id), 'Sign-in reset. Set up a new passkey to finish recovery.') })}
               onRemove={(item) => setConfirm({ title: `Remove ${item.display_name}?`, description: 'Active authority and sign-in methods are revoked. Identity and audit history are retained so past evidence remains understandable.', confirmLabel: 'Remove person', action: () => execute(`remove:${item.human_id}`, () => liteEnterpriseApi.removePerson(item.human_id), 'Person removed.') })}
+              onDetails={(item) => {
+                const canManageTarget = currentRole === 'Owner' || !['Owner', 'Admin'].includes(item.role);
+                const isSelf = item.human_id === currentPerson?.human_id;
+                const detailActions = [];
+                if (canManageTarget && item.status === 'invited') detailActions.push({ label: 'Set up passkey', onClick: () => enrollPerson(item) });
+                if (canManageTarget && item.status === 'active' && !isSelf) detailActions.push({ label: 'Suspend access', onClick: () => setConfirm({ title: 'Suspend access?', description: 'Existing sessions and authority are invalidated.', confirmLabel: 'Suspend access', action: () => execute('suspend', () => liteEnterpriseApi.suspendPerson(item.human_id), 'Access suspended.') }) });
+                if (canManageTarget && item.status === 'suspended') detailActions.push({ label: 'Reactivate', onClick: () => execute('reactivate', () => liteEnterpriseApi.reactivatePerson(item.human_id), 'Access reactivated.') });
+                if (canManageTarget && item.status === 'active' && !isSelf) detailActions.push({ label: 'Reset sign-in', onClick: () => setConfirm({ title: 'Reset sign-in?', description: 'Passkeys, password, recovery codes, sessions and continuations are invalidated. The person must re-enroll.', confirmLabel: 'Reset sign-in', action: () => execute('reset', () => liteEnterpriseApi.resetPersonAccess(item.human_id), 'Sign-in reset.') }) });
+                if (canManageTarget && item.status !== 'removed' && !isSelf) detailActions.push({ label: 'Remove person', onClick: () => setConfirm({ title: 'Remove person?', description: 'Existing authority is revoked while identity and audit history are retained.', confirmLabel: 'Remove person', action: () => execute('remove', () => liteEnterpriseApi.removePerson(item.human_id), 'Person removed.') }) });
+                onOpenDetails?.('person', { ...item, roleOptions: roleIds.filter((role) => currentRole === 'Owner' || !['Owner', 'Admin'].includes(role)), onChangeRole: canManageTarget && item.status !== 'removed' ? (role) => changeRole(item, role) : null, detailActions });
+              }}
             />)}
           </div>
           {!people.loading && !(people.data?.people || []).length ? <StateSurface tone="neutral" title="No people yet" description="Add a person to create a separate server-owned identity and assign its first role." /> : null}
@@ -263,13 +264,13 @@ export default function LiteIdentityEnterprise({ enterprise, access: initialAcce
             <div className="lite-governance-card-head"><LiteHelpHeading title="Roles & access" helpKey="identity.roles" as="h3" /><StatusBadge status="healthy">Server owned</StatusBadge></div>
             <p>The browser displays authority; it does not grant it. Identity and Rules read the same server projection.</p>
             <div className="lite-governance-role-grid">
-              {roleCatalog.map((role) => <div key={role.id} className={`lite-governance-role-card ${role.id === currentRole ? 'is-current' : ''}`}><div className="lite-governance-card-head"><strong>{role.label || role.id}</strong><StatusBadge status={roleTone(role.id)}>{role.id === currentRole ? 'Your role' : role.id}</StatusBadge></div><p>{role.summary}</p></div>)}
+              {roleCatalog.map((role) => <div key={role.id} className={`lite-governance-role-card ${role.id === currentRole ? 'is-current' : ''}`}><div className="lite-governance-card-head"><strong>{role.label || role.id}</strong><StatusBadge status={roleTone(role.id)}>{role.id === currentRole ? 'Your role' : role.id}</StatusBadge></div><p>{role.summary}</p><LiteButton variant="secondary" onClick={() => onOpenDetails?.('role', role)}>Role Details</LiteButton></div>)}
             </div>
           </GlassCard>
           <GlassCard className="lite-governance-card">
             <div className="lite-governance-card-head"><h3>Effective capability matrix</h3><LiteHelp helpKey="rules.protection" /></div>
-            <div className="lite-governance-matrix">
-              {(accessData.action_matrix || []).map((row) => <div className="lite-governance-matrix-row" key={row.action_id}><div><strong>{row.label}</strong><div className="lite-governance-muted">{row.summary}</div></div>{ROLE_ORDER.map((role) => <div key={role} className="lite-governance-matrix-cell"><strong>{role}</strong><br />{row.roles?.[role] === 'allow' ? 'Direct' : row.roles?.[role] === 'approval' ? 'Review' : row.roles?.[role] === 'step_up' ? 'Passkey' : row.roles?.[role] === 'temporary_access' ? 'Temporary' : 'Blocked'}</div>)}</div>)}
+            <div className="lite-governance-matrix" aria-label="Server reported action matrix">
+              {(accessData.action_matrix || []).map((row) => <div className="lite-governance-matrix-row" key={row.action_id}><div><strong>{row.label}</strong><div className="lite-governance-muted">{row.summary}</div><LiteButton variant="secondary" onClick={() => onOpenDetails?.('authorization', { label: row.label, summary: row.summary, decision: row.roles?.[currentRole] })}>Access Details</LiteButton></div>{ROLE_ORDER.map((role) => <div key={role} className="lite-governance-matrix-cell"><strong>{role}</strong><br />{row.roles?.[role] === 'allow' ? 'Direct' : row.roles?.[role] === 'approval' ? 'Review' : row.roles?.[role] === 'step_up' ? 'Passkey' : row.roles?.[role] === 'temporary_access' ? 'Temporary' : 'Blocked'}</div>)}</div>)}
             </div>
           </GlassCard>
           {(accessData.app_resources || []).length ? (
