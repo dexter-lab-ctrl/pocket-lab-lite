@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserRoundCheck, Target, Scale, ArrowRightCircle, FlaskConical } from 'lucide-react';
+import { UserRoundCheck, Target, Scale, ArrowRightCircle } from 'lucide-react';
 import { GlassCard, StatusBadge, StateSurface } from '../LiteUi.jsx';
 import { LiteTechnicalFacts } from '../LiteUx.jsx';
 import { rulesDecisionView } from './rulesPremiumView.js';
