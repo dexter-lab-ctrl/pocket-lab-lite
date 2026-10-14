@@ -54,6 +54,7 @@ export default function RulesScreen() {
   const [manageOpen, setManageOpen] = React.useState(false);
   const [manageSection, setManageSection] = React.useState('overview');
   const [insightDecision, setInsightDecision] = React.useState(null);
+  const [manageDecision, setManageDecision] = React.useState(null);
   const [sourceSyncBusy, setSourceSyncBusy] = React.useState(false);
   const [sourceSyncNotice, setSourceSyncNotice] = React.useState(null);
   const [activationStatus, setActivationStatus] = React.useState(null);
@@ -72,7 +73,22 @@ export default function RulesScreen() {
   const latestView = rulesDecisionView(latest);
   const templates = Array.isArray(data?.templates) ? data.templates : [];
   const protection = rulesProtectionView(data, { savedStateOnly, backendReachable, isExpired, enterprise: enterpriseMode });
-  const openManage = (section = 'overview') => { setManageSection(section); setManageOpen(true); };
+  const openManage = (section = 'overview') => { setManageDecision(null); setManageSection(section); setManageOpen(true); };
+  async function explainDecision(record, inManage = false) {
+    if (!record) return;
+    const update = inManage ? setManageDecision : setInsightDecision;
+    update(record);
+    // Details are hydrated only on intent. Never fetch an entire history for first paint.
+    if (!record.decision_id || !backendReachable || savedStateOnly) return;
+    try {
+      const result = await liteApi.policyDecision(record.decision_id);
+      const detail = result?.decision && typeof result.decision === 'object' ? result.decision : result;
+      if (!detail || typeof detail !== 'object' || (detail.decision_id && detail.decision_id !== record.decision_id)) return;
+      update((previous) => previous?.decision_id === record.decision_id ? { ...record, ...detail } : previous);
+    } catch (_error) {
+      // Retain verified list summary; missing detail is not a new authorization outcome.
+    }
+  }
   const enterpriseSections = {
     governance: 'protection', decisions: 'activity', policies: 'policies', simulate: 'simulate',
     requests: 'requests', exceptions: 'exceptions', revision: 'revision',
@@ -191,7 +207,7 @@ export default function RulesScreen() {
           <h3>{latestView.action}</h3><p>{latestView.reason}</p>
           {latestView.occurredAt ? <time dateTime={latestView.occurredAt}>{formatLiteTime(latestView.occurredAt)}</time> : null}
           <p className="lite-rules-premium-boundary">This is an authorization decision, not proof of execution.</p>
-          <LiteButton onClick={() => setInsightDecision(latest)}>Explain this</LiteButton>
+          <LiteButton onClick={() => explainDecision(latest)}>Explain this</LiteButton>
         </div> : <StateSurface tone="neutral" title="No recorded decisions" description="When Pocket Lab evaluates a protected change, its decision can appear here. Nothing is assumed." />}
         {(savedStateOnly || isExpired) && latestView ? <p className="lite-rules-premium-saved">Saved decision — current state not confirmed.</p> : null}
       </GlassCard>
@@ -213,7 +229,7 @@ export default function RulesScreen() {
           <p>Owner actions still obey Server Host protections, passkey step-up where required and backend confirmation.</p>
         </div> : null}
         {manageSection === 'decisions' && !enterpriseEnabled ? <div className="lite-rules-premium-manage-content" data-rules-manage-section="decisions"><h2>Decision History</h2>
-          <RulesDecisionTimeline decisions={recent} saved={savedStateOnly || isExpired} onExplain={setInsightDecision} />
+          {manageDecision ? <div className="lite-rules-premium-inline-insight"><LiteButton tone="secondary" onClick={() => setManageDecision(null)}>Back to Decision History</LiteButton><RulesDecisionInsight decision={manageDecision} /></div> : <RulesDecisionTimeline decisions={recent} saved={savedStateOnly || isExpired} onExplain={(record) => explainDecision(record, true)} />}
         </div> : null}
         {manageSection === 'policies' && !enterpriseEnabled ? <div className="lite-rules-premium-manage-content" data-rules-manage-section="policies"><h2>Policy summaries</h2>
           {templates.map((template) => <LiteActionRow key={template.id} label={template.label} value={template.status === 'active' ? 'Active' : 'Available'} summary={template.summary} />)}
