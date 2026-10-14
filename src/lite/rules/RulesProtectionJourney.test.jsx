@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import React from 'react';
 import { describe, expect, it } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, within } from '@testing-library/react';
 import RulesProtectionJourney from './RulesProtectionJourney.jsx';
 import RulesDecisionInsight from './RulesDecisionInsight.jsx';
 import { RulesActivationTimeline, RulesRevisionTimeline } from './RulesPremiumTimeline.jsx';
@@ -29,7 +29,8 @@ describe('Premium Rules Journey, Decision Insight and source timelines', () => {
     render(<RulesDecisionInsight decision={{ allow: true, action_id: 'device.remove', reason_code: 'unknown_reason' }} />);
     expect(screen.getByText(/Actor information unavailable/i)).toBeTruthy();
     expect(screen.getByText(/does not establish that execution/i)).toBeTruthy();
-    expect(screen.getByText(/Remove a device/i)).toBeTruthy();
+    const actionRow = screen.getByRole('heading', { name: 'What would change?' }).parentElement;
+    expect(within(actionRow).getByText('Remove a device')).toBeTruthy();
     cleanup();
   });
   it('displays a simulation disclaimer without granting authority', () => {
@@ -39,7 +40,8 @@ describe('Premium Rules Journey, Decision Insight and source timelines', () => {
   });
   it('renders uncertain recovery and only factual revision comparison', () => {
     render(<RulesActivationTimeline operation={{ state: 'uncertain' }} backendReachable={false} />);
-    expect(screen.getByText('Uncertain')).toBeTruthy();
+    const activationHeader = screen.getByRole('heading', { name: 'Rules activation' }).parentElement;
+    expect(within(activationHeader).getByText('Uncertain')).toBeTruthy();
     expect(screen.queryByText('Server-reported activation success')).toBeNull();
     cleanup();
     render(<RulesRevisionTimeline health={{ db_active_revision: 'rev-a', known_good_revision: 'rev-b' }} />);

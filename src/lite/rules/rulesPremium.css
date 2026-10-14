@@ -21,6 +21,13 @@
 .lite-rules-premium-attention svg { flex: none; }
 .lite-rules-premium-journey { display: grid; gap: .9rem; }
 .lite-rules-premium-journey header, .lite-rules-premium-latest header { min-width: 0; }
+.theme-pocket-lite-daylight .lite-rules-premium-screen :is(.lite-rules-premium-journey, .lite-rules-premium-latest) > header {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
 .lite-rules-premium-journey h2, .lite-rules-premium-latest h2 { font-size: 1.12rem; font-weight: 740; margin: .2rem 0; }
 .lite-rules-premium-journey p, .lite-rules-premium-latest p { margin: .2rem 0; line-height: 1.55; }
 .lite-rules-journey-track { list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .4rem; padding: 0; margin: .3rem 0; }
@@ -40,6 +47,15 @@
 .lite-rules-premium-latest-body > button { margin-top: .25rem; }
 .lite-rules-premium-boundary, .lite-rules-premium-saved { opacity: .84; font-size: .85rem; }
 .lite-rules-premium-manage, .lite-rules-insight-sheet { min-width: 0; }
+.lite-rules-overlay-surface, .lite-rules-overlay-scroll { min-width: 0; max-width: 100%; }
+.lite-rules-overlay-head { min-width: 0; }
+.lite-rules-overlay-head > div { min-width: 0; flex: 1 1 auto; }
+.lite-rules-overlay-head > div > span,
+.lite-rules-overlay-head > div > strong { display: block; }
+.lite-rules-overlay-head > div > strong { margin-top: .2rem; }
+.lite-rules-overlay-close { flex: 0 0 44px; }
+.lite-rules-overlay-scroll { overflow-x: hidden; }
+.lite-rules-overlay-scroll > * { min-width: 0; max-width: 100%; }
 .lite-rules-premium-nav { display: flex; flex-wrap: wrap; gap: .45rem; padding: .15rem 0 1rem; }
 .lite-rules-premium-nav button { border: 1px solid var(--lite-border, #8293aa); border-radius: .65rem; color: inherit; background: transparent; padding: .6rem .8rem; min-height: 44px; cursor: pointer; font-weight: 620; max-width: 100%; }
 .lite-rules-premium-nav button.is-active { border-width: 2px; background: var(--lite-surface-subtle, rgba(118,143,171,.11)); }

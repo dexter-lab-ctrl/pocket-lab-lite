@@ -212,7 +212,7 @@ export default function RulesScreen() {
         {(savedStateOnly || isExpired) && latestView ? <p className="lite-rules-premium-saved">Saved decision — current state not confirmed.</p> : null}
       </GlassCard>
       {showActivationProgress ? <RulesActivationTimeline operation={activationStatus} backendReachable={backendReachable && !savedStateOnly} /> : activationInProgress ? <StateSurface tone="neutral" title="Rules update reported" description="The server reports an update but has not returned a detailed activation phase. No stage is assumed." /> : null}
-      <LiteSheet open={manageOpen} onClose={() => setManageOpen(false)} title="Manage Safety Rules" eyebrow="Safety Rules" description="Review current protection, decisions and authorized management options." className="lite-rules-manage-sheet lite-rules-premium-manage">
+      <LiteSheet variant="rules" open={manageOpen} onClose={() => setManageOpen(false)} title="Manage Safety Rules" eyebrow="Safety Rules" description="Review current protection, decisions and authorized management options." className="lite-rules-manage-sheet lite-rules-premium-manage">
         <nav className="lite-rules-premium-nav" aria-label="Manage Safety Rules sections">
           {sections.map(([id,label]) => <button key={id} type="button" aria-current={manageSection === id ? 'page' : undefined} className={manageSection === id ? 'is-active' : ''} onClick={() => setManageSection(id)}>{label}</button>)}
         </nav>
@@ -246,7 +246,7 @@ export default function RulesScreen() {
           ]} />
         </div> : null}
       </LiteSheet>
-      <LiteSheet open={Boolean(insightDecision)} onClose={() => setInsightDecision(null)} title="Decision Insight" eyebrow="Safety Rules" description="What the server reported about this protected decision." className="lite-rules-insight-sheet">
+      <LiteSheet variant="rules" open={Boolean(insightDecision)} onClose={() => setInsightDecision(null)} title="Decision Insight" eyebrow="Safety Rules" description="What the server reported about this protected decision." className="lite-rules-insight-sheet">
         {insightDecision ? <RulesDecisionInsight decision={insightDecision} /> : null}
       </LiteSheet>
     </section>

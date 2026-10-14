@@ -6,7 +6,7 @@ async function launch(page: Page, scenario: string) {
   await page.goto('/?screen=rules');
   await waitForLiteScreenToSettle(page, 'rules');
 }
-test.describe('Premium Rules — baseline generation DEFERRED until owner-reviewed render', () => {
+test.describe('Premium Rules — owner-reviewed visual contract', () => {
   test('mobile summary 390', async ({ page }) => {
     await page.setViewportSize({ width:390, height:844 });
     await launch(page, 'rules-enabled');
