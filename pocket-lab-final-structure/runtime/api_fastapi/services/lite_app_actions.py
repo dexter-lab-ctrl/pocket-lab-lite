@@ -220,6 +220,8 @@ def _safe_text(value: Any, fallback: str = "Action status is available.") -> str
 
 def _normalized_status(value: Any, *, enabled: bool) -> str:
     raw = str(value or "").strip().lower().replace("-", "_")
+    if not raw:
+        return "unknown" if enabled else "not_ready"
     if raw in {"queued", "pending"}:
         return "queued"
     if raw in {"running", "working", "executing"}:
@@ -254,6 +256,8 @@ def _progress_payload(action_id: str, action: dict[str, Any], status: str) -> di
             step = "Worker picked it up."
         elif status in {"ready", "not_ready"}:
             step = "Ready." if status == "ready" else "Not ready."
+        elif status == "unknown":
+            step = "Status is not reported."
         else:
             step = "Action status is available."
     steps: list[dict[str, Any]] = []
@@ -393,15 +397,21 @@ def _run_count(action: dict[str, Any], result: dict[str, Any]) -> int:
 def _phone_storage_connected(media: Any) -> bool:
     if not isinstance(media, dict):
         return False
-    try:
-        mapping_count = int(media.get("mapping_count") or 0)
-    except (TypeError, ValueError):
-        mapping_count = 0
     labels = media.get("labels") if isinstance(media.get("labels"), list) else []
     label_text = " ".join(str(label or "").lower() for label in labels)
     if "phone storage" in label_text or "phone" in label_text:
         return True
-    return mapping_count > 0 and not labels
+    mappings = media.get("mappings") if isinstance(media.get("mappings"), list) else []
+    for mapping in mappings:
+        if not isinstance(mapping, dict):
+            continue
+        mapping_text = " ".join(
+            str(mapping.get(key) or "").lower()
+            for key in ("label", "source_label", "source_type", "preset", "kind")
+        )
+        if any(marker in mapping_text for marker in ("phone", "android", "shared storage", "phone_storage")):
+            return True
+    return False
 
 
 def _apply_connect_photos_truth(actions: dict[str, Any], media: Any) -> None:
@@ -436,12 +446,10 @@ def _media_import_completed(media: Any) -> bool:
         return False
     last_import = media.get("last_import") if isinstance(media.get("last_import"), dict) else {}
     status = str(last_import.get("status") or media.get("last_import_status") or "").lower()
-    evidence_status = str(last_import.get("evidence_status") or (media.get("evidence") or {}).get("status") or "").lower() if isinstance(media.get("evidence"), dict) else str(last_import.get("evidence_status") or "").lower()
     return bool(
         media.get("last_imported_at")
         or last_import.get("completed_at")
-        or status in {"succeeded", "success", "completed", "done"}
-        or evidence_status == "saved"
+        or status in {"succeeded", "success", "completed", "complete", "done", "verified"}
     )
 
 

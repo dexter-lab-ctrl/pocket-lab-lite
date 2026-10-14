@@ -3453,7 +3453,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "c9e9d9e65e4cb5a2b889d07978acaaef07c52f38c2e62a791fad6b408a49a97c",
+    "aggregate_fingerprint": "8ed51365b452a02472e3a8f40aedc5e2515d5a87c6d22c71c1092b83c0ac9c5b",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3471,7 +3471,7 @@
       "src/lite/LiteActionProgress.jsx": "880d1bf891c3f76ef42e4565c01b0d2a39a9660a6f2d0ac9f909f0fce458f5a5",
       "src/lite/LiteApp.jsx": "049db027fbb01321feb725128346e91a5fad123a0bf05a316a165509a0cf4295",
       "src/lite/LiteCatalog.jsx": "8e58b8d66a504532ae3a8f97a63b4cb5b058e172f11c167bb11c2484e02e4902",
-      "src/lite/LiteCatalog.stories.jsx": "7bca071d95d610bf6c8f3d33aafcc202392afc3b5b3fe6394c3395679fa2ff1f",
+      "src/lite/LiteCatalog.stories.jsx": "cd1316d9e731f20ce69ee2a1bd6e6d8e8e00e727758b50db0a2a63c8398918f7",
       "src/lite/LiteDesignSystemP0.test.jsx": "6bba968bf49b96e65585f33b9a43df4e16b821f33bb6c2764c0c0421a7d43993",
       "src/lite/LiteDevices.jsx": "1c065eab8fac3c5be3bdf160bd6013ba9b642551886c066e55f26a8077174582",
       "src/lite/LiteDevices.stories.jsx": "a7a5332db1f1b64a1da6beedbd30891ac3ad83c123dadb749ee909e8d5236d33",
@@ -3506,7 +3506,7 @@
       "src/lite/LiteUi.test.jsx": "d09ad1e06cf21773a1d8ed93dc8071ef7516d872ebd3e3f44eafed0644ee8c50",
       "src/lite/LiteUx.jsx": "86028142a9f9b74b7defd17dbfc25eda92cb6f41acf79e5a9a7bc7bcff79c674",
       "src/lite/LiteUx.stories.jsx": "a45605c9460b371143058035f733beab232d1374d4fa4eb77a9c4b3704843e5f",
-      "src/mocks/handlers.js": "62372f1d06d1d70e2e2cdfa46faa2e8c19edd1ab5290bdc3f093c519a19a6269"
+      "src/mocks/handlers.js": "8413038dfd9469f36445837a48f03593a0443a0f62754a6045cdb4255fdc9a04"
     },
     "validation_state": "generated"
   }

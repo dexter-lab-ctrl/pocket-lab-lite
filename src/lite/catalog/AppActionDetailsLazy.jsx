@@ -1,15 +1,11 @@
 import React from 'react';
-import { X } from 'lucide-react';
 import { formatLiteTime } from '../../lib/liteApi.js';
-import { LiteSharedElementCue } from '../LiteMotion.jsx';
 import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
 
-const APP_ACTION_DETAILS_PANEL_SOURCE_MARKER = 'AppActionDetailsPanel';
 const APP_ACTION_DETAILS_USES_PROGRESSIVE_FOUNDATION = true;
 const APP_ACTION_DETAILS_HISTORY_IS_LAZY = true;
 const APP_ACTION_DETAILS_BACKEND_EVIDENCE_BOUNDARY = 'normal App Catalog details do not fetch backend evidence endpoints';
 const APP_ACTION_DETAILS_VISIBLE_SUMMARY_MARKERS = ['Last result', 'Saved for troubleshooting'];
-void APP_ACTION_DETAILS_PANEL_SOURCE_MARKER;
 void APP_ACTION_DETAILS_USES_PROGRESSIVE_FOUNDATION;
 void APP_ACTION_DETAILS_HISTORY_IS_LAZY;
 void APP_ACTION_DETAILS_BACKEND_EVIDENCE_BOUNDARY;
@@ -28,7 +24,7 @@ function getActionDisplayState(status, enabled = true) {
   if (['running', 'working', 'executing', 'in_progress'].includes(normalized)) return { status: 'working', label: 'Working' };
   if (['succeeded', 'success', 'completed', 'complete', 'done', 'verified', 'ready', 'protected', 'imported'].includes(normalized)) return { status: 'ready', label: 'Done' };
   if (['failed', 'error', 'blocked', 'needs_attention', 'review', 'not_ready'].includes(normalized)) return { status: 'review', label: 'Needs attention' };
-  return { status: 'checking', label: 'Ready' };
+  return { status: 'checking', label: 'Not checked' };
 }
 
 function safeDetailList(items, fallback = []) {
@@ -115,7 +111,7 @@ function compactTechnicalRows(actionId, details = {}, saved = {}, technical = []
   const owner = 'Pocket Lab';
   const rows = [
     { label: 'Action', value: technicalLabel(actionId) },
-    { label: 'Current state', value: technicalLabel(details.status || 'ready') },
+    { label: 'Current state', value: technicalLabel(details.status || 'unknown') },
     { label: 'Run by', value: owner },
     details.operation_id ? { label: 'Operation reference', value: details.operation_id } : null,
     details.sanitized_reference_id ? { label: 'Troubleshooting reference', value: details.sanitized_reference_id } : null,
@@ -163,7 +159,7 @@ function historySummary(details = {}, runLabels, saved = {}) {
   return parts.join(' · ');
 }
 
-export default function AppActionDetailsLazy({ details, actionId = '', onClose }) {
+export default function AppActionDetailsLazy({ details, actionId = '' }) {
   if (!details) return null;
   const happened = actionDetailList(actionId, details.what_happened, [details.summary || 'Action details are available.']);
   const changed = actionDetailList(actionId, details.what_changed, ['Nothing changed.']);
@@ -177,21 +173,10 @@ export default function AppActionDetailsLazy({ details, actionId = '', onClose }
     : { saved: false, backend_only: true, summary: 'No troubleshooting record was saved because this action did not run.' };
   const detailsTone = actionDetailsTone(details, saved);
   const runLabels = actionDetailRunHistoryLabels(actionId);
-  const display = getActionDisplayState(details.status || 'ready');
+  const display = getActionDisplayState(details.status || 'unknown');
 
   return (
-    <section className={`lite-app-action-details-panel is-${detailsTone}`} role="region" aria-label={`${details.title || 'Action'} details`}>
-      <div className="lite-app-action-details-head">
-        {actionId !== 'check_app' && actionId !== 'repair_app' ? <LiteSharedElementCue kind="row-to-details" active label={details.title || 'Action details'} /> : null}
-        <div>
-          <span>Details</span>
-          <h3>{details.title || 'Action details'}</h3>
-          <p>{details.summary || 'Action details are available.'}</p>
-        </div>
-        <button type="button" className="lite-app-action-details-close" onClick={onClose} aria-label="Close action details">
-          <X className="h-4 w-4" />
-        </button>
-      </div>
+    <section className={`lite-app-action-details-panel lite-app-premium-details is-${detailsTone}`} role="region" aria-label={`${details.title || 'Action'} details`}>
 
       <LiteProgressiveDetails
         title={details.title || 'Action details'}

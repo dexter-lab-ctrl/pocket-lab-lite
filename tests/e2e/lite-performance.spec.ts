@@ -183,6 +183,7 @@ test('[interaction] Apps Manage section and action details stay inside the rende
   await page.getByRole('button', { name: /^Manage$/i }).first().click();
   const sheet = page.getByRole('dialog', { name: /Manage PhotoPrism/i });
   await expect(sheet).toBeVisible();
+  await expect(sheet.getByRole('region', { name: 'Photo workflow' })).toBeVisible();
 
   const sectionReport = await measureLiteInteraction(
     page,
@@ -209,7 +210,7 @@ test('[interaction] Apps Manage section and action details stay inside the rende
     interactionId('nested-detail-open', 'catalog-action-details'),
     async () => {
       await detailsButton.click();
-      await expect(sheet.locator('.lite-app-action-details-panel:visible').first()).toBeVisible();
+      await expect(page.locator('.lite-details-panel:visible .lite-app-action-details-panel').first()).toBeVisible();
     },
     {
       settleMs: 480,

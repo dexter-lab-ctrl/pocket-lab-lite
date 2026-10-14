@@ -2,6 +2,8 @@ import { LiteProtectedConfirmation } from '../components/LiteSafeForms.jsx';
 import LiteNextSteps from '../components/LiteNextSteps.jsx';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { filterCatalogApps, sortCatalogApps } from './catalogPresentation.js';
+import { LiteDetailsPanel } from '../LiteOverlay.jsx';
+import './appsPremiumRefinement.css';
 import '../components/liteSafeForms.css';
 import { createPortal } from 'react-dom';
 import { useDrag } from '@use-gesture/react';
@@ -221,15 +223,24 @@ const PHOTO_PRISM_STORAGE_COPY = {
   },
 };
 
-const PHONE_STORAGE_CONNECTED_FOLDERS = [
-  'Android shared storage',
-  'Camera photos',
-  'Pictures',
-  'Videos',
-  'Downloads',
-  'Music',
-];
-
+// Only backend-projected mapping or preview names are shown here.
+function storageConnectedFolderLabels(app, preview = null) {
+  const labels = [];
+  const add = (value) => {
+    if (typeof value !== 'string') return;
+    const label = value.trim();
+    if (label && !labels.includes(label)) labels.push(label);
+  };
+  for (const mapping of storageMappings(app).filter(isPhoneStorageMapping)) {
+    add(mapping.label || mapping.source_label);
+    for (const folder of Array.isArray(mapping.folders) ? mapping.folders : []) add(typeof folder === 'string' ? folder : folder?.name);
+    for (const folder of Array.isArray(mapping.subfolders) ? mapping.subfolders : []) add(typeof folder === 'string' ? folder : folder?.name);
+  }
+  if (['ready', 'connected'].includes(String(preview?.status || '').toLowerCase())) {
+    for (const folder of Array.isArray(preview?.subfolders) ? preview.subfolders : []) add(typeof folder === 'string' ? folder : folder?.name);
+  }
+  return labels;
+}
 
 function actionCopy(actionId, action = {}) {
   const category = appActionCategory(actionId, action);
@@ -377,7 +388,8 @@ function clampNumber(value, min, max) {
 
 function normalizeActionStatus(rawStatus, enabled, busy = false, hasProgress = false) {
   if (busy || hasProgress) return 'running';
-  const value = String(rawStatus || '').toLowerCase().replace(/[\s-]+/g, '_');
+  const value = String(rawStatus || '').trim().toLowerCase().replace(/[\s-]+/g, '_');
+  if (!value) return enabled ? 'unknown' : 'not_ready';
   if (['queued', 'pending'].includes(value)) return 'queued';
   if (['running', 'working', 'executing'].includes(value)) return 'running';
   if (['succeeded', 'success', 'done', 'completed', 'verified'].includes(value)) return 'done';
@@ -596,7 +608,7 @@ function bestResultForAction(actionId, action = {}, result = null) {
   if (actionHasRunEvidence(action, action?.result, action?.progress)) {
     return {
       action_id: actionId,
-      status: action?.result?.status || action?.status || 'ready',
+      status: action?.result?.status || action?.status || 'unknown',
       summary: action?.last_result || action?.result?.summary || action?.summary || 'Action completed.',
       receipt_id: action?.receipt_id || action?.result?.receipt_id || null,
       backend_only: action?.result?.backend_only !== false,
@@ -655,7 +667,7 @@ function normalizeAppAction(entry) {
     progress,
     disabledReason: !enabled ? actionDisabledReason(action) || entry?.title || 'Action is not ready yet.' : '',
     risk: action?.risk || (category === 'danger' ? 'destructive' : category === 'recovery' || category === 'setup' ? 'review' : 'low'),
-    detailsAvailable: actionId !== 'connect_photos',
+    detailsAvailable: true,
     summary: action?.summary || copy.description,
   };
 }
@@ -687,11 +699,13 @@ function groupAppActions(entries, sectionId = '') {
 }
 
 function normalizedResultTone(actionId, payload = {}, action = {}) {
-  const status = String(payload?.status || action?.status || action?.result?.status || '').toLowerCase().replace(/[-\s]+/g, '_');
+  const status = normalizedActionValue(payload?.status || action?.status || action?.result?.status);
   const summary = String(payload?.summary || action?.last_result || action?.result?.summary || '').toLowerCase();
   if (['review', 'needs_attention', 'degraded', 'warning', 'failed', 'error'].includes(status)) return 'review';
+  if (['queued', 'pending', 'accepted', 'running', 'working', 'executing', 'in_progress'].includes(status)) return 'working';
+  if (['ready', 'connected', 'imported', 'installed', 'succeeded', 'success', 'completed', 'complete', 'done', 'verified'].includes(status)) return 'ready';
   if (summary.includes('something changed') || summary.includes('needs review') || summary.includes('not ready')) return 'review';
-  return 'ready';
+  return 'neutral';
 }
 
 function actionStatusChecks(actionId, action = {}) {
@@ -713,23 +727,51 @@ function actionStatusChecks(actionId, action = {}) {
   return [];
 }
 
+const ACTION_RESULT_LIVE_STATUSES = new Set([
+  'queued', 'pending', 'accepted', 'running', 'working', 'executing', 'in_progress',
+]);
+const ACTION_RESULT_SUCCESS_STATUSES = new Set([
+  'succeeded', 'success', 'completed', 'complete', 'done', 'verified', 'connected',
+  'already_connected', 'created', 'imported', 'installed', 'ready',
+]);
+const ACTION_RESULT_REVIEW_STATUSES = new Set([
+  'review', 'needs_attention', 'degraded', 'warning', 'failed', 'failure', 'error',
+  'blocked', 'not_ready', 'unavailable', 'cancelled', 'canceled', 'partial',
+]);
+
+function actionResultStatus(payload = {}, action = {}) {
+  return normalizedActionValue(payload?.status || action?.result?.status || action?.status);
+}
+
+function actionResultTitle(status, {
+  live = 'Working',
+  success = 'Completed',
+  review = 'Needs review',
+  unknown = 'Status unavailable',
+} = {}) {
+  if (ACTION_RESULT_LIVE_STATUSES.has(status)) return live;
+  if (ACTION_RESULT_SUCCESS_STATUSES.has(status)) return success;
+  if (ACTION_RESULT_REVIEW_STATUSES.has(status)) return review;
+  return unknown;
+}
+
 function actionResultCopy(actionId, payload = {}, action = {}) {
-  const status = String(payload?.status || action?.result?.status || '').toLowerCase();
+  const status = actionResultStatus(payload, action);
   const summary = payload?.summary || action?.result?.summary || action?.last_result || '';
   if (actionId === 'backup_app') {
-    return { title: status === 'queued' ? 'App backup queued' : 'App backup saved', summary: summary || 'Settings, mappings, route records, and safe app records were saved.', badges: ['Media excluded', 'Secrets hidden'] };
+    return { title: actionResultTitle(status, { live: 'App backup queued', success: 'App backup saved', review: 'App backup needs review' }), summary: summary || (ACTION_RESULT_SUCCESS_STATUSES.has(status) ? 'Settings, mappings, route records, and safe app records were saved.' : 'The backend has not reported a completed app backup.'), badges: ['Media excluded', 'Secrets hidden'] };
   }
   if (actionId === 'preview_restore') {
-    return { title: status === 'queued' ? 'Restore preview queued' : 'Restore preview ready', summary: summary || 'No files were restored. No database was changed.', badges: ['Preview only', 'Media preserved'] };
+    return { title: actionResultTitle(status, { live: 'Restore preview queued', success: 'Restore preview ready', review: 'Restore preview needs review' }), summary: summary || (ACTION_RESULT_SUCCESS_STATUSES.has(status) ? 'No files were restored. No database was changed.' : 'The backend has not reported a ready restore preview.'), badges: ['Preview only', 'Media preserved'] };
   }
   if (actionId === 'update_app') {
-    return { title: status === 'queued' ? 'Update readiness queued' : 'Update readiness checked', summary: summary || 'No update was applied.', badges: ['No update was applied', 'Rollback checked'] };
+    return { title: actionResultTitle(status, { live: 'Update readiness queued', success: 'Update readiness checked', review: 'Update readiness needs review' }), summary: summary || (ACTION_RESULT_SUCCESS_STATUSES.has(status) ? 'No update was applied.' : 'The backend has not reported an update-readiness result.'), badges: ['No update was applied', 'Rollback checked'] };
   }
   if (actionId === 'check_app') {
     const tone = normalizedResultTone(actionId, payload, action);
     return {
-      title: status === 'queued' ? 'Check app queued' : tone === 'review' ? 'Something changed' : 'Checked safely',
-      summary: summary || (tone === 'review' ? 'PhotoPrism needs attention.' : 'Route, health, storage, and safety look ready.'),
+      title: ACTION_RESULT_LIVE_STATUSES.has(status) ? 'Check app queued' : tone === 'review' ? 'Something changed' : tone === 'ready' ? 'Checked safely' : 'Check status unavailable',
+      summary: summary || (tone === 'review' ? 'PhotoPrism needs attention.' : tone === 'ready' ? 'Route, health, storage, and safety look ready.' : 'The backend has not reported a completed app check.'),
       badges: [],
       checks: actionStatusChecks(actionId, action),
       tone,
@@ -738,22 +780,22 @@ function actionResultCopy(actionId, payload = {}, action = {}) {
   if (actionId === 'repair_app') {
     const tone = normalizedResultTone(actionId, payload, action);
     return {
-      title: status === 'queued' ? 'Repair queued' : tone === 'review' ? 'Repair needs attention' : 'Repair completed',
-      summary: summary || (tone === 'review' ? 'PhotoPrism still needs attention.' : 'PhotoPrism is online again.'),
+      title: ACTION_RESULT_LIVE_STATUSES.has(status) ? 'Repair queued' : tone === 'review' ? 'Repair needs attention' : tone === 'ready' ? 'Repair completed' : 'Repair status unavailable',
+      summary: summary || (tone === 'review' ? 'PhotoPrism still needs attention.' : tone === 'ready' ? 'PhotoPrism is online again.' : 'The backend has not reported a completed repair.'),
       badges: ['Non-destructive', tone === 'review' ? 'Needs attention' : 'Evidence saved'],
       tone,
     };
   }
   if (actionId === 'import_photos') {
-    return { title: status === 'queued' ? 'Import photos queued' : 'Import photos completed', summary: summary || 'PhotoPrism owns indexing and media details.', badges: ['Media flow', 'Saved for troubleshooting'] };
+    return { title: actionResultTitle(status, { live: 'Import photos in progress', success: 'Import photos completed', review: 'Import photos needs review', unknown: 'Import status unavailable' }), summary: summary || (ACTION_RESULT_SUCCESS_STATUSES.has(status) ? 'PhotoPrism owns indexing and media details.' : 'The backend has not reported a completed import.'), badges: ['Media flow', 'Saved for troubleshooting'] };
   }
   if (actionId === 'connect_photos') {
-    return { title: 'Photos connected', summary: summary || 'PhotoPrism can now look there. Run Import photos to update your library.', badges: ['Read-only', 'Paths hidden'] };
+    return { title: actionResultTitle(status, { live: 'Photo connection in progress', success: 'Photos connected', review: 'Photo connection needs review', unknown: 'Connection status unavailable' }), summary: summary || (ACTION_RESULT_SUCCESS_STATUSES.has(status) ? 'PhotoPrism can now look there. Run Import photos to update your library.' : 'The backend has not reported a connected photo source.'), badges: ['Read-only', 'Paths hidden'] };
   }
   if (actionId === 'backup_to_storage') {
-    return { title: status === 'queued' ? 'Storage backup queued' : 'Storage target checked', summary: summary || 'Join a storage device to save app backups elsewhere.', badges: ['Readiness only'] };
+    return { title: actionResultTitle(status, { live: 'Storage backup queued', success: 'Storage target checked', review: 'Storage target needs review' }), summary: summary || (ACTION_RESULT_SUCCESS_STATUSES.has(status) ? 'Join a storage device to save app backups elsewhere.' : 'The backend has not reported a ready storage target.'), badges: ['Readiness only'] };
   }
-  return { title: status === 'queued' ? 'Getting ready' : 'Action updated', summary: summary || 'Pocket Lab updated this app action.', badges: [] };
+  return { title: actionResultTitle(status, { live: 'Getting ready', success: 'Action completed', review: 'Action needs review' }), summary: summary || (ACTION_RESULT_SUCCESS_STATUSES.has(status) ? 'Pocket Lab updated this app action.' : 'The backend has not reported a completed outcome.'), badges: [] };
 }
 
 function tileResultForAction(actionId, action = {}, result = null) {
@@ -762,10 +804,24 @@ function tileResultForAction(actionId, action = {}, result = null) {
 
 function AppActionDetailsButton({ available, onClick, expanded = false }) {
   if (!available) return null;
+  const className = `lite-app-action-details-button ${expanded ? 'is-expanded' : ''}`;
+  if (isLitePerformanceMode()) {
+    return (
+      <button
+        type="button"
+        className={className}
+        onClick={onClick}
+        aria-expanded={expanded}
+      >
+        <FileCheck className="h-4 w-4" />
+        <span>{expanded ? 'Hide details' : 'Details'}</span>
+      </button>
+    );
+  }
   return (
     <LitePressableButton
       type="button"
-      className={`lite-app-action-details-button ${expanded ? 'is-expanded' : ''}`}
+      className={className}
       onClick={onClick}
       aria-expanded={expanded}
       haptic="selection"
@@ -777,10 +833,14 @@ function AppActionDetailsButton({ available, onClick, expanded = false }) {
 }
 
 function AppActionDisabledReason({ reason }) {
+  if (!reason) return null;
+  if (isLitePerformanceMode()) {
+    return <p className="lite-app-action-disabled-reason">{reason}</p>;
+  }
   return (
     <LiteMotionReveal
       as="p"
-      show={Boolean(reason)}
+      show
       className="lite-app-action-disabled-reason"
       motionKey={reason || ''}
     >
@@ -921,7 +981,8 @@ function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
     const media = lifecycle?.media || {};
     const operation = media?.last_import || null;
     const operationStatus = normalizedActionStatus(operation?.status || operation?.phase);
-    const operationLive = Boolean(media?.operation_running || isLiveCatalogActionStatus(operationStatus));
+    const operationLive = !mediaImportIsStale(media)
+      && Boolean(media?.operation_running || isLiveCatalogActionStatus(operationStatus));
     if (!operationLive) return busy ? syntheticBusyProgress(actionId) : null;
     return progressFromLiveOperation({
       actionId,
@@ -1190,7 +1251,7 @@ const PhotoPrismActionTile = React.memo(function PhotoPrismActionTile({
   const showProgress = Boolean(!isSimpleMediaShortcut && progressState?.running && ['import_photos', 'check_app', 'repair_app', 'backup_app', 'preview_restore', 'backup_to_storage', 'update_app'].includes(actionId));
   const progressLabel = progressState?.running ? progressState.step || busyActionLabel(actionId) : '';
   const tileResult = isSimpleMediaShortcut ? null : tileResultForAction(actionId, action, result);
-  const detailsAvailable = !isSimpleMediaShortcut;
+  const detailsAvailable = true;
   const rowTone = actionRowTone(actionId, action, tileResult || result);
   const rowStateLabel = progressLabel || reason || actionRowStateLabel(actionId, action, tileResult || result);
   const actionButtonLabel = busy || progressState?.running ? 'Working' : copy.label;
@@ -1226,6 +1287,11 @@ const PhotoPrismActionTile = React.memo(function PhotoPrismActionTile({
       <span>{normalized.summary || copy.description}</span>
       <AppActionDetailsButton available={detailsAvailable} onClick={onViewDetails} expanded={detailsExpanded} />
     </div>
+  ) : isSimpleMediaShortcut ? (
+    <div className="lite-app-action-row-result is-neutral">
+      <span>{reason || normalized.summary || copy.description}</span>
+      <AppActionDetailsButton available onClick={onViewDetails} expanded={detailsExpanded} />
+    </div>
   ) : null;
 
   return (
@@ -1259,16 +1325,27 @@ const PhotoPrismActionTile = React.memo(function PhotoPrismActionTile({
   );
 });
 
-function PhoneStorageConnectedFolders() {
+function PhoneStorageConnectedFolders({ app, preview }) {
+  const folders = storageConnectedFolderLabels(app, preview);
   return (
-    <div className="lite-catalog-connected-folders" role="status" aria-live="polite">
-      <p>Connected folders from Phone Storage</p>
-      <div className="lite-catalog-connected-folder-list">
-        {storageConnectedFolderLabels().map((folder) => (
-          <span key={folder}>{folder}</span>
-        ))}
+    <section className="lite-catalog-connected-folders" aria-label="Connected folders from Phone Storage">
+      <div className="lite-catalog-premium-connection-heading">
+        <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+        <div><strong>Phone storage connected</strong><p>Read-only access to shared storage.</p></div>
       </div>
-    </div>
+      {folders.length ? (
+        <>
+          <div className="lite-catalog-connected-folder-list" aria-label="Reported folders preview">
+            {folders.slice(0, 3).map((folder) => <span key={folder}>{folder}</span>)}
+            {folders.length > 3 ? <span>+{folders.length - 3} more</span> : null}
+          </div>
+          {folders.length > 3 ? <details className="lite-catalog-premium-disclosure">
+            <summary>View all {folders.length} reported folders</summary>
+            <ul>{folders.map((folder) => <li key={folder}>{folder}</li>)}</ul>
+          </details> : null}
+        </>
+      ) : <p className="lite-catalog-premium-muted">Folder names are not available in the current storage projection.</p>}
+    </section>
   );
 }
 
@@ -1310,9 +1387,12 @@ function PhotoPrismStoragePreviewSheet({
   onRetry,
   onDismissNotice,
 }) {
-  const ready = String(preview?.status || '').toLowerCase() === 'ready' && preview?.connect_payload;
-  const notReady = String(preview?.status || '').toLowerCase() === 'not_ready';
+  const previewStatus = String(preview?.status || '').toLowerCase();
+  const ready = previewStatus === 'ready' && preview?.connect_payload;
+  const notReady = previewStatus === 'not_ready';
+  const hasReportedPreview = ['ready', 'connected'].includes(previewStatus);
   const folders = Array.isArray(preview?.subfolders) ? preview.subfolders : [];
+  const reportedRoot = preview?.root_label || preview?.root || 'Not reported';
 
   return (
       <section
@@ -1324,7 +1404,7 @@ function PhotoPrismStoragePreviewSheet({
           <div>
             <span>Connect photos</span>
             <h2 id="lite-catalog-storage-preview-title">Choose where PhotoPrism should look for pictures.</h2>
-            <p>PhotoPrism will look for pictures in this phone’s storage.</p>
+            <p>{preview?.summary || 'Pocket Lab will show the backend-reported storage preview before connecting photos.'}</p>
           </div>
           <button type="button" className="lite-catalog-storage-preview-close" onClick={onClose} aria-label="Cancel Connect photos">
             <X className="h-4 w-4" />
@@ -1334,7 +1414,7 @@ function PhotoPrismStoragePreviewSheet({
         <div className="lite-catalog-storage-preview-root" aria-label="Phone storage mapping">
           <div>
             <span>Phone storage</span>
-            <strong>{preview?.root || '~/storage'}</strong>
+            <strong>{reportedRoot}</strong>
           </div>
           <span>{previewStatusText(preview)}</span>
           <span>Read-only</span>
@@ -1342,7 +1422,7 @@ function PhotoPrismStoragePreviewSheet({
 
         <div className="lite-catalog-storage-preview-note">
           <strong>Photos are not moved by this step.</strong>
-          <p>PhotoPrism will look in ~/storage. Run Import photos after connecting storage. PhotoPrism handles indexing inside the app.</p>
+          <p>{ready ? 'Run Import photos after connecting storage. PhotoPrism handles indexing inside the app.' : 'No photo source is connected by this preview.'}</p>
         </div>
 
         <div className="lite-catalog-storage-preview-list-head">
@@ -1350,7 +1430,7 @@ function PhotoPrismStoragePreviewSheet({
             <span>Visible folders</span>
             <strong>Included with phone storage</strong>
           </div>
-          <p>These folders are shown for clarity. Pocket Lab connects the whole phone storage folder.</p>
+          <p>Only folder names reported by the backend preview are shown here.</p>
         </div>
 
         {loading ? (
@@ -1374,7 +1454,7 @@ function PhotoPrismStoragePreviewSheet({
             <strong>Phone storage is not ready yet.</strong>
             <p>{preview?.reason || 'Allow Android storage access for Pocket Lab on this device, then try again.'}</p>
           </div>
-        ) : folders.length ? (
+        ) : hasReportedPreview && folders.length ? (
           <div className="lite-catalog-storage-preview-list" aria-label="Visible folders included with phone storage">
             {folders.map((folder) => (
               <div key={folder.path_summary || folder.name} className="lite-catalog-storage-preview-row">
@@ -1386,8 +1466,8 @@ function PhotoPrismStoragePreviewSheet({
           </div>
         ) : (
           <div className="lite-catalog-storage-preview-empty" role="status">
-            <strong>No visible folders yet.</strong>
-            <p>Pocket Lab can still connect the whole phone storage folder if Android storage access is ready.</p>
+            <strong>No reported folders yet.</strong>
+            <p>The backend did not report folder metadata for this storage preview.</p>
           </div>
         )}
 
@@ -1413,126 +1493,71 @@ function PhotoPrismStoragePreviewSheet({
   );
 }
 
-function PhotoPrismMediaFlowCard({ lifecycle, busyKey = '' }) {
-  const flow = photoPrismMediaFlowState(lifecycle, busyKey);
-  const steps = [
-    { id: 'phone', label: 'Phone photos', icon: <Smartphone className="h-4 w-4" /> },
-    { id: 'worker', label: 'Pocket Lab', icon: <RefreshCw className="h-4 w-4" /> },
-    { id: 'prism', label: 'PhotoPrism', icon: <ImageIcon className="h-4 w-4" /> },
-    { id: 'backup', label: 'Storage', icon: <HardDrive className="h-4 w-4" /> },
-  ];
-
+function PhotoPrismMediaFlowCard({ lifecycle, busyKey = '', phoneSource = false, onViewDetails }) {
+  const flow = photoPrismMediaFlowState(lifecycle, busyKey, phoneSource);
+  const icons = {
+    phone: <Smartphone aria-hidden="true" />,
+    source: <FolderOpen aria-hidden="true" />,
+    transfer: <RefreshCw aria-hidden="true" />,
+    prism: <ImageIcon aria-hidden="true" />,
+  };
   return (
-    <div className={`lite-catalog-media-flow-card is-${flow.state} motion-${flow.motion}`} aria-label={flow.ariaLabel}>
-      <div className="lite-catalog-media-flow-copy">
-        <span>{flow.eyebrow}</span>
-        <strong>{flow.title}</strong>
+    <section className={`lite-catalog-media-flow-card lite-catalog-premium-flow is-${flow.state}`} aria-label="Photo workflow">
+      <div className="lite-catalog-premium-flow-header">
+        <div><span>Photo workflow</span><strong>{flow.title}</strong></div>
+        <span className={`lite-catalog-premium-state is-${flow.state}`}>{flow.badge}</span>
+      </div>
+      <ol className="lite-catalog-premium-flow-steps" aria-label={flow.ariaLabel}>
+        {flow.steps.map((step) => (
+          <li key={step.id} className={`lite-catalog-premium-flow-step is-${step.state}`}>
+            <span className="lite-catalog-premium-flow-icon">{icons[step.id]}</span>
+            <strong>{step.label}</strong><small>{step.status}</small>
+          </li>
+        ))}
+      </ol>
+      <div className="lite-catalog-premium-flow-foot">
         <p>{flow.summary}</p>
+        {onViewDetails ? <button type="button" onClick={onViewDetails}>View details</button> : null}
       </div>
-      <div className="lite-catalog-media-flow-stage">
-        <div className="lite-catalog-media-flow-visual" aria-hidden="true">
-          {steps.map((step, index) => (
-            <React.Fragment key={step.id}>
-              {index > 0 ? <span className={`lite-catalog-media-flow-line is-${step.id}`}><i /></span> : null}
-              <span className={`lite-catalog-media-flow-node is-${step.id} ${flow.activeNodes.includes(step.id) ? 'is-active' : ''} ${flow.doneNodes.includes(step.id) ? 'is-done' : ''}`}>
-                {step.icon}
-                <small>{step.label}</small>
-              </span>
-            </React.Fragment>
-          ))}
-        </div>
-      </div>
-      <span className="lite-catalog-media-flow-badge">{flow.badge}</span>
-    </div>
+    </section>
   );
 }
 
-function photoPrismMediaFlowState(lifecycle, busyKey = '') {
-  const media = lifecycle?.media || {};
-  const backup = lifecycle?.backup || {};
-  const backupTargets = lifecycle?.backup_targets || {};
-  const mappingCount = Number(media?.mapping_count || lifecycle?.storage?.mapping_count || 0);
-  const storageConnected = mappingCount > 0 || lifecycle?.storage?.status === 'connected';
-  const lastImport = media?.last_import || {};
-  const importStatus = String(lastImport?.status || '').toLowerCase();
-  const actionBusy = String(busyKey || '').includes('import_photos');
-  const operationRunning = Boolean(media?.operation_running || actionBusy);
-  const importing = operationRunning && ['queued', 'running'].includes(importStatus);
-  const failed = ['failed', 'timed_out'].includes(importStatus) || media?.status === 'review';
-  const succeeded = ['succeeded'].includes(importStatus) || media?.evidence?.status === 'saved';
-  const backupTargetReady = Boolean(backup?.target_ready || backupTargets?.ready_count > 0);
-  const backupMissing = storageConnected && !backupTargetReady;
-
-  if (!storageConnected) {
-    return {
-      state: 'idle',
-      eyebrow: 'PhotoPrism flow',
-      title: 'Connect photos to start',
-      summary: 'Choose phone photos or a storage device before importing.',
-      badge: 'Connect photos',
-      ariaLabel: 'PhotoPrism media flow idle. Connect photos to start.',
-      motion: 'calm',
-      activeNodes: [],
-      doneNodes: [],
-    };
-  }
-
-  if (importing) {
-    return {
-      state: 'importing',
-      eyebrow: 'PhotoPrism flow',
-      title: 'Importing photos',
-      summary: 'Pocket Lab is bringing connected photos into PhotoPrism.',
-      badge: 'Working',
-      ariaLabel: 'PhotoPrism media flow importing photos through Pocket Lab.',
-      motion: 'active',
-      activeNodes: ['phone', 'worker', 'prism'],
-      doneNodes: ['phone'],
-    };
-  }
-
-  if (failed) {
-    return {
-      state: 'review',
-      eyebrow: 'PhotoPrism flow',
-      title: 'Photo action needs review',
-      summary: 'Check the latest media action before running it again.',
-      badge: 'Needs review',
-      ariaLabel: 'PhotoPrism media flow needs review.',
-      motion: 'attention',
-      activeNodes: [],
-      doneNodes: ['phone'],
-    };
-  }
-
-  if (backupMissing) {
-    return {
-      state: succeeded ? 'succeeded' : 'connected',
-      eyebrow: 'PhotoPrism flow',
-      title: succeeded ? 'Photo library updated' : 'Phone photos connected',
-      summary: 'Add a storage device when you are ready to save app backups elsewhere.',
-      badge: succeeded ? 'Done' : 'Connected',
-      ariaLabel: 'PhotoPrism media flow connected. Backup target is not ready yet.',
-      motion: succeeded ? 'calm' : 'ready',
-      activeNodes: [],
-      doneNodes: succeeded ? ['phone', 'worker', 'prism'] : ['phone'],
-    };
-  }
-
-  return {
-    state: succeeded ? 'succeeded' : 'connected',
-    eyebrow: 'PhotoPrism flow',
-    title: succeeded ? 'Photo library updated' : 'Phone photos connected',
-    summary: succeeded ? 'PhotoPrism is ready with a saved troubleshooting record.' : 'PhotoPrism is ready to import connected media.',
-    badge: succeeded ? 'Done' : 'Connected',
-    ariaLabel: 'PhotoPrism media flow ready.',
-    motion: succeeded ? 'calm' : 'ready',
-    activeNodes: [],
-    doneNodes: succeeded ? ['phone', 'worker', 'prism', ...(backupTargetReady ? ['backup'] : [])] : ['phone'],
-  };
+function mediaImportIsStale(media = {}) {
+  const operation = media?.last_import && typeof media.last_import === 'object' ? media.last_import : {};
+  const progress = operation?.progress && typeof operation.progress === 'object' ? operation.progress : {};
+  return Boolean(media?.progress_stale || media?.stale || operation?.progress_stale || operation?.stale || progress?.progress_stale || progress?.stale);
 }
 
-
+function photoPrismMediaFlowState(lifecycle, busyKey = '', phoneSource = false) {
+  const media = lifecycle?.media || {};
+  const connected = Number(media.mapping_count ?? lifecycle?.storage?.mapping_count ?? 0) > 0
+    || lifecycle?.storage?.status === 'connected';
+  const status = normalizedActionValue(media?.last_import?.status);
+  const stale = mediaImportIsStale(media);
+  const queued = !stale && ['queued', 'accepted', 'pending', 'planning', 'waiting', 'waiting_for_credentials', 'starting'].includes(status);
+  const executing = !stale && ['running', 'working', 'executing', 'in_progress', 'transferring', 'cancelling'].includes(status);
+  const completed = ['succeeded', 'success', 'completed', 'done'].includes(status);
+  const failed = ['failed', 'error', 'timed_out', 'blocked', 'partial', 'needs_review'].includes(status) || media.status === 'review';
+  const active = !failed && !completed && (queued || executing || (!stale && Boolean(media.operation_running)) || String(busyKey).includes('import_photos'));
+  const state = failed ? 'review' : active ? (executing ? 'running' : 'waiting') : completed ? 'completed' : connected ? 'connected' : 'idle';
+  const badge = { review: 'Needs review', running: 'Running', waiting: 'Waiting', completed: 'Completed', connected: 'Connected', idle: 'Not connected' }[state];
+  const transferStatus = executing ? 'Running' : queued || active ? 'Waiting' : completed ? 'Completed' : failed ? 'Needs review' : 'Not running';
+  const prismStatus = completed ? 'Updated' : failed ? 'Check readiness' : active ? 'Waiting' : 'Not checked';
+  const steps = [
+    { id: phoneSource ? 'phone' : 'source', label: phoneSource ? 'Phone' : 'Photo source', state: connected ? 'done' : 'idle', status: connected ? 'Connected' : 'Not connected' },
+    { id: 'transfer', label: 'Transfer', state: active ? 'running' : failed ? 'review' : completed ? 'done' : 'idle', status: transferStatus },
+    { id: 'prism', label: 'PhotoPrism', state: completed ? 'done' : failed ? 'review' : 'idle', status: prismStatus },
+  ];
+  const title = failed ? 'Latest photo action needs review' : active ? 'Photo action in progress'
+    : completed ? 'Latest photo import completed' : connected ? 'Phone storage connected' : 'Connect photos to start';
+  const summary = failed ? 'Review the latest import outcome before retrying.'
+    : active ? 'Waiting for the latest backend-reported photo action outcome.'
+    : completed ? 'The latest import was reported as completed.'
+    : connected ? 'A connected folder does not mean photos were transferred.'
+    : 'Connect a backend-approved photo source before importing.';
+  return { state, badge, title, summary, steps, ariaLabel: steps.map((step) => `${step.label}: ${step.status}`).join('. ') };
+}
 
 function safeDetailList(items, fallback = []) {
   const values = Array.isArray(items) ? items : fallback;
@@ -1599,14 +1624,16 @@ function fallbackActionDetails(actionId, action = {}, result = null) {
   const summary = result?.summary || action?.summary || copy.description || 'Action details are available.';
   const browserOnly = ['open', 'open_full_screen', 'install_to_phone'].includes(actionId);
   const disabled = action?.enabled === false;
+  const status = action?.status || (disabled ? 'not_ready' : 'unknown');
+  const hasReportedOutcome = Boolean(result?.status || action?.result?.status || action?.last_result);
   return {
     title: action?.label || copy.label,
-    status: action?.status || (disabled ? 'not_ready' : 'ready'),
+    status,
     summary,
     what_happened: disabled
       ? [`This action is paused because ${String(action?.disabled_reason || action?.reason || 'it is not ready yet.').replace(/^./, (char) => char.toLowerCase())}`]
       : [summary],
-    what_changed: [browserOnly || disabled ? 'Nothing changed.' : 'Pocket Lab will update this action when the work finishes.'],
+    what_changed: [browserOnly || disabled || !hasReportedOutcome ? 'Nothing changed.' : 'Pocket Lab reported the latest action outcome.'],
     what_did_not_happen: browserOnly
       ? ['No device action was started.', 'No app files were changed.', 'No photos were changed.']
       : ['No unsafe change was started.'],
@@ -1620,7 +1647,7 @@ function fallbackActionDetails(actionId, action = {}, result = null) {
     technical_details: [
       `Run by: ${browserOnly ? 'This screen' : 'Pocket Lab'}`,
       `Action: ${actionId}`,
-      `Status: ${action?.status || 'ready'}`,
+      `Status: ${status}`,
     ],
   };
 }
@@ -1760,24 +1787,18 @@ function phoneStorageConnected(app, lifecycle = null, actionSnapshot = null) {
   for (const media of mediaSources) {
     const labels = Array.isArray(media?.labels) ? media.labels : [];
     const labelText = labels.map((label) => String(label || '').toLowerCase()).join(' ');
-    const mappingCount = Number(media?.mapping_count || media?.connected_count || media?.count || 0);
-    const statusText = String(media?.status || media?.summary || '').toLowerCase();
     if (labelText.includes('phone storage') || labelText.includes('phone') || labelText.includes('android shared storage')) return true;
-    if (mappingCount > 0 && (statusText.includes('ready') || statusText.includes('connected') || statusText.includes('import'))) return true;
+    const mappings = Array.isArray(media?.mappings) ? media.mappings : [];
+    if (mappings.some(isPhoneStorageMapping)) return true;
   }
   const mappings = storageMappings(app);
   if (!mappings.length) return false;
-  return mappings.some(isPhoneStorageMapping) || mappings.length === 1;
+  return mappings.some(isPhoneStorageMapping);
 }
 
 function photosAlreadyImported(lifecycle = null, actionSnapshot = null, app = null, action = null) {
-  const actionText = [
-    action?.status,
-    action?.summary,
-    action?.disabled_reason,
-    action?.reason,
-  ].map((value) => String(value || '').toLowerCase()).join(' ');
-  if (actionText.includes('imported')) return true;
+  const actionStatus = normalizedActionValue(action?.status);
+  if (['imported', 'succeeded', 'success', 'completed', 'complete', 'done', 'verified'].includes(actionStatus)) return true;
 
   const mediaSources = [
     actionSnapshot?.media,
@@ -1789,18 +1810,12 @@ function photosAlreadyImported(lifecycle = null, actionSnapshot = null, app = nu
   return mediaSources.some((media) => {
     const lastImport = media?.last_import && typeof media.last_import === 'object' ? media.last_import : null;
     const status = String(lastImport?.status || media?.last_import_status || '').toLowerCase();
-    const evidenceStatus = String(lastImport?.evidence_status || media?.evidence?.status || '').toLowerCase();
     return Boolean(
       media?.last_imported_at
       || lastImport?.completed_at
-      || ['succeeded', 'success', 'completed', 'done'].includes(status)
-      || evidenceStatus === 'saved'
+      || ['succeeded', 'success', 'completed', 'complete', 'done', 'verified'].includes(status)
     );
   });
-}
-
-function storageConnectedFolderLabels() {
-  return PHONE_STORAGE_CONNECTED_FOLDERS;
 }
 
 function storageMediaSummary(app) {
@@ -1851,7 +1866,7 @@ function lifecycleMediaSummary(lifecycle, app) {
     return lifecycle?.summary || `${app?.name || 'App'} actions are available.`;
   }
   const media = lifecycle?.media || {};
-  if (media?.operation_running) return 'Importing photos';
+  if (media?.operation_running && !mediaImportIsStale(media)) return 'Importing photos';
   if (media?.last_imported_at) return `Last import ${formatLiteTime(media.last_imported_at)}`;
   if (Number(media?.mapping_count || 0) > 0) return media.summary || 'Import ready';
   return 'Connect a photo folder first';
@@ -1962,30 +1977,66 @@ function shouldRefreshCatalogAfterAppAction(actionId = '', response = {}) {
   ].some(changed);
 }
 
-function PhotoBackupTruthCard({ devices = [], summary = '' }) {
-  const rows = (Array.isArray(devices) ? devices : []).slice(0, 3);
-  const latest = rows
-    .map((item) => item?.latest_backup)
-    .filter(Boolean)
-    .sort((left, right) => String(right?.updated_at || '').localeCompare(String(left?.updated_at || '')))[0] || null;
-  const live = ['queued', 'planning', 'waiting_for_credentials', 'starting', 'transferring', 'cancelling']
-    .includes(String(latest?.status || '').toLowerCase());
+const PHOTO_BACKUP_LIVE_STATUSES = new Set(['queued', 'planning', 'waiting', 'waiting_for_credentials', 'starting', 'transferring', 'cancelling']);
+const PHOTO_BACKUP_PRESENTATION = {
+  queued: 'Queued', planning: 'Planning', waiting_for_credentials: 'Waiting for credentials',
+  starting: 'Starting', transferring: 'Transferring', cancelling: 'Cancelling',
+  completed: 'Completed', partial: 'Partial', partial_storage_limit: 'Partial',
+  failed: 'Failed', error: 'Failed', ready: 'Ready', not_ready: 'Not ready',
+  unavailable: 'Unavailable', cancelled: 'Cancelled', unknown: 'Unknown', metadata_unavailable: 'Metadata unavailable',
+};
+
+function PhotoBackupTruthCard({ devices = [], summary = '', saved = false, onGoToDevices }) {
+  const rows = Array.isArray(devices) ? devices : [];
+  const latest = rows.map((item) => item?.latest_backup).filter(Boolean)
+    .sort((a, b) => String(b?.updated_at || b?.completed_at || '').localeCompare(String(a?.updated_at || a?.completed_at || '')))[0] || null;
+  const rawStatus = String(latest?.status || '').toLowerCase().replace(/[\s-]+/g, '_');
+  const live = PHOTO_BACKUP_LIVE_STATUSES.has(rawStatus);
+  const ready = rows.some((item) => item?.ready === true);
+  const destinationNotReady = rows.some((item) => item?.ready === false || ['not_ready', 'unavailable', 'failed'].includes(String(item?.status || '').toLowerCase().replace(/[\s-]+/g, '_')));
+  const statusLabel = saved ? 'Saved / offline' : latest
+    ? PHOTO_BACKUP_PRESENTATION[rawStatus] || 'Unknown'
+    : destinationNotReady ? 'Not ready' : 'No backup recorded';
+  const statusTone = saved ? 'saved' : ['failed', 'error', 'partial', 'partial_storage_limit'].includes(rawStatus) ? 'review'
+    : live ? 'working' : rawStatus === 'completed' ? 'completed' : rawStatus === 'ready' || (ready && latest) ? 'ready' : 'neutral';
+  // A missing transferred count is unknown; a reported zero is an actual zero.
+  const transferred = latest?.items_transferred;
+  const count = transferred !== null && transferred !== undefined && Number.isFinite(Number(transferred))
+    ? Number(transferred).toLocaleString() + ' items' : 'Not reported';
+  const timestamp = latest?.completed_at || latest?.updated_at || null;
+  const guidance = saved ? 'Showing saved information. Reconnect before starting a backup.'
+    : live ? latest?.summary || 'Pocket Lab is handling this backup.'
+    : rawStatus === 'completed' ? latest?.summary || 'Latest backup completed.'
+    : rawStatus === 'partial' || rawStatus === 'partial_storage_limit' ? latest?.summary || 'Backup completed only partially. Review the device.'
+    : ['failed', 'error'].includes(rawStatus) ? latest?.summary || 'Latest backup needs review in Devices.'
+    : latest ? latest.summary || (ready ? 'Backup is ready to start from Devices.' : 'Backup destination is not ready. Review readiness in Devices.')
+      : ready ? 'No backup has been recorded yet. Backup is ready to start from Devices.'
+        : 'Backup destination is not ready. Review readiness in Devices.';
   return (
-    <section className="lite-catalog-photo-backup-truth" aria-label="Photo backup">
-      <div>
-        <span><Camera className="h-4 w-4" />Photo backup</span>
-        <strong>{live ? 'Backing up photos' : summary || 'Photo backup status'}</strong>
-        <p>Managed by Pocket Lab on enrolled devices. PhotoPrism receives completed files through its protected WebDAV originals path.</p>
+    <section className="lite-catalog-photo-backup-truth lite-catalog-premium-backup" aria-label="Photo backup">
+      <div className="lite-catalog-premium-backup-header">
+        <div><span><Camera className="h-4 w-4" aria-hidden="true" />Photo backup</span><p>Managed by Pocket Lab</p></div>
+        <span className={`lite-catalog-premium-state is-${statusTone}`} role="status">{statusLabel}</span>
       </div>
-      {latest ? (
-        <dl>
-          <div><dt>Latest</dt><dd>{latest.summary || latest.status || 'Checked'}</dd></div>
-          <div><dt>Backed up</dt><dd>{Number(latest.items_transferred || 0)} item{Number(latest.items_transferred || 0) === 1 ? '' : 's'}</dd></div>
-          <div><dt>Last update</dt><dd>{formatLiteTime(latest.completed_at || latest.updated_at)}</dd></div>
-        </dl>
-      ) : (
-        <small>Open a device in Devices to choose folders, start a backup, retry, or stop it.</small>
-      )}
+      <div className="lite-catalog-premium-backup-path" aria-label="Backup path: enrolled device to Pocket Lab transfer to PhotoPrism protected destination">
+        <span><Smartphone aria-hidden="true" />Device</span><i aria-hidden="true">→</i>
+        <span><RefreshCw aria-hidden="true" />Transfer</span><i aria-hidden="true">→</i>
+        <span><ImageIcon aria-hidden="true" />PhotoPrism</span>
+      </div>
+      <p className="lite-catalog-premium-backup-destination">Protected WebDAV destination · conceptual path, not live transfer progress</p>
+      <dl className="lite-catalog-premium-backup-metrics">
+        <div><dt>Latest transfer</dt><dd>{count}</dd></div>
+        <div><dt>Last update</dt><dd>{timestamp ? formatLiteTime(timestamp) : 'Not recorded'}</dd></div>
+      </dl>
+      <p className="lite-catalog-premium-backup-guidance" role={statusTone === 'review' ? 'alert' : 'status'}>{guidance}</p>
+      <div className="lite-catalog-premium-backup-actions">
+        {onGoToDevices ? <button type="button" onClick={onGoToDevices}>Review in Devices</button> : null}
+        <details className="lite-catalog-premium-disclosure">
+          <summary>How photo backup works</summary>
+          <p>Pocket Lab manages photo backups from enrolled devices. PhotoPrism receives completed files through its protected WebDAV originals destination. Connect folders and start, retry, or stop backups in Devices. An app-record backup is different from a photo backup.</p>
+          {summary ? <p>{summary}</p> : null}
+        </details>
+      </div>
     </section>
   );
 }
@@ -2014,6 +2065,7 @@ function CatalogManagePortal({
   setStoragePreviewNotice,
   photoBackupDevices,
   photoBackupSummary,
+  savedStateOnly = false,
   appResource,
 }) {
   const appKey = catalogAppKey(app);
@@ -2071,11 +2123,17 @@ function CatalogManagePortal({
   useEffect(() => {
     if (!manageAppOpen) return undefined;
     const onKeyDown = (event) => {
-      if (event.key === 'Escape') {
+      const activeDetailsActionId = useLiteUiStore.getState().activeDetailsActionId;
+      if (event.key === 'Escape' && !activeDetailsActionId) {
         closeManageSheet();
       }
     };
     document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [closeManageSheet, manageAppOpen]);
+
+  useEffect(() => {
+    if (!manageAppOpen) return undefined;
     const previousOverflow = document.body.style.overflow;
     // The fixed portal already owns pointer/scroll interaction in the
     // qualification render path. Avoid changing the document scroll
@@ -2094,36 +2152,48 @@ function CatalogManagePortal({
       manageCloseRef.current?.focus?.({ preventScroll: true });
     });
     return () => {
-      document.removeEventListener('keydown', onKeyDown);
       viewport?.removeEventListener?.('resize', updateLiteCatalogVisualViewportVar);
       viewport?.removeEventListener?.('scroll', updateLiteCatalogVisualViewportVar);
       window.removeEventListener('resize', updateLiteCatalogVisualViewportVar);
       if (lockBodyScroll) document.body.style.overflow = previousOverflow;
     };
-  }, [app, closeManageSheet, manageAppOpen]);
-
-  if (!app || !lifecycle || !manageAppOpen || typeof document === 'undefined') return null;
+  }, [manageAppOpen]);
 
   // Keep the expensive lifecycle/action projection out of the measured Manage
   // open boundary. The portal first paints its lightweight shell, then builds
   // the action model after the qualification-safe body delay has elapsed.
-  const manageViewModel = manageBodyReady ? buildManageViewModel() : null;
+  const manageViewModel = useMemo(
+    () => (manageBodyReady && manageAppOpen && app && lifecycle ? buildManageViewModel() : null),
+    [app, buildManageViewModel, lifecycle, manageAppOpen, manageBodyReady],
+  );
   const mediaSummary = manageViewModel?.mediaSummary || '';
   const hostLabel = manageViewModel?.hostLabel || '';
   const storageBackupLabel = manageViewModel?.storageBackupLabel || '';
   const isPhoneStorageConnected = Boolean(manageViewModel?.isPhoneStorageConnected);
   const isPhotosImported = Boolean(manageViewModel?.isPhotosImported);
   const appActionEntries = manageViewModel?.appActionEntries || [];
-  const appActionGroups = manageViewModel
-    ? groupAppActions(appActionEntries)
-    : [];
+  const appActionGroups = useMemo(
+    () => (manageViewModel ? groupAppActions(appActionEntries) : []),
+    [appActionEntries, manageViewModel],
+  );
   const availableManageSections = appActionGroups.map((group) => group.id);
   const activeManageSection = availableManageSections.includes(manageSection)
     ? manageSection
     : availableManageSections[0] || '';
-  const activeAppActionGroups = manageViewModel
-    ? groupAppActions(appActionEntries, activeManageSection)
-    : [];
+  const activeAppActionGroups = useMemo(
+    () => (manageViewModel ? groupAppActions(appActionEntries, activeManageSection) : []),
+    [activeManageSection, appActionEntries, manageViewModel],
+  );
+  const actionDetailHandlers = useMemo(
+    () => new Map(appActionEntries.map((entry) => [
+      entry.actionId,
+      () => openActionDetails(entry.actionId, app.id),
+    ])),
+    [app.id, appActionEntries, openActionDetails],
+  );
+  if (!app || !lifecycle || !manageAppOpen || typeof document === 'undefined') return null;
+
+  const selectedDetailsEntry = appActionEntries.find((entry) => entry.actionId === detailsActionId) || null;
   const appAuthority = appResource?.authority || {};
   const credentialStatus = appResource?.credential_status || {};
   const appRecovery = appResource?.recovery || {};
@@ -2146,7 +2216,7 @@ function CatalogManagePortal({
 
   return createPortal(
     <div
-      className="theme-pocket-lite-daylight lite-catalog-manage-layer"
+      className="theme-pocket-lite-daylight lite-catalog-manage-layer lite-catalog-app-premium-layer"
       role="presentation"
       data-lite-manage-portal="true"
       data-lite-perf-mode={isLitePerformanceMode() ? 'true' : undefined}
@@ -2224,9 +2294,9 @@ function CatalogManagePortal({
         <div className="lite-catalog-manage-scroll" ref={manageScrollRef}>
           {manageBodyReady ? (
             <>
-              {isPhotoPrismApp(app) ? <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} /> : null}
-              {isPhotoPrismApp(app) ? (
-                <PhotoBackupTruthCard devices={photoBackupDevices} summary={photoBackupSummary} />
+              {isPhotoPrismApp(app) && activeManageSection === 'media' ? <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} phoneSource={isPhoneStorageConnected} onViewDetails={actionDetailHandlers.get('import_photos')} /> : null}
+              {isPhotoPrismApp(app) && activeManageSection === 'media' ? (
+                <PhotoBackupTruthCard devices={photoBackupDevices} summary={photoBackupSummary} saved={savedStateOnly} onGoToDevices={() => { closeManageSheet(); useLiteUiStore.getState().setActiveTab('devices'); }} />
               ) : null}
               <div className="lite-catalog-manage-quick-actions" aria-label="Quick app actions">
                 <LiteButton onClick={(event) => { stopGestureEvent(event); openAppFullScreen(app, event); }} disabled={!canOpen} tone="secondary"><ExternalLink className="h-4 w-4" />Open full screen</LiteButton>
@@ -2249,7 +2319,11 @@ function CatalogManagePortal({
                     sectionId={sectionId}
                     active={manageSection === sectionId}
                     label={MANAGE_SECTION_LABELS[sectionId] || sectionId}
-                    onSelect={(event) => { stopGestureEvent(event); setManageSection(sectionId); closeActionDetails(); }}
+                    onSelect={(event) => {
+                      stopGestureEvent(event);
+                      setManageSection(sectionId);
+                      if (detailsActionId) closeActionDetails();
+                    }}
                   />
                 ))}
               </div> : null}
@@ -2272,12 +2346,12 @@ function CatalogManagePortal({
                               result={entry.result}
                               tone={entry.tone}
                               onClick={entry.onClick}
-                              onViewDetails={() => openActionDetails(entry.actionId, app.id)}
+                              onViewDetails={actionDetailHandlers.get(entry.actionId)}
                               detailsExpanded={detailsActionId === entry.actionId}
                               disabled={entry.disabled}
                               title={entry.title}
                             />
-                            {entry.actionId === 'connect_photos' && isPhoneStorageConnected ? <PhoneStorageConnectedFolders /> : null}
+                            {entry.actionId === 'connect_photos' && isPhoneStorageConnected ? <PhoneStorageConnectedFolders app={app} preview={storagePreviewApp?.id === app.id ? storagePreview : null} /> : null}
                             {entry.actionId === 'connect_photos' && !isPhoneStorageConnected && storagePreviewApp?.id === app.id ? (
                               <div className="lite-catalog-storage-preview-anchor">
                                 <PhotoPrismStoragePreviewSheet
@@ -2294,17 +2368,6 @@ function CatalogManagePortal({
                               </div>
                             ) : null}
                             {entry.actionId === 'import_photos' && isPhotosImported ? <p className="lite-catalog-media-note">Photos imported. PhotoPrism will handle new photos.</p> : null}
-                            {entry.actionId !== 'connect_photos' && detailsActionId === entry.actionId ? (
-                              <div className="lite-catalog-action-details-anchor">
-                                <React.Suspense fallback={<div className="lite-app-action-details-loading">Loading details…</div>}>
-                                  <AppActionDetailsLazy
-                                    details={detailsForAction(entry.actionId, entry.action, tileResultForAction(entry.actionId, entry.action, entry.result))}
-                                    actionId={entry.actionId}
-                                    onClose={closeActionDetails}
-                                  />
-                                </React.Suspense>
-                              </div>
-                            ) : null}
                           </React.Fragment>
                         ))}
                     </AppActionGroup>
@@ -2313,7 +2376,7 @@ function CatalogManagePortal({
               </div> : null}
               {manageExtrasReady && isPhotoPrismApp(app) ? (
                 <>
-                  <div className="lite-catalog-action-reasons">
+                  <details className="lite-catalog-premium-disclosure lite-catalog-premium-action-notices"><summary>Other action notices</summary><div className="lite-catalog-action-reasons">
                     {[
                       lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'import_photos')?.action, 'Import photos'),
                       lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'preview_restore')?.action, 'Preview restore'),
@@ -2321,8 +2384,8 @@ function CatalogManagePortal({
                       lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'update_app')?.action, 'Update'),
                       lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'repair_app')?.action, 'Repair'),
                     ].filter(Boolean).map((warning) => <span key={warning}>{warning}</span>)}
-                  </div>
-                  <div className="lite-catalog-storage-panel lite-catalog-storage-panel--sheet">
+                  </div></details>
+                  {activeManageSection === 'media' ? <details className="lite-catalog-premium-disclosure lite-catalog-premium-storage-details"><summary>Storage and device details</summary><div className="lite-catalog-storage-panel lite-catalog-storage-panel--sheet">
                     <div className="lite-catalog-storage-head">
                       <div>
                         <span>Media folders</span>
@@ -2342,13 +2405,28 @@ function CatalogManagePortal({
                       </div>
                     ) : <p className="lite-catalog-storage-empty">No media folders connected yet. Connect a photo folder to start using PhotoPrism.</p>}
                     {storageDeviceCount(app) < 1 ? <p className="lite-catalog-storage-hint">Join a storage device to use remote media folders.</p> : null}
-                  </div>
+                  </div></details> : null}
                 </>
               ) : null}
             </>
           ) : <div className="lite-catalog-manage-section-loading" aria-busy="true">Preparing app actions…</div>}
         </div>
       </section>
+      {selectedDetailsEntry ? (
+        <LiteDetailsPanel
+          open
+          onClose={closeActionDetails}
+          title={actionCopy(selectedDetailsEntry.actionId, selectedDetailsEntry.action).label}
+          bodyClassName="lite-apps-premium-details-scroll"
+        >
+          <React.Suspense fallback={<p className="lite-app-action-details-loading" role="status">Loading details…</p>}>
+            <AppActionDetailsLazy
+              actionId={selectedDetailsEntry.actionId}
+              details={detailsForAction(selectedDetailsEntry.actionId, selectedDetailsEntry.action, tileResultForAction(selectedDetailsEntry.actionId, selectedDetailsEntry.action, selectedDetailsEntry.result))}
+            />
+          </React.Suspense>
+        </LiteDetailsPanel>
+      ) : null}
     </div>,
     document.body,
   );
@@ -2456,7 +2534,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     pollingMode: 'relaxed',
     staleTime: 60_000,
     isLive: (payload) => (payload?.devices || []).some((device) => (
-      ['queued', 'planning', 'waiting_for_credentials', 'starting', 'transferring', 'cancelling']
+      ['queued', 'planning', 'waiting', 'waiting_for_credentials', 'starting', 'transferring', 'cancelling']
         .includes(String(device?.latest_backup?.status || '').toLowerCase())
     )),
     refetchOnWindowFocus: false,
@@ -2467,14 +2545,14 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     .filter(Boolean)
     .sort((left, right) => String(right?.updated_at || '').localeCompare(String(left?.updated_at || '')))[0] || null;
   const photoBackupLive = photoBackupDevices.some((device) => (
-    ['queued', 'planning', 'waiting_for_credentials', 'starting', 'transferring', 'cancelling']
+    ['queued', 'planning', 'waiting', 'waiting_for_credentials', 'starting', 'transferring', 'cancelling']
       .includes(String(device?.latest_backup?.status || '').toLowerCase())
   ));
   const photoBackupReadyCount = photoBackupDevices.filter((device) => device?.ready).length;
   const photoBackupSummary = photoBackupLive
     ? 'Photo backup is running'
-    : ['completed', 'partial_storage_limit'].includes(String(photoBackupLatest?.status || '').toLowerCase())
-      ? `Photos protected by Pocket Lab · Last backup ${formatLiteTime(photoBackupLatest?.completed_at || photoBackupLatest?.updated_at)}`
+    : String(photoBackupLatest?.status || '').toLowerCase() === 'completed'
+      ? `Latest photo backup completed · ${formatLiteTime(photoBackupLatest?.completed_at || photoBackupLatest?.updated_at)}`
       : photoBackupReadyCount
         ? `Photo backup ready on ${photoBackupReadyCount} device${photoBackupReadyCount === 1 ? '' : 's'}`
         : 'Photo backup not ready yet';
@@ -3131,7 +3209,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <h2>{app.name}</h2>
           </div>
         </div>
-        <p>{app.summary}</p>
         {quickActionsOpen ? (
           <div className="lite-catalog-quick-actions" role="menu" aria-label={`${app.name} quick actions`}>
             <button type="button" onClick={(event) => { event.stopPropagation(); openApp(app, event); setQuickActionsAppId(null); }} disabled={!canOpen}>Open</button>
@@ -3139,50 +3216,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <button type="button" onClick={(event) => { event.stopPropagation(); setQuickActionsAppId(null); refresh(); refreshAppActions(app.id); }}>Refresh</button>
           </div>
         ) : null}
-        {installed ? (
-          <div className="lite-catalog-trust-marker" aria-label="Self-hosted app">
-            <ShieldCheck className="h-4 w-4" />
-            <span>Self-hosted app</span>
-          </div>
-        ) : null}
-        {installed && (
-          appSupports(app, 'security_check')
-          || appSupports(app, 'backup')
-          || appSupports(app, 'media_sources')
-        ) ? (
-          <div className="lite-catalog-profile-markers" aria-label="App protection and backup readiness">
-            {appSupports(app, 'security_check') ? <span><ShieldCheck className="h-4 w-4" />{app?.security_profile?.label || 'Safety check available'}</span> : null}
-            {appSupports(app, 'backup') ? <span><FileCheck className="h-4 w-4" />{app?.backup_profile?.config || app?.backup_profile?.label || 'Backup available'}</span> : null}
-            {appSupports(app, 'media_sources') && app?.backup_profile?.media ? <span><FileCheck className="h-4 w-4" />{app.backup_profile.media}</span> : null}
-            {isPhotoPrismApp(app) ? <span><Camera className="h-4 w-4" />{photoBackupSummary}</span> : null}
-          </div>
-        ) : null}
-        {installed && lifecycle ? (
-          <div className="lite-catalog-summary-panel" aria-label="App summary">
-            <div className="lite-catalog-summary-head">
-              <div>
-                <span>App status</span>
-                <strong>{lifecycle.status === 'ready' ? 'Running' : lifecycle.status === 'review' ? 'Needs attention' : lifecycle.summary || 'Checking'}</strong>
-              </div>
-              <StatusBadge status={backendBadgeStatus(lifecycle.status)}>
-                {backendLabel(lifecycle.status, { ready: 'Ready', review: 'Needs attention', danger: 'Needs attention', checking: 'Checking' })}
-              </StatusBadge>
-            </div>
-            <div className="lite-catalog-summary-chips" aria-label="App health summary">
-              <span><Server className="h-4 w-4" />Route</span>
-              {appSupports(app, 'media_sources') ? <span><FolderOpen className="h-4 w-4" />{lifecycleStorageLabel(lifecycle, app)}</span> : null}
-              {appSupports(app, 'security_check') ? <span><ShieldCheck className="h-4 w-4" />{lifecycleSecurityLabel(lifecycle, app)}</span> : null}
-              {appSupports(app, 'backup') ? <span><FileCheck className="h-4 w-4" />{lifecycleBackupLabel(lifecycle, app)}</span> : null}
-            </div>
-            {lifecycleAttention.length ? (
-              <div className="lite-catalog-summary-attention">
-                {lifecycleAttention.slice(0, 2).map((item) => (
-                  <span key={item.id || item.title}><strong>{item.title || 'Needs attention'}</strong>{item.summary || 'Check again.'}</span>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        ) : null}
+        <p className="lite-catalog-premium-app-status" role="status">
+          {installed && lifecycle ? lifecycle.summary || canonical.statusSummary || 'App status is not available.'
+            : app?.status_summary || app?.summary || 'Install to set up this app.'}
+        </p>
         {installed && lifecycle ? (
           <CatalogManagePortal
             app={app}
@@ -3208,14 +3245,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             setStoragePreviewNotice={setStoragePreviewNotice}
             photoBackupDevices={photoBackupDevices}
             photoBackupSummary={photoBackupSummary}
+            savedStateOnly={savedStateOnly}
             appResource={manageAppId === catalogAppKey(app) ? managedAppResource : null}
           />
         ) : null}
-        <div className="lite-catalog-meta lite-catalog-meta-grid">
-          <span><Server className="h-4 w-4" /> {targetName}</span>
-          <span><CheckCircle2 className="h-4 w-4" /> {installed ? (canOpen ? 'Ready to open' : 'Installed') : 'Setup needed'}</span>
-          <span><HeartPulse className="h-4 w-4" /> {canonical.statusSummary}</span>
-        </div>
         {reason ? (
           <div className="lite-catalog-attention-reason">
             <strong>{installed ? (canOpen ? 'Status note' : 'Attention') : 'Setup'}</strong>
@@ -3229,7 +3262,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <div className="lite-catalog-progress-bar"><span style={{ width: `${percent}%` }} /></div>
           </div>
         ) : null}
-        <div className="lite-catalog-last-op"><strong>Latest status</strong><p>{lastOperationText(app, actionSnapshot)}</p></div>
         <div className={actionsClassName}>
           {!installed ? (
             <LiteButton onClick={(event) => { stopGestureEvent(event); install(app, event); }} disabled={!canInstall} tone={canInstall ? 'primary' : 'secondary'}>{installing ? 'Installing...' : app?.actions?.retry ? 'Retry' : 'Install'}</LiteButton>

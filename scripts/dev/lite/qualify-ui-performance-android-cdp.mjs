@@ -689,7 +689,7 @@ await measureNestedInteraction({
   surface: 'PhotoPrism Manage / action details',
   action: async () => {
     await catalogDetailsButton.click();
-    await catalogManage.locator('.lite-app-action-details-panel:visible').first().waitFor({ state: 'visible' });
+    await page.locator('.lite-details-panel:visible .lite-app-action-details-panel').first().waitFor({ state: 'visible' });
   },
   settleMs: 480,
 });

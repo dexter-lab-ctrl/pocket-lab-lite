@@ -2283,6 +2283,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
+      "name": "tests/e2e/lite-apps-premium-refinement.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-apps-premium-refinement.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-content-stress.spec.ts",
       "name": "tests/e2e/lite-content-stress.spec.ts",
       "source_refs": [
@@ -2657,6 +2667,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "7dfcad8ac4f87187c9f95c192d1a1ff8956d47557e0c718c4555307653ec2201"
+    "source_fingerprint": "16c4ac9d3b790619e85274d797dc96efca1bbab3c647b767426f4fedc3c98fe4"
   }
 }

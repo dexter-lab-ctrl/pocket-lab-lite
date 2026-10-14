@@ -518,7 +518,7 @@ function mockUnifiedAppActions() {
   };
   const normalized = Object.fromEntries(Object.entries(actions).map(([actionId, action]) => {
     const enabled = action.enabled !== false;
-    const status = action.status || (enabled ? 'ready' : 'not_ready');
+    const status = action.status || (enabled ? 'unknown' : 'not_ready');
     const recordRef = action.evidence_ref || action.latest_check?.evidence_ref || null;
     return [actionId, {
       ...action,
@@ -1189,7 +1189,7 @@ export const handlers = [
     const currentScenario = rawScenario();
     const multiApp = currentScenario === 'catalog-multi-app';
     const installAvailable = currentScenario === 'catalog-install-available';
-    const ready = !installAvailable && (scenario() === 'catalog-ready' || multiApp || currentScenario.startsWith('app-governance-'));
+    const ready = !installAvailable && (scenario() === 'catalog-ready' || scenario() === 'lifecycle-attention' || multiApp || currentScenario.startsWith('app-governance-'));
     const installing = currentScenario === 'catalog-installing' || scenario() === 'catalog-installing';
     const app = {
       id: 'photoprism', name: 'PhotoPrism', category: 'Photos',

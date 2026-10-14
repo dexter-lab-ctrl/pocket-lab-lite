@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_contracts.py
-source_fingerprint: 6dface78f2f90a2379477883a64e68673829684e152c3870510977ec3a1d9191
+source_fingerprint: 72b429e7ddd79a313f2672c0b1622a20ee0a1a37a998e450bd8b20737861770a
 schema_revision: 1
 validation_status: generated
 ---
