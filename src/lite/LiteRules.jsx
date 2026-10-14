@@ -62,7 +62,7 @@ export default function RulesScreen() {
   const enterpriseEnabled = identity.data?.enterprise?.enabled === true;
   const enterpriseMode = identity.data?.enterprise?.enabled;
   const role = identity.data?.enterprise?.current_membership?.role || identity.data?.person?.role || (identity.data?.person?.is_local_owner ? 'Owner' : '');
-  const rulesReadOnly = savedStateOnly || !backendReachable;
+  const rulesReadOnly = savedStateOnly || isExpired || !backendReachable;
   const sourceUpdateRequired = Boolean(data?.active_policy?.source_update_required);
   const activationInProgress = Boolean(data?.active_policy?.activation_in_progress) || data?.degraded_reason === 'policy_activation_pending';
   const activationState = String(activationStatus?.state || '');
