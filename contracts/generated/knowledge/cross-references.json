@@ -709,6 +709,10 @@
       ],
       "api:get:/api/lite/policy/decisions/{decision_id}": [
         {
+          "source": "ui:literules",
+          "type": "calls"
+        },
+        {
           "source": "domain:rules",
           "type": "owns"
         }
@@ -16463,6 +16467,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-rules-premium-visual.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-ux-maturity.spec.ts": [
         {
           "source": "domain:identity",
@@ -31215,6 +31225,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-rules-premium-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-visual-devices.spec.ts",
           "type": "verified_by"
         },
@@ -35301,6 +35315,10 @@
           "type": "calls"
         },
         {
+          "target": "api:get:/api/lite/policy/decisions/{decision_id}",
+          "type": "calls"
+        },
+        {
           "target": "api:post:/api/lite/identity/step-up/options",
           "type": "calls"
         },
@@ -35365,6 +35383,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ecc36cb414fe785ecbbf931c975720bf4394798c30a81e1480afbe7f7dd5fa50"
+    "source_fingerprint": "20f24dbfe20a5dd2bc7a0c7e63de90551c48e20c14177278a05439201409cb72"
   }
 }

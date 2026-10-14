@@ -97,7 +97,7 @@ generator_version: 3
 | `GET /api/lite/identity/owner-claim/status` | identity | LiteIdentity | owner_claim_status_api_lite_identity_owner_claim_status_get | contract-derived |
 | `GET /api/lite/media-backup` | media-backup | — | lite_photo_backup_fleet_status_api_lite_media_backup_get | contract-derived |
 | `GET /api/lite/policy` | rules | LiteRules | get_lite_policy_api_lite_policy_get | contract-derived |
-| `GET /api/lite/policy/decisions/{decision_id}` | rules | — | get_lite_policy_decision_api_lite_policy_decisions__decision_id__get | contract-derived |
+| `GET /api/lite/policy/decisions/{decision_id}` | rules | LiteRules | get_lite_policy_decision_api_lite_policy_decisions__decision_id__get | contract-derived |
 | `GET /api/lite/policy/templates` | rules | — | get_lite_policy_templates_api_lite_policy_templates_get | contract-derived |
 | `GET /api/lite/recovery` | recovery | — | get_lite_recovery_api_lite_recovery_get | contract-derived |
 | `GET /api/lite/recovery/apps` | recovery | LiteRecovery | get_lite_recovery_apps_api_lite_recovery_apps_get | contract-derived |
@@ -266,6 +266,6 @@ generator_version: 3
 | LiteRecovery | GET /api/lite/recovery/apps, GET /api/lite/recovery/backups, GET /api/lite/recovery/database, GET /api/lite/recovery/details, GET /api/lite/recovery/locations, GET /api/lite/recovery/summary, POST /api/lite/apps/{app_id}/backup, POST /api/lite/recovery/backup, POST /api/lite/recovery/backups/{backup_id}/verify, POST /api/lite/recovery/database/backup, POST /api/lite/recovery/database/backups/{backup_id}/preview, POST /api/lite/recovery/database/backups/{backup_id}/restore, POST /api/lite/recovery/database/backups/{backup_id}/verify, POST /api/lite/recovery/locations/discover, POST /api/lite/recovery/locations/forget, POST /api/lite/recovery/locations/select, POST /api/lite/recovery/restore, POST /api/lite/recovery/restore/preview |
 | LiteReleaseUpdateCard | GET /api/lite/release, POST /api/lite/release/apply, POST /api/lite/release/check |
 | LiteRevisionSyncBridge | GET /api/lite/revisions |
-| LiteRules | GET /api/lite/policy, POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify |
+| LiteRules | GET /api/lite/policy, GET /api/lite/policy/decisions/{decision_id}, POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify |
 | LiteRulesEnterprise | GET /api/lite/fleet, POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify |
 | LiteSecurity | GET /api/lite/security/evidence/{run_id}/summary, GET /api/lite/security/freshness, GET /api/lite/security/history, GET /api/lite/security/profiles/{profile}, GET /api/lite/security/progress, GET /api/lite/security/summary, POST /api/lite/security/apps/{app_id}/check, POST /api/lite/security/check |

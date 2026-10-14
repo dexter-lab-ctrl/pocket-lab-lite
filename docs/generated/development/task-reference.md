@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: ca6bed867a574987ab2f9a8aa3a83cb27c1d9f04b4073efd1909b858cb80fd95
+source_fingerprint: b34cdb09574b30b5de438cafceefa05217eb1acff7af76a54167135151043ff8
 schema_revision: 1
 validation_status: generated
 ---
@@ -237,6 +237,10 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:test:identity:premium:visual`
 - `lite:test:lighthouse`
 - `lite:test:redaction`
+- `lite:test:rules:premium:mocked`
+- `lite:test:rules:premium:perf`
+- `lite:test:rules:premium:unit`
+- `lite:test:rules:premium:visual`
 - `lite:test:runtime`
 - `lite:test:storybook`
 - `lite:test:ux:maturity`
@@ -352,6 +356,12 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:test:identity:premium:visual` → `lite:playwright:preflight`
 - `lite:test:lighthouse` → `lite:dev:scratch:prepare`
 - `lite:test:lighthouse` → `lite:playwright:preflight`
+- `lite:test:rules:premium:mocked` → `lite:dev:scratch:prepare`
+- `lite:test:rules:premium:mocked` → `lite:playwright:preflight`
+- `lite:test:rules:premium:perf` → `lite:dev:scratch:prepare`
+- `lite:test:rules:premium:perf` → `lite:playwright:preflight`
+- `lite:test:rules:premium:visual` → `lite:dev:scratch:prepare`
+- `lite:test:rules:premium:visual` → `lite:playwright:preflight`
 - `lite:test:storybook` → `lite:dev:scratch:prepare`
 - `lite:test:storybook` → `lite:playwright:preflight`
 - `lite:test:visual` → `lite:dev:scratch:prepare`

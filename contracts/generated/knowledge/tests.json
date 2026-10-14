@@ -2453,6 +2453,36 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-rules-premium-performance.spec.ts",
+      "name": "tests/e2e/lite-rules-premium-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-rules-premium-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-rules-premium-refinement.spec.ts",
+      "name": "tests/e2e/lite-rules-premium-refinement.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-rules-premium-refinement.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-rules-premium-visual.spec.ts",
+      "name": "tests/e2e/lite-rules-premium-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-rules-premium-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-security-runtime.spec.ts",
       "name": "tests/e2e/lite-security-runtime.spec.ts",
       "source_refs": [
@@ -2687,6 +2717,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ecc36cb414fe785ecbbf931c975720bf4394798c30a81e1480afbe7f7dd5fa50"
+    "source_fingerprint": "20f24dbfe20a5dd2bc7a0c7e63de90551c48e20c14177278a05439201409cb72"
   }
 }

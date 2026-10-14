@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: ca6bed867a574987ab2f9a8aa3a83cb27c1d9f04b4073efd1909b858cb80fd95
+source_fingerprint: b34cdb09574b30b5de438cafceefa05217eb1acff7af76a54167135151043ff8
 schema_revision: 1
 validation_status: generated
 ---
@@ -262,24 +262,42 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 - `RulesPresent`
 - `ProtectionHealthy`
 - `RuleEnabled`
+- `PersonalReady`
 - `RuleDisabled`
+- `PersonalNeedsAttention`
 - `RuleValidationError`
 - `RuleExecutionPending`
 - `RulesUnavailable`
-- `ManageRulesOpen`
-- `ValidationErrorOpen`
-- `ContextHelpOpen`
+- `SavedOffline`
+- `Mobile320`
+- `EnterpriseMobile`
 - `EnterpriseOwnerProtection`
-- `EnterpriseOwnerPolicies`
 - `EnterpriseAdminReview`
 - `EnterpriseOperatorReview`
 - `EnterpriseAuditorReadOnly`
 - `EnterpriseViewerReadOnly`
 - `EnterpriseRequests`
-- `Mobile320`
-- `EnterpriseMobile`
 - `EnterpriseApprovalFixture`
 - `FutureApprovalRequired`
+- `EmptyDecisions`
+- `MultipleDecisions`
+- `AllowedDecision`
+- `BlockedDecision`
+- `StepUpRequired`
+- `PendingApproval`
+- `ActivationRunning`
+- `ActivationFailed`
+- `Rollback`
+- `MissingRevision`
+- `ReducedMotion`
+- `LongText`
+- `NarrowMobile`
+- `ManageRulesOpen`
+- `EnterpriseOwnerPolicies`
+- `DecisionHistoryOpen`
+- `ProtectionJourneyExpanded`
+- `DecisionInsightOpen`
+- `ContextHelpOpen`
 
 ## LiteSecurity
 

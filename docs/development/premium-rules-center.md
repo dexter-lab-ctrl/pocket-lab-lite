@@ -1,7 +1,10 @@
-# Premium Rules Center — implementation handoff
+# Premium Rules Center — qualification record
 
-**Scope:** P0–P3 source authoring, not qualified. **Base:** `main` at `f90403e292e62f548e674f65bbc46a386a145056`.
-**Branch:** `feat/rules-premium-refinement`. **Validation:** expressly deferred by the owner.
+**Scope:** P0–P3 implementation stabilization and qualification record. **Base:** `main` at `f90403e292e62f548e674f65bbc46a386a145056`.
+**Branch:** `feat/rules-premium-refinement`. **Candidate:** `0065e045e1d2dc129d8199fedaeb76d47058f5d9`.
+**Dev-PC status:** feature-focused qualification verified. **Physical Android status:** blocked by the required elevated Windows CDP bridge setup; no physical Android PASS is claimed.
+
+The candidate was authored only on the Dev-PC, committed and pushed to the feature branch. The Server Phone remained a consumer-only runtime: its prequalification checkout was clean `main` at `f90403e292e62f548e674f65bbc46a386a145056`, and no source or production configuration was changed there.
 
 ## Objective and screen hierarchy
 
@@ -48,38 +51,44 @@ Manage and Decision Insight each use the established shared `LiteSheet`; the Ent
 
 Use native stage buttons, four semantic ordered Journey steps, headings, accessible labels and selected/expanded state. CSS uses `min-width:0`, wrapping and no forced single-line labels. 320–1440px widths, browser zoom, mobile safe-area sheet, reduced-motion media query, consistent focus management and low-power animation constraints are covered in **authored** tests, not proven by a renderer.
 
-**WCAG 2.2 AA compliance has not been qualified.** Contrast against actual translucent surfaces, focus restoration, keyboard/screen-reader traversal and physical Android/PWA behavior require later execution/manual review.
+Automated accessibility qualification passed the authored Rules states and the broader state matrix (`npm run test:a11y`, `npm run test:a11y:states`). The physical Android renderer, device keyboard behavior and screen-reader traversal remain unqualified because the repository CDP bridge could not be established from the available non-elevated WSL PowerShell. This record does not claim full manual WCAG 2.2 AA conformance.
 
-## Authored tests (not executed)
+## Executed qualification
 
-- Pure presentation: `src/lite/rules/rulesPremiumView.test.js`.
-- Journey, Insights and timelines: `src/lite/rules/RulesProtectionJourney.test.jsx`.
-- Storybook: `src/lite/LiteRules.stories.jsx` with personal, Enterprise roles, saved/degraded, activation, mobile, expanded journey, Manage, and Insight states.
-- Browser/Axe: `tests/e2e/lite-rules-premium-refinement.spec.ts`.
-- Visual: `tests/e2e/lite-rules-premium-visual.spec.ts` (**no PNGs generated or approved**).
-- Performance instrumentation: `tests/e2e/lite-rules-premium-performance.spec.ts`, without changing established gate thresholds.
-- Activation compatibility: `tests/e2e/lite-rules-activation-progress.spec.ts` reflects fail-closed no-synthetic-success semantics.
+- Pure presentation and Journey tests: `npm run test:rules:premium:unit` — **10 passed**.
+- Mocked Rules browser coverage: `npm run test:rules:premium:mocked` — **38 passed**; activation compatibility — **4 passed**; full mocked E2E — **52 passed, 10 skipped**.
+- Rules visual contract: `npm run test:rules:premium:visual` — **18 passed**. Reviewed Rules state and overlay references were regenerated only for the refined Rules surfaces; unrelated Identity references were not overwritten.
+- Rules performance instrumentation: `npm run test:rules:premium:perf` — **2 passed**. Rules paths in the broader 56-case performance matrix also passed after the hydration and nested-header styling fixes.
+- Accessibility/content: `npm run test:a11y` — **2 passed**; `npm run test:a11y:states` — **36 passed**; `npm run test:content-stress` — **14 passed**.
+- Build/tooling: `npm run build`, `npm run build:budget`, `npm run build-storybook`, `task lite:test:storybook`, and `npm run test:unit` passed. Storybook rendered 14 representative stories and documented 278 canonical stories.
+- Existing Rules/backend governance suites passed their relevant cases. A broader 158-test Rules/governance selection reported **153 passed, 5 unrelated OPA bootstrap failures**; those failures are outside this branch's diff and are retained as an exact-head repository issue.
+- Browser visual state and overlay matrices passed after reviewed Rules-only reference updates (`40 passed, 2 unrelated Identity baseline failures`; `14 passed`).
+- Final repository gate: `task lite:check` completed with **exit 0**. Its full path included 416 backend tests, 52 passed/10 skipped mocked E2E cases, 60 documentation browser tests, redaction, Storybook and generated-documentation checks.
 
-## Known limitations / qualification
+## Physical Android, harness and runtime evidence
 
-The main screen uses the latest entry of `policy.recent_decisions`; it does not load an entire Enterprise history by default. Inspect Decision's stage evaluation description is illustrative when backend does not supply a complete trace. Some fixtures may need expanding during the validation session for explicit step-up, pending review, rolling-back and long-reason responses. No screenshot baselines were rendered because test execution was prohibited. Source semantics, browser interaction, accessibility, contrast, motion, performance and runtime remain **unvalidated** until the next session.
+The repository-owned exact-candidate workflow built and served `0065e045e1d2dc129d8199fedaeb76d47058f5d9`, opened Android Chrome through the Windows ADB reverse mapping, and cleaned the owned reverse/wake-lock state afterward. Physical qualification stopped at the required CDP preflight because `172.19.0.1:19222` reset the connection. The approved helper reports that `prepare-ui-performance-android-cdp.ps1` must run from an elevated Windows PowerShell; the available WSL-launched PowerShell is not elevated. Therefore Android DOM interaction, foreground animation frames, screenshots and device performance are **BLOCKED**, not PASS.
 
-## Future validation session — commands **not executed here**
+The read-only Server Phone baseline and restoration checks passed: `task lite:runtime:termux:capture` produced sanitized capture `20261014T222550Z-4625f448`; `task lite:runtime:resilience:phone:check` passed health/readiness, PM2 convergence, NATS/Tailscale, agent/supervisor and runtime projections. Rules reported active and known-good revision `plr-c802978be4c9b958df7d3312a30baed1`, with no source update pending. The harness status was safely disabled (`enabled=false`, `qualification_owner=false`, `active_sessions=0`, no profiles returned), so no synthetic Owner qualification was attempted and no authentication bypass was used.
+
+The main screen uses the latest entry of `policy.recent_decisions`; it does not load an entire Enterprise history by default. Inspect Decision's stage evaluation description is illustrative when backend does not supply a complete trace. Remaining non-qualifying findings are the two unrelated Identity visual baselines, seven non-Rules shared performance misses, five unrelated OPA bootstrap fixture/source-contract failures, and the elevated Android CDP prerequisite.
+
+## Documentation and remaining gates
+
+After the feature and bounded runtime work, `task lite:docs:generate` completed and `task lite:docs:check` passed with the repository Node 24.16.0 environment. Generated contracts, catalogs, runtime projections, architecture, knowledge/intelligence, development/production/enterprise pages, SchemaSpy, diagrams and Codebase Map are current and redaction-safe. Redocly reported 88 existing warnings but no lint errors; MkDocs completed with repository navigation warnings and no build error.
+
+`task lite:check` is locally verified. Exact-final-head GitHub CI remains the last qualification gate. The PR must remain OPEN and DRAFT; no merge, release or permanent deployment is authorized.
+
+## Requalification command
 
 ```bash
-npm run test:rules:premium:unit
-npm run test:rules:premium:mocked
-npm run test:rules:premium:visual
-npm run test:rules:premium:perf
-npm run test:a11y:states
-npm run test:mock-regression
-npm run build
-npm run build:budget
-task lite:test:rules:premium:unit
-task lite:test:rules:premium:mocked
-task lite:test:rules:premium:visual
 task lite:check
 git diff --check
+
+# Physical phase, after running prepare-ui-performance-android-cdp.ps1
+# from elevated Windows PowerShell:
+npm run check:perf:android-cdp
+bash scripts/dev/lite/run-ui-performance-android-candidate.sh
 ```
 
-For visual baselines, run the **specific** Playwright visual spec with `--update-snapshots` only after approved rendering and review. Do not overwrite unrelated approved baselines. Follow with read-only isolated Android/Termux qualification and separate CI investigation if required. Generated docs/contracts may need a future refresh; none were run or falsified in this implementation-only session.
+For visual baselines, run the **specific** Playwright visual spec with `--update-snapshots` only after approved rendering and review. Do not overwrite unrelated approved baselines. Keep all physical Android qualification and any future harness session bounded, auditable and revocable.

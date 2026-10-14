@@ -14998,6 +14998,39 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-rules-premium-performance.spec.ts",
+      "name": "tests/e2e/lite-rules-premium-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-rules-premium-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-rules-premium-refinement.spec.ts",
+      "name": "tests/e2e/lite-rules-premium-refinement.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-rules-premium-refinement.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-rules-premium-visual.spec.ts",
+      "name": "tests/e2e/lite-rules-premium-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-rules-premium-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-security-runtime.spec.ts",
       "name": "tests/e2e/lite-security-runtime.spec.ts",
       "source_refs": [
@@ -31529,6 +31562,20 @@
       "id": "rel:4260bcb49f111cfe",
       "source": "requirement:architecture-02",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-rules-premium-visual.spec.ts"
+      ],
+      "id": "rel:42637ad0489c059f",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-rules-premium-visual.spec.ts",
       "type": "verified_by"
     },
     {
@@ -58779,6 +58826,20 @@
       "source": "component:post-switch-health",
       "target": "component:release-state",
       "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "src/lite/LiteRules.jsx"
+      ],
+      "id": "rel:c2d41c35a0381974",
+      "source": "ui:literules",
+      "target": "api:get:/api/lite/policy/decisions/{decision_id}",
+      "type": "calls"
     },
     {
       "derivation": {
