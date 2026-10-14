@@ -2,12 +2,12 @@ import { getLiteReasonPresentation, getLiteRulesActionLabel } from '../../lib/id
 
 // Deliberately accept only server-provided, display-safe facts. Unknown != blocked.
 const words = (value) => typeof value === 'string' && value.trim() ? value.trim() : '';
-export function rulesProtectionView(policy, { savedStateOnly = false, backendReachable = true, isExpired = false, enterprise = false } = {}) {
+export function rulesProtectionView(policy, { savedStateOnly = false, backendReachable = true, isExpired = false, enterprise = null } = {}) {
   const current = Boolean(policy && backendReachable && !savedStateOnly && !isExpired);
   const confirmed = current && policy.status === 'ready' && policy.engine?.healthy === true
     && policy.engine?.loopback_only === true && !policy.active_policy?.activation_in_progress
     && !policy.active_policy?.source_update_required;
-  const saved = Boolean(savedStateOnly || (!backendReachable && policy));
+  const saved = Boolean(savedStateOnly || isExpired || (!backendReachable && policy));
   const state = saved ? (isExpired ? 'stale' : 'saved') : !policy || !backendReachable ? 'unavailable' : confirmed ? 'ready' : 'degraded';
   const presentation = {
     ready: ['Ready', 'Your important actions are protected.', 'Pocket Lab checks whether sensitive changes are permitted before they can continue.', 'healthy'],
@@ -17,7 +17,7 @@ export function rulesProtectionView(policy, { savedStateOnly = false, backendRea
     unavailable: ['Unavailable', 'Protection status is unavailable.', 'Pocket Lab cannot currently confirm its protection state.', 'degraded'],
   }[state];
   return { state, label: presentation[0], headline: presentation[1], summary: presentation[2], tone: presentation[3],
-    mode: enterprise ? 'Enterprise Mode' : 'Personal Mode',
+    mode: enterprise === true ? 'Enterprise Mode' : enterprise === false ? 'Personal Mode' : 'Workspace mode unavailable',
     updateAttention: Boolean(policy?.active_policy?.source_update_required),
     revisionCurrent: confirmed && policy?.active_policy?.bundle_ready === true,
     canWrite: current };
