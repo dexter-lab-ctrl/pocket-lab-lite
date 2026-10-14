@@ -6,6 +6,8 @@ export const IDENTITY_MANAGE_SECTIONS = Object.freeze([
 export const IDENTITY_ENTERPRISE_SECTIONS = Object.freeze([['people', 'People'], ['roles', 'Roles & Access']]);
 
 const eventFamilies = Object.freeze({
+  'session.signed_in': 'sign-ins', 'session.signed_out': 'sign-ins',
+  'passkey.added': 'access', 'passkey.removed': 'access', 'identity.access_denied': 'access',
   sign_in: 'sign-ins', sign_out: 'sign-ins', login: 'sign-ins', logout: 'sign-ins',
   passkey_added: 'access', passkey_removed: 'access', passkey_renamed: 'access',
   session_revoked: 'access', recovery_generated: 'access', recovery_used: 'access',

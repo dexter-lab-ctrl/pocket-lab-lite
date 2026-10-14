@@ -3,6 +3,9 @@ import { Clock3, KeyRound, ShieldCheck, ShieldAlert, LogIn, LogOut, UsersRound, 
 import { identityActivityView } from './identityPremiumView.js';
 
 const iconFor = (event) => {
+  if (event.type === 'session.signed_in') return LogIn;
+  if (event.type === 'session.signed_out') return LogOut;
+  if (event.type === 'passkey.added' || event.type === 'passkey.removed') return KeyRound;
   if (event.outcome === 'denied' || event.outcome === 'blocked') return ShieldAlert;
   return ({ sign_in: LogIn, login: LogIn, sign_out: LogOut, logout: LogOut, passkey_added: KeyRound,
     passkey_removed: KeyRound, passkey_renamed: KeyRound, session_revoked: LogOut,
