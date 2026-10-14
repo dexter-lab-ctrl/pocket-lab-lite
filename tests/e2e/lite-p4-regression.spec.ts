@@ -44,7 +44,7 @@ const GUIDANCE = [
   ['catalog', 'catalog-install-available', 'App readiness'],
   ['recovery', 'recovery-restore-blocked', 'Protection readiness'],
   ['security', 'security-action-needed', 'Safety result and coverage'],
-  ['identity', 'healthy', 'Your current access'],
+  ['identity', 'healthy', 'Access profile'],
   ['rules', 'rules-disabled', 'How protection decisions work'],
 ] as const;
 

@@ -15,7 +15,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 | Workflow | Task count |
 | --- | --- |
-| Development loop | 70 |
+| Development loop | 73 |
 | Documentation loop | 55 |
 | API-validation loop | 12 |
 | Runtime-evidence loop | 35 |
@@ -8098,6 +8098,108 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** gate-defined
 
 **Example:** `task lite:test:e2e:mocked`
+
+## `lite:test:identity:premium:mocked`
+
+**Purpose:** Run premium Identity mocked desktop/mobile, responsive and Axe AA contracts
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:identity:premium:mocked`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:identity:premium:mocked`
+
+## `lite:test:identity:premium:unit`
+
+**Purpose:** Run premium Identity pure selectors and interactive component tests
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:identity:premium:unit`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:identity:premium:unit`
+
+## `lite:test:identity:premium:visual`
+
+**Purpose:** Compare premium Identity screenshots to separately owner-reviewed baselines
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:identity:premium:visual`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:identity:premium:visual`
 
 ## `lite:test:lighthouse`
 

@@ -361,9 +361,11 @@ test('[interaction] Identity confirmation rendering stays inside the render budg
   await installScenario(page, 'identity-summary');
   await page.goto('/?screen=identity');
   await waitForLiteScreenToSettle(page, 'identity');
-  await page.getByRole('button', { name: /Manage Access/i }).click();
+  await page.getByRole('button', { name: /Manage Access/i }).first().click();
   const manage = page.locator('.lite-identity-manage-sheet:visible');
   await expect(manage).toBeVisible();
+  await manage.getByRole('button', { name: /^Recovery$/ }).click();
+  await expect(manage.getByRole('button', { name: 'Generate New Codes' })).toBeVisible();
   const confirmationReport = await measureLiteInteraction(
     page,
     testInfo,

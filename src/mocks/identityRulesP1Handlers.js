@@ -1,7 +1,9 @@
 import { http, HttpResponse } from 'msw';
 
-const now = () => new Date().toISOString();
-const future = (ms) => new Date(Date.now() + ms).toISOString();
+// Keep Identity screenshots and fixture assertions reproducible across runs.
+const MOCK_NOW_MS = Date.parse('2026-09-24T08:54:00.000Z');
+const now = () => new Date(MOCK_NOW_MS).toISOString();
+const future = (ms) => new Date(MOCK_NOW_MS + ms).toISOString();
 const scenario = () => (typeof window !== 'undefined' ? window.localStorage.getItem('POCKETLAB_MOCK_SCENARIO') || 'identity-summary' : 'identity-summary');
 
 function enterpriseRole() {
@@ -21,7 +23,7 @@ function enterpriseEnabled() {
 function identityPayload() {
   const enabled = enterpriseEnabled();
   const role = enabled ? enterpriseRole() : 'Owner';
-  return {
+  const payload = {
     status: 'ready',
     summary: enabled ? 'Your access is protected by server-side identity, role and Safety Rules checks.' : 'Owner access is protected by server-side sessions.',
     setup_required: false,
@@ -57,6 +59,35 @@ function identityPayload() {
     },
     updated_at: now(),
   };
+  const kind = scenario();
+  if (kind === 'identity-premium-signed-out') return { ...payload, authenticated: false, sessions: [], session: null };
+  if (kind === 'identity-premium-first-owner') return { ...payload, setup_required: true, authenticated: false, owner: null, person: null, sessions: [], passkeys: [], recovery: { configured: false, remaining: null } };
+  if (kind === 'identity-premium-enrollment') return { ...payload, authenticated: false, sessions: [], session: null };
+  if (kind === 'identity-premium-no-passkeys') return { ...payload, passkeys: [] };
+  if (kind === 'identity-premium-recovery-missing') return { ...payload, recovery: { configured: false, remaining: null } };
+  if (kind === 'identity-premium-unavailable-facts') return { ...payload, passkeys: undefined, sessions: undefined, recovery: undefined };
+  if (kind === 'identity-premium-multiple') return {
+    ...payload,
+    passkeys: [
+      ...payload.passkeys,
+      { credential_id: 'mock-second-passkey', friendly_name: 'Second passkey', created_at: now(), active: true },
+    ],
+    sessions: [
+      ...payload.sessions,
+      { session_id: 'sess-other', auth_method: 'password', active: true, current: false, absolute_expires_at: future(3600000) },
+    ],
+    recent_activity: [
+      ...payload.recent_activity,
+      { event_type: 'passkey.added', occurred_at: now(), summary: 'Passkey registered', outcome: 'completed', correlation_id: 'mock-event-2' },
+      { event_type: 'identity.access_denied', occurred_at: now(), summary: 'Access denied', outcome: 'denied', reason_code: 'enterprise_owner_required', correlation_id: 'mock-event-3' },
+    ],
+  };
+  if (kind === 'identity-premium-long-text') return {
+    ...payload,
+    person: { ...payload.person, display_name: 'Long identity name '.repeat(16) },
+    passkeys: [{ ...payload.passkeys[0], friendly_name: 'Long passkey name '.repeat(15) }],
+  };
+  return payload;
 }
 
 const ROLE_SUMMARIES = {
@@ -178,7 +209,7 @@ export const identityRulesP1Handlers = [
   http.post('/api/lite/identity/owner-claim/passkey/options', () => HttpResponse.json({ publicKey: { challenge: 'bW9jay1jaGFsbGVuZ2U', rp: { name: 'Pocket Lab Lite', id: 'localhost' }, user: { id: 'bW9jay11c2Vy', name: 'owner', displayName: 'Pocket Lab Owner' }, pubKeyCredParams: [{ type: 'public-key', alg: -7 }] } })),
   http.post('/api/lite/identity/owner-claim/passkey/verify', () => HttpResponse.json({ ...identityPayload(), csrf_token: 'mock-csrf', recovery_codes: ['MOCK-RECOVERY-CODE'] }, { status: 201 })),
 
-  http.get('/api/lite/enterprise/identity/enrollment/status', () => HttpResponse.json(scenario() === 'identity-enterprise-invited' ? { active: true, status: 'claim_verified', expires_at: future(5 * 60 * 1000), person: { display_name: 'New Person', username: 'new-person', role: 'Operator' }, summary: 'Connect link verified. Create a passkey to finish joining Pocket Lab.' } : { active: false, status: 'person_claim_authority_invalid' })),
+  http.get('/api/lite/enterprise/identity/enrollment/status', () => HttpResponse.json(['identity-enterprise-invited', 'identity-premium-enrollment'].includes(scenario()) ? { active: true, status: 'claim_verified', expires_at: future(5 * 60 * 1000), person: { display_name: 'New Person', username: 'new-person', role: 'Operator' }, summary: 'Connect link verified. Create a passkey to finish joining Pocket Lab.' } : { active: false, status: 'person_claim_authority_invalid' })),
   http.post('/api/lite/enterprise/identity/enrollment/consume', () => HttpResponse.json({ status: 'claim_verified', expires_at: future(5 * 60 * 1000), summary: 'Connect link verified.' })),
   http.post('/api/lite/enterprise/identity/enrollment/passkey/options', () => HttpResponse.json({ publicKey: { challenge: 'bW9jay1jaGFsbGVuZ2U', rp: { name: 'Pocket Lab Lite', id: 'localhost' }, user: { id: 'bW9jay11c2Vy', name: 'new-person', displayName: 'New Person' }, pubKeyCredParams: [{ type: 'public-key', alg: -7 }] } })),
   http.post('/api/lite/enterprise/identity/enrollment/passkey/verify', () => HttpResponse.json({ ...identityPayload(), csrf_token: 'mock-csrf', recovery_codes: ['MOCK-PERSON-RECOVERY'] }, { status: 201 })),

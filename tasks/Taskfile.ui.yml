@@ -60,3 +60,20 @@ tasks:
     deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
     cmds:
       - bash scripts/dev/check-lighthouse.sh
+
+  lite:test:identity:premium:unit:
+    desc: Run premium Identity pure selectors and interactive component tests
+    cmds:
+      - npm run test:identity:premium:unit
+
+  lite:test:identity:premium:mocked:
+    desc: Run premium Identity mocked desktop/mobile, responsive and Axe AA contracts
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:identity:premium:mocked
+
+  lite:test:identity:premium:visual:
+    desc: Compare premium Identity screenshots to separately owner-reviewed baselines
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:identity:premium:visual

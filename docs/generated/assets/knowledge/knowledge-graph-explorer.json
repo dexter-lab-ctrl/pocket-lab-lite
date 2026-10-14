@@ -14844,6 +14844,28 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-identity-premium-refinement.spec.ts",
+      "name": "tests/e2e/lite-identity-premium-refinement.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-identity-premium-refinement.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-identity-premium-visual.spec.ts",
+      "name": "tests/e2e/lite-identity-premium-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-identity-premium-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-live.spec.ts",
       "name": "tests/e2e/lite-live.spec.ts",
       "source_refs": [
@@ -41524,6 +41546,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-identity-premium-refinement.spec.ts"
+      ],
+      "id": "rel:7054298be55eac6c",
+      "source": "domain:identity",
+      "target": "test:tests/e2e/lite-identity-premium-refinement.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:70601f75361db622",
@@ -65015,6 +65051,20 @@
       "id": "rel:dfad7bc42ae836c4",
       "source": "reason:exception_identity_unknown",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-identity-premium-visual.spec.ts"
+      ],
+      "id": "rel:dfb023fc06dab85a",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-identity-premium-visual.spec.ts",
       "type": "verified_by"
     },
     {

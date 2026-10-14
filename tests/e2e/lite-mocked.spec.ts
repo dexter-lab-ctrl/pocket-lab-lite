@@ -467,8 +467,11 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(identity).toContainText('Passkeys');
     await expect(identity).toContainText('Sessions');
     await expect(identity).toContainText('Recovery');
-    await identity.getByRole('button', { name: /Manage access/i }).click();
-    await expect(page.getByRole('dialog', { name: 'Manage access' })).toContainText(/Manage how you sign in, where you are signed in, and how you recover access/i);
+    // The premium Access Center intentionally exposes the same Manage action
+    // in its operational-story action and compact profile CTA. Both are
+    // authoritative entry points; target the first visible trigger here.
+    await identity.getByRole('button', { name: /^Manage Access$/i }).first().click();
+    await expect(page.getByRole('dialog', { name: 'Manage access' })).toContainText(/Review and manage your reported access/i);
     await expect(identity).not.toContainText('local-admin');
 
     await page.goto('/?screen=rules');
@@ -546,7 +549,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
       }
 
       await openTab(page, 'Access', 'identity');
-      await page.getByRole('button', { name: /Manage access/i }).click();
+      await page.getByRole('button', { name: /^Manage Access$/i }).first().click();
       const identitySheet = page.getByRole('dialog', { name: 'Manage access' });
       await expect(identitySheet).toBeVisible();
       expect(await identitySheet.evaluate((element) => {
@@ -912,11 +915,14 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await installScenario(page, 'identity-enterprise-owner');
     await page.goto('/?screen=identity');
     const identity = page.locator('[data-lite-screen-id="identity"]');
-    await expect(identity.getByRole('heading', { name: 'Identity & Access governance', exact: true })).toBeVisible();
-    await identity.getByRole('button', { name: 'Roles & access', exact: true }).click();
-    await expect(identity).toContainText('App resources');
-    await expect(identity).toContainText('PhotoPrism');
-    await expect(identity).toContainText(/You can manage this app|Shared authority/i);
+    await expect(identity.getByRole('region', { name: 'Access profile' })).toBeVisible();
+    await identity.getByRole('button', { name: /^Manage Access$/i }).first().click();
+    const identityManage = page.getByRole('dialog', { name: 'Manage access' });
+    await expect(identityManage).toBeVisible();
+    await identityManage.getByRole('button', { name: 'Roles & Access', exact: true }).click();
+    await expect(identityManage).toContainText('App resources');
+    await expect(identityManage).toContainText('PhotoPrism');
+    await expect(identityManage).toContainText(/You can manage this app|Shared authority/i);
 
     const catalogContext = await browser.newContext({
       baseURL: new URL(page.url()).origin,
