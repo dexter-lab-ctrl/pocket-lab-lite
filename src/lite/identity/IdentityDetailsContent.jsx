@@ -4,6 +4,7 @@ import { LiteButton, StateSurface } from '../LiteUi.jsx';
 import { LiteTechnicalFacts } from '../LiteUx.jsx';
 import { getLiteReasonPresentation } from '../../lib/identityRulesPresentation.js';
 import { identityDecisionLabel } from './identityPremiumView.js';
+import LiteEvidenceGuide from '../components/LiteEvidenceGuide.jsx';
 
 function Fact({ label, children }) {
   return <div className="lite-id-detail-fact"><dt>{label}</dt><dd>{children == null || children === '' ? 'Not reported' : children}</dd></div>;
@@ -18,7 +19,6 @@ export default function IdentityDetailsContent({ selection, view, onRename, onRe
   const [roleDraft, setRoleDraft] = useState(item.role || '');
   useEffect(() => setRoleDraft(item.role || ''), [item.role, kind]);
   const explanation = kind === 'explain';
-  const reason = getLiteReasonPresentation(item.reasonCode || '', item.title || 'Access information');
   const basicTitle = ({ identity: 'Identity', passkey: 'Passkey', session: 'Session', recovery: 'Recovery', person: 'Person', role: 'Role', authorization: 'Access decision', activity: 'Access activity', mode: 'Workspace mode', explain: 'Understand your access' })[kind] || 'Access details';
   const title = kind === 'passkey' ? item.friendly_name || 'Passkey' : kind === 'person' ? item.display_name || 'Person' : basicTitle;
   const status = kind === 'passkey' ? (item.active ? 'Active' : 'Revoked') : kind === 'session' ? (item.current ? 'Current session' : item.active ? 'Active' : 'Inactive') : kind === 'activity' ? item.outcome : kind === 'recovery' ? (view.recoveryConfigured ? 'Configured' : 'Unavailable or unconfigured') : view.fresh ? 'Reported by Pocket Lab' : 'Saved information';
@@ -50,6 +50,7 @@ export default function IdentityDetailsContent({ selection, view, onRename, onRe
         {explanation ? <><Fact label="Who">{view.name}</Fact><Fact label="Authority">{view.role} · {view.mode}</Fact><Fact label="Sign-in method">{view.authentication}</Fact></> : null}
       </dl>
     </DetailGroup>
+    {explanation ? <LiteEvidenceGuide title="Why Pocket Lab says this" description="This is a sanitized, read-only Identity projection." saved={!view.fresh} facts={[{ id: 'name', label: 'Signed in as', value: view.name }, { id: 'role', label: 'Reported role', value: view.role }, { id: 'method', label: 'Reported sign-in method', value: view.authentication }, { id: 'mode', label: 'Mode', value: view.mode }]} caution="Only a fresh backend decision can authorize protected changes." /> : null}
     {explanation ? <DetailGroup title="Why Pocket Lab says this"><p>These facts were reported by the Identity read. Browser passkey support alone does not prove your sign-in method or authorize an action.</p><p><BookOpenText size={16} aria-hidden="true" /> {view.fresh ? 'Live access read available.' : 'Previously reported access information; live authority unavailable.'}</p></DetailGroup> : null}
     <DetailGroup title="What this means"><p>{kind === 'activity' ? 'The record describes only the reported event and outcome.' : summary}</p></DetailGroup>
     <DetailGroup title="What happens next">

@@ -278,8 +278,8 @@ export function buildLiteIdentityAccessOverview(identity, {
         : {
             state: 'signed_in',
             tone: 'ready',
-            headline: 'Signed in with protected local access',
-            summary: 'Your passkey, sessions, and recovery state are available to review.',
+            headline: enterpriseEnabled ? 'Signed in with server-managed access' : 'Signed in with protected local access',
+            summary: enterpriseEnabled ? 'Your server-reported role, passkeys, sessions and recovery state are available to review.' : 'Your passkey, sessions, and recovery state are available to review.',
             freshness,
           };
   } else {

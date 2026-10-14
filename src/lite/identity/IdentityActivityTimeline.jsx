@@ -27,7 +27,7 @@ export default function IdentityActivityTimeline({ items = [], limit = 0, onDeta
       return <li key={event.key}><span className="lite-id-timeline-marker"><Icon size={17} aria-hidden="true" /></span><div>
         <strong>{event.title}</strong><span className="lite-id-timeline-outcome">{event.outcome}</span>
         <p>{event.reasonCode ? 'Pocket Lab reported an access decision reason.' : 'Recorded by Pocket Lab.'}</p>
-        <time dateTime={event.timestamp}>{event.timestamp ? new Date(event.timestamp).toLocaleString() : 'Time unavailable'}</time>
+        <time dateTime={event.timestamp}>{event.timestamp && Number.isFinite(Date.parse(event.timestamp)) ? new Date(event.timestamp).toLocaleString() : 'Time unavailable'}</time>
         <button type="button" onClick={() => onDetails(event)} aria-label={'View activity details: ' + event.title}>Details</button>
       </div></li>;
     })}</ol> : <p role="status">No reported activity in this view.</p>}

@@ -4,7 +4,7 @@ import './identityRulesGovernance.css';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Fingerprint, KeyRound, LogIn, ShieldUser, UserCheck, BookOpenText } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
-import { clearLiteIdentityCsrf, formatLiteTime, liteApi } from '../lib/liteApi.js';
+import { clearLiteIdentityCsrf, liteApi } from '../lib/liteApi.js';
 import { liteEnterpriseApi } from '../lib/liteEnterpriseApi.js';
 import { getLiteReasonPresentation, identityActionStageLabel, buildLiteIdentityAccessOverview } from '../lib/identityRulesPresentation.js';
 import { takePendingOwnerClaim } from '../lib/liteOwnerClaim.js';
@@ -21,7 +21,6 @@ import IdentityDetailsContent from './identity/IdentityDetailsContent.jsx';
 import IdentityActivityTimeline from './identity/IdentityActivityTimeline.jsx';
 import { identityPremiumProjection } from './identity/identityPremiumView.js';
 import './identity/identityPremium.css';
-import LiteEvidenceGuide from './components/LiteEvidenceGuide.jsx';
 import { LiteField } from './components/LiteSafeForms.jsx';
 import {
   GlassCard,
@@ -29,7 +28,6 @@ import {
   StateSurface,
   PageHeader,
   LiteButton,
-  LiteActionRow,
   LiteOperationalStory,
   LiteRefreshButton,
   LoadingCard,
@@ -315,7 +313,9 @@ export default function IdentityScreen() {
     if (result) setShowEnterpriseOptIn(false);
   }
 
-  function openManage(section = 'overview') { setManageSection(section); setManageOpen(true); }
+  function changeManageSection(section) { if (section !== 'recovery') setRecoveryCodes([]); setManageSection(section); }
+  function closeManage() { setManageOpen(false); setRecoveryCodes([]); }
+  function openManage(section = 'overview') { changeManageSection(section); setManageOpen(true); }
   function openDetails(kind, item = {}) {
     if (kind === 'person') {
       const wrap = (callback) => typeof callback === 'function' ? (...args) => { setSelectedDetails(null); return callback(...args); } : null;
@@ -423,9 +423,9 @@ export default function IdentityScreen() {
           }} />
           <section className="lite-id-preview"><div><h2>Recent Activity</h2><button type="button" onClick={() => openManage('activity')}>View all activity</button></div><IdentityActivityTimeline items={data?.recent_activity} limit={3} onDetails={(event) => openDetails('activity', event)} /></section>
           <div className="lite-id-overview-action"><LiteButton variant="secondary" onClick={() => openManage('overview')}>Manage Access</LiteButton></div>
-          <LiteSheet open={manageOpen} onClose={() => setManageOpen(false)} title="Manage access" eyebrow="Identity & Access" description="Review and manage your reported access." className="lite-identity-manage-sheet">
+          <LiteSheet open={manageOpen} onClose={closeManage} title="Manage access" eyebrow="Identity & Access" description="Review and manage your reported access." className="lite-identity-manage-sheet">
             <IdentityManageContent
-              data={data} view={premiumView} section={manageSection} setSection={setManageSection} busy={busy} notice={notice}
+              data={data} view={premiumView} section={manageSection} setSection={changeManageSection} busy={busy} notice={notice}
               passkeyEligible={passkeyEligible} recoveryCodes={recoveryCodes} onOpenDetails={openDetails}
               onAddPasskey={addPasskey} onRename={renamePasskey} onRemovePasskey={requestRemovePasskey}
               onSignOutSession={requestSignOutSession} onSignOutOthers={requestSignOutOthers}
