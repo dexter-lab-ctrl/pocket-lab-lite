@@ -255,7 +255,7 @@ export function buildLiteIdentityAccessOverview(identity, {
       nextAction: canUsePasskey ? { id: 'sign_in_passkey', label: 'Sign in with Passkey' } : null,
     };
   } else if (source.authenticated === true) {
-    const missingPasskey = activePasskeys.length === 0;
+    const missingPasskey = Array.isArray(source.passkeys) && activePasskeys.length === 0;
     const recoveryNeedsAttention = recoveryConfigured === false;
     workspaceStory = missingPasskey
       ? {
@@ -297,14 +297,14 @@ export function buildLiteIdentityAccessOverview(identity, {
     {
       key: 'passkeys',
       label: 'Passkeys',
-      value: source ? (activePasskeys.length ? `${activePasskeys.length} active` : 'Not set up') : 'Unknown',
+      value: !Array.isArray(source?.passkeys) ? 'Unknown' : (activePasskeys.length ? `${activePasskeys.length} active` : 'Not set up'),
       summary: source ? (activePasskeys.length ? `${previous}passkeys can protect sign-in and sensitive confirmation.` : 'Add a passkey to use the preferred sign-in path.') : 'Passkey state is not available yet.',
       attention: Boolean(source && activePasskeys.length === 0),
     },
     {
       key: 'sessions',
       label: 'Sessions',
-      value: source ? `${activeSessions.length} active` : 'Unknown',
+      value: Array.isArray(source?.sessions) ? `${activeSessions.length} active` : 'Unknown',
       summary: source ? `${previous}current and other sessions stay separate.` : 'Session state is not available yet.',
       attention: false,
     },

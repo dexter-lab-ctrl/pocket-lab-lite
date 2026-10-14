@@ -316,7 +316,12 @@ export default function IdentityScreen() {
   }
 
   function openManage(section = 'overview') { setManageSection(section); setManageOpen(true); }
-  function openDetails(kind, item = {}) { setSelectedDetails({ kind, item }); }
+  function openDetails(kind, item = {}) {
+    if (kind === 'person') {
+      const wrap = (callback) => typeof callback === 'function' ? (...args) => { setSelectedDetails(null); return callback(...args); } : null;
+      setSelectedDetails({ kind, item: { ...item, onChangeRole: wrap(item.onChangeRole), detailActions: (item.detailActions || []).map((action) => ({ ...action, onClick: wrap(action.onClick) })) } });
+    } else setSelectedDetails({ kind, item });
+  }
   function requestRemovePasskey(passkey) {
     requestConfirmation({ title: 'Remove this passkey?', description: 'Pocket Lab may request another recent passkey confirmation before revoking the credential.', confirmLabel: 'Remove Passkey', onConfirm: () => revokePasskey(passkey), will: ['Revoke the selected passkey after server authorization.'], willNot: ['Reveal the credential identifier or affect a different passkey.'] });
   }
@@ -430,7 +435,7 @@ export default function IdentityScreen() {
               onReviewEnterprise={() => setShowEnterpriseOptIn((value) => !value)}
               showEnterpriseOptIn={showEnterpriseOptIn}
               onEnableEnterprise={() => requestConfirmation({ title: 'Enable Enterprise Mode?', description: 'Owner passkey confirmation may be required and active sessions will be signed out.', confirmLabel: 'Enable Enterprise Mode', onConfirm: enableEnterpriseMode })}
-              enterpriseContent={data?.enterprise?.enabled ? <LiteIdentityEnterprise embedded section={manageSection === 'settings' ? 'mode' : manageSection} enterprise={data.enterprise} currentPerson={currentPerson} onIdentityRefresh={refresh} onModeChanged={refresh} onOpenDetails={openDetails} /> : null}
+              enterpriseContent={data?.enterprise?.enabled ? <LiteIdentityEnterprise readOnly={!premiumView.fresh} embedded section={manageSection === 'settings' ? 'mode' : manageSection} enterprise={data.enterprise} currentPerson={currentPerson} onIdentityRefresh={refresh} onModeChanged={refresh} onOpenDetails={openDetails} /> : null}
             />
           </LiteSheet>
           <LiteDetailsPanel open={Boolean(selectedDetails)} onClose={() => setSelectedDetails(null)} title={selectedDetails?.kind === 'explain' ? 'Understand your access' : 'Access Details'} description="Server-reported information and safe next actions.">

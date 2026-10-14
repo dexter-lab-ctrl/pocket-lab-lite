@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BookOpenText, LockKeyhole } from 'lucide-react';
 import { LiteButton, StateSurface } from '../LiteUi.jsx';
 import { LiteTechnicalFacts } from '../LiteUx.jsx';
@@ -15,6 +15,8 @@ function Action({ label, onClick, disabled = false, why = '' }) {
 export default function IdentityDetailsContent({ selection, view, onRename, onRemovePasskey, onSignOutSession, onRegenerate, onSignOutOtherSessions, onOpenManage, disabled = false }) {
   if (!selection) return null;
   const { kind, item = {} } = selection;
+  const [roleDraft, setRoleDraft] = useState(item.role || '');
+  useEffect(() => setRoleDraft(item.role || ''), [item.role, kind]);
   const explanation = kind === 'explain';
   const reason = getLiteReasonPresentation(item.reasonCode || '', item.title || 'Access information');
   const basicTitle = ({ identity: 'Identity', passkey: 'Passkey', session: 'Session', recovery: 'Recovery', person: 'Person', role: 'Role', authorization: 'Access decision', activity: 'Access activity', mode: 'Workspace mode', explain: 'Understand your access' })[kind] || 'Access details';
@@ -55,6 +57,7 @@ export default function IdentityDetailsContent({ selection, view, onRename, onRe
       {kind === 'session' && item.active && !item.current ? <Action label="Sign out session" onClick={() => onSignOutSession(item)} disabled={disabled} why="Live access is required." /> : null}
       {kind === 'recovery' ? <Action label="Generate new recovery codes" onClick={onRegenerate} disabled={disabled} why="Live access is required." /> : null}
       {kind === 'session' && item.current ? <p>This is your current session. Sign-out controls are in Manage Access.</p> : null}
+      {kind === 'person' && typeof item.onChangeRole === 'function' && Array.isArray(item.roleOptions) ? <div className="lite-id-person-role"><label>Role <select value={roleDraft} onChange={(event) => setRoleDraft(event.target.value)} disabled={disabled}>{item.roleOptions.map((role) => <option key={role} value={role}>{role}</option>)}</select></label><Action label="Save role" onClick={() => item.onChangeRole(roleDraft)} disabled={disabled || roleDraft === item.role || !item.roleOptions.includes(roleDraft)} why="Role changes require current server authority." /></div> : null}
       {kind === 'person' && Array.isArray(item.detailActions) ? item.detailActions.map((action) => <Action key={action.label} label={action.label} onClick={action.onClick} disabled={disabled || action.disabled} why={action.reason} />) : null}
       {kind === 'role' || kind === 'authorization' || kind === 'explain' || kind === 'identity' || kind === 'mode' || kind === 'activity' ? <Action label="Back to Manage Access" onClick={onOpenManage} /> : null}
       {kind === 'session' && item.current ? <Action label="Sign out other sessions" onClick={onSignOutOtherSessions} disabled={disabled} /> : null}

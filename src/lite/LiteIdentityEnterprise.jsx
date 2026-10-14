@@ -58,10 +58,10 @@ function PersonRow({ person, currentPersonId, roles, currentRole, busy, onRole, 
   );
 }
 
-export default function LiteIdentityEnterprise({ enterprise, access: initialAccess = null, currentPerson = null, onIdentityRefresh, onModeChanged, embedded = false, section: selectedSection = 'overview', onOpenDetails }) {
+export default function LiteIdentityEnterprise({ enterprise, access: initialAccess = null, currentPerson = null, onIdentityRefresh, onModeChanged, embedded = false, section: selectedSection = 'overview', onOpenDetails, readOnly = false }) {
   const currentRole = enterprise?.current_membership?.role || initialAccess?.current_role || '';
-  const canManagePeople = currentRole === 'Owner' || currentRole === 'Admin';
-  const canChangeMode = currentRole === 'Owner';
+  const canManagePeople = !readOnly && (currentRole === 'Owner' || currentRole === 'Admin');
+  const canChangeMode = !readOnly && currentRole === 'Owner';
   const [standaloneSection, setStandaloneSection] = useState('overview');
   const section = embedded ? selectedSection : standaloneSection;
   const setSection = setStandaloneSection;
@@ -242,7 +242,7 @@ export default function LiteIdentityEnterprise({ enterprise, access: initialAcce
               onReset={(item) => setConfirm({ title: `Reset sign-in for ${item.display_name}?`, description: 'Existing passkeys, password credentials, recovery codes, sessions and continuations are invalidated. The person returns to Waiting to join, where an authorized Owner/Admin can run Set up passkey again.', confirmLabel: 'Reset sign-in', action: () => execute(`reset:${item.human_id}`, () => liteEnterpriseApi.resetPersonAccess(item.human_id), 'Sign-in reset. Set up a new passkey to finish recovery.') })}
               onRemove={(item) => setConfirm({ title: `Remove ${item.display_name}?`, description: 'Active authority and sign-in methods are revoked. Identity and audit history are retained so past evidence remains understandable.', confirmLabel: 'Remove person', action: () => execute(`remove:${item.human_id}`, () => liteEnterpriseApi.removePerson(item.human_id), 'Person removed.') })}
               onDetails={(item) => {
-                const canManageTarget = currentRole === 'Owner' || !['Owner', 'Admin'].includes(item.role);
+                const canManageTarget = !readOnly && (currentRole === 'Owner' || !['Owner', 'Admin'].includes(item.role));
                 const isSelf = item.human_id === currentPerson?.human_id;
                 const detailActions = [];
                 if (canManageTarget && item.status === 'invited') detailActions.push({ label: 'Set up passkey', onClick: () => enrollPerson(item) });
