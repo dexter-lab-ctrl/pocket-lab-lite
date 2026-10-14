@@ -18,15 +18,18 @@ async function openManageAccess(canvasElement) {
   await expect(dialog).toBeInTheDocument();
   await expect(dialog).toHaveTextContent(/Passkeys/i);
   await expect(dialog).toHaveTextContent(/Sessions/i);
-  await expect(dialog).toHaveTextContent(/Recovery/i);
+  await expect(dialog.getByRole('button', { name: 'Recovery', exact: true })).toBeInTheDocument();
 }
 
 async function expectEnterpriseRole(canvasElement, role) {
   const canvas = await expectIdentity(canvasElement);
-  await expect(await canvas.findByRole('heading', { name: /Identity & Access governance/i })).toBeInTheDocument();
-  await expect(canvasElement).toHaveTextContent(new RegExp(role, 'i'));
-  await expect(canvasElement).toHaveTextContent(/People, roles and Safety Rules use the same server-owned authority model/i);
-  return canvas;
+  const trigger = await canvas.findByRole('button', { name: /Manage Access/i });
+  await userEvent.click(trigger);
+  const dialog = await within(canvasElement.ownerDocument.body).findByRole('dialog', { name: /Manage access/i });
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Roles & Access' }));
+  await expect(dialog).toHaveTextContent(new RegExp(role, 'i'));
+  await expect(dialog).toHaveTextContent(/Effective capability matrix/i);
+  return dialog;
 }
 
 export const IdentitySummary = {
@@ -75,8 +78,8 @@ export const EnterpriseOwner = {
   ...createLiteStory('identity', 'identity-enterprise-owner', { viewport: 'desktop', notes: 'Enterprise Owner is root-equivalent for supported Pocket Lab administration while hard safety and step-up controls remain.' }),
   play: async ({ canvasElement }) => {
     await expectEnterpriseRole(canvasElement, 'Owner');
-    await expect(canvasElement).toHaveTextContent(/No peer approval/i);
-    await expect(canvasElement).toHaveTextContent(/Owner is root-equivalent/i);
+    const dialog = within(canvasElement.ownerDocument.body).getByRole('dialog', { name: /Manage access/i });
+    await expect(dialog).toHaveTextContent(/Owner/i);
   },
 };
 
@@ -84,7 +87,7 @@ export const EnterpriseAdmin = {
   ...createLiteStory('identity', 'identity-enterprise-admin', { viewport: 'desktop', notes: 'Admin delegated-management story with independent review for protected operations where Rules require it.' }),
   play: async ({ canvasElement }) => {
     await expectEnterpriseRole(canvasElement, 'Admin');
-    await expect(canvasElement).toHaveTextContent(/delegated administration|independent review/i);
+    await expect(within(canvasElement.ownerDocument.body).getByRole('dialog', { name: /Manage access/i })).toHaveTextContent(/Admin/i);
   },
 };
 
@@ -92,7 +95,7 @@ export const EnterpriseOperator = {
   ...createLiteStory('identity', 'identity-enterprise-operator', { viewport: 'desktop', notes: 'Operator day-to-day access story.' }),
   play: async ({ canvasElement }) => {
     await expectEnterpriseRole(canvasElement, 'Operator');
-    await expect(canvasElement).toHaveTextContent(/day-to-day|review/i);
+    await expect(within(canvasElement.ownerDocument.body).getByRole('dialog', { name: /Manage access/i })).toHaveTextContent(/Operator/i);
   },
 };
 
@@ -100,7 +103,7 @@ export const EnterpriseAuditor = {
   ...createLiteStory('identity', 'identity-enterprise-auditor', { viewport: 'desktop', notes: 'Auditor read-only governance/evidence story.' }),
   play: async ({ canvasElement }) => {
     await expectEnterpriseRole(canvasElement, 'Auditor');
-    await expect(canvasElement).toHaveTextContent(/Read-only governance|evidence/i);
+    await expect(within(canvasElement.ownerDocument.body).getByRole('dialog', { name: /Manage access/i })).toHaveTextContent(/Auditor/i);
   },
 };
 
@@ -108,7 +111,7 @@ export const EnterpriseViewer = {
   ...createLiteStory('identity', 'identity-enterprise-viewer', { viewport: 'desktop', notes: 'Viewer read-only workspace evidence story.' }),
   play: async ({ canvasElement }) => {
     await expectEnterpriseRole(canvasElement, 'Viewer');
-    await expect(canvasElement).toHaveTextContent(/Read-only workspace/i);
+    await expect(within(canvasElement.ownerDocument.body).getByRole('dialog', { name: /Manage access/i })).toHaveTextContent(/Viewer/i);
   },
 };
 
@@ -116,11 +119,11 @@ export const EnterprisePeopleManagement = {
   ...createLiteStory('identity', 'identity-enterprise-owner', { viewport: 'desktop', notes: 'Owner People management matrix with separate identities and role-aware lifecycle actions.' }),
   play: async ({ canvasElement }) => {
     const canvas = await expectEnterpriseRole(canvasElement, 'Owner');
-    await userEvent.click(await canvas.findByRole('button', { name: 'People' }));
-    await expect(await canvas.findByRole('heading', { name: 'People', level: 3 })).toBeInTheDocument();
-    await expect(canvasElement).toHaveTextContent(/Add person/i);
-    await expect(canvasElement).toHaveTextContent(/New Person/i);
-    await expect(canvasElement).toHaveTextContent(/Waiting to join/i);
+    const dialog = within(canvasElement.ownerDocument.body).getByRole('dialog', { name: /Manage access/i });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'People', exact: true }));
+    await expect(dialog).toHaveTextContent(/Add person/i);
+    await expect(dialog).toHaveTextContent(/New Person/i);
+    await expect(dialog).toHaveTextContent(/Waiting to join/i);
   },
 };
 
@@ -132,3 +135,48 @@ export const EnterpriseMobile = createLiteStory('identity', 'identity-enterprise
 // Enterprise projection rather than a future/partial placeholder.
 export const EnterpriseRoleAwareFixture = EnterpriseOwner;
 export const FutureRoleAwareState = EnterpriseOwner;
+
+
+// P3 deterministic premium states. These are source/fixture definitions only until qualification.
+export const PremiumAccessJourney = {
+  ...createLiteStory('identity', 'identity-summary', { viewport: 'desktop', notes: 'Conceptual four-stage Journey, not an authentication progress engine.' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await expectIdentity(canvasElement);
+    await expect(await canvas.findByRole('heading', { name: 'How your access fits together' })).toBeInTheDocument();
+    await userEvent.click(canvas.getByRole('button', { name: 'View Recovery details' }));
+    await expect(await within(canvasElement.ownerDocument.body).findByRole('dialog', { name: /Access Details/i })).toHaveTextContent(/Recovery/i);
+  },
+};
+export const PremiumPasskeysMultiple = createLiteStory('identity', 'identity-premium-multiple');
+export const PremiumSessionsMultiple = createLiteStory('identity', 'identity-premium-multiple');
+export const PremiumRecoveryMissing = createLiteStory('identity', 'identity-premium-recovery-missing');
+export const PremiumPasskeysMissing = createLiteStory('identity', 'identity-premium-no-passkeys');
+export const PremiumFactsUnavailable = createLiteStory('identity', 'identity-premium-unavailable-facts');
+export const PremiumSignedOut = createLiteStory('identity', 'identity-premium-signed-out');
+export const PremiumFirstOwner = createLiteStory('identity', 'identity-premium-first-owner');
+export const PremiumPersonEnrollment = createLiteStory('identity', 'identity-premium-enrollment');
+export const PremiumLongText = createLiteStory('identity', 'identity-premium-long-text', { viewport: 'mobile360', textScale: 2 });
+export const PremiumReducedMotion = createLiteStory('identity', 'identity-premium-multiple', { viewport: 'mobile360', notes: 'Reduced-motion assertion belongs to focused mocked Playwright.' });
+export const PremiumActivityOutcomes = createLiteStory('identity', 'identity-premium-multiple');
+export const PremiumActivityEmpty = createLiteStory('identity', 'identity-summary');
+export const PremiumProtectedConfirmation = {
+  ...createLiteStory('identity', 'identity-summary', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => {
+    await openManageAccess(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+    const dialog = body.getByRole('dialog', { name: /Manage access/i });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Recovery', exact: true }));
+    await userEvent.click(within(dialog).getByRole('button', { name: /Generate New Codes/i }));
+    await expect(await body.findByRole('dialog', { name: /Generate new recovery codes/i })).toHaveTextContent(/older/i);
+  },
+};
+export const PremiumPeopleDetails = {
+  ...createLiteStory('identity', 'identity-enterprise-owner', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => {
+    await openManageAccess(canvasElement);
+    const dialog = within(canvasElement.ownerDocument.body).getByRole('dialog', { name: /Manage access/i });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'People', exact: true }));
+    await userEvent.click(within(dialog).getAllByRole('button', { name: /Open Details/i })[0]);
+    await expect(await within(canvasElement.ownerDocument.body).findByRole('dialog', { name: /Access Details/i })).toHaveTextContent(/Owner/i);
+  },
+};

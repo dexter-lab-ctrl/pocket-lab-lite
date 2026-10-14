@@ -225,6 +225,7 @@ export default function LiteIdentityEnterprise({ enterprise, access: initialAcce
             )}
           </GlassCard>
 
+          {readOnly ? <StateSurface tone="degraded" title="Saved Enterprise access information" description="People management requires a current server read." /> : null}
           {people.loading ? <StateSurface tone="neutral" title="Loading people" description="Pocket Lab is reading current server-owned Identity state." /> : null}
           {people.error ? <StateSurface tone="degraded" title="People are unavailable" description={String(people.error)} /> : null}
           <div className="lite-governance-people">
@@ -254,7 +255,7 @@ export default function LiteIdentityEnterprise({ enterprise, access: initialAcce
               }}
             />)}
           </div>
-          {!people.loading && !(people.data?.people || []).length ? <StateSurface tone="neutral" title="No people yet" description="Add a person to create a separate server-owned identity and assign its first role." /> : null}
+          {!readOnly && !people.loading && !(people.data?.people || []).length ? <StateSurface tone="neutral" title="No people yet" description="Add a person to create a separate server-owned identity and assign its first role." /> : null}
         </div>
       ) : null}
 

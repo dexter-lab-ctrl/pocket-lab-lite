@@ -1,6 +1,6 @@
 import React from 'react';
-import { BookOpenText, Fingerprint, LifeBuoy, LogOut, MonitorSmartphone } from 'lucide-react';
-import { LiteButton, StateSurface, StatusBadge } from '../LiteUi.jsx';
+import { BookOpenText, Fingerprint, LifeBuoy, LogOut } from 'lucide-react';
+import { LiteButton, StateSurface } from '../LiteUi.jsx';
 import { IDENTITY_MANAGE_SECTIONS, IDENTITY_ENTERPRISE_SECTIONS } from './identityPremiumView.js';
 import IdentityActivityTimeline from './IdentityActivityTimeline.jsx';
 
@@ -28,6 +28,7 @@ export default function IdentityManageContent({
         <LiteButton variant="secondary" onClick={() => onOpenDetails('identity', {})}>Identity Details</LiteButton>
         <LiteButton variant="secondary" onClick={() => onOpenDetails('explain', {})}><BookOpenText aria-hidden="true" size={16} /> Explain This</LiteButton>
         <p>Only the live server decides whether an action is allowed.</p>
+        {enterpriseEnabled ? enterpriseContent : null}
       </div> : null}
       {section === 'passkeys' ? <div className="lite-id-manage-list">
         <p>Each passkey protects a single identity. Removing one may require recent passkey confirmation.</p>
