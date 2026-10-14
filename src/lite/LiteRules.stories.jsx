@@ -35,14 +35,14 @@ export const EmptyDecisions = rules('rules-empty');
 export const MultipleDecisions = rules('rules-present');
 export const AllowedDecision = rules('rules-enabled');
 export const BlockedDecision = rules('rules-disabled');
-export const StepUpRequired = rules('rules-enterprise-owner', { notes: 'Step-up surfaces are shown only when backend reports the requirement.' });
-export const PendingApproval = rules('rules-approval-required');
+export const StepUpRequired = rules('rules-premium-step-up', { notes: 'Step-up surfaces are shown only when backend reports the requirement.' });
+export const PendingApproval = rules('rules-premium-approval');
 export const ActivationRunning = rules('rules-execution-pending', { notes: 'Server-reported activation only; no inferred success.' });
 export const ActivationFailed = rules('rules-validation-error');
 export const Rollback = rules('rules-validation-error', { notes: 'Recovery outcome must be returned by server; this story does not invent a rollback event.' });
 export const MissingRevision = rules('rules-empty');
 export const ReducedMotion = rules('rules-enabled', { notes: 'Playwright emulates prefers-reduced-motion; CSS disables new transitions.' });
-export const LongText = rules('rules-validation-error', { textScale: 2, notes: 'Long text and 200% text scale layout scenario.' });
+export const LongText = rules('rules-premium-long', { textScale: 2, notes: 'Long text and 200% text scale layout scenario.' });
 export const NarrowMobile = rules('rules-enabled', { viewport: 'mobile360' });
 export const ManageRulesOpen = {
   ...rules('rules-enabled', { viewport: 'desktop' }),
