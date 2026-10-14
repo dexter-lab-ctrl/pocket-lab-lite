@@ -241,8 +241,17 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
   }
 
   async function openDecision(decisionId) {
-    const result = await execute(`decision:${decisionId}`, () => liteEnterpriseApi.rulesDecision(decisionId), 'Decision details loaded.', []);
-    if (result) setDecisionDetail(result);
+    if (!decisionId) return;
+    setBusy('decision:' + decisionId);
+    setDecisionDetail(null);
+    try {
+      const result = await liteEnterpriseApi.rulesDecision(decisionId);
+      // This is a read-only Details hydration, not a completed Rules update.
+      setDecisionDetail(result?.decision && typeof result.decision === 'object' ? result.decision : result);
+    } catch (error) {
+      const reason = getLiteReasonPresentation(errorCode(error), 'Decision details are temporarily unavailable.');
+      setNotice({ error: true, title: reason.title, message: reason.message });
+    } finally { setBusy(''); }
   }
 
   async function openApproval(approvalId) {
