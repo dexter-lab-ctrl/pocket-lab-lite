@@ -22,10 +22,9 @@ import {
   LoadingCard,
   LiteButton,
   LiteActionRow,
-  LiteOperationalStory,
 } from './LiteUi.jsx';
 import LiteRulesEnterprise from './LiteRulesEnterprise.jsx';
-import LiteHelp, { LiteHelpHeading } from './LiteHelp.jsx';
+import LiteHelp from './LiteHelp.jsx';
 import { LiteSheet } from './LiteOverlay.jsx';
 import { LiteFreshness, LiteTechnicalFacts } from './LiteUx.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
@@ -51,7 +50,6 @@ export default function RulesScreen() {
     backendReachable,
     lastUpdatedLabel,
     isExpired,
-    backendDegraded,
   } = policy;
   const [manageOpen, setManageOpen] = React.useState(false);
   const [manageSection, setManageSection] = React.useState('overview');
@@ -61,7 +59,8 @@ export default function RulesScreen() {
   const [activationStatus, setActivationStatus] = React.useState(null);
   const [activationTracked, setActivationTracked] = React.useState(false);
   const pushToast = useLiteUiStore((state) => state.pushToast);
-  const enterpriseEnabled = Boolean(identity.data?.enterprise?.enabled);
+  const enterpriseEnabled = identity.data?.enterprise?.enabled === true;
+  const enterpriseMode = identity.data?.enterprise?.enabled;
   const role = identity.data?.enterprise?.current_membership?.role || identity.data?.person?.role || (identity.data?.person?.is_local_owner ? 'Owner' : '');
   const rulesReadOnly = savedStateOnly || !backendReachable;
   const sourceUpdateRequired = Boolean(data?.active_policy?.source_update_required);
@@ -72,7 +71,7 @@ export default function RulesScreen() {
   const latest = recent[0] || null;
   const latestView = rulesDecisionView(latest);
   const templates = Array.isArray(data?.templates) ? data.templates : [];
-  const protection = rulesProtectionView(data, { savedStateOnly, backendReachable, isExpired, enterprise: enterpriseEnabled });
+  const protection = rulesProtectionView(data, { savedStateOnly, backendReachable, isExpired, enterprise: enterpriseMode });
   const openManage = (section = 'overview') => { setManageSection(section); setManageOpen(true); };
   const enterpriseSections = {
     governance: 'protection', decisions: 'activity', policies: 'policies', simulate: 'simulate',
