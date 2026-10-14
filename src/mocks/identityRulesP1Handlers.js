@@ -1,7 +1,9 @@
 import { http, HttpResponse } from 'msw';
 
-const now = () => new Date().toISOString();
-const future = (ms) => new Date(Date.now() + ms).toISOString();
+// Keep Identity screenshots and fixture assertions reproducible across runs.
+const MOCK_NOW_MS = Date.parse('2026-09-24T08:54:00.000Z');
+const now = () => new Date(MOCK_NOW_MS).toISOString();
+const future = (ms) => new Date(MOCK_NOW_MS + ms).toISOString();
 const scenario = () => (typeof window !== 'undefined' ? window.localStorage.getItem('POCKETLAB_MOCK_SCENARIO') || 'identity-summary' : 'identity-summary');
 
 function enterpriseRole() {

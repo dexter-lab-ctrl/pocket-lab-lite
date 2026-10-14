@@ -23,6 +23,16 @@ test.describe('Premium Identity & Access — source-backed interactions', () => 
     await expect(page.getByRole('heading', { name: 'How your access fits together' })).toBeVisible();
     await expect(page.getByRole('region', { name: 'Recent access activity' })).toBeVisible();
   });
+  test('does not query setup claims for an already authenticated Access Center', async ({ page }) => {
+    const unnecessaryReads: string[] = [];
+    page.on('request', (request) => {
+      if (/\/api\/lite\/(?:identity\/owner-claim\/status|enterprise\/identity\/enrollment\/status)$/.test(new URL(request.url()).pathname)) {
+        unnecessaryReads.push(new URL(request.url()).pathname);
+      }
+    });
+    await identity(page);
+    expect(unnecessaryReads).toEqual([]);
+  });
   test('only mounts the selected Manage content section', async ({ page }) => {
     const dialog = await manage(page, 'identity-premium-multiple');
     await dialog.getByRole('button', { name: /^Passkeys$/ }).click();
@@ -30,7 +40,7 @@ test.describe('Premium Identity & Access — source-backed interactions', () => 
     await expect(dialog.getByRole('button', { name: /Second passkey/i })).toBeVisible();
     await dialog.getByRole('button', { name: /^Sessions$/ }).click();
     await expect(dialog.locator('[data-identity-manage-section]')).toHaveAttribute('data-identity-manage-section', 'sessions');
-    await expect(dialog.getByRole('button', { name: /Other session/i })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: /^Other session/i })).toBeVisible();
     await expect(dialog.getByRole('button', { name: /Second passkey/i })).toHaveCount(0);
   });
   test('returns from Details to Manage without dismissing underlying overlay', async ({ page }) => {

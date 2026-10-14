@@ -11,6 +11,7 @@ for (const scenario of ['identity-summary', 'identity-enterprise-owner', 'identi
       await installScenario(page, scenario);
       await page.goto('/?screen=identity');
       await waitForLiteScreenToSettle(page, 'identity');
+      await page.getByRole('region', { name: 'Access profile' }).waitFor({ state: 'visible' });
       await expect(page.locator('[data-lite-screen-id="identity"]')).toHaveScreenshot('premium-identity-' + scenario + '-' + width + '.png', { animations: 'disabled' });
     });
   }

@@ -109,9 +109,18 @@ export default function IdentityScreen() {
   }), [data, savedStateOnly, backendReachable, lastUpdatedLabel, isExpired, passkeyEligible, ownerClaim.active, personClaim.active]);
 
   useEffect(() => {
+    // Claim/status reads are only needed for signed-out setup and enrollment
+    // flows. Avoid querying them, and avoid a whole Access Center rerender,
+    // for an already authenticated identity unless a pending claim exists.
+    if (loading || !data) return undefined;
     let cancelled = false;
     async function hydrateClaims() {
       const rawPersonClaim = takePendingPersonClaim();
+      let rawOwnerClaim = null;
+      if (data.authenticated && !rawPersonClaim) {
+        rawOwnerClaim = takePendingOwnerClaim();
+        if (!rawOwnerClaim) return;
+      }
       if (rawPersonClaim) {
         try {
           await liteEnterpriseApi.consumeEnrollment(rawPersonClaim);
@@ -132,7 +141,7 @@ export default function IdentityScreen() {
         if (!cancelled) setPersonClaim({ checked: true, active: false, status: '', person: null });
       }
 
-      const rawOwnerClaim = takePendingOwnerClaim();
+      if (!rawOwnerClaim) rawOwnerClaim = takePendingOwnerClaim();
       try {
         if (rawOwnerClaim) {
           const result = await liteApi.consumeOwnerClaim(rawOwnerClaim);
@@ -150,7 +159,7 @@ export default function IdentityScreen() {
     }
     hydrateClaims();
     return () => { cancelled = true; };
-  }, []);
+  }, [data?.authenticated, data?.setup_required, loading]);
 
   async function run(name, callback, successMessage, { refreshAfter = true, signedOutAfter = false } = {}) {
     setBusy(name);

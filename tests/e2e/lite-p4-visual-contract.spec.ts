@@ -4,11 +4,11 @@ import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers'
 // New baselines deliberately require a human-reviewed first approval.
 // Never use --update-snapshots as part of a default validation task.
 const cases = [
-  { screen: 'home', scenario: 'lifecycle-attention', region: 'Review what needs attention', name: 'home-attention' },
+  { screen: 'home', scenario: 'lifecycle-attention', region: 'Needs your attention', name: 'home-attention' },
   { screen: 'devices', scenario: 'devices-repairing', region: 'Connection review', name: 'devices-connection' },
   { screen: 'catalog', scenario: 'catalog-install-available', region: 'App readiness', name: 'apps-readiness' },
   { screen: 'security', scenario: 'security-action-needed', region: 'Safety result and coverage', name: 'safety-evidence' },
-  { screen: 'identity', scenario: 'healthy', region: 'Your current access', name: 'access-evidence' },
+  { screen: 'identity', scenario: 'healthy', region: 'Access profile', name: 'access-evidence' },
   { screen: 'rules', scenario: 'rules-disabled', region: 'How protection decisions work', name: 'rules-evidence' },
   { screen: 'recovery', scenario: 'recovery-restore-blocked', region: 'Protection readiness', name: 'recovery-guidance' },
 ] as const;

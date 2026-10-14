@@ -22,7 +22,7 @@ describe('Identity Journey and safe Details', () => {
   });
   it('never renders raw passkey identifiers in Details', () => {
     render(<IdentityDetailsContent selection={{ kind: 'passkey', item: { credential_id: 'TOPSECRET', friendly_name: 'Phone passkey', active: true } }} view={view} />);
-    expect(screen.getByText('Phone passkey')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Phone passkey' })).toBeTruthy();
     expect(screen.queryByText('TOPSECRET')).toBeNull(); cleanup();
   });
   it('presents unvalidated authority and disables protected actions', () => {
