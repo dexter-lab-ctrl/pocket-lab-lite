@@ -47,7 +47,7 @@ test.describe('Premium Rules — baseline generation DEFERRED until owner-review
   });
   test('long text at narrow width', async ({ page }) => {
     await page.setViewportSize({ width:320, height:850 });
-    await launch(page, 'rules-validation-error');
+    await launch(page, 'rules-premium-long');
     await page.evaluate(() => { document.documentElement.style.fontSize='200%'; });
     await expect(page).toHaveScreenshot('rules-premium-long-text.png', { animations:'disabled' });
   });
