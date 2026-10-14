@@ -25,6 +25,8 @@ import {
 } from './LiteUi.jsx';
 import LiteHelp, { LiteHelpHeading } from './LiteHelp.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
+import RulesDecisionInsight from './rules/RulesDecisionInsight.jsx';
+import { RulesDecisionTimeline, RulesActivationTimeline, RulesRevisionTimeline } from './rules/RulesPremiumTimeline.jsx';
 
 const SECTIONS = [
   ['protection', 'Protection'],
@@ -74,8 +76,9 @@ function SimulationResult({ result }) {
   );
 }
 
-export default function LiteRulesEnterprise({ role: roleProp = '', access: initialAccess = null }) {
-  const [section, setSection] = useState('protection');
+export default function LiteRulesEnterprise({ role: roleProp = '', access: initialAccess = null, embedded = false, sectionOverride = '' }) {
+  const [localSection, setSection] = useState('protection');
+  const section = sectionOverride || localSection;
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState('');
   const [decisionFilter, setDecisionFilter] = useState('');
@@ -110,7 +113,7 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
   const canSimulate = Boolean(capabilities['rules.simulate']);
   const canReviewRequests = Boolean(capabilities['approvals.review']);
   const canManageExceptions = Boolean(capabilities['exceptions.manage']);
-  const rulesReady = health.data?.consistency_state === 'ready';
+  const rulesReady = health.data?.consistency_state === 'ready' && health.backendReachable && !health.savedStateOnly;
   const enterpriseReadOnly = health.savedStateOnly || !health.backendReachable;
   const activeRevision = health.data?.db_active_revision || '';
   const knownGoodRevision = health.data?.known_good_revision || '';
@@ -280,22 +283,22 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
 
   return (
     <section className="lite-rules-enterprise lite-governance-section" aria-labelledby="enterprise-rules-heading">
-      <div className="lite-rules-enterprise-head">
+      {!embedded ? <div className="lite-rules-enterprise-head">
         <div><span>Enterprise Mode</span><h2 id="enterprise-rules-heading">Rules governance</h2><p>Protection, policy changes, requests and evidence all use the same server-resolved {resolvedRole || 'Enterprise'} authority shown in Identity & Access.</p></div>
         <div className="lite-governance-inline-actions"><StatusBadge status={rulesReady ? 'healthy' : 'degraded'}>{rulesReady ? 'Rules ready' : 'Needs attention'}</StatusBadge><LiteHelp helpKey="rules.protection" /></div>
-      </div>
+      </div> : null}
 
       {notice ? <StateSurface tone={notice.error ? 'degraded' : 'neutral'} title={notice.title} description={notice.message} className="mt-4" /> : null}
 
-      <LiteOperationalStory
+      {!embedded ? <LiteOperationalStory
         className="lite-rules-enterprise-story"
         story={enterpriseOverview.workspaceStory}
         primaryAction={enterpriseOverview.workspaceStory.nextAction?.id === 'requests' ? { label: 'Review requests', onClick: () => setSection('requests') } : enterpriseOverview.workspaceStory.nextAction?.id === 'exceptions' ? { label: 'Review temporary access', onClick: () => setSection('exceptions') } : { label: 'Review protection', onClick: () => setSection('protection') }}
-      />
+      /> : null}
 
-      <nav className="lite-rules-section-tabs lite-governance-nav" aria-label="Enterprise Safety Rules sections">
+      {!embedded ? <nav className="lite-rules-section-tabs lite-governance-nav" aria-label="Enterprise Safety Rules sections">
         {SECTIONS.map(([id, label]) => <button key={id} type="button" className={section === id ? 'is-active' : ''} aria-current={section === id ? 'page' : undefined} onClick={() => setSection(id)}>{label}</button>)}
-      </nav>
+      </nav> : null}
 
       {health.loading ? <LoadingCard label="Loading Enterprise Rules..." /> : null}
       {health.error ? <StateSurface tone="degraded" title="Enterprise Rules are unavailable" description={String(health.error)} /> : null}
@@ -335,7 +338,7 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
 
           {candidateRevision ? <StateSurface tone="neutral" title="Candidate created — not active" description={`Candidate ${shortRevision(candidateRevision)} is a protected Rules draft. It does not change running protection until an Owner confirms activation and Pocket Lab proves the revision is healthy.`} /> : null}
 
-          {activeOperation ? <GlassCard className="lite-rules-card"><div className="lite-rules-card-head"><FileCheck2 className="h-5 w-5" /><StatusBadge status={TERMINAL_ACTIVATION_STATES.has(activeOperation.state) ? (activeOperation.state === 'active' ? 'healthy' : 'degraded') : 'review'}>{activeOperation.state || 'Pending'}</StatusBadge></div><h3>Activation progress</h3><p>{activeOperation.state === 'active' ? 'Pocket Lab proved the requested revision is running and known-good.' : activeOperation.state === 'uncertain' ? 'Pocket Lab cannot prove which revision is authoritative. Protected changes remain fail-closed until recovery is proved.' : 'Pocket Lab recorded the request and is safely staging, activating, checking, and recovering the revision as needed.'}</p><div className="lite-governance-actions">{activeOperation.operation_id ? <LiteButton variant="secondary" onClick={refreshActivation} disabled={Boolean(busy)}>Refresh activation</LiteButton> : null}{activeOperation.state === 'uncertain' && canActivate ? <LiteButton onClick={resolveUncertainActivation} disabled={Boolean(busy)}>Verify recovered Rules</LiteButton> : null}</div></GlassCard> : null}
+          {activeOperation ? <GlassCard className="lite-rules-card"><RulesActivationTimeline operation={activeOperation} backendReachable={!enterpriseReadOnly} /><div className="lite-rules-card-head"><FileCheck2 className="h-5 w-5" /><StatusBadge status={TERMINAL_ACTIVATION_STATES.has(activeOperation.state) ? (activeOperation.state === 'active' ? 'healthy' : 'degraded') : 'review'}>{activeOperation.state || 'Pending'}</StatusBadge></div><h3>Activation progress</h3><p>{activeOperation.state === 'active' ? 'Pocket Lab proved the requested revision is running and known-good.' : activeOperation.state === 'uncertain' ? 'Pocket Lab cannot prove which revision is authoritative. Protected changes remain fail-closed until recovery is proved.' : 'Pocket Lab recorded the request and is safely staging, activating, checking, and recovering the revision as needed.'}</p><div className="lite-governance-actions">{activeOperation.operation_id ? <LiteButton variant="secondary" onClick={refreshActivation} disabled={Boolean(busy)}>Refresh activation</LiteButton> : null}{activeOperation.state === 'uncertain' && canActivate ? <LiteButton onClick={resolveUncertainActivation} disabled={Boolean(busy)}>Verify recovered Rules</LiteButton> : null}</div></GlassCard> : null}
 
           <GlassCard className="lite-rules-card">
             <div className="lite-rules-card-head"><History className="h-5 w-5" /><span className="lite-rules-soft-badge">Immutable history</span></div><h3>Rules revisions</h3>
@@ -349,7 +352,7 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
       {section === 'simulate' ? (
         <GlassCard className="lite-rules-card">
           <div className="lite-rules-card-head"><LiteHelpHeading title="Test a change" helpKey="rules.simulation" as="h3" /><span className="lite-rules-soft-badge">What-if only</span></div>
-          {!canSimulate ? <RoleUnavailable title="Simulation is not available to this role" description="This role can review current protection but cannot run a bounded policy simulation." /> : <><StateSurface tone="neutral" title="This never executes the real action" description={simulation.mode === 'real_derived' ? 'Pocket Lab derives your identity, role and session on the server. You supply only a bounded action and target.' : 'Synthetic mode changes only the four supported boolean facts shown below.'} /><form onSubmit={runSimulation} className="lite-rules-form-grid mt-4"><label><span>Rules revision</span><select value={simulation.revision_id} onChange={(event) => setSimulation((value) => ({ ...value, revision_id: event.target.value }))}>{(revisions.data?.revisions || []).map((revision) => <option key={revision.revision_id} value={revision.revision_id}>{revision.revision_id === activeRevision ? 'Active Rules' : `${revision.change_summary || 'Candidate'} · ${shortRevision(revision.revision_id)}`}</option>)}</select></label><label><span>Protected action</span><select value={simulation.action_id} onChange={(event) => setSimulation((value) => ({ ...value, action_id: event.target.value }))}>{(health.data?.registered_protected_actions || []).map((action) => <option key={action} value={action}>{getLiteRulesActionLabel(action) || action}</option>)}</select></label><label><span>Target reference</span><input required value={simulation.target_id} onChange={(event) => setSimulation((value) => ({ ...value, target_id: event.target.value }))} placeholder="device-or-app-id" /></label><label><span>Context</span><select value={simulation.mode} onChange={(event) => setSimulation((value) => ({ ...value, mode: event.target.value }))}><option value="real_derived">Real server-derived context</option><option value="synthetic">Synthetic what-if</option></select></label>{simulation.mode === 'synthetic' ? <fieldset className="lite-rules-synthetic-facts"><legend>Supported hypothetical facts</legend>{[['confirmed','Action confirmed'],['revision_validated','Target revision validated'],['protected_server_host','Target is protected Server Host'],['assurance_recent','Recent passkey assurance']].map(([key,label]) => <label key={key}><input type="checkbox" checked={Boolean(simulation.scenario[key])} onChange={(event) => setSimulation((value) => ({ ...value, scenario: { ...value.scenario, [key]: event.target.checked } }))} /><span>{label}</span></label>)}</fieldset> : null}<LiteButton type="submit" disabled={Boolean(busy) || !simulation.revision_id}>{busy === 'simulation' ? 'Testing safely…' : 'Run simulation'}</LiteButton></form><SimulationResult result={simulationResult} /></>}
+          {!canSimulate ? <RoleUnavailable title="Simulation is not available to this role" description="This role can review current protection but cannot run a bounded policy simulation." /> : <><StateSurface tone="neutral" title="Simulation only — no live permission" description="This is a simulation. No real permission or system change is granted. Pocket Lab derives your context on the server or evaluates bounded hypothetical facts." /><form onSubmit={runSimulation} className="lite-rules-form-grid mt-4"><label><span>Rules revision</span><select value={simulation.revision_id} onChange={(event) => setSimulation((value) => ({ ...value, revision_id: event.target.value }))}>{(revisions.data?.revisions || []).map((revision) => <option key={revision.revision_id} value={revision.revision_id}>{revision.revision_id === activeRevision ? 'Active Rules' : `${revision.change_summary || 'Candidate'} · ${shortRevision(revision.revision_id)}`}</option>)}</select></label><label><span>Protected action</span><select value={simulation.action_id} onChange={(event) => setSimulation((value) => ({ ...value, action_id: event.target.value }))}>{(health.data?.registered_protected_actions || []).map((action) => <option key={action} value={action}>{getLiteRulesActionLabel(action) || action}</option>)}</select></label><label><span>Target reference</span><input required value={simulation.target_id} onChange={(event) => setSimulation((value) => ({ ...value, target_id: event.target.value }))} placeholder="device-or-app-id" /></label><label><span>Context</span><select value={simulation.mode} onChange={(event) => setSimulation((value) => ({ ...value, mode: event.target.value }))}><option value="real_derived">Real server-derived context</option><option value="synthetic">Synthetic what-if</option></select></label>{simulation.mode === 'synthetic' ? <fieldset className="lite-rules-synthetic-facts"><legend>Supported hypothetical facts</legend>{[['confirmed','Action confirmed'],['revision_validated','Target revision validated'],['protected_server_host','Target is protected Server Host'],['assurance_recent','Recent passkey assurance']].map(([key,label]) => <label key={key}><input type="checkbox" checked={Boolean(simulation.scenario[key])} onChange={(event) => setSimulation((value) => ({ ...value, scenario: { ...value.scenario, [key]: event.target.checked } }))} /><span>{label}</span></label>)}</fieldset> : null}<LiteButton type="submit" disabled={Boolean(busy) || !simulation.revision_id}>{busy === 'simulation' ? 'Testing safely…' : 'Run simulation'}</LiteButton></form><SimulationResult result={simulationResult} /></>}
         </GlassCard>
       ) : null}
 
@@ -360,7 +363,7 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
           <label className="lite-rules-filter-field"><span>Filter by protected action</span><input value={decisionFilter ? decodeURIComponent(decisionFilter.replace('action_id=', '')) : ''} onChange={(event) => setDecisionFilter(event.target.value ? `action_id=${encodeURIComponent(event.target.value)}` : '')} placeholder="device.remove" /></label>
           {decisions.error ? <StateSurface tone="degraded" title="Decision evidence is unavailable" description={String(decisions.error)} /> : <div className="lite-rules-decision-list">{(decisions.data?.decisions || []).map((decision) => { const reason = getLiteReasonPresentation(decision.reason_code, decision.reason_code || 'Decision recorded'); return <div key={decision.decision_id} className="lite-rules-decision-row"><StatusBadge status={decision.allow ? 'healthy' : 'degraded'}>{decision.allow ? 'Allowed' : 'Blocked'}</StatusBadge><div><strong>{getLiteRulesActionLabel(decision.action_id) || 'Protected action'}</strong><span>{decision.target_type}: {decision.target_id}</span><small>{reason.title}</small></div><div className="lite-rules-decision-meta"><span>{decision.occurred_at ? formatLiteTime(decision.occurred_at) : 'Recent'}</span><small>{decision.evaluation_ms} ms</small></div><LiteButton variant="secondary" onClick={() => openDecision(decision.decision_id)} disabled={Boolean(busy)}>Details</LiteButton></div>; })}</div>}
           {!decisions.loading && !(decisions.data?.decisions || []).length ? <StateSurface tone="neutral" title="No decisions match" description="Protected-action decisions appear here without raw session, authenticator or command material." /> : null}
-          {decisionDetail ? <div className="lite-rules-focus-detail"><div className="lite-rules-card-head"><strong>Decision details</strong><LiteButton variant="secondary" onClick={() => setDecisionDetail(null)}>Close</LiteButton></div><dl className="lite-rules-detail-list"><div><dt>Result</dt><dd>{decisionDetail.allow ? 'Allowed' : 'Blocked'}</dd></div><div><dt>Reason</dt><dd>{getLiteReasonPresentation(decisionDetail.reason_code).title}</dd></div><div><dt>Action</dt><dd>{getLiteRulesActionLabel(decisionDetail.action_id) || decisionDetail.action_id}</dd></div><div><dt>Target</dt><dd>{decisionDetail.target_type}: {decisionDetail.target_id}</dd></div><div><dt>Rules revision</dt><dd><RevisionValue value={decisionDetail.policy_revision} label="decision" /></dd></div><div><dt>Constraints</dt><dd>{(decisionDetail.constraints || []).join(', ') || 'None'}</dd></div></dl><details className="lite-rules-advanced-details"><summary>Evidence reference</summary><p>Correlation: <code>{decisionDetail.correlation_id || 'unavailable'}</code></p><p>Support reference: {getLiteReasonPresentation(decisionDetail.reason_code).title}</p></details></div> : null}
+          {decisionDetail ? <div className="lite-rules-focus-detail"><div className="lite-rules-card-head"><strong>Explain this decision</strong><LiteButton variant="secondary" onClick={() => setDecisionDetail(null)}>Back to history</LiteButton></div><RulesDecisionInsight decision={decisionDetail} /></div> : null}
         </GlassCard>
       ) : null}
 
@@ -372,6 +375,12 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
           {approvals.error ? <StateSurface tone="degraded" title="Requests are unavailable" description={String(approvals.error)} /> : <div className="lite-rules-decision-list">{(approvals.data?.approvals || []).map((approval) => { const presentation = getApprovalPresentation(approval); return <div key={approval.approval_id} className="lite-rules-approval-card"><div className="lite-rules-approval-head"><StatusBadge status={presentation.tone === 'blocked' ? 'degraded' : presentation.tone}>{presentation.label}</StatusBadge><strong>{approval.action_id === 'device.remove' ? 'Remove device' : approval.action_id}</strong></div><p>{presentation.guidance}</p><dl className="lite-rules-compact-meta"><div><dt>Device</dt><dd>{approval.target_id}</dd></div><div><dt>Requested</dt><dd>{formatLiteTime(approval.created_at)}</dd></div><div><dt>Expires</dt><dd>{formatLiteTime(approval.expires_at)}</dd></div></dl><div className="lite-rules-inline-actions"><LiteButton variant="secondary" onClick={() => openApproval(approval.approval_id)} disabled={Boolean(busy)}>History</LiteButton>{canReviewRequests && approval.viewer_actions?.approve ? <LiteButton onClick={() => transitionApproval(approval, 'approve')} disabled={Boolean(busy) || enterpriseReadOnly}>Approve</LiteButton> : null}{canReviewRequests && approval.viewer_actions?.reject ? <LiteButton variant="secondary" onClick={() => transitionApproval(approval, 'reject')} disabled={Boolean(busy) || enterpriseReadOnly}>Reject</LiteButton> : null}{approval.viewer_actions?.cancel ? <LiteButton variant="secondary" onClick={() => transitionApproval(approval, 'cancel')} disabled={Boolean(busy) || enterpriseReadOnly}>Cancel request</LiteButton> : null}</div></div>; })}</div>}
           {!approvals.loading && !(approvals.data?.approvals || []).length ? <StateSurface tone="neutral" title="No review requests" description={resolvedRole === 'Owner' ? 'Owner has no peer-approval requirement. Delegated requests will appear here when Admin or Operator actions require review.' : 'A qualifying delegated protected action will create a short-lived request here.'} /> : null}
           {approvalDetail ? <div className="lite-rules-focus-detail"><div className="lite-rules-card-head"><strong>Request history</strong><LiteButton variant="secondary" onClick={() => setApprovalDetail(null)}>Close</LiteButton></div><ol className="lite-rules-history-list">{(approvalDetail.history || []).map((entry,index) => <li key={`${entry.occurred_at}-${index}`}><strong>{getLiteStatusPresentation(entry.event_type?.split('.').pop()).label}</strong><span>{entry.summary}</span><small>{formatLiteTime(entry.occurred_at)}</small></li>)}</ol></div> : null}
+        </GlassCard>
+      ) : null}
+
+      {section === 'revision' ? (
+        <GlassCard className="lite-rules-card"><RulesRevisionTimeline health={health.data} revisions={revisions.data?.revisions || []} />
+          <p>Activation, rollback and verification events are shown only when returned by Pocket Lab. Candidate creation is not activation.</p>
         </GlassCard>
       ) : null}
 
