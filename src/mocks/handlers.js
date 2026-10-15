@@ -1037,6 +1037,49 @@ const mockLiteDevices = () => {
   return devices;
 };
 
+// Recovery UI-only MSW scenario projections. These are synthetic and never evidence
+// that a backup, verification or restore ran on a real device.
+function mockPremiumRecoveryProjection(name = 'healthy') {
+  const first = name === 'recovery-no-backups';
+  const unverified = ['recovery-unverified', 'recovery-backup-failed'].includes(name);
+  const verificationFailed = name === 'recovery-verification-failed';
+  const previewReady = ['recovery-preview-ready', 'recovery-ready', 'recovery-restore-running', 'recovery-restore-completed', 'recovery-restore-failed', 'healthy'].includes(name);
+  const restoreBlocked = name === 'recovery-restore-blocked';
+  const stale = name === 'recovery-projection-too-old' || name === 'offline-saved';
+  const backup = first ? null : {
+    backup_id: 'backup-mock-001', verification_status: verificationFailed ? 'failed' : unverified ? 'not_verified' : 'verified',
+    created_at: mockIso(-3600000), location_id:'default-private',
+    location: { location_id:'default-private', display_name:'Pocket Lab private backup folder', status:'ready', available:true },
+  };
+  const restorePreview = !backup || unverified || verificationFailed ? null : {
+    preview_id:'preview-mock-001', backup_id:backup.backup_id, status:restoreBlocked ? 'blocked' : previewReady ? 'ready' : 'not_started',
+    restore_allowed:previewReady && !restoreBlocked, change_count:2, included_components:['Lite settings'], excluded_components:['User photos'],
+    summary:restoreBlocked ? 'Preview blocked by a safety guard.' : previewReady ? 'Preview prepared without applying changes.' : 'Preview required.',
+  };
+  const lastRestore = name === 'recovery-restore-running' ? {
+    restore_id:'restore-mock-running',status:'running',summary:'Restoring the selected backup.',started_at:mockIso(-300000),
+  } : name === 'recovery-restore-completed' ? {
+    restore_id:'restore-mock-completed',status:'succeeded',summary:'Restore completed in this synthetic scenario.',
+    completed_at:mockIso(-200000),health_validation:{status:'healthy'},service_restart:{status:'succeeded'},
+  } : name === 'recovery-restore-failed' ? {
+    restore_id:'restore-mock-failed',status:'failed',summary:'Restore could not finish.',completed_at:mockIso(-200000),
+  } : null;
+  const repositoryAvailable = !['recovery-repository-unavailable','recovery-storage-unavailable'].includes(name);
+  return {
+    status: stale ? 'degraded' : restoreBlocked || verificationFailed || !repositoryAvailable ? 'review' : 'healthy',
+    read_degraded: stale, degraded_reason:stale ? 'projection_too_old' : '',
+    repository: { ready: repositoryAvailable, status: repositoryAvailable ? 'ready' : 'unavailable',engine:'restic' },
+    repository_readiness: { ready: repositoryAvailable, engine:'restic' },
+    last_backup: backup, latest_backup:backup, latest_restore_preview:restorePreview, last_restore:lastRestore,
+    backup_history: backup ? [{...backup, summary:'Current synthetic backup record'}] : [],
+    available_restore_points: backup ? [backup] : [],
+    recent_activity: first ? [] : [
+      { id:'backup-mock-001',kind:'backup',status:'completed',summary:'Synthetic backup record saved.',occurred_at:mockIso(-3600000) },
+    ],
+    active_operation: name === 'recovery-backup-running' ? {status:'running',action:'backup_now',summary:'Creating a backup.'} : name === 'recovery-restore-running' ? {status:'running',action:'recovery_restore',summary:'Restoring.'} : null,
+  };
+}
+
 export const handlers = [
   http.get('/ready', () => HttpResponse.json(controlPlane(), { status: controlPlane().ready ? 200 : 503 })),
   http.get('/api', () => HttpResponse.json({ name: 'Pocket Lab FastAPI/NATS Control API', mode: 'msw' })),
@@ -1759,6 +1802,7 @@ export const handlers = [
     last_restore: null,
     active_operation: null,
     revision: 1,
+    ...mockPremiumRecoveryProjection(currentScenario),
   }, { headers: liteSafeReadHeaders(request) });
   }),
   http.get('/api/lite/recovery/details', ({ request }) => {
@@ -1783,6 +1827,7 @@ export const handlers = [
     what_will_be_backed_up: ['Lite runtime state', 'Device records and heartbeats', 'Rules/protection state', 'App catalog/install metadata'],
     what_will_not_be_backed_up: ['raw API tokens', 'raw invite tokens', 'NATS passwords', 'private SSH keys'],
     updated_at: mockIso(),
+    ...mockPremiumRecoveryProjection(currentScenario),
   }, { headers: liteSafeReadHeaders(request) });
   }),
   http.get('/api/lite/recovery/locations', ({ request }) => HttpResponse.json({
