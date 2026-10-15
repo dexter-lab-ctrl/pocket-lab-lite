@@ -27,6 +27,7 @@ Verified relationships are generated from frontend API usage, parity field mappi
 | `GET /api/lite/home/activity-history` | ui:litehome | — | unvalidated |
 | `GET /api/lite/identity/owner-claim/status` | ui:liteidentity | — | unvalidated |
 | `GET /api/lite/policy` | ui:literules | — | unvalidated |
+| `GET /api/lite/policy/decisions/{decision_id}` | ui:literules | — | unvalidated |
 | `GET /api/lite/recovery/apps` | ui:literecovery | — | unvalidated |
 | `GET /api/lite/recovery/backups` | ui:literecovery | — | unvalidated |
 | `GET /api/lite/recovery/database` | ui:literecovery | — | unvalidated |

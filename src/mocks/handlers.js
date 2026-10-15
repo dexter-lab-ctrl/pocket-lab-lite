@@ -1645,15 +1645,58 @@ export const handlers = [
       summary: safeToRemove ? 'This saved device record can be removed after confirmation.' : 'This device cannot be removed in its current state.',
     }, { headers: liteSafeReadHeaders(request) });
   }),
-  http.get('/api/lite/policy', () => HttpResponse.json({
-    status: 'ready', summary: 'Safety Rules are active and ready for protected changes.',
-    engine: { name: 'Open Policy Agent', version: '1.19.0', healthy: true, loopback_only: true, endpoint_exposed_to_browser: false, reason_code: '' },
-    active_policy: { revision: 'mock-policy-revision', bundle_ready: true, package_status: 'active', protected_actions: ['catalog.install', 'device.remove'], activation_model: 'atomic_local_copy', last_known_good: true },
-    degraded_reason: '',
-    last_decision_at: null,
-    policy_groups: [{ id: 'apps', label: 'Apps', actions: ['catalog.install'] }, { id: 'devices', label: 'Devices', actions: ['device.remove'] }],
-    recent_decisions: [],
-  })),
+  http.get('/api/lite/policy', () => {
+    // Deterministic mock-only Rules state: never used as live authorization evidence.
+    const kind = rawScenario();
+    const blocked = kind === 'rules-disabled' || kind === 'rules-validation-error';
+    const update = kind === 'rules-disabled';
+    const activationInProgress = kind === 'rules-execution-pending';
+    const permitted = {
+      decision_id: 'mock-rules-allow-1', action_id: 'catalog.install', allow: true,
+      reason_code: 'allowed', reason_summary: 'Rules authorized this request. Installation completion is not established.',
+      actor_type: 'human', target_type: 'app', target_id: 'example-app',
+      occurred_at: mockIso(-60 * 1000), policy_revision: 'mock-policy-revision',
+    };
+    const denied = {
+      decision_id: 'mock-rules-block-2', action_id: 'device.remove', allow: false,
+      reason_code: 'approval_required', reason_summary: 'This protected change requires an independent reviewer.',
+      actor_type: 'human', target_type: 'device', target_id: 'example-device',
+      occurred_at: mockIso(-5 * 60 * 1000), policy_revision: 'mock-policy-revision',
+    };
+    const stepUp = {
+      decision_id: 'mock-rules-stepup-3', action_id: 'identity.passkey.revoke',
+      outcome: 'step_up_required', reason_code: 'passkey_step_up_required',
+      reason_summary: 'Recent passkey confirmation is required for this protected change.',
+      occurred_at: mockIso(-12 * 60 * 1000),
+    };
+    const approval = {
+      decision_id: 'mock-rules-review-4', action_id: 'device.remove',
+      outcome: 'approval_required', reason_code: 'approval_required',
+      reason_summary: 'An eligible independent reviewer must make this decision.',
+      occurred_at: mockIso(-7 * 60 * 1000),
+    };
+    const long = { ...denied, decision_id: 'mock-rules-long', reason_summary: ('A protected change needs review because the server has not confirmed every required safeguard. ').repeat(15) };
+    const decisions = kind === 'rules-empty' ? []
+      : kind === 'rules-premium-step-up' ? [stepUp]
+      : kind === 'rules-premium-approval' ? [approval]
+      : kind === 'rules-premium-long' ? [long]
+      : blocked ? [denied]
+      : ['rules-present','rules-enabled','rules-enterprise-owner','rules-enterprise-admin','rules-enterprise-operator','rules-enterprise-auditor','rules-enterprise-viewer','rules-approval-required'].includes(kind) ? [permitted, approval, denied, stepUp] : [];
+    return HttpResponse.json({
+      status: blocked || activationInProgress ? 'degraded' : 'ready',
+      summary: blocked ? 'Safety Rules need attention.' : activationInProgress ? 'Safety Rules update not yet confirmed.' : 'Safety Rules are active and ready for protected changes.',
+      engine: { name: 'Open Policy Agent', version: '1.19.0', healthy: true, loopback_only: true, endpoint_exposed_to_browser: false, reason_code: '' },
+      active_policy: { revision: 'mock-policy-revision', bundle_ready: true, package_status: 'active',
+        protected_actions: ['catalog.install', 'device.remove'],
+        activation_model: 'atomic_local_copy', last_known_good: true,
+        source_update_required: update, activation_in_progress: activationInProgress },
+      degraded_reason: blocked ? 'policy_source_update_pending' : activationInProgress ? 'policy_activation_pending' : '',
+      last_decision_at: decisions[0]?.occurred_at || null,
+      policy_groups: [{ id:'apps', label:'Apps', actions:['catalog.install'] }, { id:'devices', label:'Devices', actions:['device.remove'] }],
+      templates: [{ id:'personal-protection', label:'Server-owned protections', summary:'Pocket Lab checks protected actions on the server.', status:'active' }],
+      recent_decisions: decisions,
+    });
+  }),
   http.get('/api/lite/recovery/database', () => HttpResponse.json({
     status: 'healthy',
     summary: 'Database protection is ready.',

@@ -40532,7 +40532,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 500,
+      "page_count": 501,
       "top_level": [
         "start-here",
         "use",
@@ -48416,7 +48416,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "90636d7095ffbae4c17bdac75b55cad9efde0e99d4a0810d8dd991fb0241f64d",
-        "documentation": "084c60708a570cd4d56d89b6e95ba6b1da38f5a8aa9e3d44eb97e502d2ab525c",
+        "documentation": "e81015e17632865b1ee1cbba13737b458d656a1b3adc29bda355cda9ebfbde36",
         "openapi": "21b10835554b759b2cc77c3a7b98b135519d45b2efbf24701020701ff1b071be",
         "operational_health": "3c725c4c70c007c60a97a8f37e53c066767572ea45b6949a71d53a538b814432"
       },
@@ -50352,7 +50352,7 @@
         },
         {
           "path": "package.json",
-          "sha256": "f6f91e793a09fc9576227442fe87784225e72828a6f06ec3ca7d9dbf6b9062de"
+          "sha256": "bde6dde0050438b95bb3b7a7382974b24786798caa421d20f8def9edeea60832"
         },
         {
           "path": "requirements-dev.txt",
@@ -100547,6 +100547,176 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
+          "npm run test:rules:premium:mocked"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:rules:premium:mocked",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:rules:premium:mocked",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run authored Rules mocked browser, accessibility and activation tests",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:rules:premium:perf"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:rules:premium:perf",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:rules:premium:perf",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Collect Rules interaction timing without relaxing existing budget gates",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:rules:premium:unit"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:test:rules:premium:unit",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:rules:premium:unit",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run authored premium Rules selector, Journey and Insight tests",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:rules:premium:visual"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:rules:premium:visual",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:rules:premium:visual",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run Rules visual specs against later owner-approved baselines",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
           "npm run build-storybook",
           "{{.PYTHON}} scripts/docs/lite/generate_docs.py check-storybook",
           "node scripts/docs/lite/test-storybook.mjs"
@@ -119893,5 +120063,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "d2a29c67ba29be93a84a5902b4b5ab481cc9fef95b3949ef0ae1b2d191b0edc8"
+  "source_fingerprint": "9ffbac774f7b3408981af60f16430e551d72b561fdfa56232ac39ac280d4878f"
 }

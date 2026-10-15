@@ -103,8 +103,8 @@ def test_identity_rules_ui_polish_keeps_sensitive_internals_progressively_disclo
 
     assert "Review the local policy engine" not in rules
     assert "free-form browser Rego" not in rules
-    assert "Technical status" in rules
-    assert "This never executes the real action" in rules_enterprise
+    assert "Technical Status" in rules
+    assert "This is a simulation. No real permission or system change is granted." in rules_enterprise
     for field in ("confirmed", "revision_validated", "protected_server_host", "assurance_recent"):
         assert field in rules_enterprise
     assert "viewer_actions?.approve" in rules_enterprise

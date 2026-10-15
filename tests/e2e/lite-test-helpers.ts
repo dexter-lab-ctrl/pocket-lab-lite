@@ -93,6 +93,13 @@ export async function waitForLiteScreenToSettle(page: Page, screenId: string, op
     await page.getByRole('heading', { name: 'Your Apps', exact: true }).waitFor({ state: 'visible', timeout: timeoutMs });
     await screen.locator('.lite-catalog-app-card').first().waitFor({ state: 'visible', timeout: timeoutMs });
   }
+  if (screenId === 'rules') {
+    // The Rules route can expose its loading shell before the policy and
+    // identity projections have hydrated. Require the authored Premium Rules
+    // surface so response-driven layout work is not measured as steady-state
+    // scrolling.
+    await screen.locator('.lite-rules-premium-screen').waitFor({ state: 'visible', timeout: timeoutMs });
+  }
   await page.evaluate(async () => {
     if ('fonts' in document) await document.fonts.ready;
   });

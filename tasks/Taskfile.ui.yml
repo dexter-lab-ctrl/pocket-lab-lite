@@ -77,3 +77,26 @@ tasks:
     deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
     cmds:
       - npm run test:identity:premium:visual
+
+  lite:test:rules:premium:unit:
+    desc: Run authored premium Rules selector, Journey and Insight tests
+    cmds:
+      - npm run test:rules:premium:unit
+
+  lite:test:rules:premium:mocked:
+    desc: Run authored Rules mocked browser, accessibility and activation tests
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:rules:premium:mocked
+
+  lite:test:rules:premium:visual:
+    desc: Run Rules visual specs against later owner-approved baselines
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:rules:premium:visual
+
+  lite:test:rules:premium:perf:
+    desc: Collect Rules interaction timing without relaxing existing budget gates
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:rules:premium:perf

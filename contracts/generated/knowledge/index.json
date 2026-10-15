@@ -2597,13 +2597,6 @@
           "resolved": true,
           "source_module": "src/mocks/handlers.js",
           "usage": "mock"
-        },
-        {
-          "mocked": true,
-          "owner": "MSW handler",
-          "resolved": true,
-          "source_module": "src/mocks/identityRulesP1Handlers.js",
-          "usage": "mock"
         }
       ],
       "id": "api:get:/api/lite/policy",
@@ -2628,6 +2621,13 @@
       "description": "Get Lite Policy Decision",
       "domain": "rules",
       "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.policyDecision",
+          "resolved": true,
+          "source_module": "src/lite/LiteRules.jsx",
+          "usage": "query"
+        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -30411,6 +30411,36 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-rules-premium-performance.spec.ts",
+      "name": "tests/e2e/lite-rules-premium-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-rules-premium-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-rules-premium-refinement.spec.ts",
+      "name": "tests/e2e/lite-rules-premium-refinement.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-rules-premium-refinement.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-rules-premium-visual.spec.ts",
+      "name": "tests/e2e/lite-rules-premium-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-rules-premium-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-security-runtime.spec.ts",
       "name": "tests/e2e/lite-security-runtime.spec.ts",
       "source_refs": [
@@ -33845,6 +33875,9 @@
         "test:tests/e2e/lite-phase9-qualification.spec.ts",
         "test:tests/e2e/lite-photo-backup.spec.ts",
         "test:tests/e2e/lite-rules-activation-progress.spec.ts",
+        "test:tests/e2e/lite-rules-premium-performance.spec.ts",
+        "test:tests/e2e/lite-rules-premium-refinement.spec.ts",
+        "test:tests/e2e/lite-rules-premium-visual.spec.ts",
         "test:tests/e2e/lite-security-runtime.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/e2e/lite-ux-maturity.spec.ts",
@@ -35311,6 +35344,9 @@
         "test:tests/e2e/lite-phase9-qualification.spec.ts",
         "test:tests/e2e/lite-photo-backup.spec.ts",
         "test:tests/e2e/lite-rules-activation-progress.spec.ts",
+        "test:tests/e2e/lite-rules-premium-performance.spec.ts",
+        "test:tests/e2e/lite-rules-premium-refinement.spec.ts",
+        "test:tests/e2e/lite-rules-premium-visual.spec.ts",
         "test:tests/e2e/lite-security-runtime.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/e2e/lite-ux-maturity.spec.ts",
@@ -36149,6 +36185,10 @@
         }
       ],
       "api:get:/api/lite/policy/decisions/{decision_id}": [
+        {
+          "source": "ui:literules",
+          "type": "calls"
+        },
         {
           "source": "domain:rules",
           "type": "owns"
@@ -51904,6 +51944,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-rules-premium-visual.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-ux-maturity.spec.ts": [
         {
           "source": "domain:identity",
@@ -66656,6 +66702,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-rules-premium-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-visual-devices.spec.ts",
           "type": "verified_by"
         },
@@ -70739,6 +70789,10 @@
       "ui:literules": [
         {
           "target": "api:get:/api/lite/policy",
+          "type": "calls"
+        },
+        {
+          "target": "api:get:/api/lite/policy/decisions/{decision_id}",
           "type": "calls"
         },
         {
@@ -80672,6 +80726,15 @@
       "id": "rel:4260bcb49f111cfe",
       "source": "requirement:architecture-02",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-rules-premium-visual.spec.ts"
+      ],
+      "id": "rel:42637ad0489c059f",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-rules-premium-visual.spec.ts",
       "type": "verified_by"
     },
     {
@@ -98240,6 +98303,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteRules.jsx"
+      ],
+      "id": "rel:c2d41c35a0381974",
+      "source": "ui:literules",
+      "target": "api:get:/api/lite/policy/decisions/{decision_id}",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:c2e4e395e0eecce9",
@@ -106810,9 +106882,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "ecc36cb414fe785ecbbf931c975720bf4394798c30a81e1480afbe7f7dd5fa50",
+  "source_fingerprint": "20f24dbfe20a5dd2bc7a0c7e63de90551c48e20c14177278a05439201409cb72",
   "statistics": {
-    "entity_count": 1384,
+    "entity_count": 1387,
     "entity_type_counts": {
       "adr": 6,
       "api": 237,
@@ -106829,14 +106901,14 @@
       "runtime-topology": 9,
       "subject": 220,
       "table": 83,
-      "test": 268,
+      "test": 271,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 3970,
-    "source_count": 305
+    "relation_count": 3972,
+    "source_count": 308
   }
 }

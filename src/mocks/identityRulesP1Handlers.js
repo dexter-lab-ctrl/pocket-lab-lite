@@ -166,18 +166,6 @@ function accessPayload() {
   };
 }
 
-function policyPayload() {
-  return {
-    status: 'ready', summary: 'Safety Rules are active and ready for protected changes.',
-    engine: { name: 'Open Policy Agent', version: '1.19.0', healthy: true, loopback_only: true, endpoint_exposed_to_browser: false, reason_code: '' },
-    active_policy: { revision: 'mock-policy-revision', bundle_ready: true, package_status: 'active', protected_actions: ['catalog.install','app.install','device.remove','identity.passkey.revoke'], activation_model: 'supervisor_proved_revision', last_known_good: true },
-    degraded_reason: '', last_decision_at: now(),
-    policy_groups: [{ id: 'apps', label: 'Apps', actions: ['catalog.install','app.install'] }, { id: 'devices', label: 'Devices', actions: ['device.remove'] }, { id: 'identity', label: 'Identity', actions: ['identity.passkey.revoke'] }],
-    templates: [{ id: 'passkey_step_up', label: 'Passkey confirmation for sensitive Identity changes', summary: 'Requires recent server-verified passkey confirmation before removing a passkey.', status: 'active', enforcement: 'server-derived assurance', actions: ['identity.passkey.revoke'] }],
-    recent_decisions: [{ decision_id: 'decision-recent', action_id: 'device.remove', target_type: 'device', target_id: 'old-phone', allow: enterpriseRole() === 'Owner', reason_code: enterpriseRole() === 'Owner' ? 'owner_authority_device_removal' : 'approval_required', policy_revision: 'mock-policy-revision', evaluation_ms: 0.4, occurred_at: now() }],
-  };
-}
-
 function peoplePayload() {
   return {
     roles: ['Admin','Auditor','Operator','Owner','Viewer'],
@@ -202,8 +190,6 @@ function approvalPayload() {
 export const identityRulesP1Handlers = [
   http.get('/api/lite/identity', () => HttpResponse.json(identityPayload())),
   http.get('/api/lite/enterprise/identity/self', () => HttpResponse.json(identityPayload())),
-  http.get('/api/lite/policy', () => HttpResponse.json(policyPayload())),
-
   http.get('/api/lite/identity/owner-claim/status', () => HttpResponse.json({ active: false, status: 'owner_claim_authority_invalid' })),
   http.post('/api/lite/identity/owner-claim/consume', () => HttpResponse.json({ status: 'claim_verified', expires_at: future(5 * 60 * 1000), summary: 'Owner claim verified. Create a passkey to finish setup.' })),
   http.post('/api/lite/identity/owner-claim/passkey/options', () => HttpResponse.json({ publicKey: { challenge: 'bW9jay1jaGFsbGVuZ2U', rp: { name: 'Pocket Lab Lite', id: 'localhost' }, user: { id: 'bW9jay11c2Vy', name: 'owner', displayName: 'Pocket Lab Owner' }, pubKeyCredParams: [{ type: 'public-key', alg: -7 }] } })),

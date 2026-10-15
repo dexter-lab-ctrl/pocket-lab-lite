@@ -144,7 +144,10 @@ export function useFocusTrap(open, surfaceRef) {
 
 export function LiteOverlayRoot({ children }) {
   if (typeof document === 'undefined') return null;
-  return createPortal(children, document.body);
+  // Portals mount under document.body, outside the themed application shell.
+  // Keep the theme context around the shared overlay root so the global Lite
+  // surface contract applies to every sheet, including Rules sheets.
+  return createPortal(<div className="theme-pocket-lite-daylight lite-overlay-portal-theme">{children}</div>, document.body);
 }
 
 export function LiteBackdrop({ onClose, label = 'Close overlay', className = '' }) {
@@ -186,6 +189,19 @@ const LITE_SHEET_VARIANTS = {
     closeLabel: 'Close security details',
     backdropLabel: 'Close security details',
     gripLabel: 'Drag security details sheet',
+  },
+  rules: {
+    layer: 'lite-rules-overlay-layer',
+    backdrop: 'lite-rules-overlay-backdrop',
+    surface: 'lite-rules-overlay-surface',
+    grip: 'lite-rules-overlay-grip',
+    head: 'lite-rules-overlay-head',
+    close: 'lite-rules-overlay-close',
+    scroll: 'lite-rules-overlay-scroll',
+    eyebrow: 'Safety Rules',
+    closeLabel: 'Close Rules management',
+    backdropLabel: 'Close Rules management',
+    gripLabel: 'Drag Rules management sheet',
   },
 };
 

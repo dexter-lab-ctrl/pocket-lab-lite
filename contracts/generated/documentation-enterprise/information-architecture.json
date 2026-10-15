@@ -4682,7 +4682,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 500,
+  "page_count": 501,
   "page_types": [
     "overview",
     "guide",
@@ -4972,6 +4972,29 @@
       "source_or_generator": "development/lite-ui-completeness-4-to-6.md",
       "title": "Sections 4–6 — shared controls, Home, Apps",
       "url": "/development/lite-ui-completeness-4-to-6/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/premium-rules-center.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "rules",
+      "generated": false,
+      "id": "page:development/premium-rules-center",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/premium-rules-center.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/premium-rules-center.md",
+      "title": "Premium Rules Center — qualification record",
+      "url": "/development/premium-rules-center/"
     },
     {
       "additional_audiences": [
@@ -17850,7 +17873,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "6750a16efdcd230f2e270d8a6023afc2ca825e235aafc678263d88e616c2aa64",
+  "source_fingerprint": "18cdae28713b3e6461bf55973a7880c76082b73b8396c846e92ed34d37e29250",
   "top_level": [
     "start-here",
     "use",

@@ -112,56 +112,30 @@ async function installRulesActivationFetch(page, terminal: 'success' | 'not_comp
   }, { terminalState: terminal });
 }
 
-test.describe('Rules governed activation progress', () => {
+test.describe('Rules governed activation progress — source truth only', () => {
   test.beforeEach(async ({ page }) => {
     await installScenario(page, 'healthy');
     await page.setViewportSize({ width: 390, height: 844 });
   });
-
-  test('shows server-reported supervisor phases and disables duplicate actions until proof succeeds', async ({ page }) => {
-    await installRulesActivationFetch(page, 'success');
-    await page.goto('/?screen=rules');
-    const rules = page.locator('[data-lite-screen-id="rules"]');
-
-    const update = rules.getByRole('button', { name: 'Update Safety Rules' });
-    await expect(update).toBeVisible();
-    await update.click();
-
-    await expect(rules.getByRole('button', { name: 'Rules update running' })).toBeDisabled();
-    await expect(rules.getByRole('button', { name: 'Update in progress…' })).toBeDisabled();
-    await expect(rules.getByRole('button', { name: /^Refresh$/ })).toHaveCount(0);
-
-    const progress = rules.locator('.lite-rules-activation-card');
-    await expect(progress).toBeVisible();
-    await expect(progress).toContainText('Supervisor proof');
-    await expect(progress).toContainText('Accepted');
-    await expect(progress).toContainText('Validating');
-    await expect(progress).toContainText('Switching');
-    await expect(progress).toContainText('Restarting');
-    await expect(progress).toContainText('Verifying');
-    await expect(progress).toContainText('Succeeded');
-
-    await expect(progress).toHaveAttribute('data-rules-activation-state', 'active', { timeout: 15_000 });
-    await expect(progress).toContainText('proved the new Rules revision');
-    await expect(rules.getByRole('button', { name: /^Refresh$/ })).toBeVisible();
-    await expect(rules.getByRole('button', { name: 'Rules update running' })).toHaveCount(0);
-    await expect(rules.getByRole('button', { name: 'Update in progress…' })).toHaveCount(0);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
-  });
-
-  test('keeps the last proved phase and re-enables retry after the server reports no completed update', async ({ page }) => {
-    await installRulesActivationFetch(page, 'not_completed');
-    await page.goto('/?screen=rules');
-    const rules = page.locator('[data-lite-screen-id="rules"]');
-
-    await rules.getByRole('button', { name: 'Update Safety Rules' }).click();
-    const progress = rules.locator('.lite-rules-activation-card');
-    await expect(progress).toHaveAttribute('data-rules-activation-state', 'not_completed', { timeout: 10_000 });
-    await expect(progress).toContainText('Update not completed');
-    await expect(progress).toContainText('previous known-good protection remains authoritative');
-
-    await expect(rules.getByRole('button', { name: 'Update Safety Rules' })).toBeEnabled();
-    await expect(rules.getByRole('button', { name: /^Refresh$/ })).toBeVisible();
-    await expect(rules).toContainText(/fail-closed|blocked/i);
-  });
+  for (const terminal of ['success', 'not_completed'] as const) {
+    test('does not invent success after operation disappears: ' + terminal, async ({ page }) => {
+      await installRulesActivationFetch(page, terminal);
+      await page.goto('/?screen=rules');
+      const rules = page.locator('[data-lite-screen-id="rules"]');
+      await rules.getByRole('button', { name: 'Manage Safety Rules' }).click();
+      const sheet = page.getByRole('dialog', { name: 'Manage Safety Rules' });
+      await sheet.getByRole('button', { name: 'Update Safety Rules' }).click();
+      const rail = sheet.locator('.lite-rules-activation-premium');
+      await expect(rail).toBeVisible();
+      await expect(rail).toContainText('Accepted');
+      await expect(rail).toContainText('Checking');
+      await expect(rail).toContainText('Applying');
+      await expect(rail).toContainText('Verifying');
+      // The fixture eventually omits the operation object. The UI must keep
+      // uncertainty rather than claiming activation success from a missing event.
+      await expect(rail).toHaveAttribute('data-rules-activation-state', 'uncertain', { timeout: 20_000 });
+      await expect(rail).not.toContainText('Server-reported activation success');
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+    });
+  }
 });

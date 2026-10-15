@@ -56,6 +56,10 @@
     "test:perf:qualification": "npm run test:perf:components && npm run build:budget && npm run test:perf:mocked",
     "test:perf:interactions": "rm -rf .pocketlab-dev/performance && VITE_POCKETLAB_PERF_TEST=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-performance.spec.ts --grep \"\\\\[interaction\\\\]\" --project=mocked-desktop --project=mocked-mobile && npm run check:render-budgets",
     "test:ui:p4:mocked": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-p4-regression.spec.ts --project=mocked-desktop --project=mocked-mobile",
+    "test:rules:premium:unit": "vitest run src/lite/rules/rulesPremiumView.test.js src/lite/rules/RulesProtectionJourney.test.jsx",
+    "test:rules:premium:mocked": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-rules-premium-refinement.spec.ts tests/e2e/lite-rules-activation-progress.spec.ts --project=mocked-desktop --project=mocked-mobile",
+    "test:rules:premium:visual": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-rules-premium-visual.spec.ts --project=mocked-desktop --project=mocked-mobile",
+    "test:rules:premium:perf": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-rules-premium-performance.spec.ts --project=mocked-desktop --project=mocked-mobile",
     "test:identity:premium:unit": "vitest run src/lite/identity/*.test.js src/lite/identity/*.test.jsx",
     "test:identity:premium:mocked": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-identity-premium-refinement.spec.ts --project=mocked-desktop --project=mocked-mobile",
     "test:identity:premium:visual": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-identity-premium-visual.spec.ts --project=mocked-desktop --project=mocked-mobile"

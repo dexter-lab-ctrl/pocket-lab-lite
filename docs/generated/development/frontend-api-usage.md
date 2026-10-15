@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 33e6ddbc41c193c89c5f81eed49693a8c40ea26c49b2610f1b5ea60d417229f7
+source_fingerprint: d5b815557090efd236ff69b7c60eaaaf21a51ef75d707f694b344b4a3865187e
 schema_revision: 1
 validation_status: generated
 ---
@@ -83,6 +83,7 @@ validation_status: generated
 | src/lite/LiteRules.jsx | liteApi.passkeyStepUpOptions | POST | `/api/lite/identity/step-up/options` | mutation | no | static |
 | src/lite/LiteRules.jsx | liteApi.verifyPasskeyStepUp | POST | `/api/lite/identity/step-up/verify` | mutation | no | static |
 | src/lite/LiteRules.jsx | liteApi.policy | GET | `/api/lite/policy` | query | no | static |
+| src/lite/LiteRules.jsx | liteApi.policyDecision | GET | `/api/lite/policy/decisions/{param}` | query | no | dynamic |
 | src/lite/LiteRulesEnterprise.jsx | liteApi.fleet | GET | `/api/lite/fleet` | query | no | static |
 | src/lite/LiteRulesEnterprise.jsx | liteApi.passkeyStepUpOptions | POST | `/api/lite/identity/step-up/options` | mutation | no | static |
 | src/lite/LiteRulesEnterprise.jsx | liteApi.verifyPasskeyStepUp | POST | `/api/lite/identity/step-up/verify` | mutation | no | static |
@@ -268,7 +269,6 @@ validation_status: generated
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/sessions/revoke-others` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/step-up/options` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/step-up/verify` | mock | yes | static |
-| src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/policy` | mock | yes | static |
 
 ## Unsupported frontend route references
 
@@ -373,7 +373,6 @@ validation_status: generated
 - `/api/lite/identity/passkeys/login/verify`
 - `/api/lite/identity/rotate`
 - `/api/lite/policy/apply`
-- `/api/lite/policy/decisions/{decision_id}`
 - `/api/lite/policy/templates`
 - `/api/lite/recovery`
 - `/api/lite/recovery/apps/{app_id}`

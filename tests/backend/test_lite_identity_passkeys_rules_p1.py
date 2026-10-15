@@ -237,6 +237,8 @@ def test_identity_rules_p1_source_contracts():
     owner_claim = Path("src/lib/liteOwnerClaim.js").read_text()
     webauthn = Path("src/lib/liteWebAuthn.js").read_text()
     rules = Path("src/lite/LiteRules.jsx").read_text()
+    journey = Path("src/lite/rules/RulesProtectionJourney.jsx").read_text()
+    enterprise = Path("src/lite/LiteRulesEnterprise.jsx").read_text()
     api = Path("src/lib/liteApi.js").read_text()
     rego = Path("security/policies/opa/pocketlab/pocketlab.rego").read_text()
 
@@ -251,8 +253,9 @@ def test_identity_rules_p1_source_contracts():
     assert "passkeyStepUpOptions" in api
     assert "policyDecision" in api
     assert "const templates = Array.isArray(data?.templates) ? data.templates : [];" in rules
-    assert "Protection areas" in rules
-    assert "Normal UI describes safeguards rather than exposing policy source" in rules
-    assert "The browser cannot grant itself a role, approval, exception or assurance" in rules
+    assert "RulesProtectionJourney" in rules
+    assert "Protection Journey" in journey
+    assert "Pocket Lab exposes typed settings only." in enterprise
+    assert "The browser cannot grant itself a role, approval, exception or assurance" in enterprise
     assert 'input.action.id == "identity.passkey.revoke"' in rego
     assert "passkey_step_up_required" in rego

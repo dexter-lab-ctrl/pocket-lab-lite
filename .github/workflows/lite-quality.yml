@@ -70,6 +70,39 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+  ui-performance-qualification:
+    # Keep the unchanged 60 FPS gate, but measure on a fresh runner rather
+    # than after docs generation, Storybook and mocked browser integration.
+    # PR #590 explicitly excludes the PR #588/#589 60 FPS qualification.
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.number != 590 }}
+    runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      PUPPETEER_SKIP_DOWNLOAD: '1'
+      LITE_PERF_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: '24.16.0'
+          cache: npm
+      - name: Install dependencies and Chromium
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Qualify UI performance contract
+        run: npm run test:perf:qualification
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: pocket-lab-lite-performance-qualification
+          path: |
+            .pocketlab-dev/performance
+            .pocketlab-dev/validation
+            .pocketlab-dev/playwright-report
+          if-no-files-found: warn
+          retention-days: 14
+
   quick-and-docs:
     runs-on: ubuntu-latest
     env:
@@ -163,12 +196,6 @@ jobs:
           npx playwright install --with-deps chromium
           VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-mocked.spec.ts tests/e2e/lite-parity.spec.ts tests/e2e/lite-accessibility.spec.ts --project=mocked-desktop --project=mocked-mobile
           task lite:test:docs
-      - name: Qualify UI performance contract
-        # PR #590 explicitly excludes the PR #588/#589 60 FPS qualification.
-        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.number != 590 }}
-        env:
-          LITE_PERF_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: npm run test:perf:qualification
       - name: Redaction and evidence
         run: |
           .venv/bin/python scripts/dev/lite/redaction_check.py --paths contracts/generated src/test/fixtures/generated docs/generated .pocketlab-dev/validation .pocketlab-dev/performance
