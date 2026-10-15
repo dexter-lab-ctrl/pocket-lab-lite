@@ -406,7 +406,7 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
         await manageRules.click();
         const sheet = page.getByRole('dialog', { name: /Manage Safety Rules/i });
         await expect(sheet).toBeVisible();
-        const disclosure = sheet.locator('details.lite-rules-advanced-details');
+        const disclosure = sheet.locator('details.lite-ux-technical-facts');
         const report = await measureLiteInteraction(
           page,
           testInfo,
