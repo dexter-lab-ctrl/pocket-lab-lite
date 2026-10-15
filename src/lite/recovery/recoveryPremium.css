@@ -50,3 +50,9 @@
 @media(max-width:640px) { .lite-recovery-premium-indicators { grid-template-columns:repeat(2,minmax(0,1fr)); } .lite-recovery-premium-stage-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .lite-recovery-premium-actions { display:grid; grid-template-columns:1fr; } .lite-recovery-premium-actions button { width:100%; } .lite-recovery-impact dl { grid-template-columns:1fr; } }
 @media(max-width:360px) { .lite-recovery-premium-indicators { grid-template-columns:1fr; } }
 @media(prefers-reduced-motion:reduce) { .lite-recovery-premium-screen *, .lite-recovery-premium-screen *::before,.lite-recovery-premium-screen *::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; scroll-behavior:auto!important; } }
+
+/* Higher specificity than the legacy R1 daylight two-column hero. */
+.theme-pocket-lite-daylight .lite-recovery-r1-hero.lite-recovery-premium-protection {
+  grid-template-columns: minmax(0, 1fr);
+  overflow: visible;
+}
