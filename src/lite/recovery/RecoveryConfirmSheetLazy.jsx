@@ -3,6 +3,7 @@ import { ArchiveRestore, Database, ShieldCheck } from 'lucide-react';
 import { formatLiteTime } from '../../lib/liteApi.js';
 import { LiteButton, StatusBadge } from '../LiteUi.jsx';
 import { LiteConsequenceSummary } from '../LiteUx.jsx';
+import { recoveryRestoreImpact } from './recoveryPremiumView.js';
 
 function formatSize(bytes) {
   const value = Number(bytes || 0);
@@ -24,8 +25,9 @@ export default function RecoveryConfirmSheetLazy({
   const title = databaseRestore ? 'Restore Pocket Lab data?' : 'Restore this backup?';
   const backupLabel = backup?.created_at ? formatLiteTime(backup.created_at) : 'Selected verified backup';
   const sizeLabel = backup?.size_bytes ? formatSize(backup.size_bytes) : null;
-  const includedComponents = Array.isArray(preview?.included_components) ? preview.included_components : [];
-  const excludedComponents = Array.isArray(preview?.excluded_components) ? preview.excluded_components : [];
+  const impact = recoveryRestoreImpact({ backup, preview, location });
+  const includedComponents = impact.included;
+  const excludedComponents = impact.excluded;
 
   return (
     <div className="lite-recovery-native-confirm" data-recovery-native-confirm="true">
@@ -47,13 +49,26 @@ export default function RecoveryConfirmSheetLazy({
         {!databaseRestore ? <span>Restore to: This Server Phone</span> : null}
       </section>
 
+      <section className="lite-recovery-impact" aria-label="Restore impact preview">
+        <strong>What this restore may change</strong>
+        <dl>
+          <dt>Selected backup</dt><dd>{impact.backupId || 'Not reported'}</dd>
+          <dt>Verification</dt><dd>{impact.verified ? 'Verified' : 'Not confirmed'}</dd>
+          <dt>Created</dt><dd>{impact.createdAt ? formatLiteTime(impact.createdAt) : 'Not reported'}</dd>
+          <dt>Matching preview</dt><dd>{impact.ready ? 'Ready' : 'Not ready or not confirmed'}</dd>
+          <dt>Expected items</dt><dd>{impact.count === null ? 'Impact not reported' : impact.count}</dd>
+          <dt>Backup location</dt><dd>{impact.location || 'Not reported'}</dd>
+          <dt>Location</dt><dd>{impact.locationReady ? 'Not reported as unavailable' : 'Unavailable'}</dd>
+        </dl>
+        <p>The backend decides what is safe to restore. An unavailable impact count never means zero.</p>
+      </section>
       <div className="lite-safe-protected-confirmation" data-lite-confirmation-contract="server-owned">
         <LiteConsequenceSummary value={{
         title: 'Before Pocket Lab restores anything',
         summary: 'Pocket Lab will create a safety checkpoint first and check the workspace again afterward.',
         will: [
           'Create a protected checkpoint before local state changes.',
-          databaseRestore ? 'Restore the verified Pocket Lab data backup and check it.' : `${Number(preview?.change_count || 0)} item(s) from the preview are eligible for restore.`,
+          databaseRestore ? 'Restore the verified Pocket Lab data backup and check it.' : impact.count === null ? 'Impact count not reported.' : String(impact.count) + ' item(s) from the preview are eligible for restore.',
           'Check workspace health after the restore and save a recovery record.',
         ],
         willNot: [
@@ -76,7 +91,7 @@ export default function RecoveryConfirmSheetLazy({
 
       <div className="lite-recovery-native-confirm-actions">
         <LiteButton tone="secondary" onClick={onCancel} disabled={busy}>Cancel</LiteButton>
-        <LiteButton tone="danger" onClick={onConfirm} disabled={busy}>
+        <LiteButton tone="danger" onClick={onConfirm} disabled={busy || !impact.ready}>
           {busy ? 'Restoring…' : databaseRestore ? 'Restore Database' : 'Restore Backup'}
         </LiteButton>
       </div>
