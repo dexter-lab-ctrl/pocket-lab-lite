@@ -107,7 +107,7 @@ export default function RecoveryActionDetailsLazy({
       ? String(latestPreview.status)
       : actionKey === 'verify' && latestBackup?.verification_status
         ? String(latestBackup.verification_status)
-        : 'Protected';
+        : 'Not reported';
   const historyItems = buildHistoryItems({ history, latestBackup, latestPreview, checkpoint, lastRestore });
   const logs = Array.isArray(panel?.logs) ? panel.logs : [];
   const restoreSummary = lastRestore?.summary || (lastRestore?.restored_file_count ? `${lastRestore.restored_file_count} Lite state file(s) restored.` : 'Restore stays protected until confirmed.');
