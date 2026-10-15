@@ -15,10 +15,9 @@ import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { createLiteFeedbackDeduper, triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import { LiteSheet } from './LiteOverlay.jsx';
 import { LiteMotionReveal } from './LiteMotion.jsx';
-import { selectRecoveryOperationalStoryView, selectRecoveryScreenView, selectRecoverySummaryView, isLiteRecoveryViewLive } from '../lib/liteViewModels.js';
+import { selectRecoveryScreenView, selectRecoverySummaryView, isLiteRecoveryViewLive } from '../lib/liteViewModels.js';
 import {
   GlassCard,
-  StatusBadge,
   StateSurface,
   copyTextToClipboard,
   PageHeader,
@@ -334,30 +333,6 @@ export default function RecoveryScreen() {
 
   const recoveryLive = Boolean(busy) || recoveryFlow.isBusy || serverRecoveryLive;
   useLiteServiceWorkerUpdateBlocker('recovery-workflow', Boolean(recoveryLive || restoreConfirmation));
-  const recoveryReady = !projectionStale && !databaseWriteBlocked && (repository?.ready || latestBackupVerified || databaseBackupVerified);
-  const recoveryStatus = projectionStale || databaseWriteBlocked ? 'review' : recoveryReady ? 'healthy' : backendBadgeStatus(data?.status);
-  const recoveryTitle = projectionStale
-    ? 'Recovery information needs a refresh'
-    : databaseWriteBlocked
-    ? 'Backup protection needs attention'
-    : latestBackupVerified
-      ? 'Backup protection is ready'
-      : latestBackup
-        ? 'Verify your latest backup'
-        : 'Create your first protected backup';
-  const recoverySummary = projectionStale
-    ? 'Saved recovery details are available, but they are older than expected. Refresh before backing up or restoring.'
-    : databaseWriteBlocked
-    ? recoveryFlow.blockedReason || 'Backup and restore actions are temporarily protected.'
-    : latestBackupVerified
-      ? 'Your latest backup is verified. Preview a restore before anything changes.'
-      : data?.summary || 'Create a protected backup before making important changes.';
-  const recoveryStory = selectRecoveryOperationalStoryView(data, {
-    savedStateOnly,
-    backendReachable,
-    projectionStale,
-    databaseWriteBlocked,
-  });
   const premiumHero = recoveryPremiumHero({
     data, backup: latestBackup, preview: latestPreview, repository, database: databaseProtection,
     busy, saved: savedStateOnly, stale: projectionStale || isExpired, reachable: backendReachable,
