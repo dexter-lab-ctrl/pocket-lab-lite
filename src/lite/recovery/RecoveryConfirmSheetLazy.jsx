@@ -91,7 +91,7 @@ export default function RecoveryConfirmSheetLazy({
 
       <div className="lite-recovery-native-confirm-actions">
         <LiteButton tone="secondary" onClick={onCancel} disabled={busy}>Cancel</LiteButton>
-        <LiteButton tone="danger" onClick={onConfirm} disabled={busy || !impact.ready}>
+        <LiteButton tone="danger" onClick={onConfirm} disabled={busy}>
           {busy ? 'Restoring…' : databaseRestore ? 'Restore Database' : 'Restore Backup'}
         </LiteButton>
       </div>
