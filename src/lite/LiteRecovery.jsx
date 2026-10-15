@@ -282,9 +282,9 @@ export default function RecoveryScreen() {
   const restoreSteps = [
     { key: 'backup', label: 'Backup', detail: latestBackup ? 'Safe copy saved' : 'Create backup', complete: Boolean(latestBackup) },
     { key: 'verified', label: 'Verified', detail: latestBackupVerified ? 'Evidence checked' : 'Verify backup', complete: latestBackupVerified },
-    { key: 'preview', label: 'Preview', detail: latestPreviewReady ? `${latestPreview?.change_count || 0} item(s)` : 'Preview changes', complete: latestPreviewReady },
+    { key: 'preview', label: 'Preview', detail: latestPreviewReady ? (Number.isInteger(latestPreview?.change_count) ? String(latestPreview.change_count) + ' item(s)' : 'Impact not reported') : 'Preview changes', complete: latestPreviewReady },
     { key: 'checkpoint', label: 'Checkpoint', detail: checkpoint?.checkpoint_id ? 'Saved before restore' : 'Created on restore', complete: checkpoint?.status === 'created' },
-    { key: 'restored', label: 'Restored', detail: restoreSucceeded ? `${lastRestore?.restored_file_count || 0} file(s)` : 'Confirm restore', complete: restoreSucceeded },
+    { key: 'restored', label: 'Restored', detail: restoreSucceeded ? (Number.isInteger(lastRestore?.restored_file_count) ? String(lastRestore.restored_file_count) + ' file(s)' : 'Result recorded') : 'Confirm restore', complete: restoreSucceeded },
   ];
 
   const evidenceItems = [
@@ -309,17 +309,17 @@ export default function RecoveryScreen() {
     },
     preview: {
       title: 'Preview Restore',
-      subtitle: latestPreviewReady ? `${latestPreview?.change_count || 0} item(s) checked without changing local state.` : 'Pocket Lab will inspect the restore point safely.',
+      subtitle: latestPreviewReady ? (Number.isInteger(latestPreview?.change_count) ? String(latestPreview.change_count) + ' item(s) checked without changing local state.' : 'Preview ready; impact not reported.') : 'Pocket Lab will inspect the restore point safely.',
       next: 'Restore Latest',
       logs: [
         'Preview checks the restore point without changing files.',
-        latestPreviewReady ? `${latestPreview?.change_count || 0} item(s) would be restored.` : 'Restore changes will be counted first.',
+        latestPreviewReady ? (Number.isInteger(latestPreview?.change_count) ? String(latestPreview.change_count) + ' item(s) would be restored.' : 'Item count not reported.') : 'Restore changes will be counted first.',
         'Raw secrets remain excluded from this restore point.',
       ],
     },
     restore: {
       title: 'Restore Latest',
-      subtitle: restoreSucceeded ? `${lastRestore?.restored_file_count || 0} file(s) restored after checkpoint creation.` : 'Restore creates a checkpoint before changing Lite state.',
+      subtitle: restoreSucceeded ? (Number.isInteger(lastRestore?.restored_file_count) ? String(lastRestore.restored_file_count) + ' file(s) restored.' : 'Restore result recorded; file count not reported.') : 'Restore creates a checkpoint before changing Lite state.',
       next: 'Evidence',
       logs: [
         checkpoint?.checkpoint_id ? `Checkpoint saved: ${shortId(checkpoint.checkpoint_id)}` : 'Checkpoint will be saved before restore.',
