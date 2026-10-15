@@ -12,6 +12,7 @@ import { formatLiteTime } from '../../lib/liteApi.js';
 import { friendlyLiteText } from '../../lib/liteUxPresentation.js';
 import { LiteButton, LoadingCard, StateSurface, StatusBadge } from '../LiteUi.jsx';
 import RecoveryBackupLocation from './RecoveryBackupLocation.jsx';
+import { recoveryRestoreImpact } from './recoveryPremiumView.js';
 
 const RecoveryBackupHistory = React.lazy(() => import('./RecoveryBackupHistory.jsx'));
 
@@ -130,6 +131,7 @@ export default function RecoveryManageSheetLazy({
 }) {
   const activeSection = RECOVERY_MANAGE_SECTIONS.some((item) => item.id === section) ? section : 'backup';
   const recentHistory = (Array.isArray(history) ? history : []).slice(0, 3);
+  const impact = recoveryRestoreImpact({ backup: latestBackup, preview: latestPreview, location: latestBackup?.location });
   const tabRefs = React.useRef([]);
   const onTabKeyDown = (event, index) => {
     const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
@@ -270,6 +272,17 @@ export default function RecoveryManageSheetLazy({
       {activeSection === 'restore' ? (
         <section id="recovery-manage-panel-restore" className="lite-recovery-manage-section" role="tabpanel" aria-labelledby="recovery-manage-tab-restore" tabIndex={0}>
           <SectionHeading eyebrow="Restore" title="Review and restore safely" description="Verify the selected backup, review expected changes, and confirm before restoration begins." />
+          <section className="lite-recovery-impact" aria-label="Restore impact preview">
+            <strong>Selected restore point</strong>
+            <dl>
+              <dt>Backup</dt><dd>{impact.backupId || 'Not selected'}</dd>
+              <dt>Verified</dt><dd>{impact.verified ? 'Yes' : 'Not confirmed'}</dd>
+              <dt>Preview</dt><dd>{impact.ready ? 'Ready for confirmation' : 'Fresh matching preview required'}</dd>
+              <dt>Expected items</dt><dd>{impact.count === null ? 'Not reported' : impact.count}</dd>
+              <dt>Excluded</dt><dd>{impact.excluded.length ? impact.excluded.join(', ') : 'Not reported'}</dd>
+            </dl>
+            <p>Restoring still requires explicit confirmation and server-owned checkpoint and health checks.</p>
+          </section>
           <div className="lite-recovery-manage-action-list">
             <RecoveryActionRow
               icon={CheckCircle2}
@@ -287,7 +300,7 @@ export default function RecoveryManageSheetLazy({
             <RecoveryActionRow
               icon={FileCheck}
               title="Preview restore"
-              description={latestPreviewReady ? `${latestPreview?.change_count || 0} item(s) checked without changing local state.` : 'Review expected changes before restoration is enabled.'}
+              description={latestPreviewReady ? impact.count === null ? 'Preview ready; impact count not reported.' : String(impact.count) + ' item(s) checked without changing local state.' : 'Review expected changes before restoration is enabled.'}
               status={latestPreviewReady ? 'Ready' : 'Preview needed'}
               statusTone={latestPreviewReady ? 'healthy' : 'review'}
               actionLabel="Preview"
@@ -306,7 +319,7 @@ export default function RecoveryManageSheetLazy({
               actionLabel="Restore"
               busyLabel="Restoring…"
               busy={busy === 'restore'}
-              disabled={Boolean(busy) || !latestBackupVerified || !latestPreviewReady || databaseWriteBlocked}
+              disabled={Boolean(busy) || !impact.ready || databaseWriteBlocked || savedStateOnly}
               tone="danger"
               onAction={onRestore}
               onDetails={() => onOpenActionDetails('restore')}
@@ -333,7 +346,7 @@ export default function RecoveryManageSheetLazy({
             <article>
               <ShieldCheck className="h-5 w-5" />
               <div><strong>Protected data</strong><p>Pocket Lab Lite state, app metadata, rules, and safe evidence references.</p></div>
-              <StatusBadge status="healthy">Protected</StatusBadge>
+              <StatusBadge status={protectedItems.length ? 'healthy' : 'unknown'}>{protectedItems.length ? 'Reported' : 'Not reported'}</StatusBadge>
               <ul>{protectedItems.slice(0, 6).map((item) => <li key={item}>{item}</li>)}</ul>
             </article>
             <article>
@@ -344,7 +357,7 @@ export default function RecoveryManageSheetLazy({
             </article>
             <article>
               <Database className="h-5 w-5" />
-              <div><strong>Database protection</strong><p>{friendlyLiteText(databaseProtection?.summary, 'Pocket Lab data backup, restore guard, and write protection are ready.')}</p></div>
+              <div><strong>Database protection</strong><p>{friendlyLiteText(databaseProtection?.summary, 'Database protection status has not been reported.')}</p></div>
               <StatusBadge status={databaseMaintenance?.active ? 'checking' : databaseBackupVerified ? 'healthy' : 'review'}>
                 {databaseMaintenance?.active ? 'Working' : databaseBackupVerified ? 'Healthy' : 'Review'}
               </StatusBadge>
