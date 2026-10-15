@@ -895,6 +895,7 @@ if (!manageRulesButton) {
 } else {
   await manageRulesButton.click();
   const rulesManage = await firstVisible(page.getByRole('dialog', { name: /Manage Safety Rules/i }), 'Rules Manage dialog');
+  await rulesManage.getByRole('button', { name: 'Technical Status', exact: true }).click();
   const rulesTechnicalDetails = rulesManage.locator('details.lite-ux-technical-facts');
   await measureNestedInteraction({
     screen: 'rules',
