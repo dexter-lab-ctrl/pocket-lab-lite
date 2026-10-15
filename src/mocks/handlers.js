@@ -1076,7 +1076,7 @@ function mockPremiumRecoveryProjection(name = 'healthy') {
     recent_activity: first ? [] : [
       { id:'backup-mock-001',kind:'backup',status:'completed',summary:'Synthetic backup record saved.',occurred_at:mockIso(-3600000) },
     ],
-    active_operation: name === 'recovery-backup-running' ? {status:'running',action:'backup_now',summary:'Creating a backup.'} : name === 'recovery-restore-running' ? {status:'running',action:'recovery_restore',summary:'Restoring.'} : null,
+    current_operation: name === 'recovery-backup-running' ? {status:'running',action:'backup_now',summary:'Creating a backup.'} : name === 'recovery-restore-running' ? {status:'running',action:'recovery_restore',summary:'Restoring.'} : null,
   };
 }
 

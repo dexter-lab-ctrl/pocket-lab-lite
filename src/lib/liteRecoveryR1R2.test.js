@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 const recoverySource = readFileSync(new URL('../lite/LiteRecovery.jsx', import.meta.url), 'utf8');
 const manageSource = readFileSync(new URL('../lite/recovery/RecoveryManageSheetLazy.jsx', import.meta.url), 'utf8');
 const detailsSource = readFileSync(new URL('../lite/recovery/RecoveryActionDetailsLazy.jsx', import.meta.url), 'utf8');
+const timelineSource = readFileSync(new URL('../lite/recovery/RecoveryPremiumTimeline.jsx', import.meta.url), 'utf8');
 const cssSource = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
 
 describe('Pocket Lab Lite Recovery R1/R2 UI', () => {
@@ -12,7 +13,8 @@ describe('Pocket Lab Lite Recovery R1/R2 UI', () => {
     expect(recoverySource).toContain('Back Up Now');
     expect(recoverySource).toContain('Manage backups and recovery');
     expect(recoverySource).toContain('Protection');
-    expect(recoverySource).toContain('Recent activity');
+    expect(recoverySource).toContain('RecoveryPremiumTimeline');
+    expect(timelineSource).toContain('Recent Activity');
     expect(recoverySource).not.toContain('lite-recovery-flip-shell');
     expect(recoverySource).not.toContain('<RecoveryBackupHistory');
   });

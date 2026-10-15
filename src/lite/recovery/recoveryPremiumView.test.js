@@ -21,6 +21,8 @@ describe('Recovery premium presentation is backend-truthful', () => {
     expect(recoveryPremiumHero({ reachable: false, backup: verified }).disabled).toBe(true);
     expect(recoveryPremiumHero({ database: { restore_guard: { unresolved: true } } }).state).toBe('blocked');
     expect(recoveryPremiumHero({ repository: { ready: false } }).state).toBe('blocked');
+    expect(recoveryPremiumHero({ backup: verified, repository: { ready: false } }).statusLabel).toBe('Needs attention');
+    expect(recoveryPremiumHero({ data: { current_operation: { status: 'running' } }, backup: verified, preview }).state).toBe('in_progress');
     expect(recoveryPremiumHero({ database: { latest_backup: { backup_id:'db-a' } } }).safety.label).toBe('Database backed up');
   });
   it('keeps educational stage selection separate from backend states', () => {
@@ -30,6 +32,9 @@ describe('Recovery premium presentation is backend-truthful', () => {
     expect(recoveryJourneyStatus({ backup:verified, preview, saved:true }).restore).toBe('unknown');
     expect(recoveryJourneyStatus({ restore: { restore_id:'r-a', status:'accepted' } }).restore).not.toBe('completed');
     expect(recoveryJourneyStatus({ restore: { restore_id:'r-a', status:'failed' } }).restore).toBe('failed');
+    expect(recoveryJourneyStatus({ backup: { ...verified, status:'failed' } }).backup).toBe('failed');
+    expect(recoveryJourneyStatus({ backup: verified, preview: { ...preview, status:'blocked', restore_allowed:false } }).preview).toBe('blocked');
+    expect(recoveryJourneyStatus({ backup: verified, preview, restore: { restore_id:'r-a', status:'running' } }).restore).toBe('in_progress');
     expect(recoveryJourneyStatus({ backup:verified, busy:'verify' }).verify).toBe('in_progress');
   });
   it('uses event facts only, deduplicates stable IDs and keeps absent timestamps unknown', () => {
@@ -57,5 +62,6 @@ describe('Recovery premium presentation is backend-truthful', () => {
     expect(recoveryRestoreImpact({backup: verified,preview}).count).toBe(0);
     expect(recoveryRestoreImpact({backup: verified,preview:{...preview,backup_id:'wrong'}}).ready).toBe(false);
     expect(recoveryRestoreImpact({backup: verified,preview,location:{available:false}}).ready).toBe(false);
+    expect(recoveryRestoreImpact({backup: verified,preview,location:{status:'missing'}}).ready).toBe(false);
   });
 });

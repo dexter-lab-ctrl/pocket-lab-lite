@@ -106,7 +106,7 @@ def test_unified_history_and_context_help_contracts_are_present() -> None:
     # Premium Rules owns a richer decision timeline that preserves backend
     # outcome/provenance semantics and lazy explanation hydration.
     assert "RulesDecisionTimeline" in read("src/lite/LiteRules.jsx")
-    assert "LiteHistoryTimeline" in read("src/lite/LiteRecovery.jsx")
+    assert "RecoveryPremiumTimeline" in read("src/lite/LiteRecovery.jsx")
     assert "LiteHistoryTimeline" in read("src/lite/devices/DeviceDetailsLazy.jsx")
     help_source = read("src/lite/LiteHelp.jsx")
     assert "Explain this" in help_source

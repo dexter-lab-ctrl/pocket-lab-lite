@@ -1,10 +1,17 @@
 // Read-only Recovery presentation. Never infer operation completion or restore authority.
 const ACTIVE = new Set(['accepted', 'pending', 'queued', 'running', 'working', 'in_progress', 'restoring']);
 const FAILED = new Set(['failed', 'failure', 'error', 'blocked', 'cancelled', 'canceled']);
+const BLOCKED = new Set(['blocked', 'unavailable', 'not_available', 'read_only']);
 const COMPLETE = new Set(['succeeded', 'completed', 'complete', 'success', 'done']);
 const string = (value) => typeof value === 'string' ? value : '';
 const norm = (value) => string(value).trim().toLowerCase();
 const record = (value) => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+export function isRecoveryLocationReady(location) {
+  const item = record(location);
+  return item.available !== false
+    && item.ready !== false
+    && !['missing', 'read_only', 'low_space', 'unavailable', 'error'].includes(norm(item.status));
+};
 const validTime = (value) => {
   if (typeof value !== 'string' || !value || !Number.isFinite(Date.parse(value))) return '';
   return value;
@@ -18,7 +25,9 @@ export function recoveryPremiumHero({ data = {}, backup = null, preview = null, 
   const matchingPreview = verified && Boolean(p.preview_id) && p.backup_id === b.backup_id && norm(p.status) === 'ready' && p.restore_allowed !== false;
   const repoUnavailable = repo.ready === false || ['unavailable', 'missing', 'error'].includes(norm(repo.status));
   const dbBlocked = blocked || db.restore_guard?.unresolved === true || db.maintenance?.active === true;
-  const active = Boolean(busy);
+  const operation = record(data?.current_operation || data?.latest_operation || data?.operation || data?.action_progress || data?.active_operation);
+  const activeRestore = norm(data?.last_restore?.status || data?.last_restore?.state || data?.last_restore?.phase);
+  const active = Boolean(busy) || data?.live === true || ACTIVE.has(activeRestore) || ACTIVE.has(norm(operation.status || operation.state || operation.phase));
   const restoreState = norm(data?.last_restore?.status);
   let headline = 'Create your first protected backup';
   let summary = 'No verified recovery point has been reported.';
@@ -34,9 +43,18 @@ export function recoveryPremiumHero({ data = {}, backup = null, preview = null, 
   const databaseBackup = record(db.latest_backup);
   const dbVerified = norm(databaseBackup.verification_status) === 'verified';
   const safetyIndicator = unavailable ? result('Not confirmed', 'unknown') : dbBlocked ? result('Guard active', 'blocked') : dbVerified ? result('Database verified', 'completed') : databaseBackup.backup_id ? result('Database backed up', 'available') : result('Not confirmed', 'unknown');
+  const state = unavailable ? 'unknown' : dbBlocked || repoUnavailable ? 'blocked' : active ? 'in_progress' : FAILED.has(restoreState) ? 'failed' : verified ? 'available' : 'needs_action';
+  const statusLabel = {
+    unknown: 'Not confirmed',
+    blocked: repoUnavailable && !dbBlocked ? 'Needs attention' : 'Protected',
+    in_progress: 'In progress',
+    failed: 'Needs attention',
+    available: 'Protection ready',
+    needs_action: 'Review recommended',
+  }[state];
   return {
     headline, summary, time: validTime(b.created_at), backup: backupIndicator, restore: restoreIndicator, safety: safetyIndicator,
-    state: unavailable ? 'unknown' : dbBlocked || repoUnavailable ? 'blocked' : active ? 'in_progress' : FAILED.has(restoreState) ? 'failed' : verified ? 'available' : 'needs_action',
+    state, statusLabel,
     disabled: unavailable || dbBlocked || repoUnavailable || active,
     verified, previewReady: matchingPreview,
   };
@@ -54,11 +72,14 @@ export function recoveryJourneyStatus({ backup = {}, preview = {}, restore = {},
   const verified = hasBackup && norm(b.verification_status) === 'verified';
   const matching = verified && Boolean(p.preview_id) && p.backup_id === b.backup_id && norm(p.status) === 'ready' && p.restore_allowed !== false;
   const rStatus = norm(r.status);
+  const backupStatus = norm(b.status || b.state);
+  const verificationStatus = norm(b.verification_status || b.verification_state);
+  const previewStatus = norm(p.status || p.state || p.phase);
   const statuses = {
-    backup: hasBackup ? 'completed' : 'not_started',
-    verify: verified ? 'completed' : norm(b.verification_status) === 'failed' ? 'failed' : hasBackup ? 'needs_action' : 'blocked',
-    preview: matching ? 'completed' : FAILED.has(norm(p.status)) ? 'failed' : verified ? 'needs_action' : 'blocked',
-    restore: r.restore_id && COMPLETE.has(rStatus) ? 'completed' : r.restore_id && FAILED.has(rStatus) ? 'failed' : matching ? 'available' : 'blocked',
+    backup: ACTIVE.has(backupStatus) || b.pending === true ? 'in_progress' : BLOCKED.has(backupStatus) ? 'blocked' : FAILED.has(backupStatus) ? 'failed' : hasBackup ? 'completed' : 'not_started',
+    verify: ACTIVE.has(verificationStatus) || ['verifying', 'checking'].includes(backupStatus) ? 'in_progress' : verified ? 'completed' : BLOCKED.has(verificationStatus) ? 'blocked' : FAILED.has(verificationStatus) ? 'failed' : hasBackup ? 'needs_action' : 'blocked',
+    preview: ACTIVE.has(previewStatus) ? 'in_progress' : matching ? 'completed' : BLOCKED.has(previewStatus) ? 'blocked' : FAILED.has(previewStatus) ? 'failed' : verified ? 'needs_action' : 'blocked',
+    restore: r.restore_id && ACTIVE.has(rStatus) ? 'in_progress' : r.restore_id && COMPLETE.has(rStatus) ? 'completed' : r.restore_id && BLOCKED.has(rStatus) ? 'blocked' : r.restore_id && FAILED.has(rStatus) ? 'failed' : matching ? 'available' : 'blocked',
   };
   if (busy && Object.hasOwn(statuses, busy)) statuses[busy] = 'in_progress';
   return statuses;
@@ -74,7 +95,7 @@ const ACTIVITY_KINDS = {
 export function recoveryPremiumActivity({ activity = [], backup = null, restore = null, unavailable = false } = {}) {
   if (unavailable) return [];
   const supplied = Array.isArray(activity) ? activity : [];
-  const mapped = supplied.map((entry, index) => {
+  const mapped = supplied.map((entry) => {
     const item = record(entry);
     const kind = norm(item.kind), id = string(item.id);
     if (!id || !Object.hasOwn(ACTIVITY_KINDS, kind)) return null;
@@ -88,20 +109,26 @@ export function recoveryPremiumActivity({ activity = [], backup = null, restore 
     if (r.restore_id) mapped.push({ id: 'restore:' + r.restore_id, kind: 'restore', title: 'Latest restore record', summary: string(r.summary) || 'Review the backend restore outcome.', time: validTime(r.completed_at), state: COMPLETE.has(norm(r.status)) ? 'completed' : FAILED.has(norm(r.status)) ? 'failed' : 'unknown', origin: 'snapshot' });
   }
   const seen = new Set();
-  return mapped.filter((item) => { if (seen.has(item.id)) return false; seen.add(item.id); return true; }).sort((a, b) => a.time && b.time ? Date.parse(b.time) - Date.parse(a.time) : 0).slice(0, 3);
+  return mapped.filter((item) => { if (seen.has(item.id)) return false; seen.add(item.id); return true; }).sort((a, b) => {
+    if (!a.time && !b.time) return 0;
+    if (!a.time) return 1;
+    if (!b.time) return -1;
+    return Date.parse(b.time) - Date.parse(a.time);
+  }).slice(0, 3);
 }
 export function recoveryRestoreImpact({ backup = {}, preview = {}, location = null } = {}) {
   const b = record(backup), p = record(preview), l = record(location);
   const matched = Boolean(b.backup_id && p.preview_id && p.backup_id === b.backup_id);
   const verified = norm(b.verification_status) === 'verified';
+  const readyLocation = isRecoveryLocationReady(l);
   return {
     backupId: string(b.backup_id), createdAt: validTime(b.created_at), verified,
     previewId: matched ? string(p.preview_id) : '',
-    ready: matched && verified && norm(p.status) === 'ready' && p.restore_allowed !== false && l.available !== false,
+    ready: matched && verified && norm(p.status) === 'ready' && p.restore_allowed !== false && readyLocation,
     count: matched && Number.isInteger(p.change_count) && p.change_count >= 0 ? p.change_count : null,
     included: matched && Array.isArray(p.included_components) ? p.included_components.filter((x) => typeof x === 'string').slice(0, 12) : [],
     excluded: matched && Array.isArray(p.excluded_components) ? p.excluded_components.filter((x) => typeof x === 'string').slice(0, 12) : [],
     location: string(l.display_name) || string(b.location?.display_name) || '',
-    locationReady: l.available !== false,
+    locationReady: readyLocation,
   };
 }

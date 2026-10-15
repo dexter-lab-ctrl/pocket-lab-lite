@@ -911,7 +911,7 @@ if (!manageRulesButton) {
 // Recovery exercises only section navigation and the Verify-backup detail
 // projection. Restore apply and backup creation remain untouched.
 await gotoScreen('recovery');
-const manageRecoveryButton = await firstVisible(page.getByRole('button', { name: 'Manage backups and recovery' }), 'Recovery Manage button');
+const manageRecoveryButton = await firstVisible(page.getByRole('button', { name: 'Manage Recovery' }), 'Recovery Manage button');
 await manageRecoveryButton.click();
 const recoveryManage = await firstVisible(page.locator('[data-lite-sheet-variant="manage"]:visible').first(), 'Recovery Manage sheet');
 // The recovery sheet is lazy-mounted after the screen transition. Resolve the

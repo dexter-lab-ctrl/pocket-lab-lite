@@ -598,10 +598,10 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
       await page.goto('/?screen=recovery');
       const recovery = page.locator('[data-lite-screen-id="recovery"]');
       await expect(recovery).toBeVisible();
-      await expect(recovery).toContainText(/Backup protection|Recovery information|Create your first protected backup/i);
+      await expect(recovery).toContainText(/Backup & Restore|Recovery information|Create your first protected backup/i);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 
-      const manage = recovery.getByRole('button', { name: 'Manage backups and recovery' });
+      const manage = recovery.getByRole('button', { name: 'Manage Recovery' });
       await manage.click();
       const sheet = page.getByRole('dialog', { name: 'Manage backups and recovery' });
       await expect(sheet).toBeVisible();
@@ -978,7 +978,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await page.evaluate(() => window.localStorage.setItem('POCKETLAB_MOCK_SCENARIO', 'app-governance-recovery-blocker'));
     await page.getByRole('button', { name: 'Recovery', exact: true }).click();
     const recovery = page.locator('[data-lite-screen-id="recovery"]');
-    await recovery.getByRole('button', { name: 'Manage backups and recovery' }).click();
+    await recovery.getByRole('button', { name: 'Manage Recovery' }).click();
     const sheet = page.getByRole('dialog', { name: 'Manage backups and recovery' });
     await expect(sheet).toContainText('Required storage device is unavailable.');
     await expect(sheet).toContainText('Protected user data is intentionally excluded.');

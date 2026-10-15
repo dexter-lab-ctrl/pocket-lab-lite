@@ -29,7 +29,7 @@ import {
 import { LiteFreshness } from './LiteUx.jsx';
 import RecoveryJourney from './recovery/RecoveryJourney.jsx';
 import RecoveryPremiumTimeline from './recovery/RecoveryPremiumTimeline.jsx';
-import { recoveryPremiumHero, recoveryJourneyStatus, recoveryPremiumActivity } from './recovery/recoveryPremiumView.js';
+import { isRecoveryLocationReady, recoveryPremiumHero, recoveryJourneyStatus, recoveryPremiumActivity } from './recovery/recoveryPremiumView.js';
 import './recovery/recoveryPremium.css';
 
 const RECOVERY_LAYOUT_SIMPLIFICATION_PHASE_R1 = true;
@@ -55,13 +55,6 @@ export const RECOVERY_S3_QUERY_SNAPSHOT_TUNING = 'RECOVERY_S3_QUERY_SNAPSHOT_TUN
 
 export function hasLiveRecoveryOperation(payload) {
   return isLiteRecoveryViewLive(payload);
-}
-
-function formatSize(bytes) {
-  const value = Number(bytes || 0);
-  if (!value) return 'Size unavailable';
-  if (value >= 1024 * 1024) return `${(value / (1024 * 1024)).toFixed(value >= 10 * 1024 * 1024 ? 0 : 1)} MB`;
-  return `${Math.max(1, Math.round(value / 1024))} KB`;
 }
 
 function mergeOptional(...values) {
@@ -100,7 +93,6 @@ export default function RecoveryScreen() {
     savedStateOnly,
     backendDegraded: summaryBackendDegraded,
     degradedReason: summaryDegradedReason,
-    dataSource: summaryDataSource,
     lastUpdatedLabel,
     isExpired,
   } = useLiteResource(liteApi.recoverySummary, [], {
@@ -178,8 +170,7 @@ export default function RecoveryScreen() {
   const selectedBackupVerified = selectedRestorePoint?.verification_status === 'verified';
   const selectedPreviewReady = selectedRestorePreview?.status === 'ready';
   const selectedBackupLocation = selectedRestorePoint?.location || selectedRestorePreview?.location || null;
-  const selectedBackupLocationReady = !selectedBackupLocation
-    || (selectedBackupLocation.available !== false && !['missing', 'read_only', 'low_space', 'unavailable'].includes(String(selectedBackupLocation.status || '').toLowerCase()));
+  const selectedBackupLocationReady = isRecoveryLocationReady(selectedBackupLocation);
   const lastRestore = mergeOptional(details?.last_restore, data?.last_restore);
   const checkpoint = mergeOptional(details?.pre_restore_checkpoint, data?.pre_restore_checkpoint);
   const serviceRestart = details?.last_restore?.service_restart || {};
@@ -231,10 +222,6 @@ export default function RecoveryScreen() {
   const latestDatabasePreview = databaseProtection?.latest_restore_preview || null;
   const databaseMaintenance = databaseProtection?.maintenance || data?.maintenance || {};
   const databaseRestore = databaseProtection?.last_restore || null;
-  const databaseRestoreHistory = databaseProtection?.restore_history || {};
-  const databaseProjectionReconciliation = databaseProtection?.projection_reconciliation || {};
-  const databaseRestoreCompleted = String(databaseRestore?.status || databaseRestore?.state || '').toLowerCase() === 'completed';
-  const databaseHistoricalPreview = latestDatabasePreview?.status === 'historical';
   const databaseRestoreGuard = databaseProtection?.restore_guard || {};
   const activeDatabaseRestore = databaseProtection?.active_restore || null;
   const databaseBackupVerified = latestDatabaseBackup?.verification_status === 'verified';
@@ -538,12 +525,18 @@ export default function RecoveryScreen() {
     });
   }
 
-  function restoreLatestBackup() {
-    if (!selectedRestorePoint?.backup_id || !selectedRestorePreview?.preview_id || !selectedBackupLocationReady) return;
+  function restoreLatestBackup(backupOverride = null) {
+    const restorePoint = backupOverride || selectedRestorePoint;
+    const restorePreview = latestPreview && restorePoint?.backup_id === latestPreview?.backup_id ? latestPreview : null;
+    const restoreLocation = restorePoint?.location || restorePreview?.location || null;
+    const restoreLocationReady = !restoreLocation
+      || isRecoveryLocationReady(restoreLocation);
+    if (backupOverride) setSelectedBackup(backupOverride);
+    if (!restorePoint?.backup_id || !restorePreview?.preview_id || !restoreLocationReady) return;
     const flowCheck = recoveryFlow.requestRestore({
-      verified: selectedBackupVerified,
-      previewReady: selectedPreviewReady,
-      explicitBackup: Boolean(selectedRestorePoint?.backup_id && selectedRestorePoint.backup_id !== 'latest'),
+      verified: restorePoint?.verification_status === 'verified',
+      previewReady: restorePreview?.status === 'ready',
+      explicitBackup: Boolean(restorePoint?.backup_id && restorePoint.backup_id !== 'latest'),
     });
     if (!flowCheck.ok) return;
     setRestoreConfirmation('lite');
@@ -664,13 +657,14 @@ export default function RecoveryScreen() {
       />
 
       
-      <div className="lite-recovery-premium-screen" data-recovery-premium="true">
+      <div className="lite-recovery-premium-screen lite-render-containment lite-render-containment--recovery" data-recovery-premium="true">
         <div className="lite-recovery-native-announcer" role="status" aria-live="polite" aria-atomic="true">{recoveryAnnouncement}</div>
         <GlassCard className="lite-recovery-premium-protection lite-recovery-r1-hero" data-recovery-protection-state={premiumHero.state} data-recovery-r1-summary="true">
           <div className="lite-recovery-premium-brand">
             <ShieldCheck aria-hidden="true" />
             <div>
-              <span className="lite-recovery-premium-eyebrow" data-testid="parity-recovery-status">Your Recovery Point</span>
+              <span className="lite-recovery-premium-eyebrow">Your Recovery Point</span>
+              <span className="lite-recovery-premium-status" data-testid="parity-recovery-status" data-status={premiumHero.state}>{premiumHero.statusLabel}</span>
               <h2 data-testid="parity-recovery-summary">{premiumHero.headline}</h2>
               <p>{premiumHero.summary}</p>
               {premiumHero.time ? <p className="lite-recovery-premium-backup-date" data-testid="parity-latest-backup-id" data-backup-id={latestBackup?.backup_id || ''}>Latest backup: <time dateTime={premiumHero.time}>{formatLiteTime(premiumHero.time)}</time></p> : null}
@@ -738,7 +732,7 @@ export default function RecoveryScreen() {
             onBackup={backup}
             onVerify={verifyLatestBackup}
             onPreview={previewLatestRestore}
-            onRestore={(backup) => { if (backup) setSelectedBackup(backup); restoreLatestBackup(); }}
+            onRestore={restoreLatestBackup}
             onDatabaseBackup={backUpDatabase}
             onOpenDatabaseDetails={() => setDatabaseDetailsOpen(true)}
             onBackUpApp={backUpApp}
