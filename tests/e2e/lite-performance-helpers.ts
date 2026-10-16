@@ -17,6 +17,36 @@ type FrameSample = {
   eventDurations: number[];
 };
 
+export type LiteScrollDiagnostics = {
+  scroll_container: string;
+  scroll_behavior: string;
+  scroll_overflow_y: string;
+  body_overflow_y: string;
+  scroll_height: number;
+  client_height: number;
+  viewport_height: number;
+  initial_scroll_top: number;
+  final_scroll_top: number;
+  max_scroll_top: number;
+  requested_distance: number;
+  observed_min_scroll_top: number;
+  observed_max_scroll_top: number;
+  scroll_event_count: number;
+  document_scroll_event_count: number;
+  window_scroll_event_count: number;
+  container_scroll_event_count: number;
+  scroll_top_sample_count: number;
+  scroll_top_change_count: number;
+  scroll_raf_count: number;
+  scroll_raf_interval_count: number;
+  scroll_raf_p50_ms: number;
+  scroll_raf_p95_ms: number;
+  scroll_raf_max_ms: number;
+  scroll_raf_approx_16_7ms_frames: number;
+  scroll_raf_approx_33_3ms_frames: number;
+  scroll_raf_over_40ms_frames: number;
+};
+
 type ReactCommitSummary = {
   commit_count: number;
   p95_commit_ms: number;
@@ -155,16 +185,60 @@ export async function installLiteFrameSampler(page: Page) {
   });
 }
 
-export async function exerciseLiteScroll(page: Page, durationMs = 720) {
-  await page.evaluate(async (duration) => {
+export async function exerciseLiteScroll(
+  page: Page,
+  durationMs = 720,
+  { collectDiagnostics = false }: { collectDiagnostics?: boolean } = {},
+): Promise<LiteScrollDiagnostics | null> {
+  return page.evaluate(async ({ duration, collectDiagnostics: shouldCollectDiagnostics }) => {
     const root = document.scrollingElement || document.documentElement;
     const startTop = root.scrollTop;
     const maxScroll = Math.max(0, root.scrollHeight - window.innerHeight);
     const distance = Math.min(maxScroll, Math.max(220, Math.round(window.innerHeight * 0.55)));
+    const scrollIntervals: number[] = [];
+    let previousFrame: number | null = null;
+    let frameCount = 0;
+    let documentScrollEventCount = 0;
+    let windowScrollEventCount = 0;
+    let containerScrollEventCount = 0;
+    let scrollTopSampleCount = 0;
+    let scrollTopChangeCount = 0;
+    let observedMin = startTop;
+    let observedMax = startTop;
+    let previousObservedTop = startTop;
+    const observeTop = () => {
+      if (!shouldCollectDiagnostics) return;
+      scrollTopSampleCount += 1;
+      const currentTop = root.scrollTop;
+      observedMin = Math.min(observedMin, currentTop);
+      observedMax = Math.max(observedMax, currentTop);
+      if (currentTop !== previousObservedTop) scrollTopChangeCount += 1;
+      previousObservedTop = currentTop;
+    };
+    const onDocumentScroll = () => { documentScrollEventCount += 1; observeTop(); };
+    const onWindowScroll = () => { windowScrollEventCount += 1; observeTop(); };
+    const onContainerScroll = () => { containerScrollEventCount += 1; observeTop(); };
+    if (shouldCollectDiagnostics) {
+      document.addEventListener('scroll', onDocumentScroll, { passive: true });
+      window.addEventListener('scroll', onWindowScroll, { passive: true });
+      root.addEventListener('scroll', onContainerScroll, { passive: true });
+    }
+
+    const percentile = (values: number[], fraction: number) => {
+      if (!values.length) return 0;
+      const sorted = [...values].sort((left, right) => left - right);
+      return sorted[Math.min(sorted.length - 1, Math.floor((sorted.length - 1) * fraction))];
+    };
 
     await new Promise<void>((resolve) => {
       const startedAt = performance.now();
       const step = (now: number) => {
+        if (shouldCollectDiagnostics) {
+          observeTop();
+          frameCount += 1;
+          if (previousFrame !== null) scrollIntervals.push(now - previousFrame);
+          previousFrame = now;
+        }
         const elapsed = now - startedAt;
         const phase = Math.min(1, elapsed / Math.max(240, duration));
         const wave = (1 - Math.cos(phase * Math.PI * 2)) / 2;
@@ -178,7 +252,47 @@ export async function exerciseLiteScroll(page: Page, durationMs = 720) {
       };
       requestAnimationFrame(step);
     });
-  }, durationMs);
+    if (shouldCollectDiagnostics) {
+      root.scrollTop = startTop;
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      observeTop();
+      document.removeEventListener('scroll', onDocumentScroll);
+      window.removeEventListener('scroll', onWindowScroll);
+      root.removeEventListener('scroll', onContainerScroll);
+    }
+    const finalTop = root.scrollTop;
+    if (!shouldCollectDiagnostics) return null;
+    const roundedIntervals = scrollIntervals.map((value) => Math.round(value * 10) / 10);
+    return {
+      scroll_container: `${root.tagName.toLowerCase()}${root.id ? `#${root.id}` : ''}${root.className && typeof root.className === 'string' ? `.${root.className.trim().split(/\s+/).slice(0, 2).join('.')}` : ''}`.slice(0, 160),
+      scroll_behavior: getComputedStyle(root).scrollBehavior,
+      scroll_overflow_y: getComputedStyle(root).overflowY,
+      body_overflow_y: getComputedStyle(document.body).overflowY,
+      scroll_height: root.scrollHeight,
+      client_height: root.clientHeight,
+      viewport_height: window.innerHeight,
+      initial_scroll_top: Math.round(startTop * 10) / 10,
+      final_scroll_top: Math.round(finalTop * 10) / 10,
+      max_scroll_top: Math.round(maxScroll * 10) / 10,
+      requested_distance: Math.round(distance * 10) / 10,
+      observed_min_scroll_top: Math.round(observedMin * 10) / 10,
+      observed_max_scroll_top: Math.round(observedMax * 10) / 10,
+      scroll_event_count: Math.min(600, documentScrollEventCount + windowScrollEventCount + containerScrollEventCount),
+      document_scroll_event_count: Math.min(600, documentScrollEventCount),
+      window_scroll_event_count: Math.min(600, windowScrollEventCount),
+      container_scroll_event_count: Math.min(600, containerScrollEventCount),
+      scroll_top_sample_count: Math.min(600, scrollTopSampleCount),
+      scroll_top_change_count: Math.min(600, scrollTopChangeCount),
+      scroll_raf_count: Math.min(600, frameCount),
+      scroll_raf_interval_count: Math.min(600, roundedIntervals.length),
+      scroll_raf_p50_ms: Math.round(percentile(roundedIntervals, 0.5) * 10) / 10,
+      scroll_raf_p95_ms: Math.round(percentile(roundedIntervals, 0.95) * 10) / 10,
+      scroll_raf_max_ms: Math.round(Math.max(0, ...roundedIntervals) * 10) / 10,
+      scroll_raf_approx_16_7ms_frames: roundedIntervals.filter((value) => value >= 14 && value <= 20).length,
+      scroll_raf_approx_33_3ms_frames: roundedIntervals.filter((value) => value >= 28 && value <= 38).length,
+      scroll_raf_over_40ms_frames: roundedIntervals.filter((value) => value > 40).length,
+    } satisfies LiteScrollDiagnostics;
+  }, { duration: durationMs, collectDiagnostics });
 }
 
 export async function measureLiteInteraction(

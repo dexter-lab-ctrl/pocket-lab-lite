@@ -7,6 +7,7 @@ import {
   expectLitePerformanceBudget,
   installLiteFrameSampler,
   measureLiteInteraction,
+  type LiteScrollDiagnostics,
   writeLitePerformanceEvidence,
 } from './lite-performance-helpers';
 
@@ -527,16 +528,27 @@ test('[interaction] explicit list scrolling stays inside the render budget', asy
   await page.goto('/?screen=recovery');
   await waitForLiteScreenToSettle(page, 'recovery');
 
+  let scrollDiagnostics: LiteScrollDiagnostics | null = null;
   const report = await measureLiteInteraction(
     page,
     testInfo,
     interactionId('list-scroll', 'recovery'),
     async () => {
-      await exerciseLiteScroll(page, 820);
+      scrollDiagnostics = await exerciseLiteScroll(page, 820, { collectDiagnostics: true });
     },
     { settleMs: 180, mode: 'mocked' },
   );
 
+  expect(scrollDiagnostics, 'list-scroll must return bounded scroll diagnostics').toBeTruthy();
+  if (!scrollDiagnostics) throw new Error('list-scroll diagnostics were not returned');
+  await testInfo.attach('recovery-list-scroll-diagnostics', {
+    body: JSON.stringify(scrollDiagnostics, null, 2),
+    contentType: 'application/json',
+  });
+  expect(scrollDiagnostics.scroll_height).toBeGreaterThan(scrollDiagnostics.client_height);
+  expect(scrollDiagnostics.requested_distance).toBeGreaterThan(0);
+  expect(scrollDiagnostics.scroll_top_change_count).toBeGreaterThan(0);
+  expect(scrollDiagnostics.observed_max_scroll_top).toBeGreaterThan(scrollDiagnostics.initial_scroll_top);
   expectLitePerformanceBudget(report);
   await writeLitePerformanceEvidence(testInfo, report);
 });

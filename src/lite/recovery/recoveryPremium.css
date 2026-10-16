@@ -44,6 +44,20 @@
 .lite-recovery-premium-timeline-list li > div { display:grid; gap:.25rem; min-width:0; }
 .lite-recovery-premium-timeline-list small { color:var(--lite-text-muted,#536275); }
 .lite-recovery-premium-timeline-empty { padding:.65rem 0; }
+
+/* The daylight theme gives every header a glass surface. Recovery Journey and
+   Recent Activity headers live inside already-opaque cards, so repeating that
+   effect creates large backdrop-filter compositor layers during qualification
+   scrolling. Keep the qualification-only paint reduction scoped to these
+   nested decorative headers; normal product rendering is unchanged. */
+html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .lite-recovery-premium-screen > .lite-recovery-premium-journey > header,
+html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .lite-recovery-premium-screen > .lite-recovery-premium-timeline > header {
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 .lite-recovery-impact { display:grid; gap:.7rem; padding:.9rem; border:1px solid var(--lite-border,#8293aa); border-radius:.9rem; }
 .lite-recovery-impact dl { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr); gap:.5rem; margin:0; }
 .lite-recovery-impact dd,.lite-recovery-impact dt { margin:0; min-width:0; overflow-wrap:anywhere; }
