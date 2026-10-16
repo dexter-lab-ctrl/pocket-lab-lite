@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 4cd495ed0941fe4745896d74da5bd15e87ffc93d32774e6944bc77daf23e4561
+source_fingerprint: c7beba943475d31e446714db445f80ebab211502538a48aa39c9e17aac3935d6
 schema_revision: 1
 validation_status: generated
 ---
@@ -237,6 +237,29 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 - `ProjectionRefreshing`
 - `MobileManage`
 - `DesktopManage`
+- `PremiumProtected`
+- `PremiumFirstRun`
+- `PremiumBackupUnverified`
+- `PremiumVerificationFailed`
+- `PremiumPreviewReady`
+- `PremiumRestoreBlocked`
+- `PremiumRestoreRunning`
+- `PremiumRestoreFailed`
+- `PremiumDatabaseProtection`
+- `PremiumRepositoryUnavailable`
+- `PremiumStorageUnavailable`
+- `PremiumStaleProjection`
+- `PremiumOfflineSaved`
+- `PremiumActivityTimeline`
+- `PremiumMobile`
+- `PremiumDesktop`
+- `PremiumDarkTheme`
+- `PremiumLargeText`
+- `PremiumLongText`
+- `PremiumJourneyExpanded`
+- `PremiumManageOpen`
+- `PremiumRestoreImpact`
+- `PremiumConfirmation`
 
 ## LiteRecoveryParity
 

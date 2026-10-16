@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 4cd495ed0941fe4745896d74da5bd15e87ffc93d32774e6944bc77daf23e4561
+source_fingerprint: c7beba943475d31e446714db445f80ebab211502538a48aa39c9e17aac3935d6
 schema_revision: 1
 validation_status: generated
 ---
@@ -236,6 +236,10 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:test:identity:premium:unit`
 - `lite:test:identity:premium:visual`
 - `lite:test:lighthouse`
+- `lite:test:recovery:premium:mocked`
+- `lite:test:recovery:premium:perf`
+- `lite:test:recovery:premium:unit`
+- `lite:test:recovery:premium:visual`
 - `lite:test:redaction`
 - `lite:test:rules:premium:mocked`
 - `lite:test:rules:premium:perf`
@@ -356,6 +360,12 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:test:identity:premium:visual` → `lite:playwright:preflight`
 - `lite:test:lighthouse` → `lite:dev:scratch:prepare`
 - `lite:test:lighthouse` → `lite:playwright:preflight`
+- `lite:test:recovery:premium:mocked` → `lite:dev:scratch:prepare`
+- `lite:test:recovery:premium:mocked` → `lite:playwright:preflight`
+- `lite:test:recovery:premium:perf` → `lite:dev:scratch:prepare`
+- `lite:test:recovery:premium:perf` → `lite:playwright:preflight`
+- `lite:test:recovery:premium:visual` → `lite:dev:scratch:prepare`
+- `lite:test:recovery:premium:visual` → `lite:playwright:preflight`
 - `lite:test:rules:premium:mocked` → `lite:dev:scratch:prepare`
 - `lite:test:rules:premium:mocked` → `lite:playwright:preflight`
 - `lite:test:rules:premium:perf` → `lite:dev:scratch:prepare`

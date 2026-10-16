@@ -14987,6 +14987,39 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-recovery-premium-performance.spec.ts",
+      "name": "tests/e2e/lite-recovery-premium-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-recovery-premium-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-recovery-premium-refinement.spec.ts",
+      "name": "tests/e2e/lite-recovery-premium-refinement.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-recovery-premium-refinement.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-recovery-premium-visual.spec.ts",
+      "name": "tests/e2e/lite-recovery-premium-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-recovery-premium-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-rules-activation-progress.spec.ts",
       "name": "tests/e2e/lite-rules-activation-progress.spec.ts",
       "source_refs": [
@@ -29052,20 +29085,6 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "src/lite/LiteRecovery.jsx"
-      ],
-      "id": "rel:38748cbe618beed2",
-      "source": "ui:literecovery",
-      "target": "api:get:/api/lite/recovery/backups",
-      "type": "calls"
-    },
-    {
-      "derivation": {
-        "generator": "scripts/docs/knowledge/generate_knowledge.py",
-        "generator_version": 3,
-        "method": "deterministic-canonical-correlation"
-      },
-      "evidence": [
         "tests/backend/test_lite_premium_tab_polish.py"
       ],
       "id": "rel:387ea61c0f5adf77",
@@ -32542,6 +32561,20 @@
       "id": "rel:46b9bdd470217374",
       "source": "reason:approval_not_found",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-recovery-premium-visual.spec.ts"
+      ],
+      "id": "rel:46bccddb05bfd63b",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-recovery-premium-visual.spec.ts",
       "type": "verified_by"
     },
     {
@@ -69128,6 +69161,20 @@
       "source": "component:app-lifecycle-worker",
       "target": "subject:pocketlab.events.release.check_degraded",
       "type": "publishes"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-mocked.spec.ts"
+      ],
+      "id": "rel:f198a88478aee088",
+      "source": "domain:recovery",
+      "target": "test:tests/e2e/lite-mocked.spec.ts",
+      "type": "verified_by"
     },
     {
       "derivation": {

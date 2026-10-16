@@ -340,7 +340,7 @@ generator_version: 3
 | Platform | domain | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/mkdocs.spec.ts, test:tests/docs/test_documentation_ia.py, test:tests/docs/test_documentation_intelligence.py, test:tests/docs/test_documentation_presentation_polish.py, test:tests/docs/test_enterprise_completion.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
 | Prepared State | domain | — | unvalidated |
 | Projections | domain | — | unvalidated |
-| Backup & Restore | domain | test:tests/docs/mkdocs.spec.ts, test:tests/docs/test_documentation_ia.py, test:tests/docs/test_documentation_intelligence.py, test:tests/docs/test_living_knowledgebase.py, test:tests/docs/test_operational_health_bridge.py, test:tests/e2e/lite-p4-regression.spec.ts, test:tests/e2e/lite-ux-maturity.spec.ts, test:tests/parity/test_intelligent_runtime_parity.py | test-linked |
+| Backup & Restore | domain | test:tests/docs/mkdocs.spec.ts, test:tests/docs/test_documentation_ia.py, test:tests/docs/test_documentation_intelligence.py, test:tests/docs/test_living_knowledgebase.py, test:tests/docs/test_operational_health_bridge.py, test:tests/e2e/lite-mocked.spec.ts, test:tests/e2e/lite-p4-regression.spec.ts, test:tests/e2e/lite-ux-maturity.spec.ts, test:tests/parity/test_intelligent_runtime_parity.py | test-linked |
 | Release | domain | test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_documentation_presentation_polish.py, test:tests/docs/test_enterprise_completion.py, test:tests/docs/test_living_knowledgebase.py | test-linked |
 | Release Management | domain | — | unvalidated |
 | Remote Access | domain | — | unvalidated |

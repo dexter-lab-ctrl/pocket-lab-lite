@@ -759,10 +759,6 @@
       ],
       "api:get:/api/lite/recovery/backups": [
         {
-          "source": "ui:literecovery",
-          "type": "calls"
-        },
-        {
           "source": "domain:recovery",
           "type": "owns"
         }
@@ -16383,6 +16379,10 @@
           "type": "verified_by"
         },
         {
+          "source": "domain:recovery",
+          "type": "verified_by"
+        },
+        {
           "source": "domain:security",
           "type": "verified_by"
         },
@@ -16454,6 +16454,12 @@
         },
         {
           "source": "reason:interrupted",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-recovery-premium-visual.spec.ts": [
+        {
+          "source": "reason:disabled",
           "type": "verified_by"
         }
       ],
@@ -27501,6 +27507,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-mocked.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-p4-regression.spec.ts",
           "type": "verified_by"
         },
@@ -31222,6 +31232,10 @@
         },
         {
           "target": "test:tests/e2e/lite-photo-backup.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-recovery-premium-visual.spec.ts",
           "type": "verified_by"
         },
         {
@@ -35221,10 +35235,6 @@
           "type": "calls"
         },
         {
-          "target": "api:get:/api/lite/recovery/backups",
-          "type": "calls"
-        },
-        {
           "target": "api:get:/api/lite/recovery/database",
           "type": "calls"
         },
@@ -35383,6 +35393,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "20f24dbfe20a5dd2bc7a0c7e63de90551c48e20c14177278a05439201409cb72"
+    "source_fingerprint": "58aa9c53553e7334b9180d38e4f816d8d3b210799961956c4316633115b777e8"
   }
 }
