@@ -124,3 +124,46 @@ export const RestoreRolledBack = createLiteStory('recovery', 'recovery-rollback-
 export const ProjectionRefreshing = ProjectionTooOld;
 export const MobileManage = OfflineSavedManage;
 export const DesktopManage = ManageOverview;
+
+// Premium Recovery Center — scenario names are aliases to repository-backed MSW states.
+// A story documents a presentation state; it is not evidence of a real restore.
+export const PremiumProtected = createLiteStory('recovery','recovery-verified');
+export const PremiumFirstRun = createLiteStory('recovery','recovery-no-backups');
+export const PremiumBackupUnverified = createLiteStory('recovery','recovery-unverified',{ notes:'Backup presence and verification are separate facts.' });
+export const PremiumVerificationFailed = createLiteStory('recovery','recovery-verification-failed',{status:'partial',notes:'Fixture scenario; do not invent verification events.'});
+export const PremiumPreviewReady = createLiteStory('recovery','recovery-preview-ready');
+export const PremiumRestoreBlocked = createLiteStory('recovery','recovery-restore-blocked');
+export const PremiumRestoreRunning = createLiteStory('recovery','recovery-restore-running');
+export const PremiumRestoreFailed = createLiteStory('recovery','recovery-restore-failed',{status:'partial',notes:'Failure fixture does not claim a restore was executed.'});
+export const PremiumDatabaseProtection = createLiteStory('recovery','recovery-checkpoint-ready');
+export const PremiumRepositoryUnavailable = createLiteStory('recovery','recovery-repository-unavailable');
+export const PremiumStorageUnavailable = createLiteStory('recovery','recovery-storage-unavailable');
+export const PremiumStaleProjection = createLiteStory('recovery','recovery-projection-too-old');
+export const PremiumOfflineSaved = createLiteStory('recovery','offline-saved');
+export const PremiumActivityTimeline = createLiteStory('recovery','recovery-verified');
+export const PremiumMobile = createLiteStory('recovery','recovery-ready',{viewport:'mobile360'});
+export const PremiumDesktop = createLiteStory('recovery','recovery-ready',{viewport:'desktop'});
+export const PremiumDarkTheme = createLiteStory('recovery','recovery-ready',{theme:'dark'});
+export const PremiumLargeText = createLiteStory('recovery','recovery-ready',{textScale:2});
+export const PremiumLongText = createLiteStory('recovery','recovery-restore-blocked',{textScale:2,viewport:'mobile360',notes:'Reflow candidate for labels and degraded reasons.'});
+export const PremiumJourneyExpanded = {
+  ...createLiteStory('recovery','recovery-verified'),
+  play: async ({canvasElement}) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByRole('button',{name:/Verify/}));
+    await expect(canvasElement).toHaveTextContent(/Check the integrity of a saved backup/);
+  },
+};
+export const PremiumManageOpen = {
+  ...createLiteStory('recovery','recovery-ready',{viewport:'desktop'}),
+  play: async ({canvasElement}) => openManageRecovery(canvasElement,'Protection'),
+};
+export const PremiumRestoreImpact = {
+  ...createLiteStory('recovery','recovery-preview-ready',{viewport:'desktop'}),
+  play: async ({canvasElement}) => openManageRecovery(canvasElement,'Restore'),
+};
+export const PremiumConfirmation = {
+  ...createLiteStory('recovery','recovery-preview-ready',{status:'partial',
+    notes:'Protected confirm flow must be qualified by an isolated stateful test; opening Manage is not proof of confirmation.'}),
+  play: async ({canvasElement}) => openManageRecovery(canvasElement,'Restore'),
+};

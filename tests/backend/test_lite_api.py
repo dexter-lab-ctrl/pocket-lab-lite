@@ -5176,7 +5176,7 @@ def test_lite_xstate_hooks_and_screens_preserve_backend_ownership_source():
     catalog = _lite_catalog_source()
     ui = Path("src/lite/LiteUi.jsx").read_text()
     assert "useLiteAddDeviceFlow" in devices and "liteApi.addDevice" in devices and "addDeviceFlow.inviteReady" in devices
-    assert "useLiteRecoveryFlow" in recovery and "recoveryFlow.requestRestore" in recovery and "confirm: true" in recovery and "selectedRestorePoint.backup_id !== 'latest'" in recovery
+    assert "useLiteRecoveryFlow" in recovery and "recoveryFlow.requestRestore" in recovery and "confirm: true" in recovery and "explicitBackup: Boolean(restorePoint?.backup_id && restorePoint.backup_id !== 'latest')" in recovery
     assert "useLiteSecurityCheckFlow" in security and "securityFlow.requestRun" in security and "liteApi.runSecurityScan" in security and "securityExecutionTimeline" in security
     assert "useLiteAppActionFlow" in catalog and "appActionFlow.review" in catalog and "appActionFlow.submit" in catalog and "liteApi.runAppAction" in catalog
     assert "window.location.assign(target)" in catalog
@@ -8113,7 +8113,7 @@ def test_lite_n2_render_containment_is_targeted_and_overlay_safe():
     assert "lite-devices-grid lite-devices-linked-grid lite-render-containment" in devices
     assert "lite-catalog-grid lite-render-containment" in catalog
     assert "lite-security-s7-profile-cards lite-render-containment" in security
-    assert "lite-recovery-r1-summary-grid lite-render-containment" in recovery
+    assert "lite-recovery-premium-screen lite-render-containment lite-render-containment--recovery" in recovery
     for unsafe_class in [
         "lite-catalog-manage-sheet lite-render-containment",
         "lite-security-manage-shell lite-render-containment",
@@ -8461,9 +8461,8 @@ def test_lite_recovery_stale_projection_uses_truthful_status_presentation():
     repository_root = Path(__file__).resolve().parents[2]
     recovery = (repository_root / "src/lite/LiteRecovery.jsx").read_text(encoding="utf-8")
 
-    assert "const recoveryStatus = projectionStale || databaseWriteBlocked ? 'review'" in recovery
-    status_marker = 'data-testid="parity-recovery-status"'
-    status_slice = recovery.partition(status_marker)[2].partition('</div>')[0]
-    assert "backendLabel(recoveryStatus" in status_slice
-    assert "backendLabel(data?.status" not in status_slice
-    assert "review: 'Review recommended'" in status_slice
+    assert "const projectionStale = summaryBackendDegraded === true" in recovery
+    assert 'data-recovery-protection-state={premiumHero.state}' in recovery
+    assert 'data-testid="parity-recovery-status"' in recovery
+    assert 'premiumHero.statusLabel' in recovery
+    assert "backendLabel(recoveryStatus" not in recovery

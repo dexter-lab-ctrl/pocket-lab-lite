@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { createActor } from 'xstate';
 import fs from 'node:fs';
-import { liteRecoveryFlowMachine } from '../machines/liteRecoveryFlowMachine.js';
+import { liteRecoveryFlowMachine, recoveryFlowIsBusy } from '../machines/liteRecoveryFlowMachine.js';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 import {
   getLiteRecoveryMutationInvalidations,
@@ -122,5 +122,10 @@ describe('Recovery state integration hardening', () => {
     actor.send({ type: 'REQUEST_BACKUP' });
     expect(actor.getSnapshot().value).toBe('backupRequested');
     actor.stop();
+  });
+
+  it('keeps protected confirmation cancellable until the user confirms', () => {
+    expect(recoveryFlowIsBusy('restoreConfirmationRequired')).toBe(false);
+    expect(recoveryFlowIsBusy('restoreRequested')).toBe(true);
   });
 });

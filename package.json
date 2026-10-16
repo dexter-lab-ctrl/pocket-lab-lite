@@ -62,7 +62,11 @@
     "test:rules:premium:perf": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-rules-premium-performance.spec.ts --project=mocked-desktop --project=mocked-mobile",
     "test:identity:premium:unit": "vitest run src/lite/identity/*.test.js src/lite/identity/*.test.jsx",
     "test:identity:premium:mocked": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-identity-premium-refinement.spec.ts --project=mocked-desktop --project=mocked-mobile",
-    "test:identity:premium:visual": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-identity-premium-visual.spec.ts --project=mocked-desktop --project=mocked-mobile"
+    "test:identity:premium:visual": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-identity-premium-visual.spec.ts --project=mocked-desktop --project=mocked-mobile",
+    "test:recovery:premium:unit": "vitest run src/lite/recovery/recoveryPremiumView.test.js src/lite/recovery/RecoveryJourney.test.jsx src/lite/recovery/RecoveryConfirmSheetLazy.test.jsx",
+    "test:recovery:premium:mocked": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-recovery-premium-refinement.spec.ts --project=mocked-desktop --project=mocked-mobile",
+    "test:recovery:premium:visual": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-recovery-premium-visual.spec.ts --project=mocked-desktop --project=mocked-mobile",
+    "test:recovery:premium:perf": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-recovery-premium-performance.spec.ts --project=mocked-desktop --project=mocked-mobile"
   },
   "keywords": [],
   "author": "",

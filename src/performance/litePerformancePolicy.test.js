@@ -118,6 +118,14 @@ describe('Pocket Lab Lite UI performance policy guards', () => {
     expect(css).toContain('backdrop-filter: none !important;');
   });
 
+  it('keeps nested Recovery premium headers from creating duplicate glass layers', () => {
+    const css = read('src/lite/recovery/recoveryPremium.css');
+    expect(css).toContain("html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .lite-recovery-premium-screen > .lite-recovery-premium-journey > header");
+    expect(css).toContain("html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .lite-recovery-premium-screen > .lite-recovery-premium-timeline > header");
+    expect(css).toContain('backdrop-filter: none !important;');
+    expect(css).toContain('normal product rendering is unchanged');
+  });
+
   it('does not start passive Security Manage progress polling during overlay qualification', () => {
     const policy = read('src/lib/liteSecurityProgressPolicy.js');
     expect(policy).toContain('shouldLoadSecurityProgress');

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 2916b8ce6a7cf8758f8c05360ff26851c64120f81a828e789076a26d0cb500b3
+source_fingerprint: 9e50b684ee5de7b0e977a5e9fea0020580f3164b2ae8ad0c0674f2df2b3f9781
 schema_revision: 1
 validation_status: generated
 ---
@@ -90,6 +90,25 @@ validation_status: generated
 | `pocket-lab-lite-recovery-restorerunning` | recovery | `recovery-restore-running` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-restorerunning-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-recovery-restoresucceeded` | recovery | `recovery-restore-completed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-restoresucceeded-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-recovery-restorerolledback` | recovery | `recovery-rollback-completed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-restorerolledback-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-premiumprotected` | recovery | `recovery-verified` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumprotected-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-premiumfirstrun` | recovery | `recovery-no-backups` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumfirstrun-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-premiumbackupunverified` | recovery | `recovery-unverified` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumbackupunverified-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-premiumverificationfailed` | recovery | `recovery-verification-failed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumverificationfailed-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-premiumpreviewready` | recovery | `recovery-preview-ready` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumpreviewready-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-premiumrestoreblocked` | recovery | `recovery-restore-blocked` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumrestoreblocked-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-premiumrestorerunning` | recovery | `recovery-restore-running` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumrestorerunning-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-premiumrestorefailed` | recovery | `recovery-restore-failed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumrestorefailed-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-premiumdatabaseprotection` | recovery | `recovery-checkpoint-ready` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumdatabaseprotection-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-premiumrepositoryunavailable` | recovery | `recovery-repository-unavailable` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumrepositoryunavailable-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-premiumstorageunavailable` | recovery | `recovery-storage-unavailable` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumstorageunavailable-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-premiumstaleprojection` | recovery | `recovery-projection-too-old` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumstaleprojection-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-premiumofflinesaved` | recovery | `offline-saved` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumofflinesaved-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-premiumactivitytimeline` | recovery | `recovery-verified` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumactivitytimeline-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-premiummobile` | recovery | `recovery-ready` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiummobile-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-premiumdesktop` | recovery | `recovery-ready` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumdesktop-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-premiumdarktheme` | recovery | `recovery-ready` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumdarktheme-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-premiumlargetext` | recovery | `recovery-ready` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumlargetext-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-premiumlongtext` | recovery | `recovery-restore-blocked` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumlongtext-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-security-noscanhistory` | security | `security-first-run` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-noscanhistory-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-security-profiledatastale` | security | `security-profile-stale` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-profiledatastale-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-security-progressstages` | security | `security-progress` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-progressstages-{viewport}.png` | fixture-dependent |

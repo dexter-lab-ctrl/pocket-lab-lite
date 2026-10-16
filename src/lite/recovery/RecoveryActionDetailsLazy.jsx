@@ -2,6 +2,7 @@ import React from 'react';
 import { formatLiteTime } from '../../lib/liteApi.js';
 import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
 import { LiteButton } from '../LiteUi.jsx';
+import { recoveryRestoreImpact } from './recoveryPremiumView.js';
 
 const RECOVERY_PROGRESSIVE_DETAILS_MILESTONE_2 = true;
 const RECOVERY_HISTORY_MOUNTS_ONLY_WHEN_OPENED = true;
@@ -106,16 +107,17 @@ export default function RecoveryActionDetailsLazy({
       ? String(latestPreview.status)
       : actionKey === 'verify' && latestBackup?.verification_status
         ? String(latestBackup.verification_status)
-        : 'Protected';
+        : 'Not reported';
   const historyItems = buildHistoryItems({ history, latestBackup, latestPreview, checkpoint, lastRestore });
   const logs = Array.isArray(panel?.logs) ? panel.logs : [];
   const restoreSummary = lastRestore?.summary || (lastRestore?.restored_file_count ? `${lastRestore.restored_file_count} Lite state file(s) restored.` : 'Restore stays protected until confirmed.');
   const includedComponents = Array.isArray(latestPreview?.included_components) ? latestPreview.included_components : [];
   const excludedComponents = Array.isArray(latestPreview?.excluded_components) ? latestPreview.excluded_components : [];
+  const impact = recoveryRestoreImpact({ backup: latestBackup, preview: latestPreview });
 
   const whatChanged = [];
   if (actionKey === 'verify' && latestBackup?.verification_status === 'verified') whatChanged.push('Backup verification is ready.');
-  if (actionKey === 'preview' && latestPreview?.preview_id) whatChanged.push(`${latestPreview.change_count || 0} item(s) were checked without changing local state.`);
+  if (actionKey === 'preview' && latestPreview?.preview_id) whatChanged.push(impact.count === null ? 'Preview exists; impact count not reported.' : String(impact.count) + ' item(s) were checked without changing local state.');
   if (actionKey === 'restore' && lastRestore?.restore_id) whatChanged.push(restoreSummary);
   if (!whatChanged.length) whatChanged.push('No local state was changed by opening these details.');
 
@@ -163,6 +165,15 @@ export default function RecoveryActionDetailsLazy({
             ))}
           </div>
         </section>
+        {actionKey === 'preview' ? <section className="lite-recovery-impact" aria-label="Restore impact preview">
+          <strong>Expected restore impact</strong>
+          <p>Backup verification: {impact.verified ? 'Verified' : 'Not confirmed'}</p>
+          <p>Matching preview: {impact.ready ? 'Ready' : 'Not ready'}</p>
+          <p>Items reported: {impact.count === null ? 'Not reported' : impact.count}</p>
+          <p>Included: {impact.included.length ? impact.included.join(', ') : 'Not reported'}</p>
+          <p>Excluded: {impact.excluded.length ? impact.excluded.join(', ') : 'Not reported'}</p>
+          <p>A preview does not restore anything. The server owns checkpoint creation and health checks.</p>
+        </section> : null}
         {actionKey === 'preview' && (includedComponents.length || excludedComponents.length) ? (
           <section className="lite-progressive-detail-section lite-app-action-detail-section" aria-label="Restore scope">
             <strong>Restore scope</strong>

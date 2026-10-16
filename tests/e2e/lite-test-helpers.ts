@@ -100,6 +100,12 @@ export async function waitForLiteScreenToSettle(page: Page, screenId: string, op
     // scrolling.
     await screen.locator('.lite-rules-premium-screen').waitFor({ state: 'visible', timeout: timeoutMs });
   }
+  if (screenId === 'recovery') {
+    // Recovery's opening shell can have a stable geometry before the
+    // authoritative premium projection has hydrated. Require the authored
+    // surface so visual and interaction checks do not capture the shell.
+    await screen.locator('.lite-recovery-premium-screen').waitFor({ state: 'visible', timeout: timeoutMs });
+  }
   await page.evaluate(async () => {
     if ('fonts' in document) await document.fonts.ready;
   });
@@ -125,7 +131,13 @@ export async function waitForLiteScreenToSettle(page: Page, screenId: string, op
     const busyCount = Number(signature.split(':').at(-1) || '0');
     if (signature === previous && busyCount === 0) {
       consecutive += 1;
-      if (consecutive >= stableSamples) return;
+      if (consecutive >= stableSamples) {
+        // Recovery's mocked service-worker projection can deliver its final
+        // operation snapshot immediately after the first stable geometry.
+        // Keep that delivery outside scroll/visual measurements.
+        if (screenId === 'recovery') await page.waitForTimeout(1000);
+        return;
+      }
     } else {
       consecutive = 0;
       previous = signature;

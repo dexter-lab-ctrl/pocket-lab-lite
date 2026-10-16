@@ -4682,7 +4682,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 501,
+  "page_count": 502,
   "page_types": [
     "overview",
     "guide",
@@ -4972,6 +4972,29 @@
       "source_or_generator": "development/lite-ui-completeness-4-to-6.md",
       "title": "Sections 4–6 — shared controls, Home, Apps",
       "url": "/development/lite-ui-completeness-4-to-6/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/premium-recovery-center.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "recovery",
+      "generated": false,
+      "id": "page:development/premium-recovery-center",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/premium-recovery-center.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/premium-recovery-center.md",
+      "title": "Premium Recovery & Restore Center — implementation handover",
+      "url": "/development/premium-recovery-center/"
     },
     {
       "additional_audiences": [],
@@ -17873,7 +17896,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "18cdae28713b3e6461bf55973a7880c76082b73b8396c846e92ed34d37e29250",
+  "source_fingerprint": "d865af11e3de496673516801490c8abd4753918e94c94a0fd00d3967f42c8993",
   "top_level": [
     "start-here",
     "use",

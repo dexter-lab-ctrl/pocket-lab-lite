@@ -100,3 +100,26 @@ tasks:
     deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
     cmds:
       - npm run test:rules:premium:perf
+
+  lite:test:recovery:premium:unit:
+    desc: Run authored Recovery truth selectors and educational Journey component coverage
+    cmds:
+      - npm run test:recovery:premium:unit
+
+  lite:test:recovery:premium:mocked:
+    desc: Run Recovery mocked desktop/mobile, responsive, keyboard and Axe contracts
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:recovery:premium:mocked
+
+  lite:test:recovery:premium:visual:
+    desc: Run Recovery visual specs after owner has reviewed and accepted baseline images
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:recovery:premium:visual
+
+  lite:test:recovery:premium:perf:
+    desc: Capture Recovery component/Manage timing for comparison to existing budgets
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:recovery:premium:perf

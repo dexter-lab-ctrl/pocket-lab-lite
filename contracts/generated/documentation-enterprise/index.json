@@ -40532,7 +40532,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 501,
+      "page_count": 502,
       "top_level": [
         "start-here",
         "use",
@@ -48416,7 +48416,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "90636d7095ffbae4c17bdac75b55cad9efde0e99d4a0810d8dd991fb0241f64d",
-        "documentation": "e81015e17632865b1ee1cbba13737b458d656a1b3adc29bda355cda9ebfbde36",
+        "documentation": "35fcea47e5a282736e00f4c2dde561f0a59dfc3ee0ba032b5a474cf89261895c",
         "openapi": "21b10835554b759b2cc77c3a7b98b135519d45b2efbf24701020701ff1b071be",
         "operational_health": "3c725c4c70c007c60a97a8f37e53c066767572ea45b6949a71d53a538b814432"
       },
@@ -50352,7 +50352,7 @@
         },
         {
           "path": "package.json",
-          "sha256": "bde6dde0050438b95bb3b7a7382974b24786798caa421d20f8def9edeea60832"
+          "sha256": "1ec2525a66688f41a1abccf98186083faff56e7ab95aeb4134b636748285fbc2"
         },
         {
           "path": "requirements-dev.txt",
@@ -90610,7 +90610,11 @@
         "lite:harness:recovery:authorize",
         "lite:qualification:start:key-bound:recovery",
         "lite:recovery:database:offline-promote",
-        "lite:runtime:termux:inspect"
+        "lite:runtime:termux:inspect",
+        "lite:test:recovery:premium:mocked",
+        "lite:test:recovery:premium:perf",
+        "lite:test:recovery:premium:unit",
+        "lite:test:recovery:premium:visual"
       ],
       "Release loop": [
         "lite:check:release",
@@ -100541,6 +100545,176 @@
         "source": "tasks/Taskfile.ui.yml",
         "validation_outcome": "gate-defined",
         "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:recovery:premium:mocked"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:recovery:premium:mocked",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:recovery:premium:mocked",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run Recovery mocked desktop/mobile, responsive, keyboard and Axe contracts",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Recovery-diagnostics loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:recovery:premium:perf"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:recovery:premium:perf",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:recovery:premium:perf",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Capture Recovery component/Manage timing for comparison to existing budgets",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Recovery-diagnostics loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:recovery:premium:unit"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:test:recovery:premium:unit",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:recovery:premium:unit",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run authored Recovery truth selectors and educational Journey component coverage",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Recovery-diagnostics loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:recovery:premium:visual"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:recovery:premium:visual",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:recovery:premium:visual",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run Recovery visual specs after owner has reviewed and accepted baseline images",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Recovery-diagnostics loop"
       },
       {
         "aliases": [],
@@ -120063,5 +120237,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "9ffbac774f7b3408981af60f16430e551d72b561fdfa56232ac39ac280d4878f"
+  "source_fingerprint": "38a8853551299692dcfa3f125993a6db4055d91815f5b88869084253adbb636a"
 }

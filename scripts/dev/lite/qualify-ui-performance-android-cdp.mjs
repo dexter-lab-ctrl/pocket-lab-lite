@@ -430,6 +430,13 @@ async function removeQualificationUpdateNotice() {
   }).catch(() => {});
 }
 
+async function captureRecoveryScreenshot(name, target = page) {
+  const safeName = sanitizeLitePerformanceName(name);
+  const filePath = resolve(outputDir, `android-recovery-${safeName}.png`);
+  await target.screenshot({ path: filePath, animations: 'disabled' });
+  console.log(`[ui-performance-android] screenshot ${safeName}: ${filePath}`);
+}
+
 async function gotoScreen(screenId) {
   const target = new URL(base.href);
   target.searchParams.set('screen', screenId);
@@ -843,6 +850,7 @@ if (!findingDetailsButton) {
 
 // Phase 4: explicit list/page scrolling on a content-rich screen.
 await gotoScreen('recovery');
+await captureRecoveryScreenshot('landing', page.locator('[data-lite-screen-id="recovery"]'));
 await measurePhase4Interaction({
   interaction: 'list-scroll',
   scope: 'recovery',
@@ -895,7 +903,8 @@ if (!manageRulesButton) {
 } else {
   await manageRulesButton.click();
   const rulesManage = await firstVisible(page.getByRole('dialog', { name: /Manage Safety Rules/i }), 'Rules Manage dialog');
-  const rulesTechnicalDetails = rulesManage.locator('details.lite-rules-advanced-details');
+  await rulesManage.getByRole('button', { name: 'Technical Status', exact: true }).click();
+  const rulesTechnicalDetails = rulesManage.locator('details.lite-ux-technical-facts');
   await measureNestedInteraction({
     screen: 'rules',
     nestedSurface: 'Manage Safety Rules / Technical status',
@@ -911,7 +920,7 @@ if (!manageRulesButton) {
 // Recovery exercises only section navigation and the Verify-backup detail
 // projection. Restore apply and backup creation remain untouched.
 await gotoScreen('recovery');
-const manageRecoveryButton = await firstVisible(page.getByRole('button', { name: 'Manage backups and recovery' }), 'Recovery Manage button');
+const manageRecoveryButton = await firstVisible(page.getByRole('button', { name: 'Manage Recovery' }), 'Recovery Manage button');
 await manageRecoveryButton.click();
 const recoveryManage = await firstVisible(page.locator('[data-lite-sheet-variant="manage"]:visible').first(), 'Recovery Manage sheet');
 // The recovery sheet is lazy-mounted after the screen transition. Resolve the
@@ -919,6 +928,7 @@ const recoveryManage = await firstVisible(page.locator('[data-lite-sheet-variant
 // of retaining a role locator under a potentially replaced sheet subtree.
 const recoveryHistoryTab = page.locator('#recovery-manage-tab-history');
 await recoveryHistoryTab.waitFor({ state: 'visible', timeout: 10_000 });
+await captureRecoveryScreenshot('manage', recoveryManage);
 await measureNestedInteraction({
   screen: 'recovery',
   nestedSurface: 'Manage recovery / section tabs',
@@ -950,6 +960,7 @@ await measureNestedInteraction({
   },
   settleMs: 500,
 });
+await captureRecoveryScreenshot('verify-backup-details', page.getByRole('dialog', { name: 'Verify Backup' }));
 
 // Phase 4: truthful read-only progress/feedback lifecycle.
 //

@@ -2846,13 +2846,6 @@
           "mocked": false,
           "owner": "liteApi.recoveryHistory",
           "resolved": true,
-          "source_module": "src/lite/LiteRecovery.jsx",
-          "usage": "query"
-        },
-        {
-          "mocked": false,
-          "owner": "liteApi.recoveryHistory",
-          "resolved": true,
           "source_module": "src/lite/recovery/RecoveryBackupHistory.jsx",
           "usage": "query"
         },
@@ -30401,6 +30394,36 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-recovery-premium-performance.spec.ts",
+      "name": "tests/e2e/lite-recovery-premium-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-recovery-premium-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-recovery-premium-refinement.spec.ts",
+      "name": "tests/e2e/lite-recovery-premium-refinement.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-recovery-premium-refinement.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-recovery-premium-visual.spec.ts",
+      "name": "tests/e2e/lite-recovery-premium-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-recovery-premium-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-rules-activation-progress.spec.ts",
       "name": "tests/e2e/lite-rules-activation-progress.spec.ts",
       "source_refs": [
@@ -33874,6 +33897,9 @@
         "test:tests/e2e/lite-performance.spec.ts",
         "test:tests/e2e/lite-phase9-qualification.spec.ts",
         "test:tests/e2e/lite-photo-backup.spec.ts",
+        "test:tests/e2e/lite-recovery-premium-performance.spec.ts",
+        "test:tests/e2e/lite-recovery-premium-refinement.spec.ts",
+        "test:tests/e2e/lite-recovery-premium-visual.spec.ts",
         "test:tests/e2e/lite-rules-activation-progress.spec.ts",
         "test:tests/e2e/lite-rules-premium-performance.spec.ts",
         "test:tests/e2e/lite-rules-premium-refinement.spec.ts",
@@ -35343,6 +35369,9 @@
         "test:tests/e2e/lite-performance.spec.ts",
         "test:tests/e2e/lite-phase9-qualification.spec.ts",
         "test:tests/e2e/lite-photo-backup.spec.ts",
+        "test:tests/e2e/lite-recovery-premium-performance.spec.ts",
+        "test:tests/e2e/lite-recovery-premium-refinement.spec.ts",
+        "test:tests/e2e/lite-recovery-premium-visual.spec.ts",
         "test:tests/e2e/lite-rules-activation-progress.spec.ts",
         "test:tests/e2e/lite-rules-premium-performance.spec.ts",
         "test:tests/e2e/lite-rules-premium-refinement.spec.ts",
@@ -36235,10 +36264,6 @@
         }
       ],
       "api:get:/api/lite/recovery/backups": [
-        {
-          "source": "ui:literecovery",
-          "type": "calls"
-        },
         {
           "source": "domain:recovery",
           "type": "owns"
@@ -51860,6 +51885,10 @@
           "type": "verified_by"
         },
         {
+          "source": "domain:recovery",
+          "type": "verified_by"
+        },
+        {
           "source": "domain:security",
           "type": "verified_by"
         },
@@ -51931,6 +51960,12 @@
         },
         {
           "source": "reason:interrupted",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-recovery-premium-visual.spec.ts": [
+        {
+          "source": "reason:disabled",
           "type": "verified_by"
         }
       ],
@@ -62978,6 +63013,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-mocked.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-p4-regression.spec.ts",
           "type": "verified_by"
         },
@@ -66699,6 +66738,10 @@
         },
         {
           "target": "test:tests/e2e/lite-photo-backup.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-recovery-premium-visual.spec.ts",
           "type": "verified_by"
         },
         {
@@ -70695,10 +70738,6 @@
       "ui:literecovery": [
         {
           "target": "api:get:/api/lite/recovery/apps",
-          "type": "calls"
-        },
-        {
-          "target": "api:get:/api/lite/recovery/backups",
           "type": "calls"
         },
         {
@@ -79106,15 +79145,6 @@
     },
     {
       "evidence": [
-        "src/lite/LiteRecovery.jsx"
-      ],
-      "id": "rel:38748cbe618beed2",
-      "source": "ui:literecovery",
-      "target": "api:get:/api/lite/recovery/backups",
-      "type": "calls"
-    },
-    {
-      "evidence": [
         "tests/backend/test_lite_premium_tab_polish.py"
       ],
       "id": "rel:387ea61c0f5adf77",
@@ -81361,6 +81391,15 @@
       "id": "rel:46b9bdd470217374",
       "source": "reason:approval_not_found",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-recovery-premium-visual.spec.ts"
+      ],
+      "id": "rel:46bccddb05bfd63b",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-recovery-premium-visual.spec.ts",
       "type": "verified_by"
     },
     {
@@ -104945,6 +104984,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-mocked.spec.ts"
+      ],
+      "id": "rel:f198a88478aee088",
+      "source": "domain:recovery",
+      "target": "test:tests/e2e/lite-mocked.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:f1b07e64cca2aa0a",
@@ -106882,9 +106930,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "20f24dbfe20a5dd2bc7a0c7e63de90551c48e20c14177278a05439201409cb72",
+  "source_fingerprint": "08aaf86ee48335d793798979d5d571b4991533e4d48ba22137f217192e2f7d3c",
   "statistics": {
-    "entity_count": 1387,
+    "entity_count": 1390,
     "entity_type_counts": {
       "adr": 6,
       "api": 237,
@@ -106901,14 +106949,14 @@
       "runtime-topology": 9,
       "subject": 220,
       "table": 83,
-      "test": 271,
+      "test": 274,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 3972,
-    "source_count": 308
+    "relation_count": 3973,
+    "source_count": 311
   }
 }

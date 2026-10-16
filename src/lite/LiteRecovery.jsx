@@ -1,7 +1,5 @@
-import LiteNextSteps from './components/LiteNextSteps.jsx';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Activity,
   ArchiveRestore,
   Copy,
   Database,
@@ -14,28 +12,25 @@ import { useLiteUiStore } from '../stores/liteUiStore.js';
 import { useLiteRecoveryFlow } from '../hooks/useLiteRecoveryFlow.js';
 import { useLiteServiceWorkerUpdateBlocker } from '../hooks/useLiteServiceWorkerUpdateBlocker.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
-import { liteQueryClient, liteQueryKeys } from '../lib/liteQueryClient.js';
 import { createLiteFeedbackDeduper, triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import { LiteSheet } from './LiteOverlay.jsx';
-import { LiteElevationSurface, LiteMotionReveal } from './LiteMotion.jsx';
-import { selectRecoveryOperationalStoryView, selectRecoveryScreenView, selectRecoverySummaryView, isLiteRecoveryViewLive } from '../lib/liteViewModels.js';
+import { LiteMotionReveal } from './LiteMotion.jsx';
+import { selectRecoveryScreenView, selectRecoverySummaryView, isLiteRecoveryViewLive } from '../lib/liteViewModels.js';
 import {
   GlassCard,
-  StatusBadge,
   StateSurface,
   copyTextToClipboard,
-  backendBadgeStatus,
-  backendLabel,
   PageHeader,
   LiteButton,
-  LiteOperationalStory,
-  LiteActionRow,
-  LiteOutcomeNotice,
   LiteRefreshButton,
   LoadingCard,
   LiteFlowStatusPanel,
 } from './LiteUi.jsx';
-import { LiteFreshness, LiteHistoryTimeline } from './LiteUx.jsx';
+import { LiteFreshness } from './LiteUx.jsx';
+import RecoveryJourney from './recovery/RecoveryJourney.jsx';
+import RecoveryPremiumTimeline from './recovery/RecoveryPremiumTimeline.jsx';
+import { isRecoveryLocationReady, recoveryPremiumHero, recoveryJourneyStatus, recoveryPremiumActivity } from './recovery/recoveryPremiumView.js';
+import './recovery/recoveryPremium.css';
 
 const RECOVERY_LAYOUT_SIMPLIFICATION_PHASE_R1 = true;
 const RECOVERY_SHARED_MANAGE_SHELL_PHASE_R2 = true;
@@ -60,13 +55,6 @@ export const RECOVERY_S3_QUERY_SNAPSHOT_TUNING = 'RECOVERY_S3_QUERY_SNAPSHOT_TUN
 
 export function hasLiveRecoveryOperation(payload) {
   return isLiteRecoveryViewLive(payload);
-}
-
-function formatSize(bytes) {
-  const value = Number(bytes || 0);
-  if (!value) return 'Size unavailable';
-  if (value >= 1024 * 1024) return `${(value / (1024 * 1024)).toFixed(value >= 10 * 1024 * 1024 ? 0 : 1)} MB`;
-  return `${Math.max(1, Math.round(value / 1024))} KB`;
 }
 
 function mergeOptional(...values) {
@@ -105,7 +93,6 @@ export default function RecoveryScreen() {
     savedStateOnly,
     backendDegraded: summaryBackendDegraded,
     degradedReason: summaryDegradedReason,
-    dataSource: summaryDataSource,
     lastUpdatedLabel,
     isExpired,
   } = useLiteResource(liteApi.recoverySummary, [], {
@@ -183,8 +170,7 @@ export default function RecoveryScreen() {
   const selectedBackupVerified = selectedRestorePoint?.verification_status === 'verified';
   const selectedPreviewReady = selectedRestorePreview?.status === 'ready';
   const selectedBackupLocation = selectedRestorePoint?.location || selectedRestorePreview?.location || null;
-  const selectedBackupLocationReady = !selectedBackupLocation
-    || (selectedBackupLocation.available !== false && !['missing', 'read_only', 'low_space', 'unavailable'].includes(String(selectedBackupLocation.status || '').toLowerCase()));
+  const selectedBackupLocationReady = isRecoveryLocationReady(selectedBackupLocation);
   const lastRestore = mergeOptional(details?.last_restore, data?.last_restore);
   const checkpoint = mergeOptional(details?.pre_restore_checkpoint, data?.pre_restore_checkpoint);
   const serviceRestart = details?.last_restore?.service_restart || {};
@@ -236,10 +222,6 @@ export default function RecoveryScreen() {
   const latestDatabasePreview = databaseProtection?.latest_restore_preview || null;
   const databaseMaintenance = databaseProtection?.maintenance || data?.maintenance || {};
   const databaseRestore = databaseProtection?.last_restore || null;
-  const databaseRestoreHistory = databaseProtection?.restore_history || {};
-  const databaseProjectionReconciliation = databaseProtection?.projection_reconciliation || {};
-  const databaseRestoreCompleted = String(databaseRestore?.status || databaseRestore?.state || '').toLowerCase() === 'completed';
-  const databaseHistoricalPreview = latestDatabasePreview?.status === 'historical';
   const databaseRestoreGuard = databaseProtection?.restore_guard || {};
   const activeDatabaseRestore = databaseProtection?.active_restore || null;
   const databaseBackupVerified = latestDatabaseBackup?.verification_status === 'verified';
@@ -287,9 +269,9 @@ export default function RecoveryScreen() {
   const restoreSteps = [
     { key: 'backup', label: 'Backup', detail: latestBackup ? 'Safe copy saved' : 'Create backup', complete: Boolean(latestBackup) },
     { key: 'verified', label: 'Verified', detail: latestBackupVerified ? 'Evidence checked' : 'Verify backup', complete: latestBackupVerified },
-    { key: 'preview', label: 'Preview', detail: latestPreviewReady ? `${latestPreview?.change_count || 0} item(s)` : 'Preview changes', complete: latestPreviewReady },
+    { key: 'preview', label: 'Preview', detail: latestPreviewReady ? (Number.isInteger(latestPreview?.change_count) ? String(latestPreview.change_count) + ' item(s)' : 'Impact not reported') : 'Preview changes', complete: latestPreviewReady },
     { key: 'checkpoint', label: 'Checkpoint', detail: checkpoint?.checkpoint_id ? 'Saved before restore' : 'Created on restore', complete: checkpoint?.status === 'created' },
-    { key: 'restored', label: 'Restored', detail: restoreSucceeded ? `${lastRestore?.restored_file_count || 0} file(s)` : 'Confirm restore', complete: restoreSucceeded },
+    { key: 'restored', label: 'Restored', detail: restoreSucceeded ? (Number.isInteger(lastRestore?.restored_file_count) ? String(lastRestore.restored_file_count) + ' file(s)' : 'Result recorded') : 'Confirm restore', complete: restoreSucceeded },
   ];
 
   const evidenceItems = [
@@ -314,17 +296,17 @@ export default function RecoveryScreen() {
     },
     preview: {
       title: 'Preview Restore',
-      subtitle: latestPreviewReady ? `${latestPreview?.change_count || 0} item(s) checked without changing local state.` : 'Pocket Lab will inspect the restore point safely.',
+      subtitle: latestPreviewReady ? (Number.isInteger(latestPreview?.change_count) ? String(latestPreview.change_count) + ' item(s) checked without changing local state.' : 'Preview ready; impact not reported.') : 'Pocket Lab will inspect the restore point safely.',
       next: 'Restore Latest',
       logs: [
         'Preview checks the restore point without changing files.',
-        latestPreviewReady ? `${latestPreview?.change_count || 0} item(s) would be restored.` : 'Restore changes will be counted first.',
+        latestPreviewReady ? (Number.isInteger(latestPreview?.change_count) ? String(latestPreview.change_count) + ' item(s) would be restored.' : 'Item count not reported.') : 'Restore changes will be counted first.',
         'Raw secrets remain excluded from this restore point.',
       ],
     },
     restore: {
       title: 'Restore Latest',
-      subtitle: restoreSucceeded ? `${lastRestore?.restored_file_count || 0} file(s) restored after checkpoint creation.` : 'Restore creates a checkpoint before changing Lite state.',
+      subtitle: restoreSucceeded ? (Number.isInteger(lastRestore?.restored_file_count) ? String(lastRestore.restored_file_count) + ' file(s) restored.' : 'Restore result recorded; file count not reported.') : 'Restore creates a checkpoint before changing Lite state.',
       next: 'Evidence',
       logs: [
         checkpoint?.checkpoint_id ? `Checkpoint saved: ${shortId(checkpoint.checkpoint_id)}` : 'Checkpoint will be saved before restore.',
@@ -338,57 +320,26 @@ export default function RecoveryScreen() {
 
   const recoveryLive = Boolean(busy) || recoveryFlow.isBusy || serverRecoveryLive;
   useLiteServiceWorkerUpdateBlocker('recovery-workflow', Boolean(recoveryLive || restoreConfirmation));
-  const recoveryReady = !projectionStale && !databaseWriteBlocked && (repository?.ready || latestBackupVerified || databaseBackupVerified);
-  const recoveryStatus = projectionStale || databaseWriteBlocked ? 'review' : recoveryReady ? 'healthy' : backendBadgeStatus(data?.status);
-  const recoveryTitle = projectionStale
-    ? 'Recovery information needs a refresh'
-    : databaseWriteBlocked
-    ? 'Backup protection needs attention'
-    : latestBackupVerified
-      ? 'Backup protection is ready'
-      : latestBackup
-        ? 'Verify your latest backup'
-        : 'Create your first protected backup';
-  const recoverySummary = projectionStale
-    ? 'Saved recovery details are available, but they are older than expected. Refresh before backing up or restoring.'
-    : databaseWriteBlocked
-    ? recoveryFlow.blockedReason || 'Backup and restore actions are temporarily protected.'
-    : latestBackupVerified
-      ? 'Your latest backup is verified. Preview a restore before anything changes.'
-      : data?.summary || 'Create a protected backup before making important changes.';
-  const recoveryStory = selectRecoveryOperationalStoryView(data, {
-    savedStateOnly,
-    backendReachable,
-    projectionStale,
-    databaseWriteBlocked,
+  const premiumHero = recoveryPremiumHero({
+    data, backup: latestBackup, preview: latestPreview, repository, database: databaseProtection,
+    busy, saved: savedStateOnly, stale: projectionStale || isExpired, reachable: backendReachable,
+    blocked: databaseWriteBlocked,
   });
-  const latestActivity = [
-    latestBackup ? {
-      id: 'backup',
-      title: latestBackupVerified ? 'Backup verified' : 'Backup saved',
-      summary: latestBackupVerified ? 'This restore point passed its verification check.' : 'Verify this backup before relying on it for recovery.',
-      time: latestBackup.created_at ? formatLiteTime(latestBackup.created_at) : 'Time unavailable',
-      state: latestBackupVerified ? 'completed' : 'review',
-    } : null,
-    lastRestore?.restore_id ? {
-      id: 'restore',
-      title: lastRestore.summary || 'Restore recorded',
-      summary: restoreSucceeded ? 'Pocket Lab completed the restore and checked the workspace afterward.' : 'Review this restore result before relying on the recovered state.',
-      time: lastRestore.completed_at ? formatLiteTime(lastRestore.completed_at) : lastRestore.status || 'Recorded',
-      state: restoreSucceeded ? 'completed' : 'review',
-    } : null,
-  ].filter(Boolean);
+  const journeyStatuses = recoveryJourneyStatus({
+    backup: latestBackup, preview: latestPreview, restore: lastRestore,
+    busy: ['backup', 'verify', 'preview', 'restore'].includes(busy) ? busy : '',
+    saved: savedStateOnly || projectionStale || isExpired || !backendReachable,
+  });
+  const premiumActivity = recoveryPremiumActivity({
+    activity: data?.recent_activity, backup: latestBackup, restore: lastRestore,
+    unavailable: !backendReachable && !savedStateOnly,
+  });
 
   function openRecoveryManage(section = 'backup') {
     triggerLiteHaptic('accepted');
     void loadRecoveryManageSheet();
-    void loadRecoveryHistory();
     void loadRecoveryActionDetails();
-    void liteQueryClient.prefetchQuery({
-      queryKey: liteQueryKeys.recoveryHistoryPage(10, ''),
-      queryFn: () => liteApi.recoveryHistory(10, ''),
-      staleTime: 15_000,
-    });
+    if (section === 'history') void loadRecoveryHistory();
     setRecoveryManageSection(section);
     setRecoveryManageOpen(true);
   }
@@ -574,12 +525,18 @@ export default function RecoveryScreen() {
     });
   }
 
-  function restoreLatestBackup() {
-    if (!selectedRestorePoint?.backup_id || !selectedRestorePreview?.preview_id || !selectedBackupLocationReady) return;
+  function restoreLatestBackup(backupOverride = null) {
+    const restorePoint = backupOverride || selectedRestorePoint;
+    const restorePreview = latestPreview && restorePoint?.backup_id === latestPreview?.backup_id ? latestPreview : null;
+    const restoreLocation = restorePoint?.location || restorePreview?.location || null;
+    const restoreLocationReady = !restoreLocation
+      || isRecoveryLocationReady(restoreLocation);
+    if (backupOverride) setSelectedBackup(backupOverride);
+    if (!restorePoint?.backup_id || !restorePreview?.preview_id || !restoreLocationReady) return;
     const flowCheck = recoveryFlow.requestRestore({
-      verified: selectedBackupVerified,
-      previewReady: selectedPreviewReady,
-      explicitBackup: Boolean(selectedRestorePoint?.backup_id && selectedRestorePoint.backup_id !== 'latest'),
+      verified: restorePoint?.verification_status === 'verified',
+      previewReady: restorePreview?.status === 'ready',
+      explicitBackup: Boolean(restorePoint?.backup_id && restorePoint.backup_id !== 'latest'),
     });
     if (!flowCheck.ok) return;
     setRestoreConfirmation('lite');
@@ -687,7 +644,7 @@ export default function RecoveryScreen() {
 
   const recoveryAnnouncement = actionError
     || (busy ? `Backup or restore in progress: ${busy.replace(/[-:]/g, ' ')}` : '')
-    || (recoveryFlow.context.lastCompletedAt ? latestActivity[0]?.title || 'Backup and restore status updated.' : '');
+    || (recoveryFlow.context.lastCompletedAt ? premiumActivity[0]?.title || 'Backup and restore status updated.' : '');
 
 
   return (
@@ -700,172 +657,40 @@ export default function RecoveryScreen() {
       />
 
       
-      <LiteNextSteps
-        title="Protection readiness"
-        saved={savedStateOnly || projectionStale || isExpired}
-        description="Verify recovery evidence before making changes. Restore still requires the existing protected preview and confirmation flow."
-        items={[
-          ...(!latestBackup ? [{ id: "backup", label: "Create a protected backup", description: "No backup is recorded yet.", actionLabel: "Manage backups", onClick: () => openRecoveryManage("backup") }] : []),
-          ...(latestBackup && !latestBackupVerified ? [{ id: "verify", label: "Verify the latest backup", description: "A saved backup is not yet a verified restore point.", actionLabel: "Manage backups", onClick: () => openRecoveryManage("backup") }] : []),
-          ...(latestBackupVerified && !latestPreviewReady ? [{ id: "preview", label: "Review restore readiness", description: "A verified backup does not by itself confirm a safe restore preview.", actionLabel: "Review restore", onClick: () => openRecoveryManage("restore") }] : []),
-          ...(recoveryWriteBlocked ? [{ id: "blocked", label: "Recovery actions are paused", description: recoveryWriteBlockedReason || "Review current connectivity and readiness before continuing." }] : []),
-        ]}
-      />
-      <div className="lite-recovery-native-announcer" role="status" aria-live="polite" aria-atomic="true">
-        {recoveryAnnouncement}
+      <div className="lite-recovery-premium-screen lite-render-containment lite-render-containment--recovery" data-recovery-premium="true">
+        <div className="lite-recovery-native-announcer" role="status" aria-live="polite" aria-atomic="true">{recoveryAnnouncement}</div>
+        <GlassCard className="lite-recovery-premium-protection lite-recovery-r1-hero" data-recovery-protection-state={premiumHero.state} data-recovery-r1-summary="true">
+          <div className="lite-recovery-premium-brand">
+            <ShieldCheck aria-hidden="true" />
+            <div>
+              <span className="lite-recovery-premium-eyebrow">Your Recovery Point</span>
+              <span className="lite-recovery-premium-status" data-testid="parity-recovery-status" data-status={premiumHero.state}>{premiumHero.statusLabel}</span>
+              <h2 data-testid="parity-recovery-summary">{premiumHero.headline}</h2>
+              <p>{premiumHero.summary}</p>
+              {premiumHero.time ? <p className="lite-recovery-premium-backup-date" data-testid="parity-latest-backup-id" data-backup-id={latestBackup?.backup_id || ''}>Latest backup: <time dateTime={premiumHero.time}>{formatLiteTime(premiumHero.time)}</time></p> : null}
+            </div>
+          </div>
+          <ul className="lite-recovery-premium-indicators" aria-label="Recovery status">
+            <li data-state={premiumHero.backup.state}><ArchiveRestore aria-hidden="true" /><span>Backup</span><strong>{premiumHero.backup.label}</strong></li>
+            <li data-state={premiumHero.restore.state}><RotateCcw aria-hidden="true" /><span>Restore</span><strong>{premiumHero.restore.label}</strong></li>
+            <li data-state={premiumHero.safety.state}><Database aria-hidden="true" /><span>Safety</span><strong>{premiumHero.safety.label}</strong></li>
+          </ul>
+          <div className="lite-recovery-premium-actions">
+            <LiteButton onClick={backup} disabled={premiumHero.disabled || recoveryWriteBlocked || Boolean(busy)} haptic>{busy ? 'Recovery working…' : 'Back Up Now'}</LiteButton>
+            <LiteButton tone="secondary" onClick={() => openRecoveryManage('backup')} ariaLabel="Manage Recovery">Manage Recovery</LiteButton>
+          </div>
+          <LiteFreshness saved={savedStateOnly} stale={projectionStale || isExpired} refreshing={refreshing} lastUpdatedLabel={lastUpdatedLabel} backendReachable={backendReachable} />
+        </GlassCard>
+        <RecoveryJourney stages={journeyStatuses} saved={savedStateOnly || projectionStale || isExpired || !backendReachable} />
+        <RecoveryPremiumTimeline items={premiumActivity} unavailable={!backendReachable && !savedStateOnly} saved={savedStateOnly || projectionStale || isExpired} onViewActivity={() => openRecoveryManage('history')} />
+        {recoveryLive ? <LiteMotionReveal motionKey={busy || recoveryFlow.value} ariaLive="polite">
+          <LiteFlowStatusPanel title="Recovery in progress" label={recoveryFlow.label} steps={recoveryFlow.steps} note={recoveryFlow.writeBlocked ? recoveryFlow.blockedReason : 'Only backend-reported progress is authoritative.'} />
+        </LiteMotionReveal> : null}
+        {loading ? <LoadingCard label="Loading recovery…" /> : null}
+        {projectionStale ? <StateSurface tone="degraded" title="Recovery information needs a refresh" description="Saved information does not confirm live restore readiness." data-testid="recovery-projection-stale" /> : null}
+        {error ? <StateSurface tone="degraded" title="Backup information is temporarily unavailable" description={error} /> : null}
+        {actionError ? <StateSurface tone="degraded" title="Backup or restore needs attention" description={actionError} /> : null}
       </div>
-
-      <LiteOperationalStory
-        className="lite-recovery-operational-story"
-        story={recoveryStory}
-        primaryAction={recoveryStory.nextAction?.id === 'backup' ? { label: 'Back Up Now', onClick: backup, disabled: Boolean(busy) || recoveryWriteBlocked, disabledReason: recoveryWriteBlockedReason } : recoveryStory.nextAction?.id === 'verify' ? { label: 'Verify Backup', onClick: verifyLatestBackup, disabled: Boolean(busy) || recoveryWriteBlocked, disabledReason: recoveryWriteBlockedReason } : recoveryStory.nextAction?.id === 'preview' ? { label: 'Preview Restore', onClick: previewLatestRestore, disabled: Boolean(busy) || recoveryWriteBlocked, disabledReason: recoveryWriteBlockedReason } : recoveryStory.nextAction?.id === 'refresh' ? { label: 'Refresh Recovery', onClick: refreshSummary } : recoveryStory.nextAction?.id === 'manage' ? { label: recoveryStory.nextAction.label, onClick: () => openRecoveryManage(recoveryStory.nextAction.section) } : null}
-        manageAction={{ label: 'Manage Recovery', onClick: () => openRecoveryManage('backup') }}
-      />
-      <LiteFreshness
-        saved={savedStateOnly}
-        stale={projectionStale || isExpired}
-        refreshing={refreshing}
-        lastUpdatedLabel={lastUpdatedLabel}
-        backendReachable={backendReachable}
-      />
-
-      <LiteActionRow
-        className="lite-recovery-runtime-row"
-        label="System recovery"
-        value={runtimeRecoveryLabel}
-        summary={runtimeRecovery?.summary || 'Pocket Lab is checking whether the workspace can recover automatically.'}
-        attention={!runtimeRecovery?.stable}
-      />
-
-      <LiteActionRow
-        className="lite-recovery-latest-backup-row"
-        label="Latest backup"
-        value={latestBackupVerified ? 'Verified' : latestBackup ? 'Verification needed' : 'Not created'}
-        summary={latestBackup?.created_at ? `Created ${formatLiteTime(latestBackup.created_at)}${latestBackup?.size_bytes ? ` · ${formatSize(latestBackup.size_bytes)}` : ''}` : 'No protected backup is recorded yet.'}
-        attention={!latestBackupVerified}
-        action={{ label: 'Details', onClick: () => openRecoveryManage('backup') }}
-      />
-
-      <LiteFlowStatusPanel
-        className="lite-recovery-journey"
-        title="Safe recovery journey"
-        label={recoveryLive ? recoveryFlow.label : 'Preview before anything changes'}
-        steps={restoreSteps.map((step) => ({ label: step.label, state: step.complete ? 'completed' : 'waiting', detail: step.detail }))}
-        note="Preview does not change local state. A checkpoint is created before a confirmed restore."
-        tone={recoveryLive ? 'checking' : 'info'}
-      />
-
-      {lastRestore?.restore_id && !recoveryLive ? <LiteOutcomeNotice outcome={{ tone: recoveryStory.tone, headline: recoveryStory.headline, summary: recoveryStory.summary, consequence: recoveryStory.consequence }} className="lite-recovery-latest-outcome" /> : null}
-
-      <LiteElevationSurface hidden as="section" settle active={recoveryLive} className="lite-recovery-r1-hero lite-recovery-premium-hero" data-recovery-r1-summary="true" data-recovery-native-polish="true">
-        <div className="lite-recovery-r1-hero-copy">
-          <div className="lite-home-pill" data-testid="parity-recovery-status">
-            <span className="lite-ready-dot" />
-            {backendLabel(recoveryStatus, {
-              ready: 'Protection ready',
-              review: 'Review recommended',
-              danger: 'Needs attention',
-              checking: 'Checking protection',
-            })}
-          </div>
-          <h2 data-testid="parity-recovery-summary">{recoveryTitle}</h2>
-          <p>{recoverySummary}</p>
-          <div className="lite-recovery-r1-status-strip" aria-label="Recovery status">
-            <span className={latestBackupVerified ? 'is-ready' : ''}><ArchiveRestore className="h-4 w-4" />{latestBackupVerified ? 'Backup verified' : latestBackup ? 'Backup saved' : 'Backup needed'}</span>
-            <span className={latestPreviewReady ? 'is-ready' : ''}><RotateCcw className="h-4 w-4" />{latestPreviewReady ? 'Restore preview ready' : 'Restore preview needed'}</span>
-            <span className={databaseBackupVerified && !databaseWriteBlocked ? 'is-ready' : ''}><Database className="h-4 w-4" />{databaseWriteBlocked ? 'Pocket Lab data protected' : databaseBackupVerified ? 'Pocket Lab data backed up' : 'Data backup recommended'}</span>
-          </div>
-          <div className="lite-recovery-r1-actions">
-            <LiteButton onClick={backup} disabled={Boolean(busy) || recoveryWriteBlocked} haptic>
-              {busy ? 'Backup protection is working…' : projectionStale ? 'Refresh to continue' : recoveryFlow.writeBlocked ? 'Reconnect to continue' : 'Back Up Now'}
-            </LiteButton>
-            <LiteButton tone="secondary" onClick={() => openRecoveryManage('backup')} ariaLabel="Manage backups and recovery">
-              Manage
-            </LiteButton>
-          </div>
-        </div>
-
-        <LiteElevationSurface as="div" settle className="lite-recovery-r1-latest-card lite-recovery-premium-latest">
-          <div><Database className="h-6 w-6" /><StatusBadge status={recoveryStatus}>{recoveryReady ? 'Protected' : 'Review'}</StatusBadge></div>
-          <span>Latest protected backup</span>
-          <strong data-testid="parity-latest-backup-id" data-backup-id={latestBackup?.backup_id || ''}>{latestBackup?.created_at ? formatLiteTime(latestBackup.created_at) : 'No backup yet'}</strong>
-          <small>{latestBackup ? `${latestBackupVerified ? 'Verified' : 'Needs verification'} · ${formatSize(latestBackup.size_bytes)}` : 'Create a safe restore point to get started.'}</small>
-        </LiteElevationSurface>
-      </LiteElevationSurface>
-
-      {recoveryLive ? (
-        <LiteMotionReveal motionKey={busy || recoveryFlow.value} ariaLive="polite">
-        <LiteFlowStatusPanel
-          title="Backup and restore activity"
-          label={recoveryFlow.label}
-          steps={recoveryFlow.steps}
-          note={recoveryFlow.writeBlocked ? recoveryFlow.blockedReason : 'Pocket Lab is completing the selected backup or restore task.'}
-          className="mt-4"
-        />
-        </LiteMotionReveal>
-      ) : null}
-
-      {loading ? <LoadingCard label="Loading recovery…" /> : null}
-      {projectionStale ? (
-        <StateSurface
-          tone="degraded"
-          title="Recovery information is old"
-          description={`Saved recovery details were last updated ${data?.updated_at ? formatLiteTime(data.updated_at) : 'earlier than expected'}. Refresh before making changes.${summaryDataSource ? ` Source: ${summaryDataSource}.` : ''}`}
-          className="mb-5"
-          data-testid="recovery-projection-stale"
-        />
-      ) : null}
-      {error ? <StateSurface tone="degraded" title="Backup information is temporarily unavailable" description={error} className="mb-5" /> : null}
-      {actionError ? <StateSurface tone="degraded" title="Backup or restore needs attention" description={actionError} className="mb-5" /> : null}
-
-      <LiteMotionReveal className="lite-recovery-r1-summary-grid lite-render-containment lite-render-containment--recovery lite-recovery-premium-summary-grid" motionKey={`${latestBackup?.backup_id || 'none'}:${lastRestore?.restore_id || 'none'}`}>
-        <GlassCard as={LiteElevationSurface} settle className="lite-recovery-r1-summary-card lite-recovery-premium-summary-card">
-          <div className="lite-recovery-r1-card-head">
-            <div><ShieldCheck className="h-5 w-5" /><span><strong>Protection overview</strong><small>Backups, restore readiness, and Pocket Lab data</small></span></div>
-            <StatusBadge status={recoveryStatus}>{recoveryReady ? 'Ready' : 'Review'}</StatusBadge>
-          </div>
-          <div className="lite-recovery-r1-summary-rows">
-            <div><span>Backup</span><strong>{latestBackupVerified ? 'Verified' : latestBackup ? 'Needs verification' : 'Not created'}</strong></div>
-            <div><span>Restore</span><strong>{latestPreviewReady ? 'Ready for confirmation' : 'Preview required'}</strong></div>
-            <div><span>Pocket Lab data</span><strong>{databaseWriteBlocked ? 'Protected for safety' : databaseBackupVerified ? 'Backed up' : 'Backup recommended'}</strong></div>
-            <div data-testid="parity-last-restore" data-restore-id={databaseRestore?.restore_id || ''}>
-              <span>Last database recovery</span>
-              <strong data-testid="parity-last-restore-status">
-                {databaseRestoreCompleted ? 'Restored' : databaseRestore ? 'Needs review' : 'No recovery recorded'}
-              </strong>
-            </div>
-            <div data-testid="parity-restore-history" data-restore-count={Number(databaseRestoreHistory?.completed || 0)}>
-              <span>Recovery history</span>
-              <strong>{Number(databaseRestoreHistory?.completed || 0)} completed</strong>
-            </div>
-            <div data-testid="parity-historical-preview" data-fresh-preview-required={databaseHistoricalPreview ? 'true' : 'false'}>
-              <span>Restore preview</span>
-              <strong>{databaseHistoricalPreview ? 'Fresh preview required' : latestDatabasePreview ? 'Preview available' : 'Preview required'}</strong>
-            </div>
-            {databaseProjectionReconciliation?.status ? (
-              <div>
-                <span>History sync</span>
-                <strong>{databaseProjectionReconciliation.status === 'reconciled' ? 'Up to date' : 'Reconciling'}</strong>
-              </div>
-            ) : null}
-          </div>
-          <LiteButton tone="secondary" onClick={() => openRecoveryManage('protection')}>View protection</LiteButton>
-        </GlassCard>
-
-        <GlassCard as={LiteElevationSurface} settle className="lite-recovery-r1-summary-card lite-recovery-premium-summary-card">
-          <div className="lite-recovery-r1-card-head">
-            <div><Activity className="h-5 w-5" /><span><strong>Recent activity</strong><small>Latest backup and restore events</small></span></div>
-            <StatusBadge status={latestActivity.length ? 'healthy' : 'unknown'}>{latestActivity.length ? 'Updated' : 'Quiet'}</StatusBadge>
-          </div>
-          <LiteHistoryTimeline
-            items={latestActivity}
-            emptyTitle="No recovery activity yet"
-            emptyDescription="Create a backup to begin building a recovery history."
-            className="lite-recovery-r1-activity-list"
-          />
-          <LiteButton tone="secondary" onClick={() => openRecoveryManage('history')}>View activity</LiteButton>
-        </GlassCard>
-      </LiteMotionReveal>
 
       <LiteSheet
         open={recoveryManageOpen}
@@ -907,7 +732,7 @@ export default function RecoveryScreen() {
             onBackup={backup}
             onVerify={verifyLatestBackup}
             onPreview={previewLatestRestore}
-            onRestore={(backup) => { if (backup) setSelectedBackup(backup); restoreLatestBackup(); }}
+            onRestore={restoreLatestBackup}
             onDatabaseBackup={backUpDatabase}
             onOpenDatabaseDetails={() => setDatabaseDetailsOpen(true)}
             onBackUpApp={backUpApp}
