@@ -66,7 +66,7 @@ function RecoveryActionRow({
           </LiteButton>
         ) : null}
         {onAction ? (
-          <LiteButton tone={tone} onClick={onAction} disabled={disabled || busy}>
+          <LiteButton tone={tone} onClick={() => onAction()} disabled={disabled || busy}>
             {busy ? busyLabel || 'Working…' : actionLabel}
           </LiteButton>
         ) : null}

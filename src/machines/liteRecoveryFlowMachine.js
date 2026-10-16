@@ -13,6 +13,7 @@ const TERMINAL_ACTION_STATES = new Set([
   'previewRequired',
   'verificationRequired',
   'explicitBackupRequired',
+  'restoreConfirmationRequired',
   'confirmationMissing',
   'restoreBlocked',
 ]);

@@ -37,6 +37,33 @@ test.describe('Premium Recovery Center — mocked UX, safety and accessibility',
     await expect(dialog).toHaveCount(0);
     await expect(trigger).toBeFocused();
   });
+  test('opens protected restore confirmation and cancels without dispatching restore', async ({ page }) => {
+    await recovery(page, 'recovery-preview-ready');
+    const restoreRequests: string[] = [];
+    page.on('request', (request) => {
+      if (request.method() !== 'GET' && /\/api\/lite\/recovery\/restore(?:$|\/)/.test(request.url())) {
+        restoreRequests.push(request.url());
+      }
+    });
+    const detailsResponse = page.waitForResponse((response) => response.url().endsWith('/api/lite/recovery/details') && response.status() === 200);
+    await page.getByRole('button', { name: 'Manage Recovery' }).click();
+    const manage = page.getByRole('dialog', { name: /Manage backups and recovery/i });
+    await manage.getByRole('tab', { name: 'Restore' }).click();
+    const restoreRow = manage.locator('.lite-recovery-manage-action-row').filter({ hasText: 'Restore latest backup' });
+    await detailsResponse;
+    const restoreButton = restoreRow.getByRole('button', { name: 'Restore', exact: true });
+    await expect(restoreButton).toBeEnabled();
+    await restoreButton.click();
+
+    const confirmation = page.getByRole('dialog', { name: 'Restore backup' });
+    await expect(confirmation).toBeVisible();
+    await expect(confirmation.locator('[data-recovery-native-confirm="true"]')).toContainText('backup-mock-001');
+    await expect(confirmation).toContainText('Location status');
+    await expect(confirmation).toContainText('Available');
+    await confirmation.getByRole('button', { name: 'Cancel' }).click();
+    await expect(confirmation).toHaveCount(0);
+    expect(restoreRequests).toEqual([]);
+  });
   test('saved or stale state never promotes restore readiness', async ({ page }) => {
     await recovery(page,'recovery-projection-too-old');
     await expect(page.locator('.lite-recovery-premium-protection')).toHaveAttribute('data-recovery-protection-state','unknown');
@@ -50,6 +77,29 @@ test.describe('Premium Recovery Center — mocked UX, safety and accessibility',
       expect(overflow).toBe(false);
     });
   }
+  test('keeps final Recovery activity reachable above the fixed mobile navigation', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 850 });
+    await recovery(page, 'recovery-verified');
+    const finalActivity = page.locator('.lite-recovery-premium-timeline-list li').last();
+    await finalActivity.waitFor({ state: 'visible' });
+    const metrics = await page.evaluate(() => {
+      window.scrollTo(0, document.documentElement.scrollHeight);
+      const nav = document.querySelector('.pocket-nav-dock');
+      const activity = document.querySelector('.lite-recovery-premium-timeline-list li:last-child');
+      const navRect = nav?.getBoundingClientRect();
+      const activityRect = activity?.getBoundingClientRect();
+      return {
+        navTop: navRect?.top ?? null,
+        activityBottom: activityRect?.bottom ?? null,
+        maxScroll: document.documentElement.scrollHeight - window.innerHeight,
+        scrollY: window.scrollY,
+      };
+    });
+    expect(metrics.scrollY).toBeGreaterThanOrEqual(Math.max(0, metrics.maxScroll - 1));
+    expect(metrics.activityBottom).not.toBeNull();
+    expect(metrics.navTop).not.toBeNull();
+    expect(metrics.activityBottom as number).toBeLessThanOrEqual(metrics.navTop as number);
+  });
   test('large text and reduced motion preserve content and controls', async ({ page }) => {
     await page.setViewportSize({width:390,height:850});
     await page.emulateMedia({reducedMotion:'reduce'});

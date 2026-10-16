@@ -58,7 +58,7 @@ export default function RecoveryConfirmSheetLazy({
           <dt>Matching preview</dt><dd>{impact.ready ? 'Ready' : 'Not ready or not confirmed'}</dd>
           <dt>Expected items</dt><dd>{impact.count === null ? 'Impact not reported' : impact.count}</dd>
           <dt>Backup location</dt><dd>{impact.location || 'Not reported'}</dd>
-          <dt>Location</dt><dd>{impact.locationReady ? 'Not reported as unavailable' : 'Unavailable'}</dd>
+          <dt>Location status</dt><dd>{impact.location ? (impact.locationReady ? 'Available' : 'Unavailable') : 'Not reported'}</dd>
         </dl>
         <p>The backend decides what is safe to restore. An unavailable impact count never means zero.</p>
       </section>
