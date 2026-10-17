@@ -3269,6 +3269,81 @@ def _android_run_owned_processes(remote: AndroidRemote, *, root: str, run_id: st
     return [item for item in value if isinstance(item, dict)] if isinstance(value, list) else None
 
 
+_ANDROID_RUN_IDENTITY_SCAN_CODE = r'''
+import hashlib, json, os, pathlib, sys
+run_id = str(sys.argv[1])
+root_prefix = str(pathlib.Path(sys.argv[2]).absolute())
+marker = f"POCKETLAB_QUALIFICATION_RUN_ID={run_id}".encode()
+rows = []
+for entry in pathlib.Path("/proc").iterdir():
+    if not entry.name.isdigit():
+        continue
+    try:
+        environ = (entry / "environ").read_bytes()
+        if marker not in environ:
+            continue
+        try:
+            cwd = os.readlink(f"/proc/{entry.name}/cwd")
+        except OSError:
+            cwd = "unavailable"
+        if cwd.startswith(root_prefix + "/"):
+            cwd_class = "run_root"
+        elif cwd.startswith(root_prefix + " (deleted)"):
+            cwd_class = "deleted_run_root"
+        else:
+            cwd_class = "outside_run_root"
+        cmdline = (entry / "cmdline").read_bytes()
+        rows.append({
+            "pid": int(entry.name),
+            "cwd_class": cwd_class,
+            "argv_sha256": hashlib.sha256(cmdline).hexdigest()[:32],
+        })
+    except (FileNotFoundError, OSError, ValueError):
+        continue
+print(json.dumps(sorted(rows, key=lambda item: item["pid"]), sort_keys=True))
+'''
+
+
+def _android_run_owned_processes_by_identity(
+    remote: AndroidRemote,
+    *,
+    root: str,
+    run_id: str,
+) -> list[dict[str, Any]] | None:
+    """Scan the exact run marker even after the run root has been removed."""
+    if not remote.python:
+        return None
+    result = _android_ssh_run(remote.host, [
+        remote.python, "-c", _ANDROID_RUN_IDENTITY_SCAN_CODE, run_id, root,
+    ], timeout=20)
+    if result.returncode != 0:
+        return None
+    try:
+        value = json.loads(result.stdout or "[]")
+    except (TypeError, ValueError):
+        return None
+    return [item for item in value if isinstance(item, dict)] if isinstance(value, list) else None
+
+
+def _android_wait_for_run_processes(
+    remote: AndroidRemote,
+    *,
+    root: str,
+    run_id: str,
+    timeout: float = 5.0,
+) -> list[dict[str, Any]] | None:
+    deadline = time.monotonic() + timeout
+    latest: list[dict[str, Any]] = []
+    while True:
+        found = _android_run_owned_processes_by_identity(remote, root=root, run_id=run_id)
+        if found is None:
+            return None
+        latest = found
+        if not latest or time.monotonic() >= deadline:
+            return latest
+        time.sleep(0.25)
+
+
 _ANDROID_PM2_COMMAND_CODE = r'''
 import json, pathlib, shlex, shutil, subprocess, sys
 env = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
@@ -4819,6 +4894,7 @@ class AndroidQualificationRun(QualificationRun):
             "credentials_revoked": False,
             "candidate_processes_stopped": True,
             "candidate_processes_remaining": [],
+            "candidate_processes_observed_before_convergence": [],
             "candidate_process_scan": "NOT RUN",
             "ssh_tunnels_stopped": True,
             "dev_pc_services_stopped": True,
@@ -4872,6 +4948,7 @@ class AndroidQualificationRun(QualificationRun):
         if self.launch_started:
             process_scan_ok = True
             remaining_processes: list[dict[str, Any]] = []
+            observed_before_convergence: list[dict[str, Any]] = []
             for device, remote, root in (
                 ("server", self.server, self.server_root),
                 ("secondary", self.secondary, self.secondary_root),
@@ -4883,7 +4960,13 @@ class AndroidQualificationRun(QualificationRun):
                 if found is None:
                     process_scan_ok = False
                     continue
-                remaining_processes.extend({"device": device, **item} for item in found)
+                observed_before_convergence.extend({"device": device, **item} for item in found)
+                stable = _android_wait_for_run_processes(remote, root=root, run_id=self.run_id)
+                if stable is None:
+                    process_scan_ok = False
+                    continue
+                remaining_processes.extend({"device": device, **item} for item in stable)
+            cleanup["candidate_processes_observed_before_convergence"] = observed_before_convergence
             cleanup["candidate_processes_remaining"] = remaining_processes
             cleanup["candidate_process_scan"] = "PASS" if process_scan_ok else "FAIL"
             cleanup["candidate_processes_stopped"] = process_scan_ok and not remaining_processes
@@ -4904,6 +4987,26 @@ class AndroidQualificationRun(QualificationRun):
                 if remote is not None and root and not _android_remove_root(remote, root):
                     roots_ok = False
         cleanup["remote_roots_removed"] = roots_ok if self.roots_created else True
+        if self.launch_started:
+            final_scan_ok = True
+            final_remaining: list[dict[str, Any]] = []
+            for device, remote, root in (
+                ("server", self.server, self.server_root),
+                ("secondary", self.secondary, self.secondary_root),
+            ):
+                if remote is None or not root:
+                    final_scan_ok = False
+                    continue
+                found = _android_wait_for_run_processes(remote, root=root, run_id=self.run_id, timeout=3.0)
+                if found is None:
+                    final_scan_ok = False
+                    continue
+                final_remaining.extend({"device": device, **item} for item in found)
+            cleanup["candidate_processes_remaining"] = final_remaining
+            cleanup["candidate_process_scan"] = "PASS" if process_scan_ok and final_scan_ok else "FAIL"
+            cleanup["candidate_processes_stopped"] = (
+                process_scan_ok and final_scan_ok and not final_remaining
+            )
         try:
             if self.paths.root.is_symlink():
                 raise OSError("local qualification root became a symlink")
