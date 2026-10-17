@@ -88,6 +88,11 @@ ANDROID_MAX_LIVE_PROCESSES = 8
 ANDROID_MIN_FREE_BYTES = 32 * 1024 * 1024
 ANDROID_MAX_DURATION_SECONDS = 20 * 60
 ANDROID_MAX_RETRIES = 3
+# These are the Dev-PC-managed SSH aliases for the authorized physical lane.
+# Keep the transport alias-only: the controller must never accept or derive a
+# device address from runtime state.
+ANDROID_SERVER_SSH_ALIAS = "pocketlab-termux-tailnet"
+ANDROID_SECONDARY_SSH_ALIAS = "pocketlab-secondary-tailnet"
 ANDROID_ALLOWED_SNAPSHOT_PREFIXES = (
     "pocket-lab-final-structure/runtime/",
     "security/policies/opa/pocketlab/",
@@ -2175,7 +2180,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.android_read_only and args.android_qualify:
         parser.error("--android-read-only and --android-qualify are mutually exclusive")
     if args.android_read_only:
-        result = android_read_only_preflight(repo=repo, hosts=("pocketlab-termux", "pocketlab-secondary"))
+        result = android_read_only_preflight(
+            repo=repo,
+            hosts=(ANDROID_SERVER_SSH_ALIAS, ANDROID_SECONDARY_SSH_ALIAS),
+        )
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0 if result.get("status") == "PASS" else 2
     try:
@@ -3420,7 +3428,7 @@ class AndroidQualificationRun(QualificationRun):
 
     def _discover_remotes(self) -> None:
         remotes: list[AndroidRemote] = []
-        for host in ("pocketlab-termux", "pocketlab-secondary"):
+        for host in (ANDROID_SERVER_SSH_ALIAS, ANDROID_SECONDARY_SSH_ALIAS):
             baseline = _android_baseline(host)
             home = str(baseline.get("home") or "")
             prefix = str(baseline.get("prefix") or "")

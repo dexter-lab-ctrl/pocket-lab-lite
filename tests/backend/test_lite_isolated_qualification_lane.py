@@ -157,6 +157,18 @@ def test_android_candidate_task_is_explicit_and_preserves_read_only_mode():
     assert "EVIDENCE_DIR" in taskfile
 
 
+def test_android_physical_lane_uses_authoritative_tailnet_aliases():
+    spec = importlib.util.spec_from_file_location("isolated_android_aliases", CONTROLLER)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    import sys
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    assert module.ANDROID_SERVER_SSH_ALIAS == "pocketlab-termux-tailnet"
+    assert module.ANDROID_SECONDARY_SSH_ALIAS == "pocketlab-secondary-tailnet"
+
+
 def test_android_media_fixture_keeps_camera_files_with_nested_nomedia_marker(tmp_path, monkeypatch):
     spec = importlib.util.spec_from_file_location("isolated_android_media_fixture_test", CONTROLLER)
     assert spec and spec.loader
