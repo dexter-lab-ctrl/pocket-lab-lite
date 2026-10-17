@@ -235,7 +235,8 @@ task lite:photo-backup:candidate:android-preflight CANDIDATE_SHA="$(git rev-pars
 
 It records bounded source-checkout, architecture, PM2 count, storage,
 listener-count, Tailscale-state, and best-effort PhotoPrism-health
-observations for `pocketlab-termux` and `pocketlab-secondary`. It never starts
+observations for `pocketlab-termux-tailnet` and
+`pocketlab-secondary-tailnet`. It never starts
 candidate code, changes PM2, starts Tailscale, changes Caddy/NATS/PhotoPrism,
 installs packages, writes media, or changes production state. Its top-level
 result remains `BLOCKED` by design. A successful read-only baseline is not
@@ -251,8 +252,8 @@ task lite:photo-backup:candidate:android:qualify \
   OPA_BIN="$(command -v opa)"
 ```
 
-The controller first requires a clean exact-SHA Dev-PC checkout, both SSH
-aliases, Termux ARM64/Python dependencies, production PM2/listener/Git
+The controller first requires a clean exact-SHA Dev-PC checkout, both managed
+Tailnet SSH aliases, Termux ARM64/Python dependencies, production PM2/listener/Git
 baselines, the secondary phone's existing `rclone` and PM2, and disposable
 Dev-PC `nats-server` and OPA binaries. If any prerequisite is missing it
 returns `BLOCKED` before creating a phone run root or starting candidate code.
@@ -285,8 +286,10 @@ not changed and `--no-check-certificate` is never used.
 The server phone runs the exact candidate API and worker on private ports and
 state; the secondary phone runs the exact candidate supervisor and PM2 agent
 with a run-owned `PM2_HOME`, synthetic storage identity, and archived media
-fixtures. The signed non-destructive harness and server-owned fleet-role
-profile are used for one-time synthetic enrollment. The physical lane proves
+fixtures. The signed, run-scoped `qualification-owner` harness profile is used
+only inside the isolated candidate runtime, with destructive authority and
+test bypass disabled; a separate server-owned fleet-role profile is used for
+synthetic enrollment. The physical lane proves
 real NATS/JetStream delivery/redelivery, heartbeat/capability projection,
 synthetic WebDAV transfer, size/hash read-back, API/worker/agent recovery,
 NATS and SSH-forward reconnection, and bounded WebDAV retry. It does not use

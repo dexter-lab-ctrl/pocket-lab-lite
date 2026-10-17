@@ -9802,7 +9802,7 @@
         "scripts/dev/lite/run-ui-performance-qualified.py",
         "scripts/dev/lite/start-qualification.sh",
         "tests/backend/test_lite_harness.py",
-        "tests/backend/test_lite_photo_backup_candidate_qualification.py"
+        "tests/backend/test_lite_isolated_qualification_lane.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

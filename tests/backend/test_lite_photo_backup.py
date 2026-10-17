@@ -265,7 +265,22 @@ def test_worker_start_sends_only_opaque_credential_reference_to_node(photo_backu
             "prefix": f"PocketLab/Devices/{node_id}",
         },
     )
-    command = photo_backup.make_start_command("storage-phone", ["camera", "pictures"])
+    fixture_id = "fixture-" + ("a" * 20)
+    state = photo_backup._state()
+    state["acceptance_fixtures"][fixture_id] = {
+        "fixture_id": fixture_id,
+        "node_id": "storage-phone",
+        "collection": "pictures",
+        "scope": photo_backup.ACCEPTANCE_FIXTURE_SCOPE,
+        "status": "prepared",
+        "expires_at_epoch": photo_backup._epoch() + 300,
+    }
+    photo_backup._save_state(state)
+    command = photo_backup.make_start_command(
+        "storage-phone",
+        ["camera", "pictures"],
+        acceptance_fixture_id=fixture_id,
+    )
 
     monkeypatch.setattr(photo_backup, "_secure_origin", lambda _request=None: "https://pocket.test.ts.net")
     monkeypatch.setattr(
@@ -312,6 +327,8 @@ def test_worker_start_sends_only_opaque_credential_reference_to_node(photo_backu
     encoded = json.dumps(published)
     assert published["command"] == "media.backup.photoprism.start"
     assert "credential_ref" in published["payload"]
+    assert published["payload"]["source_scope"] == photo_backup.ACCEPTANCE_FIXTURE_SCOPE
+    assert published["payload"]["source_fixture"] == command["source_fixture"]
     assert "raw-app-password" not in encoded
     assert "webdav_url" not in published["payload"]
     assert "/storage/" not in encoded

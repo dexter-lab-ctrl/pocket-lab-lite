@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import time
 from pathlib import Path
 
 import pytest
@@ -93,6 +94,25 @@ def test_pm2_failures_are_unknown_not_absent(monkeypatch, mode, error_type):
     assert result["signal"] == "unknown"
     assert result["registered"] is None
     assert result["error_type"] == error_type
+
+
+def test_pm2_probe_allows_bounded_termux_daemon_latency(tmp_path):
+    from api_fastapi.services import lite_app_runtime
+
+    pm2_stub = tmp_path / "pm2-slow-stub"
+    pm2_stub.write_text("#!/bin/sh\nsleep 3\nprintf '%s' '[]'\n")
+    pm2_stub.chmod(0o700)
+
+    started = time.monotonic()
+    returncode, output = lite_app_runtime._run_pm2_jlist(
+        str(pm2_stub), {"PATH": "/usr/bin", "HOME": str(tmp_path)}
+    )
+    elapsed = time.monotonic() - started
+
+    assert returncode == 0
+    assert output == b"[]"
+    assert elapsed >= 2.5
+    assert lite_app_runtime._PM2_TIMEOUT_SECONDS >= 3.0
 
 
 def test_pm2_last_valid_result_is_retained_during_temporary_failure(monkeypatch):
