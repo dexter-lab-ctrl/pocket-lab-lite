@@ -3659,6 +3659,11 @@ async def execute_start(
                             SUPPORTED_COLLECTIONS
                         )
                     ),
+                    "source_scope": command.get("source_scope") or (
+                        ACCEPTANCE_FIXTURE_SCOPE
+                        if isinstance(command.get("source_fixture"), dict)
+                        else "collection"
+                    ),
                     "source_fixture": (
                         command.get("source_fixture")
                         if isinstance(command.get("source_fixture"), dict)
