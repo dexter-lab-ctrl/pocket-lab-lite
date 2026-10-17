@@ -4811,6 +4811,9 @@ class AndroidQualificationRun(QualificationRun):
         if self.secondary is not None and self.secondary_env_path and self.supervisor_started:
             if not _android_pm2_command(self.secondary, self.secondary_env_path, agent_name, "delete", root=self.secondary_root):
                 cleanup["candidate_processes_stopped"] = False
+        for process in (self.worker, self.api):
+            if process is not None and not process.stop():
+                cleanup["candidate_processes_stopped"] = False
         for remote, env_path, root in (
             (self.server, self.server_env_path, self.server_root),
             (self.secondary, self.secondary_env_path, self.secondary_root),
@@ -4818,9 +4821,6 @@ class AndroidQualificationRun(QualificationRun):
             if remote is None or not env_path or not self.launch_started:
                 continue
             if not _android_stop_pm2_daemon(remote, env_path, root=root):
-                cleanup["candidate_processes_stopped"] = False
-        for process in (self.worker, self.api):
-            if process is not None and not process.stop():
                 cleanup["candidate_processes_stopped"] = False
         for tunnel in reversed(self.tunnels):
             if not tunnel.stop():
