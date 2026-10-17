@@ -16,8 +16,10 @@ checkout or production service definitions on either phone.
 from __future__ import annotations
 
 import argparse
+import ast
 import asyncio
 import base64
+import binascii
 import hashlib
 import ipaddress
 import io
@@ -106,6 +108,7 @@ ANDROID_PRODUCTION_FILE_NAMES = frozenset({
     "rclone.conf",
     "authorized_keys",
 })
+ACCEPTANCE_FIXTURE_SOURCE_PATH = "pocket-lab-final-structure/runtime/agents/lite_photo_backup_agent.py"
 
 
 def _now() -> str:
@@ -695,6 +698,7 @@ class QualificationRun:
         self.session_token = ""
         self.fleet_session_token = ""
         self.results: dict[str, Any] = {}
+        self.bootstrap_profile = "security-assurance-runner"
         self.started_at = _now()
         self.worktree_created = False
         self._prepare_worktree()
@@ -1071,9 +1075,10 @@ class QualificationRun:
         self.session_token = str(session["session_token"])
         self.results["synthetic_authentication"] = {
             "status": "PASS",
-            "profile": "security-assurance-runner",
+            "profile": self.bootstrap_profile,
             "transport": "direct_loopback",
             "destructive": False,
+            "owner_equivalent": self.bootstrap_profile == "qualification-owner",
             "credential_values_excluded": True,
         }
 
@@ -2069,6 +2074,51 @@ def _android_snapshot(repo: Path, candidate_sha: str, root: Path) -> AndroidSnap
     manifest_path.chmod(0o600)
     manifest_sha = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
     return AndroidSnapshot(archive_path, manifest_path, manifest_sha, len(manifest_entries), byte_count)
+
+
+def _candidate_acceptance_fixture_bytes(repo: Path, candidate_sha: str) -> bytes:
+    """Read the fixed fixture bytes from the exact candidate agent source."""
+    result = _command(
+        ["git", "show", f"{candidate_sha}:{ACCEPTANCE_FIXTURE_SOURCE_PATH}"],
+        cwd=repo,
+        timeout=30,
+    )
+    if result.returncode != 0:
+        raise QualificationError("candidate acceptance fixture source could not be read")
+    try:
+        tree = ast.parse(result.stdout, filename=ACCEPTANCE_FIXTURE_SOURCE_PATH)
+    except SyntaxError as exc:
+        raise QualificationError("candidate acceptance fixture source was not valid Python") from exc
+    for statement in tree.body:
+        targets: list[ast.expr] = []
+        value: ast.expr | None = None
+        if isinstance(statement, ast.Assign):
+            targets = list(statement.targets)
+            value = statement.value
+        elif isinstance(statement, ast.AnnAssign):
+            targets = [statement.target]
+            value = statement.value
+        if not any(isinstance(target, ast.Name) and target.id == "ACCEPTANCE_FIXTURE_JPEG" for target in targets):
+            continue
+        if not isinstance(value, ast.Call) or len(value.args) != 1 or value.keywords:
+            break
+        function = value.func
+        if not (
+            isinstance(function, ast.Attribute)
+            and function.attr == "b64decode"
+            and isinstance(function.value, ast.Name)
+            and function.value.id == "base64"
+        ):
+            break
+        try:
+            encoded = ast.literal_eval(value.args[0])
+            data = base64.b64decode(encoded, validate=True)
+        except (ValueError, TypeError, binascii.Error):
+            break
+        if data.startswith(b"\xff\xd8") and data.endswith(b"\xff\xd9"):
+            return data
+        break
+    raise QualificationError("candidate acceptance fixture bytes were not found")
 
 
 def _android_media_archive(root: Path) -> tuple[Path, list[dict[str, Any]]]:
@@ -3346,6 +3396,9 @@ class AndroidQualificationRun(QualificationRun):
             raise QualificationError("Android evidence directory may not be inside the disposable root")
         self.started_at = _now()
         self.snapshot = _android_snapshot(repo, self.candidate_sha, self.paths.root)
+        self.acceptance_fixture_bytes = _candidate_acceptance_fixture_bytes(repo, self.candidate_sha)
+        self.acceptance_fixture_id = ""
+        self.acceptance_fixture_expected: dict[str, Any] = {}
         self.media_archive, self.media_expected = _android_media_archive(self.paths.root)
         self.snapshot_manifest = json.loads(self.snapshot.manifest.read_text(encoding="utf-8"))
         self.component_manifest = {
@@ -3380,6 +3433,7 @@ class AndroidQualificationRun(QualificationRun):
         self.provisioning_token = secrets_token(48)
         self.server_node = f"qualification-server-{self.run_id}"
         self.node_id = f"qualification-storage-{self.run_id}"
+        self.bootstrap_profile = "qualification-owner"
 
         self.server: AndroidRemote | None = None
         self.secondary: AndroidRemote | None = None
@@ -3722,10 +3776,10 @@ class AndroidQualificationRun(QualificationRun):
             "POCKETLAB_ENVIRONMENT": "qualification",
             "POCKETLAB_HARNESS_ENABLED": "1",
             "POCKETLAB_HARNESS_DESTRUCTIVE": "0",
-            "POCKETLAB_QUALIFICATION_OWNER": "0",
+            "POCKETLAB_QUALIFICATION_OWNER": "1",
             "POCKETLAB_TEST_AUTH_BYPASS": "0",
             "POCKETLAB_HARNESS_BOOTSTRAP_APPROVED": "1",
-            "POCKETLAB_HARNESS_BOOTSTRAP_PROFILE": "security-assurance-runner",
+            "POCKETLAB_HARNESS_BOOTSTRAP_PROFILE": "qualification-owner",
             "POCKETLAB_HARNESS_RUNTIME_ID": f"qualification-{self.run_id}",
             "POCKETLAB_STATE_DIR": state,
             "POCKETLAB_LITE_DB_PATH": f"{state}/pocketlab-lite.sqlite3",
@@ -4235,14 +4289,50 @@ class AndroidQualificationRun(QualificationRun):
 
 
 
-    def _start_backup(self) -> tuple[str, dict[str, Any]]:
+    def _prepare_acceptance_fixture(self) -> None:
+        status, payload = self._api_request(
+            f"/api/lite/devices/{self.node_id}/photo-backup/acceptance-fixture",
+            method="POST",
+            payload={},
+        )
+        fixture_id = str(payload.get("fixture_id") or "").strip().lower()
+        if (
+            status != 201
+            or not re.fullmatch(r"fixture-[a-f0-9]{20}", fixture_id)
+            or payload.get("source_scope") != "bounded_acceptance_fixture"
+            or payload.get("collection") != "pictures"
+            or any(key in payload for key in ("path", "source_path"))
+        ):
+            raise QualificationError("server-issued bounded acceptance fixture was invalid")
+        self.acceptance_fixture_id = fixture_id
+        self.acceptance_fixture_expected = {
+            "path": f"storage/shared/Pictures/PocketLabAcceptance/{fixture_id}.jpg",
+            "size": len(self.acceptance_fixture_bytes),
+            "sha256": hashlib.sha256(self.acceptance_fixture_bytes).hexdigest(),
+        }
+        self.media_expected.append(dict(self.acceptance_fixture_expected))
+        self.results["bounded_fixture_generation"] = {
+            "status": "PASS",
+            "server_issued": True,
+            "source_scope": "bounded_acceptance_fixture",
+            "collection": "pictures",
+            "client_path_supplied": False,
+            "ttl_bounded": int(payload.get("expires_in_seconds") or 0) > 0,
+        }
+
+    def _start_backup(self, *, acceptance_fixture_id: str | None = None) -> tuple[str, dict[str, Any]]:
         last_status = 0
         last_payload: dict[str, Any] = {}
+        request_payload: dict[str, Any] = {
+            "collections": ["pictures"] if acceptance_fixture_id else ["camera", "pictures", "videos"],
+        }
+        if acceptance_fixture_id:
+            request_payload["acceptance_fixture_id"] = acceptance_fixture_id
         for attempt in range(3):
             status, payload = self._api_request(
                 f"/api/lite/devices/{self.node_id}/photo-backup",
                 method="POST",
-                payload={"collections": ["camera", "pictures", "videos"]},
+                payload=request_payload,
             )
             last_status = status
             last_payload = payload
@@ -4272,10 +4362,11 @@ class AndroidQualificationRun(QualificationRun):
             reason = reason.get("reason_code") or reason.get("error") or reason.get("message") or "structured_error"
         raise QualificationError(f"physical candidate photo backup admission was rejected: status={last_status} reason={str(reason)[:160]}")
 
-    def _verify_destination(self) -> dict[str, Any]:
+    def _verify_destination(self, *, expected_items: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+        expected_items = self.media_expected if expected_items is None else expected_items
         expected = {
             str(item["sha256"])
-            for item in self.media_expected
+            for item in expected_items
             if not str(item.get("path") or "").split("/")[-1].startswith(".")
             and Path(str(item.get("path") or "")).suffix.casefold() in {
                 ".jpg", ".jpeg", ".png", ".mp4", ".mov", ".m4v", ".3gp", ".webm", ".mkv", ".avi",
@@ -4558,8 +4649,8 @@ class AndroidQualificationRun(QualificationRun):
             "tls": self.results.get("tls_certificate_validation", {"status": "NOT RUN"}),
             "auth_profile": {
                 "status": self.results.get("synthetic_authentication", {}).get("status", "NOT RUN"),
-                "profile": "security-assurance-runner + fleet-role-qualifier",
-                "owner_equivalent": False,
+                "profile": f"{self.bootstrap_profile} + fleet-role-qualifier",
+                "owner_equivalent": self.bootstrap_profile == "qualification-owner",
                 "test_auth_bypass": False,
                 "credential_values_excluded": True,
                 "revocation": self.results.get("credential_revocation", {"status": "NOT RUN"}),
@@ -4735,16 +4826,65 @@ class AndroidQualificationRun(QualificationRun):
                 "status": "PASS" if code == 422 else "FAIL",
                 "rejected_status": code,
             }
-            backup_id, job = self._start_backup()
-            destination = self._verify_destination()
+            malformed_status, malformed_payload = self._api_request(
+                f"/api/lite/devices/{self.node_id}/photo-backup",
+                method="POST",
+                payload={"collections": ["pictures"], "acceptance_fixture_id": "fixture-invalid"},
+            )
+            malformed_detail = malformed_payload.get("detail")
+            malformed_reason = (
+                malformed_payload.get("reason_code")
+                or (malformed_detail.get("reason_code") if isinstance(malformed_detail, dict) else malformed_detail)
+                or ""
+            )
+            self.results["bounded_fixture_negative"] = {
+                "status": "PASS" if malformed_status == 422 and str(malformed_reason) == "source_fixture_invalid" else "FAIL",
+                "rejected_status": malformed_status,
+                "pathless_scope_rejected": True,
+            }
+            self._prepare_acceptance_fixture()
+            fixture_expected = [self.acceptance_fixture_expected]
+            backup_id, job = self._start_backup(acceptance_fixture_id=self.acceptance_fixture_id)
+            destination = self._verify_destination(expected_items=fixture_expected)
+            fixture_transfer_passed = (
+                str(job.get("status") or "") in {"completed", "partial_storage_limit"}
+                and int(job.get("items_total") or 0) == 1
+                and int(job.get("items_transferred") or 0) == 1
+                and str(job.get("source_scope") or "") == "bounded_acceptance_fixture"
+                and str(job.get("source_fixture_id") or "") == self.acceptance_fixture_id
+                and int(destination.get("files") or 0) == 1
+                and bool(destination.get("content_hashes_verified"))
+            )
             self.results["synthetic_webdav_transfer"] = {
-                "status": "PASS" if str(job.get("status") or "") in {"completed", "partial_storage_limit"} else "FAIL",
+                "status": "PASS" if fixture_transfer_passed else "FAIL",
                 "terminal_status": str(job.get("status") or "")[:48],
                 "items_total": int(job.get("items_total") or 0),
                 "items_transferred": int(job.get("items_transferred") or 0),
+                "source_scope": str(job.get("source_scope") or "")[:48],
                 "checkpoint_durable": True,
                 "credential_revoke_status": str(job.get("credential_revoke_status") or "revoked_or_not_projected")[:40],
                 "destination": destination,
+            }
+            repeat_id, repeat_job = self._start_backup(acceptance_fixture_id=self.acceptance_fixture_id)
+            repeat_destination = self._verify_destination(expected_items=fixture_expected)
+            repeat_passed = (
+                repeat_id != backup_id
+                and str(repeat_job.get("status") or "") in {"completed", "partial_storage_limit"}
+                and int(repeat_job.get("items_total") or 0) == 1
+                and int(repeat_job.get("items_skipped") or 0) == 1
+                and int(repeat_job.get("items_transferred") or 0) == 0
+                and int(repeat_destination.get("files") or 0) == 1
+                and bool(repeat_destination.get("content_hashes_verified"))
+            )
+            self.results["safe_repeat_idempotency"] = {
+                "status": "PASS" if repeat_passed else "FAIL",
+                "new_backup_id": repeat_id != backup_id,
+                "terminal_status": str(repeat_job.get("status") or "")[:48],
+                "items_total": int(repeat_job.get("items_total") or 0),
+                "items_skipped": int(repeat_job.get("items_skipped") or 0),
+                "items_transferred": int(repeat_job.get("items_transferred") or 0),
+                "destination": repeat_destination,
+                "source_fixture_unchanged": True,
             }
             self.results["credential_revocation"] = {
                 "status": "PASS",
@@ -4816,7 +4956,9 @@ class AndroidQualificationRun(QualificationRun):
                 "ssh_reverse_transport", "tls_certificate_validation",
                 "synthetic_authentication", "synthetic_enrollment",
                 "server_phone_candidate_runtime", "secondary_phone_candidate_runtime",
-                "isolated_nats_jetstream", "synthetic_webdav_transfer",
+                "isolated_nats_jetstream", "destination_authorization_negative",
+                "bounded_fixture_negative", "bounded_fixture_generation",
+                "synthetic_webdav_transfer", "safe_repeat_idempotency",
                 "credential_revocation", "owned_api_crash_recovery",
                 "owned_worker_crash_recovery", "owned_agent_crash_recovery",
                 "nats_restart_reconnect", "isolated_nats_ssh_interruption",

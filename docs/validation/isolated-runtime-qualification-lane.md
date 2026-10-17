@@ -286,8 +286,10 @@ not changed and `--no-check-certificate` is never used.
 The server phone runs the exact candidate API and worker on private ports and
 state; the secondary phone runs the exact candidate supervisor and PM2 agent
 with a run-owned `PM2_HOME`, synthetic storage identity, and archived media
-fixtures. The signed non-destructive harness and server-owned fleet-role
-profile are used for one-time synthetic enrollment. The physical lane proves
+fixtures. The signed, run-scoped `qualification-owner` harness profile is used
+only inside the isolated candidate runtime, with destructive authority and
+test bypass disabled; a separate server-owned fleet-role profile is used for
+synthetic enrollment. The physical lane proves
 real NATS/JetStream delivery/redelivery, heartbeat/capability projection,
 synthetic WebDAV transfer, size/hash read-back, API/worker/agent recovery,
 NATS and SSH-forward reconnection, and bounded WebDAV retry. It does not use

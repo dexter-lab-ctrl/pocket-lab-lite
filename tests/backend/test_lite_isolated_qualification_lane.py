@@ -169,6 +169,14 @@ def test_android_physical_lane_uses_authoritative_tailnet_aliases():
     assert module.ANDROID_SECONDARY_SSH_ALIAS == "pocketlab-secondary-tailnet"
 
 
+def test_physical_candidate_owner_profile_remains_isolated_and_non_destructive():
+    source = CONTROLLER.read_text(encoding="utf-8")
+    assert '"POCKETLAB_QUALIFICATION_OWNER": "1"' in source
+    assert '"POCKETLAB_HARNESS_BOOTSTRAP_PROFILE": "qualification-owner"' in source
+    assert '"POCKETLAB_HARNESS_DESTRUCTIVE": "0"' in source
+    assert '"POCKETLAB_TEST_AUTH_BYPASS": "0"' in source
+
+
 def test_android_media_fixture_keeps_camera_files_with_nested_nomedia_marker(tmp_path, monkeypatch):
     spec = importlib.util.spec_from_file_location("isolated_android_media_fixture_test", CONTROLLER)
     assert spec and spec.loader
