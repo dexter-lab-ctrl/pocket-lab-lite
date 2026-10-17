@@ -3224,6 +3224,51 @@ def _android_stop_pm2_daemon(remote: AndroidRemote, env_path: str, *, root: str)
     return result.returncode == 0
 
 
+_ANDROID_RUN_PROCESS_SCAN_CODE = r'''
+import hashlib, json, pathlib, sys
+root = pathlib.Path(sys.argv[1]).resolve(strict=True)
+run_id = str(sys.argv[2])
+marker = f"POCKETLAB_QUALIFICATION_RUN_ID={run_id}".encode()
+rows = []
+for entry in pathlib.Path("/proc").iterdir():
+    if not entry.name.isdigit():
+        continue
+    try:
+        environ = (entry / "environ").read_bytes()
+        if marker not in environ:
+            continue
+        cwd = pathlib.Path(f"/proc/{entry.name}/cwd").resolve(strict=True)
+        if not str(cwd).startswith(str(root) + "/"):
+            continue
+        cmdline = (entry / "cmdline").read_bytes()
+        rows.append({
+            "pid": int(entry.name),
+            "cwd_class": "run_root",
+            "argv_sha256": hashlib.sha256(cmdline).hexdigest()[:32],
+        })
+    except (FileNotFoundError, OSError, ValueError):
+        continue
+print(json.dumps(sorted(rows, key=lambda item: item["pid"]), sort_keys=True))
+'''
+
+
+def _android_run_owned_processes(remote: AndroidRemote, *, root: str, run_id: str) -> list[dict[str, Any]] | None:
+    """Return the final exact run-owned process set, or None if it cannot be verified."""
+    _android_safe_remote_path(root + "/probe", root)
+    if not remote.python:
+        return None
+    result = _android_ssh_run(remote.host, [
+        remote.python, "-c", _ANDROID_RUN_PROCESS_SCAN_CODE, root, run_id,
+    ], timeout=20)
+    if result.returncode != 0:
+        return None
+    try:
+        value = json.loads(result.stdout or "[]")
+    except (TypeError, ValueError):
+        return None
+    return [item for item in value if isinstance(item, dict)] if isinstance(value, list) else None
+
+
 _ANDROID_PM2_COMMAND_CODE = r'''
 import json, pathlib, shlex, shutil, subprocess, sys
 env = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
@@ -4773,6 +4818,8 @@ class AndroidQualificationRun(QualificationRun):
             "cancel_admission": "NOT RUN",
             "credentials_revoked": False,
             "candidate_processes_stopped": True,
+            "candidate_processes_remaining": [],
+            "candidate_process_scan": "NOT RUN",
             "ssh_tunnels_stopped": True,
             "dev_pc_services_stopped": True,
             "production_baseline_compared": False,
@@ -4822,6 +4869,24 @@ class AndroidQualificationRun(QualificationRun):
                 continue
             if not _android_stop_pm2_daemon(remote, env_path, root=root):
                 cleanup["candidate_processes_stopped"] = False
+        if self.launch_started:
+            process_scan_ok = True
+            remaining_processes: list[dict[str, Any]] = []
+            for device, remote, root in (
+                ("server", self.server, self.server_root),
+                ("secondary", self.secondary, self.secondary_root),
+            ):
+                if remote is None or not root:
+                    process_scan_ok = False
+                    continue
+                found = _android_run_owned_processes(remote, root=root, run_id=self.run_id)
+                if found is None:
+                    process_scan_ok = False
+                    continue
+                remaining_processes.extend({"device": device, **item} for item in found)
+            cleanup["candidate_processes_remaining"] = remaining_processes
+            cleanup["candidate_process_scan"] = "PASS" if process_scan_ok else "FAIL"
+            cleanup["candidate_processes_stopped"] = process_scan_ok and not remaining_processes
         for tunnel in reversed(self.tunnels):
             if not tunnel.stop():
                 cleanup["ssh_tunnels_stopped"] = False

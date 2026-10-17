@@ -332,12 +332,16 @@ def test_android_cleanup_unlocks_read_only_roots_and_avoids_unstarted_pm2():
     assert "_ANDROID_PM2_STOP_CODE" in module.__dict__
     assert "PM2_HOME=" in module._ANDROID_PM2_STOP_CODE
     assert "_android_stop_pm2_daemon" in CONTROLLER.read_text(encoding="utf-8")
+    assert "_ANDROID_RUN_PROCESS_SCAN_CODE" in module.__dict__
+    assert "_android_run_owned_processes" in module.__dict__
 
 
 def test_android_pm2_cleanup_does_not_probe_with_pm2_after_kill():
     source = CONTROLLER.read_text(encoding="utf-8")
     cleanup_source = source.split("    def cleanup(self) -> dict[str, Any]:", 1)[1]
     assert "_android_stop_pm2_daemon" in cleanup_source
+    assert "_android_run_owned_processes" in cleanup_source
+    assert '"candidate_processes_remaining"' in cleanup_source
     assert "_android_pm2_list(" not in cleanup_source
 
 
