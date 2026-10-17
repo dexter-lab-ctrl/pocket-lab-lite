@@ -1404,7 +1404,25 @@ class QualificationRun:
                     if str(job.get("status") or "") in {"completed", "partial_storage_limit", "cancelled", "failed", "interrupted", "destination_unavailable"}:
                         return job
             time.sleep(0.5)
-        raise QualificationError("candidate photo backup did not reach a terminal state")
+        safe_progress = latest.get("progress") if isinstance(latest.get("progress"), dict) else {}
+        diagnostic = {
+            "status": str(latest.get("status") or "unknown")[:48],
+            "reason_code": str(latest.get("reason_code") or "")[:80],
+            "items_total": int(latest.get("items_total") or 0),
+            "items_transferred": int(latest.get("items_transferred") or 0),
+            "items_skipped": int(latest.get("items_skipped") or 0),
+            "items_remaining": int(latest.get("items_remaining") or 0),
+            "source_scope": str(latest.get("source_scope") or "")[:64],
+            "source_fixture_present": bool(latest.get("source_fixture_id")),
+            "credential_revoke_status": str(latest.get("credential_revoke_status") or "")[:32],
+            "progress_phase": str(safe_progress.get("phase") or "")[:48],
+            "progress_percent": int(safe_progress.get("percent") or 0),
+        }
+        self.results["backup_wait_timeout"] = {"status": "FAIL", **diagnostic}
+        raise QualificationError(
+            "candidate photo backup did not reach a terminal state: "
+            + json.dumps(diagnostic, separators=(",", ":"))
+        )
 
     def _start_backup(self) -> tuple[str, dict[str, Any]]:
         status, payload = self._api_request(
