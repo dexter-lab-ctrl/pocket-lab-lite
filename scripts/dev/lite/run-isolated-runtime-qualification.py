@@ -3344,6 +3344,58 @@ def _android_wait_for_run_processes(
         time.sleep(0.25)
 
 
+_ANDROID_RUN_PROCESS_STOP_CODE = r'''
+import os, pathlib, signal, sys, time
+run_id = str(sys.argv[1])
+root_prefix = str(pathlib.Path(sys.argv[2]).absolute())
+marker = f"POCKETLAB_QUALIFICATION_RUN_ID={run_id}".encode()
+
+def targets():
+    found = []
+    for entry in pathlib.Path("/proc").iterdir():
+        if not entry.name.isdigit() or int(entry.name) == os.getpid():
+            continue
+        try:
+            environ = (entry / "environ").read_bytes()
+            if marker not in environ:
+                continue
+            cwd = os.readlink(f"/proc/{entry.name}/cwd")
+            if cwd.startswith(root_prefix + "/") or cwd.startswith(root_prefix + " (deleted)"):
+                found.append(int(entry.name))
+        except (FileNotFoundError, OSError, ValueError):
+            continue
+    return sorted(found)
+
+for pid in targets():
+    try:
+        os.kill(pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+deadline = time.monotonic() + 5
+while time.monotonic() < deadline and targets():
+    time.sleep(0.1)
+for pid in targets():
+    try:
+        os.kill(pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+time.sleep(0.1)
+remaining = targets()
+print(remaining)
+raise SystemExit(0 if not remaining else 1)
+'''
+
+
+def _android_stop_run_owned_processes(remote: AndroidRemote, *, root: str, run_id: str) -> bool:
+    """Terminate only candidate processes carrying this run marker and root."""
+    if not remote.python:
+        return False
+    result = _android_ssh_run(remote.host, [
+        remote.python, "-c", _ANDROID_RUN_PROCESS_STOP_CODE, run_id, root,
+    ], timeout=20)
+    return result.returncode == 0
+
+
 _ANDROID_PM2_COMMAND_CODE = r'''
 import json, pathlib, shlex, shutil, subprocess, sys
 env = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
@@ -4944,6 +4996,14 @@ class AndroidQualificationRun(QualificationRun):
             if remote is None or not env_path or not self.launch_started:
                 continue
             if not _android_stop_pm2_daemon(remote, env_path, root=root):
+                cleanup["candidate_processes_stopped"] = False
+        for remote, root in (
+            (self.server, self.server_root),
+            (self.secondary, self.secondary_root),
+        ):
+            if remote is None or not root or not _android_stop_run_owned_processes(
+                remote, root=root, run_id=self.run_id
+            ):
                 cleanup["candidate_processes_stopped"] = False
         if self.launch_started:
             process_scan_ok = True

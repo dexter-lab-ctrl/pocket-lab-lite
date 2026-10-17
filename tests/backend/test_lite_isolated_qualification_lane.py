@@ -336,6 +336,8 @@ def test_android_cleanup_unlocks_read_only_roots_and_avoids_unstarted_pm2():
     assert "_android_run_owned_processes" in module.__dict__
     assert "_ANDROID_RUN_IDENTITY_SCAN_CODE" in module.__dict__
     assert "_android_wait_for_run_processes" in module.__dict__
+    assert "_ANDROID_RUN_PROCESS_STOP_CODE" in module.__dict__
+    assert "_android_stop_run_owned_processes" in module.__dict__
 
 
 def test_android_pm2_cleanup_does_not_probe_with_pm2_after_kill():
@@ -344,6 +346,7 @@ def test_android_pm2_cleanup_does_not_probe_with_pm2_after_kill():
     assert "_android_stop_pm2_daemon" in cleanup_source
     assert "_android_run_owned_processes" in cleanup_source
     assert "_android_wait_for_run_processes" in cleanup_source
+    assert "_android_stop_run_owned_processes" in cleanup_source
     assert '"candidate_processes_remaining"' in cleanup_source
     assert "_android_pm2_list(" not in cleanup_source
 
