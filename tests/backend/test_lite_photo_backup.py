@@ -1223,6 +1223,47 @@ def test_progress_contract_preserves_conflicts_required_and_remaining_bytes(phot
     assert result["photo_processing_state"] == "processing"
 
 
+def test_terminal_progress_zeroes_previous_remaining_work(photo_backup, monkeypatch):
+    monkeypatch.setattr(photo_backup, "_revoke_job_credential", lambda _job: None)
+    monkeypatch.setattr(photo_backup, "_append_evidence", lambda *_args, **_kwargs: None)
+    state = photo_backup._state()
+    state["jobs"]["photo-progress-complete"] = {
+        "backup_id": "photo-progress-complete",
+        "node_id": "storage-phone",
+        "status": "transferring",
+        "items_total": 1,
+        "items_transferred": 0,
+        "items_remaining": 1,
+        "bytes_total_required": 516,
+        "bytes_transferred": 0,
+        "bytes_remaining": 516,
+        "started_at": photo_backup._now(),
+        "sanitized": True,
+    }
+    state["latest_by_node"]["storage-phone"] = "photo-progress-complete"
+    photo_backup._save_state(state)
+
+    result = photo_backup.record_agent_progress(
+        "photo-progress-complete",
+        "storage-phone",
+        {
+            "status": "completed",
+            "items_total": 1,
+            "items_transferred": 1,
+            "items_remaining": 0,
+            "bytes_total_required": 516,
+            "bytes_transferred": 516,
+            "bytes_remaining": 0,
+            "progress": {"phase": "completed", "percent": 100},
+        },
+    )
+
+    assert result["status"] == "completed"
+    assert result["items_remaining"] == 0
+    assert result["bytes_remaining"] == 0
+    assert result["partial"] is False
+
+
 
 @pytest.mark.parametrize(
     ("case", "expected_blocker", "expected_summary"),
