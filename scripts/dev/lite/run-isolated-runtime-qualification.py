@@ -3166,6 +3166,59 @@ def _android_pm2_list(remote: AndroidRemote, env_path: str, *, root: str) -> lis
     return [item for item in value if isinstance(item, dict)] if isinstance(value, list) else []
 
 
+_ANDROID_PM2_STATUS_CODE = r'''
+import json, pathlib, sys
+env_path, root_value = sys.argv[1:]
+env = json.loads(pathlib.Path(env_path).read_text(encoding="utf-8"))
+root = pathlib.Path(root_value).resolve(strict=True)
+pm2_home = pathlib.Path(str(env.get("PM2_HOME") or "")).resolve(strict=False)
+if not str(pm2_home).startswith(str(root) + "/"):
+    raise SystemExit(3)
+marker = f"PM2_HOME={pm2_home}".encode()
+pids = []
+for entry in pathlib.Path("/proc").iterdir():
+    if not entry.name.isdigit():
+        continue
+    pid = int(entry.name)
+    if pid == __import__("os").getpid():
+        continue
+    try:
+        environ = (entry / "environ").read_bytes()
+    except OSError:
+        continue
+    if marker in environ:
+        pids.append(pid)
+print(json.dumps({"pids": sorted(pids), "running": bool(pids)}, sort_keys=True))
+'''
+
+
+def _android_pm2_state(remote: AndroidRemote, env_path: str, *, root: str) -> dict[str, Any] | None:
+    """Inspect a run-scoped PM2 daemon without invoking PM2 and respawning it."""
+    _android_safe_remote_path(env_path, root)
+    if not remote.python:
+        return None
+    result = _android_ssh_run(remote.host, [
+        remote.python, "-c", _ANDROID_PM2_STATUS_CODE, env_path, root,
+    ], timeout=15)
+    if result.returncode != 0:
+        return None
+    try:
+        value = json.loads(result.stdout or "{}")
+    except (TypeError, ValueError):
+        return None
+    return value if isinstance(value, dict) and isinstance(value.get("running"), bool) else None
+
+
+def _android_pm2_stopped(remote: AndroidRemote, env_path: str, *, root: str, timeout: float = 6.0) -> bool:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        state = _android_pm2_state(remote, env_path, root=root)
+        if state is not None and state.get("running") is False:
+            return True
+        time.sleep(0.2)
+    return False
+
+
 _ANDROID_PM2_COMMAND_CODE = r'''
 import json, pathlib, shlex, shutil, subprocess, sys
 env = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
@@ -4749,17 +4802,32 @@ class AndroidQualificationRun(QualificationRun):
                     cleanup["credentials_revoked"] = False
         if self.supervisor is not None and not self.supervisor.stop():
             cleanup["candidate_processes_stopped"] = False
+        agent_name = f"pocketlab-agent-{self.node_id}"
         if self.secondary is not None and self.secondary_env_path and self.supervisor_started:
-            agent_name = f"pocketlab-agent-{self.node_id}"
             if not _android_pm2_command(self.secondary, self.secondary_env_path, agent_name, "delete", root=self.secondary_root):
                 cleanup["candidate_processes_stopped"] = False
-            if not _android_pm2_command(self.secondary, self.secondary_env_path, agent_name, "kill", root=self.secondary_root):
+            state = _android_pm2_state(self.secondary, self.secondary_env_path, root=self.secondary_root)
+            if state is None:
                 cleanup["candidate_processes_stopped"] = False
-            try:
-                if any(str(item.get("name") or "") == agent_name for item in _android_pm2_list(self.secondary, self.secondary_env_path, root=self.secondary_root)):
+            elif state.get("running"):
+                if not _android_pm2_command(self.secondary, self.secondary_env_path, agent_name, "kill", root=self.secondary_root):
                     cleanup["candidate_processes_stopped"] = False
-            except Exception:
+                elif not _android_pm2_stopped(self.secondary, self.secondary_env_path, root=self.secondary_root):
+                    cleanup["candidate_processes_stopped"] = False
+        for remote, env_path, root in (
+            (self.server, self.server_env_path, self.server_root),
+            (self.secondary, self.secondary_env_path, self.secondary_root),
+        ):
+            if remote is None or not env_path or not self.launch_started:
+                continue
+            state = _android_pm2_state(remote, env_path, root=root)
+            if state is None:
                 cleanup["candidate_processes_stopped"] = False
+            elif state.get("running"):
+                if not _android_pm2_command(remote, env_path, agent_name, "kill", root=root):
+                    cleanup["candidate_processes_stopped"] = False
+                elif not _android_pm2_stopped(remote, env_path, root=root):
+                    cleanup["candidate_processes_stopped"] = False
         for process in (self.worker, self.api):
             if process is not None and not process.stop():
                 cleanup["candidate_processes_stopped"] = False
