@@ -3,6 +3,7 @@ import { BookOpenText, Fingerprint, LifeBuoy, LogOut } from 'lucide-react';
 import { LiteButton, StateSurface } from '../LiteUi.jsx';
 import { IDENTITY_MANAGE_SECTIONS, IDENTITY_ENTERPRISE_SECTIONS } from './identityPremiumView.js';
 import IdentityActivityTimeline from './IdentityActivityTimeline.jsx';
+import OwnerOperationApprovals from './OwnerOperationApprovals.jsx';
 
 export default function IdentityManageContent({
   data, view, section, setSection, busy, notice, passkeyEligible, recoveryCodes,
@@ -10,8 +11,11 @@ export default function IdentityManageContent({
   onSignOutOthers, onRegenerate, onCopyCodes, onSignOut, passwordForm,
   onPasswordForm, onChangePassword, enterpriseContent, enterpriseEnabled,
   onReviewEnterprise, onEnableEnterprise, showEnterpriseOptIn,
+  ownerOperations = [], ownerOperationsFresh = false, onApproveOwnerOperation, onRejectOwnerOperation,
 }) {
-  const sections = enterpriseEnabled ? [...IDENTITY_MANAGE_SECTIONS, ...IDENTITY_ENTERPRISE_SECTIONS] : IDENTITY_MANAGE_SECTIONS;
+  const hasOwnerOperations = Array.isArray(ownerOperations) && ownerOperations.length > 0;
+  const baseSections = hasOwnerOperations ? [...IDENTITY_MANAGE_SECTIONS, ['approvals', 'Pending approvals']] : IDENTITY_MANAGE_SECTIONS;
+  const sections = enterpriseEnabled ? [...baseSections, ...IDENTITY_ENTERPRISE_SECTIONS] : baseSections;
   const heading = sections.find(([key]) => key === section)?.[1] || 'Overview';
   const readOnly = !view.fresh;
   return <div className="lite-id-manage" data-identity-manage-section={section}>
@@ -53,6 +57,7 @@ export default function IdentityManageContent({
         {recoveryCodes.length ? <div className="lite-identity-recovery-codes" data-private-ephemeral-result="true"><strong>Save these now — shown only once</strong><code>{recoveryCodes.join('\n')}</code><LiteButton variant="secondary" onClick={onCopyCodes}>Copy Codes</LiteButton></div> : null}
       </div> : null}
       {section === 'activity' ? <IdentityActivityTimeline items={data?.recent_activity} onDetails={(item) => onOpenDetails('activity', item)} /> : null}
+      {section === 'approvals' ? <OwnerOperationApprovals operations={ownerOperations} fresh={ownerOperationsFresh} busy={busy} onApprove={onApproveOwnerOperation} onReject={onRejectOwnerOperation} /> : null}
       {section === 'settings' ? <div className="lite-id-manage-list">
         <button type="button" className="lite-id-item-row" onClick={() => onOpenDetails('mode', {})}><span><strong>Workspace mode</strong><small>{view.mode}. Review consequences before changing mode.</small></span><span>Details</span></button>
         {!enterpriseEnabled ? <><p>Personal Mode keeps local Owner access simple. Enterprise Mode enables separate people and server-managed roles.</p><LiteButton variant="secondary" onClick={onReviewEnterprise}>{showEnterpriseOptIn ? 'Hide Enterprise option' : 'Review Enterprise Mode'}</LiteButton>{showEnterpriseOptIn ? <div><StateSurface tone="neutral" title="Switching modes signs out sessions" description="Owner passkey confirmation may be required. Role authority will be resolved again after sign-in." /><LiteButton onClick={onEnableEnterprise} disabled={readOnly || Boolean(busy)}>Enable Enterprise Mode</LiteButton></div> : null}</> : enterpriseContent}

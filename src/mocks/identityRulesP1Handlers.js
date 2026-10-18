@@ -20,6 +20,53 @@ function enterpriseEnabled() {
   return value.includes('enterprise') || value === 'identity-role-aware-fixture' || value === 'rules-approval-required';
 }
 
+const OWNER_OPERATION_DISCLOSURES = [
+  'Target: Secondary Phone.',
+  'Destination: PhotoPrism on this server.',
+  'The server may create a persistent destination identity anchor if one is absent.',
+  'One generated synthetic test photo may remain in the destination.',
+  'The workflow includes one safe repeat of the same fixture.',
+  'This approval expires and cannot authorize another request.',
+];
+
+function ownerOperation(operationId, status = 'pending_approval', overrides = {}) {
+  return {
+    operation_id: operationId,
+    contract_version: 1,
+    operation: 'photo_backup.bounded_acceptance.v1',
+    status,
+    requester_display_name: 'Registered qualification client',
+    target_node_id: 'secondary-phone',
+    target_label: 'Secondary Phone',
+    destination: 'PhotoPrism on this server',
+    scope: { fixture: 'one_server_generated_jpeg', collection: 'pictures', repeat: 'same_fixture_once' },
+    reason: 'Production Photo Backup acceptance',
+    approval_deadline: future(15 * 60 * 1000),
+    execution_deadline: future(55 * 60 * 1000),
+    execution_stage: status === 'executing' ? 'transfer' : status === 'verifying' ? 'verify' : status,
+    disclosures: OWNER_OPERATION_DISCLOSURES,
+    evidence: status === 'completed' ? { transfer: 'verified', indexing: 'unvalidated', repeat: 'verified' } : {},
+    sanitized: true,
+    ...overrides,
+  };
+}
+
+function ownerOperationsPayload() {
+  const kind = scenario();
+  const states = {
+    'identity-owner-operation-pending': [ownerOperation('oo-mock-pending')],
+    'identity-owner-operations-multiple': [ownerOperation('oo-mock-pending'), ownerOperation('oo-mock-pending-2', 'pending_approval', { requester_display_name: 'Registered backup client' })],
+    'identity-owner-operation-expired': [ownerOperation('oo-mock-expired', 'expired', { terminal_reason: 'Approval window expired before a decision.' })],
+    'identity-owner-operation-approved': [ownerOperation('oo-mock-approved', 'approved')],
+    'identity-owner-operation-executing': [ownerOperation('oo-mock-executing', 'executing', { execution_stage: 'transfer' })],
+    'identity-owner-operation-completed': [ownerOperation('oo-mock-completed', 'completed', { execution_stage: 'completed' })],
+    'identity-owner-operation-failed': [ownerOperation('oo-mock-failed', 'failed', { terminal_reason: 'The bounded workflow stopped safely after a prerequisite failed.' })],
+    'identity-owner-operation-offline': [ownerOperation('oo-mock-offline')],
+  };
+  const operations = states[kind] || [];
+  return { status: kind === 'identity-owner-operation-offline' ? 'saved' : 'ok', operations, sanitized: true };
+}
+
 function identityPayload() {
   const enabled = enterpriseEnabled();
   const role = enabled ? enterpriseRole() : 'Owner';
@@ -58,6 +105,7 @@ function identityPayload() {
       service: { label: 'Service identities', managed_by: 'Backend', summary: 'Service identities stay backend-owned.' },
     },
     updated_at: now(),
+    owner_operations: ownerOperationsPayload(),
   };
   const kind = scenario();
   if (kind === 'identity-premium-signed-out') return { ...payload, authenticated: false, sessions: [], session: null };
@@ -99,7 +147,7 @@ const ROLE_SUMMARIES = {
 };
 
 function actionMode(action, role) {
-  if (role === 'Owner') return ['rules.activate', 'rules.rollback', 'enterprise.mode.change'].includes(action) ? 'step_up' : 'allow';
+  if (role === 'Owner') return ['rules.activate', 'rules.rollback', 'enterprise.mode.change', 'owner.operations.approve'].includes(action) ? 'step_up' : 'allow';
   if (role === 'Admin') {
     if (action === 'device.remove') return 'approval';
     return ['people.manage','catalog.install','app.install','rules.draft','rules.simulate','approvals.review','exceptions.manage','evidence.read'].includes(action) ? 'allow' : 'deny';
@@ -115,6 +163,7 @@ function actionMode(action, role) {
 
 const ACTIONS = [
   ['people.manage','Manage people','Create, suspend, reactivate, remove and assign access to people.'],
+  ['owner.operations.approve','Approve bounded operations','Approve one exact server-owned workflow after reviewing its target and scope.'],
   ['enterprise.mode.change','Change workspace mode','Switch between Personal and Enterprise Mode.'],
   ['device.remove','Remove devices','Retire a confirmed non-server device from Pocket Lab.'],
   ['catalog.install','Install apps','Install an approved app through the server-owned execution path.'],
@@ -214,6 +263,8 @@ export const identityRulesP1Handlers = [
   http.post('/api/lite/identity/logout', () => HttpResponse.json({ status: 'signed_out', summary: 'Signed out of Pocket Lab.' })),
   http.post('/api/lite/identity/sessions/revoke-others', () => HttpResponse.json({ status: 'completed', revoked_sessions: 1, summary: 'Other sessions were signed out.' })),
   http.delete('/api/lite/identity/sessions/:sessionId', ({ params }) => HttpResponse.json({ status: 'revoked', session_id: params.sessionId, summary: 'Session signed out.' })),
+  http.post('/api/lite/owner-operations/pending/:operationId/approve', ({ params }) => HttpResponse.json(ownerOperation(params.operationId, 'approved'))),
+  http.post('/api/lite/owner-operations/pending/:operationId/reject', ({ params }) => HttpResponse.json(ownerOperation(params.operationId, 'rejected', { terminal_reason: 'Rejected by Owner.' }))),
 
   http.get('/api/lite/enterprise/access', () => HttpResponse.json(accessPayload())),
   http.get('/api/lite/enterprise/identity', () => enterpriseEnabled() ? HttpResponse.json(identityPayload().enterprise) : HttpResponse.json({ detail: { reason_code: 'enterprise_mode_disabled', message: 'Enterprise Mode is not enabled.' } }, { status: 404 })),

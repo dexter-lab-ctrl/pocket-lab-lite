@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 84135b8e75a8dd8780aef98816b665616ed058dc7addeeaec4f64dc20d33f152
+source_fingerprint: 16448996ac1f8b89d40a0317f9d167c8a42922ad839fd197e044a4c450904622
 schema_revision: 1
 validation_status: generated
 ---
@@ -67,12 +67,16 @@ Semantic rows marked **inferred** are conservative source-derived ownership hint
 | `harness_sessions` | table | 17 | 1 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql |
 | `human_credentials` | table | 10 | 1 | 2 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql |
 | `human_enrollment_claims` | table | 16 | 2 | 5 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql |
-| `human_identities` | table | 8 | 0 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql |
+| `human_identities` | table | 8 | 0 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql |
 | `identity_audit_events` | table | 8 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql |
 | `lite_home_activity_read_cursors` | table | 3 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0040_home_activity_read_cursors.sql |
 | `lite_installed_release_identity` | table | 18 | 0 | 2 | release | release runtime and identity services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0021_lite_native_release.sql |
 | `lite_revision_events` | table | 10 | 0 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0009_lite_revision_events.sql |
+| `owner_approved_operations` | table | 28 | 2 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql |
 | `owner_claims` | table | 12 | 0 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql |
+| `owner_operation_challenges` | table | 12 | 0 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql |
+| `owner_operation_clients` | table | 12 | 1 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql |
+| `owner_operation_events` | table | 9 | 1 | 1 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql |
 | `phase3b_current_state` | table | 12 | 0 | 3 | prepared_state | prepared state projection services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0015_phase3b_system_current_state.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql |
 | `phase3b_revision_events` | table | 16 | 0 | 4 | prepared_state | prepared state projection services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0015_phase3b_system_current_state.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql |
 | `policy_activation_operations` | table | 14 | 3 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql |
@@ -1108,6 +1112,42 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | `occurred_at_epoch_ms` | INTEGER | no | — | 0 |
 | `sanitized` | INTEGER | no | 1 | 0 |
 
+<a id="owner-approved-operations"></a>
+## `owner_approved_operations`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `operation_id` | TEXT | yes | — | 1 |
+| `contract_version` | INTEGER | no | 1 | 0 |
+| `operation_type` | TEXT | no | — | 0 |
+| `requester_client_id` | TEXT | no | — | 0 |
+| `target_node_id` | TEXT | no | — | 0 |
+| `target_identity_revision` | INTEGER | no | — | 0 |
+| `target_binding_digest` | TEXT | no | — | 0 |
+| `destination_id` | TEXT | no | — | 0 |
+| `destination_contract_version` | INTEGER | no | — | 0 |
+| `descriptor_json` | TEXT | no | — | 0 |
+| `scope_json` | TEXT | no | — | 0 |
+| `scope_digest` | TEXT | no | — | 0 |
+| `reason` | TEXT | no | — | 0 |
+| `idempotency_key` | TEXT | no | — | 0 |
+| `status` | TEXT | no | — | 0 |
+| `created_at` | TEXT | no | — | 0 |
+| `approval_deadline` | TEXT | no | — | 0 |
+| `approved_by_human_id` | TEXT | yes | — | 0 |
+| `approved_at` | TEXT | yes | — | 0 |
+| `approval_assurance_ref` | TEXT | yes | — | 0 |
+| `execution_deadline` | TEXT | yes | — | 0 |
+| `execution_stage` | TEXT | no | 'awaiting_approval' | 0 |
+| `fixture_id` | TEXT | yes | — | 0 |
+| `backup_id` | TEXT | yes | — | 0 |
+| `repeat_backup_id` | TEXT | yes | — | 0 |
+| `terminal_reason` | TEXT | no | '' | 0 |
+| `evidence_json` | TEXT | no | '{}' | 0 |
+| `updated_at` | TEXT | no | — | 0 |
+
 <a id="owner-claims"></a>
 ## `owner_claims`
 
@@ -1127,6 +1167,63 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | `authority_hash` | TEXT | yes | — | 0 |
 | `authority_expires_at` | TEXT | yes | — | 0 |
 | `completed_at` | TEXT | yes | — | 0 |
+
+<a id="owner-operation-challenges"></a>
+## `owner_operation_challenges`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `challenge_id` | TEXT | yes | — | 1 |
+| `client_id` | TEXT | no | — | 0 |
+| `purpose` | TEXT | no | — | 0 |
+| `operation_id` | TEXT | yes | — | 0 |
+| `binding_json` | TEXT | no | — | 0 |
+| `binding_digest` | TEXT | no | — | 0 |
+| `signing_payload_json` | TEXT | no | — | 0 |
+| `nonce_hash` | TEXT | no | — | 0 |
+| `issued_at` | TEXT | no | — | 0 |
+| `expires_at` | TEXT | no | — | 0 |
+| `failed_attempts` | INTEGER | no | 0 | 0 |
+| `consumed_at` | TEXT | yes | — | 0 |
+
+<a id="owner-operation-clients"></a>
+## `owner_operation_clients`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `client_id` | TEXT | yes | — | 1 |
+| `display_name` | TEXT | no | — | 0 |
+| `public_key` | TEXT | no | — | 0 |
+| `public_key_fingerprint` | TEXT | no | — | 0 |
+| `capabilities_json` | TEXT | no | — | 0 |
+| `status` | TEXT | no | 'active' | 0 |
+| `created_by_human_id` | TEXT | no | — | 0 |
+| `created_at` | TEXT | no | — | 0 |
+| `expires_at` | TEXT | yes | — | 0 |
+| `last_used_at` | TEXT | yes | — | 0 |
+| `revoked_at` | TEXT | yes | — | 0 |
+| `revoke_reason` | TEXT | no | '' | 0 |
+
+<a id="owner-operation-events"></a>
+## `owner_operation_events`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `event_id` | INTEGER | yes | — | 1 |
+| `operation_id` | TEXT | no | — | 0 |
+| `occurred_at` | TEXT | no | — | 0 |
+| `actor_type` | TEXT | no | — | 0 |
+| `actor_id` | TEXT | no | '' | 0 |
+| `event_type` | TEXT | no | — | 0 |
+| `reason_code` | TEXT | no | '' | 0 |
+| `summary` | TEXT | no | — | 0 |
+| `evidence_json` | TEXT | no | '{}' | 0 |
 
 <a id="phase3b-current-state"></a>
 ## `phase3b_current_state`

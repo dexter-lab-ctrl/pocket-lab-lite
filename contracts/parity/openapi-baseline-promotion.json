@@ -8,12 +8,13 @@
     "promote the exact generated multi-role fleet and target-bound recovery OpenAPI contract after DEV-PC focused/full gates and exact-feature-runtime qualification; secondary-device media transfer remains outside this change and unvalidated",
     "add a server-owned, short-lived bounded Photo Backup acceptance fixture with fixed Pictures scope and no client source path; live production transfer remains pending release and operational acceptance",
     "add durable, per-human Home activity review cursor reads and monotonic review writes backed by the prepared projection",
-    "add the bounded private Home activity-history read endpoint backed by the existing prepared projection; exhaustive pagination and cross-domain resolution remain deferred"
+    "add the bounded private Home activity-history read endpoint backed by the existing prepared projection; exhaustive pagination and cross-domain resolution remain deferred",
+    "add registered, single-use Owner-approved photo_backup.bounded_acceptance.v1 operations with immutable target and scope binding, requester proof of possession, human Owner passkey approval, durable lifecycle, server-owned execution and sanitized evidence; generic maintenance remains disabled"
   ],
   "baseline": "contracts/parity/openapi-baseline.json",
   "contract": "contracts/generated/lite-openapi.json",
-  "previous_sha256": "adc9d8e4bee083e2ca69fb9c5d541fdc8f22cd4f20f368349f37d7f524152dae",
-  "promoted_sha256": "21b10835554b759b2cc77c3a7b98b135519d45b2efbf24701020701ff1b071be",
+  "previous_sha256": "21b10835554b759b2cc77c3a7b98b135519d45b2efbf24701020701ff1b071be",
+  "promoted_sha256": "f75d0708b32c8f520dc5d15ad1bf57d61424d055849bd86ddb5d831abe95e314",
   "sanitized": true,
   "schema_version": "1.0.0",
   "security_review": {
@@ -22,7 +23,7 @@
     "runtime_routes_removed": false,
     "write_operations_added": true
   },
-  "source_revision": "feat/home-premium-refinement@4613ee9a7941d1cf8eb2d93f3fd02c8786ea5e24",
+  "source_revision": "feat/owner-approved-operations@7230d54e1598acfbf3821f88135ac94be5932bc9",
   "status": "promoted",
-  "validation_status": "dev-pc-backend-and-contract-gates-passed; isolated-physical-android-runtime-qualification-validated; physical-android-home-rendering-blocked-by-unreachable-android-chrome-cdp; mocked-ui-performance-partial; live-production-transfer-pending-reviewed-release"
+  "validation_status": "dev-pc-focused-and-full-gates-passed; exact-candidate-isolated-runtime-qualification-validated; physical-android-candidate-blocked-by-missing-authorized-private-transport-and-isolated-destination; live-production-transfer-pending-reviewed-release"
 }

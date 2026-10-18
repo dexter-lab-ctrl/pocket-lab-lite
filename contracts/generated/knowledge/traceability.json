@@ -881,6 +881,28 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:get:/api/lite/owner-operations/pending",
+      "name": "GET /api/lite/owner-operations/pending",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/owner-operations/{operation_id}",
+      "name": "GET /api/lite/owner-operations/{operation_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:get:/api/lite/policy",
       "name": "GET /api/lite/policy",
       "note": "A test link does not by itself prove runtime verification.",
@@ -2302,6 +2324,105 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:post:/api/lite/owner-operations/clients",
+      "name": "POST /api/lite/owner-operations/clients",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/owner-operations/clients/challenge",
+      "name": "POST /api/lite/owner-operations/clients/challenge",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/owner-operations/clients/{client_id}/revoke",
+      "name": "POST /api/lite/owner-operations/clients/{client_id}/revoke",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/owner-operations/observer-challenge",
+      "name": "POST /api/lite/owner-operations/observer-challenge",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/owner-operations/pending/{operation_id}/approve",
+      "name": "POST /api/lite/owner-operations/pending/{operation_id}/approve",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/owner-operations/pending/{operation_id}/reject",
+      "name": "POST /api/lite/owner-operations/pending/{operation_id}/reject",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/owner-operations/request-challenge",
+      "name": "POST /api/lite/owner-operations/request-challenge",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/owner-operations/requests",
+      "name": "POST /api/lite/owner-operations/requests",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/owner-operations/{operation_id}/cancel",
+      "name": "POST /api/lite/owner-operations/{operation_id}/cancel",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:post:/api/lite/policy/apply",
       "name": "POST /api/lite/policy/apply",
       "note": "A test link does not by itself prove runtime verification.",
@@ -3134,6 +3255,7 @@
         "test:tests/backend/test_lite_device_health_d4.py",
         "test:tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py",
         "test:tests/backend/test_lite_isolated_qualification_lane.py",
+        "test:tests/backend/test_lite_owner_approved_operations.py",
         "test:tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py",
         "test:tests/backend/test_lite_photo_backup.py",
         "test:tests/backend/test_lite_photo_backup_agent.py",
@@ -3152,6 +3274,7 @@
         "test:tests/e2e/lite-accessibility-states.spec.ts",
         "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
         "test:tests/e2e/lite-content-stress.spec.ts",
+        "test:tests/e2e/lite-identity-premium-refinement.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-performance-live.spec.ts",
         "test:tests/e2e/lite-performance.spec.ts",
@@ -3786,6 +3909,14 @@
     {
       "entity": "domain:operations",
       "name": "Operations",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:owner-operations",
+      "name": "Owner Operations",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [],
       "type": "domain",
@@ -4552,6 +4683,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "b2f4d902e788a1cc7faef0b5e3f5314be07c5f2adf3a6f58558c099600b77b83"
+    "source_fingerprint": "58a396f75d19a727f60d7e0e15762aef587386efba2c81e3ed17eb2d72b34489"
   }
 }

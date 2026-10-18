@@ -14,7 +14,7 @@
     "scenario": "recovery-restore-blocked",
     "schema_revision": 1,
     "source_commit": "uncommitted",
-    "source_fingerprint": "7a6ed97ddfc1a9c929c7a93bed8b78d6b192a366f69bd883b33cc24ba699304a",
+    "source_fingerprint": "2c69f48c291c7164b0770626c153c6d8f31741a624baa61866e4435ecff1a0b8",
     "validation_status": "generated"
   }
 }

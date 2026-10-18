@@ -49,6 +49,12 @@ The node cannot provide an arbitrary URL, path, rclone flag, remote, or command.
 
 ## Bounded acceptance workflow
 
+For the protected one-human acceptance path, see
+[Single-use Owner-approved operations](owner-approved-operations.md). That
+contract wraps this existing bounded Photo Backup handler; it does not create
+a second transfer engine or turn the normal collection-wide Devices action
+into an Owner-approved automation surface.
+
 Do not use a collection-wide backup as the first production test when the source contains personal media. Use the backend-owned acceptance fixture only after the read-only destination, capacity, agent, and authorization preflight passes.
 
 1. An authenticated operator requests `POST /api/lite/devices/{node_id}/photo-backup/acceptance-fixture` for an enrolled secondary device.

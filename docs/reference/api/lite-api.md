@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 15153f73f01b004d4d65c89ca969da3a100ec4688b1965a21ea94183cd03948a
+source_fingerprint: f1468fc0155514174de84430ebc156ee858d454b0047bbbbf7b55532e1272166
 schema_revision: 1
 validation_status: generated
 ---
@@ -3489,6 +3489,269 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-owner-operations-clients"></a>
+## POST `/api/lite/owner-operations/clients`
+
+- Operation ID: `register_owner_operation_client_api_lite_owner_operations_clients_post`
+- Summary: Register Owner Operation Client
+- Deprecated: no
+- Tags: `lite-owner-operations`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `ClientRegistrationRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 201 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-owner-operations-clients-challenge"></a>
+## POST `/api/lite/owner-operations/clients/challenge`
+
+- Operation ID: `issue_owner_operation_client_challenge_api_lite_owner_operations_clients_challenge_post`
+- Summary: Issue Owner Operation Client Challenge
+- Deprecated: no
+- Tags: `lite-owner-operations`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `ClientChallengeRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-owner-operations-clients-client-id-revoke"></a>
+## POST `/api/lite/owner-operations/clients/{client_id}/revoke`
+
+- Operation ID: `revoke_owner_operation_client_api_lite_owner_operations_clients__client_id__revoke_post`
+- Summary: Revoke Owner Operation Client
+- Deprecated: no
+- Tags: `lite-owner-operations`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| client_id | path | yes | `string` |
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `ClientRevokeRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-owner-operations-observer-challenge"></a>
+## POST `/api/lite/owner-operations/observer-challenge`
+
+- Operation ID: `issue_owner_operation_observer_challenge_api_lite_owner_operations_observer_challenge_post`
+- Summary: Issue Owner Operation Observer Challenge
+- Deprecated: no
+- Tags: `lite-owner-operations`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `ObserverChallengeRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-owner-operations-pending"></a>
+## GET `/api/lite/owner-operations/pending`
+
+- Operation ID: `owner_operation_pending_api_lite_owner_operations_pending_get`
+- Summary: Owner Operation Pending
+- Deprecated: no
+- Tags: `lite-owner-operations`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-owner-operations-pending-operation-id-approve"></a>
+## POST `/api/lite/owner-operations/pending/{operation_id}/approve`
+
+- Operation ID: `approve_owner_operation_api_lite_owner_operations_pending__operation_id__approve_post`
+- Summary: Approve Owner Operation
+- Deprecated: no
+- Tags: `lite-owner-operations`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| operation_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-owner-operations-pending-operation-id-reject"></a>
+## POST `/api/lite/owner-operations/pending/{operation_id}/reject`
+
+- Operation ID: `reject_owner_operation_api_lite_owner_operations_pending__operation_id__reject_post`
+- Summary: Reject Owner Operation
+- Deprecated: no
+- Tags: `lite-owner-operations`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| operation_id | path | yes | `string` |
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `RejectOperationRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-owner-operations-request-challenge"></a>
+## POST `/api/lite/owner-operations/request-challenge`
+
+- Operation ID: `issue_owner_operation_request_challenge_api_lite_owner_operations_request_challenge_post`
+- Summary: Issue Owner Operation Request Challenge
+- Deprecated: no
+- Tags: `lite-owner-operations`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `RequestChallengeRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-owner-operations-requests"></a>
+## POST `/api/lite/owner-operations/requests`
+
+- Operation ID: `submit_owner_operation_request_api_lite_owner_operations_requests_post`
+- Summary: Submit Owner Operation Request
+- Deprecated: no
+- Tags: `lite-owner-operations`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `SignedOperationRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 201 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-owner-operations-operation-id"></a>
+## GET `/api/lite/owner-operations/{operation_id}`
+
+- Operation ID: `get_owner_operation_api_lite_owner_operations__operation_id__get`
+- Summary: Get Owner Operation
+- Deprecated: no
+- Tags: `lite-owner-operations`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| operation_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-owner-operations-operation-id-cancel"></a>
+## POST `/api/lite/owner-operations/{operation_id}/cancel`
+
+- Operation ID: `cancel_owner_operation_api_lite_owner_operations__operation_id__cancel_post`
+- Summary: Cancel Owner Operation
+- Deprecated: no
+- Tags: `lite-owner-operations`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| operation_id | path | yes | `string` |
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `SignedObserverRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-policy"></a>

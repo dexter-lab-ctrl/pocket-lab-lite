@@ -159,6 +159,21 @@ export const PremiumLongText = createLiteStory('identity', 'identity-premium-lon
 export const PremiumReducedMotion = createLiteStory('identity', 'identity-premium-multiple', { viewport: 'mobile360', notes: 'Reduced-motion assertion belongs to focused mocked Playwright.' });
 export const PremiumActivityOutcomes = createLiteStory('identity', 'identity-premium-multiple');
 export const PremiumActivityEmpty = createLiteStory('identity', 'identity-summary');
+export const OwnerOperationPending = {
+  ...createLiteStory('identity', 'identity-owner-operation-pending', { viewport: 'desktop', notes: 'One server-owned bounded Photo Backup operation awaiting real Owner approval.' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await expectIdentity(canvasElement);
+    await expect(canvas).toHaveTextContent(/Pending approvals/i);
+    await expect(canvas).toHaveTextContent(/Secondary Phone/i);
+    await expect(canvas).toHaveTextContent(/one safe repeat/i);
+  },
+};
+export const OwnerOperationsMultiple = createLiteStory('identity', 'identity-owner-operations-multiple', { viewport: 'desktop', notes: 'Multiple immutable pending operations remain separately reviewable.' });
+export const OwnerOperationExpired = createLiteStory('identity', 'identity-owner-operation-expired', { notes: 'Expired operation is visible as terminal evidence without approval controls.' });
+export const OwnerOperationApprovedExecuting = createLiteStory('identity', 'identity-owner-operation-executing', { viewport: 'desktop', notes: 'Server-owned execution progress after approval; no second Owner action is implied.' });
+export const OwnerOperationCompleted = createLiteStory('identity', 'identity-owner-operation-completed', { viewport: 'desktop', notes: 'Completed bounded operation with indexing truth kept explicit.' });
+export const OwnerOperationFailed = createLiteStory('identity', 'identity-owner-operation-failed', { notes: 'Safe terminal failure with no replayable approval action.' });
+export const OwnerOperationOfflineSaved = createLiteStory('identity', 'identity-owner-operation-offline', { viewport: 'mobile360', notes: 'Saved operation state is review-only; backend freshness prevents approval.' });
 export const PremiumProtectedConfirmation = {
   ...createLiteStory('identity', 'identity-summary', { viewport: 'desktop' }),
   play: async ({ canvasElement }) => {

@@ -520,6 +520,14 @@ def unified_identity_projection(auth_context: dict[str, Any] | None) -> dict[str
             "updated_at": _iso(),
         }
     base = lite_identity_auth.identity_projection(auth_context)
+    try:
+        from . import lite_owner_operations
+
+        base["owner_operations"] = lite_owner_operations.identity_projection(auth_context)
+    except Exception:
+        # The additive operation projection must never make the established
+        # Identity read unavailable during a rolling migration.
+        base["owner_operations"] = {"status": "unavailable", "operations": [], "sanitized": True}
     actor_id = str(((auth_context or {}).get("actor") or {}).get("identity_id") or "")
     if not actor_id:
         base["person"] = None

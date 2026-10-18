@@ -482,6 +482,50 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The durable Photo Backup job bound to an Owner-approved workflow no longer matches its target, destination, or fixed acceptance scope.",
+      "domain": "apps",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:backup_binding_invalid",
+      "name": "backup_binding_invalid",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "high",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Owner-approved Photo Backup binding blocked"
+      ],
+      "user_interpretation": "The approved Photo Backup binding changed, so Pocket Lab stopped safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The durable Photo Backup job bound to an Owner-approved workflow could not be recovered after a restart or delivery failure.",
+      "domain": "apps",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:backup_state_missing",
+      "name": "backup_state_missing",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "high",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Owner-approved Photo Backup recovery failed"
+      ],
+      "user_interpretation": "Pocket Lab could not recover the approved Photo Backup job; request a new approval."
+    },
+    {
+      "confidence": "source-derived",
       "description": "A reliable battery reading was at or below the explicitly configured device threshold while discharging.",
       "domain": "security",
       "event_mapping": [],
@@ -2526,6 +2570,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "A server-owned Photo Backup recovery request supplied a backup identity outside the fixed durable ID format.",
+      "domain": "apps",
+      "event_mapping": [],
+      "http_status": 422,
+      "id": "reason:invalid_backup_id",
+      "name": "invalid_backup_id",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The Photo Backup recovery identity is invalid."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The requested projection domain is invalid.",
       "domain": "projections",
       "event_mapping": [],
@@ -3393,6 +3457,30 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The bounded payload limit was exceeded."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "WebDAV finalization proved transfer to the authorized PhotoPrism originals namespace but the current supported API did not prove indexing.",
+      "domain": "apps",
+      "event_mapping": [],
+      "http_status": 200,
+      "id": "reason:photoprism_indexing_not_proven",
+      "name": "photoprism_indexing_not_proven",
+      "projection_mapping": [
+        "photo_backup_readiness"
+      ],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "PhotoPrism indexing not verified"
+      ],
+      "user_interpretation": "The test photo transfer completed, but PhotoPrism indexing was not independently verified."
     },
     {
       "confidence": "source-derived",
@@ -4842,6 +4930,28 @@
     },
     {
       "confidence": "source-derived",
+      "description": "A recovered Photo Backup job does not match the one server-issued Pictures fixture approved for the bounded workflow.",
+      "domain": "apps",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:source_scope_mismatch",
+      "name": "source_scope_mismatch",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "high",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Photo Backup scope mismatch"
+      ],
+      "user_interpretation": "The approved Photo Backup source scope changed, so Pocket Lab stopped safely."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Private free storage was below the backend scan threshold.",
       "domain": "security",
       "event_mapping": [],
@@ -5703,6 +5813,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "b2f4d902e788a1cc7faef0b5e3f5314be07c5f2adf3a6f58558c099600b77b83"
+    "source_fingerprint": "58a396f75d19a727f60d7e0e15762aef587386efba2c81e3ed17eb2d72b34489"
   }
 }

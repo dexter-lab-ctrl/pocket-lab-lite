@@ -105,3 +105,26 @@
 .theme-pocket-lite-daylight .lite-id-person-role { display: grid; gap: .65rem; margin: .75rem 0; }
 .theme-pocket-lite-daylight .lite-id-person-role label { display: grid; gap: .4rem; }
 .theme-pocket-lite-daylight .lite-id-person-role select { min-height: 44px; border-radius: .7rem; padding: .6rem; color: inherit; background: var(--lite-surface, #fff); border: 1px solid currentColor; }
+
+.theme-pocket-lite-daylight .lite-owner-operation-approvals { display: grid; gap: .9rem; margin-block: 1rem; padding: clamp(.9rem, 2.5vw, 1.3rem); border: 1px solid color-mix(in srgb, currentColor 14%, transparent); border-radius: 1.15rem; background: var(--lite-surface, #fff); }
+.theme-pocket-lite-daylight .lite-owner-operation-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: start; flex-wrap: wrap; }
+.theme-pocket-lite-daylight .lite-owner-operation-heading h2 { margin: .25rem 0 0; }
+.theme-pocket-lite-daylight .lite-owner-operation-heading p { margin: .3rem 0 0; max-width: 32rem; }
+.theme-pocket-lite-daylight .lite-owner-operation-list { display: grid; gap: .8rem; }
+.theme-pocket-lite-daylight .lite-owner-operation-card { display: grid; gap: .75rem; padding: .9rem; border: 1px solid color-mix(in srgb, currentColor 14%, transparent); border-radius: .85rem; min-width: 0; }
+.theme-pocket-lite-daylight .lite-owner-operation-card-head { display: flex; justify-content: space-between; gap: .8rem; align-items: start; }
+.theme-pocket-lite-daylight .lite-owner-operation-card-head h3 { margin: .2rem 0 0; overflow-wrap: anywhere; }
+.theme-pocket-lite-daylight .lite-owner-operation-kicker { font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; opacity: .78; }
+.theme-pocket-lite-daylight .lite-owner-operation-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem .9rem; margin: 0; }
+.theme-pocket-lite-daylight .lite-owner-operation-facts > div { min-width: 0; }
+.theme-pocket-lite-daylight .lite-owner-operation-facts dt { font-size: .78rem; opacity: .76; }
+.theme-pocket-lite-daylight .lite-owner-operation-facts dd { margin: .1rem 0 0; overflow-wrap: anywhere; }
+.theme-pocket-lite-daylight .lite-owner-operation-reason { margin: 0; overflow-wrap: anywhere; }
+.theme-pocket-lite-daylight .lite-owner-operation-details summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; text-decoration: underline; }
+.theme-pocket-lite-daylight .lite-owner-operation-details ul { margin: .2rem 0 0 1.1rem; padding: 0; }
+.theme-pocket-lite-daylight .lite-owner-operation-terminal { margin: 0; font-size: .88rem; overflow-wrap: anywhere; }
+.theme-pocket-lite-daylight .lite-owner-operation-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+@media (max-width: 560px) {
+  .theme-pocket-lite-daylight .lite-owner-operation-facts { grid-template-columns: 1fr; }
+  .theme-pocket-lite-daylight .lite-owner-operation-actions > * { flex: 1 1 9rem; }
+}

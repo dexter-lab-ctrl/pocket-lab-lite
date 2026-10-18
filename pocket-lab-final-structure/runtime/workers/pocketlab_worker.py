@@ -227,6 +227,7 @@ async def worker_recovery_watchdog(stop_event: asyncio.Event) -> None:
                     )
 
             from api_fastapi.services import lite_photo_backup  # type: ignore
+            from api_fastapi.services import lite_owner_operations  # type: ignore
             await asyncio.to_thread(
                 lite_photo_backup.reconcile_stale_jobs
             )
@@ -236,6 +237,7 @@ async def worker_recovery_watchdog(stop_event: asyncio.Event) -> None:
             await asyncio.to_thread(
                 lite_photo_backup.cleanup_expired_credentials
             )
+            await lite_owner_operations.reconcile_operations()
 
             status = BUS.durable_consumer_status(DURABLE_NAME)
             if status.get("healthy") and not status.get("callback_inflight"):
@@ -1375,6 +1377,7 @@ async def main_async() -> int:
 
     from api_fastapi.services import lite_database_recovery  # type: ignore
     from api_fastapi.services import lite_photo_backup  # type: ignore
+    from api_fastapi.services import lite_owner_operations  # type: ignore
     from api_fastapi.services import lite_security_assurance  # type: ignore
 
     # Recover or block on any durable restore journal before this process can
@@ -1387,6 +1390,9 @@ async def main_async() -> int:
         lite_photo_backup.reconcile_pending_credential_revocations
     )
     await asyncio.to_thread(lite_photo_backup.cleanup_expired_credentials)
+    # The worker owns restart reconciliation for approved server-owned
+    # workflows. It runs again after NATS is connected through the watchdog.
+    await lite_owner_operations.reconcile_operations()
     # A worker restart must not strand a previously running assurance row as
     # an apparent success or an eternal active lock.
     await asyncio.to_thread(lite_security_assurance.reconcile_stale_runs)

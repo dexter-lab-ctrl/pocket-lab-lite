@@ -14,6 +14,8 @@ workflow_event_index
 security_database_backups
 policy_revisions
 assurance_runs
+owner_operation_clients
+device_system_profiles
 security_scan_runs
 auth_sessions
 harness_sessions
@@ -23,6 +25,7 @@ security_database_restores
 webauthn_credentials
 device_lifecycle_events
 policy_activation_operations
+owner_approved_operations
 app_action_lifecycle
 assurance_execution_checkpoints
 assurance_findings
@@ -41,6 +44,8 @@ human_credentials
 identity_audit_events
 lite_installed_release_identity
 lite_revision_events
+owner_operation_challenges
+owner_operation_events
 recovery_backup_location_events
 recovery_codes
 recovery_current_state
@@ -55,7 +60,6 @@ workflow_command_state
 auth_session_assurance
 device_health_transitions
 device_lifecycle_transactions
-device_system_profiles
 enterprise_configuration
 harness_recovery_receipts
 human_enrollment_claims

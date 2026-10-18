@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 0b986ffa051807f4b4a1317e0e0687a9dadff7d693ca39a675a36899ff07a5a4
+source_fingerprint: f858d5960124fb445b3af8f996b362b2a3610620e912c8f84c54e41c8c45e3de
 schema_revision: 1
 validation_status: generated
 ---
@@ -56,6 +56,8 @@ validation_status: generated
 | src/lite/LiteIdentity.jsx | liteApi.setupIdentity | POST | `/api/lite/identity/setup` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.passkeyStepUpOptions | POST | `/api/lite/identity/step-up/options` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.verifyPasskeyStepUp | POST | `/api/lite/identity/step-up/verify` | mutation | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.approveOwnerOperation | POST | `/api/lite/owner-operations/pending/{param}/approve` | mutation | no | dynamic |
+| src/lite/LiteIdentity.jsx | liteApi.rejectOwnerOperation | POST | `/api/lite/owner-operations/pending/{param}/reject` | mutation | no | dynamic |
 | src/lite/LiteIdentityEnterprise.jsx | liteApi.passkeyStepUpOptions | POST | `/api/lite/identity/step-up/options` | mutation | no | static |
 | src/lite/LiteIdentityEnterprise.jsx | liteApi.verifyPasskeyStepUp | POST | `/api/lite/identity/step-up/verify` | mutation | no | static |
 | src/lite/LiteRecovery.jsx | liteApi.backupApp | POST | `/api/lite/apps/{param}/backup` | mutation | no | dynamic |
@@ -212,7 +214,7 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/system/activity-summary` | mock | yes | static |
 | src/mocks/identityRulesCompatibilityHandlers.js | MSW handler | GET | `/api/lite/policy/decisions/:decisionId` | mock | yes | static |
 | src/mocks/identityRulesCompatibilityHandlers.js | MSW handler | GET | `/api/lite/policy/templates` | mock | yes | static |
-| src/mocks/identityRulesP1Handlers.js | MSW handler | DELETE | `/api/lite/enterprise/access` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/access` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/enterprise/identity` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/identity/enrollment/consume` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/identity/enrollment/passkey/options` | mock | yes | static |
@@ -268,6 +270,8 @@ validation_status: generated
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/sessions/revoke-others` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/step-up/options` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/step-up/verify` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | DELETE | `/api/lite/owner-operations/pending/:operationId/approve` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/owner-operations/pending/:operationId/reject` | mock | yes | static |
 
 ## Unsupported frontend route references
 
@@ -371,6 +375,15 @@ validation_status: generated
 - `/api/lite/identity/passkeys/login/options`
 - `/api/lite/identity/passkeys/login/verify`
 - `/api/lite/identity/rotate`
+- `/api/lite/owner-operations/clients`
+- `/api/lite/owner-operations/clients/challenge`
+- `/api/lite/owner-operations/clients/{client_id}/revoke`
+- `/api/lite/owner-operations/observer-challenge`
+- `/api/lite/owner-operations/pending`
+- `/api/lite/owner-operations/request-challenge`
+- `/api/lite/owner-operations/requests`
+- `/api/lite/owner-operations/{operation_id}`
+- `/api/lite/owner-operations/{operation_id}/cancel`
 - `/api/lite/policy/apply`
 - `/api/lite/policy/templates`
 - `/api/lite/recovery`

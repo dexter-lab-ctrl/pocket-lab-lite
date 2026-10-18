@@ -579,6 +579,11 @@ def _resolve_acceptance_fixture(
     }
 
 
+def acceptance_fixture_descriptor(node_id: str, fixture_id: Any) -> dict[str, Any]:
+    """Resolve the server-issued fixture without exposing source paths."""
+    return _resolve_acceptance_fixture(_safe_node_id(node_id), fixture_id)
+
+
 def prepare_acceptance_fixture(node_id: str) -> dict[str, Any]:
     """Issue a short-lived, fixed-scope source selector for operator acceptance."""
     node_id = _safe_node_id(node_id)
@@ -1552,6 +1557,12 @@ def status(
     }
 
 
+def job_status(backup_id: str) -> dict[str, Any]:
+    """Return one sanitized durable job projection for server-owned adapters."""
+    _payload, job = _find_job(str(backup_id or ""))
+    return _public_job(job) or {}
+
+
 def fleet_status(
     request: Request | None = None,
 ) -> dict[str, Any]:
@@ -1597,6 +1608,7 @@ def make_start_command(
     request: Request | None = None,
     destination_id: Any = None,
     acceptance_fixture_id: Any = None,
+    backup_id: Any = None,
 ) -> dict[str, Any]:
     node_id = _safe_node_id(node_id)
     if destination_id is not None and destination_id != lite_photo_backup_destinations.CURRENT_DESTINATION_ID:
@@ -1614,6 +1626,85 @@ def make_start_command(
         if acceptance_fixture_id is not None
         else None
     )
+    requested_backup_id = str(backup_id or "").strip()
+    if requested_backup_id:
+        if not re.fullmatch(r"photo-[a-f0-9]{20}", requested_backup_id):
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "status": "invalid_backup_id",
+                    "reason_code": "invalid_backup_id",
+                    "summary": "The existing backup binding is not valid.",
+                    "sanitized": True,
+                },
+            )
+        payload = _state()
+        existing = payload["jobs"].get(requested_backup_id)
+        if not isinstance(existing, dict):
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "status": "backup_state_missing",
+                    "reason_code": "backup_state_missing",
+                    "summary": "The existing photo backup binding could not be recovered.",
+                    "retryable": False,
+                    "sanitized": True,
+                },
+            )
+        if str(existing.get("node_id") or "") != node_id:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "status": "target_identity_mismatch",
+                    "reason_code": "placement_identity_mismatch",
+                    "summary": "The existing photo backup target could not be verified.",
+                    "retryable": False,
+                    "sanitized": True,
+                },
+            )
+        if str(existing.get("destination_id") or "") != lite_photo_backup_destinations.CURRENT_DESTINATION_ID:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "status": "destination_identity_mismatch",
+                    "reason_code": "destination_identity_mismatch",
+                    "summary": "The existing photo backup destination could not be verified.",
+                    "retryable": False,
+                    "sanitized": True,
+                },
+            )
+        requested_fixture_id = str(source_fixture.get("fixture_id") or "") if source_fixture else ""
+        if (
+            not requested_fixture_id
+            or str(existing.get("source_fixture_id") or "") != requested_fixture_id
+            or str(existing.get("source_scope") or "") != ACCEPTANCE_FIXTURE_SCOPE
+            or list(existing.get("collections") or []) != [ACCEPTANCE_FIXTURE_COLLECTION]
+        ):
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "status": "source_scope_mismatch",
+                    "reason_code": "source_scope_mismatch",
+                    "summary": "The existing photo backup scope could not be verified.",
+                    "retryable": False,
+                    "sanitized": True,
+                },
+            )
+        return {
+            "command_id": requested_backup_id,
+            "backup_id": requested_backup_id,
+            "node_id": node_id,
+            "collections": [ACCEPTANCE_FIXTURE_COLLECTION],
+            "source_scope": ACCEPTANCE_FIXTURE_SCOPE,
+            "source_fixture": source_fixture,
+            "source_fixture_id": requested_fixture_id,
+            "reason": _safe_text(reason, "manual photo backup", 100),
+            "provider": _PROVIDER_ID,
+            "destination_id": lite_photo_backup_destinations.CURRENT_DESTINATION_ID,
+            "requested_by": "lite-api",
+            "requested_at": _now(),
+            "recovered_binding": True,
+        }
     # Read the current projection once first so an active request can be
     # answered idempotently without making another network/runtime probe.
     current = status(node_id, request)
@@ -1890,10 +1981,14 @@ def make_cancel_command(
     node_id: str,
     *,
     reason: str = "manual cancel",
+    backup_id: Any = None,
 ) -> dict[str, Any]:
     node_id = _safe_node_id(node_id)
     payload = _state()
-    backup_id = str(
+    requested_backup_id = str(backup_id or "").strip()
+    if requested_backup_id and not re.fullmatch(r"photo-[a-f0-9]{20}", requested_backup_id):
+        raise ValueError("invalid_backup_id")
+    backup_id = requested_backup_id or str(
         payload["latest_by_node"].get(node_id) or ""
     )
     job = (
