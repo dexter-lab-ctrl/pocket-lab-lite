@@ -558,6 +558,108 @@ def test_dispatch_reuses_durable_backup_binding_after_publish_loss(owner_operati
     assert len(submissions) == 2
 
 
+def test_redelivered_dispatch_reuses_one_durable_backup_binding(owner_operation_runtime, monkeypatch):
+    """A reclaimed dispatch may publish twice, but it must bind one job."""
+    runtime = owner_operation_runtime
+    private, _public, _registered = _register(runtime, "redelivery-owner-client")
+    _deps, operations = runtime["modules"]
+    operation = _request(
+        runtime,
+        private,
+        "redelivery-owner-client",
+        _descriptor("redelivery-owner-client", key="redelivery-owner-0001"),
+    )
+    operations.approve_operation(runtime["approval_auth"], operation["operation_id"])
+
+    from api_fastapi.services import action_queue, lite_photo_backup
+
+    fixture_id = "fixture-0123456789abcdef0123"
+    backup_id = "photo-0123456789abcdef0123"
+    monkeypatch.setattr(
+        lite_photo_backup,
+        "prepare_acceptance_fixture",
+        lambda _node: {"fixture_id": fixture_id},
+    )
+    monkeypatch.setattr(
+        lite_photo_backup,
+        "acceptance_fixture_descriptor",
+        lambda _node, fixture: {
+            "fixture_id": fixture,
+            "collection": "pictures",
+            "scope": "bounded_acceptance_fixture",
+        },
+    )
+    monkeypatch.setattr(
+        lite_photo_backup,
+        "job_status",
+        lambda _backup_id: {
+            "backup_id": backup_id,
+            "node_id": "secondary-phone",
+            "destination_id": "server-photoprism-originals",
+            "destination_contract_version": 2,
+            "source_fixture_id": fixture_id,
+            "source_scope": "bounded_acceptance_fixture",
+            "collections": ["pictures"],
+            "status": "queued",
+        },
+    )
+
+    make_calls = []
+
+    def start(_node, collections, **kwargs):
+        make_calls.append(dict(kwargs))
+        return {
+            "backup_id": backup_id,
+            "node_id": "secondary-phone",
+            "collections": collections,
+        }
+
+    monkeypatch.setattr(lite_photo_backup, "make_start_command", start)
+
+    submissions = []
+    first_publish_started = asyncio.Event()
+    release_first_publish = asyncio.Event()
+
+    async def submit(subject, event_type, command, *, trace_id):
+        submissions.append((subject, event_type, command, trace_id))
+        if len(submissions) == 1:
+            # Simulate a worker that remains in the external publish call long
+            # enough for the 30-second durable dispatch lease to be reclaimed.
+            with runtime["db"][1]() as conn:
+                with runtime["db"][0](conn) as tx:
+                    tx.execute(
+                        "UPDATE owner_approved_operations SET updated_at=? WHERE operation_id=?",
+                        (
+                            (datetime.now(timezone.utc) - timedelta(seconds=60))
+                            .isoformat()
+                            .replace("+00:00", "Z"),
+                            operation["operation_id"],
+                        ),
+                    )
+            first_publish_started.set()
+            await release_first_publish.wait()
+        return {"status": "queued"}
+
+    monkeypatch.setattr(action_queue, "submit_domain_command", submit)
+
+    async def run_redelivery():
+        first_task = asyncio.create_task(
+            operations.dispatch_approved_operation(operation["operation_id"])
+        )
+        await first_publish_started.wait()
+        second = await operations.dispatch_approved_operation(operation["operation_id"])
+        release_first_publish.set()
+        first = await first_task
+        return first, second
+
+    first, second = asyncio.run(run_redelivery())
+    assert first["execution_stage"] == "initial_dispatched"
+    assert second["execution_stage"] == "initial_dispatched"
+    assert [call.get("backup_id") for call in make_calls] == [None, backup_id]
+    assert [item[2]["backup_id"] for item in submissions] == [backup_id, backup_id]
+    assert first["backup_id"] == second["backup_id"] == backup_id
+
+
 def test_approval_expiry_is_terminal_and_does_not_execute(owner_operation_runtime):
     runtime = owner_operation_runtime
     private, _public, _registered = _register(runtime)
