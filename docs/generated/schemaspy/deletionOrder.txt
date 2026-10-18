@@ -23,7 +23,6 @@ policy_runtime_state
 human_enrollment_claims
 harness_recovery_receipts
 enterprise_configuration
-device_system_profiles
 device_lifecycle_transactions
 device_health_transitions
 auth_session_assurance
@@ -38,6 +37,8 @@ release_runtime_projection
 recovery_current_state
 recovery_codes
 recovery_backup_location_events
+owner_operation_events
+owner_operation_challenges
 lite_revision_events
 lite_installed_release_identity
 identity_audit_events
@@ -56,6 +57,7 @@ assurance_scenarios
 assurance_findings
 assurance_execution_checkpoints
 app_action_lifecycle
+owner_approved_operations
 policy_activation_operations
 device_lifecycle_events
 webauthn_credentials
@@ -65,6 +67,8 @@ policy_decision_details
 harness_sessions
 auth_sessions
 security_scan_runs
+device_system_profiles
+owner_operation_clients
 assurance_runs
 policy_revisions
 security_database_backups

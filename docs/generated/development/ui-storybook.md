@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: e7832fd21e4460aae42aea27866364cdca049486b2d426df522ed0c74e529d52
+source_fingerprint: 67a469fbca73d517b951074fc3ba285edc0b78aefc79a8639783818c050446b3
 schema_revision: 1
 validation_status: generated
 ---
@@ -175,6 +175,13 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 - `PremiumReducedMotion`
 - `PremiumActivityOutcomes`
 - `PremiumActivityEmpty`
+- `OwnerOperationPending`
+- `OwnerOperationsMultiple`
+- `OwnerOperationExpired`
+- `OwnerOperationApprovedExecuting`
+- `OwnerOperationCompleted`
+- `OwnerOperationFailed`
+- `OwnerOperationOfflineSaved`
 - `PremiumProtectedConfirmation`
 - `PremiumPeopleDetails`
 

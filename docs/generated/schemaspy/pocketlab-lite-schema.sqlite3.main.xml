@@ -1132,6 +1132,7 @@
       </table>
       <table name="device_system_profiles" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="node_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="target_node_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="owner_approved_operations"/>
             <parent column="device_id" foreignKey="" implied="false" onDeleteCascade="true" table="device_current_state"/>
          </column>
          <column autoUpdated="false" defaultValue="1" digits="0" id="1" name="profile_schema_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
@@ -1477,6 +1478,8 @@
             <child column="human_id" foreignKey="" implied="false" onDeleteCascade="true" table="human_credentials"/>
             <child column="created_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_enrollment_claims"/>
             <child column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_enrollment_claims"/>
+            <child column="approved_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="owner_approved_operations"/>
+            <child column="created_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="owner_operation_clients"/>
             <child column="requested_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_activation_operations"/>
             <child column="approved_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_approvals"/>
             <child column="initiating_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_approvals"/>
@@ -1605,6 +1608,69 @@
             <column ascending="true" name="event_id"/>
          </index>
       </table>
+      <table name="owner_approved_operations" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="operation_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="operation_id" foreignKey="" implied="false" onDeleteCascade="true" table="owner_operation_events"/>
+         </column>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="1" name="contract_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
+            <parent column="version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="schema_migrations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="operation_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="requester_client_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="client_id" foreignKey="" implied="false" onDeleteCascade="false" table="owner_operation_clients"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="target_node_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="node_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="device_system_profiles"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="target_identity_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="target_binding_digest" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="destination_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="destination_contract_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
+            <parent column="version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="schema_migrations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="descriptor_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="scope_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="scope_digest" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="idempotency_key" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="approval_deadline" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="approved_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="approved_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="approval_assurance_ref" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="execution_deadline" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'awaiting_approval'" digits="0" id="21" name="execution_stage" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="fixture_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="23" name="backup_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="24" name="repeat_backup_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="25" name="terminal_reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="26" name="evidence_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="27" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="operation_id" sequenceNumberInPK="1"/>
+         <index name="owner_approved_operations_s_pk" unique="true">
+            <column ascending="true" name="operation_id"/>
+         </index>
+         <index name="idx_owner_approved_operations_lifecycle" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="approval_deadline"/>
+            <column ascending="true" name="execution_deadline"/>
+            <column ascending="true" name="updated_at"/>
+         </index>
+         <index name="idx_owner_approved_operations_requester" unique="false">
+            <column ascending="true" name="requester_client_id"/>
+            <column ascending="true" name="created_at"/>
+         </index>
+         <index name="sqlite_autoindex_owner_approved_operations_1" unique="true">
+            <column ascending="true" name="operation_id"/>
+         </index>
+         <index name="sqlite_autoindex_owner_approved_operations_2" unique="true">
+            <column ascending="true" name="requester_client_id"/>
+            <column ascending="true" name="idempotency_key"/>
+         </index>
+      </table>
       <table name="owner_claims" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="claim_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <child column="owner_claim_id" foreignKey="" implied="false" onDeleteCascade="true" table="webauthn_challenges"/>
@@ -1637,6 +1703,92 @@
          </index>
          <index name="sqlite_autoindex_owner_claims_3" unique="true">
             <column ascending="true" name="authority_hash"/>
+         </index>
+      </table>
+      <table name="owner_operation_challenges" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="challenge_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="client_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="client_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="owner_operation_clients"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="purpose" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="operation_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="binding_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="binding_digest" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="signing_payload_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="nonce_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="issued_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="10" name="failed_attempts" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="consumed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="challenge_id" sequenceNumberInPK="1"/>
+         <index name="owner_operation_challenges_s_pk" unique="true">
+            <column ascending="true" name="challenge_id"/>
+         </index>
+         <index name="idx_owner_operation_challenges_expiry" unique="false">
+            <column ascending="true" name="expires_at"/>
+            <column ascending="true" name="consumed_at"/>
+            <column ascending="true" name="client_id"/>
+         </index>
+         <index name="sqlite_autoindex_owner_operation_challenges_1" unique="true">
+            <column ascending="true" name="challenge_id"/>
+         </index>
+         <index name="sqlite_autoindex_owner_operation_challenges_2" unique="true">
+            <column ascending="true" name="nonce_hash"/>
+         </index>
+      </table>
+      <table name="owner_operation_clients" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="client_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="requester_client_id" foreignKey="" implied="false" onDeleteCascade="false" table="owner_approved_operations"/>
+            <child column="client_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="owner_operation_challenges"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="display_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="public_key" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="public_key_fingerprint" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="capabilities_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'active'" digits="0" id="5" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_by_human_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="expires_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="last_used_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="revoked_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="11" name="revoke_reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="client_id" sequenceNumberInPK="1"/>
+         <index name="owner_operation_clients_s_pk" unique="true">
+            <column ascending="true" name="client_id"/>
+         </index>
+         <index name="idx_owner_operation_clients_status" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="expires_at"/>
+            <column ascending="true" name="created_at"/>
+         </index>
+         <index name="sqlite_autoindex_owner_operation_clients_1" unique="true">
+            <column ascending="true" name="client_id"/>
+         </index>
+         <index name="sqlite_autoindex_owner_operation_clients_2" unique="true">
+            <column ascending="true" name="public_key_fingerprint"/>
+         </index>
+      </table>
+      <table name="owner_operation_events" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="event_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="operation_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="operation_id" foreignKey="" implied="false" onDeleteCascade="true" table="owner_approved_operations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="occurred_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="actor_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="4" name="actor_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="event_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="6" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="8" name="evidence_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="event_id" sequenceNumberInPK="1"/>
+         <index name="owner_operation_events_s_pk" unique="true">
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="idx_owner_operation_events_operation" unique="false">
+            <column ascending="true" name="operation_id"/>
+            <column ascending="true" name="event_id"/>
          </index>
       </table>
       <table name="phase3b_current_state" remarks="" type="TABLE">
@@ -2331,6 +2483,8 @@
             <child column="auth_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="human_identities"/>
             <child column="schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_installed_release_identity"/>
             <child column="projection_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_revision_events"/>
+            <child column="contract_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="owner_approved_operations"/>
+            <child column="destination_contract_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="owner_approved_operations"/>
             <child column="initiating_authorization_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_approvals"/>
             <child column="schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="release_runtime_projection"/>
             <child column="schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="security_database_backups"/>

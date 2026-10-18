@@ -4682,7 +4682,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 502,
+  "page_count": 503,
   "page_types": [
     "overview",
     "guide",
@@ -16621,6 +16621,30 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "operations/owner-approved-operations.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "apps",
+      "generated": false,
+      "id": "page:operations/owner-approved-operations",
+      "intents": [
+        "operate",
+        "diagnose"
+      ],
+      "page_type": "reference",
+      "path": "operations/owner-approved-operations.md",
+      "primary_audience": "operator",
+      "primary_navigation_owner": "operate",
+      "related_pages": [],
+      "source_or_generator": "operations/owner-approved-operations.md",
+      "title": "Single-use Owner-approved operations",
+      "url": "/operations/owner-approved-operations/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "operations/photo-backup-enterprise-reliability.md"
       ],
       "confidence": "source-derived",
@@ -17896,7 +17920,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "d865af11e3de496673516801490c8abd4753918e94c94a0fd00d3967f42c8993",
+  "source_fingerprint": "c27947ccd5d1c682cf791505f746a385bba0dd440b2e9d1b833cef6876f59874",
   "top_level": [
     "start-here",
     "use",

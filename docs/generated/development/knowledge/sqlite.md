@@ -674,6 +674,21 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | Indexes | idx_lite_revision_events_retention, idx_lite_revision_events_replay, idx_lite_revision_events_domain_revision |
 | Confidence | inferred |
 
+## `owner_approved_operations`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | restricted operational metadata |
+| Indexes | idx_owner_approved_operations_requester, idx_owner_approved_operations_lifecycle, sqlite_autoindex_owner_approved_operations_2, sqlite_autoindex_owner_approved_operations_1 |
+| Confidence | inferred |
+
 ## `owner_claims`
 
 Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
@@ -687,6 +702,51 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
 | Classification | restricted operational metadata |
 | Indexes | idx_owner_claims_active, sqlite_autoindex_owner_claims_3, sqlite_autoindex_owner_claims_2, sqlite_autoindex_owner_claims_1 |
+| Confidence | inferred |
+
+## `owner_operation_challenges`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | restricted operational metadata |
+| Indexes | idx_owner_operation_challenges_expiry, sqlite_autoindex_owner_operation_challenges_2, sqlite_autoindex_owner_operation_challenges_1 |
+| Confidence | inferred |
+
+## `owner_operation_clients`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | idx_owner_operation_clients_status, sqlite_autoindex_owner_operation_clients_2, sqlite_autoindex_owner_operation_clients_1 |
+| Confidence | inferred |
+
+## `owner_operation_events`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | restricted operational metadata |
+| Indexes | idx_owner_operation_events_operation |
 | Confidence | inferred |
 
 ## `phase3b_current_state`

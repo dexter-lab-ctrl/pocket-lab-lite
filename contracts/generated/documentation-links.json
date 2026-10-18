@@ -373,6 +373,14 @@
         "title": "GET /api/lite/media-backup",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-media-backup"
       },
+      "endpoint:GET:/api/lite/owner-operations/pending": {
+        "title": "GET /api/lite/owner-operations/pending",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-owner-operations-pending"
+      },
+      "endpoint:GET:/api/lite/owner-operations/{operation_id}": {
+        "title": "GET /api/lite/owner-operations/{operation_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-owner-operations-operation-id"
+      },
       "endpoint:GET:/api/lite/policy": {
         "title": "GET /api/lite/policy",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-policy"
@@ -888,6 +896,42 @@
       "endpoint:POST:/api/lite/identity/step-up/verify": {
         "title": "POST /api/lite/identity/step-up/verify",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-step-up-verify"
+      },
+      "endpoint:POST:/api/lite/owner-operations/clients": {
+        "title": "POST /api/lite/owner-operations/clients",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-owner-operations-clients"
+      },
+      "endpoint:POST:/api/lite/owner-operations/clients/challenge": {
+        "title": "POST /api/lite/owner-operations/clients/challenge",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-owner-operations-clients-challenge"
+      },
+      "endpoint:POST:/api/lite/owner-operations/clients/{client_id}/revoke": {
+        "title": "POST /api/lite/owner-operations/clients/{client_id}/revoke",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-owner-operations-clients-client-id-revoke"
+      },
+      "endpoint:POST:/api/lite/owner-operations/observer-challenge": {
+        "title": "POST /api/lite/owner-operations/observer-challenge",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-owner-operations-observer-challenge"
+      },
+      "endpoint:POST:/api/lite/owner-operations/pending/{operation_id}/approve": {
+        "title": "POST /api/lite/owner-operations/pending/{operation_id}/approve",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-owner-operations-pending-operation-id-approve"
+      },
+      "endpoint:POST:/api/lite/owner-operations/pending/{operation_id}/reject": {
+        "title": "POST /api/lite/owner-operations/pending/{operation_id}/reject",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-owner-operations-pending-operation-id-reject"
+      },
+      "endpoint:POST:/api/lite/owner-operations/request-challenge": {
+        "title": "POST /api/lite/owner-operations/request-challenge",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-owner-operations-request-challenge"
+      },
+      "endpoint:POST:/api/lite/owner-operations/requests": {
+        "title": "POST /api/lite/owner-operations/requests",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-owner-operations-requests"
+      },
+      "endpoint:POST:/api/lite/owner-operations/{operation_id}/cancel": {
+        "title": "POST /api/lite/owner-operations/{operation_id}/cancel",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-owner-operations-operation-id-cancel"
       },
       "endpoint:POST:/api/lite/policy/apply": {
         "title": "POST /api/lite/policy/apply",
@@ -2005,6 +2049,14 @@
         "title": "authentication_required",
         "url": "../../docs/generated/development/reason-codes.md#authentication-required"
       },
+      "reason:backup_binding_invalid": {
+        "title": "backup_binding_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#backup-binding-invalid"
+      },
+      "reason:backup_state_missing": {
+        "title": "backup_state_missing",
+        "url": "../../docs/generated/development/reason-codes.md#backup-state-missing"
+      },
       "reason:battery_policy_threshold": {
         "title": "battery_policy_threshold",
         "url": "../../docs/generated/development/reason-codes.md#battery-policy-threshold"
@@ -2393,6 +2445,10 @@
         "title": "interrupted",
         "url": "../../docs/generated/development/reason-codes.md#interrupted"
       },
+      "reason:invalid_backup_id": {
+        "title": "invalid_backup_id",
+        "url": "../../docs/generated/development/reason-codes.md#invalid-backup-id"
+      },
       "reason:invalid_domain": {
         "title": "invalid_domain",
         "url": "../../docs/generated/development/reason-codes.md#invalid-domain"
@@ -2564,6 +2620,10 @@
       "reason:payload_too_large": {
         "title": "payload_too_large",
         "url": "../../docs/generated/development/reason-codes.md#payload-too-large"
+      },
+      "reason:photoprism_indexing_not_proven": {
+        "title": "photoprism_indexing_not_proven",
+        "url": "../../docs/generated/development/reason-codes.md#photoprism-indexing-not-proven"
       },
       "reason:placement_identity_mismatch": {
         "title": "placement_identity_mismatch",
@@ -2852,6 +2912,10 @@
       "reason:source_inventory_failed": {
         "title": "source_inventory_failed",
         "url": "../../docs/generated/development/reason-codes.md#source-inventory-failed"
+      },
+      "reason:source_scope_mismatch": {
+        "title": "source_scope_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#source-scope-mismatch"
       },
       "reason:storage_pressure": {
         "title": "storage_pressure",
@@ -3269,10 +3333,30 @@
         "schema_url": "../../docs/generated/schemaspy/tables/lite_revision_events.html",
         "title": "lite_revision_events"
       },
+      "table:owner_approved_operations": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#owner-approved-operations",
+        "schema_url": "../../docs/generated/schemaspy/tables/owner_approved_operations.html",
+        "title": "owner_approved_operations"
+      },
       "table:owner_claims": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#owner-claims",
         "schema_url": "../../docs/generated/schemaspy/tables/owner_claims.html",
         "title": "owner_claims"
+      },
+      "table:owner_operation_challenges": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#owner-operation-challenges",
+        "schema_url": "../../docs/generated/schemaspy/tables/owner_operation_challenges.html",
+        "title": "owner_operation_challenges"
+      },
+      "table:owner_operation_clients": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#owner-operation-clients",
+        "schema_url": "../../docs/generated/schemaspy/tables/owner_operation_clients.html",
+        "title": "owner_operation_clients"
+      },
+      "table:owner_operation_events": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#owner-operation-events",
+        "schema_url": "../../docs/generated/schemaspy/tables/owner_operation_events.html",
+        "title": "owner_operation_events"
       },
       "table:phase3b_current_state": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#phase3b-current-state",
@@ -3467,7 +3551,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "3a5b9b38bb615ba12afe79f928548eaf31e35874dd8e62b6bc23cb126daa87ec",
+    "aggregate_fingerprint": "365a541be2bf8d7f82a70b0e89f675edae0a3d3481ef809ee0d53d3ffec74780",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3477,8 +3561,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "21b10835554b759b2cc77c3a7b98b135519d45b2efbf24701020701ff1b071be",
-      "contracts/metadata/documentation-platform.json": "50a2ba3bf86579e0e816cfe8da1a9ca12ba8eaab777d10d38941d142e1c219ce",
+      "contracts/generated/lite-openapi.json": "f75d0708b32c8f520dc5d15ad1bf57d61424d055849bd86ddb5d831abe95e314",
+      "contracts/metadata/documentation-platform.json": "8581a61d27860c218bdb1e23d6b806cc3c8512685be07712338a277b1fee22e2",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -3520,6 +3604,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql": "dcaedcf9d44d99fb07895ab314852157b4f41cbf465bad674a6c78af22bd849e",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql": "c84441cc13c352773b69c1aedbd585907ea96643e5a777929da03251e676342c",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0040_home_activity_read_cursors.sql": "af84425c0179761b47ab078dec5d27fec1696742145b80c9b2148ed4c7276dc2",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql": "926786b6f279ee6cf4bbeb5cd92032c6ce04921d19118d0f8f99557264cb58fe",
       "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a"
     },
     "validation_state": "generated"

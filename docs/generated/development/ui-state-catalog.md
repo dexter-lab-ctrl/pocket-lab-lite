@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 9e50b684ee5de7b0e977a5e9fea0020580f3164b2ae8ad0c0674f2df2b3f9781
+source_fingerprint: 0738bf04c4bb0214c1e1f40cf5bc152d17ad499a663a7a96078914e08a8e9545
 schema_revision: 1
 validation_status: generated
 ---
@@ -82,6 +82,12 @@ validation_status: generated
 | `pocket-lab-lite-identity-premiumreducedmotion` | identity | `identity-premium-multiple` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-premiumreducedmotion-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-identity-premiumactivityoutcomes` | identity | `identity-premium-multiple` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-premiumactivityoutcomes-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-identity-premiumactivityempty` | identity | `identity-summary` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-premiumactivityempty-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-owneroperationsmultiple` | identity | `identity-owner-operations-multiple` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-owneroperationsmultiple-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-owneroperationexpired` | identity | `identity-owner-operation-expired` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-owneroperationexpired-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-owneroperationapprovedexecuting` | identity | `identity-owner-operation-executing` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-owneroperationapprovedexecuting-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-owneroperationcompleted` | identity | `identity-owner-operation-completed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-owneroperationcompleted-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-owneroperationfailed` | identity | `identity-owner-operation-failed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-owneroperationfailed-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-owneroperationofflinesaved` | identity | `identity-owner-operation-offline` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-owneroperationofflinesaved-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-recovery-nobackupsyet` | recovery | `recovery-no-backups` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-nobackupsyet-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-recovery-backupfailed` | recovery | `recovery-backup-failed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-backupfailed-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-recovery-savedofflinesnapshot` | recovery | `offline-saved` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-savedofflinesnapshot-{viewport}.png` | fixture-dependent |

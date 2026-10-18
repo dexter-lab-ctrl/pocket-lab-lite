@@ -38,6 +38,7 @@ PROTECTED_ACTIONS = frozenset(
         "device.restart",
         "device.repair",
         "identity.passkey.revoke",
+        "owner.operations.approve",
         "backup.create",
         "backup.verify",
         "backup.location.manage",

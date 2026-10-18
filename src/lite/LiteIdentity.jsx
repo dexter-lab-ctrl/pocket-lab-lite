@@ -19,6 +19,7 @@ import IdentityAccessJourney from './identity/IdentityAccessJourney.jsx';
 import IdentityManageContent from './identity/IdentityManageContent.jsx';
 import IdentityDetailsContent from './identity/IdentityDetailsContent.jsx';
 import IdentityActivityTimeline from './identity/IdentityActivityTimeline.jsx';
+import OwnerOperationApprovals from './identity/OwnerOperationApprovals.jsx';
 import { identityPremiumProjection } from './identity/identityPremiumView.js';
 import './identity/identityPremium.css';
 import { LiteField } from './components/LiteSafeForms.jsx';
@@ -322,6 +323,18 @@ export default function IdentityScreen() {
     if (result) setShowEnterpriseOptIn(false);
   }
 
+  async function approveOwnerOperation(operation) {
+    const operationId = operation?.operation_id || '';
+    if (!operationId) return;
+    await run(`approve:${operationId}`, () => withOwnerStepUp('owner.operations.approve', () => liteApi.approveOwnerOperation(operationId)), 'Owner approval recorded. The server-owned workflow will report its own progress.');
+  }
+
+  async function rejectOwnerOperation(operation) {
+    const operationId = operation?.operation_id || '';
+    if (!operationId) return;
+    await run(`reject:${operationId}`, () => liteApi.rejectOwnerOperation(operationId), 'The bounded operation was rejected.');
+  }
+
   function changeManageSection(section) { if (section !== 'recovery') setRecoveryCodes([]); setManageSection(section); }
   function closeManage() { setManageOpen(false); setRecoveryCodes([]); }
   function openManage(section = 'overview') { changeManageSection(section); setManageOpen(true); }
@@ -345,6 +358,8 @@ export default function IdentityScreen() {
   }
   const workspaceStory = accessOverview.workspaceStory;
   const currentRoleLabel = enterpriseRole || (currentPerson?.is_local_owner ? 'Owner' : 'Personal Mode');
+  const ownerOperations = Array.isArray(data?.owner_operations?.operations) ? data.owner_operations.operations : [];
+  const ownerOperationsFresh = premiumView.fresh && data?.owner_operations?.status === 'ok';
 
   return (
     <>
@@ -430,6 +445,7 @@ export default function IdentityScreen() {
             else if (stage === 'authorization') openDetails('mode');
             else openDetails('identity');
           }} />
+          <OwnerOperationApprovals operations={ownerOperations} fresh={ownerOperationsFresh} busy={busy} compact onApprove={approveOwnerOperation} onReject={rejectOwnerOperation} />
           <section className="lite-id-preview"><div><h2>Recent Activity</h2><button type="button" onClick={() => openManage('activity')}>View all activity</button></div><IdentityActivityTimeline items={data?.recent_activity} limit={3} onDetails={(event) => openDetails('activity', event)} /></section>
           <div className="lite-id-overview-action"><LiteButton variant="secondary" onClick={() => openManage('overview')}>Manage Access</LiteButton></div>
           <LiteSheet open={manageOpen} onClose={closeManage} title="Manage access" eyebrow="Identity & Access" description="Review and manage your reported access." className="lite-identity-manage-sheet">
@@ -440,6 +456,7 @@ export default function IdentityScreen() {
               onSignOutSession={requestSignOutSession} onSignOutOthers={requestSignOutOthers}
               onRegenerate={requestRecoveryRegeneration} onCopyCodes={copyRecoveryCodes} onSignOut={signOut}
               passwordForm={passwords} onPasswordForm={setPasswords} onChangePassword={changePassword}
+              ownerOperations={ownerOperations} ownerOperationsFresh={ownerOperationsFresh} onApproveOwnerOperation={approveOwnerOperation} onRejectOwnerOperation={rejectOwnerOperation}
               enterpriseEnabled={Boolean(data?.enterprise?.enabled)}
               onReviewEnterprise={() => setShowEnterpriseOptIn((value) => !value)}
               showEnterpriseOptIn={showEnterpriseOptIn}

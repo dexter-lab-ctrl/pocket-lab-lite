@@ -289,6 +289,30 @@
       "user_message": "Sign in before making this change."
     },
     {
+      "code": "backup_binding_invalid",
+      "domain": "apps",
+      "http_status": 409,
+      "meaning": "The durable Photo Backup job bound to an Owner-approved workflow no longer matches its target, destination, or fixed acceptance scope.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "high",
+      "terminal": true,
+      "user_message": "The approved Photo Backup binding changed, so Pocket Lab stopped safely."
+    },
+    {
+      "code": "backup_state_missing",
+      "domain": "apps",
+      "http_status": 409,
+      "meaning": "The durable Photo Backup job bound to an Owner-approved workflow could not be recovered after a restart or delivery failure.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "high",
+      "terminal": true,
+      "user_message": "Pocket Lab could not recover the approved Photo Backup job; request a new approval."
+    },
+    {
       "code": "battery_policy_threshold",
       "domain": "security",
       "http_status": 200,
@@ -1453,6 +1477,18 @@
       "user_message": "The operation was interrupted."
     },
     {
+      "code": "invalid_backup_id",
+      "domain": "apps",
+      "http_status": 422,
+      "meaning": "A server-owned Photo Backup recovery request supplied a backup identity outside the fixed durable ID format.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "warning",
+      "terminal": true,
+      "user_message": "The Photo Backup recovery identity is invalid."
+    },
+    {
       "code": "invalid_domain",
       "domain": "projections",
       "http_status": 400,
@@ -1967,6 +2003,18 @@
       "severity": "warning",
       "terminal": false,
       "user_message": "The bounded payload limit was exceeded."
+    },
+    {
+      "code": "photoprism_indexing_not_proven",
+      "domain": "apps",
+      "http_status": 200,
+      "meaning": "WebDAV finalization proved transfer to the authorized PhotoPrism originals namespace but the current supported API did not prove indexing.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "The test photo transfer completed, but PhotoPrism indexing was not independently verified."
     },
     {
       "code": "placement_identity_mismatch",
@@ -2837,6 +2885,18 @@
       "user_message": "Runtime Security Assurance could not continue safely."
     },
     {
+      "code": "source_scope_mismatch",
+      "domain": "apps",
+      "http_status": 409,
+      "meaning": "A recovered Photo Backup job does not match the one server-issued Pictures fixture approved for the bounded workflow.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "high",
+      "terminal": true,
+      "user_message": "The approved Photo Backup source scope changed, so Pocket Lab stopped safely."
+    },
+    {
       "code": "storage_pressure",
       "domain": "security",
       "http_status": 200,
@@ -3342,5 +3402,5 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "deeea5b79e62bc2072d73cb8184d886a70a53f5fb1cf5654bed0ad672eacf7a9"
+  "source_fingerprint": "ead2247102568474188dcb4d882355460b11a98916a72a41283cae775c69a8ca"
 }

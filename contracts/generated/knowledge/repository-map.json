@@ -135,6 +135,7 @@
         "domain:node",
         "domain:operation",
         "domain:operations",
+        "domain:owner-operations",
         "domain:parity",
         "domain:prepared_state",
         "domain:projections",
@@ -456,6 +457,8 @@
         "api:get:/api/lite/identity",
         "api:get:/api/lite/identity/owner-claim/status",
         "api:get:/api/lite/media-backup",
+        "api:get:/api/lite/owner-operations/pending",
+        "api:get:/api/lite/owner-operations/{operation_id}",
         "api:get:/api/lite/policy",
         "api:get:/api/lite/policy/decisions/{decision_id}",
         "api:get:/api/lite/policy/templates",
@@ -585,6 +588,15 @@
         "api:post:/api/lite/identity/setup",
         "api:post:/api/lite/identity/step-up/options",
         "api:post:/api/lite/identity/step-up/verify",
+        "api:post:/api/lite/owner-operations/clients",
+        "api:post:/api/lite/owner-operations/clients/challenge",
+        "api:post:/api/lite/owner-operations/clients/{client_id}/revoke",
+        "api:post:/api/lite/owner-operations/observer-challenge",
+        "api:post:/api/lite/owner-operations/pending/{operation_id}/approve",
+        "api:post:/api/lite/owner-operations/pending/{operation_id}/reject",
+        "api:post:/api/lite/owner-operations/request-challenge",
+        "api:post:/api/lite/owner-operations/requests",
+        "api:post:/api/lite/owner-operations/{operation_id}/cancel",
         "api:post:/api/lite/policy/apply",
         "api:post:/api/lite/recovery/apps/{app_id}/backup",
         "api:post:/api/lite/recovery/apps/{app_id}/backup-to-target",
@@ -635,6 +647,7 @@
         "domain:node",
         "domain:operation",
         "domain:operations",
+        "domain:owner-operations",
         "domain:parity",
         "domain:prepared_state",
         "domain:projections",
@@ -679,6 +692,7 @@
         "domain:node",
         "domain:operation",
         "domain:operations",
+        "domain:owner-operations",
         "domain:parity",
         "domain:prepared_state",
         "domain:projections",
@@ -739,7 +753,11 @@
         "table:lite_home_activity_read_cursors",
         "table:lite_installed_release_identity",
         "table:lite_revision_events",
+        "table:owner_approved_operations",
         "table:owner_claims",
+        "table:owner_operation_challenges",
+        "table:owner_operation_clients",
+        "table:owner_operation_events",
         "table:phase3b_current_state",
         "table:phase3b_revision_events",
         "table:policy_activation_operations",
@@ -830,6 +848,8 @@
         "reason:authenticated_app_install_exception_scoped",
         "reason:authenticated_confirmed_device_removal",
         "reason:authentication_required",
+        "reason:backup_binding_invalid",
+        "reason:backup_state_missing",
         "reason:battery_policy_threshold",
         "reason:bootstrap_transport_rejected",
         "reason:checkpoint_ineligible",
@@ -927,6 +947,7 @@
         "reason:independent_approval_satisfied",
         "reason:insufficient_storage",
         "reason:interrupted",
+        "reason:invalid_backup_id",
         "reason:invalid_domain",
         "reason:invite_expired",
         "reason:invite_identity_mismatch",
@@ -970,6 +991,7 @@
         "reason:passkey_verified",
         "reason:passkey_wrong_owner",
         "reason:payload_too_large",
+        "reason:photoprism_indexing_not_proven",
         "reason:placement_identity_mismatch",
         "reason:pm2_inventory_failed",
         "reason:pm2_inventory_invalid",
@@ -1042,6 +1064,7 @@
         "reason:source_fixture_invalid",
         "reason:source_fixture_unavailable",
         "reason:source_inventory_failed",
+        "reason:source_scope_mismatch",
         "reason:storage_pressure",
         "reason:storage_reservation_conflict",
         "reason:storage_unavailable",
@@ -1192,6 +1215,8 @@
         "reason:authenticated_app_install_exception_scoped",
         "reason:authenticated_confirmed_device_removal",
         "reason:authentication_required",
+        "reason:backup_binding_invalid",
+        "reason:backup_state_missing",
         "reason:battery_policy_threshold",
         "reason:bootstrap_transport_rejected",
         "reason:checkpoint_ineligible",
@@ -1289,6 +1314,7 @@
         "reason:independent_approval_satisfied",
         "reason:insufficient_storage",
         "reason:interrupted",
+        "reason:invalid_backup_id",
         "reason:invalid_domain",
         "reason:invite_expired",
         "reason:invite_identity_mismatch",
@@ -1332,6 +1358,7 @@
         "reason:passkey_verified",
         "reason:passkey_wrong_owner",
         "reason:payload_too_large",
+        "reason:photoprism_indexing_not_proven",
         "reason:placement_identity_mismatch",
         "reason:pm2_inventory_failed",
         "reason:pm2_inventory_invalid",
@@ -1404,6 +1431,7 @@
         "reason:source_fixture_invalid",
         "reason:source_fixture_unavailable",
         "reason:source_inventory_failed",
+        "reason:source_scope_mismatch",
         "reason:storage_pressure",
         "reason:storage_reservation_conflict",
         "reason:storage_unavailable",
@@ -2018,6 +2046,16 @@
         "table:lite_home_activity_read_cursors"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0040_home_activity_read_cursors.sql"
+    },
+    {
+      "entities": [
+        "table:human_identities",
+        "table:owner_approved_operations",
+        "table:owner_operation_challenges",
+        "table:owner_operation_clients",
+        "table:owner_operation_events"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
     },
     {
       "entities": [
@@ -3355,6 +3393,12 @@
     },
     {
       "entities": [
+        "test:tests/backend/test_lite_owner_approved_operations.py"
+      ],
+      "source": "tests/backend/test_lite_owner_approved_operations.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_lite_phase2_eliminate_collection.py"
       ],
       "source": "tests/backend/test_lite_phase2_eliminate_collection.py"
@@ -4506,6 +4550,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "b2f4d902e788a1cc7faef0b5e3f5314be07c5f2adf3a6f58558c099600b77b83"
+    "source_fingerprint": "a9ce73395decc7941bd4bea82d3e60aecfdb22365d7c84f9cb69b2fcea0a393b"
   }
 }

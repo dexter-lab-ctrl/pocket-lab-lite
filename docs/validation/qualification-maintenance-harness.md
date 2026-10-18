@@ -806,6 +806,14 @@ authorization logic.
 
 ## Limitations
 
+The qualification harness is not a production Owner authority. Its synthetic
+Owner and Ed25519 principals cannot register, approve, or execute the
+production `photo_backup.bounded_acceptance.v1` operation. Production
+approval must use a real authenticated Pocket Lab Owner session through the
+Identity & Access surface; isolated qualification must use disposable
+infrastructure and must prove that its approval cannot mutate a production
+PhotoPrism destination.
+
 - Production `maintenance-runner` activation is `DEFERRED`.
 - No harness-specific MCP client tools are implemented.
 - No GitHub Actions integration is enabled.

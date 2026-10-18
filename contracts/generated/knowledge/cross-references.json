@@ -689,6 +689,18 @@
           "type": "owns"
         }
       ],
+      "api:get:/api/lite/owner-operations/pending": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/owner-operations/{operation_id}": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/policy": [
         {
           "source": "journey:rules-authorization",
@@ -1849,6 +1861,68 @@
         {
           "source": "component:identity-access-controls",
           "type": "uses"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/clients": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/clients/challenge": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/clients/{client_id}/revoke": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/observer-challenge": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/pending/{operation_id}/approve": [
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/pending/{operation_id}/reject": [
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/request-challenge": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/requests": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/{operation_id}/cancel": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
         }
       ],
       "api:post:/api/lite/policy/apply": [
@@ -3641,6 +3715,18 @@
           "type": "owns"
         }
       ],
+      "reason:backup_binding_invalid": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
+      "reason:backup_state_missing": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
       "reason:battery_policy_threshold": [
         {
           "source": "domain:security",
@@ -4223,6 +4309,12 @@
           "type": "owns"
         }
       ],
+      "reason:invalid_backup_id": [
+        {
+          "source": "domain:apps",
+          "type": "owns"
+        }
+      ],
       "reason:invalid_domain": [
         {
           "source": "domain:projections",
@@ -4478,6 +4570,12 @@
       "reason:payload_too_large": [
         {
           "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:photoprism_indexing_not_proven": [
+        {
+          "source": "domain:apps",
           "type": "owns"
         }
       ],
@@ -4910,6 +5008,12 @@
       "reason:source_inventory_failed": [
         {
           "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:source_scope_mismatch": [
+        {
+          "source": "domain:apps",
           "type": "owns"
         }
       ],
@@ -7739,7 +7843,31 @@
           "type": "owns"
         }
       ],
+      "table:owner_approved_operations": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:owner_claims": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:owner_operation_challenges": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:owner_operation_clients": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:owner_operation_events": [
         {
           "source": "domain:control_plane",
           "type": "owns"
@@ -8671,6 +8799,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:backup_binding_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:backup_state_missing",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:battery_policy_threshold",
           "type": "verified_by"
         },
@@ -9059,6 +9195,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:invalid_backup_id",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:invalid_domain",
           "type": "verified_by"
         },
@@ -9228,6 +9368,10 @@
         },
         {
           "source": "reason:payload_too_large",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:photoprism_indexing_not_proven",
           "type": "verified_by"
         },
         {
@@ -9516,6 +9660,10 @@
         },
         {
           "source": "reason:source_inventory_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_scope_mismatch",
           "type": "verified_by"
         },
         {
@@ -10081,6 +10229,14 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/owner-operations/pending",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/owner-operations/{operation_id}",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/policy",
           "type": "verified_by"
         },
@@ -10594,6 +10750,42 @@
         },
         {
           "source": "api:post:/api/lite/identity/step-up/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/clients",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/clients/challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/clients/{client_id}/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/observer-challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/pending/{operation_id}/approve",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/pending/{operation_id}/reject",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/request-challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/requests",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/{operation_id}/cancel",
           "type": "verified_by"
         },
         {
@@ -11400,6 +11592,20 @@
         },
         {
           "source": "reason:policy_revision_uncertain",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_owner_approved_operations.py": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:csrf_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_fixture_expired",
           "type": "verified_by"
         }
       ],
@@ -14003,6 +14209,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:backup_binding_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:backup_state_missing",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:battery_policy_threshold",
           "type": "verified_by"
         },
@@ -14391,6 +14605,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:invalid_backup_id",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:invalid_domain",
           "type": "verified_by"
         },
@@ -14560,6 +14778,10 @@
         },
         {
           "source": "reason:payload_too_large",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:photoprism_indexing_not_proven",
           "type": "verified_by"
         },
         {
@@ -14848,6 +15070,10 @@
         },
         {
           "source": "reason:source_inventory_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_scope_mismatch",
           "type": "verified_by"
         },
         {
@@ -15197,6 +15423,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:backup_binding_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:backup_state_missing",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:battery_policy_threshold",
           "type": "verified_by"
         },
@@ -15585,6 +15819,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:invalid_backup_id",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:invalid_domain",
           "type": "verified_by"
         },
@@ -15754,6 +15992,10 @@
         },
         {
           "source": "reason:payload_too_large",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:photoprism_indexing_not_proven",
           "type": "verified_by"
         },
         {
@@ -16042,6 +16284,10 @@
         },
         {
           "source": "reason:source_inventory_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:source_scope_mismatch",
           "type": "verified_by"
         },
         {
@@ -16336,6 +16582,10 @@
         }
       ],
       "test:tests/e2e/lite-identity-premium-refinement.spec.ts": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
         {
           "source": "domain:identity",
           "type": "verified_by"
@@ -16840,6 +17090,14 @@
         },
         {
           "source": "api:get:/api/lite/media-backup",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/owner-operations/pending",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/owner-operations/{operation_id}",
           "type": "verified_by"
         },
         {
@@ -17356,6 +17614,42 @@
         },
         {
           "source": "api:post:/api/lite/identity/step-up/verify",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/clients",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/clients/challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/clients/{client_id}/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/observer-challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/pending/{operation_id}/approve",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/pending/{operation_id}/reject",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/request-challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/requests",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/{operation_id}/cancel",
           "type": "verified_by"
         },
         {
@@ -19135,6 +19429,26 @@
           "type": "verified_by"
         }
       ],
+      "api:get:/api/lite/owner-operations/pending": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/owner-operations/{operation_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:get:/api/lite/policy": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -20576,6 +20890,96 @@
         }
       ],
       "api:post:/api/lite/identity/step-up/verify": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/clients": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/clients/challenge": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/clients/{client_id}/revoke": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/observer-challenge": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/pending/{operation_id}/approve": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/pending/{operation_id}/reject": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/request-challenge": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/requests": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/{operation_id}/cancel": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -23253,6 +23657,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_owner_approved_operations.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py",
           "type": "verified_by"
         },
@@ -23322,6 +23730,10 @@
         },
         {
           "target": "test:tests/e2e/lite-content-stress.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-identity-premium-refinement.spec.ts",
           "type": "verified_by"
         },
         {
@@ -24961,6 +25373,14 @@
           "type": "owns"
         },
         {
+          "target": "reason:backup_binding_invalid",
+          "type": "owns"
+        },
+        {
+          "target": "reason:backup_state_missing",
+          "type": "owns"
+        },
+        {
           "target": "reason:credential_expired",
           "type": "owns"
         },
@@ -24989,6 +25409,14 @@
           "type": "owns"
         },
         {
+          "target": "reason:invalid_backup_id",
+          "type": "owns"
+        },
+        {
+          "target": "reason:photoprism_indexing_not_proven",
+          "type": "owns"
+        },
+        {
           "target": "reason:placement_identity_mismatch",
           "type": "owns"
         },
@@ -25002,6 +25430,10 @@
         },
         {
           "target": "reason:source_fixture_unavailable",
+          "type": "owns"
+        },
+        {
+          "target": "reason:source_scope_mismatch",
           "type": "owns"
         },
         {
@@ -25185,7 +25617,23 @@
           "type": "owns"
         },
         {
+          "target": "table:owner_approved_operations",
+          "type": "owns"
+        },
+        {
           "target": "table:owner_claims",
+          "type": "owns"
+        },
+        {
+          "target": "table:owner_operation_challenges",
+          "type": "owns"
+        },
+        {
+          "target": "table:owner_operation_clients",
+          "type": "owns"
+        },
+        {
+          "target": "table:owner_operation_events",
           "type": "owns"
         },
         {
@@ -27128,6 +27576,52 @@
         },
         {
           "target": "subject:pocketlab.events.operation.worker_claimed",
+          "type": "owns"
+        }
+      ],
+      "domain:owner-operations": [
+        {
+          "target": "api:get:/api/lite/owner-operations/pending",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/owner-operations/{operation_id}",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/clients",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/clients/challenge",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/clients/{client_id}/revoke",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/observer-challenge",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/pending/{operation_id}/approve",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/pending/{operation_id}/reject",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/request-challenge",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/requests",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/{operation_id}/cancel",
           "type": "owns"
         }
       ],
@@ -30559,6 +31053,34 @@
           "type": "verified_by"
         }
       ],
+      "reason:backup_binding_invalid": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:backup_state_missing": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:battery_policy_threshold": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -30758,6 +31280,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_owner_approved_operations.py",
           "type": "verified_by"
         },
         {
@@ -32293,6 +32819,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:invalid_backup_id": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:invalid_domain": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -32956,6 +33496,20 @@
         },
         {
           "target": "test:tests/backend/test_lite_workload_admission.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:photoprism_indexing_not_proven": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
         },
         {
@@ -34201,6 +34755,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_owner_approved_operations.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_photo_backup.py",
           "type": "verified_by"
         },
@@ -34250,6 +34808,20 @@
         }
       ],
       "reason:source_inventory_failed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:source_scope_mismatch": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -35215,6 +35787,14 @@
           "type": "calls"
         },
         {
+          "target": "api:post:/api/lite/owner-operations/pending/{operation_id}/approve",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/pending/{operation_id}/reject",
+          "type": "calls"
+        },
+        {
           "target": "api:put:/api/lite/identity/passkeys/{credential_id}",
           "type": "calls"
         }
@@ -35393,6 +35973,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "b2f4d902e788a1cc7faef0b5e3f5314be07c5f2adf3a6f58558c099600b77b83"
+    "source_fingerprint": "a9ce73395decc7941bd4bea82d3e60aecfdb22365d7c84f9cb69b2fcea0a393b"
   }
 }

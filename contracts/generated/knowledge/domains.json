@@ -708,6 +708,31 @@
     {
       "confidence": "source-derived",
       "description": "Source-derived supporting domain discovered from generated contracts.",
+      "domain": "owner-operations",
+      "id": "domain:owner-operations",
+      "name": "Owner Operations",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "contracts/generated/lite-openapi.json",
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "unvalidated",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "unvalidated",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "type": "domain"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Source-derived supporting domain discovered from generated contracts.",
       "domain": "parity",
       "id": "domain:parity",
       "name": "Parity",
@@ -1250,6 +1275,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "b2f4d902e788a1cc7faef0b5e3f5314be07c5f2adf3a6f58558c099600b77b83"
+    "source_fingerprint": "a9ce73395decc7941bd4bea82d3e60aecfdb22365d7c84f9cb69b2fcea0a393b"
   }
 }

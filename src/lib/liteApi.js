@@ -301,6 +301,8 @@ export const liteApi = {
   verifyPasskeyRegistration: (payload = {}) => postJson('/api/lite/identity/passkeys/registration/verify', payload),
   passkeyStepUpOptions: (purpose = 'identity.passkey.revoke') => postJson('/api/lite/identity/step-up/options', { purpose }),
   verifyPasskeyStepUp: (payload = {}) => postJson('/api/lite/identity/step-up/verify', payload),
+  approveOwnerOperation: (operationId) => postJson(`/api/lite/owner-operations/pending/${encodeURIComponent(operationId || '')}/approve`, {}),
+  rejectOwnerOperation: (operationId, reason = 'owner_rejected') => postJson(`/api/lite/owner-operations/pending/${encodeURIComponent(operationId || '')}/reject`, { reason }),
   renameIdentityPasskey: (credentialId, friendlyName) => putJson(`/api/lite/identity/passkeys/${encodeURIComponent(credentialId || '')}`, { friendly_name: friendlyName }),
   revokeIdentityPasskey: (credentialId) => deleteJson(`/api/lite/identity/passkeys/${encodeURIComponent(credentialId || '')}`),
   enterpriseIdentity: () => readJson('/api/lite/enterprise/identity'),

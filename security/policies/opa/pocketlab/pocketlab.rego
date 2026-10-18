@@ -34,7 +34,7 @@ harness_authorized if {
 	input.harness.target_scope == input.target.scope
 	harness_target_bound
 	input.action.id in input.harness.capabilities
-	not (input.action.id in {"device.remove", "restore.apply", "backup.location.manage", "rules.activate", "rules.rollback"})
+	not input.action.id in {"device.remove", "restore.apply", "backup.location.manage", "rules.activate", "rules.rollback"}
 }
 
 harness_authorized if {
@@ -88,6 +88,80 @@ decision := {
 	backup_location_action
 }
 
+# Owner-approved operations are a single registered capability, not a generic
+# maintenance executor.  The service also rejects synthetic principals and
+# revalidates the target before the durable transition; this rule makes the
+# human Owner and passkey step-up requirement visible to the policy engine.
+owner_operation_target if {
+	input.action.id == "owner.operations.approve"
+	input.target.type == "owner_operation"
+	input.target.id != ""
+	input.target.revision != ""
+	input.target.state.contract_version == 1
+	input.target.state.operation == "photo_backup.bounded_acceptance.v1"
+	input.target.state.status == "pending_approval"
+	input.target.state.target_node_id != ""
+	input.target.state.target_binding_digest != ""
+	input.target.state.destination_id == "server-photoprism-originals"
+	input.target.state.destination_contract_version == 2
+	input.target.state.scope_digest != ""
+	input.target.revision == input.target.state.scope_digest
+	time.parse_rfc3339_ns(input.target.state.approval_deadline) > time.now_ns()
+}
+
+owner_operation_owner if {
+	input.actor.type == "human"
+	not input.actor.synthetic
+	input.actor.owner_authority == true
+	input.actor.role == "Owner"
+	input.session.authenticated == true
+}
+
+owner_operation_step_up if {
+	some item in input.session.assurance
+	item.purpose == "owner.operations.approve"
+	item.expires_at != ""
+	time.parse_rfc3339_ns(item.expires_at) > time.now_ns()
+}
+
+decision := {
+	"allow": true,
+	"constraints": ["authenticated_actor", "owner_authority", "exact_operation_contract", "passkey_step_up"],
+	"reason_code": "owner_operation_approval_allowed",
+} if {
+	owner_operation_target
+	owner_operation_owner
+	owner_operation_step_up
+}
+
+decision := {
+	"allow": false,
+	"constraints": ["passkey_step_up"],
+	"reason_code": "passkey_step_up_required",
+} if {
+	owner_operation_target
+	owner_operation_owner
+	not owner_operation_step_up
+}
+
+decision := {
+	"allow": false,
+	"constraints": ["owner_authority", "authenticated_actor"],
+	"reason_code": "owner_authority_required",
+} if {
+	owner_operation_target
+	not owner_operation_owner
+}
+
+decision := {
+	"allow": false,
+	"constraints": ["exact_operation_contract", "immutable_scope"],
+	"reason_code": "owner_operation_invalid",
+} if {
+	input.action.id == "owner.operations.approve"
+	not owner_operation_target
+}
+
 decision := {
 	"allow": true,
 	"constraints": ["authenticated_actor", "recovery_target"],
@@ -121,7 +195,7 @@ decision := {
 	authorized_actor
 	input.target.type == "recovery"
 	input.target.id != ""
-	not (input.actor.role == "Owner")
+	not input.actor.role == "Owner"
 }
 
 # Legacy catalog.install remains registered for compatibility, but follows the

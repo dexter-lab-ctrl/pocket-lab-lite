@@ -79,6 +79,7 @@ Provides the verified managed photo application under a same-origin Caddy path.
 - verified_by: `tests/backend/test_lite_device_health_d4.py`
 - verified_by: `tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py`
 - verified_by: `tests/backend/test_lite_isolated_qualification_lane.py`
+- verified_by: `tests/backend/test_lite_owner_approved_operations.py`
 - verified_by: `tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py`
 - verified_by: `tests/backend/test_lite_photo_backup.py`
 - verified_by: `tests/backend/test_lite_photo_backup_agent.py`
@@ -97,6 +98,7 @@ Provides the verified managed photo application under a same-origin Caddy path.
 - verified_by: `tests/e2e/lite-accessibility-states.spec.ts`
 - verified_by: `tests/e2e/lite-apps-premium-refinement.spec.ts`
 - verified_by: `tests/e2e/lite-content-stress.spec.ts`
+- verified_by: `tests/e2e/lite-identity-premium-refinement.spec.ts`
 - verified_by: `tests/e2e/lite-mocked.spec.ts`
 - verified_by: `tests/e2e/lite-performance-live.spec.ts`
 - verified_by: `tests/e2e/lite-performance.spec.ts`

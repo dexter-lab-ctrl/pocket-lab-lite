@@ -241,6 +241,87 @@
         "title": "ChallengeRequest",
         "type": "object"
       },
+      "ClientChallengeRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "maxLength": 80,
+            "minLength": 3,
+            "title": "Client Id",
+            "type": "string"
+          },
+          "public_key": {
+            "maxLength": 96,
+            "minLength": 40,
+            "title": "Public Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "client_id",
+          "public_key"
+        ],
+        "title": "ClientChallengeRequest",
+        "type": "object"
+      },
+      "ClientRegistrationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "challenge_id": {
+            "maxLength": 64,
+            "minLength": 20,
+            "title": "Challenge Id",
+            "type": "string"
+          },
+          "client_id": {
+            "maxLength": 80,
+            "minLength": 3,
+            "title": "Client Id",
+            "type": "string"
+          },
+          "display_name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Display Name",
+            "type": "string"
+          },
+          "public_key": {
+            "maxLength": 96,
+            "minLength": 40,
+            "title": "Public Key",
+            "type": "string"
+          },
+          "signature": {
+            "maxLength": 160,
+            "minLength": 80,
+            "title": "Signature",
+            "type": "string"
+          }
+        },
+        "required": [
+          "client_id",
+          "display_name",
+          "public_key",
+          "challenge_id",
+          "signature"
+        ],
+        "title": "ClientRegistrationRequest",
+        "type": "object"
+      },
+      "ClientRevokeRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "default": "owner_revoked",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "title": "ClientRevokeRequest",
+        "type": "object"
+      },
       "EnterpriseMembershipRequest": {
         "properties": {
           "role": {
@@ -1585,6 +1666,36 @@
         "title": "LiteSecurityScanRequest",
         "type": "object"
       },
+      "ObserverChallengeRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "maxLength": 80,
+            "minLength": 3,
+            "title": "Client Id",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 40,
+            "minLength": 27,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "purpose": {
+            "default": "observe",
+            "maxLength": 16,
+            "minLength": 1,
+            "title": "Purpose",
+            "type": "string"
+          }
+        },
+        "required": [
+          "client_id",
+          "operation_id"
+        ],
+        "title": "ObserverChallengeRequest",
+        "type": "object"
+      },
       "OperationRequest": {
         "properties": {
           "dry_run": {
@@ -1876,6 +1987,42 @@
         "title": "RecoveryAuthorizeRequest",
         "type": "object"
       },
+      "RejectOperationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "default": "owner_rejected",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "title": "RejectOperationRequest",
+        "type": "object"
+      },
+      "RequestChallengeRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "maxLength": 80,
+            "minLength": 3,
+            "title": "Client Id",
+            "type": "string"
+          },
+          "descriptor": {
+            "additionalProperties": true,
+            "title": "Descriptor",
+            "type": "object"
+          }
+        },
+        "required": [
+          "client_id",
+          "descriptor"
+        ],
+        "title": "RequestChallengeRequest",
+        "type": "object"
+      },
       "RevisionRequest": {
         "properties": {
           "change_summary": {
@@ -2091,6 +2238,72 @@
           "signature"
         ],
         "title": "SessionRequest",
+        "type": "object"
+      },
+      "SignedObserverRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "challenge_id": {
+            "maxLength": 64,
+            "minLength": 20,
+            "title": "Challenge Id",
+            "type": "string"
+          },
+          "client_id": {
+            "maxLength": 80,
+            "minLength": 3,
+            "title": "Client Id",
+            "type": "string"
+          },
+          "signature": {
+            "maxLength": 160,
+            "minLength": 80,
+            "title": "Signature",
+            "type": "string"
+          }
+        },
+        "required": [
+          "client_id",
+          "challenge_id",
+          "signature"
+        ],
+        "title": "SignedObserverRequest",
+        "type": "object"
+      },
+      "SignedOperationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "challenge_id": {
+            "maxLength": 64,
+            "minLength": 20,
+            "title": "Challenge Id",
+            "type": "string"
+          },
+          "client_id": {
+            "maxLength": 80,
+            "minLength": 3,
+            "title": "Client Id",
+            "type": "string"
+          },
+          "descriptor": {
+            "additionalProperties": true,
+            "title": "Descriptor",
+            "type": "object"
+          },
+          "signature": {
+            "maxLength": 160,
+            "minLength": 80,
+            "title": "Signature",
+            "type": "string"
+          }
+        },
+        "required": [
+          "client_id",
+          "descriptor",
+          "challenge_id",
+          "signature"
+        ],
+        "title": "SignedOperationRequest",
         "type": "object"
       },
       "SimulationRequest": {
@@ -13227,6 +13440,814 @@
         "summary": "Lite Photo Backup Fleet Status",
         "tags": [
           "fleet"
+        ]
+      }
+    },
+    "/api/lite/owner-operations/clients": {
+      "post": {
+        "operationId": "register_owner_operation_client_api_lite_owner_operations_clients_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientRegistrationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Register Owner Operation Client Api Lite Owner Operations Clients Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Register Owner Operation Client",
+        "tags": [
+          "lite-owner-operations"
+        ]
+      }
+    },
+    "/api/lite/owner-operations/clients/challenge": {
+      "post": {
+        "operationId": "issue_owner_operation_client_challenge_api_lite_owner_operations_clients_challenge_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientChallengeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Issue Owner Operation Client Challenge Api Lite Owner Operations Clients Challenge Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Issue Owner Operation Client Challenge",
+        "tags": [
+          "lite-owner-operations"
+        ]
+      }
+    },
+    "/api/lite/owner-operations/clients/{client_id}/revoke": {
+      "post": {
+        "operationId": "revoke_owner_operation_client_api_lite_owner_operations_clients__client_id__revoke_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "client_id",
+            "required": true,
+            "schema": {
+              "title": "Client Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientRevokeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Revoke Owner Operation Client Api Lite Owner Operations Clients  Client Id  Revoke Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Revoke Owner Operation Client",
+        "tags": [
+          "lite-owner-operations"
+        ]
+      }
+    },
+    "/api/lite/owner-operations/observer-challenge": {
+      "post": {
+        "operationId": "issue_owner_operation_observer_challenge_api_lite_owner_operations_observer_challenge_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObserverChallengeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Issue Owner Operation Observer Challenge Api Lite Owner Operations Observer Challenge Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Issue Owner Operation Observer Challenge",
+        "tags": [
+          "lite-owner-operations"
+        ]
+      }
+    },
+    "/api/lite/owner-operations/pending": {
+      "get": {
+        "operationId": "owner_operation_pending_api_lite_owner_operations_pending_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Owner Operation Pending Api Lite Owner Operations Pending Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Owner Operation Pending",
+        "tags": [
+          "lite-owner-operations"
+        ]
+      }
+    },
+    "/api/lite/owner-operations/pending/{operation_id}/approve": {
+      "post": {
+        "operationId": "approve_owner_operation_api_lite_owner_operations_pending__operation_id__approve_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "operation_id",
+            "required": true,
+            "schema": {
+              "title": "Operation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Approve Owner Operation Api Lite Owner Operations Pending  Operation Id  Approve Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Approve Owner Operation",
+        "tags": [
+          "lite-owner-operations"
+        ]
+      }
+    },
+    "/api/lite/owner-operations/pending/{operation_id}/reject": {
+      "post": {
+        "operationId": "reject_owner_operation_api_lite_owner_operations_pending__operation_id__reject_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "operation_id",
+            "required": true,
+            "schema": {
+              "title": "Operation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectOperationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Reject Owner Operation Api Lite Owner Operations Pending  Operation Id  Reject Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Reject Owner Operation",
+        "tags": [
+          "lite-owner-operations"
+        ]
+      }
+    },
+    "/api/lite/owner-operations/request-challenge": {
+      "post": {
+        "operationId": "issue_owner_operation_request_challenge_api_lite_owner_operations_request_challenge_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestChallengeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Issue Owner Operation Request Challenge Api Lite Owner Operations Request Challenge Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Issue Owner Operation Request Challenge",
+        "tags": [
+          "lite-owner-operations"
+        ]
+      }
+    },
+    "/api/lite/owner-operations/requests": {
+      "post": {
+        "operationId": "submit_owner_operation_request_api_lite_owner_operations_requests_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignedOperationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Submit Owner Operation Request Api Lite Owner Operations Requests Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Submit Owner Operation Request",
+        "tags": [
+          "lite-owner-operations"
+        ]
+      }
+    },
+    "/api/lite/owner-operations/{operation_id}": {
+      "get": {
+        "operationId": "get_owner_operation_api_lite_owner_operations__operation_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "operation_id",
+            "required": true,
+            "schema": {
+              "title": "Operation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Owner Operation Api Lite Owner Operations  Operation Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested resource is not available."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get Owner Operation",
+        "tags": [
+          "lite-owner-operations"
+        ]
+      }
+    },
+    "/api/lite/owner-operations/{operation_id}/cancel": {
+      "post": {
+        "operationId": "cancel_owner_operation_api_lite_owner_operations__operation_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "operation_id",
+            "required": true,
+            "schema": {
+              "title": "Operation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignedObserverRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Cancel Owner Operation Api Lite Owner Operations  Operation Id  Cancel Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Cancel Owner Operation",
+        "tags": [
+          "lite-owner-operations"
         ]
       }
     },

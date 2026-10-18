@@ -1216,7 +1216,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
       ],
       "name": "human_identities",
       "owner": "not a prepared projection",
@@ -1235,7 +1236,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -1348,6 +1350,35 @@
       "confidence": "inferred",
       "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "control_plane",
+      "id": "table:owner_approved_operations",
+      "indexes": [
+        "idx_owner_approved_operations_requester",
+        "idx_owner_approved_operations_lifecycle",
+        "sqlite_autoindex_owner_approved_operations_2",
+        "sqlite_autoindex_owner_approved_operations_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
+      ],
+      "name": "owner_approved_operations",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "evidence_json"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
       "id": "table:owner_claims",
       "indexes": [
         "idx_owner_claims_active",
@@ -1369,6 +1400,87 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:owner_operation_challenges",
+      "indexes": [
+        "idx_owner_operation_challenges_expiry",
+        "sqlite_autoindex_owner_operation_challenges_2",
+        "sqlite_autoindex_owner_operation_challenges_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
+      ],
+      "name": "owner_operation_challenges",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "nonce_hash",
+        "signing_payload_json"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:owner_operation_clients",
+      "indexes": [
+        "idx_owner_operation_clients_status",
+        "sqlite_autoindex_owner_operation_clients_2",
+        "sqlite_autoindex_owner_operation_clients_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
+      ],
+      "name": "owner_operation_clients",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:owner_operation_events",
+      "indexes": [
+        "idx_owner_operation_events_operation"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
+      ],
+      "name": "owner_operation_events",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "evidence_json"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -2496,6 +2608,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "b2f4d902e788a1cc7faef0b5e3f5314be07c5f2adf3a6f58558c099600b77b83"
+    "source_fingerprint": "a9ce73395decc7941bd4bea82d3e60aecfdb22365d7c84f9cb69b2fcea0a393b"
   }
 }

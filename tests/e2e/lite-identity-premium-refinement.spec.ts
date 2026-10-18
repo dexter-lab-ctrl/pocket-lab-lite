@@ -113,6 +113,42 @@ test.describe('Premium Identity & Access — source-backed interactions', () => 
     await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
     await expect(page.locator('.lite-id-journey')).toHaveCount(0);
   });
+  test('shows one exact pending bounded operation without changing Devices controls', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 860 });
+    await identity(page, 'identity-owner-operation-pending');
+    const approvals = page.getByRole('region', { name: 'Pending approvals' }).first();
+    await expect(approvals).toBeVisible();
+    await expect(approvals).toContainText('Secondary Phone');
+    await expect(approvals).toContainText('PhotoPrism on this server');
+    await expect(approvals).toContainText('one safe repeat');
+    await approvals.getByText('What this approval includes').click();
+    await expect(approvals).toContainText('One generated synthetic test photo may remain');
+    await expect(approvals.getByRole('button', { name: 'Approve' })).toBeEnabled();
+    await expect(approvals.getByRole('button', { name: 'Reject' })).toBeEnabled();
+    await expect(page.locator('[data-lite-screen-id="devices"]')).toHaveCount(0);
+  });
+  test('renders multiple, expired, completed, and failed operations without replay controls', async ({ page }) => {
+    await identity(page, 'identity-owner-operations-multiple');
+    await expect(page.getByRole('region', { name: 'Pending approvals' }).first().locator('.lite-owner-operation-card')).toHaveCount(2);
+    for (const scenario of ['identity-owner-operation-expired', 'identity-owner-operation-completed', 'identity-owner-operation-failed']) {
+      await identity(page, scenario);
+      const approvals = page.getByRole('region', { name: 'Pending approvals' }).first();
+      await expect(approvals).toBeVisible();
+      await expect(approvals.getByRole('button', { name: 'Approve' })).toHaveCount(0);
+      await expect(approvals.getByRole('button', { name: 'Reject' })).toHaveCount(0);
+    }
+  });
+  test('keeps approved execution read-only and disables saved approval state', async ({ page }) => {
+    await identity(page, 'identity-owner-operation-executing');
+    const executing = page.getByRole('region', { name: 'Pending approvals' }).first();
+    await expect(executing).toContainText('Executing');
+    await expect(executing.getByRole('button', { name: 'Approve' })).toHaveCount(0);
+    await identity(page, 'identity-owner-operation-offline');
+    const saved = page.getByRole('region', { name: 'Pending approvals' }).first();
+    await expect(saved).toContainText('Live approval data unavailable');
+    await expect(saved.getByRole('button', { name: 'Approve' })).toBeDisabled();
+    await expect(saved.getByRole('button', { name: 'Reject' })).toBeDisabled();
+  });
   for (const width of [320, 360, 375, 390, 768, 1024, 1440]) {
     test('keeps Journey and Manage readable at ' + width + 'px', async ({ page }) => {
       await page.setViewportSize({ width, height: 860 });

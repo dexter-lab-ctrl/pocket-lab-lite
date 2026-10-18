@@ -15,6 +15,58 @@ test_catalog_install_legacy_alias_keeps_enterprise_owner_boundary if {
 	result.reason_code == "enterprise_app_install_allowed"
 }
 
+owner_operation_input(actor, approval_deadline) := {
+	"actor": actor,
+	"session": {
+		"authenticated": true,
+		"auth_method": "passkey",
+		"assurance": [{"purpose": "owner.operations.approve", "expires_at": approval_deadline}],
+	},
+	"action": {"id": "owner.operations.approve"},
+	"target": {
+		"type": "owner_operation",
+		"id": "oo-0123456789abcdef01234567",
+		"revision": "scope-digest-a",
+		"state": {
+			"contract_version": 1,
+			"operation": "photo_backup.bounded_acceptance.v1",
+			"status": "pending_approval",
+			"target_node_id": "secondary-phone",
+			"target_binding_digest": "target-digest-a",
+			"destination_id": "server-photoprism-originals",
+			"destination_contract_version": 2,
+			"scope_digest": "scope-digest-a",
+			"approval_deadline": "2099-01-01T00:00:00Z",
+		},
+	},
+	"request": {},
+}
+
+test_owner_operation_requires_real_owner_and_fresh_step_up if {
+	result := decision with input as owner_operation_input({"type": "human", "id": "human-owner", "role": "Owner", "owner_authority": true}, "2099-01-01T00:00:00Z")
+	result.allow
+	result.reason_code == "owner_operation_approval_allowed"
+}
+
+test_owner_operation_rejects_synthetic_owner if {
+	result := decision with input as owner_operation_input({"type": "human", "id": "synthetic-owner", "role": "Owner", "owner_authority": true, "synthetic": true}, "2099-01-01T00:00:00Z")
+	not result.allow
+	result.reason_code == "owner_authority_required"
+}
+
+test_owner_operation_rejects_expired_step_up if {
+	result := decision with input as owner_operation_input({"type": "human", "id": "human-owner", "role": "Owner", "owner_authority": true}, "2020-01-01T00:00:00Z")
+	not result.allow
+	result.reason_code == "passkey_step_up_required"
+}
+
+test_owner_operation_rejects_scope_revision_mismatch if {
+	input_doc := owner_operation_input({"type": "human", "id": "human-owner", "role": "Owner", "owner_authority": true}, "2099-01-01T00:00:00Z")
+	result := decision with input as object.union(input_doc, {"target": object.union(input_doc.target, {"revision": "different-scope"})})
+	not result.allow
+	result.reason_code == "owner_operation_invalid"
+}
+
 test_catalog_install_legacy_alias_operator_requires_exact_temporary_exception if {
 	blocked := decision with input as {
 		"actor": {"type": "human", "id": "human-operator", "role": "Operator", "enterprise_enabled": true},
