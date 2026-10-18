@@ -11960,7 +11960,7 @@
           "scripts/dev/lite/run-ui-performance-qualified.py",
           "scripts/dev/lite/start-qualification.sh",
           "tests/backend/test_lite_harness.py",
-          "tests/backend/test_lite_photo_backup_candidate_qualification.py"
+          "tests/backend/test_lite_isolated_qualification_lane.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -32720,7 +32720,7 @@
         "security_classification": "internal metadata",
         "source_owner": [
           "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3352",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3320",
           "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1404",
           "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605"
         ],
@@ -34204,7 +34204,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3365"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3333"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -48415,10 +48415,10 @@
       "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
-        "asyncapi": "90636d7095ffbae4c17bdac75b55cad9efde0e99d4a0810d8dd991fb0241f64d",
-        "documentation": "35fcea47e5a282736e00f4c2dde561f0a59dfc3ee0ba032b5a474cf89261895c",
+        "asyncapi": "5c6aa6c9678f7c4bf5f4e586697b55f8b4bf596dff4b2f547d588a1fd60de44b",
+        "documentation": "302b309951b93787361a8b4bea9a56ff8cf3310442951d24d999cf47efeadb81",
         "openapi": "21b10835554b759b2cc77c3a7b98b135519d45b2efbf24701020701ff1b071be",
-        "operational_health": "3c725c4c70c007c60a97a8f37e53c066767572ea45b6949a71d53a538b814432"
+        "operational_health": "f8605d3f4d3e95801d9315696a8d48e37039e4147dd540f44092ee08a39eaf2b"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -120237,5 +120237,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "38a8853551299692dcfa3f125993a6db4055d91815f5b88869084253adbb636a"
+  "source_fingerprint": "f39d6792d82fafc810e4970b5e031cc7917c3b2e2bda96e1b3b47f08b9adca18"
 }

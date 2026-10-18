@@ -265,7 +265,22 @@ def test_worker_start_sends_only_opaque_credential_reference_to_node(photo_backu
             "prefix": f"PocketLab/Devices/{node_id}",
         },
     )
-    command = photo_backup.make_start_command("storage-phone", ["camera", "pictures"])
+    fixture_id = "fixture-" + ("a" * 20)
+    state = photo_backup._state()
+    state["acceptance_fixtures"][fixture_id] = {
+        "fixture_id": fixture_id,
+        "node_id": "storage-phone",
+        "collection": "pictures",
+        "scope": photo_backup.ACCEPTANCE_FIXTURE_SCOPE,
+        "status": "prepared",
+        "expires_at_epoch": photo_backup._epoch() + 300,
+    }
+    photo_backup._save_state(state)
+    command = photo_backup.make_start_command(
+        "storage-phone",
+        ["camera", "pictures"],
+        acceptance_fixture_id=fixture_id,
+    )
 
     monkeypatch.setattr(photo_backup, "_secure_origin", lambda _request=None: "https://pocket.test.ts.net")
     monkeypatch.setattr(
@@ -312,6 +327,8 @@ def test_worker_start_sends_only_opaque_credential_reference_to_node(photo_backu
     encoded = json.dumps(published)
     assert published["command"] == "media.backup.photoprism.start"
     assert "credential_ref" in published["payload"]
+    assert published["payload"]["source_scope"] == photo_backup.ACCEPTANCE_FIXTURE_SCOPE
+    assert published["payload"]["source_fixture"] == command["source_fixture"]
     assert "raw-app-password" not in encoded
     assert "webdav_url" not in published["payload"]
     assert "/storage/" not in encoded
@@ -1204,6 +1221,47 @@ def test_progress_contract_preserves_conflicts_required_and_remaining_bytes(phot
     assert result["bytes_transferred"] == 5000
     assert result["bytes_remaining"] == 0
     assert result["photo_processing_state"] == "processing"
+
+
+def test_terminal_progress_zeroes_previous_remaining_work(photo_backup, monkeypatch):
+    monkeypatch.setattr(photo_backup, "_revoke_job_credential", lambda _job: None)
+    monkeypatch.setattr(photo_backup, "_append_evidence", lambda *_args, **_kwargs: None)
+    state = photo_backup._state()
+    state["jobs"]["photo-progress-complete"] = {
+        "backup_id": "photo-progress-complete",
+        "node_id": "storage-phone",
+        "status": "transferring",
+        "items_total": 1,
+        "items_transferred": 0,
+        "items_remaining": 1,
+        "bytes_total_required": 516,
+        "bytes_transferred": 0,
+        "bytes_remaining": 516,
+        "started_at": photo_backup._now(),
+        "sanitized": True,
+    }
+    state["latest_by_node"]["storage-phone"] = "photo-progress-complete"
+    photo_backup._save_state(state)
+
+    result = photo_backup.record_agent_progress(
+        "photo-progress-complete",
+        "storage-phone",
+        {
+            "status": "completed",
+            "items_total": 1,
+            "items_transferred": 1,
+            "items_remaining": 0,
+            "bytes_total_required": 516,
+            "bytes_transferred": 516,
+            "bytes_remaining": 0,
+            "progress": {"phase": "completed", "percent": 100},
+        },
+    )
+
+    assert result["status"] == "completed"
+    assert result["items_remaining"] == 0
+    assert result["bytes_remaining"] == 0
+    assert result["partial"] is False
 
 
 

@@ -9003,7 +9003,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3352",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3320",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1404",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605"
       ],
@@ -9508,7 +9508,7 @@
       "name": "pocketlab.events.fleet",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3365"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3333"
       ],
       "type": "subject"
     },

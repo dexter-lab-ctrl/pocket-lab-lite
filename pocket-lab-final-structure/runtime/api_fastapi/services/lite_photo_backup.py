@@ -2937,6 +2937,21 @@ def record_agent_progress(
         )
         else {}
     )
+
+    def reported_value(name: str, *fallback_names: str) -> Any:
+        """Prefer values reported in this update, including legitimate zeroes."""
+        if name in progress:
+            return progress[name]
+        for fallback_name in fallback_names:
+            if fallback_name in progress:
+                return progress[fallback_name]
+        if name in job:
+            return job[name]
+        for fallback_name in fallback_names:
+            if fallback_name in job:
+                return job[fallback_name]
+        return 0
+
     capacity_snapshot = server_capacity()
     bounded = {
         "status": status_value,
@@ -2951,53 +2966,27 @@ def record_agent_progress(
         ),
         "items_total": max(
             0,
-            int(
-                progress.get("items_total")
-                or job.get("items_total")
-                or 0
-            ),
+            int(reported_value("items_total")),
         ),
         "items_transferred": max(
             0,
-            int(
-                progress.get("items_transferred")
-                or job.get(
-                    "items_transferred"
-                )
-                or 0
-            ),
+            int(reported_value("items_transferred")),
         ),
         "items_skipped": max(
             0,
-            int(
-                progress.get("items_skipped")
-                or job.get("items_skipped")
-                or 0
-            ),
+            int(reported_value("items_skipped")),
         ),
         "items_remaining": max(
             0,
-            int(
-                progress.get("items_remaining")
-                or job.get("items_remaining")
-                or 0
-            ),
+            int(reported_value("items_remaining")),
         ),
         "conflicts": max(
             0,
-            int(
-                progress.get("conflicts")
-                or job.get("conflicts")
-                or 0
-            ),
+            int(reported_value("conflicts")),
         ),
         "oversized_items": max(
             0,
-            int(
-                progress.get("oversized_items")
-                or job.get("oversized_items")
-                or 0
-            ),
+            int(reported_value("oversized_items")),
         ),
         "integrity_mode": (
             "sha256"
@@ -3006,49 +2995,28 @@ def record_agent_progress(
         ),
         "bytes_total": max(
             0,
-            int(
-                progress.get("bytes_total")
-                or job.get("bytes_total")
-                or 0
-            ),
+            int(reported_value("bytes_total")),
         ),
         "bytes_total_planned": max(
             0,
-            int(
-                progress.get("bytes_total_planned")
-                or job.get("bytes_total_planned")
-                or 0
-            ),
+            int(reported_value("bytes_total_planned")),
         ),
         "bytes_total_required": max(
             0,
             int(
-                progress.get("bytes_total_required")
-                or job.get("bytes_total_required")
-                or progress.get("bytes_total")
-                or job.get("bytes_total")
-                or 0
+                reported_value(
+                    "bytes_total_required",
+                    "bytes_total",
+                )
             ),
         ),
         "bytes_transferred": max(
             0,
-            int(
-                progress.get(
-                    "bytes_transferred"
-                )
-                or job.get(
-                    "bytes_transferred"
-                )
-                or 0
-            ),
+            int(reported_value("bytes_transferred")),
         ),
         "bytes_remaining": max(
             0,
-            int(
-                progress.get("bytes_remaining")
-                or job.get("bytes_remaining")
-                or 0
-            ),
+            int(reported_value("bytes_remaining")),
         ),
         "photo_processing_state": (
             _safe_text(
@@ -3658,6 +3626,11 @@ async def execute_start(
                         or list(
                             SUPPORTED_COLLECTIONS
                         )
+                    ),
+                    "source_scope": command.get("source_scope") or (
+                        ACCEPTANCE_FIXTURE_SCOPE
+                        if isinstance(command.get("source_fixture"), dict)
+                        else "collection"
                     ),
                     "source_fixture": (
                         command.get("source_fixture")

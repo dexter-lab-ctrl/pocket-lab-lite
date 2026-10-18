@@ -16,8 +16,10 @@ checkout or production service definitions on either phone.
 from __future__ import annotations
 
 import argparse
+import ast
 import asyncio
 import base64
+import binascii
 import hashlib
 import ipaddress
 import io
@@ -88,6 +90,11 @@ ANDROID_MAX_LIVE_PROCESSES = 8
 ANDROID_MIN_FREE_BYTES = 32 * 1024 * 1024
 ANDROID_MAX_DURATION_SECONDS = 20 * 60
 ANDROID_MAX_RETRIES = 3
+# These are the Dev-PC-managed SSH aliases for the authorized physical lane.
+# Keep the transport alias-only: the controller must never accept or derive a
+# device address from runtime state.
+ANDROID_SERVER_SSH_ALIAS = "pocketlab-termux-tailnet"
+ANDROID_SECONDARY_SSH_ALIAS = "pocketlab-secondary-tailnet"
 ANDROID_ALLOWED_SNAPSHOT_PREFIXES = (
     "pocket-lab-final-structure/runtime/",
     "security/policies/opa/pocketlab/",
@@ -101,6 +108,7 @@ ANDROID_PRODUCTION_FILE_NAMES = frozenset({
     "rclone.conf",
     "authorized_keys",
 })
+ACCEPTANCE_FIXTURE_SOURCE_PATH = "pocket-lab-final-structure/runtime/agents/lite_photo_backup_agent.py"
 
 
 def _now() -> str:
@@ -690,6 +698,7 @@ class QualificationRun:
         self.session_token = ""
         self.fleet_session_token = ""
         self.results: dict[str, Any] = {}
+        self.bootstrap_profile = "security-assurance-runner"
         self.started_at = _now()
         self.worktree_created = False
         self._prepare_worktree()
@@ -1066,9 +1075,10 @@ class QualificationRun:
         self.session_token = str(session["session_token"])
         self.results["synthetic_authentication"] = {
             "status": "PASS",
-            "profile": "security-assurance-runner",
+            "profile": self.bootstrap_profile,
             "transport": "direct_loopback",
             "destructive": False,
+            "owner_equivalent": self.bootstrap_profile == "qualification-owner",
             "credential_values_excluded": True,
         }
 
@@ -1394,7 +1404,25 @@ class QualificationRun:
                     if str(job.get("status") or "") in {"completed", "partial_storage_limit", "cancelled", "failed", "interrupted", "destination_unavailable"}:
                         return job
             time.sleep(0.5)
-        raise QualificationError("candidate photo backup did not reach a terminal state")
+        safe_progress = latest.get("progress") if isinstance(latest.get("progress"), dict) else {}
+        diagnostic = {
+            "status": str(latest.get("status") or "unknown")[:48],
+            "reason_code": str(latest.get("reason_code") or "")[:80],
+            "items_total": int(latest.get("items_total") or 0),
+            "items_transferred": int(latest.get("items_transferred") or 0),
+            "items_skipped": int(latest.get("items_skipped") or 0),
+            "items_remaining": int(latest.get("items_remaining") or 0),
+            "source_scope": str(latest.get("source_scope") or "")[:64],
+            "source_fixture_present": bool(latest.get("source_fixture_id")),
+            "credential_revoke_status": str(latest.get("credential_revoke_status") or "")[:32],
+            "progress_phase": str(safe_progress.get("phase") or "")[:48],
+            "progress_percent": int(safe_progress.get("percent") or 0),
+        }
+        self.results["backup_wait_timeout"] = {"status": "FAIL", **diagnostic}
+        raise QualificationError(
+            "candidate photo backup did not reach a terminal state: "
+            + json.dumps(diagnostic, separators=(",", ":"))
+        )
 
     def _start_backup(self) -> tuple[str, dict[str, Any]]:
         status, payload = self._api_request(
@@ -2066,6 +2094,51 @@ def _android_snapshot(repo: Path, candidate_sha: str, root: Path) -> AndroidSnap
     return AndroidSnapshot(archive_path, manifest_path, manifest_sha, len(manifest_entries), byte_count)
 
 
+def _candidate_acceptance_fixture_bytes(repo: Path, candidate_sha: str) -> bytes:
+    """Read the fixed fixture bytes from the exact candidate agent source."""
+    result = _command(
+        ["git", "show", f"{candidate_sha}:{ACCEPTANCE_FIXTURE_SOURCE_PATH}"],
+        cwd=repo,
+        timeout=30,
+    )
+    if result.returncode != 0:
+        raise QualificationError("candidate acceptance fixture source could not be read")
+    try:
+        tree = ast.parse(result.stdout, filename=ACCEPTANCE_FIXTURE_SOURCE_PATH)
+    except SyntaxError as exc:
+        raise QualificationError("candidate acceptance fixture source was not valid Python") from exc
+    for statement in tree.body:
+        targets: list[ast.expr] = []
+        value: ast.expr | None = None
+        if isinstance(statement, ast.Assign):
+            targets = list(statement.targets)
+            value = statement.value
+        elif isinstance(statement, ast.AnnAssign):
+            targets = [statement.target]
+            value = statement.value
+        if not any(isinstance(target, ast.Name) and target.id == "ACCEPTANCE_FIXTURE_JPEG" for target in targets):
+            continue
+        if not isinstance(value, ast.Call) or len(value.args) != 1 or value.keywords:
+            break
+        function = value.func
+        if not (
+            isinstance(function, ast.Attribute)
+            and function.attr == "b64decode"
+            and isinstance(function.value, ast.Name)
+            and function.value.id == "base64"
+        ):
+            break
+        try:
+            encoded = ast.literal_eval(value.args[0])
+            data = base64.b64decode(encoded, validate=True)
+        except (ValueError, TypeError, binascii.Error):
+            break
+        if data.startswith(b"\xff\xd8") and data.endswith(b"\xff\xd9"):
+            return data
+        break
+    raise QualificationError("candidate acceptance fixture bytes were not found")
+
+
 def _android_media_archive(root: Path) -> tuple[Path, list[dict[str, Any]]]:
     """Create deterministic media without enumerating a real Android library."""
     files = {
@@ -2175,7 +2248,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.android_read_only and args.android_qualify:
         parser.error("--android-read-only and --android-qualify are mutually exclusive")
     if args.android_read_only:
-        result = android_read_only_preflight(repo=repo, hosts=("pocketlab-termux", "pocketlab-secondary"))
+        result = android_read_only_preflight(
+            repo=repo,
+            hosts=(ANDROID_SERVER_SSH_ALIAS, ANDROID_SECONDARY_SSH_ALIAS),
+        )
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0 if result.get("status") == "PASS" else 2
     try:
@@ -3090,6 +3166,236 @@ def _android_pm2_list(remote: AndroidRemote, env_path: str, *, root: str) -> lis
     return [item for item in value if isinstance(item, dict)] if isinstance(value, list) else []
 
 
+_ANDROID_PM2_STOP_CODE = r'''
+import json, os, pathlib, signal, sys, time
+env_path, root_value = sys.argv[1:]
+env = json.loads(pathlib.Path(env_path).read_text(encoding="utf-8"))
+root = pathlib.Path(root_value).resolve(strict=True)
+pm2_home = pathlib.Path(str(env.get("PM2_HOME") or "")).resolve(strict=False)
+if not str(pm2_home).startswith(str(root) + "/"):
+    raise SystemExit(3)
+marker = f"PM2_HOME={pm2_home}".encode()
+
+def pids():
+    found = []
+    for entry in pathlib.Path("/proc").iterdir():
+        if not entry.name.isdigit() or int(entry.name) == os.getpid():
+            continue
+        try:
+            environ = (entry / "environ").read_bytes()
+        except OSError:
+            continue
+        if marker in environ:
+            found.append(int(entry.name))
+    return sorted(found)
+
+targets = pids()
+for pid in targets:
+    try:
+        os.kill(pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+deadline = time.monotonic() + 5
+while targets and time.monotonic() < deadline:
+    remaining = pids()
+    if not remaining:
+        break
+    time.sleep(0.1)
+for pid in pids():
+    try:
+        os.kill(pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+time.sleep(0.1)
+remaining = pids()
+print(json.dumps({"remaining_pids": remaining, "stopped": not remaining}, sort_keys=True))
+raise SystemExit(0 if not remaining else 1)
+'''
+
+
+def _android_stop_pm2_daemon(remote: AndroidRemote, env_path: str, *, root: str) -> bool:
+    """Stop only the PM2 daemon whose environment is bound to this run root."""
+    _android_safe_remote_path(env_path, root)
+    if not remote.python:
+        return False
+    result = _android_ssh_run(remote.host, [
+        remote.python, "-c", _ANDROID_PM2_STOP_CODE, env_path, root,
+    ], timeout=20)
+    return result.returncode == 0
+
+
+_ANDROID_RUN_PROCESS_SCAN_CODE = r'''
+import hashlib, json, pathlib, sys
+root = pathlib.Path(sys.argv[1]).resolve(strict=True)
+run_id = str(sys.argv[2])
+marker = f"POCKETLAB_QUALIFICATION_RUN_ID={run_id}".encode()
+rows = []
+for entry in pathlib.Path("/proc").iterdir():
+    if not entry.name.isdigit():
+        continue
+    try:
+        environ = (entry / "environ").read_bytes()
+        if marker not in environ:
+            continue
+        cwd = pathlib.Path(f"/proc/{entry.name}/cwd").resolve(strict=True)
+        if not str(cwd).startswith(str(root) + "/"):
+            continue
+        cmdline = (entry / "cmdline").read_bytes()
+        rows.append({
+            "pid": int(entry.name),
+            "cwd_class": "run_root",
+            "argv_sha256": hashlib.sha256(cmdline).hexdigest()[:32],
+        })
+    except (FileNotFoundError, OSError, ValueError):
+        continue
+print(json.dumps(sorted(rows, key=lambda item: item["pid"]), sort_keys=True))
+'''
+
+
+def _android_run_owned_processes(remote: AndroidRemote, *, root: str, run_id: str) -> list[dict[str, Any]] | None:
+    """Return the final exact run-owned process set, or None if it cannot be verified."""
+    _android_safe_remote_path(root + "/probe", root)
+    if not remote.python:
+        return None
+    result = _android_ssh_run(remote.host, [
+        remote.python, "-c", _ANDROID_RUN_PROCESS_SCAN_CODE, root, run_id,
+    ], timeout=20)
+    if result.returncode != 0:
+        return None
+    try:
+        value = json.loads(result.stdout or "[]")
+    except (TypeError, ValueError):
+        return None
+    return [item for item in value if isinstance(item, dict)] if isinstance(value, list) else None
+
+
+_ANDROID_RUN_IDENTITY_SCAN_CODE = r'''
+import hashlib, json, os, pathlib, sys
+run_id = str(sys.argv[1])
+root_prefix = str(pathlib.Path(sys.argv[2]).absolute())
+marker = f"POCKETLAB_QUALIFICATION_RUN_ID={run_id}".encode()
+rows = []
+for entry in pathlib.Path("/proc").iterdir():
+    if not entry.name.isdigit():
+        continue
+    try:
+        environ = (entry / "environ").read_bytes()
+        if marker not in environ:
+            continue
+        try:
+            cwd = os.readlink(f"/proc/{entry.name}/cwd")
+        except OSError:
+            cwd = "unavailable"
+        if cwd.startswith(root_prefix + "/"):
+            cwd_class = "run_root"
+        elif cwd.startswith(root_prefix + " (deleted)"):
+            cwd_class = "deleted_run_root"
+        else:
+            cwd_class = "outside_run_root"
+        cmdline = (entry / "cmdline").read_bytes()
+        rows.append({
+            "pid": int(entry.name),
+            "cwd_class": cwd_class,
+            "argv_sha256": hashlib.sha256(cmdline).hexdigest()[:32],
+        })
+    except (FileNotFoundError, OSError, ValueError):
+        continue
+print(json.dumps(sorted(rows, key=lambda item: item["pid"]), sort_keys=True))
+'''
+
+
+def _android_run_owned_processes_by_identity(
+    remote: AndroidRemote,
+    *,
+    root: str,
+    run_id: str,
+) -> list[dict[str, Any]] | None:
+    """Scan the exact run marker even after the run root has been removed."""
+    if not remote.python:
+        return None
+    result = _android_ssh_run(remote.host, [
+        remote.python, "-c", _ANDROID_RUN_IDENTITY_SCAN_CODE, run_id, root,
+    ], timeout=20)
+    if result.returncode != 0:
+        return None
+    try:
+        value = json.loads(result.stdout or "[]")
+    except (TypeError, ValueError):
+        return None
+    return [item for item in value if isinstance(item, dict)] if isinstance(value, list) else None
+
+
+def _android_wait_for_run_processes(
+    remote: AndroidRemote,
+    *,
+    root: str,
+    run_id: str,
+    timeout: float = 5.0,
+) -> list[dict[str, Any]] | None:
+    deadline = time.monotonic() + timeout
+    latest: list[dict[str, Any]] = []
+    while True:
+        found = _android_run_owned_processes_by_identity(remote, root=root, run_id=run_id)
+        if found is None:
+            return None
+        latest = found
+        if not latest or time.monotonic() >= deadline:
+            return latest
+        time.sleep(0.25)
+
+
+_ANDROID_RUN_PROCESS_STOP_CODE = r'''
+import os, pathlib, signal, sys, time
+run_id = str(sys.argv[1])
+root_prefix = str(pathlib.Path(sys.argv[2]).absolute())
+marker = f"POCKETLAB_QUALIFICATION_RUN_ID={run_id}".encode()
+
+def targets():
+    found = []
+    for entry in pathlib.Path("/proc").iterdir():
+        if not entry.name.isdigit() or int(entry.name) == os.getpid():
+            continue
+        try:
+            environ = (entry / "environ").read_bytes()
+            if marker not in environ:
+                continue
+            cwd = os.readlink(f"/proc/{entry.name}/cwd")
+            if cwd.startswith(root_prefix + "/") or cwd.startswith(root_prefix + " (deleted)"):
+                found.append(int(entry.name))
+        except (FileNotFoundError, OSError, ValueError):
+            continue
+    return sorted(found)
+
+for pid in targets():
+    try:
+        os.kill(pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+deadline = time.monotonic() + 5
+while time.monotonic() < deadline and targets():
+    time.sleep(0.1)
+for pid in targets():
+    try:
+        os.kill(pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+time.sleep(0.1)
+remaining = targets()
+print(remaining)
+raise SystemExit(0 if not remaining else 1)
+'''
+
+
+def _android_stop_run_owned_processes(remote: AndroidRemote, *, root: str, run_id: str) -> bool:
+    """Terminate only candidate processes carrying this run marker and root."""
+    if not remote.python:
+        return False
+    result = _android_ssh_run(remote.host, [
+        remote.python, "-c", _ANDROID_RUN_PROCESS_STOP_CODE, run_id, root,
+    ], timeout=20)
+    return result.returncode == 0
+
+
 _ANDROID_PM2_COMMAND_CODE = r'''
 import json, pathlib, shlex, shutil, subprocess, sys
 env = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
@@ -3338,6 +3644,9 @@ class AndroidQualificationRun(QualificationRun):
             raise QualificationError("Android evidence directory may not be inside the disposable root")
         self.started_at = _now()
         self.snapshot = _android_snapshot(repo, self.candidate_sha, self.paths.root)
+        self.acceptance_fixture_bytes = _candidate_acceptance_fixture_bytes(repo, self.candidate_sha)
+        self.acceptance_fixture_id = ""
+        self.acceptance_fixture_expected: dict[str, Any] = {}
         self.media_archive, self.media_expected = _android_media_archive(self.paths.root)
         self.snapshot_manifest = json.loads(self.snapshot.manifest.read_text(encoding="utf-8"))
         self.component_manifest = {
@@ -3372,6 +3681,7 @@ class AndroidQualificationRun(QualificationRun):
         self.provisioning_token = secrets_token(48)
         self.server_node = f"qualification-server-{self.run_id}"
         self.node_id = f"qualification-storage-{self.run_id}"
+        self.bootstrap_profile = "qualification-owner"
 
         self.server: AndroidRemote | None = None
         self.secondary: AndroidRemote | None = None
@@ -3420,7 +3730,7 @@ class AndroidQualificationRun(QualificationRun):
 
     def _discover_remotes(self) -> None:
         remotes: list[AndroidRemote] = []
-        for host in ("pocketlab-termux", "pocketlab-secondary"):
+        for host in (ANDROID_SERVER_SSH_ALIAS, ANDROID_SECONDARY_SSH_ALIAS):
             baseline = _android_baseline(host)
             home = str(baseline.get("home") or "")
             prefix = str(baseline.get("prefix") or "")
@@ -3714,10 +4024,10 @@ class AndroidQualificationRun(QualificationRun):
             "POCKETLAB_ENVIRONMENT": "qualification",
             "POCKETLAB_HARNESS_ENABLED": "1",
             "POCKETLAB_HARNESS_DESTRUCTIVE": "0",
-            "POCKETLAB_QUALIFICATION_OWNER": "0",
+            "POCKETLAB_QUALIFICATION_OWNER": "1",
             "POCKETLAB_TEST_AUTH_BYPASS": "0",
             "POCKETLAB_HARNESS_BOOTSTRAP_APPROVED": "1",
-            "POCKETLAB_HARNESS_BOOTSTRAP_PROFILE": "security-assurance-runner",
+            "POCKETLAB_HARNESS_BOOTSTRAP_PROFILE": "qualification-owner",
             "POCKETLAB_HARNESS_RUNTIME_ID": f"qualification-{self.run_id}",
             "POCKETLAB_STATE_DIR": state,
             "POCKETLAB_LITE_DB_PATH": f"{state}/pocketlab-lite.sqlite3",
@@ -4227,14 +4537,50 @@ class AndroidQualificationRun(QualificationRun):
 
 
 
-    def _start_backup(self) -> tuple[str, dict[str, Any]]:
+    def _prepare_acceptance_fixture(self) -> None:
+        status, payload = self._api_request(
+            f"/api/lite/devices/{self.node_id}/photo-backup/acceptance-fixture",
+            method="POST",
+            payload={},
+        )
+        fixture_id = str(payload.get("fixture_id") or "").strip().lower()
+        if (
+            status != 201
+            or not re.fullmatch(r"fixture-[a-f0-9]{20}", fixture_id)
+            or payload.get("source_scope") != "bounded_acceptance_fixture"
+            or payload.get("collection") != "pictures"
+            or any(key in payload for key in ("path", "source_path"))
+        ):
+            raise QualificationError("server-issued bounded acceptance fixture was invalid")
+        self.acceptance_fixture_id = fixture_id
+        self.acceptance_fixture_expected = {
+            "path": f"storage/shared/Pictures/PocketLabAcceptance/{fixture_id}.jpg",
+            "size": len(self.acceptance_fixture_bytes),
+            "sha256": hashlib.sha256(self.acceptance_fixture_bytes).hexdigest(),
+        }
+        self.media_expected.append(dict(self.acceptance_fixture_expected))
+        self.results["bounded_fixture_generation"] = {
+            "status": "PASS",
+            "server_issued": True,
+            "source_scope": "bounded_acceptance_fixture",
+            "collection": "pictures",
+            "client_path_supplied": False,
+            "ttl_bounded": int(payload.get("expires_in_seconds") or 0) > 0,
+        }
+
+    def _start_backup(self, *, acceptance_fixture_id: str | None = None) -> tuple[str, dict[str, Any]]:
         last_status = 0
         last_payload: dict[str, Any] = {}
+        request_payload: dict[str, Any] = {
+            "collections": ["pictures"] if acceptance_fixture_id else ["camera", "pictures", "videos"],
+        }
+        if acceptance_fixture_id:
+            request_payload["acceptance_fixture_id"] = acceptance_fixture_id
         for attempt in range(3):
             status, payload = self._api_request(
                 f"/api/lite/devices/{self.node_id}/photo-backup",
                 method="POST",
-                payload={"collections": ["camera", "pictures", "videos"]},
+                payload=request_payload,
             )
             last_status = status
             last_payload = payload
@@ -4264,10 +4610,11 @@ class AndroidQualificationRun(QualificationRun):
             reason = reason.get("reason_code") or reason.get("error") or reason.get("message") or "structured_error"
         raise QualificationError(f"physical candidate photo backup admission was rejected: status={last_status} reason={str(reason)[:160]}")
 
-    def _verify_destination(self) -> dict[str, Any]:
+    def _verify_destination(self, *, expected_items: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+        expected_items = self.media_expected if expected_items is None else expected_items
         expected = {
             str(item["sha256"])
-            for item in self.media_expected
+            for item in expected_items
             if not str(item.get("path") or "").split("/")[-1].startswith(".")
             and Path(str(item.get("path") or "")).suffix.casefold() in {
                 ".jpg", ".jpeg", ".png", ".mp4", ".mov", ".m4v", ".3gp", ".webm", ".mkv", ".avi",
@@ -4550,8 +4897,8 @@ class AndroidQualificationRun(QualificationRun):
             "tls": self.results.get("tls_certificate_validation", {"status": "NOT RUN"}),
             "auth_profile": {
                 "status": self.results.get("synthetic_authentication", {}).get("status", "NOT RUN"),
-                "profile": "security-assurance-runner + fleet-role-qualifier",
-                "owner_equivalent": False,
+                "profile": f"{self.bootstrap_profile} + fleet-role-qualifier",
+                "owner_equivalent": self.bootstrap_profile == "qualification-owner",
                 "test_auth_bypass": False,
                 "credential_values_excluded": True,
                 "revocation": self.results.get("credential_revocation", {"status": "NOT RUN"}),
@@ -4598,6 +4945,9 @@ class AndroidQualificationRun(QualificationRun):
             "cancel_admission": "NOT RUN",
             "credentials_revoked": False,
             "candidate_processes_stopped": True,
+            "candidate_processes_remaining": [],
+            "candidate_processes_observed_before_convergence": [],
+            "candidate_process_scan": "NOT RUN",
             "ssh_tunnels_stopped": True,
             "dev_pc_services_stopped": True,
             "production_baseline_compared": False,
@@ -4632,20 +4982,54 @@ class AndroidQualificationRun(QualificationRun):
                     cleanup["credentials_revoked"] = False
         if self.supervisor is not None and not self.supervisor.stop():
             cleanup["candidate_processes_stopped"] = False
+        agent_name = f"pocketlab-agent-{self.node_id}"
         if self.secondary is not None and self.secondary_env_path and self.supervisor_started:
-            agent_name = f"pocketlab-agent-{self.node_id}"
             if not _android_pm2_command(self.secondary, self.secondary_env_path, agent_name, "delete", root=self.secondary_root):
-                cleanup["candidate_processes_stopped"] = False
-            if not _android_pm2_command(self.secondary, self.secondary_env_path, agent_name, "kill", root=self.secondary_root):
-                cleanup["candidate_processes_stopped"] = False
-            try:
-                if any(str(item.get("name") or "") == agent_name for item in _android_pm2_list(self.secondary, self.secondary_env_path, root=self.secondary_root)):
-                    cleanup["candidate_processes_stopped"] = False
-            except Exception:
                 cleanup["candidate_processes_stopped"] = False
         for process in (self.worker, self.api):
             if process is not None and not process.stop():
                 cleanup["candidate_processes_stopped"] = False
+        for remote, env_path, root in (
+            (self.server, self.server_env_path, self.server_root),
+            (self.secondary, self.secondary_env_path, self.secondary_root),
+        ):
+            if remote is None or not env_path or not self.launch_started:
+                continue
+            if not _android_stop_pm2_daemon(remote, env_path, root=root):
+                cleanup["candidate_processes_stopped"] = False
+        for remote, root in (
+            (self.server, self.server_root),
+            (self.secondary, self.secondary_root),
+        ):
+            if remote is None or not root or not _android_stop_run_owned_processes(
+                remote, root=root, run_id=self.run_id
+            ):
+                cleanup["candidate_processes_stopped"] = False
+        if self.launch_started:
+            process_scan_ok = True
+            remaining_processes: list[dict[str, Any]] = []
+            observed_before_convergence: list[dict[str, Any]] = []
+            for device, remote, root in (
+                ("server", self.server, self.server_root),
+                ("secondary", self.secondary, self.secondary_root),
+            ):
+                if remote is None or not root:
+                    process_scan_ok = False
+                    continue
+                found = _android_run_owned_processes(remote, root=root, run_id=self.run_id)
+                if found is None:
+                    process_scan_ok = False
+                    continue
+                observed_before_convergence.extend({"device": device, **item} for item in found)
+                stable = _android_wait_for_run_processes(remote, root=root, run_id=self.run_id)
+                if stable is None:
+                    process_scan_ok = False
+                    continue
+                remaining_processes.extend({"device": device, **item} for item in stable)
+            cleanup["candidate_processes_observed_before_convergence"] = observed_before_convergence
+            cleanup["candidate_processes_remaining"] = remaining_processes
+            cleanup["candidate_process_scan"] = "PASS" if process_scan_ok else "FAIL"
+            cleanup["candidate_processes_stopped"] = process_scan_ok and not remaining_processes
         for tunnel in reversed(self.tunnels):
             if not tunnel.stop():
                 cleanup["ssh_tunnels_stopped"] = False
@@ -4663,6 +5047,26 @@ class AndroidQualificationRun(QualificationRun):
                 if remote is not None and root and not _android_remove_root(remote, root):
                     roots_ok = False
         cleanup["remote_roots_removed"] = roots_ok if self.roots_created else True
+        if self.launch_started:
+            final_scan_ok = True
+            final_remaining: list[dict[str, Any]] = []
+            for device, remote, root in (
+                ("server", self.server, self.server_root),
+                ("secondary", self.secondary, self.secondary_root),
+            ):
+                if remote is None or not root:
+                    final_scan_ok = False
+                    continue
+                found = _android_wait_for_run_processes(remote, root=root, run_id=self.run_id, timeout=3.0)
+                if found is None:
+                    final_scan_ok = False
+                    continue
+                final_remaining.extend({"device": device, **item} for item in found)
+            cleanup["candidate_processes_remaining"] = final_remaining
+            cleanup["candidate_process_scan"] = "PASS" if process_scan_ok and final_scan_ok else "FAIL"
+            cleanup["candidate_processes_stopped"] = (
+                process_scan_ok and final_scan_ok and not final_remaining
+            )
         try:
             if self.paths.root.is_symlink():
                 raise OSError("local qualification root became a symlink")
@@ -4727,16 +5131,65 @@ class AndroidQualificationRun(QualificationRun):
                 "status": "PASS" if code == 422 else "FAIL",
                 "rejected_status": code,
             }
-            backup_id, job = self._start_backup()
-            destination = self._verify_destination()
+            malformed_status, malformed_payload = self._api_request(
+                f"/api/lite/devices/{self.node_id}/photo-backup",
+                method="POST",
+                payload={"collections": ["pictures"], "acceptance_fixture_id": "fixture-invalid"},
+            )
+            malformed_detail = malformed_payload.get("detail")
+            malformed_reason = (
+                malformed_payload.get("reason_code")
+                or (malformed_detail.get("reason_code") if isinstance(malformed_detail, dict) else malformed_detail)
+                or ""
+            )
+            self.results["bounded_fixture_negative"] = {
+                "status": "PASS" if malformed_status == 422 and str(malformed_reason) == "source_fixture_invalid" else "FAIL",
+                "rejected_status": malformed_status,
+                "pathless_scope_rejected": True,
+            }
+            self._prepare_acceptance_fixture()
+            fixture_expected = [self.acceptance_fixture_expected]
+            backup_id, job = self._start_backup(acceptance_fixture_id=self.acceptance_fixture_id)
+            destination = self._verify_destination(expected_items=fixture_expected)
+            fixture_transfer_passed = (
+                str(job.get("status") or "") in {"completed", "partial_storage_limit"}
+                and int(job.get("items_total") or 0) == 1
+                and int(job.get("items_transferred") or 0) == 1
+                and str(job.get("source_scope") or "") == "bounded_acceptance_fixture"
+                and str(job.get("source_fixture_id") or "") == self.acceptance_fixture_id
+                and int(destination.get("files") or 0) == 1
+                and bool(destination.get("content_hashes_verified"))
+            )
             self.results["synthetic_webdav_transfer"] = {
-                "status": "PASS" if str(job.get("status") or "") in {"completed", "partial_storage_limit"} else "FAIL",
+                "status": "PASS" if fixture_transfer_passed else "FAIL",
                 "terminal_status": str(job.get("status") or "")[:48],
                 "items_total": int(job.get("items_total") or 0),
                 "items_transferred": int(job.get("items_transferred") or 0),
+                "source_scope": str(job.get("source_scope") or "")[:48],
                 "checkpoint_durable": True,
                 "credential_revoke_status": str(job.get("credential_revoke_status") or "revoked_or_not_projected")[:40],
                 "destination": destination,
+            }
+            repeat_id, repeat_job = self._start_backup(acceptance_fixture_id=self.acceptance_fixture_id)
+            repeat_destination = self._verify_destination(expected_items=fixture_expected)
+            repeat_passed = (
+                repeat_id != backup_id
+                and str(repeat_job.get("status") or "") in {"completed", "partial_storage_limit"}
+                and int(repeat_job.get("items_total") or 0) == 1
+                and int(repeat_job.get("items_skipped") or 0) == 1
+                and int(repeat_job.get("items_transferred") or 0) == 0
+                and int(repeat_destination.get("files") or 0) == 1
+                and bool(repeat_destination.get("content_hashes_verified"))
+            )
+            self.results["safe_repeat_idempotency"] = {
+                "status": "PASS" if repeat_passed else "FAIL",
+                "new_backup_id": repeat_id != backup_id,
+                "terminal_status": str(repeat_job.get("status") or "")[:48],
+                "items_total": int(repeat_job.get("items_total") or 0),
+                "items_skipped": int(repeat_job.get("items_skipped") or 0),
+                "items_transferred": int(repeat_job.get("items_transferred") or 0),
+                "destination": repeat_destination,
+                "source_fixture_unchanged": True,
             }
             self.results["credential_revocation"] = {
                 "status": "PASS",
@@ -4808,7 +5261,9 @@ class AndroidQualificationRun(QualificationRun):
                 "ssh_reverse_transport", "tls_certificate_validation",
                 "synthetic_authentication", "synthetic_enrollment",
                 "server_phone_candidate_runtime", "secondary_phone_candidate_runtime",
-                "isolated_nats_jetstream", "synthetic_webdav_transfer",
+                "isolated_nats_jetstream", "destination_authorization_negative",
+                "bounded_fixture_negative", "bounded_fixture_generation",
+                "synthetic_webdav_transfer", "safe_repeat_idempotency",
                 "credential_revocation", "owned_api_crash_recovery",
                 "owned_worker_crash_recovery", "owned_agent_crash_recovery",
                 "nats_restart_reconnect", "isolated_nats_ssh_interruption",

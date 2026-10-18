@@ -27,7 +27,12 @@ INSTALL_STATES = frozenset(
     }
 )
 _MAX_PM2_OUTPUT_BYTES = 256 * 1024
-_PM2_TIMEOUT_SECONDS = 2.0
+# Android/Termux PM2 can take several seconds to answer while the
+# repository-owned runtime reconciler is converging.  Keep the probe bounded,
+# but do not turn a slow daemon into a false "app stopped" result.  A timeout
+# still produces an unknown PM2 signal and therefore preserves fail-closed
+# readiness semantics.
+_PM2_TIMEOUT_SECONDS = 15.0
 _RUNTIME_CACHE_TTL_SECONDS = 10.0
 _LAST_VALID_TTL_SECONDS = 120.0
 

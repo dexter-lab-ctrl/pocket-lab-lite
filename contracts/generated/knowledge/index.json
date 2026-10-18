@@ -21671,7 +21671,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3352",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3320",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1404",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:605"
       ],
@@ -22513,7 +22513,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3365"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3333"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -106930,7 +106930,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "08aaf86ee48335d793798979d5d571b4991533e4d48ba22137f217192e2f7d3c",
+  "source_fingerprint": "b2f4d902e788a1cc7faef0b5e3f5314be07c5f2adf3a6f58558c099600b77b83",
   "statistics": {
     "entity_count": 1390,
     "entity_type_counts": {

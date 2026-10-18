@@ -157,6 +157,26 @@ def test_android_candidate_task_is_explicit_and_preserves_read_only_mode():
     assert "EVIDENCE_DIR" in taskfile
 
 
+def test_android_physical_lane_uses_authoritative_tailnet_aliases():
+    spec = importlib.util.spec_from_file_location("isolated_android_aliases", CONTROLLER)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    import sys
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    assert module.ANDROID_SERVER_SSH_ALIAS == "pocketlab-termux-tailnet"
+    assert module.ANDROID_SECONDARY_SSH_ALIAS == "pocketlab-secondary-tailnet"
+
+
+def test_physical_candidate_owner_profile_remains_isolated_and_non_destructive():
+    source = CONTROLLER.read_text(encoding="utf-8")
+    assert '"POCKETLAB_QUALIFICATION_OWNER": "1"' in source
+    assert '"POCKETLAB_HARNESS_BOOTSTRAP_PROFILE": "qualification-owner"' in source
+    assert '"POCKETLAB_HARNESS_DESTRUCTIVE": "0"' in source
+    assert '"POCKETLAB_TEST_AUTH_BYPASS": "0"' in source
+
+
 def test_android_media_fixture_keeps_camera_files_with_nested_nomedia_marker(tmp_path, monkeypatch):
     spec = importlib.util.spec_from_file_location("isolated_android_media_fixture_test", CONTROLLER)
     assert spec and spec.loader
@@ -309,6 +329,26 @@ def test_android_cleanup_unlocks_read_only_roots_and_avoids_unstarted_pm2():
     assert "path.unlink()" in module._ANDROID_REMOVE_ROOT_CODE
     assert "already_stopped" in module._ANDROID_STOP_CODE
     assert "self.secondary_env_path and self.supervisor_started" in CONTROLLER.read_text(encoding="utf-8")
+    assert "_ANDROID_PM2_STOP_CODE" in module.__dict__
+    assert "PM2_HOME=" in module._ANDROID_PM2_STOP_CODE
+    assert "_android_stop_pm2_daemon" in CONTROLLER.read_text(encoding="utf-8")
+    assert "_ANDROID_RUN_PROCESS_SCAN_CODE" in module.__dict__
+    assert "_android_run_owned_processes" in module.__dict__
+    assert "_ANDROID_RUN_IDENTITY_SCAN_CODE" in module.__dict__
+    assert "_android_wait_for_run_processes" in module.__dict__
+    assert "_ANDROID_RUN_PROCESS_STOP_CODE" in module.__dict__
+    assert "_android_stop_run_owned_processes" in module.__dict__
+
+
+def test_android_pm2_cleanup_does_not_probe_with_pm2_after_kill():
+    source = CONTROLLER.read_text(encoding="utf-8")
+    cleanup_source = source.split("    def cleanup(self) -> dict[str, Any]:", 1)[1]
+    assert "_android_stop_pm2_daemon" in cleanup_source
+    assert "_android_run_owned_processes" in cleanup_source
+    assert "_android_wait_for_run_processes" in cleanup_source
+    assert "_android_stop_run_owned_processes" in cleanup_source
+    assert '"candidate_processes_remaining"' in cleanup_source
+    assert "_android_pm2_list(" not in cleanup_source
 
 
 def test_android_supervisor_uses_explicit_run_scoped_pm2_binary():
