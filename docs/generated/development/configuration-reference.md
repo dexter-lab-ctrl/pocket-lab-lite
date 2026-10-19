@@ -607,6 +607,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_NATS_COMMAND_MAX_DELIVER` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-isolated-runtime-qualification.py |
 | `POCKETLAB_NATS_COMPOSE_SERVICE` | configuration | nats | yes | component-dependent | scripts/dev/check-wsl-docker-desktop.sh |
 | `POCKETLAB_NATS_CONFIG` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, scripts/docs/runtime/termux_runtime_probe.sh |
+| `POCKETLAB_NATS_CONFIG_SHA256` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh |
 | `POCKETLAB_NATS_CONNECT_TIMEOUT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py |
 | `POCKETLAB_NATS_CONTAINER_NAME` | configuration | pocketlab-dev-nats | yes | component-dependent | scripts/dev/check-wsl-docker-desktop.sh |
 | `POCKETLAB_NATS_CREDENTIALS_FILE` | secret | not documented for secret variables | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, scripts/dev/lite/run-isolated-runtime-qualification.py, scripts/dev/lite/run-photo-backup-candidate-qualification.py, scripts/dev/lite/start-qualification.sh |

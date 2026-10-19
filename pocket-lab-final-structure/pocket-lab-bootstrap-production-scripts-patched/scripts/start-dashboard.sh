@@ -338,6 +338,10 @@ authorization {
 EOF
   chmod 600 "$nats_config"
   export POCKETLAB_NATS_CONFIG="$nats_config"
+  # Include the rendered policy in PM2's desired-process fingerprint.  The
+  # path is stable across releases, so without this digest a policy-only
+  # change could leave a healthy-looking NATS process serving the old ACL.
+  export POCKETLAB_NATS_CONFIG_SHA256="$(sha256sum "$nats_config" | awk '{print $1}')"
 }
 
 

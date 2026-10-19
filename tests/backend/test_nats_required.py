@@ -131,6 +131,16 @@ def test_production_worker_policy_allows_bounded_photo_backup_lifecycle_and_node
     assert '"pocketlab.commands.>"' not in worker_publish
 
 
+def test_nats_policy_digest_participates_in_supported_process_convergence():
+    from pathlib import Path
+
+    script = Path(
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
+    ).read_text(encoding="utf-8")
+    assert 'export POCKETLAB_NATS_CONFIG_SHA256=' in script
+    assert 'sha256sum "$nats_config"' in script
+
+
 def test_core_publish_does_not_flush_after_every_message():
     source = Path(
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py"

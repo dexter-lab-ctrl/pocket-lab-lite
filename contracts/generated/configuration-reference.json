@@ -10898,6 +10898,24 @@
         "pocket-lab-final-structure"
       ],
       "deprecated_aliases": [],
+      "name": "POCKETLAB_NATS_CONFIG_SHA256",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure"
+      ],
+      "deprecated_aliases": [],
       "name": "POCKETLAB_NATS_CONNECT_TIMEOUT",
       "production": true,
       "required": false,
