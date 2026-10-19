@@ -5627,6 +5627,20 @@
           "type": "related_to"
         }
       ],
+      "subject:pocketlab.commands.lite.media_backup": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
+        },
+        {
+          "source": "component:app-lifecycle-worker",
+          "type": "related_to"
+        },
+        {
+          "source": "component:worker",
+          "type": "related_to"
+        }
+      ],
       "subject:pocketlab.commands.lite.media_backup.cancel": [
         {
           "source": "domain:lite",
@@ -13094,6 +13108,24 @@
         },
         {
           "source": "reason:shutdown",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_nats_required.py": [
+        {
+          "source": "component:caddy",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:nats-listeners",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:pm2",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:startup",
           "type": "verified_by"
         }
       ],
@@ -22275,6 +22307,10 @@
           "type": "related_to"
         },
         {
+          "target": "subject:pocketlab.commands.lite.media_backup",
+          "type": "related_to"
+        },
+        {
           "target": "subject:pocketlab.commands.lite.security.assurance",
           "type": "related_to"
         },
@@ -22722,6 +22758,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_nats_required.py",
           "type": "verified_by"
         },
         {
@@ -23631,6 +23671,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_nats_required.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_documentation_presentation_polish.py",
           "type": "verified_by"
         },
@@ -24036,6 +24080,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_nats_required.py",
           "type": "verified_by"
         },
         {
@@ -25345,6 +25393,10 @@
         {
           "target": "troubleshooting:worker-stopped",
           "type": "recovers_with"
+        },
+        {
+          "target": "subject:pocketlab.commands.lite.media_backup",
+          "type": "related_to"
         },
         {
           "target": "subject:pocketlab.commands.lite.security.assurance",
@@ -27450,6 +27502,10 @@
         },
         {
           "target": "subject:pocketlab.commands.lite.maintenance.retention",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.commands.lite.media_backup",
           "type": "owns"
         },
         {
@@ -30890,6 +30946,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_nats_required.py",
           "type": "verified_by"
         },
         {
@@ -36241,6 +36301,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "a5fe92b3cfe3f47ce8c8576f353b16384adf78aee6adc3b4273951bfad4db811"
+    "source_fingerprint": "7efc666a138d2c93aae64f638612bd9e118756f449335e9f803692a8c155d1ed"
   }
 }

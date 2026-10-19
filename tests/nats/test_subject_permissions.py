@@ -11,7 +11,12 @@ PERMISSIONS = {
         "sub": ["_INBOX.*", "pocketlab.events.*", "pocketlab.audit.*"],
     },
     "worker": {
-        "pub": ["pocketlab.events.*", "pocketlab.audit.*", "pocketlab.dlq.*"],
+        "pub": [
+            "pocketlab.commands.node.*.media.backup.*",
+            "pocketlab.events.*",
+            "pocketlab.audit.*",
+            "pocketlab.dlq.*",
+        ],
         "sub": ["_INBOX.*", "pocketlab.commands.*"],
     },
     "agent": {
@@ -39,6 +44,11 @@ def test_api_can_publish_typed_operations():
 
 def test_worker_consumes_commands_and_publishes_events():
     assert allowed("worker", "sub", "pocketlab.commands.operation.execute")
+    assert allowed(
+        "worker", "pub", "pocketlab.commands.node.android-lab-01.media.backup.photoprism.start"
+    )
+    assert not allowed("worker", "pub", "pocketlab.commands.node.android-lab-01.agent.restart")
+    assert not allowed("worker", "pub", "pocketlab.commands.node.android-lab-01.device.roles.apply")
     assert allowed("worker", "pub", "pocketlab.events.operation.completed")
     assert allowed("worker", "pub", "pocketlab.audit.operation")
     assert allowed("worker", "pub", "pocketlab.dlq.operation")

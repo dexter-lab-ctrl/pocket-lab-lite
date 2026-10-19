@@ -3057,6 +3057,7 @@
         "test:tests/backend/test_lite_qualification_owner.py",
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_nats_required.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
@@ -3291,6 +3292,7 @@
         "test:tests/backend/test_lite_qualification_owner.py",
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_nats_required.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
@@ -3386,6 +3388,7 @@
         "test:tests/backend/test_lite_qualification_owner.py",
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_nats_required.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
@@ -4627,6 +4630,7 @@
         "test:tests/backend/test_lite_qualification_owner.py",
         "test:tests/backend/test_lite_security_s6_frontend_contract.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_nats_required.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py"
@@ -4771,6 +4775,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "a5fe92b3cfe3f47ce8c8576f353b16384adf78aee6adc3b4273951bfad4db811"
+    "source_fingerprint": "7efc666a138d2c93aae64f638612bd9e118756f449335e9f803692a8c155d1ed"
   }
 }

@@ -21,7 +21,7 @@ validation_status: generated
 
 Subjects are scanned from current runtime source. This does not reintroduce the retired full-product typed-operation catalog.
 
-## Detected subjects (219)
+## Detected subjects (220)
 
 - `pocketlab.commands.`
 - `pocketlab.commands.catalog.refresh`
@@ -54,6 +54,7 @@ Subjects are scanned from current runtime source. This does not reintroduce the 
 - `pocketlab.commands.lite.database.restore.preview`
 - `pocketlab.commands.lite.maintenance.checkpoint`
 - `pocketlab.commands.lite.maintenance.retention`
+- `pocketlab.commands.lite.media_backup.`
 - `pocketlab.commands.lite.media_backup.cancel`
 - `pocketlab.commands.lite.media_backup.repair`
 - `pocketlab.commands.lite.media_backup.start`

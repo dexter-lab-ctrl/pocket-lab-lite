@@ -48,6 +48,7 @@ Credentials are never included. Incomplete delivery semantics remain explicitly 
 | `pocketlab.commands.lite.device.restart` | devices | FastAPI | node agent | JetStream durable command | — | bounded command lifecycle |
 | `pocketlab.commands.lite.maintenance.checkpoint` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.maintenance.retention` | lite | — | — | incomplete | incomplete | incomplete |
+| `pocketlab.commands.lite.media_backup` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.media_backup.cancel` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.media_backup.repair` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.media_backup.start` | lite | — | — | incomplete | incomplete | incomplete |

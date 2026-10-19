@@ -1043,8 +1043,23 @@ class PocketLabEventBus:
 
 
     async def ack_message(self, msg: Any) -> None:
-        with contextlib.suppress(Exception):
-            await msg.ack()
+        """Acknowledge a JetStream message and verify broker acceptance.
+
+        A fire-and-forget ``Msg.ack()`` can leave the worker reporting an ack
+        even when the broker has not accepted it.  That is especially unsafe
+        for the broad command consumer because the same command can then be
+        redelivered indefinitely.  Use the request/reply acknowledgement when
+        the nats-py message supports it, and retain the plain acknowledgement
+        only for the minimal test/compatibility message doubles.
+        """
+        ack_sync = getattr(msg, "ack_sync", None)
+        if callable(ack_sync):
+            await ack_sync(timeout=1.0)
+            return
+        ack = getattr(msg, "ack", None)
+        if not callable(ack):
+            raise TypeError("JetStream message does not support acknowledgement")
+        await ack()
 
     async def nak_message(self, msg: Any, *, delay: int | None = None) -> None:
         with contextlib.suppress(TypeError):

@@ -1386,6 +1386,17 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:apps:6ab9a0d99fa3b03d",
+      "relation_type": "related_to",
+      "source": "page:generated/enterprise/journeys/apps",
+      "target": "subject:pocketlab.commands.lite.media_backup",
+      "target_type": "subject"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:apps:6b5a28b8ac89c996",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/apps",
@@ -1688,17 +1699,6 @@
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/apps",
       "target": "test:tests/docs/test_living_knowledgebase.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:apps:bb49a322db894de6",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/apps",
-      "target": "test:tests/backend/test_lite_projection_semantic_hardening.py",
       "target_type": "test"
     },
     {
@@ -7089,6 +7089,17 @@
       "source": "page:generated/enterprise/journeys/remote-access",
       "target": "table:device_supervisor_state",
       "target_type": "table"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:remote-access:a04b953988900d66",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/remote-access",
+      "target": "test:tests/backend/test_nats_required.py",
+      "target_type": "test"
     },
     {
       "depth": 2,

@@ -89,6 +89,45 @@ def test_close_stale_client_clears_subscriptions():
     asyncio.run(scenario())
 
 
+def test_ack_message_waits_for_broker_ack_when_supported():
+    import asyncio
+    from api_fastapi.services.nats_bus import PocketLabEventBus
+
+    class Message:
+        def __init__(self):
+            self.calls = []
+
+        async def ack_sync(self, *, timeout):
+            self.calls.append(timeout)
+
+        async def ack(self):
+            raise AssertionError("fire-and-forget ack must not be used")
+
+    async def scenario():
+        message = Message()
+        await PocketLabEventBus().ack_message(message)
+        return message.calls
+
+    assert asyncio.run(scenario()) == [1.0]
+
+
+def test_production_worker_policy_allows_only_node_scoped_dispatch():
+    from pathlib import Path
+
+    script = Path(
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
+    ).read_text(encoding="utf-8")
+    worker_line = next(
+        line
+        for line in script.splitlines()
+        if "POCKETLAB_NATS_WORKER_USER" in line and "permissions" in line
+    )
+    worker_publish = worker_line.split("subscribe:", 1)[0]
+    assert '"pocketlab.commands.node.*.media.backup.>"' in worker_publish
+    assert '"pocketlab.commands.node.>"' not in worker_publish
+    assert '"pocketlab.commands.>"' not in worker_publish
+
+
 def test_core_publish_does_not_flush_after_every_message():
     source = Path(
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py"

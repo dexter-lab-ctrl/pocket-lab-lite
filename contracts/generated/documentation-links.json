@@ -1205,6 +1205,10 @@
         "title": "pocketlab.commands.lite.maintenance.retention",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-maintenance-retention"
       },
+      "event:pocketlab.commands.lite.media_backup": {
+        "title": "pocketlab.commands.lite.media_backup",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-media-backup"
+      },
       "event:pocketlab.commands.lite.media_backup.cancel": {
         "title": "pocketlab.commands.lite.media_backup.cancel",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-media-backup-cancel"

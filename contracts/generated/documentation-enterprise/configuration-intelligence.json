@@ -18171,7 +18171,8 @@
     },
     {
       "affected_components": [
-        "bootstrap/runtime"
+        "bootstrap/runtime",
+        "repository tooling"
       ],
       "affects_release": true,
       "affects_runtime": true,
@@ -18189,7 +18190,8 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/bootstrap.sh",
-        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
+        "tests/backend/test_nats_required.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
