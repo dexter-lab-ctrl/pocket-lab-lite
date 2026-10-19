@@ -346,6 +346,29 @@ def test_pairing_reject_cancel_expiry_and_cross_client_observer_isolation(owner_
     assert cross_client.value.reason_code == "pairing_not_found"
 
 
+def test_pending_pairing_admission_is_bounded(owner_operation_runtime, monkeypatch):
+    runtime = owner_operation_runtime
+    _deps, operations = runtime["modules"]
+    monkeypatch.setattr(operations, "MAX_PENDING_PAIRINGS", 1)
+    _pair(runtime, "bounded-pairing-client")
+    second_private = Ed25519PrivateKey.generate()
+    second_public = _b64(second_private.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw))
+    challenge = operations.issue_client_pairing_challenge(
+        client_id="bounded-pairing-client-2",
+        display_name="Bounded pairing client 2",
+        public_key=second_public,
+    )
+    with pytest.raises(operations.OwnerOperationError) as limited:
+        operations.request_client_pairing(
+            client_id="bounded-pairing-client-2",
+            display_name="Bounded pairing client 2",
+            public_key=second_public,
+            challenge_id=challenge["challenge_id"],
+            signature=_b64(second_private.sign(challenge["signing_payload"].encode("utf-8"))),
+        )
+    assert limited.value.reason_code == "pairing_rate_limited"
+
+
 def test_registration_proof_binding_idempotency_replay_and_sanitized_observer(owner_operation_runtime):
     runtime = owner_operation_runtime
     _private, _public, registered = _register(runtime)

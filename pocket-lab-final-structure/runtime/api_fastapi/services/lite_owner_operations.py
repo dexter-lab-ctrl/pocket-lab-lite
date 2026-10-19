@@ -49,6 +49,7 @@ APPROVAL_TTL_SECONDS = 15 * 60
 EXECUTION_TTL_SECONDS = 40 * 60
 MAX_ACTIVE_CHALLENGES = 4
 MAX_CHALLENGE_FAILURES = 5
+MAX_PENDING_PAIRINGS = 32
 TERMINAL_STATUSES = {"completed", "rejected", "expired", "cancelled", "failed", "blocked"}
 ACTIVE_STATUSES = {"pending_approval", "approved", "executing", "verifying"}
 _CLIENT_ID_RE = re.compile(r"^[a-z][a-z0-9._-]{2,79}$")
@@ -742,6 +743,12 @@ def request_client_pairing(
             ).fetchone()
             if pending_client:
                 raise OwnerOperationError("client_id_pending", "That automation-client identity already has a pending pairing.", 409)
+            pending_count = tx.execute(
+                "SELECT COUNT(*) AS count FROM owner_operation_client_pairings WHERE status='pending' AND expires_at>?",
+                (_iso(now),),
+            ).fetchone()
+            if int(pending_count["count"] or 0) >= MAX_PENDING_PAIRINGS:
+                raise OwnerOperationError("pairing_rate_limited", "Too many pending automation-client pairings. Try again shortly.", 429)
             try:
                 tx.execute(
                     """INSERT INTO owner_operation_client_pairings(
