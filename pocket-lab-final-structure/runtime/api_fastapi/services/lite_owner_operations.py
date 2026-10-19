@@ -1745,17 +1745,24 @@ def _indexing_evidence() -> dict[str, Any]:
     }
 
 
-async def _request_existing_job_cancellation(row: Any, *, reason: str) -> dict[str, Any]:
+async def _request_existing_job_cancellation(
+    row: Any,
+    *,
+    reason: str,
+    backup_id: str | None = None,
+) -> dict[str, Any]:
     """Ask the existing Photo Backup path to stop one exact durable job.
 
     This is only a bounded safety cleanup for an expired or revoked operation;
     it does not create a new authorization or expose a general cancel API.
     The backup service still owns credential revocation and the node command.
     """
-    if str(row["execution_stage"] or "").startswith("repeat"):
-        backup_id = str(row["repeat_backup_id"] or "")
-    else:
-        backup_id = str(row["backup_id"] or "")
+    if backup_id is None:
+        if str(row["execution_stage"] or "").startswith("repeat"):
+            backup_id = str(row["repeat_backup_id"] or "")
+        else:
+            backup_id = str(row["backup_id"] or "")
+    backup_id = str(backup_id or "")
     if not backup_id:
         return {"status": "not_bound"}
     try:
@@ -1804,10 +1811,59 @@ def _job_matches_bound_operation(job: dict[str, Any], row: Any, backup_id: str) 
     )
 
 
+def _terminal_cleanup_backup_ids(row: Any) -> tuple[str, ...]:
+    """Return every exact Photo Backup job bound to a terminal operation.
+
+    A completed initial transfer can be followed by a separately persisted
+    same-fixture repeat. Terminal execution stages do not retain which phase
+    failed, so cleanup must inspect both durable bindings rather than infer a
+    single job from the final stage.
+    """
+    values: list[str] = []
+    for column in ("repeat_backup_id", "backup_id"):
+        value = str(row[column] or "")
+        if value and value not in values:
+            values.append(value)
+    return tuple(values)
+
+
 def _terminal_cleanup_backup_id(row: Any) -> str:
-    stage = str(row["execution_stage"] or "")
-    value = row["repeat_backup_id"] if stage.startswith("repeat") else row["backup_id"]
-    return str(value or "")
+    return next(iter(_terminal_cleanup_backup_ids(row)), "")
+
+
+def _cleanup_evidence_slot(
+    evidence: dict[str, Any],
+    row: Any,
+    backup_id: str,
+) -> tuple[dict[str, Any], str]:
+    """Read one job's cleanup evidence without overwriting another job."""
+    legacy = evidence.get("cancellation")
+    legacy = legacy if isinstance(legacy, dict) else None
+    if legacy and str(legacy.get("backup_id") or "") == backup_id:
+        return dict(legacy), "legacy"
+    bound_ids = _terminal_cleanup_backup_ids(row)
+    nested = evidence.get("cancellations")
+    if len(bound_ids) == 1 and not isinstance(nested, dict):
+        return dict(legacy or {}), "legacy"
+    if not isinstance(nested, dict):
+        nested = {}
+    current = nested.get(backup_id)
+    return (dict(current) if isinstance(current, dict) else {}), "nested"
+
+
+def _store_cleanup_evidence(
+    evidence: dict[str, Any],
+    backup_id: str,
+    record: dict[str, Any],
+    slot: str,
+) -> None:
+    if slot == "legacy":
+        evidence["cancellation"] = record
+        return
+    nested = evidence.get("cancellations")
+    nested = dict(nested) if isinstance(nested, dict) else {}
+    nested[backup_id] = record
+    evidence["cancellations"] = nested
 
 
 def _terminal_cleanup_candidates() -> list[Any]:
@@ -1848,13 +1904,11 @@ def _claim_terminal_cleanup(
             if (
                 str(row["status"] or "") not in TERMINAL_STATUSES
                 or str(row["execution_stage"] or "") != "terminal"
-                or _terminal_cleanup_backup_id(row) != backup_id
+                or backup_id not in _terminal_cleanup_backup_ids(row)
             ):
                 return False
             evidence = _parse_evidence(row["evidence_json"])
-            cancellation = evidence.get("cancellation")
-            if not isinstance(cancellation, dict):
-                cancellation = {}
+            cancellation, slot = _cleanup_evidence_slot(evidence, row, backup_id)
             current = str(cancellation.get("status") or "")
             if current in {"already_terminal", "idle"}:
                 return False
@@ -1864,12 +1918,12 @@ def _claim_terminal_cleanup(
                 claimed_at = _parse_iso(cancellation.get("claimed_at"))
                 if claimed_at and (_now() - claimed_at).total_seconds() < CLEANUP_CLAIM_LEASE_SECONDS:
                     return False
-            evidence["cancellation"] = {
+            _store_cleanup_evidence(evidence, backup_id, {
                 **cancellation,
                 "status": "retrying",
                 "backup_id": backup_id,
                 "claimed_at": _iso(),
-            }
+            }, slot)
             updated = tx.execute(
                 "UPDATE owner_approved_operations SET evidence_json=?,updated_at=? WHERE operation_id=? AND status IN ('completed','rejected','expired','cancelled','failed','blocked') AND execution_stage='terminal'",
                 (_canonical(evidence), _iso(), operation_id),
@@ -1892,14 +1946,17 @@ def _record_terminal_cleanup_result(
         with begin_immediate(conn) as tx:
             row = _operation_row(tx, operation_id)
             evidence = _parse_evidence(row["evidence_json"])
-            previous = evidence.get("cancellation")
-            previous = previous if isinstance(previous, dict) else {}
+            backup_id = str(safe.get("backup_id") or _terminal_cleanup_backup_id(row))
+            previous, slot = _cleanup_evidence_slot(evidence, row, backup_id)
             safe["last_attempt_at"] = _iso()
-            evidence["cancellation"] = {
+            _store_cleanup_evidence(evidence, backup_id, {
                 **previous,
                 **safe,
-            }
-            evidence["cancellation"].pop("claimed_at", None)
+            }, slot)
+            if slot == "legacy":
+                evidence["cancellation"].pop("claimed_at", None)
+            else:
+                evidence["cancellations"][backup_id].pop("claimed_at", None)
             updated = tx.execute(
                 "UPDATE owner_approved_operations SET evidence_json=?,updated_at=? WHERE operation_id=? AND status IN ('completed','rejected','expired','cancelled','failed','blocked') AND execution_stage='terminal'",
                 (_canonical(evidence), _iso(), operation_id),
@@ -1938,45 +1995,44 @@ async def _reconcile_terminal_operation_cleanup() -> int:
     """
     changed = 0
     for row in _terminal_cleanup_candidates():
-        backup_id = _terminal_cleanup_backup_id(row)
-        if not backup_id:
-            continue
-        try:
-            job = lite_photo_backup.job_status(backup_id)
-        except Exception:
-            continue
-        job_status = str(job.get("status") or "")
-        if job_status in lite_photo_backup.TERMINAL_STATES:
-            if not _job_matches_bound_operation(job, row, backup_id):
-                if _claim_terminal_cleanup(
-                    operation_id=str(row["operation_id"]),
-                    backup_id=backup_id,
-                    allow_queued=True,
-                ):
+        for backup_id in _terminal_cleanup_backup_ids(row):
+            try:
+                job = lite_photo_backup.job_status(backup_id)
+            except Exception:
+                continue
+            job_status = str(job.get("status") or "")
+            if job_status in lite_photo_backup.TERMINAL_STATES:
+                if not _job_matches_bound_operation(job, row, backup_id):
+                    if _claim_terminal_cleanup(
+                        operation_id=str(row["operation_id"]),
+                        backup_id=backup_id,
+                        allow_queued=True,
+                    ):
+                        _record_terminal_cleanup_result(
+                            str(row["operation_id"]),
+                            {"status": "binding_mismatch", "backup_id": backup_id},
+                        )
+                        changed += 1
+                    continue
+                if _claim_terminal_cleanup(operation_id=str(row["operation_id"]), backup_id=backup_id, allow_queued=True):
                     _record_terminal_cleanup_result(
                         str(row["operation_id"]),
-                        {"status": "binding_mismatch", "backup_id": backup_id},
+                        {"status": "already_terminal", "backup_id": backup_id},
                     )
                     changed += 1
                 continue
-            if _claim_terminal_cleanup(operation_id=str(row["operation_id"]), backup_id=backup_id, allow_queued=True):
-                _record_terminal_cleanup_result(
-                    str(row["operation_id"]),
-                    {"status": "already_terminal", "backup_id": backup_id},
-                )
-                changed += 1
-            continue
-        if job_status not in lite_photo_backup.ACTIVE_STATES:
-            continue
-        operation_id = str(row["operation_id"])
-        if not _claim_terminal_cleanup(operation_id, backup_id):
-            continue
-        result = await _request_existing_job_cancellation(
-            row,
-            reason="terminal_operation_cleanup",
-        )
-        _record_terminal_cleanup_result(operation_id, result)
-        changed += 1
+            if job_status not in lite_photo_backup.ACTIVE_STATES:
+                continue
+            operation_id = str(row["operation_id"])
+            if not _claim_terminal_cleanup(operation_id, backup_id):
+                continue
+            result = await _request_existing_job_cancellation(
+                row,
+                reason="terminal_operation_cleanup",
+                backup_id=backup_id,
+            )
+            _record_terminal_cleanup_result(operation_id, result)
+            changed += 1
     return changed
 
 
