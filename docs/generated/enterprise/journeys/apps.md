@@ -107,7 +107,6 @@ Execution ownership: FastAPI → NATS/JetStream → worker; FastAPI/Caddy read p
 - `test:tests/backend/test_lite_app_runtime_reconciliation.py`
 - `test:tests/backend/test_lite_control_plane_sqlite_p3.py`
 - `test:tests/backend/test_lite_development_documentation_platform.py`
-- `test:tests/backend/test_lite_projection_semantic_hardening.py`
 - `test:tests/backend/test_lite_termux_runtime_documentation.py`
 - `test:tests/backend/test_lite_ux_maturity_contract.py`
 - `test:tests/docs/test_documentation_presentation_polish.py`

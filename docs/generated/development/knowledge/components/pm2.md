@@ -86,6 +86,7 @@ Starts and supervises approved server-host and joined-device processes with boun
 - verified_by: `tests/backend/test_lite_qualification_owner.py`
 - verified_by: `tests/backend/test_lite_security_s6_frontend_contract.py`
 - verified_by: `tests/backend/test_lite_termux_runtime_documentation.py`
+- verified_by: `tests/backend/test_nats_required.py`
 - verified_by: `tests/docs/test_documentation_presentation_polish.py`
 - verified_by: `tests/docs/test_enterprise_completion.py`
 - verified_by: `tests/docs/test_living_knowledgebase.py`

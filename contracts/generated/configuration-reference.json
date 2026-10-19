@@ -18871,7 +18871,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "4847279c39d56d44f1a893359a2119680e79c5f7de7e33814af6b8f190d08c2d",
+    "aggregate_fingerprint": "e014f9de047b23928de0c9906cdd48d3c62fc1d131d29de99fd268df51969382",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -19014,7 +19014,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_storage_guard.py": "57b16f747bd3643add6c5351acb83e34c374af6e0778fca7f71a51c1fd27a9e2",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py": "92031b51af43d78839be3678b64e06eb7ed811db86dcc1bba87ea5d66639ee47",
       "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py": "ec004e6970fc322899dcbca6c4604fbbd3abec40e1f8441772e3c530ccd17766",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py": "c2e9da8bfe8ef40d0c666cea3e719db6705937bcad26997d99e267b393ee94ac",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py": "40bf8bb41a113eea49c88486949a09ad39d2fcb46f02b8d8635e318c912d1b99",
       "pocket-lab-final-structure/runtime/api_fastapi/services/observability_status.py": "a9c9fa966eaf4c4109c8fedd00836c044e2057234d3cdcc8b8a84cdd724e419e",
       "pocket-lab-final-structure/runtime/api_fastapi/services/operation_events.py": "a51d5763bbc2d1b201b017fe05ddd1737bf05f7a5a769ec0d66b8991285e90fe",
       "pocket-lab-final-structure/runtime/api_fastapi/services/process_runtime.py": "239a8c90868ec2ca121d823eddeb5e8f5b4d825fbebfdbc616be5992a1336ace",
@@ -19081,7 +19081,7 @@
       "pocket-lab-final-structure/runtime/tests/test_websockets.py": "ecd8f5a1fc7b5d1c761d80cc2cfffae02ee1f779414c20cd7af7d27cc4ab74a7",
       "pocket-lab-final-structure/runtime/tests/test_workflows.py": "bbcd6d561759d932c29027944c67939129439b7a12859486561d862d230b7bc0",
       "pocket-lab-final-structure/runtime/workers/__init__.py": "e3e6982d2a13a04d1c33169072fb59fb581df9d47d85195d7c452dea1d78b640",
-      "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py": "10e4c352b0b32afda44b29d40639959ab558ed1549ba91a52127409e0a1cb779",
+      "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py": "03871b8603994cb4f2c1016d80926e2805f4f5a9ae224898a89f0dedae2a961a",
       "scripts/dev/android-termux-smoke.sh": "fb9ce38bfaf1ac30a03d89f074d071eec71a3f6cb66cdb0e1968ed902bd11804",
       "scripts/dev/check-api-contract.sh": "0228393659f1d5df2982e24b6b2bfceed1d076b384ab05b8f377e4dafcc40355",
       "scripts/dev/check-architecture-contract.sh": "a208ffe9d3cf94293a4e47f6ff1db5c86f9594d687d44dd6e7eba9b4aecac851",

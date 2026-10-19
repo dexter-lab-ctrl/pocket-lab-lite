@@ -114,6 +114,7 @@ Execution ownership: use the component/API ownership links above; no additional 
 - `test:tests/backend/test_lite_qualification_owner.py`
 - `test:tests/backend/test_lite_security_s6_frontend_contract.py`
 - `test:tests/backend/test_lite_termux_runtime_documentation.py`
+- `test:tests/backend/test_nats_required.py`
 - `test:tests/docs/test_documentation_presentation_polish.py`
 - `test:tests/docs/test_enterprise_completion.py`
 - `test:tests/docs/test_living_knowledgebase.py`

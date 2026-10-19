@@ -657,6 +657,7 @@ async def command_callback(msg: Any) -> None:
         if callable(getattr(msg, "in_progress", None)) and (
             generic_lifecycle
             or subject == "pocketlab.commands.lite.security.assurance"
+            or subject.startswith("pocketlab.commands.lite.media_backup.")
         ):
             heartbeat_task = asyncio.create_task(_command_ack_heartbeat(msg))
         try:
