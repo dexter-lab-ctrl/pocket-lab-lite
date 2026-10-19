@@ -1762,13 +1762,7 @@ async def _request_existing_job_cancellation(row: Any, *, reason: str) -> dict[s
         job = lite_photo_backup.job_status(backup_id)
     except Exception:
         return {"status": "job_unavailable", "backup_id": backup_id}
-    if (
-        str(job.get("backup_id") or "") != backup_id
-        or str(job.get("node_id") or "") != str(row["target_node_id"] or "")
-        or str(job.get("destination_id") or "") != DESTINATION_ID
-        or str(job.get("destination_contract_version") or "")
-        != str(lite_photo_backup_destinations.SCHEMA_VERSION)
-    ):
+    if not _job_matches_bound_operation(job, row, backup_id):
         return {"status": "binding_mismatch", "backup_id": backup_id}
     if str(job.get("status") or "") in lite_photo_backup.TERMINAL_STATES:
         return {"status": "already_terminal", "backup_id": backup_id}
@@ -1798,6 +1792,16 @@ async def _request_existing_job_cancellation(row: Any, *, reason: str) -> dict[s
         "backup_id": backup_id,
         "submission": str(submitted.get("status") or "queued") if isinstance(submitted, dict) else "queued",
     }
+
+
+def _job_matches_bound_operation(job: dict[str, Any], row: Any, backup_id: str) -> bool:
+    return (
+        str(job.get("backup_id") or "") == backup_id
+        and str(job.get("node_id") or "") == str(row["target_node_id"] or "")
+        and str(job.get("destination_id") or "") == DESTINATION_ID
+        and str(job.get("destination_contract_version") or "")
+        == str(lite_photo_backup_destinations.SCHEMA_VERSION)
+    )
 
 
 def _terminal_cleanup_backup_id(row: Any) -> str:
@@ -1943,6 +1947,18 @@ async def _reconcile_terminal_operation_cleanup() -> int:
             continue
         job_status = str(job.get("status") or "")
         if job_status in lite_photo_backup.TERMINAL_STATES:
+            if not _job_matches_bound_operation(job, row, backup_id):
+                if _claim_terminal_cleanup(
+                    operation_id=str(row["operation_id"]),
+                    backup_id=backup_id,
+                    allow_queued=True,
+                ):
+                    _record_terminal_cleanup_result(
+                        str(row["operation_id"]),
+                        {"status": "binding_mismatch", "backup_id": backup_id},
+                    )
+                    changed += 1
+                continue
             if _claim_terminal_cleanup(operation_id=str(row["operation_id"]), backup_id=backup_id, allow_queued=True):
                 _record_terminal_cleanup_result(
                     str(row["operation_id"]),

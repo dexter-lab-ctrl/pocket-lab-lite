@@ -1077,6 +1077,37 @@ def test_terminal_cleanup_rejects_a_different_active_job_binding(owner_operation
     assert json.loads(row["evidence_json"])["cancellation"]["status"] == "binding_mismatch"
 
 
+def test_terminal_cleanup_rejects_a_different_terminal_job_binding(owner_operation_runtime, monkeypatch):
+    runtime = owner_operation_runtime
+    private, _public, _registered = _register(runtime, "terminal-terminal-binding-client")
+    _deps, operations = runtime["modules"]
+    operation = _request(
+        runtime,
+        private,
+        "terminal-terminal-binding-client",
+        _descriptor("terminal-terminal-binding-client", key="terminal-terminal-binding-0001"),
+    )
+    backup_id = "photo-0123456789abcdef0123"
+    _bind_terminal_backup(runtime, operation["operation_id"], backup_id)
+
+    from api_fastapi.services import lite_photo_backup
+
+    monkeypatch.setattr(
+        lite_photo_backup,
+        "job_status",
+        lambda value: _active_bound_job(value, status="interrupted", node_id="different-node"),
+    )
+    assert asyncio.run(operations.reconcile_operations()) == 1
+    with runtime["db"][1]() as conn:
+        row = conn.execute(
+            "SELECT status,execution_stage,evidence_json FROM owner_approved_operations WHERE operation_id=?",
+            (operation["operation_id"],),
+        ).fetchone()
+    assert row["status"] == "blocked"
+    assert row["execution_stage"] == "terminal"
+    assert json.loads(row["evidence_json"])["cancellation"]["status"] == "binding_mismatch"
+
+
 def test_http_surface_requires_identity_csrf_and_never_creates_anonymous_request(owner_operation_runtime):
     runtime = owner_operation_runtime
     api = TestClient(load_fastapi_app())
