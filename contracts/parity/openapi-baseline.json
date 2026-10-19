@@ -264,6 +264,94 @@
         "title": "ClientChallengeRequest",
         "type": "object"
       },
+      "ClientPairingChallengeRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "maxLength": 80,
+            "minLength": 3,
+            "title": "Client Id",
+            "type": "string"
+          },
+          "display_name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Display Name",
+            "type": "string"
+          },
+          "public_key": {
+            "maxLength": 96,
+            "minLength": 40,
+            "title": "Public Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "client_id",
+          "display_name",
+          "public_key"
+        ],
+        "title": "ClientPairingChallengeRequest",
+        "type": "object"
+      },
+      "ClientPairingDecisionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "default": "owner_rejected",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "title": "ClientPairingDecisionRequest",
+        "type": "object"
+      },
+      "ClientPairingRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "challenge_id": {
+            "maxLength": 64,
+            "minLength": 20,
+            "title": "Challenge Id",
+            "type": "string"
+          },
+          "client_id": {
+            "maxLength": 80,
+            "minLength": 3,
+            "title": "Client Id",
+            "type": "string"
+          },
+          "display_name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Display Name",
+            "type": "string"
+          },
+          "public_key": {
+            "maxLength": 96,
+            "minLength": 40,
+            "title": "Public Key",
+            "type": "string"
+          },
+          "signature": {
+            "maxLength": 160,
+            "minLength": 80,
+            "title": "Signature",
+            "type": "string"
+          }
+        },
+        "required": [
+          "client_id",
+          "display_name",
+          "public_key",
+          "challenge_id",
+          "signature"
+        ],
+        "title": "ClientPairingRequest",
+        "type": "object"
+      },
       "ClientRegistrationRequest": {
         "additionalProperties": false,
         "properties": {
@@ -1734,6 +1822,52 @@
         "title": "OperationRequest",
         "type": "object"
       },
+      "PairingCancelChallengeRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "maxLength": 80,
+            "minLength": 3,
+            "title": "Client Id",
+            "type": "string"
+          },
+          "pairing_id": {
+            "maxLength": 28,
+            "minLength": 28,
+            "title": "Pairing Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "client_id",
+          "pairing_id"
+        ],
+        "title": "PairingCancelChallengeRequest",
+        "type": "object"
+      },
+      "PairingObserverChallengeRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "maxLength": 80,
+            "minLength": 3,
+            "title": "Client Id",
+            "type": "string"
+          },
+          "pairing_id": {
+            "maxLength": 28,
+            "minLength": 28,
+            "title": "Pairing Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "client_id",
+          "pairing_id"
+        ],
+        "title": "PairingObserverChallengeRequest",
+        "type": "object"
+      },
       "PersonCreateRequest": {
         "properties": {
           "display_name": {
@@ -2304,6 +2438,36 @@
           "signature"
         ],
         "title": "SignedOperationRequest",
+        "type": "object"
+      },
+      "SignedPairingRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "challenge_id": {
+            "maxLength": 64,
+            "minLength": 20,
+            "title": "Challenge Id",
+            "type": "string"
+          },
+          "client_id": {
+            "maxLength": 80,
+            "minLength": 3,
+            "title": "Client Id",
+            "type": "string"
+          },
+          "signature": {
+            "maxLength": 160,
+            "minLength": 80,
+            "title": "Signature",
+            "type": "string"
+          }
+        },
+        "required": [
+          "client_id",
+          "challenge_id",
+          "signature"
+        ],
+        "title": "SignedPairingRequest",
         "type": "object"
       },
       "SimulationRequest": {
@@ -13443,6 +13607,456 @@
         ]
       }
     },
+    "/api/lite/owner-operations/client-pairings": {
+      "post": {
+        "operationId": "request_client_pairing_api_lite_owner_operations_client_pairings_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientPairingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Request Client Pairing Api Lite Owner Operations Client Pairings Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Request Client Pairing",
+        "tags": [
+          "lite-owner-operations"
+        ]
+      }
+    },
+    "/api/lite/owner-operations/client-pairings/cancel-challenge": {
+      "post": {
+        "operationId": "issue_client_pairing_cancel_challenge_api_lite_owner_operations_client_pairings_cancel_challenge_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PairingCancelChallengeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Issue Client Pairing Cancel Challenge Api Lite Owner Operations Client Pairings Cancel Challenge Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Issue Client Pairing Cancel Challenge",
+        "tags": [
+          "lite-owner-operations"
+        ]
+      }
+    },
+    "/api/lite/owner-operations/client-pairings/challenge": {
+      "post": {
+        "operationId": "issue_client_pairing_challenge_api_lite_owner_operations_client_pairings_challenge_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientPairingChallengeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Issue Client Pairing Challenge Api Lite Owner Operations Client Pairings Challenge Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Issue Client Pairing Challenge",
+        "tags": [
+          "lite-owner-operations"
+        ]
+      }
+    },
+    "/api/lite/owner-operations/client-pairings/observer-challenge": {
+      "post": {
+        "operationId": "issue_client_pairing_observer_challenge_api_lite_owner_operations_client_pairings_observer_challenge_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PairingObserverChallengeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Issue Client Pairing Observer Challenge Api Lite Owner Operations Client Pairings Observer Challenge Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Issue Client Pairing Observer Challenge",
+        "tags": [
+          "lite-owner-operations"
+        ]
+      }
+    },
+    "/api/lite/owner-operations/client-pairings/{pairing_id}": {
+      "get": {
+        "operationId": "observe_client_pairing_api_lite_owner_operations_client_pairings__pairing_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pairing_id",
+            "required": true,
+            "schema": {
+              "title": "Pairing Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Observe Client Pairing Api Lite Owner Operations Client Pairings  Pairing Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested resource is not available."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Observe Client Pairing",
+        "tags": [
+          "lite-owner-operations"
+        ]
+      }
+    },
+    "/api/lite/owner-operations/client-pairings/{pairing_id}/cancel": {
+      "post": {
+        "operationId": "cancel_client_pairing_api_lite_owner_operations_client_pairings__pairing_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pairing_id",
+            "required": true,
+            "schema": {
+              "title": "Pairing Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignedPairingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Cancel Client Pairing Api Lite Owner Operations Client Pairings  Pairing Id  Cancel Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Cancel Client Pairing",
+        "tags": [
+          "lite-owner-operations"
+        ]
+      }
+    },
     "/api/lite/owner-operations/clients": {
       "post": {
         "operationId": "register_owner_operation_client_api_lite_owner_operations_clients_post",
@@ -13584,6 +14198,164 @@
           }
         },
         "summary": "Issue Owner Operation Client Challenge",
+        "tags": [
+          "lite-owner-operations"
+        ]
+      }
+    },
+    "/api/lite/owner-operations/clients/pairings/{pairing_id}/approve": {
+      "post": {
+        "operationId": "approve_client_pairing_api_lite_owner_operations_clients_pairings__pairing_id__approve_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pairing_id",
+            "required": true,
+            "schema": {
+              "title": "Pairing Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Approve Client Pairing Api Lite Owner Operations Clients Pairings  Pairing Id  Approve Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Approve Client Pairing",
+        "tags": [
+          "lite-owner-operations"
+        ]
+      }
+    },
+    "/api/lite/owner-operations/clients/pairings/{pairing_id}/reject": {
+      "post": {
+        "operationId": "reject_client_pairing_api_lite_owner_operations_clients_pairings__pairing_id__reject_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pairing_id",
+            "required": true,
+            "schema": {
+              "title": "Pairing Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientPairingDecisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Reject Client Pairing Api Lite Owner Operations Clients Pairings  Pairing Id  Reject Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Reject Client Pairing",
         "tags": [
           "lite-owner-operations"
         ]
