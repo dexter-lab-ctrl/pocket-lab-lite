@@ -149,6 +149,13 @@ def test_full_task_exposes_explicit_isolated_dependency_paths():
     assert "--opa-bin" in taskfile
 
 
+def test_candidate_lane_runs_owner_operation_pairing_regressions():
+    source = (ROOT / "scripts" / "dev" / "lite" / "run-photo-backup-candidate-qualification.py").read_text(encoding="utf-8")
+    assert '"tests/backend/test_lite_owner_approved_operations.py"' in source
+    assert "OWNER_OPERATION_PAIRING_TESTS" in source
+    assert '"requester_pairing_tests"' in source
+
+
 def test_android_candidate_task_is_explicit_and_preserves_read_only_mode():
     taskfile = TASKFILE.read_text(encoding="utf-8")
     assert "lite:photo-backup:candidate:android:qualify:" in taskfile

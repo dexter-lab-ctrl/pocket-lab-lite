@@ -46,6 +46,9 @@ PHOTO_BACKUP_TESTS = (
     "tests/backend/test_lite_photo_backup_agent.py",
     "tests/backend/test_lite_photo_backup_candidate_qualification.py",
 )
+OWNER_OPERATION_PAIRING_TESTS = (
+    "tests/backend/test_lite_owner_approved_operations.py",
+)
 AUTHENTICATED_API_TESTS = (
     "test_photo_backup_api_status_and_internal_endpoints_are_semantic_only",
     "test_photo_backup_api_repeated_start_is_idempotent",
@@ -350,6 +353,7 @@ def _run_candidate_tests(worktree: Path, env: dict[str, str], timeout: float) ->
             "-p",
             "no:cacheprovider",
             *PHOTO_BACKUP_TESTS,
+            *OWNER_OPERATION_PAIRING_TESTS,
             "-k",
             excluded,
         ],
@@ -406,6 +410,13 @@ def run(candidate_sha: str | None, *, test_timeout: float) -> dict[str, object]:
                 "service_agent_tests": {
                     "status": "PASS",
                     "output_tail": "\n".join(test_output.splitlines()[-4:]),
+                },
+                "requester_pairing_tests": {
+                    "status": "PASS",
+                    "tests": list(OWNER_OPERATION_PAIRING_TESTS),
+                    "production_credentials": False,
+                    "owner_authority": False,
+                    "pending_pairing_grants_no_operation_authority": True,
                 },
                 "authenticated_api_tests": {
                     "status": "PASS",
