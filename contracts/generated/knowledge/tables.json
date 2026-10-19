@@ -1217,7 +1217,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
       ],
       "name": "human_identities",
       "owner": "not a prepared projection",
@@ -1237,7 +1238,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -1429,6 +1431,57 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:owner_operation_client_pairing_events",
+      "indexes": [
+        "idx_owner_operation_client_pairing_events_pairing"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
+      ],
+      "name": "owner_operation_client_pairing_events",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:owner_operation_client_pairings",
+      "indexes": [
+        "idx_owner_operation_client_pairings_active_key",
+        "idx_owner_operation_client_pairings_client",
+        "idx_owner_operation_client_pairings_lifecycle",
+        "sqlite_autoindex_owner_operation_client_pairings_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
+      ],
+      "name": "owner_operation_client_pairings",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -2608,6 +2661,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "58a396f75d19a727f60d7e0e15762aef587386efba2c81e3ed17eb2d72b34489"
+    "source_fingerprint": "cd4d14231cb9c7117dab97362d504b9b22fd33c330a337436194b96ceca102d0"
   }
 }

@@ -73,6 +73,7 @@ ACTION_CATALOG = (
     ("app.credentials.read_status", "Review app credential status", "Read secret-free app credential status metadata."),
     ("app.credentials.manage", "Manage app credential status", "Manage backend-owned credential metadata without exposing secret values."),
     ("owner.operations.approve", "Approve bounded operations", "Approve one exact server-owned workflow after reviewing its target and scope."),
+    ("owner.operations.client.register", "Register trusted automation client", "Register one cryptographically verified automation client with the fixed bounded-operation capability."),
     ("rules.draft", "Draft Rules", "Create a typed immutable Rules candidate for review."),
     ("rules.activate", "Activate Rules", "Activate a validated Rules revision through the supervisor-owned lifecycle."),
     ("rules.rollback", "Restore known-good Rules", "Request restoration of the proved known-good Rules revision."),
@@ -173,7 +174,7 @@ def _mode_for(action: str, role: str, params: dict[str, int]) -> str:
     if action.startswith("app."):
         return lite_app_governance.role_mode(role, action, enterprise_enabled=True)
     if role == "Owner":
-        if action in {"rules.activate", "rules.rollback", "enterprise.mode.change", "owner.operations.approve"}:
+        if action in {"rules.activate", "rules.rollback", "enterprise.mode.change", "owner.operations.approve", "owner.operations.client.register"}:
             return "step_up"
         return "allow"
     if role == "Admin":

@@ -19,7 +19,7 @@ This generated layer joins architecture, contracts, runtime evidence, parity, da
 | Entity type | Count |
 | --- | --- |
 | adr | 6 |
-| api | 248 |
+| api | 256 |
 | capability | 5 |
 | component | 58 |
 | domain | 50 |
@@ -32,7 +32,7 @@ This generated layer joins architecture, contracts, runtime evidence, parity, da
 | runbook | 5 |
 | runtime-topology | 9 |
 | subject | 220 |
-| table | 87 |
+| table | 89 |
 | test | 275 |
 | threat-boundary | 9 |
 | threat-model | 9 |

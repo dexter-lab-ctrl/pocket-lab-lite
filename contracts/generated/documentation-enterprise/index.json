@@ -48417,9 +48417,9 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "5df9b4c04dc3e7ac8c8e72fdc61af659f309003b74f7ea7ce64dccb472cb5fd3",
-        "documentation": "f9fbd29b1d85275eaf0668093dff7c952e5c760bbf3b57cee18c5d423f303865",
-        "openapi": "f75d0708b32c8f520dc5d15ad1bf57d61424d055849bd86ddb5d831abe95e314",
-        "operational_health": "0a0ca521fd3be39b2d8f01b8011701d0cbec3a4a9637a295a0d569ad97eeab34"
+        "documentation": "6e3f0a15f366c4aa38e3fc8562825404e9a53a2f8ee56ae494c29d903b8723cb",
+        "openapi": "ba5d78f12a18902f47a5c390e7c2ade4a6cc9188176bdee47cf293eada12c549",
+        "operational_health": "97d76257dd5874630cb7f6f115e6f3f77128ab6ccf9c3686ae3d5dd675cd1e02"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -120238,5 +120238,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "80939a066823ceb4f2ee2138a150398f0b14d19efb9855c4da2722cc7f73ce05"
+  "source_fingerprint": "eecdab33f6215483496534173428b19d457be78a4b9aa4f2fcf088131df66aa1"
 }

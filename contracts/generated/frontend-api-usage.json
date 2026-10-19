@@ -485,6 +485,48 @@
         ],
         "method": "POST",
         "mocked": false,
+        "owner": "liteApi.approveOwnerClientPairing",
+        "resolved": true,
+        "route": "/api/lite/owner-operations/clients/pairings/{param}/approve",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": true,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.rejectOwnerClientPairing",
+        "resolved": true,
+        "route": "/api/lite/owner-operations/clients/pairings/{param}/reject",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": true,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.revokeOwnerOperationClient",
+        "resolved": true,
+        "route": "/api/lite/owner-operations/clients/{param}/revoke",
+        "source_module": "src/lite/LiteIdentity.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": true,
+        "import_chain": [
+          "src/lite/LiteIdentity.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
         "owner": "liteApi.approveOwnerOperation",
         "resolved": true,
         "route": "/api/lite/owner-operations/pending/{param}/approve",
@@ -2615,7 +2657,7 @@
         "import_chain": [
           "src/mocks/identityRulesP1Handlers.js"
         ],
-        "method": "GET",
+        "method": "POST",
         "mocked": true,
         "owner": "MSW handler",
         "resolved": true,
@@ -3330,6 +3372,45 @@
         "import_chain": [
           "src/mocks/identityRulesP1Handlers.js"
         ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/owner-operations/clients/:clientId/revoke",
+        "source_module": "src/mocks/identityRulesP1Handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/owner-operations/clients/pairings/:pairingId/approve",
+        "source_module": "src/mocks/identityRulesP1Handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/owner-operations/clients/pairings/:pairingId/reject",
+        "source_module": "src/mocks/identityRulesP1Handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/identityRulesP1Handlers.js"
+        ],
         "method": "DELETE",
         "mocked": true,
         "owner": "MSW handler",
@@ -3450,9 +3531,14 @@
       "/api/lite/identity/passkeys/login/options",
       "/api/lite/identity/passkeys/login/verify",
       "/api/lite/identity/rotate",
+      "/api/lite/owner-operations/client-pairings",
+      "/api/lite/owner-operations/client-pairings/cancel-challenge",
+      "/api/lite/owner-operations/client-pairings/challenge",
+      "/api/lite/owner-operations/client-pairings/observer-challenge",
+      "/api/lite/owner-operations/client-pairings/{pairing_id}",
+      "/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
       "/api/lite/owner-operations/clients",
       "/api/lite/owner-operations/clients/challenge",
-      "/api/lite/owner-operations/clients/{client_id}/revoke",
       "/api/lite/owner-operations/observer-challenge",
       "/api/lite/owner-operations/pending",
       "/api/lite/owner-operations/request-challenge",
@@ -3502,7 +3588,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "e2e2672ce0e38bf80d2c196f5b3b91dc8baab84f0ab5d31c0532893ae7cac37d",
+    "aggregate_fingerprint": "e380a46a9bfcc38224a0c10c3f2ec106db6d0b1a8c3e77026b80d55148746ef5",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3512,11 +3598,11 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "f75d0708b32c8f520dc5d15ad1bf57d61424d055849bd86ddb5d831abe95e314",
+      "contracts/generated/lite-openapi.json": "ba5d78f12a18902f47a5c390e7c2ade4a6cc9188176bdee47cf293eada12c549",
       "contracts/metadata/documentation-platform.json": "8581a61d27860c218bdb1e23d6b806cc3c8512685be07712338a277b1fee22e2",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a",
-      "src/lib/liteApi.js": "d339345cb3b4b2375288838dbd32a269e3d2bd3069fcee27eaf1689dc42c7587",
+      "src/lib/liteApi.js": "fd0665bc72800c06c3de1887bc158b6d0d19b3ba7c5ca8bd7972fe251be80bdd",
       "src/lite/LiteActionProgress.jsx": "880d1bf891c3f76ef42e4565c01b0d2a39a9660a6f2d0ac9f909f0fce458f5a5",
       "src/lite/LiteApp.jsx": "049db027fbb01321feb725128346e91a5fad123a0bf05a316a165509a0cf4295",
       "src/lite/LiteCatalog.jsx": "8e58b8d66a504532ae3a8f97a63b4cb5b058e172f11c167bb11c2484e02e4902",
@@ -3529,8 +3615,8 @@
       "src/lite/LiteHome.stories.jsx": "8a8cd6bcf833ad98d7140a1e7b6a82bb93419a848fb139d16037418ac61f8966",
       "src/lite/LiteHome.test.jsx": "e6237afada9b4dc68ed0abc9b115c63ca3daf41984ee4526d2cc720b5b5b388c",
       "src/lite/LiteHomeScreen.test.jsx": "3a4f598b0a6c050c8f34f8160b34aeeaba5ae72a761542928554294deee8ef3d",
-      "src/lite/LiteIdentity.jsx": "fa924b20a3ee730889be1528bacc40cf940f60ae4b879204407db8bebcd24b03",
-      "src/lite/LiteIdentity.stories.jsx": "1bea212798dbefcf82d6938658b86d574aaa422506dc4cd5bfc6914d903a6805",
+      "src/lite/LiteIdentity.jsx": "5aee6e04c7a7ef8f45a9dd9770aa378eca7873de88fe22439bf7dd51e5678ac5",
+      "src/lite/LiteIdentity.stories.jsx": "ad6573579a56ea52e16301518791bfd9e3689aeafc4363f64fc7a7a42f2a23ba",
       "src/lite/LiteIdentityEnterprise.jsx": "371fc5fb3708bbb767d02f303cd7b2df38be9401a965299862b3355bd916c7ca",
       "src/lite/LiteMotion.jsx": "cc27a120e0e2ddcc986bb137776d1e2a586df7bee3569f4662e513b571d43b45",
       "src/lite/LiteNativeInstallSurface.jsx": "27366c82bfe0a8e99ddfc87f62fb9960f72d8a50eb48f5dbb2c89a94a1fcae61",

@@ -1,7 +1,7 @@
 {
   "lite_sqlite_schema": {
     "database": "temporary data-free SQLite",
-    "migration_count": 41,
+    "migration_count": 42,
     "objects": [
       {
         "checks": [],
@@ -6975,7 +6975,8 @@
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
         ],
         "name": "human_identities",
         "projection_owner": "not a prepared projection",
@@ -8010,6 +8011,297 @@
           "signing_payload_json"
         ],
         "sql": "CREATE TABLE owner_operation_challenges (\n    challenge_id TEXT PRIMARY KEY,\n    client_id TEXT NOT NULL,\n    purpose TEXT NOT NULL\n        CHECK (purpose IN ('client_registration', 'request', 'observe', 'cancel')),\n    operation_id TEXT,\n    binding_json TEXT NOT NULL,\n    binding_digest TEXT NOT NULL,\n    signing_payload_json TEXT NOT NULL,\n    nonce_hash TEXT NOT NULL UNIQUE,\n    issued_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    failed_attempts INTEGER NOT NULL DEFAULT 0\n        CHECK (failed_attempts >= 0),\n    consumed_at TEXT\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "actor_type IN ('requester', 'owner', 'system'"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "event_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "pairing_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "occurred_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "actor_type",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "actor_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "event_type",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "reason_code",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "summary",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "pairing_id",
+            "id": 0,
+            "on_delete": "CASCADE",
+            "on_update": "NO ACTION",
+            "parent_table": "owner_operation_client_pairings",
+            "sequence": 0,
+            "to": "pairing_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "pairing_id",
+              "event_id"
+            ],
+            "name": "idx_owner_operation_client_pairing_events_pairing",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
+        ],
+        "name": "owner_operation_client_pairing_events",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE owner_operation_client_pairing_events (\n    event_id INTEGER PRIMARY KEY AUTOINCREMENT,\n    pairing_id TEXT NOT NULL,\n    occurred_at TEXT NOT NULL,\n    actor_type TEXT NOT NULL\n        CHECK (actor_type IN ('requester', 'owner', 'system')),\n    actor_id TEXT NOT NULL DEFAULT '',\n    event_type TEXT NOT NULL,\n    reason_code TEXT NOT NULL DEFAULT '',\n    summary TEXT NOT NULL,\n    FOREIGN KEY (pairing_id) REFERENCES owner_operation_client_pairings(pairing_id) ON DELETE CASCADE\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "pairing_id GLOB 'ocp-*' AND length(pairing_id",
+          "length(client_id",
+          "length(display_name",
+          "capabilities_json = '[\"photo_backup.bounded_acceptance.v1\"]'",
+          "status IN ('pending', 'registered', 'rejected', 'expired', 'cancelled'"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "pairing_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "client_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "display_name",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "public_key",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "public_key_fingerprint",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "capabilities_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "pairing_binding_digest",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'pending'",
+            "name": "status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "created_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "expires_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "reviewed_by_human_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "reviewed_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "approval_assurance_ref",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "registered_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "terminal_reason",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "updated_at",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "reviewed_by_human_id",
+            "id": 0,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "human_identities",
+            "sequence": 0,
+            "to": "human_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "public_key_fingerprint"
+            ],
+            "name": "idx_owner_operation_client_pairings_active_key",
+            "origin": "c",
+            "partial": true,
+            "unique": true
+          },
+          {
+            "columns": [
+              "client_id",
+              "created_at"
+            ],
+            "name": "idx_owner_operation_client_pairings_client",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "status",
+              "expires_at",
+              "updated_at"
+            ],
+            "name": "idx_owner_operation_client_pairings_lifecycle",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "pairing_id"
+            ],
+            "name": "sqlite_autoindex_owner_operation_client_pairings_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
+        ],
+        "name": "owner_operation_client_pairings",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE owner_operation_client_pairings (\n    pairing_id TEXT PRIMARY KEY\n        CHECK (pairing_id GLOB 'ocp-*' AND length(pairing_id) = 28),\n    client_id TEXT NOT NULL\n        CHECK (length(client_id) BETWEEN 3 AND 80),\n    display_name TEXT NOT NULL\n        CHECK (length(display_name) BETWEEN 1 AND 120),\n    public_key TEXT NOT NULL,\n    public_key_fingerprint TEXT NOT NULL,\n    capabilities_json TEXT NOT NULL\n        CHECK (capabilities_json = '[\"photo_backup.bounded_acceptance.v1\"]'),\n    pairing_binding_digest TEXT NOT NULL,\n    status TEXT NOT NULL DEFAULT 'pending'\n        CHECK (status IN ('pending', 'registered', 'rejected', 'expired', 'cancelled')),\n    created_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    reviewed_by_human_id TEXT,\n    reviewed_at TEXT,\n    approval_assurance_ref TEXT,\n    registered_at TEXT,\n    terminal_reason TEXT NOT NULL DEFAULT '',\n    updated_at TEXT NOT NULL,\n    FOREIGN KEY (reviewed_by_human_id) REFERENCES human_identities(human_id)\n)",
         "type": "table",
         "writer": "source-defined control-plane service"
       },
@@ -14197,7 +14489,7 @@
     "row_count_enforced": 0
   },
   "metadata": {
-    "aggregate_fingerprint": "41fced828cf8d62f6b09a5bfb2be3eaa841dd27ea7f4b2926661a50c39801a21",
+    "aggregate_fingerprint": "7c7a87c3614a4ab6b0d2466a7ace809b2cefeef28e33fe1a9a23c46f71f5a4ef",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -14250,6 +14542,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql": "c84441cc13c352773b69c1aedbd585907ea96643e5a777929da03251e676342c",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0040_home_activity_read_cursors.sql": "af84425c0179761b47ab078dec5d27fec1696742145b80c9b2148ed4c7276dc2",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql": "926786b6f279ee6cf4bbeb5cd92032c6ce04921d19118d0f8f99557264cb58fe",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql": "af04a2a6d07ecf1925c797fb645409ea57a2fa4390c89c95a27b60dd58d79320",
       "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a"
     },
     "validation_state": "generated"

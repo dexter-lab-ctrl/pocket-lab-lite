@@ -881,6 +881,17 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
+      "name": "GET /api/lite/owner-operations/client-pairings/{pairing_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:get:/api/lite/owner-operations/pending",
       "name": "GET /api/lite/owner-operations/pending",
       "note": "A test link does not by itself prove runtime verification.",
@@ -2324,6 +2335,61 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:post:/api/lite/owner-operations/client-pairings",
+      "name": "POST /api/lite/owner-operations/client-pairings",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
+      "name": "POST /api/lite/owner-operations/client-pairings/cancel-challenge",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/owner-operations/client-pairings/challenge",
+      "name": "POST /api/lite/owner-operations/client-pairings/challenge",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/owner-operations/client-pairings/observer-challenge",
+      "name": "POST /api/lite/owner-operations/client-pairings/observer-challenge",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+      "name": "POST /api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:post:/api/lite/owner-operations/clients",
       "name": "POST /api/lite/owner-operations/clients",
       "note": "A test link does not by itself prove runtime verification.",
@@ -2337,6 +2403,28 @@
     {
       "entity": "api:post:/api/lite/owner-operations/clients/challenge",
       "name": "POST /api/lite/owner-operations/clients/challenge",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+      "name": "POST /api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
+      "name": "POST /api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -4683,6 +4771,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "58a396f75d19a727f60d7e0e15762aef587386efba2c81e3ed17eb2d72b34489"
+    "source_fingerprint": "cd4d14231cb9c7117dab97362d504b9b22fd33c330a337436194b96ceca102d0"
   }
 }

@@ -719,6 +719,36 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | Indexes | idx_owner_operation_challenges_expiry, sqlite_autoindex_owner_operation_challenges_2, sqlite_autoindex_owner_operation_challenges_1 |
 | Confidence | inferred |
 
+## `owner_operation_client_pairing_events`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | idx_owner_operation_client_pairing_events_pairing |
+| Confidence | inferred |
+
+## `owner_operation_client_pairings`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | idx_owner_operation_client_pairings_active_key, idx_owner_operation_client_pairings_client, idx_owner_operation_client_pairings_lifecycle, sqlite_autoindex_owner_operation_client_pairings_1 |
+| Confidence | inferred |
+
 ## `owner_operation_clients`
 
 Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.

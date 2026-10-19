@@ -457,6 +457,7 @@
         "api:get:/api/lite/identity",
         "api:get:/api/lite/identity/owner-claim/status",
         "api:get:/api/lite/media-backup",
+        "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
         "api:get:/api/lite/owner-operations/pending",
         "api:get:/api/lite/owner-operations/{operation_id}",
         "api:get:/api/lite/policy",
@@ -588,8 +589,15 @@
         "api:post:/api/lite/identity/setup",
         "api:post:/api/lite/identity/step-up/options",
         "api:post:/api/lite/identity/step-up/verify",
+        "api:post:/api/lite/owner-operations/client-pairings",
+        "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
+        "api:post:/api/lite/owner-operations/client-pairings/challenge",
+        "api:post:/api/lite/owner-operations/client-pairings/observer-challenge",
+        "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
         "api:post:/api/lite/owner-operations/clients",
         "api:post:/api/lite/owner-operations/clients/challenge",
+        "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+        "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
         "api:post:/api/lite/owner-operations/clients/{client_id}/revoke",
         "api:post:/api/lite/owner-operations/observer-challenge",
         "api:post:/api/lite/owner-operations/pending/{operation_id}/approve",
@@ -756,6 +764,8 @@
         "table:owner_approved_operations",
         "table:owner_claims",
         "table:owner_operation_challenges",
+        "table:owner_operation_client_pairing_events",
+        "table:owner_operation_client_pairings",
         "table:owner_operation_clients",
         "table:owner_operation_events",
         "table:phase3b_current_state",
@@ -2056,6 +2066,14 @@
         "table:owner_operation_events"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
+    },
+    {
+      "entities": [
+        "table:human_identities",
+        "table:owner_operation_client_pairing_events",
+        "table:owner_operation_client_pairings"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
     },
     {
       "entities": [
@@ -4550,6 +4568,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "58a396f75d19a727f60d7e0e15762aef587386efba2c81e3ed17eb2d72b34489"
+    "source_fingerprint": "cd4d14231cb9c7117dab97362d504b9b22fd33c330a337436194b96ceca102d0"
   }
 }

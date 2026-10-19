@@ -24,6 +24,7 @@ recovery_code_batches
 security_database_restores
 webauthn_credentials
 device_lifecycle_events
+owner_operation_client_pairings
 policy_activation_operations
 owner_approved_operations
 app_action_lifecycle
@@ -45,6 +46,7 @@ identity_audit_events
 lite_installed_release_identity
 lite_revision_events
 owner_operation_challenges
+owner_operation_client_pairing_events
 owner_operation_events
 recovery_backup_location_events
 recovery_codes

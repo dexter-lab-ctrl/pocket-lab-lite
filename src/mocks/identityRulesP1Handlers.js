@@ -51,6 +51,40 @@ function ownerOperation(operationId, status = 'pending_approval', overrides = {}
   };
 }
 
+function ownerClientPairing(pairingId, status = 'pending', overrides = {}) {
+  return {
+    pairing_id: pairingId,
+    client_id: 'registered-qualification-client',
+    display_name: 'Registered qualification client',
+    public_key_fingerprint: 'sha256:0c0b0319cbdc382555faeb3dfd0d465870c6e6c287b2e81acd425f34ce6cf39d',
+    capabilities: ['photo_backup.bounded_acceptance.v1'],
+    status,
+    created_at: now(),
+    expires_at: future(15 * 60 * 1000),
+    reviewed_at: status === 'registered' ? now() : null,
+    registered_at: status === 'registered' ? now() : null,
+    terminal_reason: status === 'expired' ? 'Pairing window expired.' : status === 'rejected' ? 'Rejected by Owner.' : null,
+    updated_at: now(),
+    sanitized: true,
+    ...overrides,
+  };
+}
+
+function ownerClient(clientId = 'registered-qualification-client', status = 'active', overrides = {}) {
+  return {
+    status,
+    client_id: clientId,
+    display_name: 'Registered qualification client',
+    public_key_fingerprint: 'sha256:0c0b0319cbdc382555faeb3dfd0d465870c6e6c287b2e81acd425f34ce6cf39d',
+    capabilities: ['photo_backup.bounded_acceptance.v1'],
+    created_at: now(),
+    expires_at: null,
+    revoked_at: status === 'revoked' ? now() : null,
+    sanitized: true,
+    ...overrides,
+  };
+}
+
 function ownerOperationsPayload() {
   const kind = scenario();
   const states = {
@@ -64,7 +98,16 @@ function ownerOperationsPayload() {
     'identity-owner-operation-offline': [ownerOperation('oo-mock-offline')],
   };
   const operations = states[kind] || [];
-  return { status: kind === 'identity-owner-operation-offline' ? 'saved' : 'ok', operations, sanitized: true };
+  const clientStates = {
+    'identity-owner-client-pairing-pending': { pairings: [ownerClientPairing('ocp-mock-pending')], clients: [] },
+    'identity-owner-client-registered': { pairings: [], clients: [ownerClient()] },
+    'identity-owner-client-multiple': { pairings: [ownerClientPairing('ocp-mock-pending')], clients: [ownerClient()] },
+    'identity-owner-client-expired': { pairings: [ownerClientPairing('ocp-mock-expired', 'expired')], clients: [] },
+    'identity-owner-client-revoked': { pairings: [], clients: [ownerClient('registered-qualification-client', 'revoked')] },
+    'identity-owner-client-offline': { pairings: [ownerClientPairing('ocp-mock-offline')], clients: [] },
+  };
+  const clients = clientStates[kind] || { pairings: [], clients: [] };
+  return { status: kind === 'identity-owner-operation-offline' || kind === 'identity-owner-client-offline' ? 'saved' : 'ok', operations, ...clients, sanitized: true };
 }
 
 function identityPayload() {
@@ -147,7 +190,7 @@ const ROLE_SUMMARIES = {
 };
 
 function actionMode(action, role) {
-  if (role === 'Owner') return ['rules.activate', 'rules.rollback', 'enterprise.mode.change', 'owner.operations.approve'].includes(action) ? 'step_up' : 'allow';
+  if (role === 'Owner') return ['rules.activate', 'rules.rollback', 'enterprise.mode.change', 'owner.operations.approve', 'owner.operations.client.register'].includes(action) ? 'step_up' : 'allow';
   if (role === 'Admin') {
     if (action === 'device.remove') return 'approval';
     return ['people.manage','catalog.install','app.install','rules.draft','rules.simulate','approvals.review','exceptions.manage','evidence.read'].includes(action) ? 'allow' : 'deny';
@@ -164,6 +207,7 @@ function actionMode(action, role) {
 const ACTIONS = [
   ['people.manage','Manage people','Create, suspend, reactivate, remove and assign access to people.'],
   ['owner.operations.approve','Approve bounded operations','Approve one exact server-owned workflow after reviewing its target and scope.'],
+  ['owner.operations.client.register','Register trusted automation client','Register one cryptographically verified requester with a fixed bounded-operation capability.'],
   ['enterprise.mode.change','Change workspace mode','Switch between Personal and Enterprise Mode.'],
   ['device.remove','Remove devices','Retire a confirmed non-server device from Pocket Lab.'],
   ['catalog.install','Install apps','Install an approved app through the server-owned execution path.'],
@@ -265,6 +309,9 @@ export const identityRulesP1Handlers = [
   http.delete('/api/lite/identity/sessions/:sessionId', ({ params }) => HttpResponse.json({ status: 'revoked', session_id: params.sessionId, summary: 'Session signed out.' })),
   http.post('/api/lite/owner-operations/pending/:operationId/approve', ({ params }) => HttpResponse.json(ownerOperation(params.operationId, 'approved'))),
   http.post('/api/lite/owner-operations/pending/:operationId/reject', ({ params }) => HttpResponse.json(ownerOperation(params.operationId, 'rejected', { terminal_reason: 'Rejected by Owner.' }))),
+  http.post('/api/lite/owner-operations/clients/pairings/:pairingId/approve', ({ params }) => HttpResponse.json({ status: 'registered', pairing: ownerClientPairing(params.pairingId, 'registered'), client: ownerClient(), sanitized: true })),
+  http.post('/api/lite/owner-operations/clients/pairings/:pairingId/reject', ({ params }) => HttpResponse.json(ownerClientPairing(params.pairingId, 'rejected'))),
+  http.post('/api/lite/owner-operations/clients/:clientId/revoke', ({ params }) => HttpResponse.json(ownerClient(params.clientId, 'revoked'))),
 
   http.get('/api/lite/enterprise/access', () => HttpResponse.json(accessPayload())),
   http.get('/api/lite/enterprise/identity', () => enterpriseEnabled() ? HttpResponse.json(identityPayload().enterprise) : HttpResponse.json({ detail: { reason_code: 'enterprise_mode_disabled', message: 'Enterprise Mode is not enabled.' } }, { status: 404 })),

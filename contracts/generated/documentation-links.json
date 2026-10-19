@@ -373,6 +373,10 @@
         "title": "GET /api/lite/media-backup",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-media-backup"
       },
+      "endpoint:GET:/api/lite/owner-operations/client-pairings/{pairing_id}": {
+        "title": "GET /api/lite/owner-operations/client-pairings/{pairing_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-owner-operations-client-pairings-pairing-id"
+      },
       "endpoint:GET:/api/lite/owner-operations/pending": {
         "title": "GET /api/lite/owner-operations/pending",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-owner-operations-pending"
@@ -897,6 +901,26 @@
         "title": "POST /api/lite/identity/step-up/verify",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-step-up-verify"
       },
+      "endpoint:POST:/api/lite/owner-operations/client-pairings": {
+        "title": "POST /api/lite/owner-operations/client-pairings",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-owner-operations-client-pairings"
+      },
+      "endpoint:POST:/api/lite/owner-operations/client-pairings/cancel-challenge": {
+        "title": "POST /api/lite/owner-operations/client-pairings/cancel-challenge",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-owner-operations-client-pairings-cancel-challenge"
+      },
+      "endpoint:POST:/api/lite/owner-operations/client-pairings/challenge": {
+        "title": "POST /api/lite/owner-operations/client-pairings/challenge",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-owner-operations-client-pairings-challenge"
+      },
+      "endpoint:POST:/api/lite/owner-operations/client-pairings/observer-challenge": {
+        "title": "POST /api/lite/owner-operations/client-pairings/observer-challenge",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-owner-operations-client-pairings-observer-challenge"
+      },
+      "endpoint:POST:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel": {
+        "title": "POST /api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-owner-operations-client-pairings-pairing-id-cancel"
+      },
       "endpoint:POST:/api/lite/owner-operations/clients": {
         "title": "POST /api/lite/owner-operations/clients",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-owner-operations-clients"
@@ -904,6 +928,14 @@
       "endpoint:POST:/api/lite/owner-operations/clients/challenge": {
         "title": "POST /api/lite/owner-operations/clients/challenge",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-owner-operations-clients-challenge"
+      },
+      "endpoint:POST:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve": {
+        "title": "POST /api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-owner-operations-clients-pairings-pairing-id-approve"
+      },
+      "endpoint:POST:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject": {
+        "title": "POST /api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-owner-operations-clients-pairings-pairing-id-reject"
       },
       "endpoint:POST:/api/lite/owner-operations/clients/{client_id}/revoke": {
         "title": "POST /api/lite/owner-operations/clients/{client_id}/revoke",
@@ -3348,6 +3380,16 @@
         "schema_url": "../../docs/generated/schemaspy/tables/owner_operation_challenges.html",
         "title": "owner_operation_challenges"
       },
+      "table:owner_operation_client_pairing_events": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#owner-operation-client-pairing-events",
+        "schema_url": "../../docs/generated/schemaspy/tables/owner_operation_client_pairing_events.html",
+        "title": "owner_operation_client_pairing_events"
+      },
+      "table:owner_operation_client_pairings": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#owner-operation-client-pairings",
+        "schema_url": "../../docs/generated/schemaspy/tables/owner_operation_client_pairings.html",
+        "title": "owner_operation_client_pairings"
+      },
       "table:owner_operation_clients": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#owner-operation-clients",
         "schema_url": "../../docs/generated/schemaspy/tables/owner_operation_clients.html",
@@ -3551,7 +3593,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "365a541be2bf8d7f82a70b0e89f675edae0a3d3481ef809ee0d53d3ffec74780",
+    "aggregate_fingerprint": "2e75e21c8afdff88295c526083730156646476424d45fb9692453d3df0bfdae6",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3561,7 +3603,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "f75d0708b32c8f520dc5d15ad1bf57d61424d055849bd86ddb5d831abe95e314",
+      "contracts/generated/lite-openapi.json": "ba5d78f12a18902f47a5c390e7c2ade4a6cc9188176bdee47cf293eada12c549",
       "contracts/metadata/documentation-platform.json": "8581a61d27860c218bdb1e23d6b806cc3c8512685be07712338a277b1fee22e2",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
@@ -3605,6 +3647,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql": "c84441cc13c352773b69c1aedbd585907ea96643e5a777929da03251e676342c",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0040_home_activity_read_cursors.sql": "af84425c0179761b47ab078dec5d27fec1696742145b80c9b2148ed4c7276dc2",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql": "926786b6f279ee6cf4bbeb5cd92032c6ce04921d19118d0f8f99557264cb58fe",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql": "af04a2a6d07ecf1925c797fb645409ea57a2fa4390c89c95a27b60dd58d79320",
       "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a"
     },
     "validation_state": "generated"
