@@ -48456,9 +48456,9 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "cd5e0974b51fbb3d18295e9e6b4c6149582848008d3ccd530eeaf2ea57f93faf",
-        "documentation": "72da4a4eb6778e06c94d74a021a1966157eca84dafeb5463e8a738366febd665",
+        "documentation": "239b8991af5cf9ad708b4586a1f7e0b83e30cae0ceb332c7fe3d06c914fb061c",
         "openapi": "ba5d78f12a18902f47a5c390e7c2ade4a6cc9188176bdee47cf293eada12c549",
-        "operational_health": "7c66834432cbe6e8a7e9601617ba83e0385b7146759330e2e982c3a287b96f6c"
+        "operational_health": "40e5d7c940c1c908e7748f5df67e96fd16508ed5f1412341a458045a3a40d0dd"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -120277,5 +120277,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "8e61071db77b06f9e4efb96953b889352aaa505385be864b01d8c8921924087e"
+  "source_fingerprint": "e5534898e65c48a3e21aa5afcadcb643af53c8e4d30e02c94172680d98de5481"
 }
