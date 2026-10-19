@@ -46,6 +46,32 @@ the normal authenticated Identity session, CSRF checks, Owner authorization,
 and the separate `owner.operations.client.register` passkey assurance
 purpose.
 
+The production requester-facing path is a short-lived pairing request:
+
+1. The candidate asks for a challenge with its client ID, display name, and
+   public key. The server computes the fingerprint and fixed capability; the
+   candidate signs the server payload with its private key.
+2. The signed request creates a durable `pending` pairing in migration 0042.
+   It is not an active client and cannot request, observe, or execute a Photo
+   Backup operation. The pairing expires after 15 minutes and can be rejected,
+   cancelled by the proving requester, or reconciled to `expired`.
+3. Identity & Access → Manage Access → Trusted automation clients shows only
+   the sanitized display name, client ID, public-key fingerprint, fixed
+   capability, and expiry. The browser never receives or stores the private key
+   or the raw signed payload.
+4. A real Owner registers the exact pairing. The PWA uses CSRF/origin
+   protection and the `owner.operations.client.register` passkey step-up. The
+   pairing and active client row are created in one SQLite transaction, so an
+   interrupted decision cannot leave half-authorized state.
+
+Pairing challenges use the existing Ed25519 nonce and immutable-binding
+verifier, but carry `registration_mode=pairing`. The legacy Owner-initiated
+registration challenge carries a different mode, so a pairing proof cannot be
+replayed against that endpoint. An active client can later be revoked from the
+same Owner-managed surface; revocation consumes outstanding challenges and
+cancels eligible bounded operations. Re-registration of a revoked identity is
+not an implicit recovery path.
+
 Request, observe, and cancel operations use short-lived, single-use,
 server-generated challenges. The signed payload contains the challenge,
 client, purpose, nonce, expiry, and a digest of the exact binding. Failed

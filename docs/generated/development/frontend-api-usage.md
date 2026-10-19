@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: f858d5960124fb445b3af8f996b362b2a3610620e912c8f84c54e41c8c45e3de
+source_fingerprint: 07613aa55b10c93b43d5c0c6ee66721461bcd46b43bbd953198a10e00a3f95cf
 schema_revision: 1
 validation_status: generated
 ---
@@ -56,6 +56,9 @@ validation_status: generated
 | src/lite/LiteIdentity.jsx | liteApi.setupIdentity | POST | `/api/lite/identity/setup` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.passkeyStepUpOptions | POST | `/api/lite/identity/step-up/options` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.verifyPasskeyStepUp | POST | `/api/lite/identity/step-up/verify` | mutation | no | static |
+| src/lite/LiteIdentity.jsx | liteApi.approveOwnerClientPairing | POST | `/api/lite/owner-operations/clients/pairings/{param}/approve` | mutation | no | dynamic |
+| src/lite/LiteIdentity.jsx | liteApi.rejectOwnerClientPairing | POST | `/api/lite/owner-operations/clients/pairings/{param}/reject` | mutation | no | dynamic |
+| src/lite/LiteIdentity.jsx | liteApi.revokeOwnerOperationClient | POST | `/api/lite/owner-operations/clients/{param}/revoke` | mutation | no | dynamic |
 | src/lite/LiteIdentity.jsx | liteApi.approveOwnerOperation | POST | `/api/lite/owner-operations/pending/{param}/approve` | mutation | no | dynamic |
 | src/lite/LiteIdentity.jsx | liteApi.rejectOwnerOperation | POST | `/api/lite/owner-operations/pending/{param}/reject` | mutation | no | dynamic |
 | src/lite/LiteIdentityEnterprise.jsx | liteApi.passkeyStepUpOptions | POST | `/api/lite/identity/step-up/options` | mutation | no | static |
@@ -215,7 +218,7 @@ validation_status: generated
 | src/mocks/identityRulesCompatibilityHandlers.js | MSW handler | GET | `/api/lite/policy/decisions/:decisionId` | mock | yes | static |
 | src/mocks/identityRulesCompatibilityHandlers.js | MSW handler | GET | `/api/lite/policy/templates` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/access` | mock | yes | static |
-| src/mocks/identityRulesP1Handlers.js | MSW handler | GET | `/api/lite/enterprise/identity` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/identity` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/identity/enrollment/consume` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/identity/enrollment/passkey/options` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/identity/enrollment/passkey/verify` | mock | yes | static |
@@ -270,6 +273,9 @@ validation_status: generated
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/sessions/revoke-others` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/step-up/options` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/identity/step-up/verify` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/owner-operations/clients/:clientId/revoke` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/owner-operations/clients/pairings/:pairingId/approve` | mock | yes | static |
+| src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/owner-operations/clients/pairings/:pairingId/reject` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | DELETE | `/api/lite/owner-operations/pending/:operationId/approve` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/owner-operations/pending/:operationId/reject` | mock | yes | static |
 
@@ -375,9 +381,14 @@ validation_status: generated
 - `/api/lite/identity/passkeys/login/options`
 - `/api/lite/identity/passkeys/login/verify`
 - `/api/lite/identity/rotate`
+- `/api/lite/owner-operations/client-pairings`
+- `/api/lite/owner-operations/client-pairings/cancel-challenge`
+- `/api/lite/owner-operations/client-pairings/challenge`
+- `/api/lite/owner-operations/client-pairings/observer-challenge`
+- `/api/lite/owner-operations/client-pairings/{pairing_id}`
+- `/api/lite/owner-operations/client-pairings/{pairing_id}/cancel`
 - `/api/lite/owner-operations/clients`
 - `/api/lite/owner-operations/clients/challenge`
-- `/api/lite/owner-operations/clients/{client_id}/revoke`
 - `/api/lite/owner-operations/observer-challenge`
 - `/api/lite/owner-operations/pending`
 - `/api/lite/owner-operations/request-challenge`

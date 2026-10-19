@@ -20,6 +20,40 @@ class ClientChallengeRequest(_StrictModel):
     public_key: str = Field(min_length=40, max_length=96)
 
 
+class ClientPairingChallengeRequest(_StrictModel):
+    client_id: str = Field(min_length=3, max_length=80)
+    display_name: str = Field(min_length=1, max_length=120)
+    public_key: str = Field(min_length=40, max_length=96)
+
+
+class ClientPairingRequest(_StrictModel):
+    client_id: str = Field(min_length=3, max_length=80)
+    display_name: str = Field(min_length=1, max_length=120)
+    public_key: str = Field(min_length=40, max_length=96)
+    challenge_id: str = Field(min_length=20, max_length=64)
+    signature: str = Field(min_length=80, max_length=160)
+
+
+class ClientPairingDecisionRequest(_StrictModel):
+    reason: str = Field(default="owner_rejected", min_length=1, max_length=80)
+
+
+class PairingObserverChallengeRequest(_StrictModel):
+    client_id: str = Field(min_length=3, max_length=80)
+    pairing_id: str = Field(min_length=28, max_length=28)
+
+
+class PairingCancelChallengeRequest(_StrictModel):
+    client_id: str = Field(min_length=3, max_length=80)
+    pairing_id: str = Field(min_length=28, max_length=28)
+
+
+class SignedPairingRequest(_StrictModel):
+    client_id: str = Field(min_length=3, max_length=80)
+    challenge_id: str = Field(min_length=20, max_length=64)
+    signature: str = Field(min_length=80, max_length=160)
+
+
 class ClientRegistrationRequest(_StrictModel):
     client_id: str = Field(min_length=3, max_length=80)
     display_name: str = Field(min_length=1, max_length=120)
@@ -74,6 +108,117 @@ def _no_store(response: Response) -> None:
     response.headers["Cache-Control"] = "no-store"
 
 
+@router.post("/client-pairings/challenge")
+def issue_client_pairing_challenge(
+    payload: ClientPairingChallengeRequest,
+    response: Response,
+) -> dict[str, Any]:
+    try:
+        result = lite_owner_operations.issue_client_pairing_challenge(
+            client_id=payload.client_id,
+            display_name=payload.display_name,
+            public_key=payload.public_key,
+        )
+    except Exception as exc:
+        _raise(exc)
+    _no_store(response)
+    return result
+
+
+@router.post("/client-pairings", status_code=201)
+def request_client_pairing(
+    payload: ClientPairingRequest,
+    response: Response,
+) -> dict[str, Any]:
+    try:
+        result = lite_owner_operations.request_client_pairing(
+            client_id=payload.client_id,
+            display_name=payload.display_name,
+            public_key=payload.public_key,
+            challenge_id=payload.challenge_id,
+            signature=payload.signature,
+        )
+    except Exception as exc:
+        _raise(exc)
+    _no_store(response)
+    return result
+
+
+@router.post("/client-pairings/observer-challenge")
+def issue_client_pairing_observer_challenge(
+    payload: PairingObserverChallengeRequest,
+    response: Response,
+) -> dict[str, Any]:
+    try:
+        result = lite_owner_operations.issue_client_pairing_observer_challenge(
+            client_id=payload.client_id,
+            pairing_id=payload.pairing_id,
+        )
+    except Exception as exc:
+        _raise(exc)
+    _no_store(response)
+    return result
+
+
+@router.post("/client-pairings/cancel-challenge")
+def issue_client_pairing_cancel_challenge(
+    payload: PairingCancelChallengeRequest,
+    response: Response,
+) -> dict[str, Any]:
+    try:
+        result = lite_owner_operations.issue_client_pairing_cancel_challenge(
+            client_id=payload.client_id,
+            pairing_id=payload.pairing_id,
+        )
+    except Exception as exc:
+        _raise(exc)
+    _no_store(response)
+    return result
+
+
+@router.post("/client-pairings/{pairing_id}/cancel")
+def cancel_client_pairing(
+    pairing_id: str,
+    payload: SignedPairingRequest,
+    response: Response,
+) -> dict[str, Any]:
+    try:
+        result = lite_owner_operations.cancel_client_pairing(
+            client_id=payload.client_id,
+            pairing_id=pairing_id,
+            challenge_id=payload.challenge_id,
+            signature=payload.signature,
+        )
+    except Exception as exc:
+        _raise(exc)
+    _no_store(response)
+    return result
+
+
+@router.get("/client-pairings/{pairing_id}")
+def observe_client_pairing(
+    pairing_id: str,
+    request: Request,
+    response: Response,
+) -> dict[str, Any]:
+    client_id = request.headers.get("X-Pocket-Lab-Client-ID", "").strip()
+    challenge_id = request.headers.get("X-Pocket-Lab-Client-Challenge", "").strip()
+    signature = request.headers.get("X-Pocket-Lab-Client-Signature", "").strip()
+    try:
+        if not (client_id and challenge_id and signature):
+            raise lite_owner_operations.OwnerOperationError("observer_proof_required", "A complete requester proof is required.", 401)
+        result = lite_owner_operations.observe_client_pairing(
+            client_id=client_id,
+            pairing_id=pairing_id,
+            challenge_id=challenge_id,
+            signature=signature,
+        )
+    except Exception as exc:
+        _raise(exc)
+    _no_store(response)
+    return result
+
+
 @router.post("/clients/challenge")
 def issue_owner_operation_client_challenge(
     payload: ClientChallengeRequest,
@@ -115,6 +260,58 @@ def register_owner_operation_client(
     return result
 
 
+@router.post("/clients/pairings/{pairing_id}/approve")
+def approve_client_pairing(
+    pairing_id: str,
+    request: Request,
+    response: Response,
+) -> dict[str, Any]:
+    try:
+        auth = deps.require_auth(request, write=True)
+        target = lite_owner_operations.client_pairing_policy_target(pairing_id)
+        try:
+            lite_policy_opa.evaluate_authorization(
+                auth_context=auth,
+                action_id="owner.operations.client.register",
+                target_type=target["type"],
+                target_id=target["id"],
+                target_revision=target["revision"],
+                target=target["state"],
+                request_context={"source": "identity_access", "pairing_id": pairing_id, "decision": "register"},
+                correlation_id=pairing_id,
+            )
+        except lite_policy_opa.PolicyDecisionError as exc:
+            raise HTTPException(
+                status_code=exc.status_code,
+                headers={"Cache-Control": "no-store"},
+                detail={"reason_code": exc.reason_code, "message": exc.message, "sanitized": True},
+            ) from exc
+        result = lite_owner_operations.approve_client_pairing(auth, pairing_id)
+    except Exception as exc:
+        _raise(exc)
+    _no_store(response)
+    return result
+
+
+@router.post("/clients/pairings/{pairing_id}/reject")
+def reject_client_pairing(
+    pairing_id: str,
+    payload: ClientPairingDecisionRequest,
+    request: Request,
+    response: Response,
+) -> dict[str, Any]:
+    try:
+        result = lite_owner_operations.reject_client_pairing(
+            deps.require_auth(request, write=True),
+            pairing_id,
+            reason=payload.reason,
+        )
+    except Exception as exc:
+        _raise(exc)
+    _no_store(response)
+    return result
+
+
 @router.post("/clients/{client_id}/revoke")
 def revoke_owner_operation_client(
     client_id: str,
@@ -123,11 +320,26 @@ def revoke_owner_operation_client(
     response: Response,
 ) -> dict[str, Any]:
     try:
-        result = lite_owner_operations.revoke_client(
-            deps.require_auth(request, write=True),
-            client_id=client_id,
-            reason=payload.reason,
-        )
+        auth = deps.require_auth(request, write=True)
+        target = lite_owner_operations.client_policy_target(client_id)
+        try:
+            lite_policy_opa.evaluate_authorization(
+                auth_context=auth,
+                action_id="owner.operations.client.register",
+                target_type=target["type"],
+                target_id=target["id"],
+                target_revision=target["revision"],
+                target=target["state"],
+                request_context={"source": "identity_access", "client_id": client_id, "decision": "revoke"},
+                correlation_id=f"client:{client_id}",
+            )
+        except lite_policy_opa.PolicyDecisionError as exc:
+            raise HTTPException(
+                status_code=exc.status_code,
+                headers={"Cache-Control": "no-store"},
+                detail={"reason_code": exc.reason_code, "message": exc.message, "sanitized": True},
+            ) from exc
+        result = lite_owner_operations.revoke_client(auth, client_id=client_id, reason=payload.reason)
     except Exception as exc:
         _raise(exc)
     _no_store(response)

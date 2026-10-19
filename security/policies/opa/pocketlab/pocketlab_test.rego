@@ -67,6 +67,74 @@ test_owner_operation_rejects_scope_revision_mismatch if {
 	result.reason_code == "owner_operation_invalid"
 }
 
+owner_client_pairing_input(actor, assurance) := {
+	"actor": actor,
+	"session": {
+		"authenticated": true,
+		"auth_method": "passkey",
+		"assurance": assurance,
+	},
+	"action": {"id": "owner.operations.client.register"},
+	"target": {
+		"type": "owner_operation_client_pairing",
+		"id": "ocp-0123456789abcdef01234567",
+		"revision": "pairing-digest-a",
+		"state": {
+			"registration_mode": "pairing",
+			"client_id": "registered-qualification-client",
+			"public_key_fingerprint": "sha256:fingerprint",
+			"capabilities": ["photo_backup.bounded_acceptance.v1"],
+			"status": "pending",
+			"pairing_binding_digest": "pairing-digest-a",
+			"expires_at": "2099-01-01T00:00:00Z",
+		},
+	},
+	"request": {},
+}
+
+test_owner_client_pairing_requires_real_owner_and_step_up if {
+	result := decision with input as owner_client_pairing_input(
+		{"type": "human", "id": "human-owner", "role": "Owner", "owner_authority": true},
+		[{"purpose": "owner.operations.client.register", "expires_at": "2099-01-01T00:00:00Z"}],
+	)
+	result.allow
+	result.reason_code == "owner_operation_client_registration_allowed"
+}
+
+test_owner_client_pairing_rejects_missing_or_expired_step_up if {
+	missing := decision with input as owner_client_pairing_input(
+		{"type": "human", "id": "human-owner", "role": "Owner", "owner_authority": true},
+		[],
+	)
+	not missing.allow
+	missing.reason_code == "passkey_step_up_required"
+
+	expired := decision with input as owner_client_pairing_input(
+		{"type": "human", "id": "human-owner", "role": "Owner", "owner_authority": true},
+		[{"purpose": "owner.operations.client.register", "expires_at": "2020-01-01T00:00:00Z"}],
+	)
+	not expired.allow
+	expired.reason_code == "passkey_step_up_required"
+}
+
+test_owner_client_pairing_rejects_synthetic_or_mutated_capability if {
+	synthetic := decision with input as owner_client_pairing_input(
+		{"type": "human", "id": "synthetic-owner", "role": "Owner", "owner_authority": true, "synthetic": true},
+		[{"purpose": "owner.operations.client.register", "expires_at": "2099-01-01T00:00:00Z"}],
+	)
+	not synthetic.allow
+	synthetic.reason_code == "owner_authority_required"
+
+	base := owner_client_pairing_input(
+		{"type": "human", "id": "human-owner", "role": "Owner", "owner_authority": true},
+		[{"purpose": "owner.operations.client.register", "expires_at": "2099-01-01T00:00:00Z"}],
+	)
+	mutated := object.union(base, {"target": object.union(base.target, {"state": object.union(base.target.state, {"capabilities": ["shell.execute"]})})})
+	result := decision with input as mutated
+	not result.allow
+	result.reason_code == "owner_operation_client_invalid"
+}
+
 test_catalog_install_legacy_alias_operator_requires_exact_temporary_exception if {
 	blocked := decision with input as {
 		"actor": {"type": "human", "id": "human-operator", "role": "Operator", "enterprise_enabled": true},

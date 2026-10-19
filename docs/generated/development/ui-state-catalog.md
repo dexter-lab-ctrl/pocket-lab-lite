@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 0738bf04c4bb0214c1e1f40cf5bc152d17ad499a663a7a96078914e08a8e9545
+source_fingerprint: 0fb64919d54fa0b6476274a896d8d9b94a5b91da9b1fb322824b44504b0f90b0
 schema_revision: 1
 validation_status: generated
 ---
@@ -88,6 +88,10 @@ validation_status: generated
 | `pocket-lab-lite-identity-owneroperationcompleted` | identity | `identity-owner-operation-completed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-owneroperationcompleted-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-identity-owneroperationfailed` | identity | `identity-owner-operation-failed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-owneroperationfailed-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-identity-owneroperationofflinesaved` | identity | `identity-owner-operation-offline` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-owneroperationofflinesaved-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-trustedautomationclientregistered` | identity | `identity-owner-client-registered` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-trustedautomationclientregistered-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-trustedautomationclientsmultiple` | identity | `identity-owner-client-multiple` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-trustedautomationclientsmultiple-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-trustedautomationclientexpired` | identity | `identity-owner-client-expired` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-trustedautomationclientexpired-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-trustedautomationclientofflinesaved` | identity | `identity-owner-client-offline` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-trustedautomationclientofflinesaved-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-recovery-nobackupsyet` | recovery | `recovery-no-backups` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-nobackupsyet-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-recovery-backupfailed` | recovery | `recovery-backup-failed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-backupfailed-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-recovery-savedofflinesnapshot` | recovery | `offline-saved` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-savedofflinesnapshot-{viewport}.png` | fixture-dependent |

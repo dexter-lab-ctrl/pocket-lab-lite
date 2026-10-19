@@ -1288,15 +1288,6 @@
       "confidence": "contract-derived",
       "description": "Enterprise Identity",
       "domain": "enterprise",
-      "frontend_clients": [
-        {
-          "mocked": true,
-          "owner": "MSW handler",
-          "resolved": true,
-          "source_module": "src/mocks/identityRulesP1Handlers.js",
-          "usage": "mock"
-        }
-      ],
       "id": "api:get:/api/lite/enterprise/identity",
       "method": "GET",
       "name": "GET /api/lite/enterprise/identity",
@@ -2576,6 +2567,29 @@
       ],
       "tags": [
         "fleet"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Observe Client Pairing",
+      "domain": "owner-operations",
+      "id": "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
+      "method": "GET",
+      "name": "GET /api/lite/owner-operations/client-pairings/{pairing_id}",
+      "operation_id": "observe_client_pairing_api_lite_owner_operations_client_pairings__pairing_id__get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/owner-operations/client-pairings/{pairing_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-owner-operations"
       ],
       "type": "api"
     },
@@ -6504,6 +6518,121 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Request Client Pairing",
+      "domain": "owner-operations",
+      "id": "api:post:/api/lite/owner-operations/client-pairings",
+      "method": "POST",
+      "name": "POST /api/lite/owner-operations/client-pairings",
+      "operation_id": "request_client_pairing_api_lite_owner_operations_client_pairings_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/owner-operations/client-pairings",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-owner-operations"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Issue Client Pairing Cancel Challenge",
+      "domain": "owner-operations",
+      "id": "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
+      "method": "POST",
+      "name": "POST /api/lite/owner-operations/client-pairings/cancel-challenge",
+      "operation_id": "issue_client_pairing_cancel_challenge_api_lite_owner_operations_client_pairings_cancel_challenge_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/owner-operations/client-pairings/cancel-challenge",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-owner-operations"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Issue Client Pairing Challenge",
+      "domain": "owner-operations",
+      "id": "api:post:/api/lite/owner-operations/client-pairings/challenge",
+      "method": "POST",
+      "name": "POST /api/lite/owner-operations/client-pairings/challenge",
+      "operation_id": "issue_client_pairing_challenge_api_lite_owner_operations_client_pairings_challenge_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/owner-operations/client-pairings/challenge",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-owner-operations"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Issue Client Pairing Observer Challenge",
+      "domain": "owner-operations",
+      "id": "api:post:/api/lite/owner-operations/client-pairings/observer-challenge",
+      "method": "POST",
+      "name": "POST /api/lite/owner-operations/client-pairings/observer-challenge",
+      "operation_id": "issue_client_pairing_observer_challenge_api_lite_owner_operations_client_pairings_observer_challenge_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/owner-operations/client-pairings/observer-challenge",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-owner-operations"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Cancel Client Pairing",
+      "domain": "owner-operations",
+      "id": "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+      "method": "POST",
+      "name": "POST /api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+      "operation_id": "cancel_client_pairing_api_lite_owner_operations_client_pairings__pairing_id__cancel_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-owner-operations"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Register Owner Operation Client",
       "domain": "owner-operations",
       "id": "api:post:/api/lite/owner-operations/clients",
@@ -6550,8 +6679,102 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Approve Client Pairing",
+      "domain": "owner-operations",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.approveOwnerClientPairing",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+      "method": "POST",
+      "name": "POST /api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+      "operation_id": "approve_client_pairing_api_lite_owner_operations_clients_pairings__pairing_id__approve_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-owner-operations"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Reject Client Pairing",
+      "domain": "owner-operations",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.rejectOwnerClientPairing",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
+      "method": "POST",
+      "name": "POST /api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
+      "operation_id": "reject_client_pairing_api_lite_owner_operations_clients_pairings__pairing_id__reject_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-owner-operations"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Revoke Owner Operation Client",
       "domain": "owner-operations",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.revokeOwnerOperationClient",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:post:/api/lite/owner-operations/clients/{client_id}/revoke",
       "method": "POST",
       "name": "POST /api/lite/owner-operations/clients/{client_id}/revoke",
@@ -27090,7 +27313,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
       ],
       "name": "human_identities",
       "owner": "not a prepared projection",
@@ -27110,7 +27334,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -27302,6 +27527,57 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:owner_operation_client_pairing_events",
+      "indexes": [
+        "idx_owner_operation_client_pairing_events_pairing"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
+      ],
+      "name": "owner_operation_client_pairing_events",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:owner_operation_client_pairings",
+      "indexes": [
+        "idx_owner_operation_client_pairings_active_key",
+        "idx_owner_operation_client_pairings_client",
+        "idx_owner_operation_client_pairings_lifecycle",
+        "sqlite_autoindex_owner_operation_client_pairings_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
+      ],
+      "name": "owner_operation_client_pairings",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -33303,6 +33579,8 @@
         "table:owner_approved_operations",
         "table:owner_claims",
         "table:owner_operation_challenges",
+        "table:owner_operation_client_pairing_events",
+        "table:owner_operation_client_pairings",
         "table:owner_operation_clients",
         "table:owner_operation_events",
         "table:policy_activation_operations",
@@ -33835,10 +34113,18 @@
         "troubleshooting:worker-stopped"
       ],
       "owner-operations": [
+        "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
         "api:get:/api/lite/owner-operations/pending",
         "api:get:/api/lite/owner-operations/{operation_id}",
+        "api:post:/api/lite/owner-operations/client-pairings",
+        "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
+        "api:post:/api/lite/owner-operations/client-pairings/challenge",
+        "api:post:/api/lite/owner-operations/client-pairings/observer-challenge",
+        "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
         "api:post:/api/lite/owner-operations/clients",
         "api:post:/api/lite/owner-operations/clients/challenge",
+        "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+        "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
         "api:post:/api/lite/owner-operations/clients/{client_id}/revoke",
         "api:post:/api/lite/owner-operations/observer-challenge",
         "api:post:/api/lite/owner-operations/pending/{operation_id}/approve",
@@ -34719,6 +35005,7 @@
         "api:get:/api/lite/identity",
         "api:get:/api/lite/identity/owner-claim/status",
         "api:get:/api/lite/media-backup",
+        "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
         "api:get:/api/lite/owner-operations/pending",
         "api:get:/api/lite/owner-operations/{operation_id}",
         "api:get:/api/lite/policy",
@@ -34850,8 +35137,15 @@
         "api:post:/api/lite/identity/setup",
         "api:post:/api/lite/identity/step-up/options",
         "api:post:/api/lite/identity/step-up/verify",
+        "api:post:/api/lite/owner-operations/client-pairings",
+        "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
+        "api:post:/api/lite/owner-operations/client-pairings/challenge",
+        "api:post:/api/lite/owner-operations/client-pairings/observer-challenge",
+        "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
         "api:post:/api/lite/owner-operations/clients",
         "api:post:/api/lite/owner-operations/clients/challenge",
+        "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+        "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
         "api:post:/api/lite/owner-operations/clients/{client_id}/revoke",
         "api:post:/api/lite/owner-operations/observer-challenge",
         "api:post:/api/lite/owner-operations/pending/{operation_id}/approve",
@@ -35661,6 +35955,8 @@
         "table:owner_approved_operations",
         "table:owner_claims",
         "table:owner_operation_challenges",
+        "table:owner_operation_client_pairing_events",
+        "table:owner_operation_client_pairings",
         "table:owner_operation_clients",
         "table:owner_operation_events",
         "table:phase3b_current_state",
@@ -36771,6 +37067,12 @@
       "api:get:/api/lite/media-backup": [
         {
           "source": "domain:media-backup",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}": [
+        {
+          "source": "domain:owner-operations",
           "type": "owns"
         }
       ],
@@ -37948,6 +38250,36 @@
           "type": "uses"
         }
       ],
+      "api:post:/api/lite/owner-operations/client-pairings": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/client-pairings/challenge": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/client-pairings/observer-challenge": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
       "api:post:/api/lite/owner-operations/clients": [
         {
           "source": "domain:owner-operations",
@@ -37960,7 +38292,31 @@
           "type": "owns"
         }
       ],
+      "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve": [
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject": [
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
       "api:post:/api/lite/owner-operations/clients/{client_id}/revoke": [
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
         {
           "source": "domain:owner-operations",
           "type": "owns"
@@ -43946,6 +44302,18 @@
           "type": "owns"
         }
       ],
+      "table:owner_operation_client_pairing_events": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:owner_operation_client_pairings": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:owner_operation_clients": [
         {
           "source": "domain:control_plane",
@@ -46314,6 +46682,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/owner-operations/pending",
           "type": "verified_by"
         },
@@ -46838,11 +47210,39 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/owner-operations/client-pairings",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/client-pairings/challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/client-pairings/observer-challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/owner-operations/clients",
           "type": "verified_by"
         },
         {
           "source": "api:post:/api/lite/owner-operations/clients/challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
           "type": "verified_by"
         },
         {
@@ -53178,6 +53578,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/owner-operations/pending",
           "type": "verified_by"
         },
@@ -53702,11 +54106,39 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/owner-operations/client-pairings",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/client-pairings/challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/client-pairings/observer-challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/owner-operations/clients",
           "type": "verified_by"
         },
         {
           "source": "api:post:/api/lite/owner-operations/clients/challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
           "type": "verified_by"
         },
         {
@@ -55514,6 +55946,16 @@
           "type": "verified_by"
         }
       ],
+      "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:get:/api/lite/owner-operations/pending": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -56984,6 +57426,56 @@
           "type": "verified_by"
         }
       ],
+      "api:post:/api/lite/owner-operations/client-pairings": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/client-pairings/challenge": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/client-pairings/observer-challenge": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:post:/api/lite/owner-operations/clients": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -56995,6 +57487,26 @@
         }
       ],
       "api:post:/api/lite/owner-operations/clients/challenge": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -61714,6 +62226,14 @@
           "type": "owns"
         },
         {
+          "target": "table:owner_operation_client_pairing_events",
+          "type": "owns"
+        },
+        {
+          "target": "table:owner_operation_client_pairings",
+          "type": "owns"
+        },
+        {
           "target": "table:owner_operation_clients",
           "type": "owns"
         },
@@ -63666,6 +64186,10 @@
       ],
       "domain:owner-operations": [
         {
+          "target": "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/owner-operations/pending",
           "type": "owns"
         },
@@ -63674,11 +64198,39 @@
           "type": "owns"
         },
         {
+          "target": "api:post:/api/lite/owner-operations/client-pairings",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/client-pairings/challenge",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/client-pairings/observer-challenge",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+          "type": "owns"
+        },
+        {
           "target": "api:post:/api/lite/owner-operations/clients",
           "type": "owns"
         },
         {
           "target": "api:post:/api/lite/owner-operations/clients/challenge",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
           "type": "owns"
         },
         {
@@ -71872,6 +72424,18 @@
           "type": "calls"
         },
         {
+          "target": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/clients/{client_id}/revoke",
+          "type": "calls"
+        },
+        {
           "target": "api:post:/api/lite/owner-operations/pending/{operation_id}/approve",
           "type": "calls"
         },
@@ -73117,6 +73681,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:0736b864a712c9b7",
+      "source": "ui:liteidentity",
+      "target": "api:post:/api/lite/owner-operations/clients/{client_id}/revoke",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:07494ea2c9b200cd",
@@ -73694,6 +74267,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:0b9ceecac13e6e37",
+      "source": "domain:control_plane",
+      "target": "table:owner_operation_client_pairing_events",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:0ba61b1575eadb6f",
@@ -73862,6 +74444,15 @@
       "source": "requirement:architecture-04",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:0cdf46d86e6602b8",
+      "source": "ui:liteidentity",
+      "target": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -76977,6 +77568,15 @@
       "id": "rel:215c27949d80723b",
       "source": "reason:queue_full",
       "target": "test:tests/backend/test_workflow_projection_process_isolation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:2165159e1555599c",
+      "source": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -81892,6 +82492,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:416fbadd824663e2",
+      "source": "api:post:/api/lite/owner-operations/client-pairings",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:4171744d4b1a0cbd",
@@ -82646,6 +83255,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:45e5c2682736a0fa",
+      "source": "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:460b16da249ca472",
@@ -82914,6 +83532,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:4820eb415d4468fc",
+      "source": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:482eb94c15aa4986",
@@ -82929,6 +83556,15 @@
       "source": "component:release-subprocess",
       "target": "table:release_runtime_projection",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:483d4d9c1e97074f",
+      "source": "domain:owner-operations",
+      "target": "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -84721,6 +85357,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:54cdfcc53cb3eeda",
+      "source": "api:post:/api/lite/owner-operations/client-pairings",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:54cfd3bc1f75bc7a",
@@ -85900,6 +86545,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:5cc3f4c9b280d952",
+      "source": "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
       ],
@@ -86089,6 +86743,15 @@
       "source": "component:last-known-good",
       "target": "component:atomic-promotion",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:5e47d0063241b167",
+      "source": "api:post:/api/lite/owner-operations/client-pairings/observer-challenge",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -86605,6 +87268,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:62288335f8a2526e",
+      "source": "ui:liteidentity",
+      "target": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/e2e/lite-mocked.spec.ts"
       ],
       "id": "rel:624a7742021aa3b0",
@@ -86920,6 +87592,15 @@
       "id": "rel:6517b2f331f1d7e9",
       "source": "reason:owner_claim_installation_mismatch",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:653ce8bcf1185835",
+      "source": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -87568,6 +88249,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:69c196e4cacbfc89",
+      "source": "domain:owner-operations",
+      "target": "api:post:/api/lite/owner-operations/client-pairings/challenge",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:69d58e80b5d83616",
@@ -87812,6 +88502,15 @@
       "id": "rel:6b45fbe2bcbebf80",
       "source": "domain:node",
       "target": "subject:pocketlab.commands.node.{node_id}.{command.replace",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:6b51da94f9eb3175",
+      "source": "domain:owner-operations",
+      "target": "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
       "type": "owns"
     },
     {
@@ -88732,6 +89431,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:70b53178ca8835c9",
+      "source": "domain:owner-operations",
+      "target": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/mkdocs.spec.ts"
       ],
       "id": "rel:70c5f759d0811506",
@@ -89278,6 +89986,15 @@
       "source": "domain:apps",
       "target": "reason:source_fixture_unavailable",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:742dcd5d8393dca8",
+      "source": "api:post:/api/lite/owner-operations/client-pairings/challenge",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -91315,6 +92032,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:83fcd6cc676c0573",
+      "source": "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:84036da3c8e71fbf",
@@ -91989,6 +92715,15 @@
       "source": "reason:enterprise_final_owner_protected",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:893f478544f667e6",
+      "source": "domain:owner-operations",
+      "target": "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -96048,6 +96783,15 @@
       "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
+      "id": "rel:a65dd73fe682d21c",
+      "source": "domain:owner-operations",
+      "target": "api:post:/api/lite/owner-operations/client-pairings",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
       "id": "rel:a667cfeb85521648",
       "source": "domain:recovery",
       "target": "api:post:/api/lite/recovery/restore/preview",
@@ -96547,6 +97291,15 @@
       "id": "rel:aa07e268a0ef0174",
       "source": "domain:runbook",
       "target": "subject:pocketlab.events.runbook.approved",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:aa110b0c9fe1bc3d",
+      "source": "domain:owner-operations",
+      "target": "api:post:/api/lite/owner-operations/client-pairings/observer-challenge",
       "type": "owns"
     },
     {
@@ -98871,6 +99624,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:bae16416afa0d7b0",
+      "source": "api:post:/api/lite/owner-operations/client-pairings/observer-challenge",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:baf3a02421c56450",
@@ -99467,6 +100229,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:bf38891ac3a8593a",
+      "source": "api:post:/api/lite/owner-operations/client-pairings/challenge",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:bf3fdb30ff1ab9c6",
@@ -99525,6 +100296,15 @@
       ],
       "id": "rel:bf70fab8f167dc40",
       "source": "api:get:/api/lite/system/telemetry-thresholds",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:bf8f286f53f66563",
+      "source": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
@@ -100469,6 +101249,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:c7cf8ea85a5c13b1",
+      "source": "domain:control_plane",
+      "target": "table:owner_operation_client_pairings",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:c7d7bd238c4c18fa",
@@ -101142,6 +101931,15 @@
       "id": "rel:cc7c35e540408552",
       "source": "reason:webauthn_attested_data_missing",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:cc8d6705cadbd6ea",
+      "source": "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -102348,6 +103146,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:d3ef3d52d2424567",
+      "source": "domain:owner-operations",
+      "target": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:612"
       ],
       "id": "rel:d3f14cfcbea22120",
@@ -103077,6 +103884,15 @@
       "id": "rel:d8b30ac55d7f38d7",
       "source": "reason:webauthn_challenge_scope_mismatch",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:d8bd2364ebd556c2",
+      "source": "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -104349,6 +105165,15 @@
       ],
       "id": "rel:e211e3b0d1df4a93",
       "source": "api:get:/api/lite/system/agent",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:e225fc5280817ca5",
+      "source": "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
       "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
@@ -108656,12 +109481,12 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "58a396f75d19a727f60d7e0e15762aef587386efba2c81e3ed17eb2d72b34489",
+  "source_fingerprint": "a5fe92b3cfe3f47ce8c8576f353b16384adf78aee6adc3b4273951bfad4db811",
   "statistics": {
-    "entity_count": 1412,
+    "entity_count": 1422,
     "entity_type_counts": {
       "adr": 6,
-      "api": 248,
+      "api": 256,
       "capability": 5,
       "component": 58,
       "domain": 50,
@@ -108674,7 +109499,7 @@
       "runbook": 5,
       "runtime-topology": 9,
       "subject": 220,
-      "table": 87,
+      "table": 89,
       "test": 275,
       "threat-boundary": 9,
       "threat-model": 9,
@@ -108682,7 +109507,7 @@
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 4036,
+    "relation_count": 4065,
     "source_count": 312
   }
 }

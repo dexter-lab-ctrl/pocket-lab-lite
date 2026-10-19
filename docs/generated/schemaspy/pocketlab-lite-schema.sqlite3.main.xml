@@ -1479,6 +1479,7 @@
             <child column="created_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_enrollment_claims"/>
             <child column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_enrollment_claims"/>
             <child column="approved_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="owner_approved_operations"/>
+            <child column="reviewed_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="owner_operation_client_pairings"/>
             <child column="created_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="owner_operation_clients"/>
             <child column="requested_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_activation_operations"/>
             <child column="approved_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_approvals"/>
@@ -1736,10 +1737,74 @@
             <column ascending="true" name="nonce_hash"/>
          </index>
       </table>
+      <table name="owner_operation_client_pairing_events" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="event_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="pairing_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="pairing_id" foreignKey="" implied="false" onDeleteCascade="true" table="owner_operation_client_pairings"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="occurred_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="actor_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="4" name="actor_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="event_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="6" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="event_id" sequenceNumberInPK="1"/>
+         <index name="owner_operation_client_pairing_events_s_pk" unique="true">
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="idx_owner_operation_client_pairing_events_pairing" unique="false">
+            <column ascending="true" name="pairing_id"/>
+            <column ascending="true" name="event_id"/>
+         </index>
+      </table>
+      <table name="owner_operation_client_pairings" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="pairing_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="pairing_id" foreignKey="" implied="false" onDeleteCascade="true" table="owner_operation_client_pairing_events"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="client_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="client_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="owner_operation_clients"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="display_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="public_key" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="public_key_fingerprint" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="capabilities_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="pairing_binding_digest" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'pending'" digits="0" id="7" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="reviewed_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="reviewed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="approval_assurance_ref" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="registered_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="14" name="terminal_reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="pairing_id" sequenceNumberInPK="1"/>
+         <index name="owner_operation_client_pairings_s_pk" unique="true">
+            <column ascending="true" name="pairing_id"/>
+         </index>
+         <index name="idx_owner_operation_client_pairings_active_key" unique="true">
+            <column ascending="true" name="public_key_fingerprint"/>
+         </index>
+         <index name="idx_owner_operation_client_pairings_client" unique="false">
+            <column ascending="true" name="client_id"/>
+            <column ascending="true" name="created_at"/>
+         </index>
+         <index name="idx_owner_operation_client_pairings_lifecycle" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="expires_at"/>
+            <column ascending="true" name="updated_at"/>
+         </index>
+         <index name="sqlite_autoindex_owner_operation_client_pairings_1" unique="true">
+            <column ascending="true" name="pairing_id"/>
+         </index>
+      </table>
       <table name="owner_operation_clients" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="client_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <child column="requester_client_id" foreignKey="" implied="false" onDeleteCascade="false" table="owner_approved_operations"/>
             <child column="client_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="owner_operation_challenges"/>
+            <child column="client_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="owner_operation_client_pairings"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="display_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="public_key" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>

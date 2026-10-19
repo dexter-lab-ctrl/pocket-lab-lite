@@ -162,6 +162,89 @@ decision := {
 	not owner_operation_target
 }
 
+# Automation-client enrollment is a distinct protected action.  Pairing is
+# only a pending, fixed-capability record; registration happens in the
+# server-owned SQLite transaction after this decision and passkey step-up.
+client_pairing_target if {
+	input.action.id == "owner.operations.client.register"
+	input.target.type == "owner_operation_client_pairing"
+	input.target.id != ""
+	input.target.revision != ""
+	input.target.state.registration_mode == "pairing"
+	input.target.state.client_id != ""
+	input.target.state.public_key_fingerprint != ""
+	input.target.state.capabilities == ["photo_backup.bounded_acceptance.v1"]
+	input.target.state.status == "pending"
+	input.target.state.pairing_binding_digest != ""
+	input.target.revision == input.target.state.pairing_binding_digest
+	time.parse_rfc3339_ns(input.target.state.expires_at) > time.now_ns()
+}
+
+client_revoke_target if {
+	input.action.id == "owner.operations.client.register"
+	input.target.type == "owner_operation_client"
+	input.target.id != ""
+	input.target.revision != ""
+	input.target.state.registration_mode == "revoke"
+	input.target.state.client_id == input.target.id
+	input.target.state.public_key_fingerprint == input.target.revision
+	input.target.state.capabilities == ["photo_backup.bounded_acceptance.v1"]
+	input.target.state.status == "active"
+}
+
+client_registration_target if {
+	client_pairing_target
+}
+
+client_registration_target if {
+	client_revoke_target
+}
+
+client_registration_step_up if {
+	some item in input.session.assurance
+	item.purpose == "owner.operations.client.register"
+	item.expires_at != ""
+	time.parse_rfc3339_ns(item.expires_at) > time.now_ns()
+}
+
+decision := {
+	"allow": true,
+	"constraints": ["authenticated_actor", "owner_authority", "exact_client_contract", "passkey_step_up"],
+	"reason_code": "owner_operation_client_registration_allowed",
+} if {
+	client_registration_target
+	owner_operation_owner
+	client_registration_step_up
+}
+
+decision := {
+	"allow": false,
+	"constraints": ["passkey_step_up"],
+	"reason_code": "passkey_step_up_required",
+} if {
+	client_registration_target
+	owner_operation_owner
+	not client_registration_step_up
+}
+
+decision := {
+	"allow": false,
+	"constraints": ["owner_authority", "authenticated_actor"],
+	"reason_code": "owner_authority_required",
+} if {
+	client_registration_target
+	not owner_operation_owner
+}
+
+decision := {
+	"allow": false,
+	"constraints": ["exact_client_contract", "immutable_capability"],
+	"reason_code": "owner_operation_client_invalid",
+} if {
+	input.action.id == "owner.operations.client.register"
+	not client_registration_target
+}
+
 decision := {
 	"allow": true,
 	"constraints": ["authenticated_actor", "recovery_target"],

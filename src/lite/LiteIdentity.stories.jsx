@@ -174,6 +174,22 @@ export const OwnerOperationApprovedExecuting = createLiteStory('identity', 'iden
 export const OwnerOperationCompleted = createLiteStory('identity', 'identity-owner-operation-completed', { viewport: 'desktop', notes: 'Completed bounded operation with indexing truth kept explicit.' });
 export const OwnerOperationFailed = createLiteStory('identity', 'identity-owner-operation-failed', { notes: 'Safe terminal failure with no replayable approval action.' });
 export const OwnerOperationOfflineSaved = createLiteStory('identity', 'identity-owner-operation-offline', { viewport: 'mobile360', notes: 'Saved operation state is review-only; backend freshness prevents approval.' });
+export const TrustedAutomationClientPending = {
+  ...createLiteStory('identity', 'identity-owner-client-pairing-pending', { viewport: 'desktop', notes: 'Pending requester pairing is visibly distinct from Photo Backup operation approval and remains passkey-protected.' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await expectIdentity(canvasElement);
+    await userEvent.click(await canvas.findByRole('button', { name: /Manage Access/i }));
+    const dialog = await within(canvasElement.ownerDocument.body).findByRole('dialog', { name: /Manage access/i });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Trusted automation clients' }));
+    await expect(dialog).toHaveTextContent(/Pending client registration/i);
+    await expect(dialog).toHaveTextContent(/photo_backup\.bounded_acceptance\.v1/i);
+    await expect(dialog).toHaveTextContent(/Public-key fingerprint/i);
+  },
+};
+export const TrustedAutomationClientRegistered = createLiteStory('identity', 'identity-owner-client-registered', { viewport: 'desktop', notes: 'Owner-managed registered requester with fixed capability and revocation control.' });
+export const TrustedAutomationClientsMultiple = createLiteStory('identity', 'identity-owner-client-multiple', { viewport: 'desktop', notes: 'Pending and registered requester states remain separate and reviewable.' });
+export const TrustedAutomationClientExpired = createLiteStory('identity', 'identity-owner-client-expired', { notes: 'Expired pairing remains visible as terminal evidence without registration controls.' });
+export const TrustedAutomationClientOfflineSaved = createLiteStory('identity', 'identity-owner-client-offline', { viewport: 'mobile360', notes: 'Saved pairing state is review-only; backend freshness prevents registration.' });
 export const PremiumProtectedConfirmation = {
   ...createLiteStory('identity', 'identity-summary', { viewport: 'desktop' }),
   play: async ({ canvasElement }) => {

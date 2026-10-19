@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: f1468fc0155514174de84430ebc156ee858d454b0047bbbbf7b55532e1272166
+source_fingerprint: 1b1f2774eb33b172e89b697c75705270d8ee285a7fe9f690c1619bc82627afb0
 schema_revision: 1
 validation_status: generated
 ---
@@ -3491,6 +3491,150 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | 200 | Successful Response | application/json: `object` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
+<a id="post-api-lite-owner-operations-client-pairings"></a>
+## POST `/api/lite/owner-operations/client-pairings`
+
+- Operation ID: `request_client_pairing_api_lite_owner_operations_client_pairings_post`
+- Summary: Request Client Pairing
+- Deprecated: no
+- Tags: `lite-owner-operations`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `ClientPairingRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 201 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-owner-operations-client-pairings-cancel-challenge"></a>
+## POST `/api/lite/owner-operations/client-pairings/cancel-challenge`
+
+- Operation ID: `issue_client_pairing_cancel_challenge_api_lite_owner_operations_client_pairings_cancel_challenge_post`
+- Summary: Issue Client Pairing Cancel Challenge
+- Deprecated: no
+- Tags: `lite-owner-operations`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `PairingCancelChallengeRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-owner-operations-client-pairings-challenge"></a>
+## POST `/api/lite/owner-operations/client-pairings/challenge`
+
+- Operation ID: `issue_client_pairing_challenge_api_lite_owner_operations_client_pairings_challenge_post`
+- Summary: Issue Client Pairing Challenge
+- Deprecated: no
+- Tags: `lite-owner-operations`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `ClientPairingChallengeRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-owner-operations-client-pairings-observer-challenge"></a>
+## POST `/api/lite/owner-operations/client-pairings/observer-challenge`
+
+- Operation ID: `issue_client_pairing_observer_challenge_api_lite_owner_operations_client_pairings_observer_challenge_post`
+- Summary: Issue Client Pairing Observer Challenge
+- Deprecated: no
+- Tags: `lite-owner-operations`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `PairingObserverChallengeRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-owner-operations-client-pairings-pairing-id"></a>
+## GET `/api/lite/owner-operations/client-pairings/{pairing_id}`
+
+- Operation ID: `observe_client_pairing_api_lite_owner_operations_client_pairings__pairing_id__get`
+- Summary: Observe Client Pairing
+- Deprecated: no
+- Tags: `lite-owner-operations`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| pairing_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-owner-operations-client-pairings-pairing-id-cancel"></a>
+## POST `/api/lite/owner-operations/client-pairings/{pairing_id}/cancel`
+
+- Operation ID: `cancel_client_pairing_api_lite_owner_operations_client_pairings__pairing_id__cancel_post`
+- Summary: Cancel Client Pairing
+- Deprecated: no
+- Tags: `lite-owner-operations`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| pairing_id | path | yes | `string` |
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `SignedPairingRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
 <a id="post-api-lite-owner-operations-clients"></a>
 ## POST `/api/lite/owner-operations/clients`
 
@@ -3527,6 +3671,58 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Content type | Schema | Required |
 | --- | --- | --- |
 | application/json | `ClientChallengeRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-owner-operations-clients-pairings-pairing-id-approve"></a>
+## POST `/api/lite/owner-operations/clients/pairings/{pairing_id}/approve`
+
+- Operation ID: `approve_client_pairing_api_lite_owner_operations_clients_pairings__pairing_id__approve_post`
+- Summary: Approve Client Pairing
+- Deprecated: no
+- Tags: `lite-owner-operations`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| pairing_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-owner-operations-clients-pairings-pairing-id-reject"></a>
+## POST `/api/lite/owner-operations/clients/pairings/{pairing_id}/reject`
+
+- Operation ID: `reject_client_pairing_api_lite_owner_operations_clients_pairings__pairing_id__reject_post`
+- Summary: Reject Client Pairing
+- Deprecated: no
+- Tags: `lite-owner-operations`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| pairing_id | path | yes | `string` |
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `ClientPairingDecisionRequest` | yes |
 
 ### Responses
 

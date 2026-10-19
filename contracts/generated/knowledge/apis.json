@@ -1090,15 +1090,6 @@
       "confidence": "contract-derived",
       "description": "Enterprise Identity",
       "domain": "enterprise",
-      "frontend_clients": [
-        {
-          "mocked": true,
-          "owner": "MSW handler",
-          "resolved": true,
-          "source_module": "src/mocks/identityRulesP1Handlers.js",
-          "usage": "mock"
-        }
-      ],
       "id": "api:get:/api/lite/enterprise/identity",
       "method": "GET",
       "name": "GET /api/lite/enterprise/identity",
@@ -2378,6 +2369,29 @@
       ],
       "tags": [
         "fleet"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Observe Client Pairing",
+      "domain": "owner-operations",
+      "id": "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
+      "method": "GET",
+      "name": "GET /api/lite/owner-operations/client-pairings/{pairing_id}",
+      "operation_id": "observe_client_pairing_api_lite_owner_operations_client_pairings__pairing_id__get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/owner-operations/client-pairings/{pairing_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-owner-operations"
       ],
       "type": "api"
     },
@@ -6306,6 +6320,121 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Request Client Pairing",
+      "domain": "owner-operations",
+      "id": "api:post:/api/lite/owner-operations/client-pairings",
+      "method": "POST",
+      "name": "POST /api/lite/owner-operations/client-pairings",
+      "operation_id": "request_client_pairing_api_lite_owner_operations_client_pairings_post",
+      "response_statuses": [
+        "201",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/owner-operations/client-pairings",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-owner-operations"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Issue Client Pairing Cancel Challenge",
+      "domain": "owner-operations",
+      "id": "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
+      "method": "POST",
+      "name": "POST /api/lite/owner-operations/client-pairings/cancel-challenge",
+      "operation_id": "issue_client_pairing_cancel_challenge_api_lite_owner_operations_client_pairings_cancel_challenge_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/owner-operations/client-pairings/cancel-challenge",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-owner-operations"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Issue Client Pairing Challenge",
+      "domain": "owner-operations",
+      "id": "api:post:/api/lite/owner-operations/client-pairings/challenge",
+      "method": "POST",
+      "name": "POST /api/lite/owner-operations/client-pairings/challenge",
+      "operation_id": "issue_client_pairing_challenge_api_lite_owner_operations_client_pairings_challenge_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/owner-operations/client-pairings/challenge",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-owner-operations"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Issue Client Pairing Observer Challenge",
+      "domain": "owner-operations",
+      "id": "api:post:/api/lite/owner-operations/client-pairings/observer-challenge",
+      "method": "POST",
+      "name": "POST /api/lite/owner-operations/client-pairings/observer-challenge",
+      "operation_id": "issue_client_pairing_observer_challenge_api_lite_owner_operations_client_pairings_observer_challenge_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/owner-operations/client-pairings/observer-challenge",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-owner-operations"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Cancel Client Pairing",
+      "domain": "owner-operations",
+      "id": "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+      "method": "POST",
+      "name": "POST /api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+      "operation_id": "cancel_client_pairing_api_lite_owner_operations_client_pairings__pairing_id__cancel_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-owner-operations"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Register Owner Operation Client",
       "domain": "owner-operations",
       "id": "api:post:/api/lite/owner-operations/clients",
@@ -6352,8 +6481,102 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Approve Client Pairing",
+      "domain": "owner-operations",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.approveOwnerClientPairing",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+      "method": "POST",
+      "name": "POST /api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+      "operation_id": "approve_client_pairing_api_lite_owner_operations_clients_pairings__pairing_id__approve_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-owner-operations"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Reject Client Pairing",
+      "domain": "owner-operations",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.rejectOwnerClientPairing",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
+      "method": "POST",
+      "name": "POST /api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
+      "operation_id": "reject_client_pairing_api_lite_owner_operations_clients_pairings__pairing_id__reject_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-owner-operations"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Revoke Owner Operation Client",
       "domain": "owner-operations",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.revokeOwnerOperationClient",
+          "resolved": true,
+          "source_module": "src/lite/LiteIdentity.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/identityRulesP1Handlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:post:/api/lite/owner-operations/clients/{client_id}/revoke",
       "method": "POST",
       "name": "POST /api/lite/owner-operations/clients/{client_id}/revoke",
@@ -7478,6 +7701,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "58a396f75d19a727f60d7e0e15762aef587386efba2c81e3ed17eb2d72b34489"
+    "source_fingerprint": "a5fe92b3cfe3f47ce8c8576f353b16384adf78aee6adc3b4273951bfad4db811"
   }
 }

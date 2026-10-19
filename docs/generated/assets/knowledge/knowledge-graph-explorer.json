@@ -959,6 +959,17 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Observe Client Pairing",
+      "domain": "owner-operations",
+      "id": "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
+      "name": "GET /api/lite/owner-operations/client-pairings/{pairing_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Owner Operation Pending",
       "domain": "owner-operations",
       "id": "api:get:/api/lite/owner-operations/pending",
@@ -2400,6 +2411,61 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Request Client Pairing",
+      "domain": "owner-operations",
+      "id": "api:post:/api/lite/owner-operations/client-pairings",
+      "name": "POST /api/lite/owner-operations/client-pairings",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Issue Client Pairing Cancel Challenge",
+      "domain": "owner-operations",
+      "id": "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
+      "name": "POST /api/lite/owner-operations/client-pairings/cancel-challenge",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Issue Client Pairing Challenge",
+      "domain": "owner-operations",
+      "id": "api:post:/api/lite/owner-operations/client-pairings/challenge",
+      "name": "POST /api/lite/owner-operations/client-pairings/challenge",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Issue Client Pairing Observer Challenge",
+      "domain": "owner-operations",
+      "id": "api:post:/api/lite/owner-operations/client-pairings/observer-challenge",
+      "name": "POST /api/lite/owner-operations/client-pairings/observer-challenge",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Cancel Client Pairing",
+      "domain": "owner-operations",
+      "id": "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+      "name": "POST /api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Register Owner Operation Client",
       "domain": "owner-operations",
       "id": "api:post:/api/lite/owner-operations/clients",
@@ -2415,6 +2481,28 @@
       "domain": "owner-operations",
       "id": "api:post:/api/lite/owner-operations/clients/challenge",
       "name": "POST /api/lite/owner-operations/clients/challenge",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Approve Client Pairing",
+      "domain": "owner-operations",
+      "id": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+      "name": "POST /api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Reject Client Pairing",
+      "domain": "owner-operations",
+      "id": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
+      "name": "POST /api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
       "source_refs": [
         "contracts/generated/lite-openapi.json"
       ],
@@ -11952,7 +12040,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
       ],
       "type": "table"
     },
@@ -12037,6 +12126,30 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql"
+      ],
+      "type": "table"
+    },
+    {
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:owner_operation_client_pairing_events",
+      "name": "owner_operation_client_pairing_events",
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
+      ],
+      "type": "table"
+    },
+    {
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:owner_operation_client_pairings",
+      "name": "owner_operation_client_pairings",
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
       ],
       "type": "table"
     },
@@ -18187,6 +18300,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:0736b864a712c9b7",
+      "source": "ui:liteidentity",
+      "target": "api:post:/api/lite/owner-operations/clients/{client_id}/revoke",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:07494ea2c9b200cd",
@@ -19084,6 +19211,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:0b9ceecac13e6e37",
+      "source": "domain:control_plane",
+      "target": "table:owner_operation_client_pairing_events",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:0ba61b1575eadb6f",
@@ -19342,6 +19483,20 @@
       "source": "requirement:architecture-04",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:0cdf46d86e6602b8",
+      "source": "ui:liteidentity",
+      "target": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+      "type": "calls"
     },
     {
       "derivation": {
@@ -24172,6 +24327,20 @@
       "id": "rel:215c27949d80723b",
       "source": "reason:queue_full",
       "target": "test:tests/backend/test_workflow_projection_process_isolation.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:2165159e1555599c",
+      "source": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -31802,6 +31971,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:416fbadd824663e2",
+      "source": "api:post:/api/lite/owner-operations/client-pairings",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:4171744d4b1a0cbd",
@@ -32971,6 +33154,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:45e5c2682736a0fa",
+      "source": "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:460b16da249ca472",
@@ -33384,6 +33581,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:4820eb415d4468fc",
+      "source": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:482eb94c15aa4986",
@@ -33404,6 +33615,20 @@
       "source": "component:release-subprocess",
       "target": "table:release_runtime_projection",
       "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:483d4d9c1e97074f",
+      "source": "domain:owner-operations",
+      "target": "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -36191,6 +36416,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:54cdfcc53cb3eeda",
+      "source": "api:post:/api/lite/owner-operations/client-pairings",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:54cfd3bc1f75bc7a",
@@ -38020,6 +38259,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:5cc3f4c9b280d952",
+      "source": "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
       ],
@@ -38309,6 +38562,20 @@
       "source": "component:last-known-good",
       "target": "component:atomic-promotion",
       "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:5e47d0063241b167",
+      "source": "api:post:/api/lite/owner-operations/client-pairings/observer-challenge",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -39115,6 +39382,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "src/lite/LiteIdentity.jsx"
+      ],
+      "id": "rel:62288335f8a2526e",
+      "source": "ui:liteidentity",
+      "target": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/e2e/lite-mocked.spec.ts"
       ],
       "id": "rel:624a7742021aa3b0",
@@ -39600,6 +39881,20 @@
       "id": "rel:6517b2f331f1d7e9",
       "source": "reason:owner_claim_installation_mismatch",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:653ce8bcf1185835",
+      "source": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -40608,6 +40903,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:69c196e4cacbfc89",
+      "source": "domain:owner-operations",
+      "target": "api:post:/api/lite/owner-operations/client-pairings/challenge",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:69d58e80b5d83616",
@@ -40982,6 +41291,20 @@
       "id": "rel:6b45fbe2bcbebf80",
       "source": "domain:node",
       "target": "subject:pocketlab.commands.node.{node_id}.{command.replace",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:6b51da94f9eb3175",
+      "source": "domain:owner-operations",
+      "target": "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
       "type": "owns"
     },
     {
@@ -42412,6 +42735,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:70b53178ca8835c9",
+      "source": "domain:owner-operations",
+      "target": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/mkdocs.spec.ts"
       ],
       "id": "rel:70c5f759d0811506",
@@ -43258,6 +43595,20 @@
       "source": "domain:apps",
       "target": "reason:source_fixture_unavailable",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:742dcd5d8393dca8",
+      "source": "api:post:/api/lite/owner-operations/client-pairings/challenge",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -46425,6 +46776,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:83fcd6cc676c0573",
+      "source": "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:84036da3c8e71fbf",
@@ -47469,6 +47834,20 @@
       "source": "reason:enterprise_final_owner_protected",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:893f478544f667e6",
+      "source": "domain:owner-operations",
+      "target": "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -53768,6 +54147,20 @@
       "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
+      "id": "rel:a65dd73fe682d21c",
+      "source": "domain:owner-operations",
+      "target": "api:post:/api/lite/owner-operations/client-pairings",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
       "id": "rel:a667cfeb85521648",
       "source": "domain:recovery",
       "target": "api:post:/api/lite/recovery/restore/preview",
@@ -54537,6 +54930,20 @@
       "id": "rel:aa07e268a0ef0174",
       "source": "domain:runbook",
       "target": "subject:pocketlab.events.runbook.approved",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:aa110b0c9fe1bc3d",
+      "source": "domain:owner-operations",
+      "target": "api:post:/api/lite/owner-operations/client-pairings/observer-challenge",
       "type": "owns"
     },
     {
@@ -58146,6 +58553,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:bae16416afa0d7b0",
+      "source": "api:post:/api/lite/owner-operations/client-pairings/observer-challenge",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:baf3a02421c56450",
@@ -59072,6 +59493,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:bf38891ac3a8593a",
+      "source": "api:post:/api/lite/owner-operations/client-pairings/challenge",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:bf3fdb30ff1ab9c6",
@@ -59160,6 +59595,20 @@
       ],
       "id": "rel:bf70fab8f167dc40",
       "source": "api:get:/api/lite/system/telemetry-thresholds",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:bf8f286f53f66563",
+      "source": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
@@ -60624,6 +61073,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:c7cf8ea85a5c13b1",
+      "source": "domain:control_plane",
+      "target": "table:owner_operation_client_pairings",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:c7d7bd238c4c18fa",
@@ -61667,6 +62130,20 @@
       "id": "rel:cc7c35e540408552",
       "source": "reason:webauthn_attested_data_missing",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:cc8d6705cadbd6ea",
+      "source": "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -63543,6 +64020,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:d3ef3d52d2424567",
+      "source": "domain:owner-operations",
+      "target": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:612"
       ],
       "id": "rel:d3f14cfcbea22120",
@@ -64672,6 +65163,20 @@
       "id": "rel:d8b30ac55d7f38d7",
       "source": "reason:webauthn_challenge_scope_mismatch",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:d8bd2364ebd556c2",
+      "source": "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -66644,6 +67149,20 @@
       ],
       "id": "rel:e211e3b0d1df4a93",
       "source": "api:get:/api/lite/system/agent",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:e225fc5280817ca5",
+      "source": "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
       "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },

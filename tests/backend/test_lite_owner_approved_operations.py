@@ -135,6 +135,25 @@ def _register(runtime: dict, client_id: str = "registered-qualification-client")
     return private, public, registered
 
 
+def _pair(runtime: dict, client_id: str = "pairing-qualification-client", display_name: str = "Pairing qualification client"):
+    _deps, operations = runtime["modules"]
+    private = Ed25519PrivateKey.generate()
+    public = _b64(private.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw))
+    challenge = operations.issue_client_pairing_challenge(
+        client_id=client_id,
+        display_name=display_name,
+        public_key=public,
+    )
+    pairing = operations.request_client_pairing(
+        client_id=client_id,
+        display_name=display_name,
+        public_key=public,
+        challenge_id=challenge["challenge_id"],
+        signature=_b64(private.sign(challenge["signing_payload"].encode("utf-8"))),
+    )
+    return private, public, pairing
+
+
 def _request(runtime: dict, private: Ed25519PrivateKey, client_id: str, descriptor: dict) -> dict:
     _deps, operations = runtime["modules"]
     challenge = operations.issue_request_challenge(client_id=client_id, descriptor=descriptor)
@@ -161,9 +180,9 @@ def test_schema_upgrade_adds_owner_operation_tables_and_is_restart_idempotent(tm
     monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path))
     reset_sqlite_path_cache()
     assert apply_migrations(legacy) == list(range(1, 41))
-    assert apply_migrations() == [41]
+    assert apply_migrations() == [41, 42]
     assert apply_migrations() == []
-    assert latest_schema_version() == 41
+    assert latest_schema_version() == 42
     with read_connection() as conn:
         tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         assert {
@@ -171,6 +190,8 @@ def test_schema_upgrade_adds_owner_operation_tables_and_is_restart_idempotent(tm
             "owner_operation_challenges",
             "owner_approved_operations",
             "owner_operation_events",
+            "owner_operation_client_pairings",
+            "owner_operation_client_pairing_events",
         } <= tables
         assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
 
@@ -193,6 +214,159 @@ def test_descriptor_is_strict_and_cannot_carry_paths_urls_or_arbitrary_scope(own
     with pytest.raises(operations.OwnerOperationError) as idem:
         operations.normalize_descriptor({**valid, "idempotency_key": "bad key"})
     assert idem.value.reason_code == "idempotency_key_invalid"
+
+
+def test_pairing_proof_is_immutable_pending_and_grants_no_request_authority(owner_operation_runtime):
+    runtime = owner_operation_runtime
+    private, public, pairing = _pair(runtime)
+    _deps, operations = runtime["modules"]
+    assert pairing["status"] == "pending"
+    assert pairing["public_key_fingerprint"].startswith("sha256:")
+    assert pairing["capabilities"] == [operations.OPERATION_TYPE]
+    assert "public_key" not in pairing and "signing_payload" not in pairing
+
+    with pytest.raises(operations.OwnerOperationError) as no_authority:
+        operations.issue_request_challenge(
+            client_id="pairing-qualification-client",
+            descriptor=_descriptor("pairing-qualification-client", key="pending-pairing-0001"),
+        )
+    assert no_authority.value.reason_code == "client_unknown"
+
+    forged_private = Ed25519PrivateKey.generate()
+    challenge = operations.issue_client_pairing_challenge(
+        client_id="forged-pairing-client",
+        display_name="Forged pairing client",
+        public_key=public,
+    )
+    with pytest.raises(operations.OwnerOperationError) as forged:
+        operations.request_client_pairing(
+            client_id="forged-pairing-client",
+            display_name="Forged pairing client",
+            public_key=public,
+            challenge_id=challenge["challenge_id"],
+            signature=_b64(forged_private.sign(challenge["signing_payload"].encode("utf-8"))),
+        )
+    assert forged.value.reason_code == "signature_invalid"
+
+    modified_challenge = operations.issue_client_pairing_challenge(
+        client_id="pairing-qualification-client-2",
+        display_name="Pairing qualification client",
+        public_key=public,
+    )
+    with pytest.raises(operations.OwnerOperationError) as modified:
+        operations.request_client_pairing(
+            client_id="pairing-qualification-client-2",
+            display_name="Modified display name",
+            public_key=public,
+            challenge_id=modified_challenge["challenge_id"],
+            signature=_b64(private.sign(modified_challenge["signing_payload"].encode("utf-8"))),
+        )
+    assert modified.value.reason_code == "request_binding_invalid"
+
+
+def test_pairing_requires_owner_step_up_and_atomic_registration(owner_operation_runtime, monkeypatch):
+    runtime = owner_operation_runtime
+    _private, _public, pairing = _pair(runtime, "atomic-pairing-client")
+    _deps, operations = runtime["modules"]
+
+    with pytest.raises(operations.OwnerOperationError) as no_step_up:
+        operations.approve_client_pairing(runtime["owner_auth"], pairing["pairing_id"])
+    assert no_step_up.value.reason_code == "owner_step_up_required"
+
+    monkeypatch.setenv("POCKETLAB_TEST_AUTH_BYPASS", "1")
+    monkeypatch.setenv("POCKETLAB_QUALIFICATION_OWNER", "1")
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "qualification")
+    with pytest.raises(operations.OwnerOperationError) as synthetic:
+        operations.approve_client_pairing(_deps.qualification_owner_context(), pairing["pairing_id"])
+    assert synthetic.value.reason_code == "synthetic_owner_forbidden"
+    monkeypatch.delenv("POCKETLAB_TEST_AUTH_BYPASS")
+    monkeypatch.delenv("POCKETLAB_QUALIFICATION_OWNER")
+    monkeypatch.delenv("POCKETLAB_ENVIRONMENT")
+
+    result = operations.approve_client_pairing(runtime["registration_auth"], pairing["pairing_id"])
+    assert result["status"] == "registered"
+    assert result["client"]["status"] == "active"
+    assert result["client"]["capabilities"] == [operations.OPERATION_TYPE]
+    assert result["client"]["public_key_fingerprint"].startswith("sha256:")
+    with pytest.raises(operations.OwnerOperationError) as duplicate:
+        operations.approve_client_pairing(runtime["registration_auth"], pairing["pairing_id"])
+    assert duplicate.value.reason_code == "pairing_not_pending"
+
+    with runtime["db"][1]() as conn:
+        client = conn.execute("SELECT status FROM owner_operation_clients WHERE client_id=?", ("atomic-pairing-client",)).fetchone()
+        status = conn.execute("SELECT status FROM owner_operation_client_pairings WHERE pairing_id=?", (pairing["pairing_id"],)).fetchone()
+    assert client["status"] == "active"
+    assert status["status"] == "registered"
+
+    projection = operations.owner_projection(runtime["owner_auth"])
+    assert any(item["client_id"] == "atomic-pairing-client" for item in projection["clients"])
+    assert any(item["pairing_id"] == pairing["pairing_id"] and item["status"] == "registered" for item in projection["pairings"])
+
+
+def test_pairing_reject_cancel_expiry_and_cross_client_observer_isolation(owner_operation_runtime):
+    runtime = owner_operation_runtime
+    private, _public, pairing = _pair(runtime, "cancel-pairing-client")
+    _deps, operations = runtime["modules"]
+
+    cancel_challenge = operations.issue_client_pairing_cancel_challenge(
+        client_id="cancel-pairing-client", pairing_id=pairing["pairing_id"]
+    )
+    cancelled = operations.cancel_client_pairing(
+        client_id="cancel-pairing-client",
+        pairing_id=pairing["pairing_id"],
+        challenge_id=cancel_challenge["challenge_id"],
+        signature=_b64(private.sign(cancel_challenge["signing_payload"].encode("utf-8"))),
+    )
+    assert cancelled["status"] == "cancelled"
+    with pytest.raises(operations.OwnerOperationError) as replay:
+        operations.cancel_client_pairing(
+            client_id="cancel-pairing-client",
+            pairing_id=pairing["pairing_id"],
+            challenge_id=cancel_challenge["challenge_id"],
+            signature=_b64(private.sign(cancel_challenge["signing_payload"].encode("utf-8"))),
+        )
+    assert replay.value.reason_code == "pairing_not_cancellable"
+
+    _private_two, _public_two, rejected = _pair(runtime, "rejected-pairing-client")
+    assert operations.reject_client_pairing(runtime["owner_auth"], rejected["pairing_id"])["status"] == "rejected"
+
+    _private_three, _public_three, expired = _pair(runtime, "expired-pairing-client")
+    past = (datetime.now(timezone.utc) - timedelta(minutes=1)).isoformat().replace("+00:00", "Z")
+    with runtime["db"][1]() as conn:
+        with runtime["db"][0](conn) as tx:
+            tx.execute("UPDATE owner_operation_client_pairings SET expires_at=? WHERE pairing_id=?", (past, expired["pairing_id"]))
+    assert operations._mark_expired_pairings() == 1
+    with pytest.raises(operations.OwnerOperationError) as expired_error:
+        operations.approve_client_pairing(runtime["registration_auth"], expired["pairing_id"])
+    assert expired_error.value.reason_code == "pairing_not_pending"
+
+    _private_four, _public_four, isolated = _pair(runtime, "isolated-pairing-client")
+    with pytest.raises(operations.OwnerOperationError) as cross_client:
+        operations.issue_client_pairing_observer_challenge(client_id="other-client", pairing_id=isolated["pairing_id"])
+    assert cross_client.value.reason_code == "pairing_not_found"
+
+
+def test_pending_pairing_admission_is_bounded(owner_operation_runtime, monkeypatch):
+    runtime = owner_operation_runtime
+    _deps, operations = runtime["modules"]
+    monkeypatch.setattr(operations, "MAX_PENDING_PAIRINGS", 1)
+    _pair(runtime, "bounded-pairing-client")
+    second_private = Ed25519PrivateKey.generate()
+    second_public = _b64(second_private.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw))
+    challenge = operations.issue_client_pairing_challenge(
+        client_id="bounded-pairing-client-2",
+        display_name="Bounded pairing client 2",
+        public_key=second_public,
+    )
+    with pytest.raises(operations.OwnerOperationError) as limited:
+        operations.request_client_pairing(
+            client_id="bounded-pairing-client-2",
+            display_name="Bounded pairing client 2",
+            public_key=second_public,
+            challenge_id=challenge["challenge_id"],
+            signature=_b64(second_private.sign(challenge["signing_payload"].encode("utf-8"))),
+        )
+    assert limited.value.reason_code == "pairing_rate_limited"
 
 
 def test_registration_proof_binding_idempotency_replay_and_sanitized_observer(owner_operation_runtime):
@@ -725,3 +899,46 @@ def test_http_approval_write_is_csrf_gated_before_operation_authority(owner_oper
     with runtime["db"][1]() as conn:
         row = conn.execute("SELECT status FROM owner_approved_operations WHERE operation_id=?", (operation["operation_id"],)).fetchone()
     assert row["status"] == "pending_approval"
+
+
+def test_http_pairing_is_proof_bound_and_owner_registration_is_csrf_gated(owner_operation_runtime):
+    runtime = owner_operation_runtime
+    private = Ed25519PrivateKey.generate()
+    public = _b64(private.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw))
+    api = TestClient(load_fastapi_app())
+    challenge_response = api.post(
+        "/api/lite/owner-operations/client-pairings/challenge",
+        json={"client_id": "http-pairing-client", "display_name": "HTTP pairing client", "public_key": public},
+    )
+    assert challenge_response.status_code == 200, challenge_response.text
+    challenge = challenge_response.json()
+    pairing_response = api.post(
+        "/api/lite/owner-operations/client-pairings",
+        json={
+            "client_id": "http-pairing-client",
+            "display_name": "HTTP pairing client",
+            "public_key": public,
+            "challenge_id": challenge["challenge_id"],
+            "signature": _b64(private.sign(challenge["signing_payload"].encode("utf-8"))),
+        },
+    )
+    assert pairing_response.status_code == 201, pairing_response.text
+    pairing = pairing_response.json()
+    assert pairing["status"] == "pending"
+    assert "public_key" not in pairing
+
+    observer_without_proof = api.get(f"/api/lite/owner-operations/client-pairings/{pairing['pairing_id']}")
+    assert observer_without_proof.status_code == 401
+    assert _reason_code(observer_without_proof) == "observer_proof_required"
+
+    login = api.post("/api/lite/identity/login", json={"username": "owner", "password": "correct horse battery staple"})
+    assert login.status_code == 200
+    approve_without_csrf = api.post(
+        f"/api/lite/owner-operations/clients/pairings/{pairing['pairing_id']}/approve",
+        json={},
+    )
+    assert approve_without_csrf.status_code == 403
+    assert _reason_code(approve_without_csrf) == "csrf_required"
+    with runtime["db"][1]() as conn:
+        row = conn.execute("SELECT status FROM owner_operation_client_pairings WHERE pairing_id=?", (pairing["pairing_id"],)).fetchone()
+    assert row["status"] == "pending"

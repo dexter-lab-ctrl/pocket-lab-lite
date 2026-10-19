@@ -411,7 +411,7 @@ export const generatedLiteFixtureManifest = {
     "generator": "scripts/docs/lite/generate_contracts.py",
     "schema_revision": 1,
     "source_commit": "uncommitted",
-    "source_fingerprint": "2c69f48c291c7164b0770626c153c6d8f31741a624baa61866e4435ecff1a0b8",
+    "source_fingerprint": "1e28d0b018c967ea830cbca6d592046dd17988e33adb000f2c4815e528567b9f",
     "validation_status": "generated"
   }
 };

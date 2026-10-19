@@ -689,6 +689,12 @@
           "type": "owns"
         }
       ],
+      "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/owner-operations/pending": [
         {
           "source": "domain:owner-operations",
@@ -1863,6 +1869,36 @@
           "type": "uses"
         }
       ],
+      "api:post:/api/lite/owner-operations/client-pairings": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/client-pairings/challenge": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/client-pairings/observer-challenge": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel": [
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
       "api:post:/api/lite/owner-operations/clients": [
         {
           "source": "domain:owner-operations",
@@ -1875,7 +1911,31 @@
           "type": "owns"
         }
       ],
+      "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve": [
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject": [
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
+        {
+          "source": "domain:owner-operations",
+          "type": "owns"
+        }
+      ],
       "api:post:/api/lite/owner-operations/clients/{client_id}/revoke": [
+        {
+          "source": "ui:liteidentity",
+          "type": "calls"
+        },
         {
           "source": "domain:owner-operations",
           "type": "owns"
@@ -7861,6 +7921,18 @@
           "type": "owns"
         }
       ],
+      "table:owner_operation_client_pairing_events": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:owner_operation_client_pairings": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:owner_operation_clients": [
         {
           "source": "domain:control_plane",
@@ -10229,6 +10301,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/owner-operations/pending",
           "type": "verified_by"
         },
@@ -10753,11 +10829,39 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/owner-operations/client-pairings",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/client-pairings/challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/client-pairings/observer-challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/owner-operations/clients",
           "type": "verified_by"
         },
         {
           "source": "api:post:/api/lite/owner-operations/clients/challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
           "type": "verified_by"
         },
         {
@@ -17093,6 +17197,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/owner-operations/pending",
           "type": "verified_by"
         },
@@ -17617,11 +17725,39 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/owner-operations/client-pairings",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/client-pairings/challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/client-pairings/observer-challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/owner-operations/clients",
           "type": "verified_by"
         },
         {
           "source": "api:post:/api/lite/owner-operations/clients/challenge",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
           "type": "verified_by"
         },
         {
@@ -19429,6 +19565,16 @@
           "type": "verified_by"
         }
       ],
+      "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:get:/api/lite/owner-operations/pending": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -20899,6 +21045,56 @@
           "type": "verified_by"
         }
       ],
+      "api:post:/api/lite/owner-operations/client-pairings": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/client-pairings/challenge": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/client-pairings/observer-challenge": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:post:/api/lite/owner-operations/clients": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -20910,6 +21106,26 @@
         }
       ],
       "api:post:/api/lite/owner-operations/clients/challenge": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -25629,6 +25845,14 @@
           "type": "owns"
         },
         {
+          "target": "table:owner_operation_client_pairing_events",
+          "type": "owns"
+        },
+        {
+          "target": "table:owner_operation_client_pairings",
+          "type": "owns"
+        },
+        {
           "target": "table:owner_operation_clients",
           "type": "owns"
         },
@@ -27581,6 +27805,10 @@
       ],
       "domain:owner-operations": [
         {
+          "target": "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/owner-operations/pending",
           "type": "owns"
         },
@@ -27589,11 +27817,39 @@
           "type": "owns"
         },
         {
+          "target": "api:post:/api/lite/owner-operations/client-pairings",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/client-pairings/challenge",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/client-pairings/observer-challenge",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
+          "type": "owns"
+        },
+        {
           "target": "api:post:/api/lite/owner-operations/clients",
           "type": "owns"
         },
         {
           "target": "api:post:/api/lite/owner-operations/clients/challenge",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
           "type": "owns"
         },
         {
@@ -35787,6 +36043,18 @@
           "type": "calls"
         },
         {
+          "target": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/approve",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/clients/pairings/{pairing_id}/reject",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/owner-operations/clients/{client_id}/revoke",
+          "type": "calls"
+        },
+        {
           "target": "api:post:/api/lite/owner-operations/pending/{operation_id}/approve",
           "type": "calls"
         },
@@ -35973,6 +36241,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "58a396f75d19a727f60d7e0e15762aef587386efba2c81e3ed17eb2d72b34489"
+    "source_fingerprint": "a5fe92b3cfe3f47ce8c8576f353b16384adf78aee6adc3b4273951bfad4db811"
   }
 }

@@ -43,17 +43,20 @@ DESTINATION_ID = lite_photo_backup_destinations.CURRENT_DESTINATION_ID
 OWNER_APPROVAL_PURPOSE = "owner.operations.approve"
 CLIENT_REGISTRATION_PURPOSE = "owner.operations.client.register"
 CLIENT_CHALLENGE_TTL_SECONDS = 120
+PAIRING_TTL_SECONDS = 15 * 60
 REQUEST_CHALLENGE_TTL_SECONDS = 120
 APPROVAL_TTL_SECONDS = 15 * 60
 EXECUTION_TTL_SECONDS = 40 * 60
 MAX_ACTIVE_CHALLENGES = 4
 MAX_CHALLENGE_FAILURES = 5
+MAX_PENDING_PAIRINGS = 32
 TERMINAL_STATUSES = {"completed", "rejected", "expired", "cancelled", "failed", "blocked"}
 ACTIVE_STATUSES = {"pending_approval", "approved", "executing", "verifying"}
 _CLIENT_ID_RE = re.compile(r"^[a-z][a-z0-9._-]{2,79}$")
 _IDEMPOTENCY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$")
 _CHALLENGE_ID_RE = re.compile(r"^oo-challenge-[a-f0-9]{24}$")
 _OPERATION_ID_RE = re.compile(r"^oo-[a-f0-9]{24}$")
+_PAIRING_ID_RE = re.compile(r"^ocp-[a-f0-9]{24}$")
 _SIGNATURE_MAX = 160
 _PUBLIC_KEY_MAX = 96
 _SECRET_MARKERS = ("password", "token", "secret", "private", "credential", "bearer", "cookie")
@@ -104,6 +107,8 @@ def _safe_id(value: Any, *, kind: str = "id") -> str:
         raise OwnerOperationError("challenge_invalid", "The client challenge is not valid.", 422)
     if kind == "operation" and not _OPERATION_ID_RE.fullmatch(candidate):
         raise OwnerOperationError("operation_invalid", "The operation identity is not valid.", 422)
+    if kind == "pairing" and not _PAIRING_ID_RE.fullmatch(candidate):
+        raise OwnerOperationError("pairing_invalid", "The pairing identity is not valid.", 422)
     return candidate
 
 
@@ -397,7 +402,12 @@ def issue_registration_challenge(auth_context: dict[str, Any], *, client_id: str
     client_id = _safe_id(client_id, kind="client")
     key_bytes = _public_key_bytes(public_key)
     fingerprint = f"sha256:{hashlib.sha256(key_bytes).hexdigest()}"
-    binding = {"client_id": client_id, "public_key": _b64encode(key_bytes), "fingerprint": fingerprint}
+    binding = {
+        "registration_mode": "owner",
+        "client_id": client_id,
+        "public_key": _b64encode(key_bytes),
+        "fingerprint": fingerprint,
+    }
     return _issue_challenge(
         client_id=client_id,
         purpose="client_registration",
@@ -481,7 +491,12 @@ def register_client(
     fingerprint = f"sha256:{hashlib.sha256(key_bytes).hexdigest()}"
     challenge_id = _safe_id(challenge_id, kind="challenge")
     signature_bytes = _signature_bytes(signature)
-    binding = {"client_id": client_id, "public_key": canonical_key, "fingerprint": fingerprint}
+    binding = {
+        "registration_mode": "owner",
+        "client_id": client_id,
+        "public_key": canonical_key,
+        "fingerprint": fingerprint,
+    }
     _ensure_db()
     with connection() as conn:
         with begin_immediate(conn) as tx:
@@ -528,6 +543,510 @@ def register_client(
             )
             row = tx.execute("SELECT * FROM owner_operation_clients WHERE client_id=?", (client_id,)).fetchone()
             return _client_projection(row)
+
+
+def _pairing_row(conn: Any, pairing_id: str) -> Any:
+    pairing_id = _safe_id(pairing_id, kind="pairing")
+    row = conn.execute(
+        "SELECT * FROM owner_operation_client_pairings WHERE pairing_id=? LIMIT 1",
+        (pairing_id,),
+    ).fetchone()
+    if not row:
+        raise OwnerOperationError("pairing_not_found", "The automation-client pairing was not found.", 404)
+    return row
+
+
+def _pairing_event(
+    tx: Any,
+    *,
+    pairing_id: str,
+    actor_type: str,
+    actor_id: str = "",
+    event_type: str,
+    reason_code: str = "",
+    summary: str,
+) -> None:
+    tx.execute(
+        """INSERT INTO owner_operation_client_pairing_events(
+               pairing_id,occurred_at,actor_type,actor_id,event_type,reason_code,summary
+           ) VALUES (?,?,?,?,?,?,?)""",
+        (
+            pairing_id,
+            _iso(),
+            actor_type,
+            str(actor_id or "")[:120],
+            str(event_type)[:80],
+            str(reason_code or "")[:80],
+            str(summary)[:240],
+        ),
+    )
+
+
+def _pairing_binding(*, client_id: str, display_name: str, canonical_key: str, fingerprint: str) -> dict[str, Any]:
+    return {
+        "registration_mode": "pairing",
+        "client_id": client_id,
+        "display_name": display_name,
+        "public_key": canonical_key,
+        "fingerprint": fingerprint,
+        "capabilities": [OPERATION_TYPE],
+    }
+
+
+def _pairing_projection(row: Any) -> dict[str, Any]:
+    if not row:
+        return {"status": "unknown", "sanitized": True}
+    status = str(row["status"] or "unknown")
+    expires_at = _parse_iso(row["expires_at"])
+    if status == "pending" and expires_at and expires_at <= _now():
+        status = "expired"
+    return {
+        "status": status,
+        "pairing_id": str(row["pairing_id"]),
+        "client_id": str(row["client_id"]),
+        "display_name": str(row["display_name"]),
+        "public_key_fingerprint": str(row["public_key_fingerprint"]),
+        "capabilities": [OPERATION_TYPE],
+        "created_at": row["created_at"],
+        "expires_at": row["expires_at"],
+        "reviewed_at": row["reviewed_at"],
+        "registered_at": row["registered_at"],
+        "terminal_reason": row["terminal_reason"] or None,
+        "updated_at": row["updated_at"],
+        "sanitized": True,
+    }
+
+
+def _pairing_events(conn: Any, pairing_id: str) -> list[dict[str, Any]]:
+    return [
+        {
+            "occurred_at": row["occurred_at"],
+            "event_type": row["event_type"],
+            "reason_code": row["reason_code"],
+            "summary": row["summary"],
+        }
+        for row in conn.execute(
+            """SELECT occurred_at,event_type,reason_code,summary
+               FROM owner_operation_client_pairing_events
+               WHERE pairing_id=? ORDER BY event_id DESC LIMIT 20""",
+            (pairing_id,),
+        )
+    ]
+
+
+def issue_client_pairing_challenge(*, client_id: str, display_name: str, public_key: str) -> dict[str, Any]:
+    """Issue proof material for a candidate; it grants no operation authority."""
+    client_id = _safe_id(client_id, kind="client")
+    display_name = _validate_text(display_name, name="display_name", maximum=120)
+    key_bytes = _public_key_bytes(public_key)
+    canonical_key = _b64encode(key_bytes)
+    fingerprint = f"sha256:{hashlib.sha256(key_bytes).hexdigest()}"
+    binding = _pairing_binding(
+        client_id=client_id,
+        display_name=display_name,
+        canonical_key=canonical_key,
+        fingerprint=fingerprint,
+    )
+    _ensure_db()
+    with connection() as conn:
+        active_client = conn.execute(
+            "SELECT status FROM owner_operation_clients WHERE client_id=? LIMIT 1",
+            (client_id,),
+        ).fetchone()
+        if active_client:
+            raise OwnerOperationError(
+                "client_id_registered",
+                "That automation-client identity is already registered or was revoked.",
+                409,
+            )
+        duplicate = conn.execute(
+            """SELECT pairing_id,status FROM owner_operation_client_pairings
+               WHERE public_key_fingerprint=? AND status IN ('pending','registered') LIMIT 1""",
+            (fingerprint,),
+        ).fetchone()
+        if duplicate and str(duplicate["status"]) == "registered":
+            raise OwnerOperationError("public_key_registered", "That public key is already registered.", 409)
+    return _issue_challenge(
+        client_id=client_id,
+        purpose="client_registration",
+        binding=binding,
+        require_active_client=False,
+        ttl_seconds=CLIENT_CHALLENGE_TTL_SECONDS,
+    )
+
+
+def request_client_pairing(
+    *,
+    client_id: str,
+    display_name: str,
+    public_key: str,
+    challenge_id: str,
+    signature: str,
+) -> dict[str, Any]:
+    client_id = _safe_id(client_id, kind="client")
+    display_name = _validate_text(display_name, name="display_name", maximum=120)
+    key_bytes = _public_key_bytes(public_key)
+    canonical_key = _b64encode(key_bytes)
+    fingerprint = f"sha256:{hashlib.sha256(key_bytes).hexdigest()}"
+    challenge_id = _safe_id(challenge_id, kind="challenge")
+    signature_bytes = _signature_bytes(signature)
+    binding = _pairing_binding(
+        client_id=client_id,
+        display_name=display_name,
+        canonical_key=canonical_key,
+        fingerprint=fingerprint,
+    )
+    binding_digest = _digest(binding)
+    _ensure_db()
+    now = _now()
+    expires_at = now + timedelta(seconds=PAIRING_TTL_SECONDS)
+    pairing_id = f"ocp-{secrets.token_hex(12)}"
+    with connection() as conn:
+        with begin_immediate(conn) as tx:
+            _consume_signed_challenge(
+                tx,
+                challenge_id=challenge_id,
+                purpose="client_registration",
+                client_id=client_id,
+                public_key=key_bytes,
+                signature=signature_bytes,
+                binding=binding,
+            )
+            existing_client = tx.execute(
+                "SELECT status FROM owner_operation_clients WHERE client_id=? LIMIT 1",
+                (client_id,),
+            ).fetchone()
+            if existing_client:
+                raise OwnerOperationError(
+                    "client_id_registered",
+                    "That automation-client identity is already registered or was revoked.",
+                    409,
+                )
+            duplicate = tx.execute(
+                """SELECT * FROM owner_operation_client_pairings
+                   WHERE public_key_fingerprint=? AND status IN ('pending','registered') LIMIT 1""",
+                (fingerprint,),
+            ).fetchone()
+            if duplicate and (
+                str(duplicate["client_id"]) != client_id
+                or str(duplicate["display_name"]) != display_name
+                or str(duplicate["pairing_binding_digest"]) != binding_digest
+            ):
+                raise OwnerOperationError("public_key_pending", "That public key is already paired to another candidate.", 409)
+            if duplicate:
+                result = _pairing_projection(duplicate)
+                result["idempotent"] = True
+                return result
+            pending_client = tx.execute(
+                "SELECT pairing_id FROM owner_operation_client_pairings WHERE client_id=? AND status='pending' LIMIT 1",
+                (client_id,),
+            ).fetchone()
+            if pending_client:
+                raise OwnerOperationError("client_id_pending", "That automation-client identity already has a pending pairing.", 409)
+            pending_count = tx.execute(
+                "SELECT COUNT(*) AS count FROM owner_operation_client_pairings WHERE status='pending' AND expires_at>?",
+                (_iso(now),),
+            ).fetchone()
+            if int(pending_count["count"] or 0) >= MAX_PENDING_PAIRINGS:
+                raise OwnerOperationError("pairing_rate_limited", "Too many pending automation-client pairings. Try again shortly.", 429)
+            try:
+                tx.execute(
+                    """INSERT INTO owner_operation_client_pairings(
+                           pairing_id,client_id,display_name,public_key,public_key_fingerprint,
+                           capabilities_json,pairing_binding_digest,status,created_at,expires_at,updated_at
+                       ) VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+                    (
+                        pairing_id,
+                        client_id,
+                        display_name,
+                        canonical_key,
+                        fingerprint,
+                        _canonical([OPERATION_TYPE]),
+                        binding_digest,
+                        "pending",
+                        _iso(now),
+                        _iso(expires_at),
+                        _iso(now),
+                    ),
+                )
+            except Exception as exc:
+                raise OwnerOperationError("pairing_conflict", "The automation-client pairing could not be recorded safely.", 409) from exc
+            _pairing_event(
+                tx,
+                pairing_id=pairing_id,
+                actor_type="requester",
+                actor_id=client_id,
+                event_type="pairing_requested",
+                reason_code="proof_verified",
+                summary="A cryptographically verified automation-client pairing is waiting for Owner review.",
+            )
+            result = _pairing_projection(tx.execute("SELECT * FROM owner_operation_client_pairings WHERE pairing_id=?", (pairing_id,)).fetchone())
+            result["idempotent"] = False
+            return result
+
+
+def client_pairing_policy_target(pairing_id: str) -> dict[str, Any]:
+    _mark_expired_pairings()
+    _ensure_db()
+    with connection() as conn:
+        row = _pairing_row(conn, pairing_id)
+    status = _pairing_projection(row)["status"]
+    return {
+        "type": "owner_operation_client_pairing",
+        "id": str(row["pairing_id"]),
+        "revision": str(row["pairing_binding_digest"]),
+        "state": {
+            "registration_mode": "pairing",
+            "client_id": str(row["client_id"]),
+            "public_key_fingerprint": str(row["public_key_fingerprint"]),
+            "capabilities": [OPERATION_TYPE],
+            "status": status,
+            "expires_at": str(row["expires_at"]),
+            "pairing_binding_digest": str(row["pairing_binding_digest"]),
+        },
+    }
+
+
+def client_policy_target(client_id: str, *, mode: str = "revoke") -> dict[str, Any]:
+    client_id = _safe_id(client_id, kind="client")
+    _ensure_db()
+    with connection() as conn:
+        row = _client_row(conn, client_id, active=False)
+    return {
+        "type": "owner_operation_client",
+        "id": client_id,
+        "revision": str(row["public_key_fingerprint"]),
+        "state": {
+            "registration_mode": mode,
+            "client_id": client_id,
+            "public_key_fingerprint": str(row["public_key_fingerprint"]),
+            "capabilities": [OPERATION_TYPE],
+            "status": str(row["status"]),
+        },
+    }
+
+
+def approve_client_pairing(auth_context: dict[str, Any], pairing_id: str) -> dict[str, Any]:
+    _context, human_id, session_id, assurance_item = _owner_context(
+        auth_context,
+        assurance=True,
+        assurance_purpose=CLIENT_REGISTRATION_PURPOSE,
+    )
+    pairing_id = _safe_id(pairing_id, kind="pairing")
+    _mark_expired_pairings()
+    _ensure_db()
+    with connection() as conn:
+        with begin_immediate(conn) as tx:
+            row = _pairing_row(tx, pairing_id)
+            if row["status"] != "pending":
+                raise OwnerOperationError("pairing_not_pending", "This automation-client pairing is no longer waiting for registration.", 409)
+            if (_parse_iso(row["expires_at"]) or _now()) <= _now():
+                tx.execute(
+                    "UPDATE owner_operation_client_pairings SET status='expired',terminal_reason='pairing_expired',updated_at=? WHERE pairing_id=? AND status='pending'",
+                    (_iso(), pairing_id),
+                )
+                _pairing_event(tx, pairing_id=pairing_id, actor_type="system", event_type="expired", reason_code="pairing_expired", summary="The automation-client pairing expired before Owner registration.")
+                raise OwnerOperationError("pairing_expired", "This automation-client pairing has expired.", 409)
+            key_bytes = _public_key_bytes(row["public_key"])
+            fingerprint = f"sha256:{hashlib.sha256(key_bytes).hexdigest()}"
+            binding = _pairing_binding(
+                client_id=str(row["client_id"]),
+                display_name=str(row["display_name"]),
+                canonical_key=_b64encode(key_bytes),
+                fingerprint=fingerprint,
+            )
+            if fingerprint != str(row["public_key_fingerprint"]) or _digest(binding) != str(row["pairing_binding_digest"]):
+                tx.execute(
+                    "UPDATE owner_operation_client_pairings SET status='rejected',terminal_reason='pairing_binding_invalid',updated_at=? WHERE pairing_id=? AND status='pending'",
+                    (_iso(), pairing_id),
+                )
+                _pairing_event(tx, pairing_id=pairing_id, actor_type="system", event_type="rejected", reason_code="pairing_binding_invalid", summary="The pairing binding could not be revalidated and was stopped safely.")
+                raise OwnerOperationError("pairing_binding_invalid", "The pairing binding is no longer valid.", 409)
+            existing = tx.execute(
+                "SELECT * FROM owner_operation_clients WHERE client_id=? OR public_key_fingerprint=? LIMIT 1",
+                (str(row["client_id"]), fingerprint),
+            ).fetchone()
+            if existing:
+                raise OwnerOperationError("client_id_conflict", "That client identity or public key is already registered.", 409)
+            now = _now()
+            try:
+                tx.execute(
+                    """INSERT INTO owner_operation_clients(
+                           client_id,display_name,public_key,public_key_fingerprint,capabilities_json,
+                           status,created_by_human_id,created_at
+                       ) VALUES (?,?,?,?,?,?,?,?)""",
+                    (str(row["client_id"]), str(row["display_name"]), _b64encode(key_bytes), fingerprint, _canonical([OPERATION_TYPE]), "active", human_id, now),
+                )
+            except Exception as exc:
+                raise OwnerOperationError("client_id_conflict", "The client could not be registered without a duplicate identity.", 409) from exc
+            assurance_ref = _assurance_reference(assurance_item)
+            updated = tx.execute(
+                """UPDATE owner_operation_client_pairings
+                   SET status='registered',reviewed_by_human_id=?,reviewed_at=?,approval_assurance_ref=?,registered_at=?,updated_at=?
+                   WHERE pairing_id=? AND status='pending'""",
+                (human_id, now, assurance_ref, now, now, pairing_id),
+            )
+            if updated.rowcount != 1:
+                raise OwnerOperationError("pairing_decision_race", "The pairing decision was already handled by another request.", 409)
+            _pairing_event(tx, pairing_id=pairing_id, actor_type="owner", actor_id=human_id, event_type="registered", reason_code="owner_confirmed", summary="Owner registered the exact cryptographically verified automation client.")
+            _audit_human(
+                tx,
+                human_id=human_id,
+                session_id=session_id,
+                event_type="owner_operation.client_pairing_registered",
+                reason_code="owner_confirmed",
+                summary="Owner registered a bounded automation client after passkey confirmation.",
+                operation_id=f"pairing:{pairing_id}",
+            )
+            client = tx.execute("SELECT * FROM owner_operation_clients WHERE client_id=?", (str(row["client_id"]),)).fetchone()
+            pairing = _pairing_projection(tx.execute("SELECT * FROM owner_operation_client_pairings WHERE pairing_id=?", (pairing_id,)).fetchone())
+            return {"status": "registered", "pairing": pairing, "client": _client_projection(client, include_fingerprint=True), "sanitized": True}
+
+
+def reject_client_pairing(auth_context: dict[str, Any], pairing_id: str, *, reason: str = "owner_rejected") -> dict[str, Any]:
+    _context, human_id, session_id, _assurance = _owner_context(auth_context, assurance=False)
+    pairing_id = _safe_id(pairing_id, kind="pairing")
+    safe_reason = _validate_text(reason, name="reason", maximum=80)
+    _mark_expired_pairings()
+    _ensure_db()
+    with connection() as conn:
+        with begin_immediate(conn) as tx:
+            row = _pairing_row(tx, pairing_id)
+            if row["status"] != "pending":
+                raise OwnerOperationError("pairing_not_pending", "This automation-client pairing is no longer waiting for a decision.", 409)
+            updated = tx.execute(
+                "UPDATE owner_operation_client_pairings SET status='rejected',terminal_reason=?,reviewed_by_human_id=?,reviewed_at=?,updated_at=? WHERE pairing_id=? AND status='pending'",
+                (safe_reason, human_id, _iso(), _iso(), pairing_id),
+            )
+            if updated.rowcount != 1:
+                raise OwnerOperationError("pairing_decision_race", "The pairing decision was already handled.", 409)
+            _pairing_event(tx, pairing_id=pairing_id, actor_type="owner", actor_id=human_id, event_type="rejected", reason_code=safe_reason, summary="Owner rejected the automation-client pairing.")
+            _audit_human(tx, human_id=human_id, session_id=session_id, event_type="owner_operation.client_pairing_rejected", reason_code=safe_reason, summary="Owner rejected a bounded automation-client pairing request.", operation_id=f"pairing:{pairing_id}")
+            return _pairing_projection(tx.execute("SELECT * FROM owner_operation_client_pairings WHERE pairing_id=?", (pairing_id,)).fetchone())
+
+
+def issue_client_pairing_cancel_challenge(*, client_id: str, pairing_id: str) -> dict[str, Any]:
+    client_id = _safe_id(client_id, kind="client")
+    pairing_id = _safe_id(pairing_id, kind="pairing")
+    _mark_expired_pairings()
+    _ensure_db()
+    with connection() as conn:
+        row = _pairing_row(conn, pairing_id)
+        if row["client_id"] != client_id:
+            raise OwnerOperationError("pairing_forbidden", "The pairing is not available to this requester.", 403)
+        if row["status"] != "pending":
+            raise OwnerOperationError("pairing_not_cancellable", "The pairing is already terminal.", 409)
+    return _issue_challenge(
+        client_id=client_id,
+        purpose="cancel",
+        binding={"registration_mode": "pairing_cancel", "pairing_id": pairing_id, "status_at_issue": "pending"},
+        operation_id=pairing_id,
+        require_active_client=False,
+        ttl_seconds=REQUEST_CHALLENGE_TTL_SECONDS,
+    )
+
+
+def cancel_client_pairing(*, client_id: str, pairing_id: str, challenge_id: str, signature: str) -> dict[str, Any]:
+    client_id = _safe_id(client_id, kind="client")
+    pairing_id = _safe_id(pairing_id, kind="pairing")
+    challenge_id = _safe_id(challenge_id, kind="challenge")
+    signature_bytes = _signature_bytes(signature)
+    _ensure_db()
+    with connection() as conn:
+        with begin_immediate(conn) as tx:
+            row = _pairing_row(tx, pairing_id)
+            if row["client_id"] != client_id:
+                raise OwnerOperationError("pairing_forbidden", "The pairing is not available to this requester.", 403)
+            if row["status"] != "pending":
+                raise OwnerOperationError("pairing_not_cancellable", "The pairing is already terminal.", 409)
+            _consume_signed_challenge(
+                tx,
+                challenge_id=challenge_id,
+                purpose="cancel",
+                client_id=client_id,
+                public_key=_public_key_bytes(row["public_key"]),
+                signature=signature_bytes,
+                binding={"registration_mode": "pairing_cancel", "pairing_id": pairing_id, "status_at_issue": "pending"},
+                operation_id=pairing_id,
+            )
+            tx.execute(
+                "UPDATE owner_operation_client_pairings SET status='cancelled',terminal_reason='requester_cancelled',updated_at=? WHERE pairing_id=? AND status='pending'",
+                (_iso(), pairing_id),
+            )
+            _pairing_event(tx, pairing_id=pairing_id, actor_type="requester", actor_id=client_id, event_type="cancelled", reason_code="requester_cancelled", summary="The requester cancelled the pending automation-client pairing.")
+            return _pairing_projection(tx.execute("SELECT * FROM owner_operation_client_pairings WHERE pairing_id=?", (pairing_id,)).fetchone())
+
+
+def issue_client_pairing_observer_challenge(*, client_id: str, pairing_id: str) -> dict[str, Any]:
+    client_id = _safe_id(client_id, kind="client")
+    pairing_id = _safe_id(pairing_id, kind="pairing")
+    _mark_expired_pairings()
+    _ensure_db()
+    with connection() as conn:
+        row = _pairing_row(conn, pairing_id)
+        if row["client_id"] != client_id:
+            raise OwnerOperationError("pairing_not_found", "The pairing is not available to this requester.", 404)
+        status = _pairing_projection(row)["status"]
+    return _issue_challenge(
+        client_id=client_id,
+        purpose="observe",
+        binding={"registration_mode": "pairing_observe", "pairing_id": pairing_id, "status_at_issue": status},
+        operation_id=pairing_id,
+        require_active_client=False,
+        ttl_seconds=REQUEST_CHALLENGE_TTL_SECONDS,
+    )
+
+
+def observe_client_pairing(*, client_id: str, pairing_id: str, challenge_id: str, signature: str) -> dict[str, Any]:
+    client_id = _safe_id(client_id, kind="client")
+    pairing_id = _safe_id(pairing_id, kind="pairing")
+    challenge_id = _safe_id(challenge_id, kind="challenge")
+    signature_bytes = _signature_bytes(signature)
+    _ensure_db()
+    with connection() as conn:
+        with begin_immediate(conn) as tx:
+            row = _pairing_row(tx, pairing_id)
+            if row["client_id"] != client_id:
+                raise OwnerOperationError("pairing_forbidden", "The pairing is not available to this requester.", 403)
+            status = _pairing_projection(row)["status"]
+            _consume_signed_challenge(
+                tx,
+                challenge_id=challenge_id,
+                purpose="observe",
+                client_id=client_id,
+                public_key=_public_key_bytes(row["public_key"]),
+                signature=signature_bytes,
+                binding={"registration_mode": "pairing_observe", "pairing_id": pairing_id, "status_at_issue": status},
+                operation_id=pairing_id,
+            )
+            result = _pairing_projection(row)
+            if result["status"] == "registered":
+                client = tx.execute("SELECT * FROM owner_operation_clients WHERE client_id=?", (client_id,)).fetchone()
+                result["client"] = _client_projection(client, include_fingerprint=True)
+            result["events"] = _pairing_events(tx, pairing_id)
+            return result
+
+
+def _mark_expired_pairings() -> int:
+    _ensure_db()
+    now = _iso()
+    changed = 0
+    with connection() as conn:
+        with begin_immediate(conn) as tx:
+            rows = tx.execute(
+                "SELECT pairing_id FROM owner_operation_client_pairings WHERE status='pending' AND expires_at<=?",
+                (now,),
+            ).fetchall()
+            for row in rows:
+                pairing_id = str(row["pairing_id"])
+                updated = tx.execute(
+                    "UPDATE owner_operation_client_pairings SET status='expired',terminal_reason='pairing_expired',updated_at=? WHERE pairing_id=? AND status='pending'",
+                    (now, pairing_id),
+                )
+                if updated.rowcount == 1:
+                    _pairing_event(tx, pairing_id=pairing_id, actor_type="system", event_type="expired", reason_code="pairing_expired", summary="The automation-client pairing expired before Owner registration.")
+                    changed += 1
+    return changed
 
 
 def revoke_client(auth_context: dict[str, Any], *, client_id: str, reason: str = "owner_revoked") -> dict[str, Any]:
@@ -583,10 +1102,10 @@ def revoke_client(auth_context: dict[str, Any], *, client_id: str, reason: str =
     return {"status": "revoked", "client_id": client_id, "sanitized": True}
 
 
-def _client_projection(row: Any) -> dict[str, Any]:
+def _client_projection(row: Any, *, include_fingerprint: bool = False) -> dict[str, Any]:
     if not row:
         return {"status": "unknown", "sanitized": True}
-    return {
+    result = {
         "status": str(row["status"] or "unknown"),
         "client_id": str(row["client_id"]),
         "display_name": str(row["display_name"]),
@@ -596,6 +1115,9 @@ def _client_projection(row: Any) -> dict[str, Any]:
         "revoked_at": row["revoked_at"],
         "sanitized": True,
     }
+    if include_fingerprint:
+        result["public_key_fingerprint"] = str(row["public_key_fingerprint"])
+    return result
 
 
 def issue_request_challenge(*, client_id: str, descriptor: Any) -> dict[str, Any]:
@@ -807,7 +1329,29 @@ def owner_projection(auth_context: dict[str, Any]) -> dict[str, Any]:
             item = _public_operation(row, audience="owner")
             item["events"] = _event_projection(conn, row["operation_id"])
             operations.append(item)
-    return {"status": "ok", "operations": operations, "updated_at": _iso(), "sanitized": True}
+        clients = [
+            _client_projection(row, include_fingerprint=True)
+            for row in conn.execute(
+                "SELECT * FROM owner_operation_clients ORDER BY created_at DESC LIMIT 50"
+            )
+        ]
+        pairings = []
+        for row in conn.execute(
+            """SELECT * FROM owner_operation_client_pairings
+               WHERE status='pending' OR updated_at >= strftime('%Y-%m-%dT%H:%M:%SZ','now','-7 day')
+               ORDER BY created_at DESC LIMIT 50"""
+        ):
+            item = _pairing_projection(row)
+            item["events"] = _pairing_events(conn, row["pairing_id"])
+            pairings.append(item)
+    return {
+        "status": "ok",
+        "operations": operations,
+        "clients": clients,
+        "pairings": pairings,
+        "updated_at": _iso(),
+        "sanitized": True,
+    }
 
 
 def require_owner_read(auth_context: dict[str, Any]) -> None:
@@ -1078,11 +1622,11 @@ def identity_projection(auth_context: dict[str, Any]) -> dict[str, Any]:
     try:
         _owner_context(auth_context, assurance=False)
     except OwnerOperationError:
-        return {"status": "not_available", "operations": [], "sanitized": True}
+        return {"status": "not_available", "operations": [], "clients": [], "pairings": [], "sanitized": True}
     try:
         return owner_projection(auth_context)
     except Exception:
-        return {"status": "unavailable", "operations": [], "sanitized": True}
+        return {"status": "unavailable", "operations": [], "clients": [], "pairings": [], "sanitized": True}
 
 
 def _operation_update(
@@ -1612,6 +2156,7 @@ async def dispatch_approved_operation(operation_id: str) -> dict[str, Any] | Non
 async def reconcile_operations() -> int:
     """Restart-safe worker reconciliation for approved bounded workflows."""
     _mark_expired_operations()
+    _mark_expired_pairings()
     _ensure_db()
     with connection() as conn:
         rows = conn.execute(

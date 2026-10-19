@@ -335,6 +335,49 @@ export default function IdentityScreen() {
     await run(`reject:${operationId}`, () => liteApi.rejectOwnerOperation(operationId), 'The bounded operation was rejected.');
   }
 
+  function requestOwnerClientPairingApproval(pairing) {
+    const pairingId = pairing?.pairing_id || '';
+    if (!pairingId) return;
+    requestConfirmation({
+      title: 'Register this trusted automation client?',
+      description: `Review ${pairing.display_name || pairing.client_id || 'this requester'} and compare its public-key fingerprint before confirming with your Owner passkey.`,
+      confirmLabel: 'Register client',
+      onConfirm: () => run(`register:${pairingId}`, () => withOwnerStepUp('owner.operations.client.register', () => liteApi.approveOwnerClientPairing(pairingId)), 'The trusted automation client was registered.'),
+      will: [
+        `Register ${pairing.client_id || 'the requester'} with only ${pairing.capabilities?.[0] || 'photo_backup.bounded_acceptance.v1'}.`,
+        `Bind registration to fingerprint ${pairing.public_key_fingerprint || 'not reported'}.`,
+      ],
+      willNot: ['Grant Owner access, receive a private key, or authorize arbitrary commands and paths.'],
+      reversible: 'You can revoke the trusted client later from this section.',
+    });
+  }
+
+  function requestOwnerClientPairingRejection(pairing) {
+    const pairingId = pairing?.pairing_id || '';
+    if (!pairingId) return;
+    requestConfirmation({
+      title: 'Reject this client registration?',
+      description: `Do not register ${pairing.display_name || pairing.client_id || 'this requester'} with fingerprint ${pairing.public_key_fingerprint || 'not reported'}.`,
+      confirmLabel: 'Reject registration',
+      onConfirm: () => run(`reject-register:${pairingId}`, () => liteApi.rejectOwnerClientPairing(pairingId), 'The client registration was rejected.'),
+      will: ['Close this short-lived pairing request.'],
+      willNot: ['Register the requester or affect existing trusted clients.'],
+    });
+  }
+
+  function requestOwnerClientRevocation(client) {
+    const clientId = client?.client_id || '';
+    if (!clientId) return;
+    requestConfirmation({
+      title: 'Revoke this trusted automation client?',
+      description: `Revoke ${client.display_name || clientId}. Its fixed bounded-operation capability will stop working.`,
+      confirmLabel: 'Revoke client',
+      onConfirm: () => run(`revoke-client:${clientId}`, () => withOwnerStepUp('owner.operations.client.register', () => liteApi.revokeOwnerOperationClient(clientId)), 'The trusted automation client was revoked.'),
+      will: ['Revoke this client and stop its future signed requests.'],
+      willNot: ['Revoke your Owner session or remove PhotoPrism media.'],
+    });
+  }
+
   function changeManageSection(section) { if (section !== 'recovery') setRecoveryCodes([]); setManageSection(section); }
   function closeManage() { setManageOpen(false); setRecoveryCodes([]); }
   function openManage(section = 'overview') { changeManageSection(section); setManageOpen(true); }
@@ -359,6 +402,8 @@ export default function IdentityScreen() {
   const workspaceStory = accessOverview.workspaceStory;
   const currentRoleLabel = enterpriseRole || (currentPerson?.is_local_owner ? 'Owner' : 'Personal Mode');
   const ownerOperations = Array.isArray(data?.owner_operations?.operations) ? data.owner_operations.operations : [];
+  const ownerOperationClients = Array.isArray(data?.owner_operations?.clients) ? data.owner_operations.clients : [];
+  const ownerOperationPairings = Array.isArray(data?.owner_operations?.pairings) ? data.owner_operations.pairings : [];
   const ownerOperationsFresh = premiumView.fresh && data?.owner_operations?.status === 'ok';
 
   return (
@@ -457,6 +502,8 @@ export default function IdentityScreen() {
               onRegenerate={requestRecoveryRegeneration} onCopyCodes={copyRecoveryCodes} onSignOut={signOut}
               passwordForm={passwords} onPasswordForm={setPasswords} onChangePassword={changePassword}
               ownerOperations={ownerOperations} ownerOperationsFresh={ownerOperationsFresh} onApproveOwnerOperation={approveOwnerOperation} onRejectOwnerOperation={rejectOwnerOperation}
+              ownerOperationClients={ownerOperationClients} ownerOperationPairings={ownerOperationPairings}
+              onApproveOwnerClientPairing={requestOwnerClientPairingApproval} onRejectOwnerClientPairing={requestOwnerClientPairingRejection} onRevokeOwnerOperationClient={requestOwnerClientRevocation}
               enterpriseEnabled={Boolean(data?.enterprise?.enabled)}
               onReviewEnterprise={() => setShowEnterpriseOptIn((value) => !value)}
               showEnterpriseOptIn={showEnterpriseOptIn}
