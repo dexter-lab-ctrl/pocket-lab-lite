@@ -331,13 +331,17 @@ jetstream {
 authorization {
   users: [
     { user: "$POCKETLAB_NATS_API_USER", password: "$POCKETLAB_NATS_API_PASSWORD", permissions: { publish: ["\$JS.API.>", "\$JS.ACK.>", "\$js.ack.>", "pocketlab.commands.>", "pocketlab.events.>", "pocketlab.audit.>", "pocketlab.dlq.>"], subscribe: ["_INBOX.>", "pocketlab.events.>", "pocketlab.audit.>"] } },
-    { user: "$POCKETLAB_NATS_WORKER_USER", password: "$POCKETLAB_NATS_WORKER_PASSWORD", permissions: { publish: ["\$JS.API.>", "\$JS.ACK.>", "\$js.ack.>", "pocketlab.commands.node.*.media.backup.>", "pocketlab.events.>", "pocketlab.audit.>", "pocketlab.dlq.>"], subscribe: ["_INBOX.>", "pocketlab.commands.>", "pocketlab.events.>", "pocketlab.audit.>"] } },
+    { user: "$POCKETLAB_NATS_WORKER_USER", password: "$POCKETLAB_NATS_WORKER_PASSWORD", permissions: { publish: ["\$JS.API.>", "\$JS.ACK.>", "\$js.ack.>", "pocketlab.commands.lite.media_backup.start", "pocketlab.commands.lite.media_backup.cancel", "pocketlab.commands.node.*.media.backup.>", "pocketlab.events.>", "pocketlab.audit.>", "pocketlab.dlq.>"], subscribe: ["_INBOX.>", "pocketlab.commands.>", "pocketlab.events.>", "pocketlab.audit.>"] } },
     { user: "$POCKETLAB_NATS_AGENT_USER", password: "$POCKETLAB_NATS_AGENT_PASSWORD", permissions: { publish: ["pocketlab.events.fleet.>", "pocketlab.events.telemetry.>", "pocketlab.events.health.>"], subscribe: ["_INBOX.>", "pocketlab.commands.node.>"] } }
   ]
 }
 EOF
   chmod 600 "$nats_config"
   export POCKETLAB_NATS_CONFIG="$nats_config"
+  # Include the rendered policy in PM2's desired-process fingerprint.  The
+  # path is stable across releases, so without this digest a policy-only
+  # change could leave a healthy-looking NATS process serving the old ACL.
+  export POCKETLAB_NATS_CONFIG_SHA256="$(sha256sum "$nats_config" | awk '{print $1}')"
 }
 
 

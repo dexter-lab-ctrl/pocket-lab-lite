@@ -111,7 +111,7 @@ def test_ack_message_waits_for_broker_ack_when_supported():
     assert asyncio.run(scenario()) == [1.0]
 
 
-def test_production_worker_policy_allows_only_node_scoped_dispatch():
+def test_production_worker_policy_allows_bounded_photo_backup_lifecycle_and_node_dispatch():
     from pathlib import Path
 
     script = Path(
@@ -123,9 +123,22 @@ def test_production_worker_policy_allows_only_node_scoped_dispatch():
         if "POCKETLAB_NATS_WORKER_USER" in line and "permissions" in line
     )
     worker_publish = worker_line.split("subscribe:", 1)[0]
+    assert '"pocketlab.commands.lite.media_backup.start"' in worker_publish
+    assert '"pocketlab.commands.lite.media_backup.cancel"' in worker_publish
+    assert '"pocketlab.commands.lite.media_backup.repair"' not in worker_publish
     assert '"pocketlab.commands.node.*.media.backup.>"' in worker_publish
     assert '"pocketlab.commands.node.>"' not in worker_publish
     assert '"pocketlab.commands.>"' not in worker_publish
+
+
+def test_nats_policy_digest_participates_in_supported_process_convergence():
+    from pathlib import Path
+
+    script = Path(
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
+    ).read_text(encoding="utf-8")
+    assert 'export POCKETLAB_NATS_CONFIG_SHA256=' in script
+    assert 'sha256sum "$nats_config"' in script
 
 
 def test_core_publish_does_not_flush_after_every_message():
