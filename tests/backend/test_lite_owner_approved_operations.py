@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import json
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -163,6 +164,35 @@ def _request(runtime: dict, private: Ed25519PrivateKey, client_id: str, descript
         challenge_id=challenge["challenge_id"],
         signature=_b64(private.sign(challenge["signing_payload"].encode("utf-8"))),
     )
+
+
+def _bind_terminal_backup(runtime: dict, operation_id: str, backup_id: str, *, evidence: dict | None = None) -> None:
+    _begin_immediate, connect = runtime["db"]
+    with connect() as conn:
+        with _begin_immediate(conn) as tx:
+            tx.execute(
+                """UPDATE owner_approved_operations
+                   SET status='blocked', execution_stage='terminal',
+                       terminal_reason='execution_deadline_expired',
+                       backup_id=?, evidence_json=?, updated_at=?
+                   WHERE operation_id=?""",
+                (
+                    backup_id,
+                    json.dumps(evidence or {}, sort_keys=True, separators=(",", ":")),
+                    datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+                    operation_id,
+                ),
+            )
+
+
+def _active_bound_job(backup_id: str, *, status: str = "starting", node_id: str = "secondary-phone") -> dict:
+    return {
+        "backup_id": backup_id,
+        "node_id": node_id,
+        "destination_id": "server-photoprism-originals",
+        "destination_contract_version": 2,
+        "status": status,
+    }
 
 
 def test_schema_upgrade_adds_owner_operation_tables_and_is_restart_idempotent(tmp_path, monkeypatch):
@@ -848,6 +878,234 @@ def test_approval_expiry_is_terminal_and_does_not_execute(owner_operation_runtim
         row = conn.execute("SELECT status,execution_stage FROM owner_approved_operations WHERE operation_id=?", (operation["operation_id"],)).fetchone()
     assert row["status"] == "expired"
     assert row["execution_stage"] == "terminal"
+
+
+def test_terminal_operation_retries_deferred_bound_job_cancellation(owner_operation_runtime, monkeypatch):
+    runtime = owner_operation_runtime
+    private, _public, _registered = _register(runtime, "terminal-cleanup-client")
+    _deps, operations = runtime["modules"]
+    operation = _request(
+        runtime,
+        private,
+        "terminal-cleanup-client",
+        _descriptor("terminal-cleanup-client", key="terminal-cleanup-0001"),
+    )
+    backup_id = "photo-0123456789abcdef0123"
+    _bind_terminal_backup(runtime, operation["operation_id"], backup_id)
+
+    from api_fastapi.services import action_queue, lite_photo_backup
+
+    monkeypatch.setattr(lite_photo_backup, "job_status", lambda value: _active_bound_job(value))
+    monkeypatch.setattr(
+        lite_photo_backup,
+        "make_cancel_command",
+        lambda node_id, *, reason, backup_id: {
+            "command_id": "cancel-terminal-cleanup",
+            "backup_id": backup_id,
+            "node_id": node_id,
+            "idle": False,
+        },
+    )
+    calls = []
+
+    async def submit(_subject, _event_type, command, *, trace_id):
+        calls.append((command, trace_id))
+        if len(calls) == 1:
+            raise RuntimeError("nats unavailable")
+        return {"status": "queued"}
+
+    monkeypatch.setattr(action_queue, "submit_domain_command", submit)
+
+    first_changed = asyncio.run(operations.reconcile_operations())
+    assert first_changed == 1
+    with runtime["db"][1]() as conn:
+        row = conn.execute(
+            "SELECT status,execution_stage,evidence_json FROM owner_approved_operations WHERE operation_id=?",
+            (operation["operation_id"],),
+        ).fetchone()
+        event = conn.execute(
+            "SELECT event_type,reason_code FROM owner_operation_events WHERE operation_id=? ORDER BY event_id DESC LIMIT 1",
+            (operation["operation_id"],),
+        ).fetchone()
+    assert row["status"] == "blocked"
+    assert row["execution_stage"] == "terminal"
+    assert json.loads(row["evidence_json"])["cancellation"]["status"] == "cancel_submit_deferred"
+    assert event["event_type"] == "cleanup_retry"
+    assert event["reason_code"] == "terminal_cleanup_cancel_submit_deferred"
+
+    second_changed = asyncio.run(operations.reconcile_operations())
+    assert second_changed == 1
+    assert len(calls) == 2
+    with runtime["db"][1]() as conn:
+        row = conn.execute(
+            "SELECT status,execution_stage,evidence_json FROM owner_approved_operations WHERE operation_id=?",
+            (operation["operation_id"],),
+        ).fetchone()
+    assert row["status"] == "blocked"
+    assert row["execution_stage"] == "terminal"
+    assert json.loads(row["evidence_json"])["cancellation"]["status"] == "queued"
+
+    # A queued cancellation is not published again on every watchdog tick.
+    assert asyncio.run(operations.reconcile_operations()) == 0
+    assert len(calls) == 2
+
+
+def test_terminal_cleanup_claim_prevents_concurrent_cancel_publish(owner_operation_runtime, monkeypatch):
+    runtime = owner_operation_runtime
+    private, _public, _registered = _register(runtime, "terminal-concurrent-client")
+    _deps, operations = runtime["modules"]
+    operation = _request(
+        runtime,
+        private,
+        "terminal-concurrent-client",
+        _descriptor("terminal-concurrent-client", key="terminal-concurrent-0001"),
+    )
+    backup_id = "photo-0123456789abcdef0123"
+    _bind_terminal_backup(runtime, operation["operation_id"], backup_id)
+
+    from api_fastapi.services import action_queue, lite_photo_backup
+
+    monkeypatch.setattr(lite_photo_backup, "job_status", lambda value: _active_bound_job(value))
+    monkeypatch.setattr(
+        lite_photo_backup,
+        "make_cancel_command",
+        lambda node_id, *, reason, backup_id: {
+            "command_id": "cancel-concurrent-cleanup",
+            "backup_id": backup_id,
+            "node_id": node_id,
+            "idle": False,
+        },
+    )
+    calls = []
+    started = asyncio.Event()
+    release = asyncio.Event()
+
+    async def submit(_subject, _event_type, command, *, trace_id):
+        calls.append((command, trace_id))
+        started.set()
+        await release.wait()
+        return {"status": "queued"}
+
+    monkeypatch.setattr(action_queue, "submit_domain_command", submit)
+
+    async def run_concurrent():
+        first = asyncio.create_task(operations.reconcile_operations())
+        await started.wait()
+        second = asyncio.create_task(operations.reconcile_operations())
+        await asyncio.sleep(0)
+        release.set()
+        return await asyncio.gather(first, second)
+
+    results = asyncio.run(run_concurrent())
+    assert sorted(results) == [0, 1]
+    assert len(calls) == 1
+
+
+def test_terminal_cleanup_confirms_terminal_job_without_cancel_or_reopen(owner_operation_runtime, monkeypatch):
+    runtime = owner_operation_runtime
+    private, _public, _registered = _register(runtime, "terminal-already-done-client")
+    _deps, operations = runtime["modules"]
+    operation = _request(
+        runtime,
+        private,
+        "terminal-already-done-client",
+        _descriptor("terminal-already-done-client", key="terminal-already-done-0001"),
+    )
+    backup_id = "photo-0123456789abcdef0123"
+    _bind_terminal_backup(runtime, operation["operation_id"], backup_id)
+
+    from api_fastapi.services import lite_photo_backup
+
+    monkeypatch.setattr(
+        lite_photo_backup,
+        "job_status",
+        lambda value: _active_bound_job(value, status="interrupted"),
+    )
+    changed = asyncio.run(operations.reconcile_operations())
+    assert changed == 1
+    with runtime["db"][1]() as conn:
+        row = conn.execute(
+            "SELECT status,execution_stage,evidence_json FROM owner_approved_operations WHERE operation_id=?",
+            (operation["operation_id"],),
+        ).fetchone()
+    assert row["status"] == "blocked"
+    assert row["execution_stage"] == "terminal"
+    assert json.loads(row["evidence_json"])["cancellation"]["status"] == "already_terminal"
+
+
+def test_terminal_cleanup_rejects_a_different_active_job_binding(owner_operation_runtime, monkeypatch):
+    runtime = owner_operation_runtime
+    private, _public, _registered = _register(runtime, "terminal-binding-client")
+    _deps, operations = runtime["modules"]
+    operation = _request(
+        runtime,
+        private,
+        "terminal-binding-client",
+        _descriptor("terminal-binding-client", key="terminal-binding-0001"),
+    )
+    backup_id = "photo-0123456789abcdef0123"
+    _bind_terminal_backup(runtime, operation["operation_id"], backup_id)
+
+    from api_fastapi.services import action_queue, lite_photo_backup
+
+    monkeypatch.setattr(
+        lite_photo_backup,
+        "job_status",
+        lambda value: _active_bound_job("photo-fedcba9876543210fedc"),
+    )
+    monkeypatch.setattr(
+        lite_photo_backup,
+        "make_cancel_command",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("mismatched job must not be cancelled")),
+    )
+    calls = []
+
+    async def submit(*_args, **_kwargs):
+        calls.append(True)
+        return {"status": "queued"}
+
+    monkeypatch.setattr(action_queue, "submit_domain_command", submit)
+    assert asyncio.run(operations.reconcile_operations()) == 1
+    assert calls == []
+    with runtime["db"][1]() as conn:
+        row = conn.execute(
+            "SELECT status,execution_stage,evidence_json FROM owner_approved_operations WHERE operation_id=?",
+            (operation["operation_id"],),
+        ).fetchone()
+    assert row["status"] == "blocked"
+    assert row["execution_stage"] == "terminal"
+    assert json.loads(row["evidence_json"])["cancellation"]["status"] == "binding_mismatch"
+
+
+def test_terminal_cleanup_rejects_a_different_terminal_job_binding(owner_operation_runtime, monkeypatch):
+    runtime = owner_operation_runtime
+    private, _public, _registered = _register(runtime, "terminal-terminal-binding-client")
+    _deps, operations = runtime["modules"]
+    operation = _request(
+        runtime,
+        private,
+        "terminal-terminal-binding-client",
+        _descriptor("terminal-terminal-binding-client", key="terminal-terminal-binding-0001"),
+    )
+    backup_id = "photo-0123456789abcdef0123"
+    _bind_terminal_backup(runtime, operation["operation_id"], backup_id)
+
+    from api_fastapi.services import lite_photo_backup
+
+    monkeypatch.setattr(
+        lite_photo_backup,
+        "job_status",
+        lambda value: _active_bound_job(value, status="interrupted", node_id="different-node"),
+    )
+    assert asyncio.run(operations.reconcile_operations()) == 1
+    with runtime["db"][1]() as conn:
+        row = conn.execute(
+            "SELECT status,execution_stage,evidence_json FROM owner_approved_operations WHERE operation_id=?",
+            (operation["operation_id"],),
+        ).fetchone()
+    assert row["status"] == "blocked"
+    assert row["execution_stage"] == "terminal"
+    assert json.loads(row["evidence_json"])["cancellation"]["status"] == "binding_mismatch"
 
 
 def test_http_surface_requires_identity_csrf_and_never_creates_anonymous_request(owner_operation_runtime):

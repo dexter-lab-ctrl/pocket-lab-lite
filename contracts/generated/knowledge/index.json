@@ -48125,6 +48125,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:interrupted",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:source_fixture_expired",
           "type": "verified_by"
         }
@@ -69478,6 +69482,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_long_gate_checkpointing.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_owner_approved_operations.py",
           "type": "verified_by"
         },
         {
@@ -97894,6 +97902,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_owner_approved_operations.py"
+      ],
+      "id": "rel:ad36f4d296071558",
+      "source": "reason:interrupted",
+      "target": "test:tests/backend/test_lite_owner_approved_operations.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:ad3e62ae50ea732a",
@@ -109625,7 +109642,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "7efc666a138d2c93aae64f638612bd9e118756f449335e9f803692a8c155d1ed",
+  "source_fingerprint": "2678dfb31465ac2b5047ca5b2c4a3970efa25cc4f18466d40be0e1de8048a82f",
   "statistics": {
     "entity_count": 1423,
     "entity_type_counts": {
@@ -109651,7 +109668,7 @@
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 4072,
+    "relation_count": 4073,
     "source_count": 312
   }
 }

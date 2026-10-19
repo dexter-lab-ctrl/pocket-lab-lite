@@ -50,6 +50,8 @@ EXECUTION_TTL_SECONDS = 40 * 60
 MAX_ACTIVE_CHALLENGES = 4
 MAX_CHALLENGE_FAILURES = 5
 MAX_PENDING_PAIRINGS = 32
+CLEANUP_CLAIM_LEASE_SECONDS = 30
+TERMINAL_CLEANUP_CANDIDATE_LIMIT = 50
 TERMINAL_STATUSES = {"completed", "rejected", "expired", "cancelled", "failed", "blocked"}
 ACTIVE_STATUSES = {"pending_approval", "approved", "executing", "verifying"}
 _CLIENT_ID_RE = re.compile(r"^[a-z][a-z0-9._-]{2,79}$")
@@ -1760,6 +1762,8 @@ async def _request_existing_job_cancellation(row: Any, *, reason: str) -> dict[s
         job = lite_photo_backup.job_status(backup_id)
     except Exception:
         return {"status": "job_unavailable", "backup_id": backup_id}
+    if not _job_matches_bound_operation(job, row, backup_id):
+        return {"status": "binding_mismatch", "backup_id": backup_id}
     if str(job.get("status") or "") in lite_photo_backup.TERMINAL_STATES:
         return {"status": "already_terminal", "backup_id": backup_id}
     try:
@@ -1788,6 +1792,192 @@ async def _request_existing_job_cancellation(row: Any, *, reason: str) -> dict[s
         "backup_id": backup_id,
         "submission": str(submitted.get("status") or "queued") if isinstance(submitted, dict) else "queued",
     }
+
+
+def _job_matches_bound_operation(job: dict[str, Any], row: Any, backup_id: str) -> bool:
+    return (
+        str(job.get("backup_id") or "") == backup_id
+        and str(job.get("node_id") or "") == str(row["target_node_id"] or "")
+        and str(job.get("destination_id") or "") == DESTINATION_ID
+        and str(job.get("destination_contract_version") or "")
+        == str(lite_photo_backup_destinations.SCHEMA_VERSION)
+    )
+
+
+def _terminal_cleanup_backup_id(row: Any) -> str:
+    stage = str(row["execution_stage"] or "")
+    value = row["repeat_backup_id"] if stage.startswith("repeat") else row["backup_id"]
+    return str(value or "")
+
+
+def _terminal_cleanup_candidates() -> list[Any]:
+    """Return terminal operations that may still own one durable backup job.
+
+    The operation row remains the authority for the exact binding.  This
+    bounded read lets the worker retry only cleanup for an already-terminal
+    operation; it cannot make the operation executable again.
+    """
+    _ensure_db()
+    with connection() as conn:
+        return conn.execute(
+            """SELECT * FROM owner_approved_operations
+               WHERE status IN ('completed','rejected','expired','cancelled','failed','blocked')
+                 AND execution_stage='terminal'
+                 AND (backup_id IS NOT NULL OR repeat_backup_id IS NOT NULL)
+               ORDER BY updated_at LIMIT ?""",
+            (TERMINAL_CLEANUP_CANDIDATE_LIMIT,),
+        ).fetchall()
+
+
+def _claim_terminal_cleanup(
+    operation_id: str,
+    backup_id: str,
+    *,
+    allow_queued: bool = False,
+) -> bool:
+    """Claim one exact terminal-operation cleanup attempt across workers.
+
+    A short durable lease prevents concurrent watchdog passes from publishing
+    duplicate cancel commands.  A crashed worker leaves a reclaimable claim;
+    it never reopens the operation or changes its authorization deadline.
+    """
+    _ensure_db()
+    with connection() as conn:
+        with begin_immediate(conn) as tx:
+            row = _operation_row(tx, operation_id)
+            if (
+                str(row["status"] or "") not in TERMINAL_STATUSES
+                or str(row["execution_stage"] or "") != "terminal"
+                or _terminal_cleanup_backup_id(row) != backup_id
+            ):
+                return False
+            evidence = _parse_evidence(row["evidence_json"])
+            cancellation = evidence.get("cancellation")
+            if not isinstance(cancellation, dict):
+                cancellation = {}
+            current = str(cancellation.get("status") or "")
+            if current in {"already_terminal", "idle"}:
+                return False
+            if current == "queued" and not allow_queued:
+                return False
+            if current == "retrying":
+                claimed_at = _parse_iso(cancellation.get("claimed_at"))
+                if claimed_at and (_now() - claimed_at).total_seconds() < CLEANUP_CLAIM_LEASE_SECONDS:
+                    return False
+            evidence["cancellation"] = {
+                **cancellation,
+                "status": "retrying",
+                "backup_id": backup_id,
+                "claimed_at": _iso(),
+            }
+            updated = tx.execute(
+                "UPDATE owner_approved_operations SET evidence_json=?,updated_at=? WHERE operation_id=? AND status IN ('completed','rejected','expired','cancelled','failed','blocked') AND execution_stage='terminal'",
+                (_canonical(evidence), _iso(), operation_id),
+            )
+            return updated.rowcount == 1
+
+
+def _record_terminal_cleanup_result(
+    operation_id: str,
+    result: dict[str, Any],
+) -> None:
+    """Persist only sanitized cleanup facts while retaining the operation terminal."""
+    safe = {
+        key: str(result.get(key) or "")[:80]
+        for key in ("status", "backup_id", "submission", "error_type")
+        if result.get(key) is not None
+    }
+    _ensure_db()
+    with connection() as conn:
+        with begin_immediate(conn) as tx:
+            row = _operation_row(tx, operation_id)
+            evidence = _parse_evidence(row["evidence_json"])
+            previous = evidence.get("cancellation")
+            previous = previous if isinstance(previous, dict) else {}
+            safe["last_attempt_at"] = _iso()
+            evidence["cancellation"] = {
+                **previous,
+                **safe,
+            }
+            evidence["cancellation"].pop("claimed_at", None)
+            updated = tx.execute(
+                "UPDATE owner_approved_operations SET evidence_json=?,updated_at=? WHERE operation_id=? AND status IN ('completed','rejected','expired','cancelled','failed','blocked') AND execution_stage='terminal'",
+                (_canonical(evidence), _iso(), operation_id),
+            )
+            if updated.rowcount == 1:
+                status = str(safe.get("status") or "unknown")
+                reason_code = f"terminal_cleanup_{status}"[:80]
+                summary = {
+                    "queued": "The terminal bounded workflow requested cleanup of its exact Photo Backup job.",
+                    "cancel_submit_deferred": "Cleanup remains pending because the existing Photo Backup cancellation path was unavailable.",
+                    "already_terminal": "The exact Photo Backup job was already terminal during cleanup reconciliation.",
+                    "job_unavailable": "Cleanup could not read the exact bound Photo Backup job and will be retried.",
+                }.get(status, "The terminal bounded workflow recorded a sanitized cleanup result.")
+                _record_event(
+                    tx,
+                    operation_id=operation_id,
+                    actor_type="system",
+                    event_type="cleanup_retry",
+                    reason_code=reason_code,
+                    summary=summary,
+                    evidence={
+                        key: safe[key]
+                        for key in ("status", "backup_id", "submission", "error_type")
+                        if key in safe
+                    },
+                )
+
+
+async def _reconcile_terminal_operation_cleanup() -> int:
+    """Retry deferred cancellation for terminal operations only.
+
+    This is deliberately separate from operation execution reconciliation:
+    terminal rows are never dispatched, approved, or deadline-extended here.
+    The existing Photo Backup cancellation handler remains responsible for
+    credential revocation and node cancellation.
+    """
+    changed = 0
+    for row in _terminal_cleanup_candidates():
+        backup_id = _terminal_cleanup_backup_id(row)
+        if not backup_id:
+            continue
+        try:
+            job = lite_photo_backup.job_status(backup_id)
+        except Exception:
+            continue
+        job_status = str(job.get("status") or "")
+        if job_status in lite_photo_backup.TERMINAL_STATES:
+            if not _job_matches_bound_operation(job, row, backup_id):
+                if _claim_terminal_cleanup(
+                    operation_id=str(row["operation_id"]),
+                    backup_id=backup_id,
+                    allow_queued=True,
+                ):
+                    _record_terminal_cleanup_result(
+                        str(row["operation_id"]),
+                        {"status": "binding_mismatch", "backup_id": backup_id},
+                    )
+                    changed += 1
+                continue
+            if _claim_terminal_cleanup(operation_id=str(row["operation_id"]), backup_id=backup_id, allow_queued=True):
+                _record_terminal_cleanup_result(
+                    str(row["operation_id"]),
+                    {"status": "already_terminal", "backup_id": backup_id},
+                )
+                changed += 1
+            continue
+        if job_status not in lite_photo_backup.ACTIVE_STATES:
+            continue
+        operation_id = str(row["operation_id"])
+        if not _claim_terminal_cleanup(operation_id, backup_id):
+            continue
+        result = await _request_existing_job_cancellation(
+            row,
+            reason="terminal_operation_cleanup",
+        )
+        _record_terminal_cleanup_result(operation_id, result)
+        changed += 1
+    return changed
 
 
 def _bound_photo_backup_job(row: Any, backup_id: str, *, repeat: bool = False) -> dict[str, Any]:
@@ -2179,4 +2369,5 @@ async def reconcile_operations() -> int:
             fresh = _operation_row(fresh_conn, operation_id)
         if str(fresh["status"] or "") != before or str(fresh["execution_stage"] or "") != stage:
             changed += 1
+    changed += await _reconcile_terminal_operation_cleanup()
     return changed

@@ -55754,6 +55754,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_owner_approved_operations.py"
+      ],
+      "id": "rel:ad36f4d296071558",
+      "source": "reason:interrupted",
+      "target": "test:tests/backend/test_lite_owner_approved_operations.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:ad3e62ae50ea732a",
