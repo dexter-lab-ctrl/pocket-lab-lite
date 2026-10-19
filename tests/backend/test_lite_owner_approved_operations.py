@@ -950,6 +950,68 @@ def test_terminal_operation_retries_deferred_bound_job_cancellation(owner_operat
     assert len(calls) == 2
 
 
+def test_terminal_cleanup_reconciles_initial_and_repeat_bound_jobs(owner_operation_runtime, monkeypatch):
+    runtime = owner_operation_runtime
+    private, _public, _registered = _register(runtime, "terminal-repeat-cleanup-client")
+    _deps, operations = runtime["modules"]
+    operation = _request(
+        runtime,
+        private,
+        "terminal-repeat-cleanup-client",
+        _descriptor("terminal-repeat-cleanup-client", key="terminal-repeat-cleanup-0001"),
+    )
+    initial_backup_id = "photo-0123456789abcdef0123"
+    repeat_backup_id = "photo-fedcba9876543210fedc"
+    _bind_terminal_backup(runtime, operation["operation_id"], initial_backup_id)
+    with runtime["db"][1]() as conn:
+        with runtime["db"][0](conn) as tx:
+            tx.execute(
+                "UPDATE owner_approved_operations SET repeat_backup_id=? WHERE operation_id=?",
+                (repeat_backup_id, operation["operation_id"]),
+            )
+
+    from api_fastapi.services import action_queue, lite_photo_backup
+
+    monkeypatch.setattr(
+        lite_photo_backup,
+        "job_status",
+        lambda value: _active_bound_job(value, status="queued"),
+    )
+    monkeypatch.setattr(
+        lite_photo_backup,
+        "make_cancel_command",
+        lambda node_id, *, reason, backup_id: {
+            "command_id": f"cancel-{backup_id}",
+            "backup_id": backup_id,
+            "node_id": node_id,
+            "idle": False,
+        },
+    )
+    calls = []
+
+    async def submit(_subject, _event_type, command, *, trace_id):
+        calls.append((command, trace_id))
+        return {"status": "queued"}
+
+    monkeypatch.setattr(action_queue, "submit_domain_command", submit)
+
+    assert asyncio.run(operations.reconcile_operations()) == 2
+    assert [item[0]["backup_id"] for item in calls] == [repeat_backup_id, initial_backup_id]
+    with runtime["db"][1]() as conn:
+        row = conn.execute(
+            "SELECT evidence_json FROM owner_approved_operations WHERE operation_id=?",
+            (operation["operation_id"],),
+        ).fetchone()
+    evidence = json.loads(row["evidence_json"])
+    assert evidence["cancellations"][repeat_backup_id]["status"] == "queued"
+    assert evidence["cancellations"][initial_backup_id]["status"] == "queued"
+
+    # A queued cancellation claim suppresses duplicate publishes on the next
+    # watchdog tick for both exact bound jobs.
+    assert asyncio.run(operations.reconcile_operations()) == 0
+    assert len(calls) == 2
+
+
 def test_terminal_cleanup_claim_prevents_concurrent_cancel_publish(owner_operation_runtime, monkeypatch):
     runtime = owner_operation_runtime
     private, _public, _registered = _register(runtime, "terminal-concurrent-client")
