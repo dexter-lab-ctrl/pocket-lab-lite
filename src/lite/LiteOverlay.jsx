@@ -9,6 +9,19 @@ let liteBodyScrollLockCount = 0;
 let liteBodyScrollLockSnapshot = null;
 const liteOverlayEscapeStack = [];
 
+// Keep the legacy theme class on the actual sheet layer for the Rules and
+// Security detail skins that still scope their presentation through it. The
+// class must follow the resolved document theme; hard-coding Daylight here
+// makes a portal look light while the application is in Black mode.
+const LITE_OVERLAY_ROOT_DAYLIGHT_CLASS = 'theme-pocket-lite-daylight lite-overlay-root';
+const LITE_OVERLAY_ROOT_DARK_CLASS = 'theme-pocket-lite-dark lite-overlay-root';
+
+function getLiteOverlayRootClassName() {
+  return document.documentElement.dataset.liteTheme === 'dark'
+    ? LITE_OVERLAY_ROOT_DARK_CLASS
+    : LITE_OVERLAY_ROOT_DAYLIGHT_CLASS;
+}
+
 export function useVisualViewportHeight(open = true) {
   useEffect(() => {
     if (!open || typeof window === 'undefined') return undefined;
@@ -313,7 +326,7 @@ export function LiteSheet({
   if (!open) return null;
   return (
     <LiteOverlayRoot>
-      <div className={`lite-overlay-root ${variantClasses.layer} ${layerClassName}`.trim()} role="presentation" data-lite-overlay-portal="true" data-lite-perf-mode={isLitePerformanceMode() ? 'true' : undefined}>
+      <div className={`${getLiteOverlayRootClassName()} ${variantClasses.layer} ${layerClassName}`.trim()} role="presentation" data-lite-overlay-portal="true" data-lite-perf-mode={isLitePerformanceMode() ? 'true' : undefined}>
         <LiteBackdrop onClose={onClose} label={variantClasses.backdropLabel} className={variantClasses.backdrop} />
         <Surface
           ref={setSurfaceRef}
