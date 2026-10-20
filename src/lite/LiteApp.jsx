@@ -766,6 +766,7 @@ function LiteAppShell() {
           return (
             <button key={item.id} type="button" onPointerEnter={() => warmScreenOnNavIntent(item.id)} onFocus={() => warmScreenOnNavIntent(item.id)} onTouchStart={() => warmScreenOnNavIntent(item.id)} onClick={(event) => commitScreenNavigation(item.id, event)} title={item.label} aria-label={item.label} aria-current={isActive ? 'page' : undefined} className={`pocket-side-button nav-active-rail-item ${isActive ? 'pocket-side-button-active' : ''}`}>
               <Icon className="nav-active-rail-icon h-5 w-5" />
+              <span className="lite-azure-side-label">{item.label}</span>
             </button>
           );
         })}

@@ -100,3 +100,20 @@ body,button,input,select,textarea { font-family: var(--azure-font-ui); }
 @media(prefers-reduced-motion:reduce) {
   .pocket-card-interactive,.pocket-button,.pocket-nav-button,.pocket-side-button {transition:none;transform:none;}
 }
+
+/* Seven-tab desktop rail reuses PR #606 navigation configuration and handlers. */
+@media(min-width:1024px){
+  html[data-lite-theme] .pocket-side-rail {
+    width:196px;align-items:stretch;left:1rem;top:5.2rem;
+    max-height:calc(100dvh - 6.2rem);border-radius:1rem;padding:.6rem;
+  }
+  html[data-lite-theme] .pocket-side-button {
+    display:flex;width:100%;min-height:46px;justify-content:flex-start;
+    gap:.7rem;padding:.55rem .8rem;border-radius:.75rem;
+  }
+  html[data-lite-theme] .pocket-main {padding-left:14.5rem;}
+  html[data-lite-theme] .lite-azure-side-label {font-size:.9rem;font-weight:600;white-space:normal;text-align:left;}
+}
+html[data-lite-theme] .mobile-more-sheet {border-color:var(--azure-border)}
+html[data-lite-theme] .mobile-more-item[aria-current=page] {color:var(--azure-accent)}
+html[data-lite-theme] .lite-home-activity-preview.pocket-card {box-shadow:var(--azure-shadow)}

@@ -1,0 +1,107 @@
+/* Home-only geometry. All colors come from the central Azure Horizon contract. */
+html[data-lite-theme] .lite-home-refined {
+  gap:clamp(.9rem,1.65vw,1.4rem);max-width:1440px;min-width:0;margin-inline:auto;
+}
+html[data-lite-theme] .lite-home-refined .lite-page-header {
+  box-shadow:none;background:transparent;border:0;padding:.3rem 0 .55rem;
+}
+html[data-lite-theme] .lite-home-operational-story {
+  position:relative;min-height:clamp(155px,18vw,200px);padding:clamp(1.15rem,3vw,1.85rem);
+  display:flex;align-items:center;justify-content:space-between;gap:1.4rem;overflow:hidden;
+  border:1px solid var(--azure-border);border-left:3px solid var(--azure-accent);
+  border-radius:var(--azure-radius-card);background:var(--azure-surface);
+  box-shadow:var(--azure-shadow);isolation:isolate;
+}
+html[data-lite-theme] .lite-home-operational-story::after {
+  content:'';position:absolute;right:-7rem;top:-8rem;width:22rem;height:22rem;
+  border-radius:50%;pointer-events:none;z-index:-1;
+  background:radial-gradient(circle,var(--azure-accent-subtle),transparent 68%);
+}
+html[data-lite-theme] .lite-home-operational-story.is-ready {border-left-color:var(--azure-success)}
+html[data-lite-theme] .lite-home-operational-story.is-review,
+html[data-lite-theme] .lite-home-operational-story.is-attention,
+html[data-lite-theme] .lite-home-operational-story.is-danger {border-left-color:var(--azure-warning)}
+html[data-lite-theme] .lite-home-operational-story.is-saved,
+html[data-lite-theme] .lite-home-operational-story.is-stale {border-left-color:var(--azure-neutral)}
+html[data-lite-theme] .lite-home-operational-story .lite-operational-story-copy {max-width:64ch;min-width:0}
+html[data-lite-theme] .lite-home-operational-story .lite-operational-story-copy>strong {
+  font-size:clamp(1.25rem,2.3vw,1.75rem);font-weight:650;line-height:1.25;
+  letter-spacing:-.025em;color:var(--azure-text);
+}
+html[data-lite-theme] .lite-home-operational-story .lite-operational-story-copy>span {
+  font-size:.8rem;font-weight:600;color:var(--azure-accent);text-transform:none;letter-spacing:.02em;
+}
+html[data-lite-theme] .lite-home-section-title h2 {font-weight:600;color:var(--azure-text);letter-spacing:-.015em}
+html[data-lite-theme] .lite-home-section-title p,html[data-lite-theme] .lite-home-muted {color:var(--azure-muted);opacity:1}
+html[data-lite-theme] .lite-home-overview-grid {gap:clamp(.55rem,1.2vw,1rem)}
+html[data-lite-theme] .lite-home-overview-tile.pocket-card {
+  display:flex;flex-direction:row;align-items:center;gap:.7rem;min-height:105px;
+  padding:clamp(.85rem,1.4vw,1.15rem);min-width:0;
+  background:var(--azure-surface);color:var(--azure-text);border:1px solid var(--azure-border);
+  text-align:left;border-radius:var(--azure-radius-card);box-shadow:var(--azure-shadow);
+}
+html[data-lite-theme] .lite-home-overview-tile.pocket-card>svg:first-child {
+  flex:none;width:38px;height:38px;padding:9px;border-radius:.78rem;
+  background:var(--azure-accent-subtle);color:var(--azure-accent);
+}
+html[data-lite-theme] .lite-home-overview-tile.pocket-card>svg:last-child {flex:none;color:var(--azure-muted)}
+html[data-lite-theme] .lite-home-overview-tile strong {font-size:.96rem;font-weight:600;color:var(--azure-text)}
+html[data-lite-theme] .lite-home-overview-tile small {color:var(--azure-muted);opacity:1;line-height:1.4}
+html[data-lite-theme] .lite-home-overview-tile.is-ready>svg:first-child {background:var(--azure-success-subtle);color:var(--azure-success)}
+html[data-lite-theme] .lite-home-overview-tile.is-review>svg:first-child {background:var(--azure-warning-subtle);color:var(--azure-warning)}
+html[data-lite-theme] .lite-home-overview-tile.is-danger>svg:first-child {background:var(--azure-danger-subtle);color:var(--azure-danger)}
+html[data-lite-theme] .lite-home-overview-tile:hover {border-color:var(--azure-strong-border)}
+html[data-lite-theme] .lite-home-lower-grid {
+  display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.9fr);gap:1rem;align-items:start;min-width:0;
+}
+html[data-lite-theme] .lite-home-lower-grid:has(> :only-child) {grid-template-columns:minmax(0,1fr)}
+html[data-lite-theme] .lite-home-activity-preview {
+  display:grid;align-content:start;gap:1rem;padding:clamp(1rem,1.6vw,1.35rem);
+  box-shadow:var(--azure-shadow);min-width:0;
+}
+html[data-lite-theme] .lite-home-activity-latest {
+  background:var(--azure-raised);border:1px solid var(--azure-border);
+  border-radius:.85rem;padding:.8rem;align-items:flex-start;min-width:0;
+}
+html[data-lite-theme] .lite-home-activity-latest>svg {color:var(--azure-accent);flex:none}
+html[data-lite-theme] .lite-home-activity-latest strong {color:var(--azure-text);overflow-wrap:anywhere}
+html[data-lite-theme] .lite-home-activity-latest small {color:var(--azure-muted);opacity:1;overflow-wrap:anywhere}
+html[data-lite-theme] .lite-home-text-action {color:var(--azure-accent);font-weight:600;min-height:44px}
+html[data-lite-theme] .lite-home-workspace-details,
+html[data-lite-theme] .lite-home-activity-details {color:var(--azure-text)}
+html[data-lite-theme] .lite-home-workspace-tabs {
+  background:var(--azure-surface);box-shadow:0 1px 0 var(--azure-border);
+  margin:-.75rem -.75rem 0;padding:.75rem;backdrop-filter:none;
+}
+html[data-lite-theme] .lite-home-workspace-tabs[data-tabs-scrolled=true] {box-shadow:0 2px 8px var(--azure-shadow)}
+html[data-lite-theme] .lite-home-details-nav button {
+  min-height:44px;background:var(--azure-raised);color:var(--azure-text);
+  border:1px solid var(--azure-border);font-weight:500;
+}
+html[data-lite-theme] .lite-home-details-nav button[aria-current="page"] {
+  color:var(--azure-accent);background:var(--azure-selected);border-color:var(--azure-accent);
+  font-weight:650;
+}
+html[data-lite-theme] .lite-home-attention-list {min-width:0;color:var(--azure-text)}
+html[data-lite-theme] .lite-home-attention-list :is(p,small) {overflow-wrap:anywhere}
+html[data-lite-theme] .lite-home-activity-counts>div {background:var(--azure-raised);border-color:var(--azure-border)}
+html[data-lite-theme] .lite-home-activity-counts dd {font-variant-numeric:tabular-nums;font-weight:650}
+@media(max-width:850px){
+  html[data-lite-theme] .lite-home-lower-grid {grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:600px){
+  html[data-lite-theme] .lite-home-operational-story {flex-direction:column;align-items:stretch;min-height:0;padding:1.1rem;gap:1rem}
+  html[data-lite-theme] .lite-home-operational-story::after {width:14rem;height:14rem;right:-5rem;top:-5rem}
+  html[data-lite-theme] .lite-home-overview-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem}
+  html[data-lite-theme] .lite-home-overview-tile.pocket-card {flex-wrap:wrap;min-height:112px;padding:.75rem;gap:.5rem}
+  html[data-lite-theme] .lite-home-overview-tile.pocket-card>svg:first-child {width:32px;height:32px;padding:7px}
+  html[data-lite-theme] .lite-home-overview-tile.pocket-card>svg:last-child {margin-left:auto}
+  html[data-lite-theme] .lite-home-overview-tile.pocket-card>span {flex-basis:100%}
+}
+@media(max-width:355px){
+  html[data-lite-theme] .lite-home-overview-grid {grid-template-columns:minmax(0,1fr)}
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-lite-theme] .lite-home-overview-tile:hover {transform:none}
+  html[data-lite-theme] .lite-home-workspace-details-scroll {scroll-behavior:auto}
+}
