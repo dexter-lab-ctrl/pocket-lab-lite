@@ -31072,6 +31072,36 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-performance.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-visual.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-content-stress.spec.ts",
       "name": "tests/e2e/lite-content-stress.spec.ts",
       "source_refs": [
@@ -34745,6 +34775,9 @@
         "test:tests/e2e/lite-accessibility-states.spec.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
         "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-performance.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-visual.spec.ts",
+        "test:tests/e2e/lite-azure-horizon.spec.ts",
         "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-device-facts.spec.ts",
         "test:tests/e2e/lite-identity-premium-refinement.spec.ts",
@@ -36250,6 +36283,9 @@
         "test:tests/e2e/lite-accessibility-states.spec.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
         "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-performance.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-visual.spec.ts",
+        "test:tests/e2e/lite-azure-horizon.spec.ts",
         "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-device-facts.spec.ts",
         "test:tests/e2e/lite-identity-premium-refinement.spec.ts",
@@ -53099,6 +53135,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-azure-horizon-visual.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-content-stress.spec.ts": [
         {
           "source": "component:app-catalog",
@@ -68455,6 +68497,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-azure-horizon-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-identity-premium-visual.spec.ts",
           "type": "verified_by"
         },
@@ -72934,6 +72980,15 @@
       "id": "rel:016a81ecece12f28",
       "source": "reason:policy_source_unavailable",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-visual.spec.ts"
+      ],
+      "id": "rel:01806e606cbaced1",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-azure-horizon-visual.spec.ts",
       "type": "verified_by"
     },
     {
@@ -109642,9 +109697,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "1d3fb68fe6a9a4f11785e54caf93c6c6f96b3e7227ea60e5b4df69dd963999f2",
+  "source_fingerprint": "7e5404afb146305d20f5f0af138ec4257094c1fde33435819af9a84496a1a787",
   "statistics": {
-    "entity_count": 1423,
+    "entity_count": 1426,
     "entity_type_counts": {
       "adr": 6,
       "api": 256,
@@ -109661,14 +109716,14 @@
       "runtime-topology": 9,
       "subject": 221,
       "table": 89,
-      "test": 275,
+      "test": 278,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 4073,
-    "source_count": 312
+    "relation_count": 4074,
+    "source_count": 315
   }
 }

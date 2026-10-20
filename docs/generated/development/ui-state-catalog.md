@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 0fb64919d54fa0b6476274a896d8d9b94a5b91da9b1fb322824b44504b0f90b0
+source_fingerprint: c6a600e1de76c9ba99f947158ff711d62fdf20091f4b0033caba51dc7e5098df
 schema_revision: 1
 validation_status: generated
 ---
@@ -22,6 +22,17 @@ validation_status: generated
 
 | Story | Tab | Fixture | Viewports | Screenshot | Offline |
 | --- | --- | --- | --- | --- | --- |
+| `pocket-lab-lite-azure-horizon-daylightdesktop` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-daylightdesktop-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-blackdesktop` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-blackdesktop-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-daylightmobile` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-daylightmobile-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-blackmobile` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-blackmobile-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-systempreference` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-systempreference-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-attention` | home | `lifecycle-attention` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-attention-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-saved` | home | `offline-saved` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-saved-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-unavailable` | home | `api-unavailable` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-unavailable-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-loading` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-loading-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-narrow` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-narrow-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-longtext` | home | `lifecycle-attention` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-longtext-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-apps-catalogready` | catalog | `catalog-ready` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-catalogready-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-apps-preparedprojectionstale` | catalog | `app-projection-stale` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-preparedprojectionstale-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-apps-mobile320` | catalog | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-mobile320-{viewport}.png` | fixture-dependent |

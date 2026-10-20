@@ -4688,7 +4688,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 503,
+  "page_count": 504,
   "page_types": [
     "overview",
     "guide",
@@ -4794,6 +4794,29 @@
       "source_or_generator": "architecture/universal-app-platform.md",
       "title": "Universal App Platform",
       "url": "/architecture/universal-app-platform/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-azure-horizon-design-system.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "apps",
+      "generated": false,
+      "id": "page:development/lite-azure-horizon-design-system",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-azure-horizon-design-system.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-azure-horizon-design-system.md",
+      "title": "Azure Horizon — Lite appearance and premium Home",
+      "url": "/development/lite-azure-horizon-design-system/"
     },
     {
       "additional_audiences": [],
@@ -17926,7 +17949,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "5c0d0868d841a7cebc056dfc3327160e503e1eb40b6e58f5b7f1d41caba6f8ea",
+  "source_fingerprint": "32d38384478f98607b24a440d7a0fe9b39146af2af106e1d0e2ce2cb28cac2c8",
   "top_level": [
     "start-here",
     "use",
