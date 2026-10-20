@@ -12,6 +12,8 @@ import {
   pruneLiteRuntimeCaches,
 } from './lib/liteServiceWorkerRuntime.js';
 import './index.css';
+import './lite/theme/azureHorizonTokens.css';
+import './lite/theme/azureHorizon.css';
 
 if (typeof document !== 'undefined') {
   document.documentElement.dataset.litePerfMode = import.meta.env.VITE_POCKETLAB_PERF_TEST === '1'
