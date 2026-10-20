@@ -66,7 +66,15 @@
     "test:recovery:premium:unit": "vitest run src/lite/recovery/recoveryPremiumView.test.js src/lite/recovery/RecoveryJourney.test.jsx src/lite/recovery/RecoveryConfirmSheetLazy.test.jsx",
     "test:recovery:premium:mocked": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-recovery-premium-refinement.spec.ts --project=mocked-desktop --project=mocked-mobile",
     "test:recovery:premium:visual": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-recovery-premium-visual.spec.ts --project=mocked-desktop --project=mocked-mobile",
-    "test:recovery:premium:perf": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-recovery-premium-performance.spec.ts --project=mocked-desktop --project=mocked-mobile"
+    "test:recovery:premium:perf": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-recovery-premium-performance.spec.ts --project=mocked-desktop --project=mocked-mobile",
+    "test:azure:unit": "vitest run src/lite/theme/liteThemeRuntime.test.js src/lite/theme/LiteThemeProvider.test.jsx",
+    "test:azure:home": "vitest run src/lite/LiteHomeScreen.test.jsx src/lite/LiteHomeAzure.test.jsx src/lite/components/HomeActivityDetails.test.jsx",
+    "test:azure:storybook": "npm run build-storybook",
+    "test:azure:mocked": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon.spec.ts --project=mocked-desktop --project=mocked-mobile",
+    "test:azure:a11y": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon.spec.ts --grep 'WCAG AA|200% text' --project=mocked-desktop --project=mocked-mobile",
+    "test:azure:visual": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-visual.spec.ts --project=mocked-desktop --project=mocked-mobile",
+    "test:azure:perf": "VITE_POCKETLAB_PERF_TEST=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-performance.spec.ts --project=mocked-desktop --project=mocked-mobile && npm run check:render-budgets",
+    "test:azure:qualification": "npm run test:azure:unit && npm run test:azure:home && npm run test:azure:storybook && npm run test:azure:mocked && npm run test:azure:visual && npm run test:azure:perf"
   },
   "keywords": [],
   "author": "",
