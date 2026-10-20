@@ -1,14 +1,22 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   LITE_THEME_STORAGE_KEY, applyLiteThemePreference, normalizeLiteThemePreference,
   readLiteThemePreference, resolveLiteTheme, saveLiteThemePreference,
 } from './liteThemeRuntime.js';
 
+beforeEach(() => {
+  const meta = document.createElement('meta');
+  meta.name = 'theme-color';
+  meta.content = '#F4F9FF';
+  document.head.appendChild(meta);
+});
+
 afterEach(() => {
   localStorage.clear();
   document.documentElement.removeAttribute('data-lite-theme');
   document.documentElement.style.colorScheme = '';
+  document.querySelector('meta[name="theme-color"]')?.remove();
   vi.restoreAllMocks();
 });
 

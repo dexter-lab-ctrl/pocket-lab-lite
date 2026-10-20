@@ -8,7 +8,6 @@ import { LiteThemeControl, LiteThemeProvider } from './LiteThemeProvider.jsx';
 
 let prefersDark = false;
 const listeners = new Set();
-const originalMatchMedia = window.matchMedia;
 window.matchMedia = vi.fn(() => ({
   get matches() { return prefersDark; },
   media: '(prefers-color-scheme: dark)',
@@ -23,7 +22,6 @@ afterEach(() => {
   useLiteUiStore.getState().setAppearancePreference('system');
   localStorage.clear();
 });
-afterEach(() => { /* The browser's simulated media state stays isolated per test. */ });
 
 describe('Azure Horizon shared theme + portal', () => {
   it('updates and persists Light/Dark/System through the existing UI-only store', async () => {

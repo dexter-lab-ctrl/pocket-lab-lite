@@ -73,7 +73,7 @@ html[data-lite-theme] .lite-home-workspace-tabs {
   background:var(--azure-surface);box-shadow:0 1px 0 var(--azure-border);
   margin:-.75rem -.75rem 0;padding:.75rem;backdrop-filter:none;
 }
-html[data-lite-theme] .lite-home-workspace-tabs[data-tabs-scrolled=true] {box-shadow:0 2px 8px var(--azure-shadow)}
+html[data-lite-theme] .lite-home-workspace-tabs[data-tabs-scrolled=true] {box-shadow:var(--azure-shadow)}
 html[data-lite-theme] .lite-home-details-nav button {
   min-height:44px;background:var(--azure-raised);color:var(--azure-text);
   border:1px solid var(--azure-border);font-weight:500;

@@ -1,6 +1,8 @@
 import React from 'react';
 import { expect, userEvent, within } from '@storybook/test';
 import '../src/index.css';
+import '../src/lite/theme/azureHorizonTokens.css';
+import '../src/lite/theme/azureHorizon.css';
 import { startPocketLabMocks, worker } from '../src/mocks/browser.js';
 import { deviceFactsScenarioHandlers } from '../src/mocks/deviceFactsScenarios.js';
 import { clearOfflineSafeSnapshots } from '../src/lib/liteOfflineDb.js';
