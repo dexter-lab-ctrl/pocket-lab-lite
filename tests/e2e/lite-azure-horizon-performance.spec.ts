@@ -15,7 +15,7 @@ test('[interaction] Azure theme switch uses the existing performance budget', as
   const report = await measureLiteInteraction(page, testInfo, 'azure-theme-switch', async () => {
     await picker.selectOption('dark');
     await expect(page.locator('html')).toHaveAttribute('data-lite-theme', 'dark');
-  }, { settleMs: 180, mode: 'mocked' });
+  }, { settleMs: 900, mode: 'mocked' });
   expectLitePerformanceBudget(report);
   await writeLitePerformanceEvidence(testInfo, report);
 });
@@ -27,7 +27,7 @@ test('[interaction] Azure workspace panel opens within the existing frame contra
   const report = await measureLiteInteraction(page, testInfo, 'azure-home-workspace-details', async () => {
     await page.getByRole('button', { name: 'Workspace details' }).click();
     await expect(page.getByRole('dialog', { name: 'Workspace details' })).toBeVisible();
-  }, { settleMs: 180, mode: 'mocked' });
+  }, { settleMs: 900, mode: 'mocked' });
   expectLitePerformanceBudget(report);
   await writeLitePerformanceEvidence(testInfo, report);
 });

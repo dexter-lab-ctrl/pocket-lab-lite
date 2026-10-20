@@ -17,6 +17,21 @@ html[data-lite-theme] .lite-home-operational-story::after {
   border-radius:50%;pointer-events:none;z-index:-1;
   background:radial-gradient(circle,var(--azure-accent-subtle),transparent 68%);
 }
+html[data-lite-theme] .lite-home-operational-story .lite-operational-story-copy {
+  display:grid;gap:.35rem;min-width:0;
+}
+html[data-lite-theme] .lite-home-operational-story .lite-operational-story-copy>span {
+  display:block;
+}
+html[data-lite-theme] .lite-home-operational-story .lite-operational-story-actions {
+  display:flex;flex-wrap:wrap;align-content:start;justify-content:flex-end;gap:.5rem;flex:0 0 auto;
+}
+html[data-lite-theme] .lite-home-operational-story .lite-operational-story-action {
+  display:grid;gap:.3rem;justify-items:end;
+}
+html[data-lite-theme] .lite-home-operational-story .lite-operational-story-action small {
+  max-width:14rem;text-align:right;
+}
 html[data-lite-theme] .lite-home-operational-story.is-ready {border-left-color:var(--azure-success)}
 html[data-lite-theme] .lite-home-operational-story.is-review,
 html[data-lite-theme] .lite-home-operational-story.is-attention,
@@ -91,12 +106,19 @@ html[data-lite-theme] .lite-home-activity-counts dd {font-variant-numeric:tabula
 }
 @media(max-width:600px){
   html[data-lite-theme] .lite-home-operational-story {flex-direction:column;align-items:stretch;min-height:0;padding:1.1rem;gap:1rem}
+  html[data-lite-theme] .lite-home-operational-story .lite-operational-story-actions {justify-content:stretch}
+  html[data-lite-theme] .lite-home-operational-story .lite-operational-story-action {justify-items:stretch}
+  html[data-lite-theme] .lite-home-operational-story .lite-operational-story-action .pocket-button {width:100%;justify-content:center}
+  html[data-lite-theme] .lite-home-operational-story .lite-operational-story-action small {max-width:none;text-align:left}
   html[data-lite-theme] .lite-home-operational-story::after {width:14rem;height:14rem;right:-5rem;top:-5rem}
   html[data-lite-theme] .lite-home-overview-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem}
   html[data-lite-theme] .lite-home-overview-tile.pocket-card {flex-wrap:wrap;min-height:112px;padding:.75rem;gap:.5rem}
   html[data-lite-theme] .lite-home-overview-tile.pocket-card>svg:first-child {width:32px;height:32px;padding:7px}
   html[data-lite-theme] .lite-home-overview-tile.pocket-card>svg:last-child {margin-left:auto}
   html[data-lite-theme] .lite-home-overview-tile.pocket-card>span {flex-basis:100%}
+  html[data-lite-theme] .lite-home-workspace-details .lite-action-row {align-items:flex-start;flex-direction:column}
+  html[data-lite-theme] .lite-home-workspace-details .lite-action-row-trailing {width:100%;justify-content:space-between}
+  html[data-lite-theme] .lite-home-workspace-details .lite-action-row-trailing>span {max-width:55%;overflow-wrap:anywhere;text-align:left}
 }
 @media(max-width:355px){
   html[data-lite-theme] .lite-home-overview-grid {grid-template-columns:minmax(0,1fr)}

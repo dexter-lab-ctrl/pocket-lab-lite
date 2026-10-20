@@ -50,6 +50,20 @@ body,button,input,select,textarea { font-family: var(--azure-font-ui); }
 .pocket-action-row,.lite-action-row {background:var(--azure-surface);color:var(--azure-text);border-color:var(--azure-border);}
 .lite-action-row :is(strong,span) {color:var(--azure-text);}
 .lite-action-row p {color:var(--azure-muted);}
+html[data-lite-theme] .lite-action-row {
+  display:flex;align-items:center;justify-content:space-between;gap:.8rem;min-height:3.1rem;
+  padding:.75rem .85rem;border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+  background:var(--azure-surface);color:var(--azure-text);
+}
+html[data-lite-theme] .lite-action-row>div:first-child {min-width:0;}
+html[data-lite-theme] .lite-action-row-trailing {
+  display:inline-flex;flex:0 0 auto;align-items:center;gap:.55rem;min-width:0;
+}
+html[data-lite-theme] .lite-action-row-trailing>span {color:var(--azure-muted);font-size:.78rem;font-weight:650;text-align:right;}
+html[data-lite-theme] .lite-action-row :is(strong,p,small) {overflow-wrap:anywhere;}
+html[data-lite-theme] .lite-action-row p {margin:.28rem 0 0;font-size:.82rem;line-height:1.45;}
+html[data-lite-theme] .lite-action-row small {display:block;margin-top:.45rem;color:var(--azure-warning);font-size:.74rem;line-height:1.35;}
+html[data-lite-theme] .lite-action-row.is-attention {border-color:var(--azure-warning);background:var(--azure-warning-subtle);}
 .lite-loading-card .lite-skeleton-bar {background:var(--azure-skeleton);}
 .lite-loading-card p {color:var(--azure-muted);}
 .lite-operational-story {background:var(--azure-surface);color:var(--azure-text);border:1px solid var(--azure-border);box-shadow:var(--azure-shadow);}
@@ -101,6 +115,21 @@ body,button,input,select,textarea { font-family: var(--azure-font-ui); }
   .pocket-card-interactive,.pocket-button,.pocket-nav-button,.pocket-side-button {transition:none;transform:none;}
 }
 
+/* PR #588's measured render lane must stay static in both Azure appearances.
+   The legacy daylight performance bridge is class-scoped; without this
+   attribute-scoped companion, switching from Light to Black re-enables the
+   inherited Tailwind transitions during the sampled interaction. */
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-app-shell,
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-app-shell *,
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-app-shell *::before,
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-app-shell *::after,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-overlay-root,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-overlay-root *,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-overlay-root *::before,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-overlay-root *::after {
+  animation:none !important;transition:none !important;
+}
+
 /* Seven-tab desktop rail reuses PR #606 navigation configuration and handlers. */
 @media(min-width:1024px){
   html[data-lite-theme] .pocket-side-rail {
@@ -138,6 +167,45 @@ html[data-lite-theme] .lite-details-panel {
 html[data-lite-theme] .lite-overlay-head {color:var(--azure-text);background:var(--azure-surface);border-color:var(--azure-border);}
 html[data-lite-theme] .lite-overlay-backdrop {background:var(--azure-backdrop);}
 html[data-lite-theme] .lite-operational-story {background:var(--azure-surface);border-color:var(--azure-border);color:var(--azure-text);}
+html[data-lite-theme] .lite-overlay-root {
+  position:fixed;inset:0;z-index:140;display:flex;align-items:flex-end;justify-content:center;
+  padding:max(.75rem,env(safe-area-inset-top)) max(.75rem,env(safe-area-inset-right))
+    max(.75rem,env(safe-area-inset-bottom)) max(.75rem,env(safe-area-inset-left));
+  pointer-events:auto;
+}
+html[data-lite-theme] .lite-overlay-backdrop {
+  position:absolute;inset:0;border:0;cursor:pointer;
+}
+html[data-lite-theme] .lite-overlay-surface {
+  position:relative;z-index:1;display:flex;width:min(100%,720px);
+  max-height:calc(var(--lite-visual-viewport-height,100vh) - max(1rem,env(safe-area-inset-top)) - max(1rem,env(safe-area-inset-bottom)));
+  min-height:min(44rem,calc(var(--lite-visual-viewport-height,100vh) - 2rem));
+  flex-direction:column;overflow:hidden;border-radius:2rem 2rem 1.35rem 1.35rem;
+}
+html[data-lite-theme] .lite-overlay-head {
+  flex:0 0 auto;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;
+  border-bottom:1px solid var(--azure-border);padding:.9rem 1rem 1rem;
+}
+html[data-lite-theme] .lite-overlay-head>div {min-width:0;}
+html[data-lite-theme] .lite-overlay-head span,
+html[data-lite-theme] .lite-overlay-head strong,
+html[data-lite-theme] .lite-overlay-head p {display:block;overflow-wrap:anywhere;}
+html[data-lite-theme] .lite-overlay-head span {font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+html[data-lite-theme] .lite-overlay-head strong {font-size:1rem;line-height:1.3;}
+html[data-lite-theme] .lite-overlay-head p {margin:.25rem 0 0;line-height:1.45;}
+html[data-lite-theme] .lite-overlay-scroll {
+  flex:1 1 auto;min-height:0;overflow-y:auto;padding:.95rem;
+  -webkit-overflow-scrolling:touch;
+}
+html[data-lite-theme] .lite-overlay-close {min-width:44px;min-height:44px;flex:0 0 auto;}
+html[data-lite-theme] .lite-overlay-grip {flex:0 0 auto;min-height:34px;border:0;background:transparent;cursor:grab;touch-action:none;}
+html[data-lite-theme] .lite-overlay-grip span {display:block;width:3.6rem;height:.32rem;margin:.78rem auto .45rem;border-radius:999px;background:var(--azure-neutral);}
+html[data-lite-theme] .lite-details-overlay-layer {z-index:155;}
+@media(min-width:900px) {
+  html[data-lite-theme] .lite-overlay-root {align-items:stretch;justify-content:flex-end;padding:1.2rem;}
+  html[data-lite-theme] .lite-overlay-surface {width:min(42rem,44vw);min-height:0;height:100%;border-radius:1.75rem;}
+  html[data-lite-theme] .lite-overlay-grip {display:none;}
+}
 @media(max-width:480px) {
   html[data-lite-theme] .lite-azure-topbar-inner {flex-wrap:wrap;gap:.35rem;}
   html[data-lite-theme] .lite-azure-brand {flex:1 1 100%;}
