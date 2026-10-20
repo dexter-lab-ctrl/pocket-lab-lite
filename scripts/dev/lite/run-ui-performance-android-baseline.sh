@@ -28,7 +28,7 @@ fi
 # Android Chrome occasionally loses the foreground candidate tab between the
 # control page and the measured page; retry the complete qualifier once from
 # a clean evidence directory instead of normalizing a partial run.
-expected_interaction_reports="${LITE_ANDROID_EXPECTED_INTERACTION_REPORTS:-27}"
+expected_interaction_reports="${LITE_ANDROID_EXPECTED_INTERACTION_REPORTS:-28}"
 if ! [[ "$expected_interaction_reports" =~ ^[0-9]+$ ]] || (( expected_interaction_reports < 1 )); then
   fail 'LITE_ANDROID_EXPECTED_INTERACTION_REPORTS must be a positive integer.'
 fi
