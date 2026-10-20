@@ -4,13 +4,15 @@ import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers'
 
 // Mock-only: no NATS, shell, destructive operation or real device mutation.
 async function openHome(page: import('@playwright/test').Page, preference: string, scenario = 'healthy') {
-  await page.addInitScript((value) => localStorage.setItem('pocketlab:appearance', value), preference);
+  await page.addInitScript((value) => {
+    if (!localStorage.getItem('pocketlab:appearance')) localStorage.setItem('pocketlab:appearance', value);
+  }, preference);
   await installScenario(page, scenario);
   await page.goto('/?screen=home');
   await waitForLiteScreenToSettle(page, 'home');
 }
 
-for (const width of [320, 360, 390, 430, 768, 1440]) {
+for (const width of [320, 360, 375, 390, 430, 768, 1024, 1440]) {
   for (const preference of ['light','dark'] as const) {
     test(`Azure Home ${width}px / ${preference}: responsive and truthful`, async ({ page }) => {
       await page.setViewportSize({ width, height: width < 500 ? 780 : 950 });
