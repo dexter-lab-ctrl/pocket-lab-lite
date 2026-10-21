@@ -4688,7 +4688,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 505,
+  "page_count": 506,
   "page_types": [
     "overview",
     "guide",
@@ -4840,6 +4840,29 @@
       "source_or_generator": "development/lite-azure-horizon-design-system.md",
       "title": "Azure Horizon — Lite appearance and premium Home",
       "url": "/development/lite-azure-horizon-design-system/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-azure-horizon-identity-access.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "identity",
+      "generated": false,
+      "id": "page:development/lite-azure-horizon-identity-access",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-azure-horizon-identity-access.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-azure-horizon-identity-access.md",
+      "title": "Azure Horizon — Identity & Access (stabilization and qualification record)",
+      "url": "/development/lite-azure-horizon-identity-access/"
     },
     {
       "additional_audiences": [],
@@ -17972,7 +17995,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "f2c66783123c35987e69d24a851b45d851639c78b06e57b43ed4d082176b4a52",
+  "source_fingerprint": "54b7b071e1dc8b7eb9b8a9dcef02ade1927d2068136a2df99d40272b86539131",
   "top_level": [
     "start-here",
     "use",

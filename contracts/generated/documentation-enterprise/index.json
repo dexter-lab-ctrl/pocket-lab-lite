@@ -40692,7 +40692,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 505,
+      "page_count": 506,
       "top_level": [
         "start-here",
         "use",
@@ -48576,7 +48576,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "cd5e0974b51fbb3d18295e9e6b4c6149582848008d3ccd530eeaf2ea57f93faf",
-        "documentation": "fa3d7bbcac06a25a8c1e279ed18a9e8c8cba01febc7d6e3792b839ff76b1473c",
+        "documentation": "a40327716e0c37643278b4db17fcf3406056b35dc30180c1e44a22aecd955e1f",
         "openapi": "ba5d78f12a18902f47a5c390e7c2ade4a6cc9188176bdee47cf293eada12c549",
         "operational_health": "c758d7d653b42f1860a89c2ab10d285eea8d8f477df13804b883c3b2e3255f8e"
       },
@@ -50512,7 +50512,7 @@
         },
         {
           "path": "package.json",
-          "sha256": "3b8b6d5a9d8e2e51bfd1f52f46ce8191d5017518e50c31f43c4c326712b649df"
+          "sha256": "f40d7acba767070a48947352ec3b4f713eb96b2f35b31d8fa5ddcc3165d461b8"
         },
         {
           "path": "requirements-dev.txt",
@@ -98109,6 +98109,272 @@
       },
       {
         "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:identity:azure:a11y"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:identity:azure:a11y",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:ui:identity:azure:a11y",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Exercise Azure Identity accessibility scenarios",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:identity:azure:geometry"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:identity:azure:geometry",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:ui:identity:azure:geometry",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Exercise desktop movement resizing reset and mobile sheet fallback",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:identity:azure:mocked"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:identity:azure:mocked",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:ui:identity:azure:mocked",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Exercise mocked Personal Enterprise and protected Identity flows",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:identity:azure:perf"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:identity:azure:perf",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:ui:identity:azure:perf",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Collect Identity interaction samples without modifying the 60 FPS gate",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:identity:azure:qualification"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:identity:azure:qualification",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:ui:identity:azure:qualification",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run post-implementation qualification after baseline approval (not an implementation step)",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:identity:azure:unit"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:identity:azure:unit",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:ui:identity:azure:unit",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Exercise source-level identity projection, Manage and shared desktop geometry",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:identity:azure:visual"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:identity:azure:visual",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:ui:identity:azure:visual",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Capture and review unapproved Identity screenshot references with explicit authorization",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
         "audience": "developer/operator",
         "captures_runtime": false,
         "commands": [
@@ -121033,5 +121299,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "33f322b8aed296005f855a87e7fd031b2b8419769462a894d3a1a5de8d739815"
+  "source_fingerprint": "9aeedf74b953bee86e429b23f7d43c2e2e29c2605029928c94d6c9a042661475"
 }

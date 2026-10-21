@@ -1,11 +1,13 @@
-# Azure Horizon — Identity & Access (implementation-only handoff)
+# Azure Horizon — Identity & Access (stabilization and qualification record)
 
 > [!IMPORTANT]
-> **IMPLEMENTED IN SOURCE / UNVALIDATED.** This feature branch was intentionally authored without executing any build, unit test, browser test, lint, accessibility scan, screenshot baseline, benchmark, docs check, or runtime qualification. No approval to merge, release, or deploy is implied.
+> **SOURCE STABILIZED / PARTIALLY QUALIFIED.** The Dev-PC implementation, approved visual references, mocked browser matrix, Storybook, accessibility, geometry and Identity performance gates are verified at the candidate SHA recorded below. Physical Android CDP and privileged live authentication remain blocked or intentionally unexecuted. PR #624 must remain OPEN, DRAFT and NOT MERGED.
 
 ## 1. Objective and current baseline
 
 The source-of-truth baseline is remote `main` at `424d8337f5b16a9a1a3d8b36117cc1543dbbf9c4` (squash integration of [PR #623](https://github.com/dexter-lab-ctrl/pocket-lab-lite/pull/623)). It already includes the Identity profile projection, Owner setup, WebAuthn/passkey flows, sign-in, recovery, sessions, protected confirmations, Owner operations, trusted clients, Enterprise People and Roles, and active/saved-state semantics. This PR is a presentation and regression-coverage change, not a new identity service.
+
+The stabilization candidate was qualified from `feat/azure-horizon-identity-access-ui` at `6e5b10c3e031025de9c98603295fc783558424f1`. The preceding source-fix commits were `62f043c18b2af5284ca2b36be9b10bb40745e433` and `55f67beaa8e82c7ca6245923d9c3a25eeb754f38`; the final live-test expectation correction is `6e5b10c3e031025de9c98603295fc783558424f1`. The feature branch was synchronized with its remote before this record was written.
 
 The goal is a premium, account-first Identity screen without changing FastAPI authority or inventing account facts.
 
@@ -87,9 +89,9 @@ No new dependency, background animation, polling path or server endpoint. The sh
 - `tests/e2e/lite-azure-horizon-identity-performance.spec.ts`: first paint, Manage and section interaction sampling; existing performance gates remain separate.
 - `src/lite/LiteIdentity.stories.jsx`: deterministic Azure Black, Daylight, System, mobile, enlarged text, protected/Enterprise variants.
 
-**DEFINED — BASELINE CAPTURE AND APPROVAL DEFERRED.** New screenshots are not approved golden artifacts.
+**VERIFIED — HUMAN BASELINE APPROVAL.** The requested “snapshot does not exist” gap was resolved by updating every affected snapshot reference after visual review. This includes 100 new Azure Identity references and 70 refreshed existing Lite visual references across the Identity, visual-state and overlay suites. Black and Daylight were reviewed separately, including desktop/mobile, Manage, moved/resized, protected confirmation and 200% text cases. No recovery code or secret appears in the approved artifacts. The loaded-state marker was added after the first candidate exposed an incorrect lazy skeleton capture; the affected mobile reference was regenerated after the fix.
 
-## 19. Task/npm entry points — NOT RUN / DEFERRED
+## 19. Task/npm entry points and executed results
 
 ```bash
 npm run test:identity:azure:unit
@@ -107,11 +109,36 @@ npm run build
 task lite:check
 ```
 
-The documentation platform's generated contracts, screenshots and navigation indexes may require regeneration by the later stabilization agent. Do not promote generated baselines without human review.
+The focused results at `6e5b10c3e031025de9c98603295fc783558424f1` were:
+
+| Gate | Result |
+| --- | --- |
+| `npm run test:identity:premium:unit` | PASS — 27/27 |
+| `npm run test:identity:azure:unit` | PASS — 32/32 |
+| `npm run test:identity:premium:mocked` | PASS — 46/46 |
+| `npm run test:identity:azure:mocked` | PASS — 116/116 |
+| `npm run test:identity:azure:geometry` | PASS — 20/20 |
+| `npm run test:apps:azure:geometry` | PASS — 40/40 |
+| `npm run test:identity:azure:a11y` | PASS — 8/8 |
+| `npm run test:identity:azure:perf` | PASS — 12/12 |
+| `npm run test:identity:azure:visual` | PASS — 96/96 |
+| `npm run test:azure:storybook` | PASS |
+| `npm run build-storybook` | PASS — Storybook 8.6.18, 2,332 modules |
+| `npm run test:a11y:states` | PASS — 36/36 |
+| `npm run test:mock-regression` | PASS — all constituent suites passed; intentional skips retained |
+| `POCKETLAB_BUILD_ID=<candidate> POCKETLAB_UI_PERF_CANDIDATE=1 npm run build` | PASS — Vite 6.4.3, exact SHA marker present |
+
+The broad `npm run test:perf` gate remains FAIL for three pre-existing, non-Identity Apps/Devices measurements: two Devices nested-details React commit p95 samples and one mobile Home-to-Devices transition. The Identity-specific performance gate passed, thresholds were not changed, and no unrelated Apps/Devices source was altered. Repository-wide `npm run lint` is not runnable because no ESLint configuration exists; `npm run format:check` reports existing repository-wide formatting/parser failures, including `docs/generated/schemaspy/anomalies.html`. These are recorded as repository-gate limitations, not hidden.
+
+The documentation platform's generated contracts, screenshots and navigation indexes are regenerated only after source/runtime qualification, as required by the execution runbook.
 
 ## 20. Limitations, risk and qualification
 
-**[UNVALIDATED]** Source-authored UI may have visual/semantic regressions until build/Playwright/Axe and physical Android evidence. **[UNVALIDATED]** WCAG AA, 200% scaling, nested focus and pointer capture, and 60fps behavior are targets, not certified outcomes. **[DEFERRED]** exact-head CI triage, Azure contrast sampling, browser/platform WebAuthn, live Owner/Admin role authorization, Android/Termux PWA and mock screenshot approval.
+**VERIFIED on Dev-PC:** source build, mocked browser behavior, approved Black/Daylight references, accessibility assertions, geometry, Storybook and Identity performance. The matrix covers 320/360/375/390/430/768/1024/1280/1440 layouts where defined, 200% text, protected confirmations, Enterprise state projections and portal-mounted sheets.
+
+**BLOCKED or intentionally limited:** physical Android CDP could not start because the Windows CDP bridge was unavailable (`npm run check:perf:android-cdp` exited 1: `curl: (28) Connection timed out ... 172.19.0.1:19222`; the supported PowerShell preparation exited 1 because it requires an elevated PowerShell window). Live read-only candidate UI reached the Server Phone through the repository-owned loopback tunnel: the first run passed 3/8 and the retry passed 6/8, but mobile read-heavy capture/recovery encountered repeated candidate-proxy 502 responses/timeouts. A bounded endpoint retry returned 200 for status, release, identity, recovery summary and security freshness, and the unauthenticated Enterprise access response was the expected 401. This is runtime-load evidence, not a claim of authenticated production qualification.
+
+Privileged authentication and protected-operation execution were not run against the production phone. The isolated Dev-PC harness/backend tests passed 87 tests and the Identity/Enterprise backend contract tests passed 34 tests. The phone harness remained disabled with zero active sessions and zero principals; the Dev-PC harness could not start because no local qualification API was running. No production Owner credential, auth bypass, browser-held secret or synthetic principal was used.
 
 The follow-up stabilization sequence should run source build/unit first, then mocked state/auth/geometry, Axe/contrast, visual reference approval, existing PR #588 performance gates, docs and full repository gates; live/physical qualification requires explicit authorization. CI failures were not investigated in this session.
 
@@ -141,20 +168,27 @@ Desktop media breakpoint is inherited from shared Apps/Devices geometry (701px).
 
 ## 27. First-paint and render metrics
 
-The new performance spec records first paint, Manage open, section switching and keyboard movement for synthetic scenarios only. No thresholds or results are changed; PR #588 remains authoritative.
+The new performance spec records first paint, Manage open, section switching and keyboard movement for synthetic scenarios only. Identity performance passed 12/12 and no thresholds or results were changed; PR #588 remains authoritative. The broad legacy performance gate retains the three non-Identity hard failures listed in section 19.
 
 ## 28. Baseline management
 
-All new `toHaveScreenshot` scenarios intentionally have no approved PNG files. Human approval of Black/Daylight, mobile/desktop, signed-out, protected dialog and moved/resized cases is a later gate. No browser-generated secret is included in a fixture.
+All new `toHaveScreenshot` scenarios now have reviewed PNG references. Human approval was explicitly supplied for this execution. Black/Daylight, mobile/desktop, signed-out, protected dialog, moved/resized and 200% cases were reviewed; the lazy-loading marker fix was applied before the final 96/96 Identity visual run. No browser-generated secret is included in a fixture.
 
 ## 29. CI and generated documentation
 
-CI can trigger automatically after push but must not be inspected or rerun in this implementation-only session. Generated docs, navigation metadata and contracts must be assessed and refreshed as needed after source stabilization, with source truth preserved.
+CI is inspected against the final pushed SHA after the documentation gate. Generated docs, navigation metadata and contracts are assessed and refreshed after source stabilization, with source truth preserved. Historical pre-stabilization run `39644380456` is not evidence for the final SHA: its isolated-devpc job passed, while its UI-performance and quick-and-docs jobs failed.
 
 ## 30. Safety gaps and deferred evidence
 
-**[UNVALIDATED]** Check owner/passkey challenge cancellation, backend 428 step-up, empty/missing session projections, revoked sessions, stale approvals, mode preview sign-out, focus return and portal theme inheritance in real browsers. Contrast, a11y, performance and Android behavior remain unproven.
+**VERIFIED in mocked/isolated coverage:** missing projections remain unavailable rather than zero, recovery codes are ephemeral, portal sheets inherit the selected Azure root, nested confirmations retain focus ownership, and browser-side approval is not introduced. **NOT RUN against production:** Owner setup, WebAuthn registration, passkey rename/revocation, password change, recovery-code generation and Enterprise role mutations, because the Server Phone is production and the no-mutation rule prohibits those writes. Their isolated contract and harness tests passed as recorded above.
 
 ## 31. Final disposition
 
-This is an OPEN DRAFT source implementation, not a qualified production release. No merge, tag, `dist.zip`, or Server Phone change is authorized.
+This is an OPEN DRAFT stabilized candidate, not a qualified production release. No merge, tag, `dist.zip`, deployment, or Server Phone change is authorized. The remaining physical Android and sustained live mobile read-load limitations must remain visible in PR #624.
+
+## 32. Security and runtime preservation record
+
+- Server Phone source, checkout, PM2 configuration, Caddy, NATS, Tailscale and persistent identity records were not modified.
+- The phone remained on its recorded main-based runtime; only read-only SSH inspection, health/readiness checks, the repository-owned runtime resilience check and the fixed loopback candidate tunnel were used.
+- The candidate server served the exact feature SHA, proxied only read-oriented `/api/lite/*` paths, rejected writes and never proxied the harness namespace.
+- FastAPI remained authoritative. No frontend permission grant, production authentication bypass, private key, recovery code, session cookie or challenge secret was printed or stored in evidence.

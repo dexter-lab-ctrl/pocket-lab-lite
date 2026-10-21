@@ -16719,6 +16719,28 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-azure-horizon-identity-performance.spec.ts": [
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts": [
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-azure-horizon-identity.spec.ts": [
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-azure-horizon-visual.spec.ts": [
         {
           "source": "reason:disabled",
@@ -27443,6 +27465,18 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-azure-horizon-identity-performance.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-azure-horizon-identity.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-content-stress.spec.ts",
           "type": "verified_by"
         },
@@ -32097,6 +32131,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-azure-horizon-visual.spec.ts",
           "type": "verified_by"
         },
@@ -36357,6 +36395,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e073fe7680ca1467760985617e110b7879592ecf23c8b9be2f339dec7eecb400"
+    "source_fingerprint": "bde9da50b45671956b590720765e1803467b880fde8e1df394b280a4bcf7716d"
   }
 }

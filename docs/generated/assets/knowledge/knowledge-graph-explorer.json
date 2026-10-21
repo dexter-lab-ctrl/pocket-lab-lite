@@ -15234,6 +15234,39 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-identity-performance.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-identity-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-identity-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-identity-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-identity.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-identity.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-identity.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-azure-horizon-performance.spec.ts",
       "name": "tests/e2e/lite-azure-horizon-performance.spec.ts",
       "source_refs": [
@@ -28913,6 +28946,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-azure-horizon-identity-visual.spec.ts"
+      ],
+      "id": "rel:34fa3d1ccc3a70a9",
+      "source": "domain:identity",
+      "target": "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:35013087dd180b70",
@@ -38016,6 +38063,20 @@
       "id": "rel:5aa39032a2c3cc0d",
       "source": "reason:fault_control_denied",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-identity-visual.spec.ts"
+      ],
+      "id": "rel:5aab16df395c2261",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
       "type": "verified_by"
     },
     {
@@ -55904,6 +55965,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-azure-horizon-identity.spec.ts"
+      ],
+      "id": "rel:ad3c650ce79bec40",
+      "source": "domain:identity",
+      "target": "test:tests/e2e/lite-azure-horizon-identity.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:ad3e62ae50ea732a",
@@ -57303,6 +57378,20 @@
       "source": "component:node-agent",
       "target": "subject:pocketlab.events.fleet.node_left",
       "type": "publishes"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-identity-performance.spec.ts"
+      ],
+      "id": "rel:b3790e63ccb8442a",
+      "source": "domain:identity",
+      "target": "test:tests/e2e/lite-azure-horizon-identity-performance.spec.ts",
+      "type": "verified_by"
     },
     {
       "derivation": {
