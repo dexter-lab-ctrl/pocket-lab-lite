@@ -15201,6 +15201,39 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-apps-performance.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-apps-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-apps-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-apps-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-apps.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-apps.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-apps.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-azure-horizon-performance.spec.ts",
       "name": "tests/e2e/lite-azure-horizon-performance.spec.ts",
       "source_refs": [
@@ -17732,6 +17765,20 @@
       "id": "rel:04d47819b5b4fe40",
       "source": "reason:assurance_orphaned_child_reconciled",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-apps-visual.spec.ts"
+      ],
+      "id": "rel:04e01ea873b4f65e",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
       "type": "verified_by"
     },
     {
@@ -26388,6 +26435,20 @@
       "id": "rel:28f1e9694a8fec87",
       "source": "api:get:/api/lite/apps/{app_id}/recovery",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-apps-visual.spec.ts"
+      ],
+      "id": "rel:28f5819aa5e11a26",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
       "type": "verified_by"
     },
     {
@@ -43074,6 +43135,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-azure-horizon-apps.spec.ts"
+      ],
+      "id": "rel:718c07656afcdb47",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-azure-horizon-apps.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:719cedd7deb88cbc",
@@ -46401,6 +46476,20 @@
       "id": "rel:80f7b1680a06c613",
       "source": "reason:protected_server_host",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-apps-performance.spec.ts"
+      ],
+      "id": "rel:80fac179e4d65644",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-azure-horizon-apps-performance.spec.ts",
       "type": "verified_by"
     },
     {

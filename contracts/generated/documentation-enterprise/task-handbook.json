@@ -9618,6 +9618,308 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
+        "npm run test:apps:azure:a11y"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:apps:azure:a11y",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:apps:azure:a11y",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run Azure Apps Light/Dark, Axe and keyboard checks",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:apps:azure:geometry"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:apps:azure:geometry",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:apps:azure:geometry",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run Apps and Devices shared desktop Manage movement/regression checks",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:apps:azure:mocked"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:apps:azure:mocked",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:apps:azure:mocked",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run Azure Apps mocks, lifecycle, responsive and desktop panel interactions",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:apps:azure:perf"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:apps:azure:perf",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:apps:azure:perf",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run supplemental interaction samples with PR 588 thresholds unchanged",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:apps:azure:qualification"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:apps:azure:qualification",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:apps:azure:qualification",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run Azure Apps source and browser qualification; visual separately gated",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:apps:azure:unit"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:test:apps:azure:unit",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:apps:azure:unit",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run Azure Apps catalog and shared geometry unit checks",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:apps:azure:visual"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:apps:azure:visual",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:apps:azure:visual",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Compare Azure Apps visuals after owner-approved baseline capture",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
         "npm run test:azure:a11y"
       ],
       "dependencies": [

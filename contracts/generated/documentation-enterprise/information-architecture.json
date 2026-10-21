@@ -4688,7 +4688,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 504,
+  "page_count": 505,
   "page_types": [
     "overview",
     "guide",
@@ -4794,6 +4794,29 @@
       "source_or_generator": "architecture/universal-app-platform.md",
       "title": "Universal App Platform",
       "url": "/architecture/universal-app-platform/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-azure-horizon-apps-refinement.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "apps",
+      "generated": false,
+      "id": "page:development/lite-azure-horizon-apps-refinement",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-azure-horizon-apps-refinement.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-azure-horizon-apps-refinement.md",
+      "title": "Azure Horizon Apps — implementation and deferred qualification",
+      "url": "/development/lite-azure-horizon-apps-refinement/"
     },
     {
       "additional_audiences": [],
@@ -17949,7 +17972,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "32d38384478f98607b24a440d7a0fe9b39146af2af106e1d0e2ce2cb28cac2c8",
+  "source_fingerprint": "f2c66783123c35987e69d24a851b45d851639c78b06e57b43ed4d082176b4a52",
   "top_level": [
     "start-here",
     "use",
