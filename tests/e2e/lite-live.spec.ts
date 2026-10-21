@@ -245,7 +245,13 @@ test.describe('Pocket Lab Lite live read-only smoke', () => {
   test(
     'Caddy and FastAPI render every current Lite tab without write actions',
     async ({ page }) => {
-      const failed = watchApiFailures(page, { allowReadDegraded: true });
+      const failed = watchApiFailures(page, {
+        allowReadDegraded: true,
+        // Enterprise access is deliberately auth-gated. This read-only
+        // candidate probe has no synthetic Owner bridge, so the Server Phone
+        // may correctly return 401 without indicating a runtime failure.
+        allowExpectedUnauthorizedPaths: ['/api/lite/enterprise/access'],
+      });
 
       const statusResponse = page.waitForResponse(
         (response) =>
