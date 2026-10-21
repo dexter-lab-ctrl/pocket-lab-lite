@@ -23,24 +23,59 @@ export async function installScenario(page: Page, scenario = 'healthy') {
   }, scenario);
 }
 
-export function watchApiFailures(page: Page) {
+type ApiFailureWatchOptions = {
+  allowReadDegraded?: boolean;
+  onReadDegraded?: () => void;
+  allowExpectedUnauthorizedPaths?: readonly string[];
+};
+
+export function watchApiFailures(page: Page, options: ApiFailureWatchOptions = {}) {
   const failures: string[] = [];
+  const expectedReadDegradedUrls = new Set<string>();
+  const expectedUnauthorizedUrls = new Set<string>();
+  const expectedUnauthorizedPaths = new Set(options.allowExpectedUnauthorizedPaths || []);
+  const pathname = (value: string) => {
+    try {
+      return new URL(value).pathname;
+    } catch (_error) {
+      return '';
+    }
+  };
   page.on('console', (message) => {
     if (message.type() !== 'error') return;
     const text = message.text();
     const locationUrl = message.location().url || '';
     const isGenericResource404 = /^Failed to load resource: the server responded with a status of 404/i.test(text);
+    const isExpectedReadDegraded = options.allowReadDegraded
+      && expectedReadDegradedUrls.has(locationUrl)
+      && /status of 5\d\d/i.test(text);
+    const isExpectedUnauthorized = expectedUnauthorizedUrls.has(locationUrl)
+      || (Boolean(locationUrl) && expectedUnauthorizedPaths.has(pathname(locationUrl)) && /status of 401/i.test(text));
 
     // API HTTP failures are recorded with their URL by the response/request listeners below.
     // Chromium's duplicate generic resource console entry has no actionable URL, so keeping it
     // would turn unrelated assets such as favicon/manifest probes into false Lite API failures.
-    if (isGenericResource404 && !locationUrl.includes('/api/lite/')) return;
+    if (isExpectedReadDegraded || isExpectedUnauthorized || (isGenericResource404 && !locationUrl.includes('/api/lite/'))) return;
 
     failures.push(`CONSOLE ${locationUrl ? `${locationUrl} ` : ''}${text}`);
   });
   page.on('pageerror', (error) => failures.push(`PAGEERROR ${error.message}`));
   page.on('response', (response) => {
     if (!response.url().includes('/api/lite/')) return;
+    const headers = response.headers();
+    const isExpectedReadDegraded = options.allowReadDegraded
+      && response.status() >= 500
+      && headers['x-pocketlab-read-degraded'] === 'true'
+      && headers['x-pocketlab-refresh-pending'] === 'true';
+    if (isExpectedReadDegraded) {
+      expectedReadDegradedUrls.add(response.url());
+      options.onReadDegraded?.();
+      return;
+    }
+    if (response.status() === 401 && expectedUnauthorizedPaths.has(pathname(response.url()))) {
+      expectedUnauthorizedUrls.add(response.url());
+      return;
+    }
     if (response.status() >= 400) failures.push(`${response.status()} ${response.url()}`);
   });
   page.on('requestfailed', (request) => {
@@ -80,7 +115,16 @@ export async function openTab(page: Page, labelOrScreenId: string, explicitScree
 }
 
 
-export async function waitForLiteScreenToSettle(page: Page, screenId: string, options: { timeoutMs?: number; stableSamples?: number; intervalMs?: number } = {}) {
+export async function waitForLiteScreenToSettle(
+  page: Page,
+  screenId: string,
+  options: {
+    timeoutMs?: number;
+    stableSamples?: number;
+    intervalMs?: number;
+    allowLoadingState?: boolean | (() => boolean);
+  } = {},
+) {
   const timeoutMs = options.timeoutMs ?? 15_000;
   const stableSamples = options.stableSamples ?? 4;
   const intervalMs = options.intervalMs ?? 250;
@@ -129,7 +173,10 @@ export async function waitForLiteScreenToSettle(page: Page, screenId: string, op
     });
 
     const busyCount = Number(signature.split(':').at(-1) || '0');
-    if (signature === previous && busyCount === 0) {
+    const allowLoadingState = typeof options.allowLoadingState === 'function'
+      ? options.allowLoadingState()
+      : options.allowLoadingState === true;
+    if (signature === previous && (busyCount === 0 || allowLoadingState)) {
       consecutive += 1;
       if (consecutive >= stableSamples) {
         // Recovery's mocked service-worker projection can deliver its final

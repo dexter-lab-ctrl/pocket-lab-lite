@@ -97,6 +97,7 @@ import {
 } from './LiteUi.jsx';
 import { LiteConsequenceSummary, LiteFreshness } from './LiteUx.jsx';
 import DeviceActionPortal from './devices/DeviceActionPortal.jsx';
+import { useDesktopManageGeometry } from './components/useDesktopManageGeometry.js';
 import LiteVirtualList from './components/LiteVirtualList.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 import { loadDeviceCard } from './devices/devicesPreload.js';
@@ -139,6 +140,7 @@ function DeviceFleetList(props) {
 
 const loadDeviceDetails = () => import('./devices/DeviceDetailsLazy.jsx');
 const DeviceDetailsLazy = React.lazy(loadDeviceDetails);
+const MemoDeviceDetailsLazy = React.memo(DeviceDetailsLazy);
 const DeviceModelPickerLazy = React.lazy(() => import('./devices/DeviceModelPickerLazy.jsx'));
 const DEVICE_DETAILS_BODY_PERF_DELAY_MS = 700;
 
@@ -247,53 +249,16 @@ function toggleDeviceDetails(deviceKey) {
   store.setActiveDeviceDetailsId(store.activeDeviceDetailsId === deviceKey ? '' : deviceKey);
 }
 
-const DEVICE_DETAILS_PANEL_MEDIA_QUERY = '(min-width: 701px)';
-const DEVICE_DETAILS_PANEL_MARGIN = 16;
-const DEVICE_DETAILS_PANEL_MIN_WIDTH = 360;
-const DEVICE_DETAILS_PANEL_MIN_HEIGHT = 360;
-
-function clampDeviceDetailsGeometry(geometry = {}) {
-  if (typeof window === 'undefined') return geometry;
-  const viewportWidth = Math.max(1, window.innerWidth);
-  const viewportHeight = Math.max(1, window.innerHeight);
-  const maxWidth = Math.max(DEVICE_DETAILS_PANEL_MIN_WIDTH, viewportWidth - DEVICE_DETAILS_PANEL_MARGIN * 2);
-  const maxHeight = Math.max(DEVICE_DETAILS_PANEL_MIN_HEIGHT, viewportHeight - DEVICE_DETAILS_PANEL_MARGIN * 2);
-  const width = Math.min(maxWidth, Math.max(DEVICE_DETAILS_PANEL_MIN_WIDTH, Number(geometry.width) || maxWidth));
-  const height = Math.min(maxHeight, Math.max(DEVICE_DETAILS_PANEL_MIN_HEIGHT, Number(geometry.height) || maxHeight));
-  return {
-    left: Math.min(Math.max(DEVICE_DETAILS_PANEL_MARGIN, Number(geometry.left) || DEVICE_DETAILS_PANEL_MARGIN), viewportWidth - width - DEVICE_DETAILS_PANEL_MARGIN),
-    top: Math.min(Math.max(DEVICE_DETAILS_PANEL_MARGIN, Number(geometry.top) || DEVICE_DETAILS_PANEL_MARGIN), viewportHeight - height - DEVICE_DETAILS_PANEL_MARGIN),
-    width,
-    height,
-  };
-}
-
-function defaultDeviceDetailsGeometry() {
-  if (typeof window === 'undefined') return null;
-  const width = Math.min(560, window.innerWidth - DEVICE_DETAILS_PANEL_MARGIN * 2);
-  const height = Math.min(Math.max(480, window.innerHeight * 0.82), window.innerHeight - DEVICE_DETAILS_PANEL_MARGIN * 2);
-  return clampDeviceDetailsGeometry({
-    left: window.innerWidth - width - DEVICE_DETAILS_PANEL_MARGIN,
-    top: Math.max(DEVICE_DETAILS_PANEL_MARGIN, (window.innerHeight - height) / 2),
-    width,
-    height,
-  });
-}
-
 function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
   const detailsDeviceId = useLiteUiStore((state) => state.activeDeviceDetailsId);
   const setDeviceModelPickerId = useLiteUiStore((state) => state.setDeviceModelPickerId);
-  const detailsPanelRef = useRef(null);
-  const panelInteractionRef = useRef(null);
-  const panelMoveFrameRef = useRef(null);
-  const panelMovePendingRef = useRef(null);
   const [detailsBodyReady, setDetailsBodyReady] = useState(false);
-  const [desktopPanel, setDesktopPanel] = useState(false);
-  const [panelGeometry, setPanelGeometry] = useState(null);
   const activeDetailsDevice = useMemo(
     () => devices.find((device) => String(device?.id || device?.name || '') === detailsDeviceId) || null,
     [devices, detailsDeviceId],
   );
+  const { panelRef: detailsPanelRef, desktopPanel, panelStyle, announcement, reset: resetPanelGeometry,
+    startPanelInteraction, adjustPanelWithKeyboard } = useDesktopManageGeometry({ open: Boolean(activeDetailsDevice) });
 
   useEffect(() => {
     if (!activeDetailsDevice) {
@@ -308,116 +273,18 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
     return () => window.cancelAnimationFrame(frame);
   }, [activeDetailsDevice]);
 
-  useEffect(() => {
-    if (!activeDetailsDevice || typeof window === 'undefined') {
-      setDesktopPanel(false);
-      setPanelGeometry(null);
-      return undefined;
-    }
-    const media = window.matchMedia(DEVICE_DETAILS_PANEL_MEDIA_QUERY);
-    const applyMedia = (matches) => {
-      setDesktopPanel(matches);
-      setPanelGeometry(matches ? (previous) => previous || defaultDeviceDetailsGeometry() : null);
-    };
-    applyMedia(media.matches);
-    const onMediaChange = (event) => applyMedia(event.matches);
-    media.addEventListener?.('change', onMediaChange);
-    return () => media.removeEventListener?.('change', onMediaChange);
-  }, [activeDetailsDevice?.id]);
 
-  useEffect(() => {
-    if (!activeDetailsDevice || typeof window === 'undefined') return undefined;
-    const onResize = () => setPanelGeometry((previous) => previous ? clampDeviceDetailsGeometry(previous) : previous);
-    window.addEventListener('resize', onResize, { passive: true });
-    return () => window.removeEventListener('resize', onResize);
-  }, [activeDetailsDevice?.id]);
-
-  const schedulePanelGeometry = useCallback((nextGeometry) => {
-    panelMovePendingRef.current = clampDeviceDetailsGeometry(nextGeometry);
-    if (panelMoveFrameRef.current !== null) return;
-    panelMoveFrameRef.current = window.requestAnimationFrame(() => {
-      panelMoveFrameRef.current = null;
-      if (panelMovePendingRef.current) setPanelGeometry(panelMovePendingRef.current);
-      panelMovePendingRef.current = null;
-    });
-  }, []);
-
-  const stopPanelInteraction = useCallback(() => {
-    const interaction = panelInteractionRef.current;
-    interaction?.cleanup?.();
-    panelInteractionRef.current = null;
-    if (panelMoveFrameRef.current !== null) {
-      window.cancelAnimationFrame(panelMoveFrameRef.current);
-      panelMoveFrameRef.current = null;
-    }
-    panelMovePendingRef.current = null;
-    detailsPanelRef.current?.classList.remove('is-interacting');
-  }, []);
-
-  const startPanelInteraction = useCallback((kind, event) => {
-    if (!desktopPanel || event.button !== 0 || !detailsPanelRef.current) return;
-    event.preventDefault();
-    const rect = detailsPanelRef.current.getBoundingClientRect();
-    const base = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
-    const pointerId = event.pointerId;
-    const onMove = (moveEvent) => {
-      if (moveEvent.pointerId !== pointerId) return;
-      const deltaX = moveEvent.clientX - event.clientX;
-      const deltaY = moveEvent.clientY - event.clientY;
-      schedulePanelGeometry(kind === 'move'
-        ? { ...base, left: base.left + deltaX, top: base.top + deltaY }
-        : { ...base, width: base.width + deltaX, height: base.height + deltaY });
-    };
-    const cleanup = () => {
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-      window.removeEventListener('pointercancel', onUp);
-    };
-    const onUp = (upEvent) => {
-      if (upEvent.pointerId !== pointerId) return;
-      cleanup();
-      panelInteractionRef.current = null;
-      detailsPanelRef.current?.classList.remove('is-interacting');
-    };
-    panelInteractionRef.current = { cleanup };
-    detailsPanelRef.current.classList.add('is-interacting');
-    window.addEventListener('pointermove', onMove, { passive: true });
-    window.addEventListener('pointerup', onUp, { passive: true });
-    window.addEventListener('pointercancel', onUp, { passive: true });
-  }, [desktopPanel, schedulePanelGeometry]);
-
-  const adjustPanelWithKeyboard = useCallback((kind, event) => {
-    if (!desktopPanel || !panelGeometry) return;
-    const step = event.shiftKey ? 64 : 16;
-    let next = panelGeometry;
-    if (event.key === 'Home') {
-      next = kind === 'move' ? defaultDeviceDetailsGeometry() : { ...panelGeometry, ...defaultDeviceDetailsGeometry() };
-    } else if (kind === 'move') {
-      const delta = {
-        ArrowLeft: { left: -step }, ArrowRight: { left: step },
-        ArrowUp: { top: -step }, ArrowDown: { top: step },
-      }[event.key];
-      if (!delta) return;
-      next = { ...panelGeometry, ...delta };
-    } else {
-      const delta = {
-        ArrowLeft: { width: panelGeometry.width - step }, ArrowRight: { width: panelGeometry.width + step },
-        ArrowUp: { height: panelGeometry.height - step }, ArrowDown: { height: panelGeometry.height + step },
-      }[event.key];
-      if (!delta) return;
-      next = { ...panelGeometry, ...delta };
-    }
-    event.preventDefault();
-    setPanelGeometry(clampDeviceDetailsGeometry(next));
-  }, [desktopPanel, panelGeometry]);
-
-  useEffect(() => () => stopPanelInteraction(), [stopPanelInteraction]);
 
   const closeDeviceDetails = useCallback(() => {
     const trigger = detailsButtonRefs.current.get(detailsDeviceId);
     useLiteUiStore.getState().setActiveDeviceDetailsId('');
     window.requestAnimationFrame(() => trigger?.focus?.({ preventScroll: true }));
   }, [detailsButtonRefs, detailsDeviceId]);
+
+  const chooseDeviceModel = useCallback(
+    () => setDeviceModelPickerId(activeDetailsDevice?.id),
+    [activeDetailsDevice?.id, setDeviceModelPickerId],
+  );
 
   useEffect(() => {
     if (!activeDetailsDevice || !detailsPanelRef.current) return undefined;
@@ -439,14 +306,6 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
   }, [activeDetailsDevice, closeDeviceDetails]);
 
   if (!activeDetailsDevice) return null;
-  const panelStyle = desktopPanel && panelGeometry ? {
-    left: `${panelGeometry.left}px`,
-    top: `${panelGeometry.top}px`,
-    width: `${panelGeometry.width}px`,
-    height: `${panelGeometry.height}px`,
-    right: 'auto',
-    bottom: 'auto',
-  } : undefined;
   return (
     <DeviceActionPortal>
       <div
@@ -470,6 +329,8 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
               <Move className="h-4 w-4" aria-hidden="true" />
             </button>
             <span>Desktop panel</span>
+            <button type="button" className="lite-device-details-panel-tool" aria-label="Reset device details panel position and size" onClick={resetPanelGeometry}>Reset</button>
+            <span className="sr-only" role="status" aria-live="polite">{announcement}</span>
             <button
               type="button"
               className="lite-device-details-panel-tool is-resize"
@@ -485,10 +346,10 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
         ) : null}
         {detailsBodyReady ? (
           <Suspense fallback={<GlassCard className="lite-device-details-panel"><p>Loading device details…</p></GlassCard>}>
-            <DeviceDetailsLazy
+            <MemoDeviceDetailsLazy
               device={activeDetailsDevice}
               onClose={closeDeviceDetails}
-              onChooseModel={() => setDeviceModelPickerId(activeDetailsDevice?.id)}
+              onChooseModel={chooseDeviceModel}
             />
           </Suspense>
         ) : (

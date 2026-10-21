@@ -28,7 +28,7 @@ body,button,input,select,textarea { font-family: var(--azure-font-ui); }
 .pocket-card-interactive:hover { transform:translateY(-1px);background:var(--azure-raised);border-color:var(--azure-strong-border); }
 .pocket-button,.lite-action-row button { min-height:44px;border-radius:var(--azure-radius-control);font-weight:600;font-size:.875rem;box-shadow:none; }
 .pocket-button-primary { background:var(--azure-button);color:var(--azure-button-text);border-color:var(--azure-button); }
-.pocket-button-primary:hover { background:var(--azure-accent);color:var(--azure-button-text); }
+.pocket-button-primary:hover { background:var(--azure-button);color:var(--azure-button-text); }
 .pocket-button-secondary { background:var(--azure-raised);color:var(--azure-text);border-color:var(--azure-border); }
 .pocket-button-secondary:hover { background:var(--azure-hover);color:var(--azure-text); }
 .pocket-button-success { background:var(--azure-success-subtle);color:var(--azure-success);border-color:var(--azure-success); }

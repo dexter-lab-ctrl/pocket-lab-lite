@@ -1,50 +1,50 @@
 /* Premium Apps refinement — presentation only. PR #606 tokens and overlay primitives remain authoritative. */
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer {
   --apps-premium-surface: var(--lite-surface, #fff);
-  --apps-premium-secondary: var(--lite-surface-soft, #f8fafc);
+  --apps-premium-secondary: var(--lite-surface-soft, var(--azure-raised));
   --apps-premium-border: var(--lite-border, rgba(100,116,139,.22));
-  --apps-premium-muted: var(--lite-muted, #64748b);
-  --apps-premium-text: var(--lite-text, #0f172a);
+  --apps-premium-muted: var(--lite-muted, var(--azure-muted));
+  --apps-premium-text: var(--lite-text, var(--azure-text));
   --apps-premium-radius: var(--lite-p0-radius-card, 1.25rem);
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-catalog-manage-scroll,.lite-catalog-manage-section-viewport,.lite-catalog-action-groups,.lite-app-action-group,.lite-app-action-row,.lite-app-action-row-main,.lite-app-action-row-copy,.lite-app-action-row-side),
-.theme-pocket-lite-daylight .lite-catalog-screen :is(.lite-catalog-card,.lite-catalog-app-card,.lite-catalog-hero,.lite-catalog-hero-actions,.lite-catalog-meta) {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-catalog-manage-scroll,.lite-catalog-manage-section-viewport,.lite-catalog-action-groups,.lite-app-action-group,.lite-app-action-row,.lite-app-action-row-main,.lite-app-action-row-copy,.lite-app-action-row-side),
+.lite-catalog-screen :is(.lite-catalog-card,.lite-catalog-app-card,.lite-catalog-hero,.lite-catalog-hero-actions,.lite-catalog-meta) {
   min-width: 0;
   max-width: 100%;
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-app-action-row-copy,.lite-app-action-row-result,.lite-catalog-manage-section-hint,.lite-catalog-storage-facts,.lite-catalog-premium-backup) :is(strong,p,span,small,dd,li),
-.theme-pocket-lite-daylight .lite-catalog-screen :is(p,strong,small) {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-app-action-row-copy,.lite-app-action-row-result,.lite-catalog-manage-section-hint,.lite-catalog-storage-facts,.lite-catalog-premium-backup) :is(strong,p,span,small,dd,li),
+.lite-catalog-screen :is(p,strong,small) {
   overflow-wrap: anywhere;
   white-space: normal;
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row {
   grid-template-columns: minmax(0,1fr);
   gap: .65rem;
   border-radius: var(--lite-p0-radius-card, 1.25rem);
   box-shadow: none;
   background-image: none;
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-main {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-main {
   display: grid;
   grid-template-columns: auto minmax(0,1fr);
   gap: .7rem;
   align-items: start;
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-side {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-side {
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
   flex-wrap: wrap;
   gap: .55rem;
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-side > .pocket-button,
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-result button {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-side > .pocket-button,
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-result button {
   min-height: var(--lite-p0-touch-target, 44px);
   max-width: 100%;
   white-space: normal;
   overflow-wrap: anywhere;
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-result {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-result {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -53,14 +53,14 @@
   border: 0;
   padding: 0;
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-result > span {flex: 1 1 12rem;min-width:0;}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-result > span {flex: 1 1 12rem;min-width:0;}
 /* This remains a secondary, actionable result: never hide disabled explanations. */
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-action-notices {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-action-notices {
   margin-top: .8rem;
   padding: .2rem .7rem;
   border-top: 1px solid var(--apps-premium-border);
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-action-notices .lite-catalog-action-reasons {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-action-notices .lite-catalog-action-reasons {
   display: grid;
   margin: 0;
   padding: .3rem 0;
@@ -69,42 +69,42 @@
   background: transparent;
   box-shadow: none;
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-action-notices .lite-catalog-action-reasons > span {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-action-notices .lite-catalog-action-reasons > span {
   display:block;
   max-width:100%;
   overflow-wrap:anywhere;
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-storage-panel--sheet {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-storage-panel--sheet {
   margin-top: .7rem;
   border: 1px solid var(--apps-premium-border);
   border-radius: var(--apps-premium-radius);
   box-shadow: none;
   background: var(--apps-premium-surface);
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-storage-chips { flex-wrap: wrap; }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-scroll {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-storage-chips { flex-wrap: wrap; }
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-scroll {
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-viewport {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-viewport {
   overflow: visible;
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-hint {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-hint {
   display: grid;
   grid-template-columns: minmax(0,1fr);
   gap: .2rem;
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-tabs button {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-tabs button {
   min-height: var(--lite-p0-touch-target,44px);
   white-space: normal;
   text-wrap: balance;
 }
 
 /* One backend-truthful, neutral photo status path. No legacy amber card wash. */
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-flow {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-flow {
   display: grid !important;
   grid-template-columns: minmax(0,1fr) !important;
   padding: .9rem 1rem !important;
@@ -131,7 +131,7 @@
 .lite-catalog-premium-flow-header > div > span,
 .lite-catalog-premium-backup-header > div > span {
   font-size: .75rem;
-  color: var(--apps-premium-muted, #64748b);
+  color: var(--apps-premium-muted, var(--azure-muted));
   font-weight: 750;
 }
 .lite-catalog-premium-flow-header strong {font-size: .94rem; overflow-wrap:anywhere;}
@@ -142,12 +142,12 @@
   padding: .2rem .55rem;
   font-size: .74rem;
   font-weight: 750;
-  color: var(--apps-premium-text,#0f172a);
-  background: var(--apps-premium-secondary,#f8fafc);
+  color: var(--apps-premium-text,var(--azure-text));
+  background: var(--apps-premium-secondary,var(--azure-raised));
   overflow-wrap: anywhere;
 }
-.lite-catalog-premium-state:is(.is-review,.is-failed) {color:#92400e;border-color:#e9be7b;background: #fffbeb;}
-.lite-catalog-premium-state:is(.is-running,.is-working,.is-waiting) {color:#1d4ed8;border-color:#bfdbfe;background:#eff6ff;}
+.lite-catalog-premium-state:is(.is-review,.is-failed) {color:var(--azure-warning);border-color:var(--azure-strong-border);background: var(--azure-warning-subtle);}
+.lite-catalog-premium-state:is(.is-running,.is-working,.is-waiting) {color:var(--azure-info);border-color:var(--azure-border);background:var(--azure-accent-subtle);}
 .lite-catalog-premium-flow-steps {
   display: grid;
   grid-template-columns: repeat(3,minmax(0,1fr)) !important;
@@ -184,25 +184,25 @@
   flex:0 0 2.4rem;
   border:1px solid var(--apps-premium-border, #cbd5e1);
   border-radius:50%;
-  background:var(--apps-premium-secondary,#f8fafc);
-  color:var(--apps-premium-muted,#64748b);
+  background:var(--apps-premium-secondary,var(--azure-raised));
+  color:var(--apps-premium-muted,var(--azure-muted));
 }
 .lite-catalog-premium-flow-icon svg {display:block;width:1.05rem;height:1.05rem;flex:none;}
-.lite-catalog-premium-flow-step.is-done .lite-catalog-premium-flow-icon {color:#047857;border-color:#a7f3d0;}
-.lite-catalog-premium-flow-step.is-review .lite-catalog-premium-flow-icon {color:#b45309;border-color:#fcd34d;}
-.lite-catalog-premium-flow-step.is-running .lite-catalog-premium-flow-icon {color:#2563eb;border-color:#93c5fd;}
+.lite-catalog-premium-flow-step.is-done .lite-catalog-premium-flow-icon {color:var(--azure-success);border-color:var(--azure-success-subtle);}
+.lite-catalog-premium-flow-step.is-review .lite-catalog-premium-flow-icon {color:var(--azure-warning);border-color:var(--azure-warning);}
+.lite-catalog-premium-flow-step.is-running .lite-catalog-premium-flow-icon {color:var(--azure-accent);border-color:var(--azure-accent);}
 .lite-catalog-premium-flow-step :is(strong,small) {min-width:0;max-width:100%;overflow-wrap:anywhere;line-height:1.3;}
 .lite-catalog-premium-flow-step strong {font-size:.8rem;font-weight:750;}
-.lite-catalog-premium-flow-step small {font-size:.7rem;color:var(--apps-premium-muted,#64748b);}
-.lite-catalog-premium-flow-foot p {margin:0; flex:1 1 12rem;font-size:.82rem;color:var(--apps-premium-muted,#64748b);}
+.lite-catalog-premium-flow-step small {font-size:.7rem;color:var(--apps-premium-muted,var(--azure-muted));}
+.lite-catalog-premium-flow-foot p {margin:0; flex:1 1 12rem;font-size:.82rem;color:var(--apps-premium-muted,var(--azure-muted));}
 .lite-catalog-premium-flow-foot button,
 .lite-catalog-premium-backup-actions > button,
 .lite-catalog-premium-disclosure summary {min-height:44px;cursor:pointer;display:inline-flex;align-items:center;overflow-wrap:anywhere;}
 .lite-catalog-premium-flow-foot button,
-.lite-catalog-premium-backup-actions > button {border:0;background:transparent;color:var(--lite-p0-focus-ring,#2563eb);font-weight:750;padding:.3rem .35rem;}
+.lite-catalog-premium-backup-actions > button {border:0;background:transparent;color:var(--lite-p0-focus-ring,var(--azure-accent));font-weight:750;padding:.3rem .35rem;}
 
 /* Compact, source-derived phone folder preview. */
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-connected-folders {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-connected-folders {
   margin-top:.5rem;
   padding:.75rem .9rem;
   background:var(--apps-premium-surface);
@@ -213,12 +213,12 @@
   gap:.55rem;
 }
 .lite-catalog-premium-connection-heading {display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:.6rem;}
-.lite-catalog-premium-connection-heading svg {color:#047857;margin-top:.15rem;}
+.lite-catalog-premium-connection-heading svg {color:var(--azure-success);margin-top:.15rem;}
 .lite-catalog-premium-connection-heading strong {font-size:.88rem;}
 .lite-catalog-premium-connection-heading p,
-.lite-catalog-premium-muted {font-size:.78rem;color:var(--apps-premium-muted,#64748b);margin:.2rem 0 0;overflow-wrap:anywhere;}
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-connected-folder-list {display:flex;flex-wrap:wrap;gap:.35rem;}
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-connected-folder-list span {
+.lite-catalog-premium-muted {font-size:.78rem;color:var(--apps-premium-muted,var(--azure-muted));margin:.2rem 0 0;overflow-wrap:anywhere;}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-connected-folder-list {display:flex;flex-wrap:wrap;gap:.35rem;}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-connected-folder-list span {
   border:1px solid var(--apps-premium-border);
   border-radius:999px;
   background:var(--apps-premium-secondary);
@@ -226,13 +226,13 @@
   max-width:100%;
   overflow-wrap:anywhere;
 }
-.lite-catalog-premium-disclosure {min-width:0;max-width:100%;color:var(--apps-premium-text,#0f172a);}
+.lite-catalog-premium-disclosure {min-width:0;max-width:100%;color:var(--apps-premium-text,var(--azure-text));}
 .lite-catalog-premium-disclosure summary {padding:.35rem 0;font-size:.8rem;font-weight:750;}
-.lite-catalog-premium-disclosure :is(ul,p) {margin:.3rem 0 .5rem;color:var(--apps-premium-muted,#64748b);font-size:.82rem;overflow-wrap:anywhere;}
+.lite-catalog-premium-disclosure :is(ul,p) {margin:.3rem 0 .5rem;color:var(--apps-premium-muted,var(--azure-muted));font-size:.82rem;overflow-wrap:anywhere;}
 .lite-catalog-premium-disclosure ul {padding-left:1.25rem;}
 
 /* Backup facts, not an animated promise of execution. */
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-backup {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-backup {
   display:grid !important;
   grid-template-columns:minmax(0,1fr) !important;
   gap:.7rem;
@@ -245,20 +245,20 @@
 }
 .lite-catalog-premium-backup-header > div {display:grid;gap:.25rem;min-width:0;}
 .lite-catalog-premium-backup-header > div > span {display:inline-flex;align-items:center;gap:.3rem;}
-.lite-catalog-premium-backup-header p {margin:0;color:var(--apps-premium-muted,#64748b);font-size:.79rem;}
+.lite-catalog-premium-backup-header p {margin:0;color:var(--apps-premium-muted,var(--azure-muted));font-size:.79rem;}
 .lite-catalog-premium-backup-path {display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:.2rem;}
 .lite-catalog-premium-backup-path > span {display:flex;align-items:center;justify-content:center;gap:.3rem;min-width:0;font-size:.73rem;font-weight:700;overflow-wrap:anywhere;text-align:center;}
 .lite-catalog-premium-backup-path svg {flex:0 0 .95rem;width:.95rem;height:.95rem;}
-.lite-catalog-premium-backup-path > i {font-size:.85rem;font-style:normal;color:var(--apps-premium-muted,#64748b);}
-.lite-catalog-premium-backup-destination {margin:0;font-size:.75rem;color:var(--apps-premium-muted,#64748b);overflow-wrap:anywhere;}
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-backup-metrics {
+.lite-catalog-premium-backup-path > i {font-size:.85rem;font-style:normal;color:var(--apps-premium-muted,var(--azure-muted));}
+.lite-catalog-premium-backup-destination {margin:0;font-size:.75rem;color:var(--apps-premium-muted,var(--azure-muted));overflow-wrap:anywhere;}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-backup-metrics {
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem;margin:0;
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-backup-metrics > div {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-backup-metrics > div {
   display:grid;grid-template-columns:minmax(0,1fr);gap:.25rem;
   padding:.65rem .75rem;border:1px solid var(--apps-premium-border);border-radius:var(--lite-p0-radius-control,.875rem);background:var(--apps-premium-secondary);
 }
-.lite-catalog-premium-backup-metrics dt {font-size:.72rem;color:var(--apps-premium-muted,#64748b);}
+.lite-catalog-premium-backup-metrics dt {font-size:.72rem;color:var(--apps-premium-muted,var(--azure-muted));}
 .lite-catalog-premium-backup-metrics dd {margin:0;text-align:left;font-size:.88rem;font-weight:750;overflow-wrap:anywhere;}
 .lite-catalog-premium-backup-guidance {margin:0;font-size:.82rem;overflow-wrap:anywhere;}
 .lite-catalog-premium-backup-actions {display:flex;gap:.55rem;align-items:flex-start;flex-wrap:wrap;}
@@ -266,7 +266,7 @@
 /* Shared LiteDetailsPanel appears above Manage's fixed portal without replacing it. */
 .theme-pocket-lite-daylight.lite-details-overlay-layer {
   z-index:11000 !important;
-  color:var(--lite-text,#0f172a);
+  color:var(--lite-text,var(--azure-text));
 }
 .theme-pocket-lite-daylight.lite-details-overlay-layer .lite-details-panel {
   display:flex;flex-direction:column;min-width:0;max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 1rem);
@@ -313,73 +313,152 @@
 .theme-pocket-lite-daylight.lite-details-overlay-layer .lite-app-premium-details :is(p,small,li,dt,dd,strong,span) {min-width:0;overflow-wrap:anywhere;white-space:normal;}
 .theme-pocket-lite-daylight.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-details-status {
   display:inline-flex;padding:.25rem .55rem;border:1px solid var(--lite-border,rgba(100,116,139,.22));border-radius:999px;
-  background:var(--lite-surface-soft,#f8fafc);
+  background:var(--lite-surface-soft,var(--azure-raised));
 }
 .theme-pocket-lite-daylight.lite-details-overlay-layer :is(button,summary):focus-visible,
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(button,summary):focus-visible {
-  outline:2px solid var(--lite-p0-focus-ring,#2563eb);outline-offset:3px;
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(button,summary):focus-visible {
+  outline:2px solid var(--lite-p0-focus-ring,var(--azure-accent));outline-offset:3px;
 }
 @media (max-width:400px) {
-  .theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-flow {padding:.7rem !important;}
+  .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-flow {padding:.7rem !important;}
   .lite-catalog-premium-flow-step strong {font-size:.73rem;}
   .lite-catalog-premium-flow-step small {font-size:.64rem;}
   .lite-catalog-premium-backup-path {grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);}
   .lite-catalog-premium-backup-path > span {flex-direction:column;font-size:.69rem;}
-  .theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-side {flex-direction:column;align-items:stretch;}
-  .theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-side .pocket-button {width:100%;}
+  .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-side {flex-direction:column;align-items:stretch;}
+  .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-side .pocket-button {width:100%;}
 }
 @media (min-width:900px) {
   .theme-pocket-lite-daylight.lite-details-overlay-layer {justify-content:flex-end;}
   .theme-pocket-lite-daylight.lite-details-overlay-layer .lite-details-panel {width:min(36rem,50vw);height:100%;}
 }
 @media (prefers-color-scheme:dark) {
-  .theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer {
+  .lite-catalog-manage-layer.lite-catalog-app-premium-layer {
     --apps-premium-surface: var(--lite-surface,#111827);
     --apps-premium-secondary: var(--lite-surface-soft,#1f2937);
     --apps-premium-border:var(--lite-border,rgba(148,163,184,.3));
     --apps-premium-text:var(--lite-text,#f1f5f9);
     --apps-premium-muted:var(--lite-muted,#94a3b8);
   }
-  .lite-catalog-premium-state.is-review {background:#3d2c16;color:#fcd34d;border-color:#92400e;}
-  .lite-catalog-premium-state:is(.is-running,.is-working,.is-waiting) {background:#172554;color:#bfdbfe;border-color:#1d4ed8;}
+  .lite-catalog-premium-state.is-review {background:#3d2c16;color:var(--azure-warning);border-color:var(--azure-warning);}
+  .lite-catalog-premium-state:is(.is-running,.is-working,.is-waiting) {background:#172554;color:var(--azure-border);border-color:var(--azure-info);}
 }
 @media (prefers-reduced-motion:reduce) {
-  .theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-flow *,
-  .theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-backup *,
+  .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-flow *,
+  .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-backup *,
   .theme-pocket-lite-daylight.lite-details-overlay-layer * {animation:none !important;transition:none !important;}
 }
 
-.theme-pocket-lite-daylight .lite-catalog-screen .lite-catalog-premium-app-status {
+.lite-catalog-screen .lite-catalog-premium-app-status {
   margin: .5rem 0 .75rem;
   font-size: .84rem;
   line-height: 1.45;
-  color: var(--lite-muted, #64748b);
+  color: var(--lite-muted, var(--azure-muted));
   overflow-wrap: anywhere;
   white-space: normal;
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-storage-details {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-storage-details {
   margin-top: .65rem;
   border-top: 1px solid var(--apps-premium-border);
   padding:.25rem .65rem;
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-storage-details .lite-catalog-storage-panel {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-storage-details .lite-catalog-storage-panel {
   margin: 0;
   padding:.65rem;
   max-width:100%;
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-catalog-manage-head,.lite-catalog-manage-head > div,.lite-catalog-action-groups,.lite-catalog-manage-section-tabs) {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-catalog-manage-head,.lite-catalog-manage-head > div,.lite-catalog-action-groups,.lite-catalog-manage-section-tabs) {
   min-width: 0;
   max-width: 100%;
 }
-.theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-tabs {
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-tabs {
   scroll-padding-inline:.5rem;
 }
 @media (max-width: 375px) {
-  .theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-backup-metrics {
+  .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-backup-metrics {
     grid-template-columns:minmax(0,1fr);
   }
-  .theme-pocket-lite-daylight.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-flow-step:not(:last-child)::after {
+  .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-flow-step:not(:last-child)::after {
     width:calc(100% - 2.5rem);
     left:calc(50% + 1.25rem);
   }
+}
+
+
+/* Azure Horizon Apps: one token-backed surface across resolved Light/Dark/System.
+   Specificity here deliberately supersedes pre-Azure Daylight catalog rules. */
+.lite-catalog-screen,
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer {
+  --apps-premium-surface: var(--azure-surface);
+  --apps-premium-secondary: var(--azure-raised);
+  --apps-premium-border: var(--azure-border);
+  --apps-premium-muted: var(--azure-muted);
+  --apps-premium-text: var(--azure-text);
+  --apps-premium-radius: var(--azure-radius-card);
+  color: var(--azure-text);
+  min-width: 0;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items:end;
+  gap: .8rem;
+  border:1px solid var(--azure-border);
+  border-radius:var(--azure-radius-card);
+  background:var(--azure-surface);
+  padding:clamp(.85rem,1.4vw,1.25rem);
+  box-shadow:var(--azure-shadow);
+}
+.lite-catalog-search-field {min-width:0;display:grid;gap:.35rem;}
+.lite-catalog-search-field label {font-weight:650;color:var(--azure-text);font-size:.86rem;}
+.lite-catalog-search-control {display:flex;align-items:center;gap:.45rem;min-width:0;min-height:46px;border:1px solid var(--azure-strong-border);border-radius:var(--azure-radius-control);padding:.25rem .6rem;background:var(--azure-input);color:var(--azure-muted);}
+.lite-catalog-search-control:focus-within {outline:2px solid var(--azure-focus);outline-offset:2px;}
+.lite-catalog-search-control input {width:100%;min-width:0;min-height:38px;flex:1;border:0;outline:0!important;background:transparent;color:var(--azure-text);box-shadow:none;}
+.lite-catalog-search-control input::placeholder {color:var(--azure-muted);opacity:1;}
+.lite-catalog-search-control button {display:grid;place-items:center;min-width:38px;min-height:38px;border:0;background:transparent;color:var(--azure-text);border-radius:var(--azure-radius-control);}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-toolbar p {color:var(--azure-muted);font-weight:550;white-space:normal;}
+.lite-catalog-status-filters {display:flex;grid-column:1/-1;gap:.5rem;overflow-x:auto;flex-wrap:wrap;min-width:0;scrollbar-width:thin;}
+.lite-catalog-status-filters button {display:inline-flex;align-items:center;justify-content:center;gap:.55rem;min-height:44px;max-width:100%;padding:.45rem .85rem;border:1px solid var(--azure-border);border-radius:99px;background:var(--azure-raised);color:var(--azure-text);font-weight:600;line-height:1.25;cursor:pointer;}
+.lite-catalog-status-filters button[aria-pressed="true"] {border-color:var(--azure-accent);background:var(--azure-selected);color:var(--azure-text);}
+.lite-catalog-status-filters button span {font-variant-numeric:tabular-nums;color:var(--azure-muted);}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr));gap:1rem;min-width:0;align-items:stretch;}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-featured {min-width:0;max-width:100%;margin-bottom:1rem;}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-card {min-width:0;max-width:100%;min-height:0;background:var(--azure-surface);color:var(--azure-text);border:1px solid var(--azure-border);border-radius:var(--azure-radius-card);box-shadow:var(--azure-shadow);transform:none;}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-card h2 {font-size:clamp(1.08rem,1.7vw,1.28rem);font-weight:650;letter-spacing:-.02em;color:var(--azure-text);overflow-wrap:anywhere;}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-card p {color:var(--azure-muted);overflow-wrap:anywhere;}
+.lite-catalog-app-description {display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;line-height:1.5;font-size:.88rem;}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-icon {width:50px;height:50px;min-width:50px;display:grid;place-items:center;border-radius:var(--azure-radius-control);background:var(--azure-accent-subtle);border:1px solid var(--azure-border);color:var(--azure-accent);}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-card .lite-catalog-card-actions {display:flex;flex-wrap:wrap;gap:.6rem;}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-card .pocket-button {min-height:44px;max-width:100%;white-space:normal;}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer {color:var(--azure-text);}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-sheet {background:var(--azure-surface);border:1px solid var(--azure-border);color:var(--azure-text);box-shadow:var(--azure-panel-shadow);max-width:calc(100vw - 1.5rem);min-width:0;}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-catalog-manage-head,.lite-catalog-manage-section-hint,.lite-app-action-row,.lite-catalog-storage-panel--sheet,.lite-catalog-premium-backup,.lite-catalog-premium-flow) {color:var(--azure-text);border-color:var(--azure-border);background:var(--azure-surface);}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-catalog-manage-scroll,.lite-catalog-manage-section-viewport,.lite-catalog-action-groups,.lite-app-action-row) {min-height:0;min-width:0;overflow-wrap:anywhere;}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(p,small,.lite-app-action-row-copy p,.lite-catalog-manage-section-hint span) {color:var(--azure-muted);opacity:1;}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(input,textarea,select) {color:var(--azure-text);background:var(--azure-input);border-color:var(--azure-strong-border);}
+.lite-catalog-manage-current-state {display:block;color:var(--azure-muted);font-size:.76rem;margin-top:.3rem;}
+.lite-catalog-manage-desktop-controls {display:flex;align-items:center;gap:.6rem;padding:.4rem .8rem;border-bottom:1px solid var(--azure-border);background:var(--azure-raised);color:var(--azure-muted);font-size:.78rem;}
+.lite-catalog-manage-desktop-controls > span:first-of-type {flex:1;}
+.lite-catalog-manage-panel-tool {display:inline-flex;align-items:center;justify-content:center;gap:.3rem;min-width:44px;min-height:44px;border:1px solid transparent;border-radius:var(--azure-radius-control);color:var(--azure-text);background:transparent;cursor:pointer;touch-action:none;}
+.lite-catalog-manage-panel-tool:hover {background:var(--azure-hover);border-color:var(--azure-border);}
+.lite-catalog-manage-panel-tool:focus-visible {outline:2px solid var(--azure-focus);outline-offset:2px;}
+.lite-catalog-manage-panel-tool:first-child {cursor:grab;}
+.lite-catalog-manage-panel-tool:last-of-type {cursor:nwse-resize;}
+.lite-catalog-manage-sheet.is-interacting {user-select:none;}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-sheet.is-movable {position:fixed;max-width:none;max-height:none;}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-side .pocket-button {min-height:44px;white-space:normal;}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(button,summary):focus-visible {outline:2px solid var(--azure-focus);outline-offset:2px;}
+@media (max-width:700px) {
+ html[data-lite-theme] .lite-catalog-screen .lite-catalog-toolbar {grid-template-columns:minmax(0,1fr);}
+ html[data-lite-theme] .lite-catalog-screen .lite-catalog-grid {grid-template-columns:minmax(0,1fr);}
+ html[data-lite-theme] .lite-catalog-screen .lite-catalog-card .lite-catalog-card-actions {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
+ html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-sheet {position:relative;width:100%;max-height:calc(var(--lite-visual-viewport-height,100vh) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 1.5rem);border-radius:1.4rem 1.4rem 0 0;}
+ .lite-catalog-manage-desktop-controls {display:none;}
+}
+@media (max-width:360px) {
+ html[data-lite-theme] .lite-catalog-screen .lite-catalog-card .lite-catalog-card-actions {grid-template-columns:minmax(0,1fr);}
+ .lite-catalog-status-filters button {flex:1 1 auto;}
+}
+@media (prefers-reduced-motion:reduce) {
+ .lite-catalog-screen .lite-catalog-card,.lite-catalog-screen .lite-catalog-card:hover,.lite-catalog-manage-sheet,.lite-catalog-manage-sheet * {animation:none;transition:none;}
 }

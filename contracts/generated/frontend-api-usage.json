@@ -3588,7 +3588,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "75964e2070354ddde54eded0cbc4c477636eca80d9b5d214823cc0889f660103",
+    "aggregate_fingerprint": "506792f15fd25893809b81b6404f936ae08186f21ee966bdaa4a222ba0f252ee",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3607,9 +3607,9 @@
       "src/lite/LiteApp.jsx": "b719960ac531fbed75453bd423a3ed0769e5babef7dafa9a435fad922596c082",
       "src/lite/LiteAzureHorizon.stories.jsx": "734d1321be4f5f5b95ace42215f0d6390c9b1cc39f089edacc7f718ddd319c72",
       "src/lite/LiteCatalog.jsx": "8e58b8d66a504532ae3a8f97a63b4cb5b058e172f11c167bb11c2484e02e4902",
-      "src/lite/LiteCatalog.stories.jsx": "cd1316d9e731f20ce69ee2a1bd6e6d8e8e00e727758b50db0a2a63c8398918f7",
+      "src/lite/LiteCatalog.stories.jsx": "246368a7f6bbf652d41433e30957e9ab26a5b3c4e6b6ec2e8a2bfcc72b0b55ef",
       "src/lite/LiteDesignSystemP0.test.jsx": "6bba968bf49b96e65585f33b9a43df4e16b821f33bb6c2764c0c0421a7d43993",
-      "src/lite/LiteDevices.jsx": "1c065eab8fac3c5be3bdf160bd6013ba9b642551886c066e55f26a8077174582",
+      "src/lite/LiteDevices.jsx": "bb04fb4fbcacb7dd6e1df25007322fb31e0bd3694ce9223c30a60d05bdec0d7f",
       "src/lite/LiteDevices.stories.jsx": "a7a5332db1f1b64a1da6beedbd30891ac3ad83c123dadb749ee909e8d5236d33",
       "src/lite/LiteHelp.jsx": "06af915a9e7f9781ac852804a5d7ab40f5a061c12c8b80b3c888b11b94167a4c",
       "src/lite/LiteHome.jsx": "70a625548632ce13f886ca0863c09f64096477f1a2bee87428662872db88fc08",
@@ -3643,7 +3643,7 @@
       "src/lite/LiteUi.test.jsx": "d09ad1e06cf21773a1d8ed93dc8071ef7516d872ebd3e3f44eafed0644ee8c50",
       "src/lite/LiteUx.jsx": "86028142a9f9b74b7defd17dbfc25eda92cb6f41acf79e5a9a7bc7bcff79c674",
       "src/lite/LiteUx.stories.jsx": "a45605c9460b371143058035f733beab232d1374d4fa4eb77a9c4b3704843e5f",
-      "src/mocks/handlers.js": "18df169fa896d5f171d67ae865d5744fef9f0b6a4b2624893920e9711f40a098"
+      "src/mocks/handlers.js": "3173a1f106cdee6e3275d19491e152524353c14092619c7ee916ce4fe6f748d9"
     },
     "validation_state": "generated"
   }

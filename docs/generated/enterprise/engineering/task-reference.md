@@ -15,7 +15,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 | Workflow | Task count |
 | --- | --- |
-| Development loop | 85 |
+| Development loop | 92 |
 | Documentation loop | 55 |
 | API-validation loop | 12 |
 | Runtime-evidence loop | 35 |
@@ -8030,6 +8030,244 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** gate-defined
 
 **Example:** `task lite:test:a11y`
+
+## `lite:test:apps:azure:a11y`
+
+**Purpose:** Run Azure Apps Light/Dark, Axe and keyboard checks
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:azure:a11y`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:azure:a11y`
+
+## `lite:test:apps:azure:geometry`
+
+**Purpose:** Run Apps and Devices shared desktop Manage movement/regression checks
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:azure:geometry`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:azure:geometry`
+
+## `lite:test:apps:azure:mocked`
+
+**Purpose:** Run Azure Apps mocks, lifecycle, responsive and desktop panel interactions
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:azure:mocked`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:azure:mocked`
+
+## `lite:test:apps:azure:perf`
+
+**Purpose:** Run supplemental interaction samples with PR 588 thresholds unchanged
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:azure:perf`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:azure:perf`
+
+## `lite:test:apps:azure:qualification`
+
+**Purpose:** Run Azure Apps source and browser qualification; visual separately gated
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:azure:qualification`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:azure:qualification`
+
+## `lite:test:apps:azure:unit`
+
+**Purpose:** Run Azure Apps catalog and shared geometry unit checks
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:azure:unit`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:azure:unit`
+
+## `lite:test:apps:azure:visual`
+
+**Purpose:** Compare Azure Apps visuals after owner-approved baseline capture
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:azure:visual`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:azure:visual`
 
 ## `lite:test:azure:a11y`
 

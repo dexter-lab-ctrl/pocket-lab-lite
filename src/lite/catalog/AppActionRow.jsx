@@ -44,6 +44,7 @@ function AppActionRow({
           onClick={onClick}
           disabled={isDisabled}
           title={buttonTitle}
+          aria-busy={Boolean(active) || undefined}
           haptic={!isDisabled}
         >
           {buttonLabel}

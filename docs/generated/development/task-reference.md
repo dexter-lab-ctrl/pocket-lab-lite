@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: a039dda526917749cb287ca962ffe98d8e8e1cf872addf6f931dbd301dcfb2cb
+source_fingerprint: dc0c9fab65a82aa57a1321aac30b15e8de230784e591c894c37a45c5e15c3631
 schema_revision: 1
 validation_status: generated
 ---
@@ -226,6 +226,13 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:test:a11y`
 - `lite:test:android`
 - `lite:test:app-governance`
+- `lite:test:apps:azure:a11y`
+- `lite:test:apps:azure:geometry`
+- `lite:test:apps:azure:mocked`
+- `lite:test:apps:azure:perf`
+- `lite:test:apps:azure:qualification`
+- `lite:test:apps:azure:unit`
+- `lite:test:apps:azure:visual`
 - `lite:test:azure:a11y`
 - `lite:test:azure:home`
 - `lite:test:azure:mocked`
@@ -355,6 +362,18 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:test:a11y` → `lite:dev:scratch:prepare`
 - `lite:test:a11y` → `lite:playwright:preflight`
 - `lite:test:app-governance` → `lite:dev:scratch:prepare`
+- `lite:test:apps:azure:a11y` → `lite:dev:scratch:prepare`
+- `lite:test:apps:azure:a11y` → `lite:playwright:preflight`
+- `lite:test:apps:azure:geometry` → `lite:dev:scratch:prepare`
+- `lite:test:apps:azure:geometry` → `lite:playwright:preflight`
+- `lite:test:apps:azure:mocked` → `lite:dev:scratch:prepare`
+- `lite:test:apps:azure:mocked` → `lite:playwright:preflight`
+- `lite:test:apps:azure:perf` → `lite:dev:scratch:prepare`
+- `lite:test:apps:azure:perf` → `lite:playwright:preflight`
+- `lite:test:apps:azure:qualification` → `lite:dev:scratch:prepare`
+- `lite:test:apps:azure:qualification` → `lite:playwright:preflight`
+- `lite:test:apps:azure:visual` → `lite:dev:scratch:prepare`
+- `lite:test:apps:azure:visual` → `lite:playwright:preflight`
 - `lite:test:azure:a11y` → `lite:dev:scratch:prepare`
 - `lite:test:azure:a11y` → `lite:playwright:preflight`
 - `lite:test:azure:mocked` → `lite:dev:scratch:prepare`
