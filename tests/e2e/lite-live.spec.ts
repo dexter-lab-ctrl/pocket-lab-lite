@@ -317,6 +317,11 @@ test.describe('Pocket Lab Lite live read-only smoke', () => {
       let readDegraded = false;
       const failed = watchApiFailures(page, {
         allowReadDegraded: true,
+        // Enterprise access is deliberately auth-gated. This read-only
+        // capture has no synthetic Owner bridge, so a 401 here is the
+        // expected backend authorization result; every other API failure
+        // remains fatal.
+        allowExpectedUnauthorizedPaths: ['/api/lite/enterprise/access'],
         onReadDegraded: () => {
           readDegraded = true;
         },

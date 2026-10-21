@@ -26,11 +26,21 @@ export async function installScenario(page: Page, scenario = 'healthy') {
 type ApiFailureWatchOptions = {
   allowReadDegraded?: boolean;
   onReadDegraded?: () => void;
+  allowExpectedUnauthorizedPaths?: readonly string[];
 };
 
 export function watchApiFailures(page: Page, options: ApiFailureWatchOptions = {}) {
   const failures: string[] = [];
   const expectedReadDegradedUrls = new Set<string>();
+  const expectedUnauthorizedUrls = new Set<string>();
+  const expectedUnauthorizedPaths = new Set(options.allowExpectedUnauthorizedPaths || []);
+  const pathname = (value: string) => {
+    try {
+      return new URL(value).pathname;
+    } catch (_error) {
+      return '';
+    }
+  };
   page.on('console', (message) => {
     if (message.type() !== 'error') return;
     const text = message.text();
@@ -39,11 +49,13 @@ export function watchApiFailures(page: Page, options: ApiFailureWatchOptions = {
     const isExpectedReadDegraded = options.allowReadDegraded
       && expectedReadDegradedUrls.has(locationUrl)
       && /status of 5\d\d/i.test(text);
+    const isExpectedUnauthorized = expectedUnauthorizedUrls.has(locationUrl)
+      || (Boolean(locationUrl) && expectedUnauthorizedPaths.has(pathname(locationUrl)) && /status of 401/i.test(text));
 
     // API HTTP failures are recorded with their URL by the response/request listeners below.
     // Chromium's duplicate generic resource console entry has no actionable URL, so keeping it
     // would turn unrelated assets such as favicon/manifest probes into false Lite API failures.
-    if (isExpectedReadDegraded || (isGenericResource404 && !locationUrl.includes('/api/lite/'))) return;
+    if (isExpectedReadDegraded || isExpectedUnauthorized || (isGenericResource404 && !locationUrl.includes('/api/lite/'))) return;
 
     failures.push(`CONSOLE ${locationUrl ? `${locationUrl} ` : ''}${text}`);
   });
@@ -58,6 +70,10 @@ export function watchApiFailures(page: Page, options: ApiFailureWatchOptions = {
     if (isExpectedReadDegraded) {
       expectedReadDegradedUrls.add(response.url());
       options.onReadDegraded?.();
+      return;
+    }
+    if (response.status() === 401 && expectedUnauthorizedPaths.has(pathname(response.url()))) {
+      expectedUnauthorizedUrls.add(response.url());
       return;
     }
     if (response.status() >= 400) failures.push(`${response.status()} ${response.url()}`);
