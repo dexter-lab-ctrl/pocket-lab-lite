@@ -1,6 +1,8 @@
 import React from 'react';
 import { expect, userEvent, within } from '@storybook/test';
 import '../src/index.css';
+import '../src/lite/theme/azureHorizonTokens.css';
+import '../src/lite/theme/azureHorizon.css';
 import { startPocketLabMocks, worker } from '../src/mocks/browser.js';
 import { deviceFactsScenarioHandlers } from '../src/mocks/deviceFactsScenarios.js';
 import { clearOfflineSafeSnapshots } from '../src/lib/liteOfflineDb.js';
@@ -19,7 +21,7 @@ const viewports = {
 export const parameters = {
   layout: 'fullscreen',
   viewport: { viewports, defaultViewport: 'mobile390' },
-  a11y: { config: { rules: [{ id: 'color-contrast', enabled: false }] } },
+  a11y: {},
   controls: { expanded: true },
   options: { storySort: { order: ['Pocket Lab Lite', ['Home', 'Devices', 'Apps', 'Recovery', 'Security', 'Identity', 'Rules']] } },
   backgrounds: { default: 'lite', values: [{ name: 'lite', value: '#f8fafc' }] },
@@ -45,10 +47,7 @@ export const loaders = [async (context) => {
   const liteTheme = context.parameters?.liteTheme || 'daylight';
   const textScale = Number(context.parameters?.liteTextScale || 1);
   localStorage.setItem('POCKETLAB_MOCK_SCENARIO', scenario);
-  localStorage.setItem('POCKETLAB_LITE_THEME', liteTheme === 'dark' ? 'dark' : 'daylight');
-  document.documentElement.dataset.pocketlabLiteTheme = liteTheme === 'dark' ? 'dark' : 'daylight';
-  document.documentElement.classList.toggle('theme-pocket-lite-dark', liteTheme === 'dark');
-  document.documentElement.classList.toggle('theme-pocket-lite-daylight', liteTheme !== 'dark');
+  useLiteUiStore.getState().setAppearancePreference(liteTheme === 'dark' ? 'dark' : liteTheme === 'system' ? 'system' : 'light');
   document.documentElement.style.fontSize = textScale >= 2 ? '200%' : '';
   worker.resetHandlers();
   const scenarioHandlers = deviceFactsScenarioHandlers(scenario);

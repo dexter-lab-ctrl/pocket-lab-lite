@@ -1,0 +1,240 @@
+/* Overrides intentionally follow historical src/index.css and P0 primitives. */
+html,body,#root { min-width: 0; min-height: 100%; }
+html { background: var(--azure-canvas); color: var(--azure-text); }
+body { margin: 0; background: var(--azure-canvas); color: var(--azure-text);
+  font-family: var(--azure-font-ui); font-size: 14px; line-height: 1.5; }
+body,button,input,select,textarea { font-family: var(--azure-font-ui); }
+::selection { background:var(--azure-selection); color:var(--azure-text); }
+:where(button,input,select,textarea) { color-scheme: inherit; }
+:where(button,a,input,select,textarea,[tabindex]):focus-visible {
+  outline: 2px solid var(--azure-focus); outline-offset: 3px;
+}
+:where(input,textarea,select) { color:var(--azure-text); background-color:var(--azure-input); }
+.pocket-app-shell { min-width:0; color:var(--azure-text); background:var(--azure-canvas); }
+.pocket-app-backdrop { display:none; }
+.pocket-main { position:relative; min-width:0; max-width: 1600px; }
+.pocket-page,.lite-screen-stage { min-width:0; }
+.pocket-page-header,.lite-page-header {
+  border:1px solid var(--azure-border); background:var(--azure-surface); border-radius:var(--azure-radius-card);
+  padding:clamp(1rem,2vw,1.45rem); box-shadow:var(--azure-shadow); backdrop-filter:none;
+  color:var(--azure-text);
+}
+.lite-page-header { display:flex;align-items:end;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.1rem; }
+.lite-page-header .lite-page-eyebrow,.pocket-eyebrow { color:var(--azure-accent);font-size:.78rem;font-weight:600;letter-spacing:.035em;text-transform:none; }
+.lite-page-header h1,.pocket-title { color:var(--azure-text);font-size:clamp(1.5rem,2.4vw,1.875rem);line-height:1.2;font-weight:650;letter-spacing:-.025em; }
+.lite-page-header p,.pocket-description { color:var(--azure-muted); }
+.pocket-section-title { font-size:clamp(1.05rem,1.5vw,1.25rem);font-weight:600;color:var(--azure-text); }
+.pocket-card,.lite-home-activity-preview { border:1px solid var(--azure-border);border-radius:var(--azure-radius-card);background:var(--azure-surface);color:var(--azure-text);box-shadow:var(--azure-shadow);backdrop-filter:none; }
+.pocket-card-interactive:hover { transform:translateY(-1px);background:var(--azure-raised);border-color:var(--azure-strong-border); }
+.pocket-button,.lite-action-row button { min-height:44px;border-radius:var(--azure-radius-control);font-weight:600;font-size:.875rem;box-shadow:none; }
+.pocket-button-primary { background:var(--azure-button);color:var(--azure-button-text);border-color:var(--azure-button); }
+.pocket-button-primary:hover { background:var(--azure-accent);color:var(--azure-button-text); }
+.pocket-button-secondary { background:var(--azure-raised);color:var(--azure-text);border-color:var(--azure-border); }
+.pocket-button-secondary:hover { background:var(--azure-hover);color:var(--azure-text); }
+.pocket-button-success { background:var(--azure-success-subtle);color:var(--azure-success);border-color:var(--azure-success); }
+.pocket-button-danger { background:var(--azure-danger-subtle);color:var(--azure-danger);border-color:var(--azure-danger); }
+.pocket-button:disabled {opacity:.62;cursor:not-allowed;}
+.pocket-input,.lite-safe-field :is(input,select,textarea) {background:var(--azure-input);color:var(--azure-text);border-color:var(--azure-border); }
+.pocket-badge {font-weight:600;font-size:.72rem;letter-spacing:0;text-transform:none; }
+.pocket-badge-success {background:var(--azure-success-subtle);color:var(--azure-success);border-color:var(--azure-success);}
+.pocket-badge-warning {background:var(--azure-warning-subtle);color:var(--azure-warning);border-color:var(--azure-warning);}
+.pocket-badge-danger {background:var(--azure-danger-subtle);color:var(--azure-danger);border-color:var(--azure-danger);}
+.pocket-badge-info {background:var(--azure-accent-subtle);color:var(--azure-info);border-color:var(--azure-strong-border);}
+.pocket-badge-neutral {background:var(--azure-neutral-subtle);color:var(--azure-neutral);border-color:var(--azure-border);}
+.pocket-state-surface {display:flex;gap:.8rem;border-radius:var(--azure-radius-card);background:var(--azure-raised);color:var(--azure-text);border:1px solid var(--azure-border);}
+.pocket-state-surface.is-degraded {background:var(--azure-warning-subtle);color:var(--azure-warning);}
+.pocket-state-surface.is-blocked {background:var(--azure-danger-subtle);color:var(--azure-danger);}
+.pocket-state-surface.is-offline {background:var(--azure-neutral-subtle);color:var(--azure-neutral);}
+.pocket-state-title {color:var(--azure-text);font-size:.95rem;font-weight:600;}
+.pocket-state-description {color:var(--azure-muted);font-size:.875rem;}
+.pocket-action-row,.lite-action-row {background:var(--azure-surface);color:var(--azure-text);border-color:var(--azure-border);}
+.lite-action-row :is(strong,span) {color:var(--azure-text);}
+.lite-action-row p {color:var(--azure-muted);}
+html[data-lite-theme] .lite-action-row {
+  display:flex;align-items:center;justify-content:space-between;gap:.8rem;min-height:3.1rem;
+  padding:.75rem .85rem;border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+  background:var(--azure-surface);color:var(--azure-text);
+}
+html[data-lite-theme] .lite-action-row>div:first-child {min-width:0;}
+html[data-lite-theme] .lite-action-row-trailing {
+  display:inline-flex;flex:0 0 auto;align-items:center;gap:.55rem;min-width:0;
+}
+html[data-lite-theme] .lite-action-row-trailing>span {color:var(--azure-muted);font-size:.78rem;font-weight:650;text-align:right;}
+html[data-lite-theme] .lite-action-row :is(strong,p,small) {overflow-wrap:anywhere;}
+html[data-lite-theme] .lite-action-row p {margin:.28rem 0 0;font-size:.82rem;line-height:1.45;}
+html[data-lite-theme] .lite-action-row small {display:block;margin-top:.45rem;color:var(--azure-warning);font-size:.74rem;line-height:1.35;}
+html[data-lite-theme] .lite-action-row.is-attention {border-color:var(--azure-warning);background:var(--azure-warning-subtle);}
+.lite-loading-card .lite-skeleton-bar {background:var(--azure-skeleton);}
+.lite-loading-card p {color:var(--azure-muted);}
+.lite-operational-story {background:var(--azure-surface);color:var(--azure-text);border:1px solid var(--azure-border);box-shadow:var(--azure-shadow);}
+.lite-operational-story-copy strong {color:var(--azure-text);font-weight:650;}
+.lite-operational-story-copy :is(p,small) {color:var(--azure-muted);}
+.lite-operational-story.is-ready {border-left:3px solid var(--azure-success);}
+.lite-operational-story.is-review,.lite-operational-story.is-attention,.lite-operational-story.is-danger {border-left:3px solid var(--azure-warning);}
+.lite-operational-story.is-saved,.lite-operational-story.is-stale {border-left:3px solid var(--azure-neutral);}
+.lite-operational-story.is-blocked,.lite-operational-story.is-failed {border-left:3px solid var(--azure-danger);}
+.lite-operational-story.is-unknown {border-left:3px solid var(--azure-neutral);}
+.lite-overlay-portal-theme,.lite-overlay-root {color:var(--azure-text);font-family:var(--azure-font-ui);}
+.lite-overlay-backdrop {background:var(--azure-backdrop);}
+.lite-overlay-surface,.lite-details-panel {background:var(--azure-surface);color:var(--azure-text);border:1px solid var(--azure-border);box-shadow:var(--azure-panel-shadow); }
+.lite-overlay-head {background:var(--azure-surface);color:var(--azure-text);border-bottom-color:var(--azure-border);}
+.lite-overlay-head strong {color:var(--azure-text);font-weight:650;}
+.lite-overlay-head p,.lite-overlay-head span {color:var(--azure-muted);}
+.lite-overlay-close,.lite-overlay-grip {color:var(--azure-muted);}
+.lite-overlay-scroll {color:var(--azure-text);overscroll-behavior:contain;}
+.lite-home-workspace-tabs {background:var(--azure-surface);}
+.lite-theme-control select {min-width:5.3rem;min-height:44px;max-width:100%;border-radius:var(--azure-radius-control);border:1px solid var(--azure-border);padding:.45rem .65rem;background:var(--azure-raised);color:var(--azure-text);font-size:.875rem;font-weight:600;cursor:pointer;}
+.lite-azure-topbar {position:relative;z-index:20;background:var(--azure-surface);color:var(--azure-text);border-bottom:1px solid var(--azure-border);}
+.lite-azure-topbar-inner {display:flex;align-items:center;justify-content:space-between;gap:.75rem;max-width:1600px;margin:auto;padding:.75rem clamp(1rem,2.5vw,1.75rem);}
+.lite-azure-brand {display:flex;align-items:center;gap:.7rem;min-width:0;}
+.lite-azure-brand-icon {display:grid;place-items:center;width:40px;height:40px;flex-shrink:0;border:1px solid var(--azure-border);border-radius:.85rem;background:var(--azure-accent-subtle);color:var(--azure-accent);}
+.lite-azure-brand strong {display:block;font-size:.94rem;color:var(--azure-text);font-weight:650;}
+.lite-azure-brand small {display:block;font-size:.78rem;color:var(--azure-muted);}
+.lite-azure-topbar-actions {display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+.lite-azure-menu-button {min-width:44px;min-height:44px;border-radius:var(--azure-radius-control);border:1px solid var(--azure-border);background:var(--azure-raised);color:var(--azure-text);display:grid;place-items:center;}
+.pocket-nav-dock,.pocket-side-rail,.mobile-more-sheet {background:var(--azure-surface);color:var(--azure-text);border-color:var(--azure-border);box-shadow:var(--azure-shadow);backdrop-filter:none;}
+.pocket-nav-button,.pocket-side-button,.mobile-more-item {color:var(--azure-muted);}
+.pocket-nav-button-active,.pocket-side-button-active,.mobile-more-item[aria-current="page"] {color:var(--azure-accent);background:var(--azure-selected);border-color:var(--azure-strong-border);box-shadow:none;}
+.pocket-nav-button:hover,.pocket-side-button:hover,.mobile-more-item:hover {color:var(--azure-text);background:var(--azure-hover);}
+.lite-p3-launcher {color:var(--azure-text);background:var(--azure-raised);border:1px solid var(--azure-border);min-height:44px;border-radius:var(--azure-radius-control);}
+.mobile-more-sheet h2,.mobile-more-sheet p {color:var(--azure-text);}
+@media(min-width:1024px) {
+  .pocket-side-rail {left:clamp(.5rem,2vw,1.5rem);top:6.75rem;bottom:1rem;max-height:calc(100dvh - 7.75rem);border-radius:1rem;overflow-y:auto;gap:.25rem;}
+  .pocket-main {padding-left:7rem;}
+}
+@media(max-width:767px) {
+  .lite-azure-topbar-inner {padding:.55rem .75rem;}
+  .lite-azure-brand small {display:none;}
+  .lite-azure-topbar-actions {gap:.3rem;}
+  .lite-p3-launcher-shortcut {display:none;}
+  .lite-theme-control select {min-width:4.4rem;}
+  .pocket-nav-dock {bottom:max(.5rem,env(safe-area-inset-bottom));}
+  .pocket-main {padding-bottom:calc(6.25rem + env(safe-area-inset-bottom));}
+}
+@media(prefers-reduced-motion:reduce) {
+  .pocket-card-interactive,.pocket-button,.pocket-nav-button,.pocket-side-button {transition:none;transform:none;}
+}
+
+/* PR #588's measured render lane must stay static in both Azure appearances.
+   The legacy daylight performance bridge is class-scoped; without this
+   attribute-scoped companion, switching from Light to Black re-enables the
+   inherited Tailwind transitions during the sampled interaction. */
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-app-shell,
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-app-shell *,
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-app-shell *::before,
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-app-shell *::after,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-overlay-root,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-overlay-root *,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-overlay-root *::before,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-overlay-root *::after {
+  animation:none !important;transition:none !important;
+}
+
+/* Seven-tab desktop rail reuses PR #606 navigation configuration and handlers. */
+@media(min-width:1024px){
+  html[data-lite-theme] .pocket-side-rail {
+    width:196px;align-items:stretch;left:1rem;top:5.2rem;
+    max-height:calc(100dvh - 6.2rem);border-radius:1rem;padding:.6rem;
+  }
+  html[data-lite-theme] .pocket-side-button {
+    display:flex;width:100%;min-height:46px;justify-content:flex-start;
+    gap:.7rem;padding:.55rem .8rem;border-radius:.75rem;
+  }
+  html[data-lite-theme] .pocket-main {padding-left:14.5rem;}
+  html[data-lite-theme] .lite-azure-side-label {font-size:.9rem;font-weight:600;white-space:normal;text-align:left;}
+}
+html[data-lite-theme] .mobile-more-sheet {border-color:var(--azure-border)}
+html[data-lite-theme] .mobile-more-item[aria-current=page] {color:var(--azure-accent)}
+html[data-lite-theme] .lite-home-activity-preview.pocket-card {box-shadow:var(--azure-shadow)}
+
+/* High-specificity bridge for historical Daylight screen-level CSS. */
+html[data-lite-theme] .pocket-card,
+html[data-lite-theme] .pocket-page-header,
+html[data-lite-theme] .lite-page-header {
+  background:var(--azure-surface);color:var(--azure-text);
+  border-color:var(--azure-border);box-shadow:var(--azure-shadow);backdrop-filter:none;
+}
+html[data-lite-theme] .pocket-button-primary {background:var(--azure-button);color:var(--azure-button-text);border-color:var(--azure-button);}
+html[data-lite-theme] .pocket-button-secondary {background:var(--azure-raised);color:var(--azure-text);border-color:var(--azure-border);}
+html[data-lite-theme] .pocket-side-rail,
+html[data-lite-theme] .pocket-nav-dock,
+html[data-lite-theme] .mobile-more-sheet {background:var(--azure-surface);border-color:var(--azure-border);color:var(--azure-text);}
+html[data-lite-theme] .lite-overlay-surface,
+html[data-lite-theme] .lite-details-panel {
+  color:var(--azure-text);background:var(--azure-surface);border-color:var(--azure-border);
+  box-shadow:var(--azure-panel-shadow);
+}
+html[data-lite-theme] .lite-overlay-head {color:var(--azure-text);background:var(--azure-surface);border-color:var(--azure-border);}
+html[data-lite-theme] .lite-overlay-backdrop {background:var(--azure-backdrop);}
+html[data-lite-theme] .lite-operational-story {background:var(--azure-surface);border-color:var(--azure-border);color:var(--azure-text);}
+html[data-lite-theme] .lite-overlay-root {
+  position:fixed;inset:0;z-index:140;display:flex;align-items:flex-end;justify-content:center;
+  padding:max(.75rem,env(safe-area-inset-top)) max(.75rem,env(safe-area-inset-right))
+    max(.75rem,env(safe-area-inset-bottom)) max(.75rem,env(safe-area-inset-left));
+  pointer-events:auto;
+}
+html[data-lite-theme] .lite-overlay-backdrop {
+  position:absolute;inset:0;border:0;cursor:pointer;
+}
+html[data-lite-theme] .lite-overlay-surface {
+  position:relative;z-index:1;display:flex;width:min(100%,720px);
+  max-height:calc(var(--lite-visual-viewport-height,100vh) - max(1rem,env(safe-area-inset-top)) - max(1rem,env(safe-area-inset-bottom)));
+  min-height:min(44rem,calc(var(--lite-visual-viewport-height,100vh) - 2rem));
+  flex-direction:column;overflow:hidden;border-radius:2rem 2rem 1.35rem 1.35rem;
+}
+html[data-lite-theme] .lite-overlay-head {
+  flex:0 0 auto;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;
+  border-bottom:1px solid var(--azure-border);padding:.9rem 1rem 1rem;
+}
+html[data-lite-theme] .lite-overlay-head>div {min-width:0;}
+html[data-lite-theme] .lite-overlay-head span,
+html[data-lite-theme] .lite-overlay-head strong,
+html[data-lite-theme] .lite-overlay-head p {display:block;overflow-wrap:anywhere;}
+html[data-lite-theme] .lite-overlay-head span {font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+html[data-lite-theme] .lite-overlay-head strong {font-size:1rem;line-height:1.3;}
+html[data-lite-theme] .lite-overlay-head p {margin:.25rem 0 0;line-height:1.45;}
+html[data-lite-theme] .lite-overlay-scroll {
+  flex:1 1 auto;min-height:0;overflow-y:auto;padding:.95rem;
+  -webkit-overflow-scrolling:touch;
+}
+html[data-lite-theme] .lite-overlay-close {min-width:44px;min-height:44px;flex:0 0 auto;}
+html[data-lite-theme] .lite-overlay-grip {flex:0 0 auto;min-height:34px;border:0;background:transparent;cursor:grab;touch-action:none;}
+html[data-lite-theme] .lite-overlay-grip span {display:block;width:3.6rem;height:.32rem;margin:.78rem auto .45rem;border-radius:999px;background:var(--azure-neutral);}
+html[data-lite-theme] .lite-details-overlay-layer {z-index:155;}
+@media(min-width:900px) {
+  html[data-lite-theme] .lite-overlay-root {align-items:stretch;justify-content:flex-end;padding:1.2rem;}
+  html[data-lite-theme] .lite-overlay-surface {width:min(42rem,44vw);min-height:0;height:100%;border-radius:1.75rem;}
+  html[data-lite-theme] .lite-overlay-grip {display:none;}
+}
+@media(max-width:480px) {
+  html[data-lite-theme] .lite-azure-topbar-inner {flex-wrap:wrap;gap:.35rem;}
+  html[data-lite-theme] .lite-azure-brand {flex:1 1 100%;}
+  html[data-lite-theme] .lite-azure-topbar-actions {width:100%;justify-content:flex-end;}
+}
+
+/* The legacy PR #588 performance bridge disables decorative shadows and
+   backdrop effects on the measured path.  These Azure selectors intentionally
+   carry one extra attribute/class specificity so the later theme layer cannot
+   re-enable those effects during qualification.  The override is limited to
+   the explicit perf build; normal product presentation keeps the Azure depth
+   treatment. */
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-main .pocket-card,
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-main .pocket-state-surface,
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-main .lite-motion-elevation-surface,
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-main .lite-operational-story,
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-main .lite-remote-access-panel,
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-main .lite-flow-status-panel {
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-overlay-root .lite-overlay-surface,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-overlay-root .lite-details-panel,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-overlay-root .lite-overlay-backdrop,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-catalog-manage-layer .lite-catalog-manage-sheet {
+  box-shadow: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}

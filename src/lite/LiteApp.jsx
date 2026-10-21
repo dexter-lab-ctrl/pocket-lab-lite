@@ -1,4 +1,5 @@
 import './liteDesignSystemP0.css';
+import { LiteThemeProvider, LiteThemeControl } from './theme/LiteThemeProvider.jsx';
 import React, { Suspense, startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -410,7 +411,7 @@ class LiteErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="pocket-app-shell theme-pocket-lite-daylight lite-motion-system">
+        <div className="pocket-app-shell lite-motion-system">
           <main className="pocket-main lite-error-boundary-wrap">
             <GlassCard className="lite-error-boundary-card">
               <div className="lite-devices-mini-icon">
@@ -704,7 +705,7 @@ function LiteAppShell() {
     </section>
   );
 
-  const shellClassName = `pocket-app-shell theme-pocket-lite-daylight lite-motion-system ${workspaceApp ? 'is-app-workspace' : ''}`;
+  const shellClassName = `pocket-app-shell lite-motion-system ${workspaceApp ? 'is-app-workspace' : ''}`;
 
   return (
     <div className={shellClassName} data-lite-perf-primitive="app-shell">
@@ -725,19 +726,20 @@ function LiteAppShell() {
         </div>
       )}
 
-      <header className="relative z-20 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl border border-indigo-300/25 bg-indigo-500/15 p-2 text-indigo-100"><Download className="h-5 w-5" /></div>
+      <header className="lite-azure-topbar">
+        <div className="lite-azure-topbar-inner">
+          <div className="lite-azure-brand">
+            <div className="lite-azure-brand-icon"><Download className="h-5 w-5" /></div>
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-200">Pocket Lab Lite</p>
-              <p className="text-sm text-slate-400">Self-hosted workspace</p>
+              <strong>Pocket Lab Lite</strong>
+              <small>Self-hosted workspace</small>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="lite-azure-topbar-actions">
+            <LiteThemeControl />
             <LiteNativeInstallSurface />
             <button type="button" className="lite-p3-launcher" onClick={openQuickNavigation} aria-label="Find a Pocket Lab section" aria-haspopup="dialog" aria-expanded={quickNavigateOpen}>Find <span className="lite-p3-launcher-shortcut">⌘/Ctrl K</span></button>
-            <button type="button" onClick={() => setMenuOpen(true)} className="rounded-2xl border border-white/10 bg-white/5 p-3 text-slate-100 md:hidden" aria-label="Open navigation"><Menu className="h-5 w-5" /></button>
+            <button type="button" onClick={() => setMenuOpen(true)} className="lite-azure-menu-button md:hidden" aria-label="Open navigation"><Menu className="h-5 w-5" /></button>
           </div>
         </div>
       </header>
@@ -764,6 +766,7 @@ function LiteAppShell() {
           return (
             <button key={item.id} type="button" onPointerEnter={() => warmScreenOnNavIntent(item.id)} onFocus={() => warmScreenOnNavIntent(item.id)} onTouchStart={() => warmScreenOnNavIntent(item.id)} onClick={(event) => commitScreenNavigation(item.id, event)} title={item.label} aria-label={item.label} aria-current={isActive ? 'page' : undefined} className={`pocket-side-button nav-active-rail-item ${isActive ? 'pocket-side-button-active' : ''}`}>
               <Icon className="nav-active-rail-icon h-5 w-5" />
+              <span className="lite-azure-side-label">{item.label}</span>
             </button>
           );
         })}
@@ -803,9 +806,11 @@ export default function LiteApp() {
   return (
     <QueryClientProvider client={liteQueryClient}>
       <LiteRevisionSyncBridge />
-      <LiteErrorBoundary>
-        <LiteAppShell />
-      </LiteErrorBoundary>
+      <LiteThemeProvider>
+        <LiteErrorBoundary>
+          <LiteAppShell />
+        </LiteErrorBoundary>
+      </LiteThemeProvider>
     </QueryClientProvider>
   );
 }

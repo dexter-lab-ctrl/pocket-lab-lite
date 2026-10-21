@@ -1,6 +1,7 @@
 import { initialLiteScreenIdFromLocation, normalizeLiteScreenId } from '../lite/liteNavigationConfig.js';
 import { sanitizeSecurityRunId } from '../lib/securityRunId.js';
 import { create } from 'zustand';
+import { readLiteThemePreference, normalizeLiteThemePreference, saveLiteThemePreference, applyLiteThemePreference } from '../lite/theme/liteThemeRuntime.js';
 
 const DEFAULT_TAB = initialLiteScreenIdFromLocation();
 const DEFAULT_MANAGE_SECTION = 'media';
@@ -131,6 +132,13 @@ function buildRefreshFeedback(scope, result, extra = {}) {
 }
 
 export const useLiteUiStore = create((set, get) => ({
+  appearancePreference: readLiteThemePreference(),
+  setAppearancePreference: (value) => {
+    const preference = normalizeLiteThemePreference(value);
+    saveLiteThemePreference(preference);
+    applyLiteThemePreference(preference);
+    set({ appearancePreference: preference });
+  },
   controlPlaneLoad: {
     state: 'normal',
     reason: '',

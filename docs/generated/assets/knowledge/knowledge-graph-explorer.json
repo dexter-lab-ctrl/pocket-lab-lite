@@ -15201,6 +15201,39 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-performance.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-visual.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-content-stress.spec.ts",
       "name": "tests/e2e/lite-content-stress.spec.ts",
       "source_refs": [
@@ -17011,6 +17044,20 @@
       "id": "rel:016a81ecece12f28",
       "source": "reason:policy_source_unavailable",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-visual.spec.ts"
+      ],
+      "id": "rel:01806e606cbaced1",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-azure-horizon-visual.spec.ts",
       "type": "verified_by"
     },
     {

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: e0c1dfc1bd3c2739d2a239b2e782421926c67a74e05567000e86578105c27f2e
+source_fingerprint: ca2915d5d4e9a504025bb36da9daaa6bbf9f1bb5304e6b784453bd148c59ae65
 schema_revision: 1
 validation_status: generated
 ---
@@ -28,7 +28,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `EDGE_STYLES` | configuration | source-defined or empty | no | component-dependent | scripts/docs/graphviz/graphviz_renderer.py |
 | `LITE_ANDROID_BASELINE_REPETITIONS` | configuration | 3 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-baseline.sh |
 | `LITE_ANDROID_CDP_URL` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-baseline.sh, scripts/dev/lite/run-ui-performance-android-cdp.sh, scripts/dev/lite/run-ui-performance-qualified.py |
-| `LITE_ANDROID_EXPECTED_INTERACTION_REPORTS` | configuration | 27 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-baseline.sh |
+| `LITE_ANDROID_EXPECTED_INTERACTION_REPORTS` | configuration | 28 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-baseline.sh |
 | `LITE_ANDROID_GATE` | configuration | 0 | yes | component-dependent | scripts/dev/lite/run-gate.sh |
 | `LITE_API_DIRECT_URL` | configuration | http://127.0.0.1:8000 | yes | component-dependent | Taskfile.yml, scripts/docs/lite/generate_docs.py, scripts/test/parity/run_schemathesis.sh, scripts/test/parity/run_schemathesis_discovery.sh |
 | `LITE_APP_OPERATION_ID` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh |

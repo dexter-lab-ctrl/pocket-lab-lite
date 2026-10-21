@@ -123,3 +123,48 @@ tasks:
     deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
     cmds:
       - npm run test:recovery:premium:perf
+
+  lite:test:azure:unit:
+    desc: Run Azure Horizon appearance and shared portal unit coverage
+    cmds:
+      - npm run test:azure:unit
+
+  lite:test:azure:home:
+    desc: Run Azure Home state, activity and Details component tests
+    cmds:
+      - npm run test:azure:home
+
+  lite:test:azure:storybook:
+    desc: Build existing Lite Storybook with Azure appearance stories
+    cmds:
+      - npm run test:azure:storybook
+
+  lite:test:azure:mocked:
+    desc: Run Azure responsive browser interaction and theme regression
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:azure:mocked
+
+  lite:test:azure:a11y:
+    desc: Run Azure WCAG AA, text scaling and mobile regression
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:azure:a11y
+
+  lite:test:azure:visual:
+    desc: Compare Azure appearance scenarios only after manual baseline capture and approval
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:azure:visual
+
+  lite:test:azure:perf:
+    desc: Measure Azure theme and Home Details with existing PR 588 thresholds
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:azure:perf
+
+  lite:test:azure:qualification:
+    desc: Run full Azure qualification only after visual baselines are owner-approved
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:azure:qualification

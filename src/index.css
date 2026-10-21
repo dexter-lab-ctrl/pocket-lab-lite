@@ -17979,7 +17979,7 @@ textarea {
 
 /* The Lite shell stays fixed while the document scrolls. Avoid repainting the
    entire document through translucent fixed layers during that gesture. */
-.theme-pocket-lite-daylight.pocket-app-shell > header,
+.theme-pocket-lite-daylight .pocket-app-shell > header,
 .theme-pocket-lite-daylight .pocket-nav-dock,
 .theme-pocket-lite-daylight .pocket-side-rail,
 .theme-pocket-lite-daylight .pocket-app-backdrop,
@@ -25516,7 +25516,7 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
 }
 
 .theme-pocket-lite-daylight .lite-device-flow-topology.is-connected .lite-device-flow-signal {
-  animation: lite-device-signal-travel 1.65s ease-in-out infinite;
+  animation: lite-device-flow-packet-horizontal 1.65s ease-in-out infinite;
 }
 
 .theme-pocket-lite-daylight .lite-device-flow-topology.is-repairing .lite-device-flow-rail {
@@ -25527,7 +25527,7 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
   opacity: 1;
   left: 50%;
   background: #d97706;
-  animation: lite-device-signal-repair 900ms linear infinite;
+  animation: lite-device-flow-packet-horizontal 1.4s ease-in-out infinite;
 }
 
 .theme-pocket-lite-daylight .lite-device-flow-topology.is-disconnected .lite-device-flow-rail {
@@ -25635,13 +25635,14 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
     left: 50%;
     top: 0;
     margin: 0 0 0 -0.3rem;
-    animation: lite-device-signal-travel-vertical 1.65s ease-in-out infinite;
+    animation: lite-device-flow-packet-vertical 1.65s ease-in-out infinite;
   }
 
   .theme-pocket-lite-daylight .lite-device-flow-topology.is-repairing .lite-device-flow-signal {
     left: 50%;
     top: 50%;
     margin: -0.3rem 0 0 -0.3rem;
+    animation: lite-device-flow-packet-vertical 1.4s ease-in-out infinite;
   }
 
   .theme-pocket-lite-daylight .lite-device-flow-topology.is-disconnected .lite-device-flow-break {

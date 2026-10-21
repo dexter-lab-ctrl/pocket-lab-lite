@@ -11,6 +11,7 @@ import {
 import { buildLiteHomeOverview } from '../lib/liteHomePresentation.js';
 import {
   PageHeader,
+  GlassCard,
   LiteRefreshButton,
   LoadingCard,
   LiteActionRow,
@@ -26,6 +27,7 @@ import { liteApi } from '../lib/liteApi.js';
 import { selectHomeActivityEvidence } from './homeActivityEvidence.js';
 import HomeActivityDetails from './components/HomeActivityDetails.jsx';
 import './components/homePremium.css';
+import './components/azureHome.css';
 import './components/homeActivityEvidence.css';
 
 const HOME_WORKFLOW_STEPS = Object.freeze([
@@ -76,8 +78,8 @@ export function homeWorkflowPresentation({ overallTone, attentionCount, savedSta
     state: 'ready',
     motion: 'live',
     eyebrow: 'Workspace status',
-    title: 'Your workspace is flowing smoothly',
-    summary: 'Device, services, apps, and safety are all ready together.',
+    title: 'Reported workspace checks are ready',
+    summary: 'Review individual areas for their latest confirmed state.',
     badge: 'Live',
     activeNodes: ['device', 'services', 'apps', 'safety'],
     doneNodes: ['device', 'services', 'apps', 'safety'],
@@ -136,12 +138,12 @@ function HomeOverviewGrid({ services, onNavigate, saved }) {
       {HOME_TILES.map(({ id, label, screen, icon: Icon }) => {
         const item = rows.find((entry) => entry.key === id);
         const tone = saved ? 'neutral' : item?.tone || 'neutral';
-        return <button key={id} type="button" className={'lite-home-overview-tile is-' + tone}
+        return <GlassCard as="button" interactive key={id} type="button" className={'lite-home-overview-tile is-' + tone}
           onClick={() => onNavigate(screen)} aria-label={'Open ' + label}>
           <Icon size={20} aria-hidden="true" />
           <span><strong>{label}</strong><small>{saved ? 'Saved information' : item?.statusLabel || SERVICE_LABELS.neutral}</small></span>
           <ArrowUpRight size={17} aria-hidden="true" />
-        </button>;
+        </GlassCard>;
       })}
     </div>
     {extra.length ? <div className="lite-home-more-areas">
@@ -155,7 +157,7 @@ function HomeOverviewGrid({ services, onNavigate, saved }) {
 
 function HomeActivityPreview({ activity, onOpen }) {
   const latest = activity?.grouped?.[0] || activity?.latestEvent;
-  return <section className="lite-home-activity-preview" aria-labelledby="lite-home-activity-preview-heading">
+  return <GlassCard as="section" className="lite-home-activity-preview" aria-labelledby="lite-home-activity-preview-heading">
     <div className="lite-home-section-title"><h2 id="lite-home-activity-preview-heading">Recent activity</h2>
       <p>{activity?.summary || 'Activity information is not available yet.'}</p></div>
     {latest ? <div className="lite-home-activity-latest">
@@ -164,7 +166,7 @@ function HomeActivityPreview({ activity, onOpen }) {
         <small>{latest.summary || latest.statusLabel}{latest.at ? ' · ' + new Date(latest.at).toLocaleString() : ''}</small></span>
     </div> : <p className="lite-home-muted">No recent activity to display.</p>}
     <button type="button" className="lite-home-text-action" onClick={onOpen}>View activity <ArrowUpRight size={16} aria-hidden="true" /></button>
-  </section>;
+  </GlassCard>;
 }
 
 export default function HomeScreen({
@@ -293,7 +295,7 @@ export default function HomeScreen({
         onClick: () => goTo(overview.nextAction.screen),
       }
     : null;
-  return <div className="lite-home-premium-shell lite-home-refined" data-lite-home-premium="true" data-home-state-source="tanstack-dexie-fastapi">
+  return <div className="lite-home-premium-shell lite-home-refined" data-lite-home-premium="true" data-azure-horizon-home="true" data-home-state-source="tanstack-dexie-fastapi">
     <PageHeader eyebrow="Self-hosted workspace" title="Home" description="Your workspace, at a glance."
       actions={<LiteRefreshButton scope="home" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />} />
     <LiteOperationalStory className="lite-home-operational-story" story={overview.workspaceStory}
@@ -307,6 +309,9 @@ export default function HomeScreen({
       backendReachable={backendReachable}
     />
     {loading && !overview.services.length ? <LoadingCard label="Checking workspace status…" /> : null}
+    <HomeOverviewGrid services={overview.services} saved={effectiveSavedStateOnly} onNavigate={goTo} />
+    <div className="lite-home-lower-grid">
+    <HomeActivityPreview activity={effectiveSavedStateOnly ? null : activity} onOpen={() => setActivityOpen(true)} />
     {attentionItems.length ? <LiteNextSteps title="Needs your attention"
       description={effectiveSavedStateOnly ? 'Last saved status — verify before acting.' : 'A few things to check.'}
       saved={effectiveSavedStateOnly} initialCount={3}
@@ -315,8 +320,7 @@ export default function HomeScreen({
         actionLabel: 'Review ' + item.label,
         onClick: item.screen ? () => goTo(item.screen) : undefined,
       }))} className="lite-home-attention-list" /> : null}
-    <HomeOverviewGrid services={overview.services} saved={effectiveSavedStateOnly} onNavigate={goTo} />
-    <HomeActivityPreview activity={effectiveSavedStateOnly ? null : activity} onOpen={() => setActivityOpen(true)} />
+    </div>
     <LiteDetailsPanel open={workspaceDetailsOpen} onClose={() => setWorkspaceDetailsOpen(false)}
       bodyRef={workspaceDetailsScrollRef} bodyClassName="lite-home-workspace-details-scroll"
       title="Workspace details" description="Current services and safe workspace information.">

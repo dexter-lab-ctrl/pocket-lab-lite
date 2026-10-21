@@ -3,10 +3,10 @@ import { AlertTriangle, Inbox, ShieldAlert, WifiOff } from 'lucide-react';
 
 
 const STATE_CLASS = {
-  empty: 'border-dashed border-blue-300/20 bg-blue-500/10 text-blue-100',
-  degraded: 'border-amber-300/25 bg-amber-500/10 text-amber-100',
-  offline: 'border-slate-300/20 bg-slate-500/10 text-slate-100',
-  blocked: 'border-rose-300/25 bg-rose-500/10 text-rose-100',
+  empty: 'is-empty',
+  degraded: 'is-degraded',
+  offline: 'is-offline',
+  blocked: 'is-blocked',
 };
 
 function stateIcon(tone) {
@@ -168,7 +168,7 @@ export function EmptyState({ icon: Icon, title, description, action, className =
         </div>
       ) : null}
       <p className="text-base font-black text-white">{title}</p>
-      {description ? <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">{description}</p> : null}
+      {description ? <p className="pocket-state-description">{description}</p> : null}
       {action ? <div className="mt-4">{action}</div> : null}
     </div>
   );
@@ -184,8 +184,8 @@ export function StateSurface({ tone = 'empty', title, description, action, icon:
         <Icon className="h-5 w-5" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-black text-white">{title}</p>
-        {description ? <p className="mt-1 text-sm leading-6 text-slate-300">{description}</p> : null}
+        <p className="pocket-state-title">{title}</p>
+        {description ? <p className="pocket-state-description">{description}</p> : null}
         {action ? <div className="mt-3">{action}</div> : null}
       </div>
     </div>

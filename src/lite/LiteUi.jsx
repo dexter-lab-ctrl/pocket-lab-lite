@@ -814,11 +814,11 @@ export function securityExecutionTimeline({ executionTimeline, currentRunId, run
 
 export function PageHeader({ eyebrow = 'Pocket Lab Lite', title, description, actions }) {
   return (
-    <div className="lite-page-header mb-5 flex flex-col gap-4 rounded-[2rem] border border-white/10 bg-slate-900/65 p-5 shadow-2xl shadow-black/20 backdrop-blur-xl sm:flex-row sm:items-end sm:justify-between">
+    <div className="lite-page-header">
       <div className="min-w-0">
-        <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200">{eyebrow}</p>
-        <h1 className="mt-2 text-3xl font-black tracking-tight text-white sm:text-4xl">{title}</h1>
-        {description ? <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">{description}</p> : null}
+        <p className="lite-page-eyebrow">{eyebrow}</p>
+        <h1 className="lite-page-title">{title}</h1>
+        {description ? <p className="lite-page-description">{description}</p> : null}
       </div>
       {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
     </div>
@@ -1005,9 +1005,9 @@ export function LiteTechnicalDetails({ summary = 'Technical details', children, 
 export function LoadingCard({ label = 'Getting the latest Pocket Lab information…' }) {
   return (
     <GlassCard className="lite-loading-card" data-lite-loading-state="true">
-      <div className="h-3 w-40 animate-pulse rounded-full bg-white/10" />
-      <div className="mt-4 h-20 animate-pulse rounded-3xl bg-white/5" />
-      <p className="mt-4 text-sm text-slate-400">{label}</p>
+      <div className="lite-skeleton-bar h-3 w-40 animate-pulse rounded-full" />
+      <div className="lite-skeleton-bar mt-4 h-20 animate-pulse rounded-3xl" />
+      <p className="mt-4 text-sm">{label}</p>
     </GlassCard>
   );
 }

@@ -1574,6 +1574,52 @@
       "affects_release": true,
       "affects_runtime": true,
       "default": "source-defined/unvalidated",
+      "name": "LITE_OVERLAY_ROOT_DARK_CLASS",
+      "owner": "frontend",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "src/lite/LiteOverlay.jsx"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "frontend"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "LITE_OVERLAY_ROOT_DAYLIGHT_CLASS",
+      "owner": "frontend",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "src/lite/LiteOverlay.jsx"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "frontend"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
       "name": "LITE_OVERLAY_SAFE_GESTURE_SPRING_READY",
       "owner": "frontend",
       "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -3975,6 +4021,53 @@
       "secret": false,
       "source": [
         "tests/e2e/lite-test-helpers.ts"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "frontend"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "LITE_THEME_PREFERENCES",
+      "owner": "frontend",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "src/lite/theme/liteThemeRuntime.js"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "frontend"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "redacted/not inferred",
+      "name": "LITE_THEME_STORAGE_KEY",
+      "owner": "frontend",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": true,
+      "source": [
+        "src/lite/theme/liteThemeRuntime.js",
+        "src/lite/theme/liteThemeRuntime.test.js"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -15169,13 +15262,14 @@
     },
     {
       "affected_components": [
-        "repository tooling"
+        "bootstrap/runtime",
+        "frontend"
       ],
-      "affects_release": false,
+      "affects_release": true,
       "affects_runtime": true,
       "default": "source-defined/unvalidated",
       "name": "POCKETLAB_LITE_THEME",
-      "owner": "repository tooling",
+      "owner": "frontend",
       "purpose": "Pocket Lab runtime/development configuration discovered from source",
       "related_troubleshooting": [
         "Development Troubleshooting",
@@ -15186,7 +15280,8 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        ".storybook/preview.jsx"
+        "public/lite-theme-bootstrap.js",
+        "src/lite/theme/liteThemeRuntime.js"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
