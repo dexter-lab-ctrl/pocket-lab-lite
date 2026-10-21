@@ -216,3 +216,47 @@ export const PremiumBackupExplanation = {
     await expect(within(backup).getByText(/protected WebDAV originals/i)).toBeInTheDocument();
   },
 };
+
+/* Azure Horizon Apps — definitions only. Qualification and baselines deferred. */
+export const AzureDaylightLibrary = createLiteStory('catalog','catalog-multi-app',{theme:'daylight',viewport:'desktop'});
+export const AzureBlackLibrary = createLiteStory('catalog','catalog-multi-app',{theme:'dark',viewport:'desktop'});
+export const AzureDaylightMobile = createLiteStory('catalog','catalog-ready',{theme:'daylight',viewport:'mobile390'});
+export const AzureBlackMobile = createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'mobile390'});
+export const AzureSystem = createLiteStory('catalog','catalog-ready',{theme:'system',viewport:'desktop'});
+export const AzureSavedBlack = createLiteStory('catalog','offline-saved',{theme:'dark',viewport:'mobile390'});
+export const AzureStaleDaylight = createLiteStory('catalog','app-projection-stale',{theme:'daylight',viewport:'desktop'});
+export const AzureRouteUnavailable = createLiteStory('catalog','app-route-not-ready',{theme:'dark',viewport:'desktop'});
+export const AzureMediaNotReady = createLiteStory('catalog','app-media-not-ready',{theme:'daylight',viewport:'mobile390'});
+export const AzureInstallInProgress = createLiteStory('catalog','catalog-installing',{theme:'dark',viewport:'desktop'});
+export const AzureStopped = createLiteStory('catalog','app-stopped',{theme:'daylight',viewport:'mobile390'});
+export const AzureFailedAction = createLiteStory('catalog','app-action-failed',{theme:'dark',viewport:'desktop'});
+export const AzureNarrowText200 = createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'mobile360',textScale:2});
+export const AzureManageDesktop = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'desktop'}),
+  play: async ({ canvasElement }) => {
+    await openManage(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+    const manage = await body.findByRole('dialog',{name:/Manage PhotoPrism/i});
+    await expect(await within(manage).findByRole('button',{name:'Move app management panel'})).toBeVisible();
+    await expect(within(manage).getByRole('button',{name:'Resize app management panel'})).toBeVisible();
+    await expect(within(manage).getByRole('button',{name:'Reset app panel position and size'})).toBeVisible();
+  },
+};
+export const AzureManageMobile = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'daylight',viewport:'mobile390'}),
+  play: async ({ canvasElement }) => {
+    await openManage(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+    const manage = await body.findByRole('dialog',{name:/Manage PhotoPrism/i});
+    await expect(within(manage).queryByRole('button',{name:'Resize app management panel'})).not.toBeInTheDocument();
+  },
+};
+export const AzureManageBackupAndRecovery = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'desktop'}),
+  play: async ({ canvasElement }) => {
+    await openManage(canvasElement);
+    const manage = await within(canvasElement.ownerDocument.body).findByRole('dialog',{name:/Manage PhotoPrism/i});
+    const recovery = within(manage).queryByRole('tab',{name:/Recovery/i});
+    if (recovery) await userEvent.click(recovery);
+  },
+};

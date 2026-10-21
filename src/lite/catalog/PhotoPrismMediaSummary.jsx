@@ -9,7 +9,7 @@ export default function PhotoPrismMediaSummary({ title = 'Media folders', summar
           <span>{title}</span>
           <strong>{summary}</strong>
         </div>
-        <FolderOpen className="h-5 w-5" />
+        <FolderOpen className="h-5 w-5" aria-hidden="true" />
       </div>
       {children}
     </div>

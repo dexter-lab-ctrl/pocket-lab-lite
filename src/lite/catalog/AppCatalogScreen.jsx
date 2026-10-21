@@ -1,7 +1,7 @@
 import { LiteProtectedConfirmation } from '../components/LiteSafeForms.jsx';
 import LiteNextSteps from '../components/LiteNextSteps.jsx';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { filterCatalogApps, sortCatalogApps, catalogStateBucket } from './catalogPresentation.js';
+import { filterCatalogApps, sortCatalogApps } from './catalogPresentation.js';
 import { LiteDetailsPanel, useFocusTrap, useFocusReturn } from '../LiteOverlay.jsx';
 import { useDesktopManageGeometry } from '../components/useDesktopManageGeometry.js';
 import './appsPremiumRefinement.css';
@@ -2339,7 +2339,7 @@ function CatalogManagePortal({
                   <LiteManageSectionTab
                     key={sectionId}
                     sectionId={sectionId}
-                    active={manageSection === sectionId}
+                    active={activeManageSection === sectionId}
                     label={MANAGE_SECTION_LABELS[sectionId] || sectionId}
                     onSelect={(event) => {
                       stopGestureEvent(event);
