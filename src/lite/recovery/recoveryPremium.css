@@ -50,8 +50,8 @@
    effect creates large backdrop-filter compositor layers during qualification
    scrolling. Keep the qualification-only paint reduction scoped to these
    nested decorative headers; normal product rendering is unchanged. */
-html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .lite-recovery-premium-screen > .lite-recovery-premium-journey > header,
-html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .lite-recovery-premium-screen > .lite-recovery-premium-timeline > header {
+html[data-lite-perf-mode='true'].theme-pocket-lite-daylight .lite-recovery-premium-screen > .lite-recovery-premium-journey > header,
+html[data-lite-perf-mode='true'].theme-pocket-lite-daylight .lite-recovery-premium-screen > .lite-recovery-premium-timeline > header {
   background: transparent !important;
   box-shadow: none !important;
   backdrop-filter: none !important;

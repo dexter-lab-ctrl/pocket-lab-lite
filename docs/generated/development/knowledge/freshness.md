@@ -15,7 +15,7 @@ generator_version: 3
 | Signal | Value |
 | --- | --- |
 | adr_count | 6 |
-| ai_knowledge_export_freshness | 7e5404afb146305d20f5f0af138ec4257094c1fde33435819af9a84496a1a787 |
+| ai_knowledge_export_freshness | 449d9f4cd3dc1359399c321b625c26d5cf8266fcb7b9c2cf38c496068321955d |
 | api_drift | owned-by-existing-openapi-gates |
 | architecture_source | architecture/metadata/pocket-lab-architecture.json |
 | current_repository_commit | uncommitted |
@@ -34,6 +34,6 @@ generator_version: 3
 | runtime_evidence_sanitized | yes |
 | runtime_topology_freshness | 2026-08-12T16:00:40Z |
 | schema_drift | checked-by-knowledge-schema-validation |
-| source_fingerprint | 7e5404afb146305d20f5f0af138ec4257094c1fde33435819af9a84496a1a787 |
+| source_fingerprint | 449d9f4cd3dc1359399c321b625c26d5cf8266fcb7b9c2cf38c496068321955d |
 | sqlite_source | contracts/generated/lite-sqlite-schema.json |
 | unresolved_incidents_count | 0 |

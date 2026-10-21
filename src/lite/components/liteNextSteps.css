@@ -17,7 +17,7 @@
 .lite-p1-next-steps-list { margin: 0; padding: 0; list-style: none; display: grid; gap: .5rem; }
 .lite-p1-next-steps-list li { display: flex; justify-content: space-between; gap: .875rem; align-items: center; padding: .75rem; border-radius: .875rem; border: 1px solid var(--pocket-border, rgba(148,163,184,.18)); min-width: 0; }
 .lite-p1-next-steps-copy { min-width: 0; }
-.lite-p1-next-steps-copy strong { overflow-wrap: anywhere; }
+.lite-p1-next-steps-copy strong { display: block; line-height: 1.25; overflow-wrap: anywhere; }
 .lite-p1-next-steps-list button { min-height: 44px; flex-shrink: 0; padding: .6rem .85rem; border-radius: .75rem; border: 1px solid currentColor; font-weight: 650; }
 .lite-p1-next-steps-list button:focus-visible { outline: 2px solid var(--lite-p0-focus-ring, #2563eb); outline-offset: 3px; }
 .lite-p1-next-steps[data-lite-information="saved"] { border-style: dashed; }

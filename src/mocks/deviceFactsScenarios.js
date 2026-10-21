@@ -9,6 +9,9 @@ export const DEVICE_FACT_SCENARIOS = new Set([
 ]);
 
 const now = (minutes = 0) => new Date(Date.now() - minutes * 60_000).toISOString();
+const liteSafeReadHeaders = (request) => ({
+  'X-PocketLab-Read-Nonce': request.headers.get('X-PocketLab-Read-Nonce') || '',
+});
 const observation = (metric, value, extra = {}) => ({
   metric, value, unit: extra.unit || null, status: extra.status || 'available',
   collection_status: extra.collection_status || extra.status || 'available',
@@ -98,11 +101,11 @@ export function deviceFactsScenarioHandlers(scenario='') {
   if (!DEVICE_FACT_SCENARIOS.has(String(scenario))) return [];
   const state=buildDeviceFactsScenario(String(scenario)); const find=id=>state.devices.find(d=>d.id===String(id||''))||state.target;
   return [
-    http.get('/api/lite/status',()=>HttpResponse.json(state.status)),
-    http.get('/api/lite/fleet',()=>HttpResponse.json({status:'healthy',devices:state.devices,count:state.devices.length,source_revision:2,sanitized:true})),
-    http.get('/api/lite/devices/:deviceId',({params})=>HttpResponse.json({status:'ready',device:find(params.deviceId),source_revision:2,sanitized:true})),
-    http.get('/api/lite/devices/:deviceId/health',({params})=>{const d=find(params.deviceId),h=d.proactive_health;return HttpResponse.json({status:'ready',health:h,device_facts:d.device_facts,resource_observations:d.device_facts.resources,capability_states:d.capability_states||[],runtime_services:d.runtime_services||[],software_posture:h.software_posture||{},source_revision:2,sanitized:true});}),
-    http.get('/api/lite/devices/:deviceId/history',()=>HttpResponse.json({status:'ready',items:[],total_count:0,sanitized:true})),
-    http.get('/api/lite/devices/:deviceId/health/history',()=>HttpResponse.json({status:'ready',items:[],total_count:0,sanitized:true})),
+    http.get('/api/lite/status',({request})=>HttpResponse.json(state.status,{headers:liteSafeReadHeaders(request)})),
+    http.get('/api/lite/fleet',({request})=>HttpResponse.json({status:'healthy',devices:state.devices,count:state.devices.length,source_revision:2,sanitized:true},{headers:liteSafeReadHeaders(request)})),
+    http.get('/api/lite/devices/:deviceId',({params,request})=>HttpResponse.json({status:'ready',device:find(params.deviceId),source_revision:2,sanitized:true},{headers:liteSafeReadHeaders(request)})),
+    http.get('/api/lite/devices/:deviceId/health',({params,request})=>{const d=find(params.deviceId),h=d.proactive_health;return HttpResponse.json({status:'ready',health:h,device_facts:d.device_facts,resource_observations:d.device_facts.resources,capability_states:d.capability_states||[],runtime_services:d.runtime_services||[],software_posture:h.software_posture||{},source_revision:2,sanitized:true},{headers:liteSafeReadHeaders(request)});}),
+    http.get('/api/lite/devices/:deviceId/history',({request})=>HttpResponse.json({status:'ready',items:[],total_count:0,sanitized:true},{headers:liteSafeReadHeaders(request)})),
+    http.get('/api/lite/devices/:deviceId/health/history',({request})=>HttpResponse.json({status:'ready',items:[],total_count:0,sanitized:true},{headers:liteSafeReadHeaders(request)})),
   ];
 }

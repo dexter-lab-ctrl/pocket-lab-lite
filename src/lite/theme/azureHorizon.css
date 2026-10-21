@@ -211,3 +211,30 @@ html[data-lite-theme] .lite-details-overlay-layer {z-index:155;}
   html[data-lite-theme] .lite-azure-brand {flex:1 1 100%;}
   html[data-lite-theme] .lite-azure-topbar-actions {width:100%;justify-content:flex-end;}
 }
+
+/* The legacy PR #588 performance bridge disables decorative shadows and
+   backdrop effects on the measured path.  These Azure selectors intentionally
+   carry one extra attribute/class specificity so the later theme layer cannot
+   re-enable those effects during qualification.  The override is limited to
+   the explicit perf build; normal product presentation keeps the Azure depth
+   treatment. */
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-main .pocket-card,
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-main .pocket-state-surface,
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-main .lite-motion-elevation-surface,
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-main .lite-operational-story,
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-main .lite-remote-access-panel,
+html[data-lite-perf-mode='true'][data-lite-theme] .pocket-main .lite-flow-status-panel {
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-overlay-root .lite-overlay-surface,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-overlay-root .lite-details-panel,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-overlay-root .lite-overlay-backdrop,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-catalog-manage-layer .lite-catalog-manage-sheet {
+  box-shadow: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}

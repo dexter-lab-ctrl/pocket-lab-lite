@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
-// BASELINES DEFINED — CAPTURE AND APPROVAL DEFERRED.
-// First capture must occur in a separately authorized stabilization session.
+// CANONICAL AZURE HORIZON BASELINES — PROMOTED AFTER REVIEW.
+// Captures were reviewed in the authorized stabilization session.
 // Do not run --update-snapshots in the default aggregate qualification lane.
 const variants = [
   { name: 'daylight-mobile', theme: 'light', width: 390, scenario: 'healthy' },
@@ -14,7 +14,7 @@ const variants = [
   { name: 'black-unavailable-mobile', theme: 'dark', width: 430, scenario: 'api-unavailable' },
 ] as const;
 for (const variant of variants) {
-  test(`Azure visual: ${variant.name} [BASELINE PENDING]`, async ({ page }) => {
+  test(`Azure visual: ${variant.name} [CANONICAL BASELINE]`, async ({ page }) => {
     await page.setViewportSize({ width: variant.width, height: variant.width < 500 ? 844 : 960 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.addInitScript((p) => localStorage.setItem('pocketlab:appearance', p), variant.theme);
@@ -31,7 +31,7 @@ for (const theme of ['light','dark'] as const) {
     ['workspace', 'Workspace details', 'Workspace details'],
     ['activity', 'View activity', 'Recent activity'],
   ]) {
-    test(`Azure visual: ${theme} ${area} details [BASELINE PENDING]`, async ({ page }) => {
+    test(`Azure visual: ${theme} ${area} details [CANONICAL BASELINE]`, async ({ page }) => {
       await page.setViewportSize({ width: 390, height: 844 });
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.addInitScript((p) => localStorage.setItem('pocketlab:appearance', p), theme);

@@ -17979,7 +17979,7 @@ textarea {
 
 /* The Lite shell stays fixed while the document scrolls. Avoid repainting the
    entire document through translucent fixed layers during that gesture. */
-.theme-pocket-lite-daylight.pocket-app-shell > header,
+.theme-pocket-lite-daylight .pocket-app-shell > header,
 .theme-pocket-lite-daylight .pocket-nav-dock,
 .theme-pocket-lite-daylight .pocket-side-rail,
 .theme-pocket-lite-daylight .pocket-app-backdrop,
