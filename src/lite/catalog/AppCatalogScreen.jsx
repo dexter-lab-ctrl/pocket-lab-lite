@@ -2288,7 +2288,7 @@ function CatalogManagePortal({
         <button
           type="button"
           className="lite-catalog-manage-grip"
-          aria-label="Close app actions"
+          aria-label="Dismiss app actions grip"
           onClick={closeManageSheet}
         >
           <span aria-hidden="true" />

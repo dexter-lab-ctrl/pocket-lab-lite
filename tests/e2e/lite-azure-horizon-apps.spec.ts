@@ -53,6 +53,19 @@ test('search and real projection-backed status counts remain keyboard-operable',
   await page.getByRole('button',{name:'Show all apps'}).click();
   await expect(search).toHaveValue('');
 });
+test('System appearance follows OS changes while Apps Manage remains open',async({page})=>{
+  await page.setViewportSize({width:1280,height:800});
+  await page.emulateMedia({colorScheme:'dark'});
+  await openApps(page,'system');
+  await expect(page.locator('html')).toHaveAttribute('data-lite-theme','dark');
+  const {dialog}=await manageApp(page);
+  for(const colorScheme of ['light','dark','light'] as const){
+    await page.emulateMedia({colorScheme});
+    await expect(page.locator('html')).toHaveAttribute('data-lite-theme',colorScheme);
+    await expect(dialog).toBeVisible();
+  }
+  expect(await page.evaluate(() => localStorage.getItem('pocketlab:appearance'))).toBe('system');
+});
 test('desktop drag, resize, keyboard, reset, bounds and nested Details',async({page})=>{
   await page.setViewportSize({width:1440,height:900});
   await openApps(page,'dark');
@@ -95,7 +108,7 @@ test('desktop drag, resize, keyboard, reset, bounds and nested Details',async({p
       await expect(dialog).toBeVisible();
     }
   }
-  await dialog.getByRole('button',{name:'Close app actions'}).click();
+  await dialog.getByRole('button',{name:'Close app actions', exact:true}).click();
   await expect(dialog).toHaveCount(0);
   await expect(trigger).toBeFocused();
 });

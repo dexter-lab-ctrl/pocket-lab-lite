@@ -150,10 +150,9 @@ export function useDesktopManageGeometry({ open, defaultWidth = 560, minWidth = 
     panelRef, desktopPanel, geometry, announcement, reset,
     startPanelInteraction, adjustPanelWithKeyboard,
     panelStyle: desktopPanel && geometry ? {
-      position: 'fixed',
       left: `${geometry.left}px`, top: `${geometry.top}px`,
       width: `${geometry.width}px`, height: `${geometry.height}px`,
-      right: 'auto', bottom: 'auto', maxWidth: 'none', maxHeight: 'none',
+      right: 'auto', bottom: 'auto',
     } : undefined,
   };
 }

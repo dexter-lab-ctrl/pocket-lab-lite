@@ -65,12 +65,12 @@ export default defineConfig({
   projects: [
     {
       name: 'mocked-desktop',
-      testMatch: /lite-(mocked|azure-horizon(?:-(?:visual|performance))?|ux-maturity|accessibility(?:-states)?|content-stress|p4-regression|p4-visual-contract|phase9-qualification|rules-activation-progress|rules-premium-(?:refinement|visual|performance)|recovery-premium-(?:refinement|visual|performance)|photo-backup|apps-premium-refinement|identity-premium(?:-(?:refinement|visual))?|visual(?:-(?:devices|states|overlays))?|parity|performance)\.spec\.ts/,
+      testMatch: /lite-(mocked|azure-horizon(?:-(?:visual|performance|apps(?:-(?:visual|performance))?))?|ux-maturity|accessibility(?:-states)?|content-stress|p4-regression|p4-visual-contract|phase9-qualification|rules-activation-progress|rules-premium-(?:refinement|visual|performance)|recovery-premium-(?:refinement|visual|performance)|photo-backup|apps-premium-refinement|identity-premium(?:-(?:refinement|visual))?|visual(?:-(?:devices|states|overlays))?|parity|performance)\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], ...commonUse, recordHar: mockedHar('mocked-desktop') },
     },
     {
       name: 'mocked-mobile',
-      testMatch: /lite-(mocked|azure-horizon(?:-(?:visual|performance))?|ux-maturity|accessibility(?:-states)?|content-stress|p4-regression|p4-visual-contract|phase9-qualification|rules-activation-progress|rules-premium-(?:refinement|visual|performance)|recovery-premium-(?:refinement|visual|performance)|photo-backup|apps-premium-refinement|identity-premium(?:-(?:refinement|visual))?|visual(?:-(?:devices|states|overlays))?|parity|performance)\.spec\.ts/,
+      testMatch: /lite-(mocked|azure-horizon(?:-(?:visual|performance|apps(?:-(?:visual|performance))?))?|ux-maturity|accessibility(?:-states)?|content-stress|p4-regression|p4-visual-contract|phase9-qualification|rules-activation-progress|rules-premium-(?:refinement|visual|performance)|recovery-premium-(?:refinement|visual|performance)|photo-backup|apps-premium-refinement|identity-premium(?:-(?:refinement|visual))?|visual(?:-(?:devices|states|overlays))?|parity|performance)\.spec\.ts/,
       use: { ...devices['Pixel 7'], ...commonUse, recordHar: mockedHar('mocked-mobile') },
     },
     {

@@ -1232,7 +1232,8 @@ export const handlers = [
     const currentScenario = rawScenario();
     const multiApp = currentScenario === 'catalog-multi-app';
     const installAvailable = currentScenario === 'catalog-install-available';
-    const ready = !installAvailable && (scenario() === 'catalog-ready' || scenario() === 'lifecycle-attention' || multiApp || currentScenario.startsWith('app-governance-'));
+    const routeUnavailable = currentScenario === 'app-route-not-ready';
+    const ready = !installAvailable && (scenario() === 'catalog-ready' || scenario() === 'lifecycle-attention' || multiApp || currentScenario.startsWith('app-governance-') || routeUnavailable);
     const installing = currentScenario === 'catalog-installing' || scenario() === 'catalog-installing';
     const app = {
       id: 'photoprism', name: 'PhotoPrism', category: 'Photos',
@@ -1241,9 +1242,9 @@ export const handlers = [
       install_state: ready ? 'installed' : installing ? 'installing' : 'available',
       installed: ready,
       target: { default_node_id: 'pocket-lab-lite-server', supported_roles: ['server'], eligible_devices: [{ node_id: 'pocket-lab-lite-server', name: 'Pocket Lab Lite Server', status: 'online', eligible: true, reason: 'Ready to install' }] },
-      actions: { install: !ready && !installing, open: ready, details: true, retry: false, remove: false },
-      runtime: { route: '/apps/photoprism/', url: ready ? '/apps/photoprism/' : null, health: ready ? 'healthy' : installing ? 'installing' : 'not_installed', version: ready ? 'detected-or-unknown' : null },
-      access: { https_ready: true, route_ready: ready, open_url: ready ? '/apps/photoprism/' : null, message: ready ? 'PhotoPrism is ready over secure access.' : 'Install PhotoPrism to enable secure app access.' },
+      actions: { install: !ready && !installing, open: ready && !routeUnavailable, details: true, retry: false, remove: false },
+      runtime: { route: '/apps/photoprism/', url: ready && !routeUnavailable ? '/apps/photoprism/' : null, health: routeUnavailable ? 'unavailable' : ready ? 'healthy' : installing ? 'installing' : 'not_installed', reachable: routeUnavailable ? false : undefined, version: ready ? 'detected-or-unknown' : null },
+      access: { https_ready: true, route_ready: ready && !routeUnavailable, open_url: ready && !routeUnavailable ? '/apps/photoprism/' : null, message: routeUnavailable ? 'PhotoPrism is installed, but its secure route is not ready.' : ready ? 'PhotoPrism is ready over secure access.' : 'Install PhotoPrism to enable secure app access.' },
       progress: installing ? { step: 'Preparing PhotoPrism runtime', current: 2, total: 7, message: 'Setting up the app environment.' } : null,
       last_operation: installing ? { operation_id: 'app-photoprism-mock', status: 'running', updated_at: mockIso(), message: 'PhotoPrism install is running.' } : ready ? { operation_id: 'app-photoprism-mock', status: 'succeeded', updated_at: mockIso(), message: 'PhotoPrism is ready.' } : null,
       evidence_refs: ready ? ['catalog/evidence/app-photoprism-mock/summary.json'] : [],

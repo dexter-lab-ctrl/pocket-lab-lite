@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { clampManageGeometry, defaultManageGeometry, useDesktopManageGeometry } from '../components/useDesktopManageGeometry.js';

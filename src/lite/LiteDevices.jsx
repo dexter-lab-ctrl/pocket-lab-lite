@@ -140,6 +140,7 @@ function DeviceFleetList(props) {
 
 const loadDeviceDetails = () => import('./devices/DeviceDetailsLazy.jsx');
 const DeviceDetailsLazy = React.lazy(loadDeviceDetails);
+const MemoDeviceDetailsLazy = React.memo(DeviceDetailsLazy);
 const DeviceModelPickerLazy = React.lazy(() => import('./devices/DeviceModelPickerLazy.jsx'));
 const DEVICE_DETAILS_BODY_PERF_DELAY_MS = 700;
 
@@ -280,6 +281,11 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
     window.requestAnimationFrame(() => trigger?.focus?.({ preventScroll: true }));
   }, [detailsButtonRefs, detailsDeviceId]);
 
+  const chooseDeviceModel = useCallback(
+    () => setDeviceModelPickerId(activeDetailsDevice?.id),
+    [activeDetailsDevice?.id, setDeviceModelPickerId],
+  );
+
   useEffect(() => {
     if (!activeDetailsDevice || !detailsPanelRef.current) return undefined;
     const frame = window.requestAnimationFrame(() => {
@@ -340,10 +346,10 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
         ) : null}
         {detailsBodyReady ? (
           <Suspense fallback={<GlassCard className="lite-device-details-panel"><p>Loading device details…</p></GlassCard>}>
-            <DeviceDetailsLazy
+            <MemoDeviceDetailsLazy
               device={activeDetailsDevice}
               onClose={closeDeviceDetails}
-              onChooseModel={() => setDeviceModelPickerId(activeDetailsDevice?.id)}
+              onChooseModel={chooseDeviceModel}
             />
           </Suspense>
         ) : (
