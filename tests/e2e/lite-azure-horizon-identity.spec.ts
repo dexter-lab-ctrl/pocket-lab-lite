@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
-// DEFINED — no execution or approved visual baseline in this implementation-only session.
+// DEFINED — mocked execution is qualified separately; visual baselines are human-approved in this qualification.
 async function openIdentity(page: Page, scenario = 'identity-summary', theme: 'light' | 'dark' | 'system' = 'dark') {
   await page.addInitScript((value) => localStorage.setItem('pocketlab:appearance', value), theme);
   await installScenario(page, scenario);
@@ -86,7 +86,7 @@ test.describe('Azure Horizon Identity source and access contracts', () => {
     const resized = await dialog.boundingBox();
     if (moved && resized) expect(resized.width).toBeLessThanOrEqual(moved.width);
     await dialog.getByRole('button', { name: 'Reset access panel position and size' }).click();
-    await expect(dialog.getByRole('button', { name: /Close app actions/i })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: /Close identity access/i })).toBeVisible();
     await page.setViewportSize({ width: 800, height: 700 });
     const clamped = await dialog.boundingBox();
     if (clamped) expect(clamped.x + clamped.width).toBeLessThanOrEqual(801);
@@ -108,7 +108,7 @@ test.describe('Azure Horizon Identity source and access contracts', () => {
   for (const role of ['owner','admin','operator','auditor','viewer']) {
     test(`Enterprise ${role} role remains server-reported`, async ({ page }) => {
       const dialog = await manage(page, `identity-enterprise-${role}`);
-      await dialog.getByRole('button', { name: 'Roles & Access' }).click();
+      await dialog.getByRole('button', { name: 'Roles & Access', exact: true }).click();
       await expect(dialog).toContainText(new RegExp(role,'i'));
       await expect(dialog).toContainText(/Effective capability matrix/i);
     });

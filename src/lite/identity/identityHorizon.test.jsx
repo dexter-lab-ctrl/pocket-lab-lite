@@ -61,7 +61,7 @@ describe('Azure Horizon account facts and Manage authorization posture', () => {
       { session_id: 'synthetic-b', active: true, current: false, auth_method: 'password' },
     ] } });
     expect(screen.getByRole('button', { name: /Current session/i })).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Other session/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Other session\b/i })).toBeTruthy();
   });
   it('shows Enterprise navigation only when server projection enables it', () => {
     mount({ enterpriseEnabled: true });

@@ -176,7 +176,7 @@ export default function LiteIdentityEnterprise({ enterprise, access: initialAcce
   return (
     <section className="lite-identity-enterprise lite-governance-section" aria-label="Enterprise access governance">
       {!embedded ? <div className="lite-governance-title-row">
-        <div><span>Enterprise Mode</span><h2 id="identity-enterprise-heading">Enterprise access</h2><p>People, roles and Safety Rules use the same server-owned authority model.</p></div>
+        <div><span>Enterprise Mode</span><h2 id="identity-enterprise-heading">Identity & Access governance</h2><p>People, roles and Safety Rules use the same server-owned authority model.</p></div>
         <div className="lite-governance-inline-actions"><StatusBadge status="healthy">Enabled</StatusBadge><LiteHelp helpKey="identity.overview" /></div>
       </div> : null}
 
@@ -302,7 +302,7 @@ export default function LiteIdentityEnterprise({ enterprise, access: initialAcce
         </div>
       ) : null}
 
-      <LiteSheet open={Boolean(confirm)} onClose={() => setConfirm(null)} title={confirm?.title || 'Confirm access change'} eyebrow="Confirm" description={confirm?.description || ''} className="lite-identity-sheet">
+      <LiteSheet variant="identity" open={Boolean(confirm)} onClose={() => setConfirm(null)} title={confirm?.title || 'Confirm access change'} eyebrow="Confirm" description={confirm?.description || ''} className="lite-identity-sheet">
         <StateSurface tone="neutral" title="Pocket Lab verifies this on the server" description="No success is shown until server-owned Identity and Rules state confirms the result." />
         <div className="lite-governance-actions"><LiteButton variant="secondary" onClick={() => setConfirm(null)}>Cancel</LiteButton><LiteButton onClick={async () => { const action = confirm?.action; setConfirm(null); if (action) await action(); }}>{confirm?.confirmLabel || 'Confirm'}</LiteButton></div>
       </LiteSheet>

@@ -17,7 +17,7 @@ export default function IdentityActivityTimeline({ items = [], limit = 0, onDeta
   const entries = identityActivityView(items);
   const filtered = entries.filter((item) => filter === 'all' || item.family === filter);
   const shown = limit > 0 ? filtered.slice(0, limit) : filtered;
-  return <section className="lite-id-activity" aria-label="Recent access activity">
+  return <section className="lite-id-activity" aria-label={limit ? 'Recent activity events' : 'Access activity history'}>
     {!limit ? <div className="lite-id-activity-filters" role="group" aria-label="Filter access activity">
       {[['all', 'All'], ['sign-ins', 'Sign-ins'], ['access', 'Access changes']].map(([id, label]) =>
         <button type="button" key={id} aria-pressed={filter === id} className={filter === id ? 'is-active' : ''} onClick={() => setFilter(id)}>{label}</button>)}

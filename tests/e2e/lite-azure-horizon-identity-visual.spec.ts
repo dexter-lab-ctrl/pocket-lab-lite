@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
-// DEFINED — BASELINE CAPTURE AND APPROVAL DEFERRED. Never use real recovery codes.
+// APPROVED — human-reviewed Black/Daylight desktop/mobile baselines. Never use real recovery codes.
 const scenarios = ['identity-summary','identity-premium-multiple','identity-premium-recovery-missing',
   'identity-premium-signed-out','identity-premium-first-owner','identity-premium-enrollment',
   'identity-owner-operation-pending','identity-owner-client-pairing-pending','identity-enterprise-owner',
@@ -46,7 +46,7 @@ for (const theme of ['light','dark'] as const) {
   });
 }
 
-// DEFINED — BASELINE CAPTURE/APPROVAL DEFERRED: desktop moved/resized and 200% mobile.
+// APPROVED — human-reviewed baseline capture for desktop moved/resized and 200% mobile.
 for (const theme of ['light','dark'] as const) {
   test(`Identity ${theme} moved and resized Manage`, async ({page}) => {
     await page.setViewportSize({width:1280,height:900});
