@@ -48,6 +48,7 @@ import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LiteRefre
 import { LiteConsequenceSummary, LiteEmptyState, LiteFreshness } from '../LiteUx.jsx';
 import { useLiteUiStore } from '../../stores/liteUiStore.js';
 import AppActionRow from './AppActionRow.jsx';
+import AppSummaryCard from './AppSummaryCard.jsx';
 import AppActionProgressSlot from './AppActionProgressSlot.jsx';
 import { LiteContextualActionCue, LiteFlipGroup, LiteMotionReveal, LitePressableButton, LiteSharedElementCue, triggerLiteTactileFeedback, useLiteReducedMotion } from '../LiteMotion.jsx';
 import { isLitePerformanceMode } from '../liteNavigationRuntime.js';
@@ -3021,7 +3022,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const targetName = app?.host_device_name || app?.target?.eligible_devices?.[0]?.name || 'Server Host';
     const reason = attentionReason(app, canOpen);
     const progress = app?.progress;
-    const percent = Math.min(100, Math.max(0, ((progress?.current || 1) / (progress?.total || 7)) * 100));
+    const measuredProgress = progress?.current !== null && progress?.current !== undefined && progress?.total !== null && progress?.total !== undefined && Number.isFinite(Number(progress.current)) && Number.isFinite(Number(progress.total)) && Number(progress.total) > 0;
+    const percent = measuredProgress ? Math.min(100, Math.max(0, Number(progress.current) / Number(progress.total) * 100)) : null;
     const cardClassName = `lite-catalog-card lite-catalog-app-card ${featured ? 'is-featured' : ''} ${installing ? 'is-installing' : ''}`;
     const actionsClassName = 'lite-catalog-actions';
     const lifecycle = lifecycleProfile(app);
@@ -3223,7 +3225,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const quickActionsOpen = quickActionsAppId === app.id;
 
     return (
-      <GlassCard
+      <AppSummaryCard
         key={app.id}
         className={`${cardClassName} ${quickActionsOpen ? 'has-quick-actions' : ''}`}
       >
@@ -3286,9 +3288,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         ) : null}
         {progress ? (
           <div className="lite-catalog-progress" aria-label="Install progress">
-            <div><strong>{progress.step || 'Working'}</strong><span>{progress.current || 1}/{progress.total || 7}</span></div>
+            <div><strong>{progress.step || 'Working'}</strong><span>{measuredProgress ? `${progress.current}/${progress.total}` : 'Progress not reported'}</span></div>
             <p>{progress.message || 'Preparing the app.'}</p>
-            <div className="lite-catalog-progress-bar"><span style={{ width: `${percent}%` }} /></div>
+            {percent !== null ? <div className="lite-catalog-progress-bar" role="progressbar" aria-label="App installation progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(percent)}><span style={{ width: `${percent}%` }} /></div> : null}
           </div>
         ) : null}
         <div className={actionsClassName}>
@@ -3300,7 +3302,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <LiteButton onClick={(event) => { stopGestureEvent(event); openManageSheet(app); }} tone="secondary">Manage</LiteButton>
           ) : null}
         </div>
-      </GlassCard>
+      </AppSummaryCard>
     );
   }
 
