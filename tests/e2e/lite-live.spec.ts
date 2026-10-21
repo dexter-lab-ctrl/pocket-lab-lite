@@ -314,7 +314,13 @@ test.describe('Pocket Lab Lite live read-only smoke', () => {
   test(
     'capture sanitized semantic observations for every Lite tab',
     async ({ page }, testInfo) => {
-      const failed = watchApiFailures(page, { allowReadDegraded: true });
+      let readDegraded = false;
+      const failed = watchApiFailures(page, {
+        allowReadDegraded: true,
+        onReadDegraded: () => {
+          readDegraded = true;
+        },
+      });
       await page.goto('/?screen=home');
       const source = sourceCommit();
       const releaseTag = (process.env.LITE_PARITY_RELEASE_TAG || '').trim();
@@ -333,7 +339,7 @@ test.describe('Pocket Lab Lite live read-only smoke', () => {
           timeoutMs: 20_000,
           stableSamples: 3,
           intervalMs: 250,
-          allowLoadingState: true,
+          allowLoadingState: () => readDegraded,
         });
         const raw = await collectSafeObservation(page, screenId);
         const domain = PARITY_DOMAIN_BY_SCREEN[screenId];

@@ -25,6 +25,7 @@ export async function installScenario(page: Page, scenario = 'healthy') {
 
 type ApiFailureWatchOptions = {
   allowReadDegraded?: boolean;
+  onReadDegraded?: () => void;
 };
 
 export function watchApiFailures(page: Page, options: ApiFailureWatchOptions = {}) {
@@ -56,6 +57,7 @@ export function watchApiFailures(page: Page, options: ApiFailureWatchOptions = {
       && headers['x-pocketlab-refresh-pending'] === 'true';
     if (isExpectedReadDegraded) {
       expectedReadDegradedUrls.add(response.url());
+      options.onReadDegraded?.();
       return;
     }
     if (response.status() >= 400) failures.push(`${response.status()} ${response.url()}`);
@@ -100,7 +102,12 @@ export async function openTab(page: Page, labelOrScreenId: string, explicitScree
 export async function waitForLiteScreenToSettle(
   page: Page,
   screenId: string,
-  options: { timeoutMs?: number; stableSamples?: number; intervalMs?: number; allowLoadingState?: boolean } = {},
+  options: {
+    timeoutMs?: number;
+    stableSamples?: number;
+    intervalMs?: number;
+    allowLoadingState?: boolean | (() => boolean);
+  } = {},
 ) {
   const timeoutMs = options.timeoutMs ?? 15_000;
   const stableSamples = options.stableSamples ?? 4;
@@ -150,7 +157,10 @@ export async function waitForLiteScreenToSettle(
     });
 
     const busyCount = Number(signature.split(':').at(-1) || '0');
-    if (signature === previous && (busyCount === 0 || options.allowLoadingState === true)) {
+    const allowLoadingState = typeof options.allowLoadingState === 'function'
+      ? options.allowLoadingState()
+      : options.allowLoadingState === true;
+    if (signature === previous && (busyCount === 0 || allowLoadingState)) {
       consecutive += 1;
       if (consecutive >= stableSamples) {
         // Recovery's mocked service-worker projection can deliver its final
