@@ -1,8 +1,9 @@
 import { LiteProtectedConfirmation } from '../components/LiteSafeForms.jsx';
 import LiteNextSteps from '../components/LiteNextSteps.jsx';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { filterCatalogApps, sortCatalogApps } from './catalogPresentation.js';
-import { LiteDetailsPanel } from '../LiteOverlay.jsx';
+import { filterCatalogApps, sortCatalogApps, catalogStateBucket } from './catalogPresentation.js';
+import { LiteDetailsPanel, useFocusTrap, useFocusReturn } from '../LiteOverlay.jsx';
+import { useDesktopManageGeometry } from '../components/useDesktopManageGeometry.js';
 import './appsPremiumRefinement.css';
 import '../components/liteSafeForms.css';
 import { createPortal } from 'react-dom';
@@ -25,6 +26,9 @@ import {
   HardDrive,
   Image as ImageIcon,
   RefreshCw,
+  Search,
+  Move,
+  Maximize2,
   X,
   Server,
   ShieldCheck,
@@ -1700,10 +1704,10 @@ function actionDetailsTone(details = {}, saved = {}) {
 
 function appTone(status) {
   const value = String(status || '').toLowerCase();
-  if (['ready', 'installed', 'installed_running', 'running', 'healthy'].includes(value)) return 'healthy';
+  if (['ready', 'installed_running', 'running', 'healthy'].includes(value)) return 'healthy';
   if (['installing', 'queued'].includes(value)) return 'working';
   if (['needs_attention', 'unavailable', 'failed', 'installed_stopped', 'installed_degraded', 'state_conflict'].includes(value)) return 'degraded';
-  return 'ready';
+  return 'neutral';
 }
 
 function appLabel(app, actionSnapshot = null) {
@@ -2076,6 +2080,9 @@ function CatalogManagePortal({
   const manageCloseRef = useRef(null);
   const manageSheetRef = useRef(null);
   const manageScrollRef = useRef(null);
+  const { panelRef: geometryPanelRef, desktopPanel, panelStyle, announcement, reset: resetPanelGeometry, startPanelInteraction, adjustPanelWithKeyboard } = useDesktopManageGeometry({ open: manageAppOpen, defaultWidth: 620 });
+  useFocusTrap(manageAppOpen && !detailsActionId, manageSheetRef);
+  useFocusReturn(manageAppOpen, manageCloseRef);
   const [manageBodyReady, setManageBodyReady] = useState(false);
   const [manageExtrasReady, setManageExtrasReady] = useState(false);
 
@@ -2124,7 +2131,8 @@ function CatalogManagePortal({
     if (!manageAppOpen) return undefined;
     const onKeyDown = (event) => {
       const activeDetailsActionId = useLiteUiStore.getState().activeDetailsActionId;
-      if (event.key === 'Escape' && !activeDetailsActionId) {
+      if (event.key === 'Escape' && !event.defaultPrevented && !activeDetailsActionId && !document.querySelector('.lite-details-overlay-layer')) {
+        event.preventDefault();
         closeManageSheet();
       }
     };
@@ -2216,7 +2224,7 @@ function CatalogManagePortal({
 
   return createPortal(
     <div
-      className="theme-pocket-lite-daylight lite-catalog-manage-layer lite-catalog-app-premium-layer"
+      className="lite-catalog-manage-layer lite-catalog-app-premium-layer"
       role="presentation"
       data-lite-manage-portal="true"
       data-lite-perf-mode={isLitePerformanceMode() ? 'true' : undefined}
@@ -2230,7 +2238,7 @@ function CatalogManagePortal({
         padding: 'max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left))',
         pointerEvents: 'auto',
         isolation: 'isolate',
-        color: '#0f172a',
+        color: 'var(--azure-text)',
       }}
     >
       <button
@@ -2243,16 +2251,18 @@ function CatalogManagePortal({
           inset: 0,
           zIndex: 0,
           border: 0,
-          background: 'rgba(15, 23, 42, 0.42)',
+          background: 'var(--azure-backdrop)',
           pointerEvents: 'auto',
         }}
       />
       <section
-        ref={manageSheetRef}
-        className="lite-catalog-manage-sheet"
+        ref={(node) => { manageSheetRef.current = node; geometryPanelRef.current = node; }}
+        className={`lite-catalog-manage-sheet ${desktopPanel ? 'is-movable' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-label={`Manage ${app.name}`}
+        data-lite-apps-manage-layout={desktopPanel ? 'desktop-movable' : 'mobile-sheet'}
+        tabIndex={-1}
         style={{
           position: 'relative',
           zIndex: 1,
@@ -2266,10 +2276,12 @@ function CatalogManagePortal({
           visibility: 'visible',
           pointerEvents: 'auto',
           transform: 'none',
-          background: '#f8fafc',
-          border: '1px solid rgba(148, 163, 184, 0.34)',
-          borderRadius: '2rem 2rem 1.35rem 1.35rem',
-          boxShadow: '0 30px 80px rgba(15, 23, 42, 0.35)',
+          background: 'var(--azure-surface)',
+          color: 'var(--azure-text)',
+          border: '1px solid var(--azure-border)',
+          borderRadius: 'var(--azure-radius-card)',
+          boxShadow: 'var(--azure-panel-shadow)',
+          ...(desktopPanel ? panelStyle : {}),
         }}
       >
         <button
@@ -2280,12 +2292,22 @@ function CatalogManagePortal({
         >
           <span aria-hidden="true" />
         </button>
+        {desktopPanel ? (
+          <div className="lite-catalog-manage-desktop-controls" role="group" aria-label="Desktop app panel controls">
+            <button type="button" className="lite-catalog-manage-panel-tool" aria-label="Move app management panel" title="Drag or use arrow keys to move; Shift + arrow for larger steps" onPointerDown={(event) => startPanelInteraction('move', event)} onKeyDown={(event) => adjustPanelWithKeyboard('move', event)}><Move aria-hidden="true" size={17} /></button>
+            <span>App workspace</span>
+            <button type="button" className="lite-catalog-manage-panel-tool" aria-label="Reset app panel position and size" onClick={resetPanelGeometry}><RotateCcw aria-hidden="true" size={16} />Reset</button>
+            <button type="button" className="lite-catalog-manage-panel-tool" aria-label="Resize app management panel" title="Drag or use arrow keys to resize; Home resets" onPointerDown={(event) => startPanelInteraction('resize', event)} onKeyDown={(event) => adjustPanelWithKeyboard('resize', event)}><Maximize2 aria-hidden="true" size={17} /></button>
+            <span className="sr-only" role="status" aria-live="polite">{announcement}</span>
+          </div>
+        ) : null}
         <div className="lite-catalog-manage-head">
           {isLitePerformanceMode() ? null : <LiteSharedElementCue kind="card-to-sheet" active label={app.name} />}
           <div>
             <span>Manage</span>
             <strong>{app.name}</strong>
-            <p>{mediaSummary}</p>
+            <p>{app?.description || mediaSummary || 'Review available app actions and readiness.'}</p>
+            <span className="lite-catalog-manage-current-state">{canonical?.statusLabel || app?.status_summary || 'Status unknown'}{savedStateOnly ? ' · Saved information' : ''}</span>
           </div>
           <button ref={manageCloseRef} type="button" className="lite-catalog-manage-close" onClick={closeManageSheet} aria-label="Close app actions">
             <X className="h-4 w-4" />
@@ -2498,6 +2520,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
   const apps = data?.apps || data?.items || [];
   const [catalogSearch, setCatalogSearch] = useState('');
+  const [catalogFilter, setCatalogFilter] = useState('all');
   const access = data?.access || {};
   const featuredApp = sortCatalogApps(apps)[0];
   const featuredAppId = String(featuredApp?.id || '').trim().toLowerCase();
@@ -2577,7 +2600,12 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     || hasLivePhotoPrismAppActionsPayload(appActionsData)
   ));
 
-  const displayedApps = filterCatalogApps(apps, catalogSearch);
+  const displayedApps = filterCatalogApps(apps, catalogSearch, catalogFilter);
+  const catalogFilters = [
+    { id: 'all', label: 'All' }, { id: 'ready', label: 'Ready' },
+    { id: 'working', label: 'Installing / working' },
+    { id: 'attention', label: 'Needs attention' }, { id: 'not_installed', label: 'Not installed' },
+  ].map((item) => ({ ...item, count: filterCatalogApps(apps, '', item.id).length }));
   const visibleFeaturedApp = displayedApps.find((app) => String(app.id) === String(featuredApp?.id)) || null;
   useEffect(() => {
     return () => {
@@ -3206,9 +3234,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         <div className="lite-catalog-card-title-row">
           <div>
             <p className="lite-catalog-category">{featured ? 'Featured local app' : app.category || 'Local app'}</p>
-            <h2>{app.name}</h2>
+            <h2 title={app.name}>{app.name || app.id || 'Unnamed app'}</h2>
           </div>
         </div>
+        <p className="lite-catalog-app-description" title={app?.description || app?.summary || ''}>{app?.description || app?.summary || 'Manage this self-hosted app from your private workspace.'}</p>
         {quickActionsOpen ? (
           <div className="lite-catalog-quick-actions" role="menu" aria-label={`${app.name} quick actions`}>
             <button type="button" onClick={(event) => { event.stopPropagation(); openApp(app, event); setQuickActionsAppId(null); }} disabled={!canOpen}>Open</button>
@@ -3311,7 +3340,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       <PageHeader
         eyebrow="Apps"
         title="Your Apps"
-        description="Install, open, and manage self-hosted apps. Pocket Lab handles setup and protection in the background."
+        description="Your private application library. Open ready apps and manage supported actions."
         actions={(
           <div className="lite-catalog-hero-actions">
             <div className={catalogBanner.secure ? 'lite-home-pill lite-catalog-hero-pill is-secure' : 'lite-home-pill lite-catalog-hero-pill is-not-secure'}>
@@ -3340,9 +3369,23 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           ...(!isCatalogSecure && insecureAppCount === 0 ? [{ id: "remote", label: "Protected access is not confirmed", description: "Review local and Tailnet HTTPS readiness before relying on remote access." }] : []),
         ]}
       />
-      <div className="lite-catalog-toolbar lite-catalog-toolbar--simple">
-        <label htmlFor="lite-catalog-app-search" className="lite-safe-field">Find an app<input id="lite-catalog-app-search" type="search" value={catalogSearch} onChange={(event) => setCatalogSearch(event.target.value)} placeholder="Search apps" autoComplete="off" /></label>
-        <p>{displayedApps.length} {displayedApps.length === 1 ? 'app available' : 'apps available'}</p>
+      <div className="lite-catalog-toolbar lite-catalog-toolbar--simple" aria-label="Find and filter apps">
+        <div className="lite-catalog-search-field">
+          <label htmlFor="lite-catalog-app-search">Search apps</label>
+          <div className="lite-catalog-search-control">
+            <Search size={18} aria-hidden="true" />
+            <input id="lite-catalog-app-search" type="search" value={catalogSearch} onChange={(event) => setCatalogSearch(event.target.value)} placeholder="Search by app name or description" autoComplete="off" />
+            {catalogSearch ? <button type="button" onClick={() => setCatalogSearch('')} aria-label="Clear app search"><X size={16} aria-hidden="true" /></button> : null}
+          </div>
+        </div>
+        <p role="status">{displayedApps.length} of {apps.length} apps shown</p>
+        <div className="lite-catalog-status-filters" role="group" aria-label="App status filters">
+          {catalogFilters.filter((item) => item.id === 'all' || item.count > 0 || item.id === catalogFilter).map((item) => (
+            <button type="button" key={item.id} aria-pressed={catalogFilter === item.id} className={catalogFilter === item.id ? 'is-active' : ''} onClick={() => setCatalogFilter(item.id)}>
+              {item.label} <span aria-label={`${item.count} apps`}>{item.count}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {visibleFeaturedApp ? (
@@ -3366,9 +3409,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       {!loading && displayedApps.length === 0 ? (
         <LiteEmptyState
           className="lite-catalog-empty-state"
-          title={catalogSearch ? 'No matching apps' : apps.length ? 'No apps available' : 'No apps installed yet'}
-          description={catalogSearch ? 'Try another app name or clear your search.' : apps.length ? 'Pocket Lab did not find an app it can show right now.' : 'Install your first self-hosted app when you are ready.'}
-          action={{ label: catalogSearch ? 'Clear search' : apps.length ? 'Check again' : 'Refresh Apps', onClick: catalogSearch ? () => setCatalogSearch('') : refresh }}
+          title={catalogSearch || catalogFilter !== 'all' ? 'No matching apps' : apps.length ? 'No apps available' : 'No apps installed yet'}
+          description={catalogSearch || catalogFilter !== 'all' ? 'Try another search or choose All to see the full library.' : apps.length ? 'Pocket Lab did not find an app it can show right now.' : 'Install your first self-hosted app when you are ready.'}
+          action={{ label: catalogSearch || catalogFilter !== 'all' ? 'Show all apps' : apps.length ? 'Check again' : 'Refresh Apps', onClick: catalogSearch || catalogFilter !== 'all' ? () => { setCatalogSearch(''); setCatalogFilter('all'); } : refresh }}
         />
       ) : null}
       {removeConfirmApp ? (
