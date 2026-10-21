@@ -220,3 +220,13 @@ html[data-lite-theme] .lite-id-hero-mobile-action .pocket-button {width:100%;}
 @media (prefers-reduced-motion:reduce) {
   html[data-lite-theme] .lite-id-account-layout *,html[data-lite-theme] .lite-identity-manage-sheet * {animation:none;transition:none;scroll-behavior:auto;}
 }
+
+html[data-lite-theme] .lite-id-hero-desktop-action {display:none;}
+html[data-lite-theme] .lite-id-header-action {display:inline-flex;}
+@media(max-width:700px){html[data-lite-theme] .lite-id-header-action {display:none;}}
+html[data-lite-theme] .lite-identity-enterprise .lite-governance-card,
+html[data-lite-theme] .lite-identity-enterprise .lite-governance-role-card {background:var(--azure-surface);border-color:var(--azure-border);color:var(--azure-text);}
+html[data-lite-theme] .lite-identity-enterprise :is(.lite-governance-nav button,.lite-governance-person,.lite-governance-matrix-row) {background:var(--azure-raised);color:var(--azure-text);border-color:var(--azure-border);}
+html[data-lite-theme] .lite-identity-enterprise :is(.lite-governance-nav button.is-active,.lite-governance-nav button[aria-pressed="true"]) {background:var(--azure-selected);border-color:var(--azure-accent);}
+html[data-lite-theme] .lite-identity-enterprise :is(p,small,dt,.lite-governance-muted) {color:var(--azure-muted);}
+html[data-lite-theme] .lite-identity-enterprise :is(input,select,textarea):focus-visible {outline:3px solid var(--azure-focus);outline-offset:2px;}

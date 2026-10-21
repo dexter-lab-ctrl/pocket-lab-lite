@@ -414,15 +414,17 @@ export default function IdentityScreen() {
         eyebrow="Identity"
         title="Identity & Access"
         description="Your account, sign-in and protection."
-        actions={<div className="lite-governance-inline-actions"><LiteHelp helpKey="identity.overview" /><LiteRefreshButton scope="identity" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} /></div>}
+        actions={<div className="lite-governance-inline-actions">{data?.authenticated ? <span className="lite-id-header-action"><LiteButton onClick={() => openManage('overview')}>Manage Access</LiteButton></span> : null}<LiteHelp helpKey="identity.overview" /><LiteRefreshButton scope="identity" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} /></div>}
       />
 
+      {!data?.authenticated ? (
       <LiteOperationalStory
         className="lite-identity-operational-story"
         story={workspaceStory}
         primaryAction={workspaceStory.nextAction?.id === 'create_owner' ? { label: 'Create Owner', onClick: () => document.getElementById('identity-owner-setup')?.scrollIntoView({ block: 'start' }) } : workspaceStory.nextAction?.id === 'sign_in_passkey' ? { label: 'Sign in with Passkey', onClick: signInWithPasskey, disabled: Boolean(busy) || !passkeyEligible } : workspaceStory.nextAction?.id === 'add_passkey' ? { label: 'Add Passkey', onClick: addPasskey, disabled: Boolean(busy) || !passkeyEligible } : workspaceStory.nextAction?.id === 'review_recovery' ? { label: 'Review Recovery', onClick: () => openManage('recovery') } : workspaceStory.nextAction?.id === 'refresh' ? { label: 'Refresh access', onClick: refresh } : null}
         manageAction={data?.authenticated ? { label: 'Manage Access', onClick: () => openManage('overview') } : null}
       />
+      ) : null}
       <LiteFreshness
         saved={savedStateOnly}
         stale={isExpired}
@@ -520,7 +522,10 @@ export default function IdentityScreen() {
               else if (stage === 'authorization') openDetails('mode');
               else openDetails('identity');
             }} />
-            <div className="lite-id-explain-entry"><button type="button" onClick={() => openDetails('explain')}><BookOpenText size={17} aria-hidden="true" /> Understand your access and its limits</button></div>
+            <LiteOperationalStory className="lite-identity-operational-story" story={workspaceStory}
+              primaryAction={workspaceStory.nextAction?.id === 'add_passkey' ? { label: 'Add Passkey', onClick: addPasskey, disabled: Boolean(busy) || !passkeyEligible || identityReadOnly } : workspaceStory.nextAction?.id === 'review_recovery' ? { label: 'Review Recovery', onClick: () => openManage('recovery') } : workspaceStory.nextAction?.id === 'refresh' ? { label: 'Refresh access', onClick: refresh } : null}
+            />
+            <div className="lite-id-explain-entry"><button type="button" onClick={() => openDetails('explain')}><BookOpenText size={17} aria-hidden="true" /> Explain This <span>Understand your access and its limits</span></button></div>
           </div>
           <LiteSheet open={manageOpen} onClose={closeManage} title="Manage access" eyebrow="Identity & Access" description="Review and manage your reported access." className={`lite-identity-manage-sheet ${desktopPanel ? 'is-movable' : ''}`}
             surfaceRef={managePanelRef} surfaceStyle={panelStyle}
