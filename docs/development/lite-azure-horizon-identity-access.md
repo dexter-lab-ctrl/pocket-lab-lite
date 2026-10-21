@@ -140,7 +140,7 @@ The documentation platform's generated contracts, screenshots and navigation ind
 
 Privileged authentication and protected-operation execution were not run against the production phone. The isolated Dev-PC harness/backend tests passed 87 tests and the Identity/Enterprise backend contract tests passed 34 tests. The phone harness remained disabled with zero active sessions and zero principals; the Dev-PC harness could not start because no local qualification API was running. No production Owner credential, auth bypass, browser-held secret or synthetic principal was used.
 
-The follow-up stabilization sequence should run source build/unit first, then mocked state/auth/geometry, Axe/contrast, visual reference approval, existing PR #588 performance gates, docs and full repository gates; live/physical qualification requires explicit authorization. CI failures were not investigated in this session.
+The follow-up stabilization sequence has now run source build/unit first, mocked state/auth/geometry, Axe/contrast, human-approved visual references, the existing PR #588 performance gates, docs and full repository gates. Live/physical qualification remains bounded by the documented authorization and environment limits. Exact-head GitHub Actions run [#980](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/39681013870) passed all three jobs against branch tip `5284692b6417a19407e1855ba88a5dbe6ddbc349`.
 
 ## 21. Rollback and future cross-tab consistency
 
@@ -176,7 +176,7 @@ All new `toHaveScreenshot` scenarios now have reviewed PNG references. Human app
 
 ## 29. CI and generated documentation
 
-CI is inspected against the final pushed SHA after the documentation gate. Generated docs, navigation metadata and contracts are assessed and refreshed after source stabilization, with source truth preserved. Historical pre-stabilization run `39644380456` is not evidence for the final SHA: its isolated-devpc job passed, while its UI-performance and quick-and-docs jobs failed.
+CI was inspected against the final pushed SHA after the documentation gate. Exact-head run [#980](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/39681013870) passed `isolated-devpc-qualification`, `quick-and-docs` and `ui-performance-qualification` at `5284692b6417a19407e1855ba88a5dbe6ddbc349`. Generated docs, navigation metadata and contracts are assessed and refreshed after source stabilization, with source truth preserved. Historical pre-stabilization run `39644380456` is not evidence for the final SHA: its isolated-devpc job passed, while its UI-performance and quick-and-docs jobs failed.
 
 ## 30. Safety gaps and deferred evidence
 
