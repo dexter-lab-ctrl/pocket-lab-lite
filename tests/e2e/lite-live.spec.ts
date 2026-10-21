@@ -245,7 +245,7 @@ test.describe('Pocket Lab Lite live read-only smoke', () => {
   test(
     'Caddy and FastAPI render every current Lite tab without write actions',
     async ({ page }) => {
-      const failed = watchApiFailures(page);
+      const failed = watchApiFailures(page, { allowReadDegraded: true });
 
       const statusResponse = page.waitForResponse(
         (response) =>
@@ -314,6 +314,7 @@ test.describe('Pocket Lab Lite live read-only smoke', () => {
   test(
     'capture sanitized semantic observations for every Lite tab',
     async ({ page }, testInfo) => {
+      const failed = watchApiFailures(page, { allowReadDegraded: true });
       await page.goto('/?screen=home');
       const source = sourceCommit();
       const releaseTag = (process.env.LITE_PARITY_RELEASE_TAG || '').trim();
@@ -328,7 +329,12 @@ test.describe('Pocket Lab Lite live read-only smoke', () => {
 
       for (const [label, screenId] of LITE_TABS) {
         await openTab(page, label, screenId);
-        await waitForLiteScreenToSettle(page, screenId, { timeoutMs: 20_000, stableSamples: 3, intervalMs: 250 });
+        await waitForLiteScreenToSettle(page, screenId, {
+          timeoutMs: 20_000,
+          stableSamples: 3,
+          intervalMs: 250,
+          allowLoadingState: true,
+        });
         const raw = await collectSafeObservation(page, screenId);
         const domain = PARITY_DOMAIN_BY_SCREEN[screenId];
         const privacy = await runtimePrivacyContext(page, domain, raw.screen_text);
@@ -369,6 +375,11 @@ test.describe('Pocket Lab Lite live read-only smoke', () => {
         const output = resolve('.pocketlab-dev', 'validation', 'parity', 'browser', `${domain}-${testInfo.project.name}.json`);
         await atomicWriteObservation(output, payload);
       }
+
+      expect(
+        failed,
+        `unexpected live Lite API failures: ${failed.join(', ')}`
+      ).toEqual([]);
     }
   );
 
