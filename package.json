@@ -74,7 +74,14 @@
     "test:azure:a11y": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon.spec.ts --grep 'WCAG AA|200% text' --project=mocked-desktop --project=mocked-mobile",
     "test:azure:visual": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-visual.spec.ts --project=mocked-desktop --project=mocked-mobile",
     "test:azure:perf": "VITE_POCKETLAB_PERF_TEST=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-performance.spec.ts --project=mocked-desktop --project=mocked-mobile && npm run check:render-budgets",
-    "test:azure:qualification": "npm run test:azure:unit && npm run test:azure:home && npm run test:azure:storybook && npm run test:azure:mocked && npm run test:azure:visual && npm run test:azure:perf"
+    "test:azure:qualification": "npm run test:azure:unit && npm run test:azure:home && npm run test:azure:storybook && npm run test:azure:mocked && npm run test:azure:visual && npm run test:azure:perf",
+    "test:apps:azure:unit": "vitest run src/lite/catalog/catalogPresentation.test.js src/lite/catalog/catalogPresentationAzure.test.js src/lite/catalog/useDesktopManageGeometry.test.jsx",
+    "test:apps:azure:mocked": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-apps.spec.ts --project=mocked-desktop --project=mocked-mobile",
+    "test:apps:azure:visual": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-apps-visual.spec.ts --project=mocked-desktop --project=mocked-mobile",
+    "test:apps:azure:a11y": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-apps.spec.ts --grep 'WCAG AA' --project=mocked-desktop --project=mocked-mobile",
+    "test:apps:azure:geometry": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-apps.spec.ts --grep 'drag|resize|geometry|desktop to mobile|Devices Manage' --project=mocked-desktop --project=mocked-mobile",
+    "test:apps:azure:perf": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-apps-performance.spec.ts --project=mocked-desktop --project=mocked-mobile",
+    "test:apps:azure:qualification": "npm run test:apps:azure:unit && npm run test:apps:azure:mocked && npm run test:apps:azure:a11y && npm run test:apps:azure:geometry && npm run test:apps:azure:perf && npm run test:azure:perf"
   },
   "keywords": [],
   "author": "",

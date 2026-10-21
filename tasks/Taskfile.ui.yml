@@ -168,3 +168,44 @@ tasks:
     deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
     cmds:
       - npm run test:azure:qualification
+
+  lite:test:apps:azure:unit:
+    desc: Authored Azure Apps catalog and shared geometry unit checks (NOT RUN in implementation)
+    cmds:
+      - npm run test:apps:azure:unit
+
+  lite:test:apps:azure:mocked:
+    desc: Azure Apps mocks, lifecycle, responsive and desktop panel interactions (NOT RUN)
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:azure:mocked
+
+  lite:test:apps:azure:a11y:
+    desc: Azure Apps Light/Dark, Axe and keyboard checks (NOT RUN)
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:azure:a11y
+
+  lite:test:apps:azure:geometry:
+    desc: Apps and Devices shared desktop Manage movement/regression (NOT RUN)
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:azure:geometry
+
+  lite:test:apps:azure:visual:
+    desc: Azure Apps visual comparison; owner-approved baseline capture first (NOT RUN)
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:azure:visual
+
+  lite:test:apps:azure:perf:
+    desc: Supplemental interaction samples, with PR 588 existing thresholds unchanged (NOT RUN)
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:azure:perf
+
+  lite:test:apps:azure:qualification:
+    desc: Future Azure Apps source and browser qualification; visual separately gated (NOT RUN)
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:azure:qualification
