@@ -20,7 +20,7 @@ function reasonCode(error) {
 }
 
 function roleTone(role) {
-  if (role === 'Owner') return 'healthy';
+  if (role === 'Owner') return 'neutral';
   if (role === 'Admin') return 'ready';
   if (role === 'Operator') return 'review';
   return 'neutral';
@@ -176,7 +176,7 @@ export default function LiteIdentityEnterprise({ enterprise, access: initialAcce
   return (
     <section className="lite-identity-enterprise lite-governance-section" aria-label="Enterprise access governance">
       {!embedded ? <div className="lite-governance-title-row">
-        <div><span>Enterprise Mode</span><h2 id="identity-enterprise-heading">Identity & Access governance</h2><p>People, roles and Safety Rules use the same server-owned authority model.</p></div>
+        <div><span>Enterprise Mode</span><h2 id="identity-enterprise-heading">Enterprise access</h2><p>People, roles and Safety Rules use the same server-owned authority model.</p></div>
         <div className="lite-governance-inline-actions"><StatusBadge status="healthy">Enabled</StatusBadge><LiteHelp helpKey="identity.overview" /></div>
       </div> : null}
 
@@ -193,7 +193,7 @@ export default function LiteIdentityEnterprise({ enterprise, access: initialAcce
               <div className="lite-governance-card-head"><ShieldCheck className="h-5 w-5" /><LiteHelp helpKey="identity.owner" /></div>
               <h3>Your authority</h3><strong className="lite-governance-value">{currentRole || 'No active role'}</strong>
               <p>{currentRoleInfo?.summary || accessData.role?.summary || 'Pocket Lab resolves your access on the server.'}</p>
-              {currentRole === 'Owner' ? <StatusBadge status="healthy">No peer approval</StatusBadge> : null}
+              {currentRole === 'Owner' ? <StatusBadge status="neutral">No peer approval</StatusBadge> : null}
             </GlassCard>
             <GlassCard className="lite-governance-card">
               <div className="lite-governance-card-head"><UsersRound className="h-5 w-5" /><LiteHelp helpKey="identity.people" /></div>

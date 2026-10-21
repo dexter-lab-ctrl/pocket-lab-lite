@@ -2,7 +2,7 @@ import { LiteProtectedConfirmation } from './components/LiteSafeForms.jsx';
 import './identityRules.css';
 import './identityRulesGovernance.css';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Fingerprint, KeyRound, LogIn, ShieldUser, UserCheck, BookOpenText } from 'lucide-react';
+import { Fingerprint, KeyRound, LogIn, ShieldUser, UserCheck, BookOpenText, Move, Maximize2, RotateCcw, ChevronRight } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { clearLiteIdentityCsrf, liteApi } from '../lib/liteApi.js';
 import { liteEnterpriseApi } from '../lib/liteEnterpriseApi.js';
@@ -15,6 +15,7 @@ import { useLiteUiStore } from '../stores/liteUiStore.js';
 import LiteIdentityEnterprise from './LiteIdentityEnterprise.jsx';
 import LiteHelp, { LiteHelpHeading } from './LiteHelp.jsx';
 import { LiteSheet, LiteDetailsPanel } from './LiteOverlay.jsx';
+import { useDesktopManageGeometry } from './components/useDesktopManageGeometry.js';
 import IdentityAccessJourney from './identity/IdentityAccessJourney.jsx';
 import IdentityManageContent from './identity/IdentityManageContent.jsx';
 import IdentityDetailsContent from './identity/IdentityDetailsContent.jsx';
@@ -80,6 +81,7 @@ export default function IdentityScreen() {
   const [confirmation, setConfirmation] = useState(null);
   const [manageOpen, setManageOpen] = useState(false);
   const [manageSection, setManageSection] = useState('overview');
+  const { panelRef: managePanelRef, desktopPanel, panelStyle, announcement, reset: resetManagePanel, startPanelInteraction, adjustPanelWithKeyboard } = useDesktopManageGeometry({ open: manageOpen, defaultWidth: 680, minWidth: 380, minHeight: 360 });
   const [selectedDetails, setSelectedDetails] = useState(null);
   const pushToast = useLiteUiStore((state) => state.pushToast);
 
@@ -411,7 +413,7 @@ export default function IdentityScreen() {
       <PageHeader
         eyebrow="Identity"
         title="Identity & Access"
-        description="See who can access your Pocket Lab, how you sign in, and how to recover access."
+        description="Your account, sign-in and protection."
         actions={<div className="lite-governance-inline-actions"><LiteHelp helpKey="identity.overview" /><LiteRefreshButton scope="identity" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} /></div>}
       />
 
@@ -429,7 +431,6 @@ export default function IdentityScreen() {
         backendReachable={backendReachable}
       />
 
-      {data?.authenticated ? <div className="lite-id-explain-entry"><button type="button" onClick={() => openDetails('explain')}><BookOpenText size={17} aria-hidden="true" /> Explain This <span>Understand your access and its limits</span></button></div> : null}
       {loading ? <LoadingCard label="Checking access and sign-in protection…" /> : null}
       {error && !data ? <StateSurface tone="degraded" title="Access information is temporarily unavailable" description="Pocket Lab could not confirm the latest access information. Saved access information remains visible when available." className="mb-5" /> : null}
       {backendDegraded && backendReachable ? <StateSurface tone="degraded" title="Identity needs attention" description="Pocket Lab is reachable, but it could not confirm all current access information. Protected changes stay unavailable until current access is confirmed." className="mb-5" /> : null}
@@ -476,24 +477,60 @@ export default function IdentityScreen() {
 
       {data?.authenticated ? (
         <>
-          <section className="lite-id-overview" aria-label="Access profile">
-            <div className="lite-id-profile"><ShieldUser size={27} aria-hidden="true" /><div><span>Signed in as</span><h2>{premiumView.name}</h2><p>{premiumView.role} · {premiumView.mode}</p><small>Sign-in method: {premiumView.authentication}</small></div></div>
-            <div className="lite-id-protections" aria-label="Access posture">
-              <button type="button" onClick={() => openManage('passkeys')}><strong>Passkeys</strong><span>{premiumView.passkeys == null ? 'Unavailable' : premiumView.passkeys + ' active'}</span></button>
-              <button type="button" onClick={() => openManage('sessions')}><strong>Sessions</strong><span>{premiumView.sessions == null ? 'Unavailable' : premiumView.sessions + ' active'}</span><small>{premiumView.currentSessionKnown ? 'Current session known' : 'Current session not identified'}</small></button>
-              <button type="button" onClick={() => openManage('recovery')}><strong>Recovery</strong><span>{premiumView.recoveryConfigured == null ? 'Unavailable' : premiumView.recoveryConfigured ? 'Configured' : 'Not configured'}</span><small>{premiumView.remaining == null ? 'Code count unavailable' : premiumView.remaining + ' unused codes'}</small></button>
+          <div className="lite-id-account-layout" data-identity-horizon="account" data-identity-mode={data?.enterprise?.enabled ? 'enterprise' : 'personal'}>
+            <section className="lite-id-overview" aria-label="Access profile">
+              <div className="lite-id-hero-heading">
+                <div className="lite-id-profile"><ShieldUser size={27} aria-hidden="true" /><div><span>Your account</span><h2>{premiumView.name}</h2><p>{premiumView.role} · {premiumView.mode}</p><small>{premiumView.fresh ? 'Signed in' : 'Saved information — changes unavailable'} · Sign-in method: {premiumView.authentication}</small></div></div>
+                <div className="lite-id-hero-desktop-action"><LiteButton onClick={() => openManage('overview')}>Manage Access</LiteButton></div>
+              </div>
+              <div className="lite-id-protections" aria-label="Access posture">
+                <button type="button" onClick={() => openManage('passkeys')}><strong>Passkeys</strong><span>{premiumView.passkeys == null ? 'Unavailable' : premiumView.passkeys + ' active'}</span></button>
+                <button type="button" onClick={() => openManage('sessions')}><strong>Sessions</strong><span>{premiumView.sessions == null ? 'Unavailable' : premiumView.sessions + ' active'}</span><small>{premiumView.currentSessionKnown ? 'Current session identified' : 'Current session not identified'}</small></button>
+                <button type="button" onClick={() => openManage('recovery')}><strong>Recovery</strong><span>{premiumView.recoveryConfigured == null ? 'Unavailable' : premiumView.recoveryConfigured ? 'Configured' : 'Not configured'}</span><small>{premiumView.remaining == null ? 'Code count unavailable' : premiumView.remaining + ' unused codes'}</small></button>
+              </div>
+              <div className="lite-id-hero-mobile-action"><LiteButton onClick={() => openManage('overview')}>Manage Access</LiteButton></div>
+            </section>
+            <div className="lite-id-primary-grid" aria-label="Account access controls">
+              <GlassCard className="lite-id-action-card">
+                <div className="lite-id-card-icon"><Fingerprint size={20} aria-hidden="true" /></div>
+                <h2>Sign-in methods</h2>
+                <p>{!premiumView.fresh ? 'Saved sign-in information — review only.' : data?.sign_in_methods?.passkey ? 'Passkey sign-in is supported for this workspace.' : 'Passkey sign-in availability is not confirmed.'}</p>
+                <p>{data?.sign_in_methods?.password ? 'Password sign-in is also supported.' : 'Password fallback is not reported as available.'}</p>
+                <LiteButton variant="secondary" onClick={() => openManage('passkeys')}>Manage sign-in methods <ChevronRight size={16} aria-hidden="true" /></LiteButton>
+              </GlassCard>
+              <GlassCard className="lite-id-action-card">
+                <div className="lite-id-card-icon"><ShieldUser size={20} aria-hidden="true" /></div>
+                <h2>Active sessions</h2>
+                <p>{premiumView.sessions == null ? 'Session information unavailable.' : `${premiumView.sessions} active ${premiumView.sessions === 1 ? 'session' : 'sessions'} reported.`}</p>
+                <p>{premiumView.currentSessionKnown ? 'Your current session is identified by Pocket Lab.' : 'Current-session details were not reported.'}</p>
+                <LiteButton variant="secondary" onClick={() => openManage('sessions')}>Review sessions <ChevronRight size={16} aria-hidden="true" /></LiteButton>
+              </GlassCard>
+              <GlassCard className="lite-id-action-card lite-id-mobile-recovery-card">
+                <div className="lite-id-card-icon"><KeyRound size={20} aria-hidden="true" /></div>
+                <h2>Recovery</h2>
+                <p>{premiumView.recoveryConfigured == null ? 'Recovery readiness unavailable.' : premiumView.recoveryConfigured ? 'Recovery is configured.' : 'Recovery is not confirmed.'}</p>
+                <LiteButton variant="secondary" onClick={() => openManage('recovery')}>Review recovery <ChevronRight size={16} aria-hidden="true" /></LiteButton>
+              </GlassCard>
             </div>
-          </section>
-          <IdentityAccessJourney view={premiumView} onSelect={(stage) => {
-            if (stage === 'authentication') openManage('passkeys');
-            else if (stage === 'recovery') openDetails('recovery');
-            else if (stage === 'authorization') openDetails('mode');
-            else openDetails('identity');
-          }} />
-          <OwnerOperationApprovals operations={ownerOperations} fresh={ownerOperationsFresh} busy={busy} compact onApprove={approveOwnerOperation} onReject={rejectOwnerOperation} />
-          <section className="lite-id-preview"><div><h2>Recent Activity</h2><button type="button" onClick={() => openManage('activity')}>View all activity</button></div><IdentityActivityTimeline items={data?.recent_activity} limit={3} onDetails={(event) => openDetails('activity', event)} /></section>
-          <div className="lite-id-overview-action"><LiteButton variant="secondary" onClick={() => openManage('overview')}>Manage Access</LiteButton></div>
-          <LiteSheet open={manageOpen} onClose={closeManage} title="Manage access" eyebrow="Identity & Access" description="Review and manage your reported access." className="lite-identity-manage-sheet">
+            <OwnerOperationApprovals operations={ownerOperations} fresh={ownerOperationsFresh} busy={busy} compact onApprove={approveOwnerOperation} onReject={rejectOwnerOperation} />
+            <section className="lite-id-preview"><div><h2>Recent access activity</h2><button type="button" onClick={() => openManage('activity')}>View history</button></div><IdentityActivityTimeline items={data?.recent_activity} limit={3} onDetails={(event) => openDetails('activity', event)} /></section>
+            <IdentityAccessJourney view={premiumView} onSelect={(stage) => {
+              if (stage === 'authentication') openManage('passkeys');
+              else if (stage === 'recovery') openDetails('recovery');
+              else if (stage === 'authorization') openDetails('mode');
+              else openDetails('identity');
+            }} />
+            <div className="lite-id-explain-entry"><button type="button" onClick={() => openDetails('explain')}><BookOpenText size={17} aria-hidden="true" /> Understand your access and its limits</button></div>
+          </div>
+          <LiteSheet open={manageOpen} onClose={closeManage} title="Manage access" eyebrow="Identity & Access" description="Review and manage your reported access." className={`lite-identity-manage-sheet ${desktopPanel ? 'is-movable' : ''}`}
+            surfaceRef={managePanelRef} surfaceStyle={panelStyle}
+            surfaceProps={{ 'data-lite-identity-manage-layout': desktopPanel ? 'desktop-movable' : 'mobile-sheet' }}
+            headerActions={desktopPanel ? <div className="lite-id-desktop-panel-tools" role="group" aria-label="Desktop access panel controls">
+              <button type="button" aria-label="Move access panel" title="Drag or use arrow keys to move" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight" onPointerDown={(event) => startPanelInteraction('move', event)} onKeyDown={(event) => adjustPanelWithKeyboard('move', event)}><Move size={16} aria-hidden="true" /></button>
+              <button type="button" aria-label="Reset access panel position and size" onClick={resetManagePanel}><RotateCcw size={16} aria-hidden="true" /> Reset</button>
+              <button type="button" aria-label="Resize access panel" title="Drag or use arrow keys to resize" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight" onPointerDown={(event) => startPanelInteraction('resize', event)} onKeyDown={(event) => adjustPanelWithKeyboard('resize', event)}><Maximize2 size={16} aria-hidden="true" /></button>
+              <span className="sr-only" role="status" aria-live="polite">{announcement}</span>
+            </div> : null}>
             <IdentityManageContent
               data={data} view={premiumView} section={manageSection} setSection={changeManageSection} busy={busy} notice={notice}
               passkeyEligible={passkeyEligible} recoveryCodes={recoveryCodes} onOpenDetails={openDetails}

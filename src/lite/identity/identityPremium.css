@@ -1,150 +1,222 @@
 /* Premium Identity & Access — scoped, low-motion, readable at zoom. */
-.theme-pocket-lite-daylight .lite-id-overview,
-.theme-pocket-lite-daylight .lite-id-journey,
-.theme-pocket-lite-daylight .lite-id-preview {
-  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+html[data-lite-theme] .lite-id-overview,
+html[data-lite-theme] .lite-id-journey,
+html[data-lite-theme] .lite-id-preview {
+  border: 1px solid var(--azure-border);
   border-radius: 1.15rem;
-  background: var(--lite-surface, #fff);
+  background: var(--azure-surface);
   padding: clamp(.9rem, 2.5vw, 1.3rem);
   margin-block: 1rem;
   min-width: 0;
 }
-.theme-pocket-lite-daylight .lite-id-profile { display: flex; gap: 1rem; align-items: center; min-width: 0; }
-.theme-pocket-lite-daylight .lite-id-profile > svg { flex: 0 0 auto; }
-.theme-pocket-lite-daylight .lite-id-profile > div { min-width: 0; }
-.theme-pocket-lite-daylight .lite-id-profile h2 { margin: .12rem 0; font-size: clamp(1.2rem, 3vw, 1.65rem); overflow-wrap: anywhere; }
-.theme-pocket-lite-daylight .lite-id-profile p,
-.theme-pocket-lite-daylight .lite-id-profile small { overflow-wrap: anywhere; }
-.theme-pocket-lite-daylight .lite-id-protections { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: .65rem; margin-top: 1.1rem; }
-.theme-pocket-lite-daylight .lite-id-protections button,
-.theme-pocket-lite-daylight .lite-id-journey-steps button,
-.theme-pocket-lite-daylight .lite-id-item-row {
+html[data-lite-theme] .lite-id-profile { display: flex; gap: 1rem; align-items: center; min-width: 0; }
+html[data-lite-theme] .lite-id-profile > svg { flex: 0 0 auto; }
+html[data-lite-theme] .lite-id-profile > div { min-width: 0; }
+html[data-lite-theme] .lite-id-profile h2 { margin: .12rem 0; font-size: clamp(1.2rem, 3vw, 1.65rem); overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-id-profile p,
+html[data-lite-theme] .lite-id-profile small { overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-id-protections { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: .65rem; margin-top: 1.1rem; }
+html[data-lite-theme] .lite-id-protections button,
+html[data-lite-theme] .lite-id-journey-steps button,
+html[data-lite-theme] .lite-id-item-row {
   display: flex; text-align: left; color: inherit; background: transparent; font: inherit;
-  cursor: pointer; border: 1px solid color-mix(in srgb, currentColor 15%, transparent); border-radius: .8rem;
+  cursor: pointer; border: 1px solid var(--azure-border); border-radius: .8rem;
   padding: .8rem; min-height: 44px; min-width: 0;
 }
-.theme-pocket-lite-daylight .lite-id-protections button { flex-direction: column; gap: .25rem; }
-.theme-pocket-lite-daylight .lite-id-protections button > *,
-.theme-pocket-lite-daylight .lite-id-journey-copy > * { max-width: 100%; overflow-wrap: anywhere; }
-.theme-pocket-lite-daylight .lite-id-protections small { font-size: .8rem; }
-.theme-pocket-lite-daylight .lite-id-journey header h2 { margin: .2rem 0; }
-.theme-pocket-lite-daylight .lite-id-journey header p { margin: .25rem 0 1rem; }
-.theme-pocket-lite-daylight .lite-id-eyebrow { font-size: .8rem; letter-spacing: .04em; }
-.theme-pocket-lite-daylight .lite-id-journey-steps { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); list-style: none; padding: 0; margin: 0; gap: .6rem; }
-.theme-pocket-lite-daylight .lite-id-journey-steps li { position: relative; min-width: 0; }
-.theme-pocket-lite-daylight .lite-id-journey-steps li:not(:last-child)::after { content: ''; position: absolute; right: -.65rem; top: 1.65rem; width: .65rem; border-top: 1px solid color-mix(in srgb, currentColor 28%, transparent); pointer-events: none; }
-.theme-pocket-lite-daylight .lite-id-journey-steps button { width: 100%; height: 100%; flex-direction: column; align-items: flex-start; gap: .5rem; }
-.theme-pocket-lite-daylight .lite-id-journey-icon { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; flex: 0 0 auto; border-radius: .7rem; background: color-mix(in srgb, currentColor 7%, transparent); }
-.theme-pocket-lite-daylight .lite-id-journey-copy { display: grid; gap: .18rem; min-width: 0; }
-.theme-pocket-lite-daylight .lite-id-journey-copy em { display: flex; gap: .35rem; align-items: center; font-style: normal; font-size: .79rem; }
-.theme-pocket-lite-daylight .lite-id-preview > div:first-child { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; align-items: center; }
-.theme-pocket-lite-daylight .lite-id-preview > div:first-child button,
-.theme-pocket-lite-daylight .lite-id-explain-entry button { min-height: 44px; background: none; border: 0; color: inherit; text-decoration: underline; cursor: pointer; }
-.theme-pocket-lite-daylight .lite-id-explain-entry button { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
-.theme-pocket-lite-daylight .lite-id-explain-entry button span { font-size: .82rem; }
-.theme-pocket-lite-daylight .lite-id-overview-action { display: flex; justify-content: flex-end; }
-.theme-pocket-lite-daylight .lite-id-manage { display: grid; gap: 1rem; min-width: 0; }
-.theme-pocket-lite-daylight .lite-id-manage-nav { display: flex; flex-wrap: wrap; gap: .4rem; border-bottom: 1px solid color-mix(in srgb, currentColor 16%, transparent); padding-bottom: .8rem; }
-.theme-pocket-lite-daylight .lite-id-manage-nav button,
-.theme-pocket-lite-daylight .lite-id-activity-filters button { min-height: 44px; border: 1px solid color-mix(in srgb, currentColor 16%, transparent); background: transparent; color: inherit; padding: .55rem .7rem; border-radius: .65rem; cursor: pointer; }
-.theme-pocket-lite-daylight .lite-id-manage-nav .is-active,
-.theme-pocket-lite-daylight .lite-id-activity-filters .is-active { border-color: currentColor; font-weight: 700; }
-.theme-pocket-lite-daylight .lite-id-manage-body { min-width: 0; }
-.theme-pocket-lite-daylight .lite-id-manage-body > header span { font-size: .82rem; overflow-wrap: anywhere; }
-.theme-pocket-lite-daylight .lite-id-manage-body > header h2 { margin: .3rem 0 1rem; }
-.theme-pocket-lite-daylight .lite-id-manage-counts { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .75rem; }
-.theme-pocket-lite-daylight .lite-id-manage-counts > div { padding: .7rem; border-radius: .7rem; border: 1px solid color-mix(in srgb, currentColor 12%, transparent); min-width: 0; }
-.theme-pocket-lite-daylight .lite-id-manage-list { display: grid; gap: .85rem; min-width: 0; }
-.theme-pocket-lite-daylight .lite-id-item-row { justify-content: space-between; align-items: center; gap: 1rem; width: 100%; }
-.theme-pocket-lite-daylight .lite-id-item-row > span:first-child { display: grid; min-width: 0; }
-.theme-pocket-lite-daylight .lite-id-item-row strong,
-.theme-pocket-lite-daylight .lite-id-item-row small { overflow-wrap: anywhere; }
-.theme-pocket-lite-daylight .lite-id-detail-heading,
-.theme-pocket-lite-daylight .lite-id-detail-group { padding-bottom: .9rem; border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent); margin-bottom: .95rem; }
-.theme-pocket-lite-daylight .lite-id-detail-facts { display: grid; gap: .55rem; }
-.theme-pocket-lite-daylight .lite-id-detail-fact { display: grid; grid-template-columns: minmax(7rem,.55fr) minmax(0,1fr); gap: .65rem; }
-.theme-pocket-lite-daylight .lite-id-detail-fact dd { margin: 0; overflow-wrap: anywhere; }
-.theme-pocket-lite-daylight .lite-id-detail-group h3 { margin-bottom: .5rem; }
-.theme-pocket-lite-daylight .lite-id-detail-action { margin: .5rem 0; }
-.theme-pocket-lite-daylight .lite-id-detail-protection { display: flex; gap: .5rem; align-items: flex-start; }
-.theme-pocket-lite-daylight .lite-id-timeline { padding: 0; margin: 1rem 0; list-style: none; }
-.theme-pocket-lite-daylight .lite-id-timeline li { display: grid; grid-template-columns: 2.2rem minmax(0,1fr); position: relative; gap: .6rem; padding: .2rem 0 1rem; }
-.theme-pocket-lite-daylight .lite-id-timeline li:not(:last-child)::before { content: ''; position: absolute; top: 2.1rem; bottom: 0; left: 1.1rem; border-left: 1px solid color-mix(in srgb, currentColor 22%, transparent); }
-.theme-pocket-lite-daylight .lite-id-timeline-marker { width: 2.2rem; height: 2.2rem; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, currentColor 8%, transparent); }
-.theme-pocket-lite-daylight .lite-id-timeline li > div { display: flex; gap: .25rem .75rem; flex-wrap: wrap; min-width: 0; }
-.theme-pocket-lite-daylight .lite-id-timeline li p { flex-basis: 100%; margin: .1rem 0; }
-.theme-pocket-lite-daylight .lite-id-timeline time { font-size: .82rem; overflow-wrap: anywhere; }
-.theme-pocket-lite-daylight .lite-id-timeline button { color: inherit; background: none; border: 0; text-decoration: underline; cursor: pointer; min-height: 44px; }
-.theme-pocket-lite-daylight .lite-id-activity-filters { display: flex; flex-wrap: wrap; gap: .4rem; }
-.theme-pocket-lite-daylight .lite-id-activity * { min-width: 0; overflow-wrap: anywhere; }
-.theme-pocket-lite-daylight .lite-identity-manage-sheet { width: min(96vw, 46rem); }
-.theme-pocket-lite-daylight .lite-id-manage button:focus-visible,
-.theme-pocket-lite-daylight .lite-id-overview button:focus-visible,
-.theme-pocket-lite-daylight .lite-id-journey button:focus-visible,
-.theme-pocket-lite-daylight .lite-id-preview button:focus-visible { outline: 3px solid var(--lite-primary, #2563eb); outline-offset: 3px; }
-.theme-pocket-lite-daylight .lite-identity-enterprise .lite-governance-matrix { overflow: visible; }
-.theme-pocket-lite-daylight .lite-identity-enterprise .lite-governance-matrix-row { min-width: 0; }
+html[data-lite-theme] .lite-id-protections button { flex-direction: column; gap: .25rem; }
+html[data-lite-theme] .lite-id-protections button > *,
+html[data-lite-theme] .lite-id-journey-copy > * { max-width: 100%; overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-id-protections small { font-size: .8rem; }
+html[data-lite-theme] .lite-id-journey header h2 { margin: .2rem 0; }
+html[data-lite-theme] .lite-id-journey header p { margin: .25rem 0 1rem; }
+html[data-lite-theme] .lite-id-eyebrow { font-size: .8rem; letter-spacing: .04em; }
+html[data-lite-theme] .lite-id-journey-steps { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); list-style: none; padding: 0; margin: 0; gap: .6rem; }
+html[data-lite-theme] .lite-id-journey-steps li { position: relative; min-width: 0; }
+html[data-lite-theme] .lite-id-journey-steps li:not(:last-child)::after { content: ''; position: absolute; right: -.65rem; top: 1.65rem; width: .65rem; border-top: 1px solid var(--azure-strong-border); pointer-events: none; }
+html[data-lite-theme] .lite-id-journey-steps button { width: 100%; height: 100%; flex-direction: column; align-items: flex-start; gap: .5rem; }
+html[data-lite-theme] .lite-id-journey-icon { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; flex: 0 0 auto; border-radius: .7rem; background: var(--azure-accent-subtle); }
+html[data-lite-theme] .lite-id-journey-copy { display: grid; gap: .18rem; min-width: 0; }
+html[data-lite-theme] .lite-id-journey-copy em { display: flex; gap: .35rem; align-items: center; font-style: normal; font-size: .79rem; }
+html[data-lite-theme] .lite-id-preview > div:first-child { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; align-items: center; }
+html[data-lite-theme] .lite-id-preview > div:first-child button,
+html[data-lite-theme] .lite-id-explain-entry button { min-height: 44px; background: none; border: 0; color: inherit; text-decoration: underline; cursor: pointer; }
+html[data-lite-theme] .lite-id-explain-entry button { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+html[data-lite-theme] .lite-id-explain-entry button span { font-size: .82rem; }
+html[data-lite-theme] .lite-id-overview-action { display: flex; justify-content: flex-end; }
+html[data-lite-theme] .lite-id-manage { display: grid; gap: 1rem; min-width: 0; }
+html[data-lite-theme] .lite-id-manage-nav { display: flex; flex-wrap: wrap; gap: .4rem; border-bottom: 1px solid var(--azure-border); padding-bottom: .8rem; }
+html[data-lite-theme] .lite-id-manage-nav button,
+html[data-lite-theme] .lite-id-activity-filters button { min-height: 44px; border: 1px solid var(--azure-border); background: transparent; color: inherit; padding: .55rem .7rem; border-radius: .65rem; cursor: pointer; }
+html[data-lite-theme] .lite-id-manage-nav .is-active,
+html[data-lite-theme] .lite-id-activity-filters .is-active { border-color: currentColor; font-weight: 700; }
+html[data-lite-theme] .lite-id-manage-body { min-width: 0; }
+html[data-lite-theme] .lite-id-manage-body > header span { font-size: .82rem; overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-id-manage-body > header h2 { margin: .3rem 0 1rem; }
+html[data-lite-theme] .lite-id-manage-counts { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .75rem; }
+html[data-lite-theme] .lite-id-manage-counts > div { padding: .7rem; border-radius: .7rem; border: 1px solid var(--azure-border); min-width: 0; }
+html[data-lite-theme] .lite-id-manage-list { display: grid; gap: .85rem; min-width: 0; }
+html[data-lite-theme] .lite-id-item-row { justify-content: space-between; align-items: center; gap: 1rem; width: 100%; }
+html[data-lite-theme] .lite-id-item-row > span:first-child { display: grid; min-width: 0; }
+html[data-lite-theme] .lite-id-item-row strong,
+html[data-lite-theme] .lite-id-item-row small { overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-id-detail-heading,
+html[data-lite-theme] .lite-id-detail-group { padding-bottom: .9rem; border-bottom: 1px solid var(--azure-border); margin-bottom: .95rem; }
+html[data-lite-theme] .lite-id-detail-facts { display: grid; gap: .55rem; }
+html[data-lite-theme] .lite-id-detail-fact { display: grid; grid-template-columns: minmax(7rem,.55fr) minmax(0,1fr); gap: .65rem; }
+html[data-lite-theme] .lite-id-detail-fact dd { margin: 0; overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-id-detail-group h3 { margin-bottom: .5rem; }
+html[data-lite-theme] .lite-id-detail-action { margin: .5rem 0; }
+html[data-lite-theme] .lite-id-detail-protection { display: flex; gap: .5rem; align-items: flex-start; }
+html[data-lite-theme] .lite-id-timeline { padding: 0; margin: 1rem 0; list-style: none; }
+html[data-lite-theme] .lite-id-timeline li { display: grid; grid-template-columns: 2.2rem minmax(0,1fr); position: relative; gap: .6rem; padding: .2rem 0 1rem; }
+html[data-lite-theme] .lite-id-timeline li:not(:last-child)::before { content: ''; position: absolute; top: 2.1rem; bottom: 0; left: 1.1rem; border-left: 1px solid var(--azure-border); }
+html[data-lite-theme] .lite-id-timeline-marker { width: 2.2rem; height: 2.2rem; border-radius: 50%; display: grid; place-items: center; background: var(--azure-accent-subtle); }
+html[data-lite-theme] .lite-id-timeline li > div { display: flex; gap: .25rem .75rem; flex-wrap: wrap; min-width: 0; }
+html[data-lite-theme] .lite-id-timeline li p { flex-basis: 100%; margin: .1rem 0; }
+html[data-lite-theme] .lite-id-timeline time { font-size: .82rem; overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-id-timeline button { color: inherit; background: none; border: 0; text-decoration: underline; cursor: pointer; min-height: 44px; }
+html[data-lite-theme] .lite-id-activity-filters { display: flex; flex-wrap: wrap; gap: .4rem; }
+html[data-lite-theme] .lite-id-activity * { min-width: 0; overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-identity-manage-sheet { width: min(96vw, 46rem); }
+html[data-lite-theme] .lite-id-manage button:focus-visible,
+html[data-lite-theme] .lite-id-overview button:focus-visible,
+html[data-lite-theme] .lite-id-journey button:focus-visible,
+html[data-lite-theme] .lite-id-preview button:focus-visible { outline: 3px solid var(--azure-focus); outline-offset: 3px; }
+html[data-lite-theme] .lite-identity-enterprise .lite-governance-matrix { overflow: visible; }
+html[data-lite-theme] .lite-identity-enterprise .lite-governance-matrix-row { min-width: 0; }
 @media (max-width: 850px) {
-  .theme-pocket-lite-daylight .lite-id-journey-steps { grid-template-columns: repeat(2,minmax(0,1fr)); }
-  .theme-pocket-lite-daylight .lite-id-journey-steps li::after { display: none; }
+  html[data-lite-theme] .lite-id-journey-steps { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  html[data-lite-theme] .lite-id-journey-steps li::after { display: none; }
 }
 @media (max-width: 640px) {
-  .theme-pocket-lite-daylight .lite-id-journey-steps { grid-template-columns: 1fr; }
-  .theme-pocket-lite-daylight .lite-id-protections { grid-template-columns: 1fr; }
-  .theme-pocket-lite-daylight .lite-id-manage-counts { grid-template-columns: 1fr; }
-  .theme-pocket-lite-daylight .lite-id-detail-fact { grid-template-columns: 1fr; gap: .1rem; }
-  .theme-pocket-lite-daylight .lite-id-journey-steps button { flex-direction: row; align-items: flex-start; }
-  .theme-pocket-lite-daylight .lite-identity-enterprise .lite-governance-matrix-row { grid-template-columns: 1fr 1fr; }
-  .theme-pocket-lite-daylight .lite-identity-enterprise .lite-governance-matrix-row > div:first-child { grid-column: 1/-1; }
-  .theme-pocket-lite-daylight .lite-id-manage-nav { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
-  .theme-pocket-lite-daylight .lite-id-item-row { flex-wrap: wrap; }
+  html[data-lite-theme] .lite-id-journey-steps { grid-template-columns: 1fr; }
+  html[data-lite-theme] .lite-id-protections { grid-template-columns: 1fr; }
+  html[data-lite-theme] .lite-id-manage-counts { grid-template-columns: 1fr; }
+  html[data-lite-theme] .lite-id-detail-fact { grid-template-columns: 1fr; gap: .1rem; }
+  html[data-lite-theme] .lite-id-journey-steps button { flex-direction: row; align-items: flex-start; }
+  html[data-lite-theme] .lite-identity-enterprise .lite-governance-matrix-row { grid-template-columns: 1fr 1fr; }
+  html[data-lite-theme] .lite-identity-enterprise .lite-governance-matrix-row > div:first-child { grid-column: 1/-1; }
+  html[data-lite-theme] .lite-id-manage-nav { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+  html[data-lite-theme] .lite-id-item-row { flex-wrap: wrap; }
 }
-@media (max-width: 380px) { .theme-pocket-lite-daylight .lite-id-manage-nav { grid-template-columns: 1fr; } }
-@media (prefers-reduced-motion: reduce) { .theme-pocket-lite-daylight .lite-id-journey *, .theme-pocket-lite-daylight .lite-id-timeline * { transition: none !important; animation: none !important; } }
+@media (max-width: 380px) { html[data-lite-theme] .lite-id-manage-nav { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { html[data-lite-theme] .lite-id-journey *, html[data-lite-theme] .lite-id-timeline * { transition: none !important; animation: none !important; } }
 
-.theme-pocket-lite-daylight .lite-id-person-role { display: grid; gap: .65rem; margin: .75rem 0; }
-.theme-pocket-lite-daylight .lite-id-person-role label { display: grid; gap: .4rem; }
-.theme-pocket-lite-daylight .lite-id-person-role select { min-height: 44px; border-radius: .7rem; padding: .6rem; color: inherit; background: var(--lite-surface, #fff); border: 1px solid currentColor; }
+html[data-lite-theme] .lite-id-person-role { display: grid; gap: .65rem; margin: .75rem 0; }
+html[data-lite-theme] .lite-id-person-role label { display: grid; gap: .4rem; }
+html[data-lite-theme] .lite-id-person-role select { min-height: 44px; border-radius: .7rem; padding: .6rem; color: inherit; background: var(--azure-surface); border: 1px solid currentColor; }
 
-.theme-pocket-lite-daylight .lite-owner-operation-approvals { display: grid; gap: .9rem; margin-block: 1rem; padding: clamp(.9rem, 2.5vw, 1.3rem); border: 1px solid color-mix(in srgb, currentColor 14%, transparent); border-radius: 1.15rem; background: var(--lite-surface, #fff); }
-.theme-pocket-lite-daylight .lite-owner-operation-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: start; flex-wrap: wrap; }
-.theme-pocket-lite-daylight .lite-owner-operation-heading h2 { margin: .25rem 0 0; }
-.theme-pocket-lite-daylight .lite-owner-operation-heading p { margin: .3rem 0 0; max-width: 32rem; }
-.theme-pocket-lite-daylight .lite-owner-operation-list { display: grid; gap: .8rem; }
-.theme-pocket-lite-daylight .lite-owner-operation-card { display: grid; gap: .75rem; padding: .9rem; border: 1px solid color-mix(in srgb, currentColor 14%, transparent); border-radius: .85rem; min-width: 0; }
-.theme-pocket-lite-daylight .lite-owner-operation-card-head { display: flex; justify-content: space-between; gap: .8rem; align-items: start; }
-.theme-pocket-lite-daylight .lite-owner-operation-card-head h3 { margin: .2rem 0 0; overflow-wrap: anywhere; }
-.theme-pocket-lite-daylight .lite-owner-operation-kicker { font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; opacity: .78; }
-.theme-pocket-lite-daylight .lite-owner-operation-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem .9rem; margin: 0; }
-.theme-pocket-lite-daylight .lite-owner-operation-facts > div { min-width: 0; }
-.theme-pocket-lite-daylight .lite-owner-operation-facts dt { font-size: .78rem; opacity: .76; }
-.theme-pocket-lite-daylight .lite-owner-operation-facts dd { margin: .1rem 0 0; overflow-wrap: anywhere; }
-.theme-pocket-lite-daylight .lite-owner-operation-reason { margin: 0; overflow-wrap: anywhere; }
-.theme-pocket-lite-daylight .lite-owner-operation-details summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; text-decoration: underline; }
-.theme-pocket-lite-daylight .lite-owner-operation-details ul { margin: .2rem 0 0 1.1rem; padding: 0; }
-.theme-pocket-lite-daylight .lite-owner-operation-terminal { margin: 0; font-size: .88rem; overflow-wrap: anywhere; }
-.theme-pocket-lite-daylight .lite-owner-operation-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+html[data-lite-theme] .lite-owner-operation-approvals { display: grid; gap: .9rem; margin-block: 1rem; padding: clamp(.9rem, 2.5vw, 1.3rem); border: 1px solid var(--azure-border); border-radius: 1.15rem; background: var(--azure-surface); }
+html[data-lite-theme] .lite-owner-operation-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: start; flex-wrap: wrap; }
+html[data-lite-theme] .lite-owner-operation-heading h2 { margin: .25rem 0 0; }
+html[data-lite-theme] .lite-owner-operation-heading p { margin: .3rem 0 0; max-width: 32rem; }
+html[data-lite-theme] .lite-owner-operation-list { display: grid; gap: .8rem; }
+html[data-lite-theme] .lite-owner-operation-card { display: grid; gap: .75rem; padding: .9rem; border: 1px solid var(--azure-border); border-radius: .85rem; min-width: 0; }
+html[data-lite-theme] .lite-owner-operation-card-head { display: flex; justify-content: space-between; gap: .8rem; align-items: start; }
+html[data-lite-theme] .lite-owner-operation-card-head h3 { margin: .2rem 0 0; overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-owner-operation-kicker { font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; opacity: .78; }
+html[data-lite-theme] .lite-owner-operation-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem .9rem; margin: 0; }
+html[data-lite-theme] .lite-owner-operation-facts > div { min-width: 0; }
+html[data-lite-theme] .lite-owner-operation-facts dt { font-size: .78rem; opacity: .76; }
+html[data-lite-theme] .lite-owner-operation-facts dd { margin: .1rem 0 0; overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-owner-operation-reason { margin: 0; overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-owner-operation-details summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; text-decoration: underline; }
+html[data-lite-theme] .lite-owner-operation-details ul { margin: .2rem 0 0 1.1rem; padding: 0; }
+html[data-lite-theme] .lite-owner-operation-terminal { margin: 0; font-size: .88rem; overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-owner-operation-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
 @media (max-width: 560px) {
-  .theme-pocket-lite-daylight .lite-owner-operation-facts { grid-template-columns: 1fr; }
-  .theme-pocket-lite-daylight .lite-owner-operation-actions > * { flex: 1 1 9rem; }
+  html[data-lite-theme] .lite-owner-operation-facts { grid-template-columns: 1fr; }
+  html[data-lite-theme] .lite-owner-operation-actions > * { flex: 1 1 9rem; }
 }
 
-.theme-pocket-lite-daylight .lite-owner-client-enrollment { display: grid; gap: .9rem; margin-block: 1rem; padding: clamp(.9rem, 2.5vw, 1.3rem); border: 1px solid color-mix(in srgb, currentColor 14%, transparent); border-radius: 1.15rem; background: var(--lite-surface, #fff); }
-.theme-pocket-lite-daylight .lite-owner-client-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: start; flex-wrap: wrap; }
-.theme-pocket-lite-daylight .lite-owner-client-heading h2 { margin: .25rem 0 0; }
-.theme-pocket-lite-daylight .lite-owner-client-heading p { margin: .3rem 0 0; max-width: 34rem; }
-.theme-pocket-lite-daylight .lite-owner-client-list { display: grid; gap: .8rem; }
-.theme-pocket-lite-daylight .lite-owner-client-card { display: grid; gap: .75rem; padding: .9rem; border: 1px solid color-mix(in srgb, currentColor 14%, transparent); border-radius: .85rem; min-width: 0; }
-.theme-pocket-lite-daylight .lite-owner-client-card-head { display: flex; justify-content: space-between; gap: .8rem; align-items: start; }
-.theme-pocket-lite-daylight .lite-owner-client-card-head h3 { margin: .2rem 0 0; overflow-wrap: anywhere; }
-.theme-pocket-lite-daylight .lite-owner-client-kicker { font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; opacity: .78; }
-.theme-pocket-lite-daylight .lite-owner-client-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem .9rem; margin: 0; }
-.theme-pocket-lite-daylight .lite-owner-client-facts > div { min-width: 0; }
-.theme-pocket-lite-daylight .lite-owner-client-facts dt { font-size: .78rem; opacity: .76; }
-.theme-pocket-lite-daylight .lite-owner-client-facts dd { margin: .1rem 0 0; overflow-wrap: anywhere; }
-.theme-pocket-lite-daylight .lite-owner-client-terminal { margin: 0; font-size: .88rem; overflow-wrap: anywhere; }
-.theme-pocket-lite-daylight .lite-owner-client-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+html[data-lite-theme] .lite-owner-client-enrollment { display: grid; gap: .9rem; margin-block: 1rem; padding: clamp(.9rem, 2.5vw, 1.3rem); border: 1px solid var(--azure-border); border-radius: 1.15rem; background: var(--azure-surface); }
+html[data-lite-theme] .lite-owner-client-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: start; flex-wrap: wrap; }
+html[data-lite-theme] .lite-owner-client-heading h2 { margin: .25rem 0 0; }
+html[data-lite-theme] .lite-owner-client-heading p { margin: .3rem 0 0; max-width: 34rem; }
+html[data-lite-theme] .lite-owner-client-list { display: grid; gap: .8rem; }
+html[data-lite-theme] .lite-owner-client-card { display: grid; gap: .75rem; padding: .9rem; border: 1px solid var(--azure-border); border-radius: .85rem; min-width: 0; }
+html[data-lite-theme] .lite-owner-client-card-head { display: flex; justify-content: space-between; gap: .8rem; align-items: start; }
+html[data-lite-theme] .lite-owner-client-card-head h3 { margin: .2rem 0 0; overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-owner-client-kicker { font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; opacity: .78; }
+html[data-lite-theme] .lite-owner-client-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem .9rem; margin: 0; }
+html[data-lite-theme] .lite-owner-client-facts > div { min-width: 0; }
+html[data-lite-theme] .lite-owner-client-facts dt { font-size: .78rem; opacity: .76; }
+html[data-lite-theme] .lite-owner-client-facts dd { margin: .1rem 0 0; overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-owner-client-terminal { margin: 0; font-size: .88rem; overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-owner-client-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
 @media (max-width: 560px) {
-  .theme-pocket-lite-daylight .lite-owner-client-facts { grid-template-columns: 1fr; }
-  .theme-pocket-lite-daylight .lite-owner-client-actions > * { flex: 1 1 10rem; }
+  html[data-lite-theme] .lite-owner-client-facts { grid-template-columns: 1fr; }
+  html[data-lite-theme] .lite-owner-client-actions > * { flex: 1 1 10rem; }
+}
+
+/* Azure Horizon Identity composition and portal surfaces: both Black and Daylight. */
+html[data-lite-theme] .lite-id-account-layout { display:grid; gap:1rem; min-width:0; }
+html[data-lite-theme] .lite-id-account-layout :is(h2,h3,p,small,span,strong) { overflow-wrap:anywhere; }
+html[data-lite-theme] .lite-id-overview,html[data-lite-theme] .lite-id-preview,html[data-lite-theme] .lite-id-journey { margin:0; border-color:var(--azure-border); background:var(--azure-surface); color:var(--azure-text); box-shadow:var(--azure-shadow); }
+html[data-lite-theme] .lite-id-hero-heading { display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap; }
+html[data-lite-theme] .lite-id-profile > svg { color:var(--azure-accent); }
+html[data-lite-theme] .lite-id-profile > div > span { display:block;color:var(--azure-muted);font-size:.82rem; }
+html[data-lite-theme] .lite-id-profile h2 {font-weight:650;letter-spacing:-.02em;}
+html[data-lite-theme] .lite-id-profile p {font-size:.9rem;color:var(--azure-text);}
+html[data-lite-theme] .lite-id-profile small,html[data-lite-theme] .lite-id-protections small {color:var(--azure-muted);}
+html[data-lite-theme] .lite-id-protections {margin-top:1.15rem;}
+html[data-lite-theme] .lite-id-protections button {background:var(--azure-raised);border-color:var(--azure-border);color:var(--azure-text);}
+html[data-lite-theme] .lite-id-protections button:hover,html[data-lite-theme] .lite-id-item-row:hover {background:var(--azure-hover);border-color:var(--azure-strong-border);}
+html[data-lite-theme] .lite-id-protections button strong {font-size:.8rem;color:var(--azure-muted);font-weight:600;}
+html[data-lite-theme] .lite-id-protections button > span {font-size:1.1rem;font-weight:650;color:var(--azure-text);}
+html[data-lite-theme] .lite-id-primary-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;min-width:0;}
+html[data-lite-theme] .lite-id-action-card {min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:.65rem;padding:clamp(1rem,2vw,1.35rem);background:var(--azure-surface);border:1px solid var(--azure-border);border-radius:var(--azure-radius-card);color:var(--azure-text);}
+html[data-lite-theme] .lite-id-action-card h2 {font-size:1.15rem;font-weight:650;line-height:1.3;margin:0;}
+html[data-lite-theme] .lite-id-action-card p {color:var(--azure-muted);font-size:.875rem;line-height:1.5;margin:0;}
+html[data-lite-theme] .lite-id-action-card .pocket-button {margin-top:auto;}
+html[data-lite-theme] .lite-id-card-icon {width:2.6rem;height:2.6rem;display:grid;place-items:center;background:var(--azure-accent-subtle);color:var(--azure-accent);border-radius:.8rem;}
+html[data-lite-theme] .lite-id-mobile-recovery-card,html[data-lite-theme] .lite-id-hero-mobile-action {display:none;}
+html[data-lite-theme] .lite-id-manage-nav :is(button,.is-active),html[data-lite-theme] .lite-id-activity-filters button {background:var(--azure-raised);color:var(--azure-text);border-color:var(--azure-border);}
+html[data-lite-theme] .lite-id-manage-nav button.is-active,html[data-lite-theme] .lite-id-activity-filters button.is-active {background:var(--azure-selected);border-color:var(--azure-accent);color:var(--azure-text);}
+html[data-lite-theme] .lite-id-item-row {background:var(--azure-surface);color:var(--azure-text);border-color:var(--azure-border);}
+html[data-lite-theme] .lite-id-manage-counts > div {background:var(--azure-raised);border-color:var(--azure-border);}
+html[data-lite-theme] .lite-id-manage :is(p,small,dt),html[data-lite-theme] .lite-id-timeline time {color:var(--azure-muted);}
+html[data-lite-theme] .lite-id-manage :is(h2,h3,dd,strong) {color:var(--azure-text);}
+html[data-lite-theme] :is(.lite-owner-operation-approvals,.lite-owner-client-enrollment) {background:var(--azure-surface);color:var(--azure-text);border-color:var(--azure-border);}
+html[data-lite-theme] :is(.lite-owner-operation-card,.lite-owner-client-card) {background:var(--azure-raised);border-color:var(--azure-border);}
+html[data-lite-theme] .lite-id-journey-steps button {background:var(--azure-raised);border-color:var(--azure-border);color:var(--azure-text);}
+html[data-lite-theme] .lite-id-journey-steps button:hover {background:var(--azure-hover);}
+html[data-lite-theme] .lite-identity-manage-sheet :is(input,select,textarea),html[data-lite-theme] .lite-identity-sheet :is(input,select,textarea),html[data-lite-theme] .lite-identity-enterprise :is(input,select,textarea) {color-scheme:inherit;background:var(--azure-input);color:var(--azure-text);border:1px solid var(--azure-strong-border);border-radius:var(--azure-radius-control);min-width:0;max-width:100%;}
+html[data-lite-theme] .lite-identity-manage-sheet,html[data-lite-theme] .lite-identity-sheet,html[data-lite-theme] .lite-details-panel {background:var(--azure-surface);color:var(--azure-text);border-color:var(--azure-border);}
+html[data-lite-theme] .lite-id-desktop-panel-tools {display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;justify-content:flex-end;min-width:0;}
+html[data-lite-theme] .lite-id-desktop-panel-tools button {display:inline-flex;align-items:center;gap:.3rem;min-height:40px;padding:.35rem .5rem;border:1px solid var(--azure-border);border-radius:.6rem;background:var(--azure-raised);color:var(--azure-text);font-size:.8rem;touch-action:none;}
+html[data-lite-theme] .lite-id-desktop-panel-tools button:hover {background:var(--azure-hover);}
+html[data-lite-theme] .lite-id-desktop-panel-tools button:first-child {cursor:move;}
+html[data-lite-theme] .lite-id-desktop-panel-tools button:nth-child(3) {cursor:nwse-resize;}
+html[data-lite-theme] .lite-identity-manage-sheet.is-movable {position:fixed;max-width:none;max-height:none;transform:none;display:flex;flex-direction:column;}
+html[data-lite-theme] .lite-identity-manage-sheet.is-movable .lite-overlay-scroll {flex:1;min-height:0;overflow:auto;}
+html[data-lite-theme] .lite-identity-manage-sheet .lite-overlay-head {display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;}
+html[data-lite-theme] .lite-identity-manage-sheet .lite-overlay-head > div:first-child {flex:1 1 12rem;min-width:0;}
+html[data-lite-theme] .lite-identity-manage-sheet .lite-overlay-scroll {overscroll-behavior:contain;}
+html[data-lite-theme] .lite-identity-recovery-codes {border:2px solid var(--azure-warning);background:var(--azure-warning-subtle);border-radius:var(--azure-radius-control);padding:1rem;min-width:0;}
+html[data-lite-theme] .lite-identity-recovery-codes code {display:block;max-height:14rem;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--azure-raised);color:var(--azure-text);padding:.8rem;border-radius:.5rem;user-select:text;}
+html[data-lite-theme] .lite-id-manage :focus-visible,html[data-lite-theme] .lite-id-account-layout button:focus-visible,html[data-lite-theme] .lite-id-desktop-panel-tools button:focus-visible {outline:3px solid var(--azure-focus);outline-offset:2px;}
+html[data-lite-theme] .lite-identity-enterprise :is(.lite-governance-person,.lite-governance-role-card,.lite-governance-card) {min-width:0;overflow-wrap:anywhere;}
+html[data-lite-theme] .lite-identity-enterprise :is(.lite-governance-form,.lite-governance-role-grid,.lite-governance-grid) {min-width:0;}
+html[data-lite-theme] .lite-id-hero-mobile-action .pocket-button {width:100%;}
+@media(max-width:700px) {
+  html[data-lite-theme] .lite-id-account-layout {gap:.75rem;}
+  html[data-lite-theme] .lite-id-primary-grid {grid-template-columns:1fr;gap:.65rem;}
+  html[data-lite-theme] .lite-id-mobile-recovery-card {display:flex;}
+  html[data-lite-theme] .lite-id-hero-desktop-action {display:none;}
+  html[data-lite-theme] .lite-id-hero-mobile-action {display:block;margin-top:1rem;}
+  html[data-lite-theme] .lite-id-protections {grid-template-columns:repeat(2,minmax(0,1fr));}
+  html[data-lite-theme] .lite-id-protections button:nth-child(3) {display:none;}
+  html[data-lite-theme] .lite-id-action-card {gap:.5rem;}
+  html[data-lite-theme] .lite-id-manage-nav {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
+  html[data-lite-theme] .lite-id-manage-body,html[data-lite-theme] .lite-id-manage-nav {min-width:0;}
+  html[data-lite-theme] .lite-identity-manage-sheet {width:min(100%,46rem);max-height:calc(var(--lite-visual-viewport-height,100dvh) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 1rem);}
+  html[data-lite-theme] .lite-id-desktop-panel-tools {display:none;}
+  html[data-lite-theme] .lite-identity-enterprise :is(.lite-governance-form,.lite-governance-role-grid,.lite-governance-grid) {grid-template-columns:minmax(0,1fr);}
+}
+@media(max-width:370px) {
+  html[data-lite-theme] .lite-id-protections,html[data-lite-theme] .lite-id-manage-counts,html[data-lite-theme] .lite-id-manage-nav {grid-template-columns:1fr;}
+}
+@media (prefers-reduced-motion:reduce) {
+  html[data-lite-theme] .lite-id-account-layout *,html[data-lite-theme] .lite-identity-manage-sheet * {animation:none;transition:none;scroll-behavior:auto;}
 }

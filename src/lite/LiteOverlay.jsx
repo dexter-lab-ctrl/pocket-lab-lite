@@ -231,6 +231,7 @@ export function LiteSheet({
   bodyClassName = '',
   closeClassName = '',
   gripClassName = '',
+  headerActions = null,
   labelledBy,
   surfaceRef,
   bodyRef,
@@ -352,6 +353,7 @@ export function LiteSheet({
               <strong id={titleId}>{title}</strong>
               {description ? <p>{description}</p> : null}
             </div>
+            {headerActions}
             <button ref={closeRef} type="button" className={`lite-overlay-close ${variantClasses.close} ${closeClassName}`.trim()} onClick={onClose} aria-label={variantClasses.closeLabel}>
               <X className="h-4 w-4" />
             </button>
