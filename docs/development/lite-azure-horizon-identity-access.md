@@ -118,3 +118,43 @@ The follow-up stabilization sequence should run source build/unit first, then mo
 ## 21. Rollback and future cross-tab consistency
 
 Revert the feature-branch source commits before merging; no backend schema or auth state migration exists. Keep PR DRAFT until qualification. For future work, consider shared Identity-safe visual tokens and panel sizing across Apps, Devices, Rules, Recovery, and Security **without changing** those tabs as part of this PR.
+
+## 22. Owner approval and trusted-client presentation details
+
+Pending, executing, completed, rejected, blocked and expired status texts remain server-derived. Fresh pending records expose Approve/Reject only under existing handlers; saved data disables decisions. Trusted-client pairings present requester, public fingerprint and bounded capability; no private material.
+
+## 23. People lifecycle actions and Owner/Admin boundaries
+
+Separate person invitations, enrollment, suspension, reactivation, sign-in reset, role assignment and removal remain delegated to `LiteIdentityEnterprise`. Frontend controls are a convenience filter only; server permissions and step-up are the enforcement boundary. Enterprise is disabled by default.
+
+## 24. Native controls and dropdowns
+
+Form styling uses existing `LiteField` and `pocket-input` with root-owned Azure colors, visible focus, non-text control borders and native `color-scheme` inheritance for select/inputs/textarea, including portal forms. Browser-dependent native dropdown contrast is unvalidated until platform qualification.
+
+## 25. Screen-reader and keyboard behavior
+
+Manage section buttons report pressed/current state. Move/Resize controls provide accessible names and arrow/Shift+arrow commands; Reset restores bounds. Focus remains managed by `LiteSheet` and its nested surface stack. Behavior with live platform passkeys remains deferred to the permitted qualification session.
+
+## 26. Browser support
+
+Desktop media breakpoint is inherited from shared Apps/Devices geometry (701px). Mobile is the accessible LiteSheet bottom sheet; installed PWA and Android viewport/safe-area behavior will require real-device review.
+
+## 27. First-paint and render metrics
+
+The new performance spec records first paint, Manage open, section switching and keyboard movement for synthetic scenarios only. No thresholds or results are changed; PR #588 remains authoritative.
+
+## 28. Baseline management
+
+All new `toHaveScreenshot` scenarios intentionally have no approved PNG files. Human approval of Black/Daylight, mobile/desktop, signed-out, protected dialog and moved/resized cases is a later gate. No browser-generated secret is included in a fixture.
+
+## 29. CI and generated documentation
+
+CI can trigger automatically after push but must not be inspected or rerun in this implementation-only session. Generated docs, navigation metadata and contracts must be assessed and refreshed as needed after source stabilization, with source truth preserved.
+
+## 30. Safety gaps and deferred evidence
+
+**[UNVALIDATED]** Check owner/passkey challenge cancellation, backend 428 step-up, empty/missing session projections, revoked sessions, stale approvals, mode preview sign-out, focus return and portal theme inheritance in real browsers. Contrast, a11y, performance and Android behavior remain unproven.
+
+## 31. Final disposition
+
+This is an OPEN DRAFT source implementation, not a qualified production release. No merge, tag, `dist.zip`, or Server Phone change is authorized.

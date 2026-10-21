@@ -515,7 +515,7 @@ export default function IdentityScreen() {
               </GlassCard>
             </div>
             <OwnerOperationApprovals operations={ownerOperations} fresh={ownerOperationsFresh} busy={busy} compact onApprove={approveOwnerOperation} onReject={rejectOwnerOperation} />
-            <section className="lite-id-preview"><div><h2>Recent access activity</h2><button type="button" onClick={() => openManage('activity')}>View history</button></div><IdentityActivityTimeline items={data?.recent_activity} limit={3} onDetails={(event) => openDetails('activity', event)} /></section>
+            <section className="lite-id-preview" aria-labelledby="lite-id-recent-access-heading"><div><h2 id="lite-id-recent-access-heading">Recent access activity</h2><button type="button" onClick={() => openManage('activity')}>View history</button></div><IdentityActivityTimeline items={data?.recent_activity} limit={3} onDetails={(event) => openDetails('activity', event)} /></section>
             <IdentityAccessJourney view={premiumView} onSelect={(stage) => {
               if (stage === 'authentication') openManage('passkeys');
               else if (stage === 'recovery') openDetails('recovery');

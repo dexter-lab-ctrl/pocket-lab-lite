@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // Azure Horizon Identity source contracts — deliberately not executed in implementation-only session.
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import IdentityManageContent from './IdentityManageContent.jsx';
 import { identityPremiumProjection, identityJourneyStages, identityActivityView } from './identityPremiumView.js';
@@ -43,7 +43,7 @@ describe('Azure Horizon account facts and Manage authorization posture', () => {
   });
   it('shows unavailable account facts explicitly rather than zero', () => {
     mount();
-    expect(screen.getByText('Unavailable', { selector: 'dd' })).toBeTruthy();
+    expect(screen.getAllByText('Unavailable', { selector: 'dd' }).length).toBeGreaterThan(0);
     expect(screen.queryByRole('button', { name: 'People' })).toBeNull();
   });
   it('prevents stale passkey registration and recovery-code generation', () => {

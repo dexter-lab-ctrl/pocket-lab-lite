@@ -21,7 +21,7 @@ export default function IdentityDetailsContent({ selection, view, onRename, onRe
   const explanation = kind === 'explain';
   const basicTitle = ({ identity: 'Identity', passkey: 'Passkey', session: 'Session', recovery: 'Recovery', person: 'Person', role: 'Role', authorization: 'Access decision', activity: 'Access activity', mode: 'Workspace mode', explain: 'Understand your access' })[kind] || 'Access details';
   const title = kind === 'passkey' ? item.friendly_name || 'Passkey' : kind === 'person' ? item.display_name || 'Person' : basicTitle;
-  const status = kind === 'passkey' ? (item.active ? 'Active' : 'Revoked') : kind === 'session' ? (item.current ? 'Current session' : item.active ? 'Active' : 'Inactive') : kind === 'activity' ? item.outcome : kind === 'recovery' ? (view.recoveryConfigured ? 'Configured' : 'Unavailable or unconfigured') : view.fresh ? 'Reported by Pocket Lab' : 'Saved information';
+  const status = kind === 'passkey' ? (item.active ? 'Active' : 'Revoked') : kind === 'session' ? (item.active && item.current ? 'Current session' : item.active ? 'Active' : 'Inactive') : kind === 'activity' ? item.outcome : kind === 'recovery' ? (view.recoveryConfigured ? 'Configured' : 'Unavailable or unconfigured') : view.fresh ? 'Reported by Pocket Lab' : 'Saved information';
   const summary = ({
     identity: 'Your displayed identity is server-reported. A role alone does not authorize a protected change.',
     passkey: 'This passkey belongs to your signed-in identity. Protected removal may need another passkey confirmation.',

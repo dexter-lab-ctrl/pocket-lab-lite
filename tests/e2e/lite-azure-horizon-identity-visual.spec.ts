@@ -45,3 +45,32 @@ for (const theme of ['light','dark'] as const) {
     await expect(page.getByRole('dialog',{name:/Generate new recovery codes/i})).toHaveScreenshot(`identity-horizon-${theme}-protected-confirmation.png`,{animations:'disabled'});
   });
 }
+
+// DEFINED — BASELINE CAPTURE/APPROVAL DEFERRED: desktop moved/resized and 200% mobile.
+for (const theme of ['light','dark'] as const) {
+  test(`Identity ${theme} moved and resized Manage`, async ({page}) => {
+    await page.setViewportSize({width:1280,height:900});
+    await page.emulateMedia({reducedMotion:'reduce'});
+    await page.addInitScript(value=>localStorage.setItem('pocketlab:appearance',value),theme);
+    await installScenario(page,'identity-premium-multiple');
+    await page.goto('/?screen=identity');
+    await waitForLiteScreenToSettle(page,'identity');
+    await page.getByRole('button',{name:/^Manage Access$/i}).first().click();
+    const dialog=page.getByRole('dialog',{name:/Manage access/i});
+    await dialog.getByRole('button',{name:'Move access panel'}).focus();
+    await page.keyboard.press('Shift+ArrowLeft');
+    await dialog.getByRole('button',{name:'Resize access panel'}).focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect(dialog).toHaveScreenshot(`identity-horizon-${theme}-manage-moved-resized.png`,{animations:'disabled'});
+  });
+  test(`Identity ${theme} mobile 200-percent text`,async({page})=>{
+    await page.setViewportSize({width:320,height:800});
+    await page.emulateMedia({reducedMotion:'reduce'});
+    await page.addInitScript(value=>localStorage.setItem('pocketlab:appearance',value),theme);
+    await installScenario(page,'identity-premium-long-text');
+    await page.goto('/?screen=identity');
+    await waitForLiteScreenToSettle(page,'identity');
+    await page.addStyleTag({content:'html { font-size: 200% !important; }'});
+    await expect(page.locator('[data-lite-screen-id="identity"]')).toHaveScreenshot(`identity-horizon-${theme}-mobile-200-percent.png`,{animations:'disabled'});
+  });
+}

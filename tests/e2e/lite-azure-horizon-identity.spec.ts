@@ -132,3 +132,32 @@ test.describe('Azure Horizon Identity source and access contracts', () => {
     await expect(page.getByRole('dialog',{name:/Access Details/i})).not.toContainText('Remove person');
   });
 });
+
+// Additional protected presentation paths use synthetic mocked state only.
+test('owner setup keeps advanced manual fields behind disclosure',async({page})=>{
+  await openIdentity(page,'identity-premium-first-owner');
+  await expect(page.getByRole('button',{name:'Advanced Setup'})).toBeVisible();
+  await expect(page.getByLabel('One-time setup token')).toHaveCount(0);
+  await page.getByRole('button',{name:'Advanced Setup'}).click();
+  await expect(page.getByLabel('One-time setup token')).toHaveAttribute('type','password');
+});
+test('signed-out supported password fallback stays optional',async({page})=>{
+  await openIdentity(page,'identity-password-configured');
+  await expect(page.getByRole('button',{name:/Advanced Sign-In/i})).toBeVisible();
+  await page.getByRole('button',{name:/Advanced Sign-In/i}).click();
+  await expect(page.getByLabel('Password',{exact:true})).toHaveAttribute('type','password');
+});
+test('session revocation is guarded by a nested consequence sheet',async({page})=>{
+  const dialog=await manage(page,'identity-premium-multiple');
+  await dialog.getByRole('button',{name:'Sessions',exact:true}).click();
+  await dialog.getByRole('button',{name:/Other session/i}).first().click();
+  const details=page.getByRole('dialog',{name:/Access Details/i});
+  await expect(details).toBeVisible();
+  await details.getByRole('button',{name:'Sign out session'}).click();
+  await expect(page.getByRole('dialog',{name:/Sign out this session/i})).toBeVisible();
+});
+test('personal account does not render Enterprise People navigation',async({page})=>{
+  const dialog=await manage(page,'identity-summary');
+  await expect(dialog.getByRole('button',{name:'People',exact:true})).toHaveCount(0);
+  await expect(dialog.getByRole('button',{name:'Roles & Access'})).toHaveCount(0);
+});
