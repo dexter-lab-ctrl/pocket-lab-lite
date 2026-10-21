@@ -1,6 +1,41 @@
 version: '3'
 
 tasks:
+  lite:ui:identity:azure:unit:
+    desc: Exercise source-level identity projection, Manage and shared desktop geometry
+    cmds:
+      - npm run test:identity:azure:unit
+
+  lite:ui:identity:azure:mocked:
+    desc: Exercise mocked Personal Enterprise and protected Identity flows
+    cmds:
+      - npm run test:identity:azure:mocked
+
+  lite:ui:identity:azure:geometry:
+    desc: Exercise desktop movement resizing reset and mobile sheet fallback
+    cmds:
+      - npm run test:identity:azure:geometry
+
+  lite:ui:identity:azure:a11y:
+    desc: Exercise Azure Identity accessibility scenarios
+    cmds:
+      - npm run test:identity:azure:a11y
+
+  lite:ui:identity:azure:visual:
+    desc: Capture and review unapproved Identity screenshot references with explicit authorization
+    cmds:
+      - npm run test:identity:azure:visual
+
+  lite:ui:identity:azure:perf:
+    desc: Collect Identity interaction samples without modifying the 60 FPS gate
+    cmds:
+      - npm run test:identity:azure:perf
+
+  lite:ui:identity:azure:qualification:
+    desc: Run post-implementation qualification after baseline approval (not an implementation step)
+    cmds:
+      - npm run test:identity:azure:qualification
+
 
   lite:ui:p4:visual-review:
     desc: Compare committed P4 visual contracts against manually approved reference snapshots

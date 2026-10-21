@@ -81,7 +81,14 @@
     "test:apps:azure:a11y": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-apps.spec.ts --grep 'WCAG AA' --project=mocked-desktop --project=mocked-mobile",
     "test:apps:azure:geometry": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-apps.spec.ts --grep 'drag|resize|geometry|desktop to mobile|Devices Manage' --project=mocked-desktop --project=mocked-mobile",
     "test:apps:azure:perf": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-apps-performance.spec.ts --project=mocked-desktop --project=mocked-mobile",
-    "test:apps:azure:qualification": "npm run test:apps:azure:unit && npm run test:apps:azure:mocked && npm run test:apps:azure:a11y && npm run test:apps:azure:geometry && npm run test:apps:azure:perf && npm run test:azure:perf"
+    "test:apps:azure:qualification": "npm run test:apps:azure:unit && npm run test:apps:azure:mocked && npm run test:apps:azure:a11y && npm run test:apps:azure:geometry && npm run test:apps:azure:perf && npm run test:azure:perf",
+    "test:identity:azure:unit": "vitest run src/lite/identity/*.test.js src/lite/identity/*.test.jsx src/lite/catalog/useDesktopManageGeometry.test.jsx",
+    "test:identity:azure:mocked": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-identity-premium-refinement.spec.ts tests/e2e/lite-azure-horizon-identity.spec.ts --project=mocked-desktop --project=mocked-mobile",
+    "test:identity:azure:geometry": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-identity.spec.ts --grep 'geometry|mobile never exposes|responsive readable' --project=mocked-desktop --project=mocked-mobile",
+    "test:identity:azure:a11y": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-identity.spec.ts --grep 'WCAG AA|200% text' --project=mocked-desktop --project=mocked-mobile",
+    "test:identity:azure:visual": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-identity-visual.spec.ts --project=mocked-desktop --project=mocked-mobile",
+    "test:identity:azure:perf": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-identity-performance.spec.ts --project=mocked-desktop --project=mocked-mobile",
+    "test:identity:azure:qualification": "npm run test:identity:azure:unit && npm run test:identity:azure:mocked && npm run test:identity:azure:a11y && npm run test:identity:azure:geometry && npm run test:identity:azure:perf && npm run test:identity:azure:visual && npm run build && npm run test:perf"
   },
   "keywords": [],
   "author": "",
