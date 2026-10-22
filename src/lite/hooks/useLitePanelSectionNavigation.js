@@ -46,9 +46,12 @@ export function useLitePanelSectionNavigation(open) {
     scrollState.current = { baseline: Math.max(0, body.scrollTop), hidden: false, scrolled: body.scrollTop > LITE_PANEL_NAV_TOP };
     setHidden(false);
     setScrolled(scrollState.current.scrolled);
-    const focused = () => Boolean(navRef.current?.contains(document.activeElement));
     const onScroll = () => {
-      const next = nextLitePanelNavState(scrollState.current, body.scrollTop, focused());
+      // Pointer scrolling can leave the last tab focused on touch browsers.
+      // Let the scroll direction retract the sticky strip; :focus-within in
+      // the panel stylesheet keeps a keyboard-focused strip visible and the
+      // focusin handler below restores the explicit state for keyboard use.
+      const next = nextLitePanelNavState(scrollState.current, body.scrollTop, false);
       scrollState.current = next;
       setHidden((current) => current === next.hidden ? current : next.hidden);
       setScrolled((current) => current === next.scrolled ? current : next.scrolled);

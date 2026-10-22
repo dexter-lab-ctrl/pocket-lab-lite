@@ -34,6 +34,10 @@ describe('Premium Recent Activity', () => {
   it('shows bounded empty/unavailable states without fabricating a success', () => {
     const { rerender } = render(<HomeActivityDetails activity={null} />);
     expect(screen.getByText('Activity unavailable')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'History', exact: true }));
+    expect(screen.getByText('Private review position and status')).toBeTruthy();
+    expect(screen.getByText('Review status not available')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Attention', exact: true }));
     rerender(<HomeActivityDetails activity={activity} />);
     expect(screen.getByText(/No attention events in this sample/i)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Recent', exact: true }));

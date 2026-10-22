@@ -40,6 +40,28 @@ function ActivityEvents({ events, label, onNavigate }) {
   </ol>;
 }
 
+function PersonalActivityReview({ cursor, cursorBusy, cursorError, saved, onMarkReviewed }) {
+  return <section className="lite-home-personal-review" aria-label="Personal activity review">
+    <div className="lite-home-review-heading">
+      <CheckCircle2 size={20} aria-hidden="true" />
+      <div><h3>Personal activity review</h3><p>Private review position and status</p></div>
+    </div>
+    {cursor?.last_reviewed_at ? <p>Last reviewed: <ActivityTime value={cursor.last_reviewed_at} /></p> : null}
+    {cursor?.changed_since_review ? <p className="lite-home-review-changed">Something changed since your last review.</p> : null}
+    {!cursor?.changed_since_review && cursor ? <p>Nothing new reported since your last review.</p> : null}
+    <p>Marking history reviewed changes only your private review position. It does not resolve an issue, approve work, clear audit history or retry an action.</p>
+    {cursor?.changed_since_review ? <button type="button"
+      disabled={Boolean(saved || cursorBusy)} aria-busy={cursorBusy || undefined}
+      onClick={onMarkReviewed}>{cursorBusy ? 'Saving review…' : 'Mark activity reviewed'}</button> : null}
+    {saved ? <ActivityNotice title="Saved information">Reconnect to confirm a new review position.</ActivityNotice> : null}
+    {cursorError ? <StateSurface tone="error" title="Review history unavailable" description={cursorError}
+      className="lite-home-activity-state" /> : null}
+    {!cursor && !cursorError ? <StateSurface tone="unavailable" title="Review status not available"
+      description="Review history couldn't be loaded or is still checking."
+      className="lite-home-activity-state" /> : null}
+  </section>;
+}
+
 export default function HomeActivityDetails({
   activity, navigation, cursor, cursorBusy, cursorError, saved, onMarkReviewed, onNavigate,
 }) {
@@ -59,14 +81,18 @@ export default function HomeActivityDetails({
         aria-current={section === key ? 'page' : undefined}
         onClick={() => { navigation?.reveal(true); setSection(key); }}>{label}</button>)}
     </nav>
-    {!activity ? <StateSurface tone="unavailable" title="Activity unavailable"
-      description="Activity information is not available. No successful or running action is assumed."
-      className="lite-home-activity-state" /> :
+    {!activity ? <>
+      <StateSurface tone="unavailable" title="Activity unavailable"
+        description="Activity information is not available. No successful or running action is assumed."
+        className="lite-home-activity-state" />
+      {section === 'history' ? <PersonalActivityReview cursor={cursor} cursorBusy={cursorBusy}
+        cursorError={cursorError} saved={saved} onMarkReviewed={onMarkReviewed} /> : null}
+    </> :
       <div className="lite-home-activity-content">
         <dl className="lite-home-activity-counts">
           <div><dt>Running now</dt><dd>{formatActivityCount(activity.active)}</dd></div>
           <div><dt>Waiting / queued</dt><dd>{formatActivityCount(activity.queued)}</dd></div>
-          <div><dt>Completed</dt><dd>{formatActivityCount(activity.completed)}</dd></div>
+          <div><dt>Completed recently</dt><dd>{formatActivityCount(activity.completed)}</dd></div>
           <div><dt>Needs review</dt><dd>{formatActivityCount(activity.attention)}</dd></div>
         </dl>
         <ActivityNotice title="Activity time window" icon={Clock3}>
@@ -103,25 +129,8 @@ export default function HomeActivityDetails({
         </> : null}
         <ActivityEvents events={lists[section]} label={sections.find(([key]) => key === section)?.[1] || section}
           onNavigate={onNavigate} />
-        {section === 'history' ? <section className="lite-home-personal-review" aria-label="Personal activity review">
-          <div className="lite-home-review-heading">
-            <CheckCircle2 size={20} aria-hidden="true" />
-            <div><h3>Personal activity review</h3><p>Private review position and status</p></div>
-          </div>
-          {cursor?.last_reviewed_at ? <p>Last reviewed: <ActivityTime value={cursor.last_reviewed_at} /></p> : null}
-          {cursor?.changed_since_review ? <p className="lite-home-review-changed">Something changed since your last review.</p> : null}
-          {!cursor?.changed_since_review && cursor ? <p>Nothing new reported since your last review.</p> : null}
-          <p>Marking history reviewed changes only your private review position. It does not resolve an issue, approve work, clear audit history or retry an action.</p>
-          {cursor?.changed_since_review ? <button type="button"
-            disabled={Boolean(saved || cursorBusy)} aria-busy={cursorBusy || undefined}
-            onClick={onMarkReviewed}>{cursorBusy ? 'Saving review…' : 'Mark activity reviewed'}</button> : null}
-          {saved ? <ActivityNotice title="Saved information">Reconnect to confirm a new review position.</ActivityNotice> : null}
-          {cursorError ? <StateSurface tone="error" title="Review history unavailable" description={cursorError}
-            className="lite-home-activity-state" /> : null}
-          {!cursor && !cursorError ? <StateSurface tone="unavailable" title="Review status not available"
-            description="Review history couldn't be loaded or is still checking."
-            className="lite-home-activity-state" /> : null}
-        </section> : null}
+        {section === 'history' ? <PersonalActivityReview cursor={cursor} cursorBusy={cursorBusy}
+          cursorError={cursorError} saved={saved} onMarkReviewed={onMarkReviewed} /> : null}
       </div>}
   </div>;
 }

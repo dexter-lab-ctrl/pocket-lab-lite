@@ -151,7 +151,7 @@ test('Home history review remains a private explicit action and unavailable stat
   await openHome(page, 'dark', 'offline-saved');
   const dialog = await panel(page, 'activity');
   await dialog.getByRole('button', { name: 'History', exact: true }).click();
-  await expect(dialog.getByText(/private review position/i)).toBeVisible();
+  await expect(dialog.getByText('Private review position and status', { exact: true })).toBeVisible();
   await expect(dialog.getByRole('button', { name: /Mark activity reviewed/i })).toHaveCount(0);
   await expect(dialog.getByRole('button', { name: /Close Home details/i })).toBeVisible();
 });
@@ -164,8 +164,9 @@ test('Home 200% text and reduced motion remain usable in mobile panels', async (
     const dialog = await panel(page, kind);
     await expect(dialog.locator('.lite-home-details-nav')).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 2)).toBe(false);
-    const motion = await dialog.locator('.lite-home-details-nav').evaluate((node) => getComputedStyle(node).transitionDuration);
-    expect(motion).toMatch(/0s|0.0s/);
+    const motion = await dialog.locator('.lite-home-details-nav').evaluate((node) =>
+      getComputedStyle(node).transitionDuration.split(',').map((value) => Number.parseFloat(value) || 0));
+    expect(motion.every((duration) => duration <= 0.001)).toBe(true);
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);
   }

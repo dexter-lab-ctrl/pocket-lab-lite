@@ -133,7 +133,7 @@ html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-notice.is-warni
 html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-notice > div {min-width:0}
 html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-notice strong {display:block;color:var(--azure-text);font-size:.87rem}
 html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-notice p {
-  margin:.25rem 0 0;color:var(--azure-muted);font-size:.82rem;line-height:1.55;overflow-wrap:anywhere;
+  margin:.25rem 0 0;color:var(--azure-neutral);font-size:.82rem;line-height:1.55;overflow-wrap:anywhere;
 }
 html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-timeline {
   list-style:none;margin:0;padding:0;display:grid;gap:.6rem;min-width:0;
