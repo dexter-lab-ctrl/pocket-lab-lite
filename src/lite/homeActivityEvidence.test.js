@@ -54,4 +54,16 @@ describe('Home activity projection', () => {
     expect(view.events[0].statusLabel).toBe('Recovered');
     expect(view.events[0].needsAttention).toBe(false);
   });
+  it('retains different bounded windows reported by the backend', () => {
+    const view = selectHomeActivityEvidence({
+      history_available: true, running_window_minutes: 45, history_window_days: 5,
+    });
+    expect(view.runningWindowMinutes).toBe(45);
+    expect(view.historyWindowDays).toBe(5);
+    const invalid = selectHomeActivityEvidence({
+      history_available: true, running_window_minutes: '45', history_window_days: -7,
+    });
+    expect(invalid.runningWindowMinutes).toBeNull();
+    expect(invalid.historyWindowDays).toBeNull();
+  });
 });
