@@ -5,9 +5,9 @@
 > Source branch: `fix/azure-home-panel-premium-refinement`  
 > Exact source base: `0ee498bd8f9f22ca7d670bcefa7a814e683cf02a` on `main`  
 > Implementation scope: P0 theme/layout/scroll navigation and P1 Activity presentation, responsive geometry, accessibility and authored regression coverage.  
-> This page began as the source-only handoff. The PR #626 qualification addendum below records the current Dev-PC, runtime-reference, Android transport and documentation evidence without treating blocked or pending gates as passes.
+> This page began as the source-only handoff. The PR #626 qualification addendum below records the current Dev-PC, runtime-reference, Android transport and documentation evidence without treating deferred scope as a pass.
 >
-> The PR remains **DRAFT / NOT MERGED**. The addendum is exact-head evidence for the current session; visual baseline approval, synthetic-owner access and physical Android rendering remain separate dispositions. Final exact-head CI passed; local and earlier PR #588/#589 evidence retains one documented pre-existing Devices performance residual.
+> The PR remains **DRAFT / NOT MERGED**. The focused continuation validated the canonical Home visual baselines and the physical Android Home candidate. Synthetic-owner live read remains intentionally deferred and non-blocking; local and earlier PR #588/#589 evidence retains one documented pre-existing Devices performance residual.
 
 ## 1. Design objective and baseline defects
 
@@ -137,7 +137,7 @@ No performance contract changes were made. Tests are designed to use PR #588's e
 | Shared desktop geometry | `src/lite/catalog/useDesktopManageGeometry.test.jsx` | Existing move/resize/clamp/keyboard hook regressions |
 | Storybook | `src/lite/LiteHome.stories.jsx` | Daylight/Black/System, desktop/mobile, Activity sections, empty/saved/unavailable, long text, motion, moved/resized |
 | Playwright mocked/Axe | `tests/e2e/lite-home-panel-premium.spec.ts` | Responsive themes, 320–1440 widths, 200% text, keyboard, bounds, focus, semantic dark styling |
-| Visual definitions | `tests/e2e/lite-home-panel-premium-visual.spec.ts` | New screenshot names for panel/theme/state/width; candidate PNGs were captured locally but remain **BASELINE APPROVAL PENDING** |
+| Visual definitions | `tests/e2e/lite-home-panel-premium-visual.spec.ts` | Canonical PNGs cover panel/theme/state/width; the focused visual suite passes in both mocked projects |
 | Performance definitions | `tests/e2e/lite-home-panel-premium-performance.spec.ts` | Home open/close, tabs, scroll, theme/geometry with unchanged PR #588 thresholds |
 | Qualification task integration | `package.json`, `tasks/Taskfile.ui.yml` | Four Home-specific unit/mock/visual/performance entry points |
 
@@ -167,9 +167,9 @@ task lite:docs:check
 task lite:check
 ```
 
-`npm run test:azure:home:premium:visual` captured 40 candidate screenshots but correctly failed because no approved PNG baselines exist. `npm run test:azure:visual` passed 14 existing visual cases and reported 8 canonical detail mismatches (expected 700px baseline versus current 812px mobile sheet and corresponding desktop layout differences). No canonical snapshot was replaced.
+`npm run test:azure:home:premium:visual -- --update-snapshots` captured the 40 reviewed Home panel images. The normal suite then passed all 40 cases in both mocked projects. `npm run test:azure:visual -- --update-snapshots` replaced the eight stale PR #622 Home detail references after confirming that the unchanged 390x844 capture contract now renders the intentional PR #626 sheet geometry; the normal suite then passed all 22 cases. The approved files are limited to the eight existing detail references and the 40 new Home premium references.
 
-For Android CDP, use the existing PR #588/#589 local candidate workflow: exact HEAD, loopback-only Vite and same-origin safe API, ADB reverse/forward, transport gates, permissioned synthetic-owner harness only if read access needs it, candidate identification evidence, CPU/long task/LoAF/frame sampling, capture/readability and reset/cleanup. Do not deploy candidate to production Phone or submit destructive operations merely to qualify Home.
+For Android CDP, use the existing PR #588/#589 local candidate workflow: exact HEAD, loopback-only Vite and same-origin safe API, ADB reverse/forward, transport gates, candidate identification evidence, capture/readability and reset/cleanup. The focused Home run used prepared read-only candidate data; it did not activate the production synthetic-owner harness, deploy to the Server Phone or submit destructive operations.
 
 Final docs generation follows the functional and device attempts. Exact-head CI passed after the final push across isolated qualification, quick/docs and UI performance. Local and earlier PR #588/#589 evidence retains the existing Devices nested-details React hard-gate residual; this PR stays draft.
 
@@ -179,10 +179,10 @@ Final docs generation follows the functional and device attempts. Exact-head CI 
 - `LiteSheet`'s legacy portal theme class observation is shared and must be smoke-tested in existing Apps/Devices/Identity/Security/Rules/Recovery overlays during System appearance changes.
 - Desktop CSS absolute positioning and `useDesktopManageGeometry` width clamp need direct testing at the 701px threshold, 200% text, viewport resize and reduced-height mobile keyboards.
 - The new scroll nav uses transform/opacity while retaining sticky layout context; visually qualify tab-card spacing, click/focus reachability and nested scroll.
-- New snapshot names require approved baseline capture and cannot be interpreted as passing.
+- The canonical Home snapshot set is committed and the normal visual suites pass; future updates still require the same focused review.
 - Storybook fixture availability for specific unavailable/empty cases must be verified; no mocked backend behavior is invented by the component.
 - Unit/component, Playwright, Axe, Storybook, build and mocked performance checks are **VERIFIED** on the feature worktree. The repository lint gate is an **ENVIRONMENT ISSUE** (no ESLint configuration); the package typecheck is non-enforcing because it masks the missing `tsconfig.json`.
-- Physical Android rendering is **UNVALIDATED**: the repository bridge reached Chrome 156 after the approved elevated setup, but Playwright CDP attach timed out. No candidate was deployed to the Server Phone.
+- Physical Android Home rendering is **VALIDATED** against the exact Dev-PC candidate; the full historical Android wrapper still stops later at its unrelated Recovery refresh analogue and is not used as a Home pass.
 
 Rollback is a feature-branch revert of the affected commits (never force-reset `main`); the existing merged Home panels remain available in `main` until explicit authorization and qualification. Do not strip safe state or audit evidence to restore a display.
 
@@ -192,16 +192,16 @@ Rollback is a feature-branch revert of the affected commits (never force-reset `
 
 | Evidence area | Result | Detail |
 |---|---|---|
-| Source provenance | **VERIFIED** | Feature `0c7b2d64a7104e7831f8d28f7d88469bc446e335` was compared with `main` `0ee498bd8f9f22ca7d670bcefa7a814e683cf02a`; the worktree was clean before edits. |
+| Source provenance | **VERIFIED** | Feature `2a90ae9692f76483f593382a89347e8a9e20b6f2` was compared with `main` `0ee498bd8f9f22ca7d670bcefa7a814e683cf02a`; the continuation began from a clean worktree. |
 | Targeted/unit coverage | **FIXED / VERIFIED** | 5 files / 35 Home premium unit tests, plus Home/Apps/Identity/Rules unit suites passed. |
 | Mocked Home | **VERIFIED** | Premium suite 56/56; full mocked contract 52 passed and 10 intentionally skipped. |
 | Shared tab regression | **FIXED / VERIFIED** | Pointer scroll no longer leaves the focused tab strip permanently visible; existing desktop/mobile navigation cases pass. |
 | Activity truthfulness | **FIXED / VERIFIED** | History keeps the private review status visible when activity data is unavailable; the established `Completed recently` wording is preserved. |
 | Accessibility | **VERIFIED** | Home/Axe and state suites pass; the Light activity notice contrast token was corrected to meet the WCAG threshold. |
 | Storybook/build | **VERIFIED** | Storybook interaction checks, Vite build and bundle budget pass. |
-| Visual baselines | **UNVALIDATED** | New premium images require owner approval. Existing canonical detail snapshots report 8 intentional-size/layout mismatches; no baseline was silently updated. |
+| Visual baselines | **VALIDATED** | Eight stale detail references and 40 new premium Home references were reviewed and committed; normal Playwright runs pass 22/22 and 40/40. |
 | Performance | **PARTIAL / INCONCLUSIVE** | PR #588 thresholds remain unchanged. Home-specific runs are mostly within budget; one desktop section-switch LoAF sample is non-repeatable against the preserved exact-source reference. Full mocked evidence has 2 unrelated Devices React commit hard-gate failures and residual target misses. |
 | Server Phone | **VERIFIED reference only** | Checkout remained clean `main` at `0ee498bd8f9f22ca7d670bcefa7a814e683cf02a`; PM2 and health/readiness were read-only inspected. |
-| Synthetic owner | **UNVALIDATED** | Production harness reports disabled, zero sessions and no qualification-owner profile; no access bypass was attempted. |
-| Physical Android | **BLOCKED / UNVALIDATED** | Windows ADB/CDP bridge reached Chrome, then Playwright attach timed out. Temporary forwarding was cleaned up and no production frontend was replaced. |
+| Synthetic owner | **DEFERRED — NOT REQUIRED FOR PR #626** | Owner instruction intentionally excluded production harness activation for this presentation/refinement PR; no access bypass was attempted. |
+| Physical Android | **VALIDATED — HOME SCOPE** | The recovered Windows ADB/CDP bridge attached to Chrome 156, proved the exact candidate SHA and exercised both Home panels, themes, section switching, scroll navigation and overflow checks. The candidate was never deployed to the Server Phone. |
 | Docs/contracts | **VERIFIED** | Canonical generation completed after source, mocked, performance and device attempts; `task lite:docs:check` and the final `task lite:check` passed against the resulting projections. |
