@@ -26,7 +26,7 @@
 .lite-home-details-nav{display:flex;flex-wrap:wrap;gap:.4rem;position:sticky;top:0;z-index:2;
  padding:.5rem 0;background:var(--pocket-surface,inherit)}
 .lite-home-workspace-details-scroll{scroll-behavior:smooth;scroll-padding-block:.75rem}
-.lite-home-workspace-tabs{isolation:isolate;align-items:center;margin:-.95rem -.95rem 0;padding:.7rem .95rem .65rem;
+.lite-home-workspace-tabs{isolation:isolate;align-items:center;margin:0;padding:.7rem .95rem .65rem;
  background:var(--azure-surface,var(--pocket-surface));
  -webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:0 1px 0 rgba(148,163,184,0);
  transition:transform 220ms cubic-bezier(.2,.8,.2,1),opacity 180ms ease,box-shadow 180ms ease}
