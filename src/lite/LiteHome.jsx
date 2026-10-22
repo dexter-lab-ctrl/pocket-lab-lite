@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   LayoutGrid,
   Server,
@@ -19,6 +19,8 @@ import {
 } from './LiteUi.jsx';
 import { LiteFreshness, LiteTechnicalFacts } from './LiteUx.jsx';
 import { LiteDetailsPanel } from './LiteOverlay.jsx';
+import { useDesktopManageGeometry } from './components/useDesktopManageGeometry.js';
+import { useLitePanelSectionNavigation } from './hooks/useLitePanelSectionNavigation.js';
 import LiteReleaseUpdateCard from './LiteReleaseUpdateCard.jsx';
 import LiteNextSteps from './components/LiteNextSteps.jsx';
 import { prioritizeWorkspaceAttention } from './homeAttentionPriority.js';
@@ -29,6 +31,7 @@ import HomeActivityDetails from './components/HomeActivityDetails.jsx';
 import './components/homePremium.css';
 import './components/azureHome.css';
 import './components/homeActivityEvidence.css';
+import './components/homePanelRefinement.css';
 
 const HOME_WORKFLOW_STEPS = Object.freeze([
   { id: 'device', label: 'Device', icon: Smartphone },
@@ -181,11 +184,11 @@ export default function HomeScreen({
   );
   const [workspaceDetailsOpen, setWorkspaceDetailsOpen] = useState(false);
   const [workspaceSection, setWorkspaceSection] = useState('overview');
-  const workspaceDetailsScrollRef = useRef(null);
-  const workspaceTabsScrollStateRef = useRef({ lastTop: 0, hidden: false, scrolled: false });
-  const [workspaceTabsHidden, setWorkspaceTabsHidden] = useState(false);
-  const [workspaceDetailsScrolled, setWorkspaceDetailsScrolled] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
+  const workspaceNav = useLitePanelSectionNavigation(workspaceDetailsOpen);
+  const activityNav = useLitePanelSectionNavigation(activityOpen);
+  const workspaceGeometry = useDesktopManageGeometry({ open: workspaceDetailsOpen, defaultWidth: 660, minWidth: 380, minHeight: 360 });
+  const activityGeometry = useDesktopManageGeometry({ open: activityOpen, defaultWidth: 660, minWidth: 380, minHeight: 360 });
   const [cursor, setCursor] = useState(null);
   const [cursorBusy, setCursorBusy] = useState(false);
   const [cursorError, setCursorError] = useState('');
@@ -234,54 +237,6 @@ export default function HomeScreen({
     onNavigate?.(screen);
   }, [onNavigate]);
 
-  useEffect(() => {
-    if (!workspaceDetailsOpen) {
-      workspaceTabsScrollStateRef.current = { lastTop: 0, hidden: false, scrolled: false };
-      setWorkspaceTabsHidden(false);
-      setWorkspaceDetailsScrolled(false);
-      return undefined;
-    }
-    const scrollElement = workspaceDetailsScrollRef.current;
-    if (!(scrollElement instanceof HTMLElement)) return undefined;
-
-    const state = workspaceTabsScrollStateRef.current;
-    state.lastTop = Math.max(0, scrollElement.scrollTop || 0);
-    state.hidden = false;
-    state.scrolled = state.lastTop > 4;
-    setWorkspaceTabsHidden(false);
-    setWorkspaceDetailsScrolled(state.scrolled);
-
-    const onScroll = () => {
-      const nextTop = Math.max(0, scrollElement.scrollTop || 0);
-      const delta = nextTop - state.lastTop;
-      const atTop = nextTop <= 4;
-      const nextScrolled = nextTop > 4;
-      const nextHidden = atTop ? false : Math.abs(delta) >= 4 ? delta > 0 : state.hidden;
-      state.lastTop = nextTop;
-      if (state.scrolled !== nextScrolled) {
-        state.scrolled = nextScrolled;
-        setWorkspaceDetailsScrolled(nextScrolled);
-      }
-      if (state.hidden !== nextHidden) {
-        state.hidden = nextHidden;
-        setWorkspaceTabsHidden(nextHidden);
-      }
-    };
-
-    const onFocusIn = (event) => {
-      if (event.target.closest?.('.lite-home-workspace-tabs')) {
-        state.hidden = false;
-        setWorkspaceTabsHidden(false);
-      }
-    };
-
-    scrollElement.addEventListener('scroll', onScroll, { passive: true });
-    scrollElement.addEventListener('focusin', onFocusIn);
-    return () => {
-      scrollElement.removeEventListener('scroll', onScroll);
-      scrollElement.removeEventListener('focusin', onFocusIn);
-    };
-  }, [workspaceDetailsOpen]);
 
   const details = overview.workspaceDetails;
   const sectionNames = { overview: 'Overview', 'service-health': 'Service health', updates: 'Updates', diagnostics: 'Diagnostics' };
@@ -322,25 +277,26 @@ export default function HomeScreen({
       }))} className="lite-home-attention-list" /> : null}
     </div>
     <LiteDetailsPanel open={workspaceDetailsOpen} onClose={() => setWorkspaceDetailsOpen(false)}
-      bodyRef={workspaceDetailsScrollRef} bodyClassName="lite-home-workspace-details-scroll"
+      variant="home" className="lite-home-details-panel" desktopGeometry={workspaceGeometry}
+      bodyRef={workspaceNav.bodyRef} bodyClassName="lite-home-workspace-details-scroll lite-home-panel-scroll"
       title="Workspace details" description="Current services and safe workspace information.">
       <div className="lite-home-workspace-details">
-        <nav className="lite-home-details-nav lite-home-workspace-tabs"
+        <nav ref={workspaceNav.navRef} className="lite-home-details-nav lite-home-workspace-tabs"
           aria-label="Workspace details sections"
-          data-tabs-hidden={workspaceTabsHidden ? 'true' : 'false'}
-          data-tabs-scrolled={workspaceDetailsScrolled ? 'true' : 'false'}>
+          data-tabs-hidden={workspaceNav.hidden ? 'true' : 'false'}
+          data-tabs-scrolled={workspaceNav.scrolled ? 'true' : 'false'}>
           {Object.entries(sectionNames).map(([id, label]) =>
             <button key={id} type="button" aria-current={workspaceSection === id ? 'page' : undefined}
-              onClick={() => { setWorkspaceTabsHidden(false); setWorkspaceSection(id); }}>{label}</button>)}
+              onClick={() => { workspaceNav.reveal(true); setWorkspaceSection(id); }}>{label}</button>)}
         </nav>
-        {workspaceSection === 'overview' ? <section aria-label="Workspace overview details">
+        {workspaceSection === 'overview' ? <section className="lite-home-workspace-section" aria-label="Workspace overview details">
           {details.resources.filter((item) => item.key !== 'activity').map((item) =>
             <LiteActionRow key={item.key} label={item.key === 'database' ? 'System data' : item.label}
               value={item.value} summary={item.note} attention={item.tone === 'danger' || item.tone === 'review'} />)}
           <LiteActionRow label="Information freshness" value={effectiveSavedStateOnly ? 'Saved' : 'Current'}
             summary={details.freshness || 'Not checked yet'} />
         </section> : null}
-        {workspaceSection === 'service-health' ? <section aria-label="Service health">
+        {workspaceSection === 'service-health' ? <section className="lite-home-workspace-section" aria-label="Service health">
           <HomeWorkspaceFlow overallTone={overview.overallTone} attentionCount={overview.attentionCount}
             savedStateOnly={effectiveSavedStateOnly} checking={loading || refreshing || status.refresh_pending === true} />
           {overview.services.map((item) => <LiteActionRow key={item.key} label={item.label}
@@ -348,8 +304,8 @@ export default function HomeScreen({
             attention={item.tone === 'danger' || item.tone === 'review'}
             action={item.screen !== 'home' ? { label: 'Open', onClick: () => goTo(item.screen) } : null} />)}
         </section> : null}
-        {workspaceSection === 'updates' ? <section aria-label="Updates"><LiteReleaseUpdateCard /></section> : null}
-        {workspaceSection === 'diagnostics' ? <section aria-label="Diagnostics">
+        {workspaceSection === 'updates' ? <section className="lite-home-workspace-section" aria-label="Updates"><LiteReleaseUpdateCard /></section> : null}
+        {workspaceSection === 'diagnostics' ? <section className="lite-home-workspace-section" aria-label="Diagnostics">
           <LiteTechnicalFacts title="Technical details" description="Sanitized status and projection information."
             facts={[
               ...details.resources.filter((item) => item.key !== 'activity').map((item) => ({
@@ -363,8 +319,10 @@ export default function HomeScreen({
       </div>
     </LiteDetailsPanel>
     <LiteDetailsPanel open={activityOpen} onClose={() => setActivityOpen(false)}
+      variant="home" className="lite-home-details-panel" desktopGeometry={activityGeometry}
+      bodyRef={activityNav.bodyRef} bodyClassName="lite-home-panel-scroll lite-home-activity-scroll"
       title="Recent activity" description="Workspace history and personal review.">
-      <HomeActivityDetails activity={history} cursor={cursor} cursorBusy={cursorBusy}
+      <HomeActivityDetails activity={history} navigation={activityNav} cursor={cursor} cursorBusy={cursorBusy}
         cursorError={cursorError} saved={effectiveSavedStateOnly} onMarkReviewed={markReviewed}
         onNavigate={(domain) => { setActivityOpen(false); goTo(ACTIVITY_SCREENS[domain] || 'home'); }} />
     </LiteDetailsPanel>

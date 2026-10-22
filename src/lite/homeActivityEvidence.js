@@ -15,6 +15,8 @@ const LABELS = new Set(['Device restart','Backup','Media backup repair','Repair'
   'Media backup repairs encountered problems','Repair operations encountered problems',
   'App safety checks encountered problems']);
 const readCount = (value) => Number.isSafeInteger(value) && value >= 0 ? value : null;
+const readWindow = (value, maximum) =>
+  Number.isSafeInteger(value) && value > 0 && value <= maximum ? value : null;
 const readTime = (value) => Number.isSafeInteger(value) && value > 0 && value <= 8640000000000000 ? value : null;
 export const formatActivityCount = (value) => readCount(value) === null ? 'Not available' : new Intl.NumberFormat().format(value);
 function selectEvent(raw) {
@@ -50,8 +52,8 @@ export function selectHomeActivityEvidence(payload) {
     stale: safe(payload.stale_operations), completed: safe(payload.recent_completed),
     attention: safe(payload.attention_required), historicalFailures: safe(payload.historical_failures),
     attentionScope: payload.attention_scope || 'unknown',
-    runningWindowMinutes: payload.running_window_minutes === 30 ? 30 : null,
-    historyWindowDays: payload.history_window_days === 7 ? 7 : null,
+    runningWindowMinutes: readWindow(payload.running_window_minutes, 10080),
+    historyWindowDays: readWindow(payload.history_window_days, 365),
     events, grouped, latestEvent: events[0] || null, lastActivityAt,
     saved: Boolean(payload.read_degraded || payload.__liteSnapshot?.cached),
   };
