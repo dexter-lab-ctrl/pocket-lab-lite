@@ -1,8 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
-// NEW BASELINES DEFINED ONLY. Deliberately do not generate/approve screenshots
-// until the next independent DEV-PC qualification session.
+// CANONICAL HOME PREMIUM BASELINES — PROMOTED AFTER FOCUSED REVIEW.
+// Keep the snapshot suite in the normal qualification lane; update mode is
+// reserved for an explicitly reviewed visual change.
 const states = [
   { name: 'daylight', theme: 'light', scenario: 'healthy' },
   { name: 'black', theme: 'dark', scenario: 'healthy' },
@@ -12,7 +13,7 @@ const states = [
 ] as const;
 for (const state of states) for (const width of [390, 1440]) {
   for (const kind of ['workspace','activity'] as const) {
-    test(`Home premium ${state.name} ${kind} ${width}px [BASELINE PENDING APPROVAL]`, async ({ page }) => {
+    test(`Home premium ${state.name} ${kind} ${width}px [CANONICAL BASELINE]`, async ({ page }) => {
       await page.setViewportSize({ width, height: width < 500 ? 844 : 960 });
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.addInitScript((theme) => localStorage.setItem('pocketlab:appearance', theme), state.theme);
