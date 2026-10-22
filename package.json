@@ -95,7 +95,8 @@
     "test:rules:azure:geometry": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-rules.spec.ts --grep 'shared desktop|clicking policy|responsive Manage' --project=mocked-desktop --project=mocked-mobile",
     "test:rules:azure:visual": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-rules-visual.spec.ts --project=mocked-desktop --project=mocked-mobile",
     "test:rules:azure:perf": "VITE_POCKETLAB_PERF_TEST=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-rules-performance.spec.ts --project=mocked-desktop --project=mocked-mobile && npm run check:render-budgets",
-    "test:rules:azure:qualification": "npm run test:rules:azure:unit && npm run test:rules:azure:mocked && npm run test:rules:azure:a11y && npm run test:rules:azure:geometry && npm run test:rules:azure:perf && npm run test:perf"
+    "test:rules:azure:qualification": "npm run test:rules:azure:unit && npm run test:rules:azure:mocked && npm run test:rules:azure:a11y && npm run test:rules:azure:geometry && npm run test:rules:azure:perf && npm run test:perf",
+    "test:rules:azure:storybook": "npm run build-storybook"
   },
   "keywords": [],
   "author": "",
