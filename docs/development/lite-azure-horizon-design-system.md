@@ -184,3 +184,8 @@ After individual baseline capture and **human approval**, run `npm run test:azur
 **IMPLEMENTATION PROVIDED — VALIDATION DEFERRED BY USER INSTRUCTION.**
 
 No builds, tests, lint, type checking, a11y, screenshot comparison, performance, CI inspection, Android qualification, runtime check or release action were executed. The PR stays **OPEN — DRAFT — NOT MERGED** until a future explicitly authorized review, stabilization and qualification session.
+
+
+## Home Workspace and Activity panel refinement (source branch, unvalidated)
+
+The later Home-only refinement adds the shared section-scroll hook, Home-specific `LiteSheet` variant, Azure token-scoped panel content, backend-truthful Activity presentation, reusable desktop geometry and authored regression definitions. **No tests, snapshots or docs generation were executed in the source-only implementation session.** See [Azure Home panel refinement architecture and qualification handoff](lite-home-azure-panel-refinement.md) for exact source maps, limitations and deferred validation commands.
