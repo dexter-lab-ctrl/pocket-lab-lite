@@ -39,7 +39,7 @@ React/Vite Home
   -> FastAPI /api/lite/status and prepared activity summaries
      -> /api/lite/system/activity-summary (safe bounded first-paint read)
      -> /api/lite/home/activity-history (lazy, when Activity opens)
-     -> /api/lite/home/activity-review/cursor (backend-owned review state)
+     -> /api/lite/home/activity-cursor (read) and /api/lite/home/activity-cursor/review (explicit backend-owned review action)
   -> TanStack Query / safe read-only snapshots where applicable
   -> sanitized presenter only
 ```

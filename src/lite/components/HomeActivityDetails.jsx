@@ -87,7 +87,7 @@ export default function HomeActivityDetails({
             : 'Unresolved issue classification is not available from this source.'}
         </ActivityNotice> : null}
         {section === 'history' && activity.historicalFailures !== null ? <ActivityNotice title="Historical failures" tone="warning" icon={History}>
-          Historical failures in the last {activity.historyWindowDays || 'reported'} days: {formatActivityCount(activity.historicalFailures)}. A failed record does not prove an issue is still unresolved.
+          Historical failures {activity.historyWindowDays ? `in the last ${activity.historyWindowDays} days` : 'in the reported history window'}: {formatActivityCount(activity.historicalFailures)}. A failed record does not prove an issue is still unresolved.
         </ActivityNotice> : null}
         {section === 'attention' && activity.grouped?.length ? <>
           <ActivityNotice title="Historical patterns">
