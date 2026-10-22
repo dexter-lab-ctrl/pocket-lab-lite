@@ -93,7 +93,7 @@ export const ContextHelpOpen = {
   },
 };
 
-// Azure Horizon Rules fixtures — DEFINED, NOT EXECUTED in this implementation session.
+// Azure Horizon Rules fixtures — rendered by Storybook inventory checks and the mocked browser qualification lanes.
 export const AzureRulesBlack = rules('rules-present', { viewport: 'desktop', notes: 'Use global Black appearance toolbar.' });
 export const AzureRulesDaylight = rules('rules-enabled', { viewport: 'desktop', notes: 'Use global Daylight appearance toolbar.' });
 export const AzureRulesSystem = rules('rules-enabled', { notes: 'Use existing System appearance preference.' });

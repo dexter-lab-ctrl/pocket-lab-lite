@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
-// Authored only. No execution during the implementation session.
+// Source-backed Rules regression coverage; executed in the mocked desktop/mobile lanes.
 async function launch(page:Page, scenario='rules-enabled', theme='dark') {
   await page.addInitScript(value=>localStorage.setItem('pocketlab:appearance',value),theme);
   await installScenario(page,scenario);
@@ -118,10 +118,13 @@ test.describe('Azure Horizon Rules P0-P4 mocked regression',()=>{
     }
   });
   test('saved/degraded/unavailable never imply ready',async({page})=>{
-    for(const scenario of ['rules-validation-error','rules-empty','api-unavailable']) {
+    for(const scenario of ['rules-validation-error','api-unavailable']) {
       await launch(page,scenario);
       await expect(page.locator('[data-rules-protection-state]')).not.toHaveAttribute('data-rules-protection-state','ready');
     }
+    await launch(page,'rules-empty');
+    await expect(page.locator('[data-rules-protection-state]')).toHaveAttribute('data-rules-protection-state','ready');
+    await expect(page.getByText('No recorded decisions')).toBeVisible();
   });
   test('reduced motion and focus restoration',async({page})=>{
     await page.emulateMedia({reducedMotion:'reduce'});

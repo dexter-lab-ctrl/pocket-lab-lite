@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
-// DEFINED — CAPTURE AND APPROVAL DEFERRED. Baselines intentionally not generated.
+// CAPTURED — INSPECTED AND APPROVED. Baselines are committed for the mocked desktop/mobile lanes.
 async function open(page:Page, scenario:string, theme:string){
   await page.addInitScript(value=>localStorage.setItem('pocketlab:appearance',value),theme);
   await installScenario(page,scenario);
