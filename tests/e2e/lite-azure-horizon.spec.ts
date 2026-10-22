@@ -61,6 +61,43 @@ test('Azure theme reaches portal dialogs and returns focus', async ({ page }) =>
   await expect(launcher).toBeFocused();
 });
 
+test('Azure Black Recovery Manage portal keeps the shared sheet themed and usable', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 780 });
+  await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
+  await page.addInitScript((value) => localStorage.setItem('pocketlab:appearance', value), 'dark');
+  await installScenario(page, 'healthy');
+  await page.goto('/?screen=recovery');
+  await waitForLiteScreenToSettle(page, 'recovery');
+  await page.getByRole('button', { name: 'Manage Recovery' }).click();
+  const manage = page.getByRole('dialog', { name: /Manage backups and recovery/i });
+  await expect(manage).toBeVisible();
+  await expect(manage.getByRole('heading', { name: 'Create and manage restore points' })).toBeVisible();
+  const styles = await manage.evaluate((element) => {
+    const surface = element;
+    const scroll = element.querySelector('.lite-recovery-manage-scroll');
+    const tabs = element.querySelector('.lite-recovery-manage-tabs');
+    const activeTab = element.querySelector('.lite-recovery-manage-tabs button.is-active');
+    const action = element.querySelector('.lite-recovery-manage-action-row');
+    const read = (node) => node ? getComputedStyle(node) : null;
+    return {
+      surfaceBackground: read(surface)?.backgroundColor,
+      scrollBackground: read(scroll)?.backgroundColor,
+      scrollColor: read(scroll)?.color,
+      tabsDisplay: read(tabs)?.display,
+      activeTabBackground: read(activeTab)?.backgroundColor,
+      actionDisplay: read(action)?.display,
+      overflow: document.documentElement.scrollWidth > window.innerWidth + 2,
+    };
+  });
+  expect(styles.surfaceBackground).toBe('rgb(11, 15, 20)');
+  expect(styles.scrollBackground).toBe('rgb(11, 15, 20)');
+  expect(styles.scrollColor).toBe('rgb(230, 237, 247)');
+  expect(styles.tabsDisplay).toBe('grid');
+  expect(styles.activeTabBackground).toBe('rgb(11, 111, 202)');
+  expect(styles.actionDisplay).toBe('grid');
+  expect(styles.overflow).toBe(false);
+});
+
 test('Azure recent activity keeps backend review action on demand', async ({ page }) => {
   await openHome(page, 'light');
   await page.getByRole('button', { name: /View activity/i }).click();

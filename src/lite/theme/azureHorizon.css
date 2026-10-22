@@ -212,6 +212,138 @@ html[data-lite-theme] .lite-details-overlay-layer {z-index:155;}
   html[data-lite-theme] .lite-azure-topbar-actions {width:100%;justify-content:flex-end;}
 }
 
+/* Recovery reuses the shared Manage primitive, whose historical catalog
+   selectors include hard-coded daylight surfaces. Keep those selectors from
+   leaking into the Black Recovery portal and provide the same responsive
+   section layout that the legacy daylight skin already owns. */
+html[data-lite-theme="dark"] .lite-recovery-manage-sheet {
+  background:var(--azure-surface) !important;
+  border-color:var(--azure-border) !important;
+  color:var(--azure-text) !important;
+}
+html[data-lite-theme="dark"] .lite-recovery-manage-sheet .lite-overlay-head {
+  background:var(--azure-surface);border-color:var(--azure-border);color:var(--azure-text);
+}
+html[data-lite-theme="dark"] .lite-recovery-manage-sheet .lite-recovery-manage-scroll {
+  display:block;flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+  background:var(--azure-surface) !important;color:var(--azure-text) !important;
+  -webkit-overflow-scrolling:touch;padding-bottom:max(1rem,env(safe-area-inset-bottom));
+}
+html[data-lite-theme="dark"] .lite-recovery-manage-content {display:grid;gap:.8rem;min-height:0;}
+html[data-lite-theme="dark"] .lite-recovery-manage-tabs {
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.35rem;margin:0;padding:.35rem;
+  background:var(--azure-raised);border:1px solid var(--azure-border);border-radius:1rem;
+  box-shadow:var(--azure-shadow);position:sticky;top:0;z-index:4;
+}
+html[data-lite-theme="dark"] .lite-recovery-manage-tabs button {
+  min-width:0;width:100%;min-height:2.7rem;padding:.65rem .55rem;overflow:hidden;text-overflow:ellipsis;
+  border:1px solid var(--azure-border);border-radius:999px;background:var(--azure-raised);
+  color:var(--azure-muted);font-size:.78rem;font-weight:650;white-space:nowrap;touch-action:manipulation;
+}
+html[data-lite-theme="dark"] .lite-recovery-manage-tabs button.is-active {
+  background:var(--azure-button);border-color:var(--azure-button);color:var(--azure-button-text);
+  box-shadow:none;
+}
+html[data-lite-theme="dark"] .lite-recovery-manage-section {display:grid;gap:.9rem;min-width:0;}
+html[data-lite-theme="dark"] .lite-recovery-manage-section-heading {
+  display:grid;gap:.3rem;padding:.9rem 1rem;background:var(--azure-accent-subtle);
+  border:1px solid var(--azure-strong-border);border-radius:1rem;
+}
+html[data-lite-theme="dark"] .lite-recovery-manage-section-heading :is(span,h3,p) {margin:0;}
+html[data-lite-theme="dark"] .lite-recovery-manage-section-heading > span {
+  color:var(--azure-accent);font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+}
+html[data-lite-theme="dark"] .lite-recovery-manage-section-heading h3 {color:var(--azure-text);font-size:1rem;font-weight:650;}
+html[data-lite-theme="dark"] .lite-recovery-manage-section-heading p {color:var(--azure-muted);font-size:.78rem;line-height:1.5;}
+html[data-lite-theme="dark"] .lite-recovery-manage-action-list {display:grid;gap:.7rem;}
+html[data-lite-theme="dark"] .lite-recovery-manage-action-row {
+  align-items:center;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:.75rem;
+  min-width:0;padding:.85rem;background:var(--azure-surface);border:1px solid var(--azure-border);
+  border-radius:1.05rem;color:var(--azure-text);
+}
+html[data-lite-theme="dark"] .lite-recovery-manage-action-row.is-active {border-color:var(--azure-strong-border);box-shadow:var(--azure-shadow);}
+html[data-lite-theme="dark"] .lite-recovery-manage-action-icon {
+  display:flex;align-items:center;justify-content:center;width:2.55rem;height:2.55rem;
+  border-radius:.85rem;background:var(--azure-accent-subtle);color:var(--azure-accent);
+}
+html[data-lite-theme="dark"] .lite-recovery-manage-action-copy {display:grid;gap:.28rem;min-width:0;}
+html[data-lite-theme="dark"] .lite-recovery-manage-action-title {display:flex;align-items:center;justify-content:space-between;gap:.45rem;flex-wrap:wrap;}
+html[data-lite-theme="dark"] .lite-recovery-manage-action-title > strong {color:var(--azure-text);font-size:.88rem;font-weight:650;}
+html[data-lite-theme="dark"] .lite-recovery-manage-action-copy > p {margin:0;color:var(--azure-muted);font-size:.76rem;line-height:1.45;}
+html[data-lite-theme="dark"] .lite-recovery-manage-action-buttons {display:flex;flex-wrap:wrap;gap:.45rem;justify-content:flex-end;}
+html[data-lite-theme="dark"] .lite-recovery-manage-action-buttons .lite-button {min-height:2.65rem;}
+html[data-lite-theme="dark"] .lite-recovery-manage-inline-progress {
+  margin-top:.2rem;padding:.55rem .65rem;border-radius:.7rem;background:var(--azure-accent-subtle);
+  color:var(--azure-accent);font-size:.72rem;font-weight:650;
+}
+html[data-lite-theme="dark"] .lite-recovery-manage-subsection {display:grid;gap:.55rem;}
+html[data-lite-theme="dark"] .lite-recovery-manage-subsection > strong {color:var(--azure-text);font-size:.78rem;font-weight:650;}
+html[data-lite-theme="dark"] .lite-recovery-manage-sheet :is(.lite-recovery-location-current,.lite-recovery-location-choice) {
+  background:var(--azure-raised);border-color:var(--azure-border);color:var(--azure-text);
+}
+html[data-lite-theme="dark"] .lite-recovery-location-current strong,
+html[data-lite-theme="dark"] .lite-recovery-location-choice strong,
+html[data-lite-theme="dark"] .lite-recovery-location-candidates > strong {color:var(--azure-text);}
+html[data-lite-theme="dark"] .lite-recovery-location-current :is(span,small),
+html[data-lite-theme="dark"] .lite-recovery-location-choice small,
+html[data-lite-theme="dark"] .lite-recovery-location-head :is(p),
+html[data-lite-theme="dark"] .lite-recovery-location-picker :is(.lite-recovery-location-picker-note,.lite-recovery-location-picker-footnote) {color:var(--azure-muted);}
+html[data-lite-theme="dark"] .lite-recovery-location-icon {background:var(--azure-accent-subtle);color:var(--azure-accent);}
+html[data-lite-theme="dark"] .lite-recovery-manage-compact-list,
+html[data-lite-theme="dark"] .lite-recovery-manage-app-list,
+html[data-lite-theme="dark"] .lite-recovery-recent-list {display:grid;gap:.55rem;}
+html[data-lite-theme="dark"] .lite-recovery-manage-compact-list > div,
+html[data-lite-theme="dark"] .lite-recovery-recent-list > article,
+html[data-lite-theme="dark"] .lite-recovery-manage-app-list article {
+  min-width:0;background:var(--azure-raised);border:1px solid var(--azure-border);border-radius:.9rem;color:var(--azure-text);
+}
+html[data-lite-theme="dark"] .lite-recovery-manage-compact-list > div,
+html[data-lite-theme="dark"] .lite-recovery-recent-list > article {display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:.65rem;padding:.7rem .78rem;}
+html[data-lite-theme="dark"] .lite-recovery-manage-app-list article {display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.75rem;}
+html[data-lite-theme="dark"] .lite-recovery-manage-app-list article > div:first-child {display:grid;gap:.12rem;min-width:0;}
+html[data-lite-theme="dark"] .lite-recovery-manage-app-list article > div:last-child {display:flex;flex:0 0 auto;gap:.4rem;}
+html[data-lite-theme="dark"] .lite-recovery-manage-compact-list :is(strong,small),
+html[data-lite-theme="dark"] .lite-recovery-recent-list :is(strong,small),
+html[data-lite-theme="dark"] .lite-recovery-manage-app-list :is(span,small) {color:var(--azure-muted);font-size:.72rem;line-height:1.4;}
+html[data-lite-theme="dark"] .lite-recovery-manage-compact-list strong,
+html[data-lite-theme="dark"] .lite-recovery-recent-list strong,
+html[data-lite-theme="dark"] .lite-recovery-manage-app-list strong {color:var(--azure-text);font-size:.8rem;font-weight:650;}
+html[data-lite-theme="dark"] .lite-recovery-protection-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;}
+html[data-lite-theme="dark"] .lite-recovery-protection-grid > article {
+  display:grid;align-content:start;gap:.55rem;min-width:0;padding:.85rem;background:var(--azure-raised);
+  border:1px solid var(--azure-border);border-radius:1rem;color:var(--azure-text);
+}
+html[data-lite-theme="dark"] .lite-recovery-protection-grid > article > svg {color:var(--azure-accent);}
+html[data-lite-theme="dark"] .lite-recovery-protection-grid :is(strong,p,li) {color:var(--azure-muted);font-size:.72rem;line-height:1.45;}
+html[data-lite-theme="dark"] .lite-recovery-protection-grid strong {color:var(--azure-text);font-size:.84rem;font-weight:650;}
+html[data-lite-theme="dark"] .lite-recovery-protection-grid p {margin:.2rem 0 0;}
+html[data-lite-theme="dark"] .lite-recovery-protection-grid ul {display:grid;gap:.28rem;margin:0;padding-left:1rem;}
+html[data-lite-theme="dark"] .lite-recovery-manage-evidence-callout {
+  display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.8rem;
+  background:var(--azure-accent-subtle);border:1px solid var(--azure-strong-border);border-radius:1rem;
+}
+html[data-lite-theme="dark"] .lite-recovery-manage-evidence-callout > div {display:flex;align-items:center;gap:.65rem;color:var(--azure-accent);}
+html[data-lite-theme="dark"] .lite-recovery-manage-evidence-callout span {display:grid;gap:.1rem;}
+html[data-lite-theme="dark"] .lite-recovery-manage-evidence-callout strong {color:var(--azure-text);font-size:.8rem;font-weight:650;}
+html[data-lite-theme="dark"] .lite-recovery-manage-evidence-callout small {color:var(--azure-muted);font-size:.72rem;}
+html[data-lite-theme="dark"] .lite-recovery-impact {
+  display:grid;gap:.55rem;padding:.85rem;background:var(--azure-raised);border:1px solid var(--azure-border);
+  border-radius:1rem;color:var(--azure-text);
+}
+html[data-lite-theme="dark"] .lite-recovery-impact :is(strong,dt,dd,p) {color:var(--azure-muted);}
+html[data-lite-theme="dark"] .lite-recovery-impact strong {color:var(--azure-text);font-weight:650;}
+html[data-lite-theme="dark"] .lite-recovery-impact dd {font-weight:650;}
+html[data-lite-theme="dark"] .lite-recovery-manage-section[role="tabpanel"] {scroll-margin-top:.75rem;}
+@media(max-width:560px) {
+  html[data-lite-theme="dark"] .lite-recovery-manage-tabs {grid-template-columns:repeat(2,minmax(0,1fr));}
+  html[data-lite-theme="dark"] .lite-recovery-manage-tabs button {white-space:normal;}
+  html[data-lite-theme="dark"] .lite-recovery-manage-action-row {grid-template-columns:auto minmax(0,1fr);}
+  html[data-lite-theme="dark"] .lite-recovery-manage-action-buttons {grid-column:1 / -1;display:grid;grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme="dark"] .lite-recovery-manage-action-buttons .lite-button {width:100%;}
+  html[data-lite-theme="dark"] .lite-recovery-protection-grid {grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme="dark"] .lite-recovery-manage-evidence-callout {align-items:stretch;flex-direction:column;}
+}
+
 /* The legacy PR #588 performance bridge disables decorative shadows and
    backdrop effects on the measured path.  These Azure selectors intentionally
    carry one extra attribute/class specificity so the later theme layer cannot
