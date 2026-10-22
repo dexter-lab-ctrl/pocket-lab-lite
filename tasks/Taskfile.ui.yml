@@ -250,3 +250,8 @@ tasks:
     deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
     cmds:
       - npm run test:rules:azure:qualification
+
+  lite:test:rules:azure:storybook:
+    desc: Build the existing Lite Storybook including Azure Rules stories
+    cmds:
+      - npm run test:rules:azure:storybook
