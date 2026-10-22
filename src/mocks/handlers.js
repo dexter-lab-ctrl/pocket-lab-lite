@@ -1692,6 +1692,12 @@ export const handlers = [
   http.get('/api/lite/policy', () => {
     // Deterministic mock-only Rules state: never used as live authorization evidence.
     const kind = rawScenario();
+    if (kind === 'api-unavailable') {
+      return HttpResponse.json({ detail: { reason_code: 'service_unavailable', message: 'Rules information is temporarily unavailable.' } }, {
+        status: 503,
+        headers: { 'X-PocketLab-Read-Degraded': 'true', 'X-PocketLab-Refresh-Pending': 'true' },
+      });
+    }
     const blocked = kind === 'rules-disabled' || kind === 'rules-validation-error';
     const update = kind === 'rules-disabled';
     const activationInProgress = kind === 'rules-execution-pending';

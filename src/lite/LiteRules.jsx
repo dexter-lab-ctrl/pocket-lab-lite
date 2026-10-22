@@ -2,7 +2,7 @@ import './identityRules.css';
 import './identityRulesGovernance.css';
 import './rulesActivationProgress.css';
 import React from 'react';
-import { ShieldCheck, History, CircleAlert } from 'lucide-react';
+import { ShieldCheck, History, CircleAlert, Move, Maximize2, RotateCcw } from 'lucide-react';
 import RulesProtectionJourney from './rules/RulesProtectionJourney.jsx';
 import RulesDecisionInsight from './rules/RulesDecisionInsight.jsx';
 import { RulesDecisionTimeline, RulesActivationTimeline } from './rules/RulesPremiumTimeline.jsx';
@@ -26,6 +26,7 @@ import {
 import LiteRulesEnterprise from './LiteRulesEnterprise.jsx';
 import LiteHelp from './LiteHelp.jsx';
 import { LiteSheet } from './LiteOverlay.jsx';
+import { useDesktopManageGeometry } from './components/useDesktopManageGeometry.js';
 import { LiteFreshness, LiteTechnicalFacts } from './LiteUx.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 
@@ -52,6 +53,7 @@ export default function RulesScreen() {
     isExpired,
   } = policy;
   const [manageOpen, setManageOpen] = React.useState(false);
+  const { panelRef: managePanelRef, desktopPanel, panelStyle, announcement, reset: resetManagePanel, startPanelInteraction, adjustPanelWithKeyboard } = useDesktopManageGeometry({ open: manageOpen, defaultWidth: 680, minWidth: 380, minHeight: 360 });
   const [manageSection, setManageSection] = React.useState('overview');
   const [insightDecision, setInsightDecision] = React.useState(null);
   const [manageDecision, setManageDecision] = React.useState(null);
@@ -176,13 +178,15 @@ export default function RulesScreen() {
   }
 
   const showActivationProgress = Boolean(activationStatus);
+  const protectedModeLabel = protection.mode;
+  const revisionLabel = protection.revisionCurrent ? 'Current revision verified' : sourceUpdateRequired ? 'Update requires attention' : 'Revision not verified';
   return (
     <section className="lite-rules-premium-screen" data-rules-protection-state={protection.state}>
       <PageHeader
         eyebrow="Rules"
         title="Safety Rules"
         description="Understand how sensitive changes are checked and review recent decisions."
-        actions={<div className="lite-governance-inline-actions"><LiteHelp helpKey="rules.protection" /><LiteRefreshButton scope="rules" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} /></div>}
+        actions={<div className="lite-governance-inline-actions lite-rules-header-actions"><LiteHelp helpKey="rules.protection" /><LiteRefreshButton scope="rules" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} /><LiteButton tone="secondary" onClick={() => openManage("overview")}>Manage</LiteButton></div>}
       />
       <GlassCard className="lite-rules-premium-hero">
         <div className="lite-rules-premium-hero-head">
@@ -191,7 +195,7 @@ export default function RulesScreen() {
         </div>
         <h2>{protection.headline}</h2>
         <p>{protection.summary}</p>
-        <div className="lite-rules-premium-chips"><span>{protection.mode}</span>{protection.revisionCurrent ? <span>Rules current</span> : null}</div>
+        <div className="lite-rules-premium-chips"><span>{protectedModeLabel}</span><span>{revisionLabel}</span></div>
         {protection.updateAttention ? <div className="lite-rules-premium-attention"><CircleAlert size={18} aria-hidden="true" /><span>Safety Rules update requires attention. Protected changes are checked against authoritative server state.</span></div> : null}
         <LiteButton onClick={() => openManage('overview')}>Manage Safety Rules</LiteButton>
       </GlassCard>
@@ -199,6 +203,7 @@ export default function RulesScreen() {
       {loading && !data ? <LoadingCard label="Checking your Safety Rules…" /> : null}
       {error && !data ? <StateSurface tone="degraded" title="Live Rules unavailable" description="Pocket Lab could not confirm the protection state. No action is authorized from saved information." /> : null}
       {sourceSyncNotice ? <StateSurface tone={sourceSyncNotice.error ? 'degraded' : 'neutral'} title={sourceSyncNotice.title} description={sourceSyncNotice.message} /> : null}
+      <div className="lite-rules-premium-overview-grid">
       <RulesProtectionJourney />
       <GlassCard className="lite-rules-premium-latest" aria-label="Latest Decision">
         <header><div><span className="lite-rules-eyebrow">Latest Decision</span><h2>Most recent protection decision</h2></div><LiteButton tone="secondary" onClick={() => openManage('decisions')}><History size={16} aria-hidden="true" /> History</LiteButton></header>
@@ -211,14 +216,23 @@ export default function RulesScreen() {
         </div> : <StateSurface tone="neutral" title="No recorded decisions" description="When Pocket Lab evaluates a protected change, its decision can appear here. Nothing is assumed." />}
         {(savedStateOnly || isExpired) && latestView ? <p className="lite-rules-premium-saved">Saved decision — current state not confirmed.</p> : null}
       </GlassCard>
+      </div>
       {showActivationProgress ? <RulesActivationTimeline operation={activationStatus} backendReachable={backendReachable && !savedStateOnly} /> : activationInProgress ? <StateSurface tone="neutral" title="Rules update reported" description="The server reports an update but has not returned a detailed activation phase. No stage is assumed." /> : null}
-      <LiteSheet variant="rules" open={manageOpen} onClose={() => setManageOpen(false)} title="Manage Safety Rules" eyebrow="Safety Rules" description="Review current protection, decisions and authorized management options." className="lite-rules-manage-sheet lite-rules-premium-manage">
+      <LiteSheet variant="rules" open={manageOpen} onClose={() => setManageOpen(false)} title="Manage Safety Rules" eyebrow="Safety Rules" description={`${protection.label} · ${protectedModeLabel} · ${revisionLabel}. Review live protection and authorized options.`} className={`lite-rules-manage-sheet lite-rules-premium-manage ${desktopPanel ? 'is-movable' : ''}`}
+        surfaceRef={managePanelRef} surfaceStyle={panelStyle}
+        surfaceProps={{ 'data-rules-manage-layout': desktopPanel ? 'desktop-movable' : 'mobile-sheet' }}
+        headerActions={desktopPanel ? <div className="lite-rules-desktop-panel-tools" role="group" aria-label="Desktop Safety Rules panel controls">
+          <button type="button" aria-label="Move Safety Rules panel" title="Drag or use arrow keys to move; Shift + arrow for larger steps" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight" onPointerDown={(event) => startPanelInteraction('move', event)} onKeyDown={(event) => adjustPanelWithKeyboard('move', event)}><Move size={16} aria-hidden="true" /></button>
+          <button type="button" aria-label="Reset Safety Rules panel position and size" onClick={resetManagePanel}><RotateCcw size={16} aria-hidden="true" /> Reset</button>
+          <button type="button" aria-label="Resize Safety Rules panel" title="Drag or use arrow keys to resize; Home resets" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight" onPointerDown={(event) => startPanelInteraction('resize', event)} onKeyDown={(event) => adjustPanelWithKeyboard('resize', event)}><Maximize2 size={16} aria-hidden="true" /></button>
+          <span className="sr-only" role="status" aria-live="polite">{announcement}</span>
+        </div> : null}>
         <nav className="lite-rules-premium-nav" aria-label="Manage Safety Rules sections">
           {sections.map(([id,label]) => <button key={id} type="button" aria-current={manageSection === id ? 'page' : undefined} className={manageSection === id ? 'is-active' : ''} onClick={() => setManageSection(id)}>{label}</button>)}
         </nav>
         {manageSection === 'overview' ? <div className="lite-rules-premium-manage-content" data-rules-manage-section="overview">
           <h2>Protection overview</h2><StatusBadge status={protection.tone}>{protection.label}</StatusBadge>
-          <p>{protection.summary}</p><p>Workspace: {protection.mode}. Rules updates and policy decisions require live server authority.</p>
+          <p>{protection.summary}</p><LiteFreshness saved={savedStateOnly} stale={isExpired} refreshing={refreshing} lastUpdatedLabel={lastUpdatedLabel} backendReachable={backendReachable} /><p>Workspace: {protection.mode}. Revision: {revisionLabel}. Rules updates and policy decisions require live server authority.</p>
           {sourceUpdateRequired ? <StateSurface tone="neutral" title="Safety Rules update ready" description="An Owner must confirm the update. Known-good protection remains authoritative until verified." /> : null}
           {sourceUpdateRequired && role === 'Owner' ? <LiteButton disabled={rulesReadOnly || activationBusy} onClick={updateSafetyRules}>{activationBusy ? 'Update running' : 'Update Safety Rules'}</LiteButton> : null}
           {showActivationProgress ? <RulesActivationTimeline operation={activationStatus} backendReachable={backendReachable && !savedStateOnly} /> : null}
@@ -232,7 +246,7 @@ export default function RulesScreen() {
           {manageDecision ? <div className="lite-rules-premium-inline-insight"><LiteButton tone="secondary" onClick={() => setManageDecision(null)}>Back to Decision History</LiteButton><RulesDecisionInsight decision={manageDecision} /></div> : <RulesDecisionTimeline decisions={recent} saved={savedStateOnly || isExpired} onExplain={(record) => explainDecision(record, true)} />}
         </div> : null}
         {manageSection === 'policies' && !enterpriseEnabled ? <div className="lite-rules-premium-manage-content" data-rules-manage-section="policies"><h2>Policy summaries</h2>
-          {templates.map((template) => <LiteActionRow key={template.id} label={template.label} value={template.status === 'active' ? 'Active' : 'Available'} summary={template.summary} />)}
+          {templates.map((template) => <LiteActionRow key={template.id} label={template.label} value={template.status === 'active' ? 'Active' : template.status === 'available' ? 'Available' : 'Status not confirmed'} summary={template.summary} />)}
           {!templates.length ? <StateSurface tone="neutral" title="No policy summaries available" description="Only server-supported policy summaries are displayed." /> : null}
         </div> : null}
         {enterpriseEnabled && enterpriseSections[manageSection] ? <div data-rules-manage-section={manageSection}><LiteRulesEnterprise key={manageSection} role={role} embedded sectionOverride={enterpriseSections[manageSection]} /></div> : null}

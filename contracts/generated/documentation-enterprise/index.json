@@ -40692,7 +40692,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 506,
+      "page_count": 507,
       "top_level": [
         "start-here",
         "use",
@@ -48576,7 +48576,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "cd5e0974b51fbb3d18295e9e6b4c6149582848008d3ccd530eeaf2ea57f93faf",
-        "documentation": "650e5df1a2fb9d4871c43f74a1bff932b989860ce4645999da038509f3580b60",
+        "documentation": "dae6f30ad5a3a4764b3a03efbce420d46ef225fa957aa5aa4cca53c7751e28c0",
         "openapi": "ba5d78f12a18902f47a5c390e7c2ade4a6cc9188176bdee47cf293eada12c549",
         "operational_health": "c758d7d653b42f1860a89c2ab10d285eea8d8f477df13804b883c3b2e3255f8e"
       },
@@ -50512,7 +50512,7 @@
         },
         {
           "path": "package.json",
-          "sha256": "f40d7acba767070a48947352ec3b4f713eb96b2f35b31d8fa5ddcc3165d461b8"
+          "sha256": "31e81272f921a1458837f8fe9c1bb319a9f0ef19aa94bfa5b0904826d96623f8"
         },
         {
           "path": "requirements-dev.txt",
@@ -101783,6 +101783,346 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
+          "npm run test:rules:azure:a11y"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:rules:azure:a11y",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:rules:azure:a11y",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Rules Axe, theme, text scaling and reduced motion",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:rules:azure:geometry"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:rules:azure:geometry",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:rules:azure:geometry",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Shared Rules desktop Manage movement and mobile separation",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:rules:azure:mocked"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:rules:azure:mocked",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:rules:azure:mocked",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Azure Rules desktop/mobile mocked scenarios and protected UX",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:rules:azure:perf"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:rules:azure:perf",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:rules:azure:perf",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Supplemental Rules performance evidence with PR 588 gates unchanged",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:rules:azure:qualification"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:rules:azure:qualification",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:rules:azure:qualification",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Authoritative Rules stabilization after human visual baseline approval",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:rules:azure:storybook"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:test:rules:azure:storybook",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:rules:azure:storybook",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Build the existing Lite Storybook including Azure Rules stories",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:rules:azure:unit"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:test:rules:azure:unit",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:rules:azure:unit",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Rules Azure selectors, Journey and shared geometry unit tests",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:rules:azure:visual"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:rules:azure:visual",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:rules:azure:visual",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Azure Rules visuals after independent owner baseline review",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
           "npm run test:rules:premium:mocked"
         ],
         "dependencies": [
@@ -121299,5 +121639,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "7277a97e6e401de59ed3ce744d78ae97e5e6d4e6c2f8e7c595e87ca879a5603b"
+  "source_fingerprint": "b5b5f4ca593041982dd2c696517f5de564e9ab27927435c59bb10a97dd29d333"
 }

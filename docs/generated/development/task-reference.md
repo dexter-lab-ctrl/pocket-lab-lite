@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 380c465c4c8893456fcabcf7d10fb24a1c5f6cab5c00b0db304ee55089525bde
+source_fingerprint: 63c579741418ae51609e4f9f0da48fdb86ed9c59aac6ac47b9175a2f73498388
 schema_revision: 1
 validation_status: generated
 ---
@@ -256,6 +256,14 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:test:recovery:premium:unit`
 - `lite:test:recovery:premium:visual`
 - `lite:test:redaction`
+- `lite:test:rules:azure:a11y`
+- `lite:test:rules:azure:geometry`
+- `lite:test:rules:azure:mocked`
+- `lite:test:rules:azure:perf`
+- `lite:test:rules:azure:qualification`
+- `lite:test:rules:azure:storybook`
+- `lite:test:rules:azure:unit`
+- `lite:test:rules:azure:visual`
 - `lite:test:rules:premium:mocked`
 - `lite:test:rules:premium:perf`
 - `lite:test:rules:premium:unit`
@@ -410,6 +418,18 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:test:recovery:premium:perf` → `lite:playwright:preflight`
 - `lite:test:recovery:premium:visual` → `lite:dev:scratch:prepare`
 - `lite:test:recovery:premium:visual` → `lite:playwright:preflight`
+- `lite:test:rules:azure:a11y` → `lite:dev:scratch:prepare`
+- `lite:test:rules:azure:a11y` → `lite:playwright:preflight`
+- `lite:test:rules:azure:geometry` → `lite:dev:scratch:prepare`
+- `lite:test:rules:azure:geometry` → `lite:playwright:preflight`
+- `lite:test:rules:azure:mocked` → `lite:dev:scratch:prepare`
+- `lite:test:rules:azure:mocked` → `lite:playwright:preflight`
+- `lite:test:rules:azure:perf` → `lite:dev:scratch:prepare`
+- `lite:test:rules:azure:perf` → `lite:playwright:preflight`
+- `lite:test:rules:azure:qualification` → `lite:dev:scratch:prepare`
+- `lite:test:rules:azure:qualification` → `lite:playwright:preflight`
+- `lite:test:rules:azure:visual` → `lite:dev:scratch:prepare`
+- `lite:test:rules:azure:visual` → `lite:playwright:preflight`
 - `lite:test:rules:premium:mocked` → `lite:dev:scratch:prepare`
 - `lite:test:rules:premium:mocked` → `lite:playwright:preflight`
 - `lite:test:rules:premium:perf` → `lite:dev:scratch:prepare`

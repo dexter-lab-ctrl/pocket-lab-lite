@@ -23,7 +23,7 @@ export default function RulesProtectionJourney({ mode = 'understand', decision =
     <header><span className="lite-rules-eyebrow">Protection Journey</span><h2>How Pocket Lab protects a change</h2><p>{inspection ? 'Verified decision facts only; other stages describe the Rules process, not a reconstructed trace.' : 'Illustrative guide — not a live authorization or execution trace.'}</p></header>
     <ol className="lite-rules-journey-track" aria-label="Protection Journey stages">
       {STAGES.map(({ id, label, short, Icon }, index) => <li key={id}>
-        <button type="button" className={selected === id ? 'is-selected' : ''} aria-expanded={selected === id} aria-controls={detailId} onClick={() => setSelected((value) => value === id ? null : id)}>
+        <button type="button" className={selected === id ? 'is-selected' : ''} aria-expanded={selected === id} aria-controls={detailId} aria-label={`${short} ${label}: ${STAGES[index].detail}`} onClick={() => setSelected((value) => value === id ? null : id)}>
           <Icon size={21} aria-hidden="true" /><strong>{short}</strong><span>{label}</span>
         </button>
         {index < STAGES.length - 1 ? <span className="lite-rules-journey-connector" aria-hidden="true" /> : null}

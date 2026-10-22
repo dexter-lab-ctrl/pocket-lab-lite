@@ -4688,7 +4688,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 506,
+  "page_count": 507,
   "page_types": [
     "overview",
     "guide",
@@ -4863,6 +4863,29 @@
       "source_or_generator": "development/lite-azure-horizon-identity-access.md",
       "title": "Azure Horizon — Identity & Access (stabilization and qualification record)",
       "url": "/development/lite-azure-horizon-identity-access/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-azure-horizon-rules-refinement.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:development/lite-azure-horizon-rules-refinement",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-azure-horizon-rules-refinement.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-azure-horizon-rules-refinement.md",
+      "title": "Azure Horizon — Safety Rules refinement",
+      "url": "/development/lite-azure-horizon-rules-refinement/"
     },
     {
       "additional_audiences": [],
@@ -17995,7 +18018,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "54b7b071e1dc8b7eb9b8a9dcef02ade1927d2068136a2df99d40272b86539131",
+  "source_fingerprint": "484c5a37aa5dc515e17f38a5f193720a9c2d839015f5a07c51266fcef4832f7f",
   "top_level": [
     "start-here",
     "use",
