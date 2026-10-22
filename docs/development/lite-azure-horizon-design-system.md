@@ -183,7 +183,7 @@ The new premium visual suite intentionally remains baseline-pending. Existing ca
 
 **IMPLEMENTATION PROVIDED — QUALIFICATION PARTIAL / DRAFT.**
 
-Dev-PC tests, a11y, Storybook, build, performance and read-only Server Phone checks were executed. Lint/typecheck are repository configuration limitations, new visual baselines await owner approval, physical Android CDP attach is blocked, and exact-head CI remains pending. The PR stays **OPEN — DRAFT — NOT MERGED**.
+Dev-PC tests, a11y, Storybook, build, performance and read-only Server Phone checks were executed. Lint/typecheck are repository configuration limitations, new visual baselines await owner approval, physical Android CDP attach is blocked, and exact-head CI completed with one documented pre-existing Devices performance residual. The PR stays **OPEN — DRAFT — NOT MERGED**.
 
 
 ## Home Workspace and Activity panel refinement (PR #626 qualification)

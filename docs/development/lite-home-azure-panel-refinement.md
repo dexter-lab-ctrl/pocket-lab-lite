@@ -7,7 +7,7 @@
 > Implementation scope: P0 theme/layout/scroll navigation and P1 Activity presentation, responsive geometry, accessibility and authored regression coverage.  
 > This page began as the source-only handoff. The PR #626 qualification addendum below records the current Dev-PC, runtime-reference, Android transport and documentation evidence without treating blocked or pending gates as passes.
 >
-> The PR remains **DRAFT / NOT MERGED**. The addendum is exact-head evidence for the current session; visual baseline approval, synthetic-owner access, physical Android rendering and final CI remain separate dispositions.
+> The PR remains **DRAFT / NOT MERGED**. The addendum is exact-head evidence for the current session; visual baseline approval, synthetic-owner access and physical Android rendering remain separate dispositions. Exact-head CI completed with one documented pre-existing Devices performance residual.
 
 ## 1. Design objective and baseline defects
 
@@ -171,7 +171,7 @@ task lite:check
 
 For Android CDP, use the existing PR #588/#589 local candidate workflow: exact HEAD, loopback-only Vite and same-origin safe API, ADB reverse/forward, transport gates, permissioned synthetic-owner harness only if read access needs it, candidate identification evidence, CPU/long task/LoAF/frame sampling, capture/readability and reset/cleanup. Do not deploy candidate to production Phone or submit destructive operations merely to qualify Home.
 
-Final docs generation follows the functional and device attempts. Exact-head CI and merge disposition remain pending after the final push; this PR stays draft.
+Final docs generation follows the functional and device attempts. Exact-head CI completed after the final push: isolated qualification and quick/docs passed, while the existing Devices nested-details React hard gate remained a documented residual. This PR stays draft.
 
 ## 12. Residual risks and recovery
 
