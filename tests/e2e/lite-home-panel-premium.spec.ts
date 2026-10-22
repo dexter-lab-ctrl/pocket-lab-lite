@@ -124,15 +124,15 @@ for (const kind of ['workspace','activity'] as const) {
       await page.setViewportSize({ width: 390, height: 844 });
       await openHome(page, theme);
       const dialog = await panel(page, kind);
-      const colors = await dialog.evaluate((element) => {
+      const colors = await dialog.evaluate((element, panelKind) => {
         const selectors = ['.lite-overlay-head', '.lite-home-panel-scroll', '.lite-home-details-nav',
-          '.lite-home-details-nav button', kind === 'workspace' ? '.lite-action-row' : '.lite-home-activity-counts > div'];
+          '.lite-home-details-nav button', panelKind === 'workspace' ? '.lite-action-row' : '.lite-home-activity-counts > div'];
         return selectors.map((selector) => {
           const node = element.querySelector(selector);
           return node ? { selector, background: getComputedStyle(node).backgroundColor,
             color: getComputedStyle(node).color } : null;
         }).filter(Boolean);
-      });
+      }, kind);
       expect(colors.length).toBeGreaterThan(3);
       for (const color of colors) {
         if (theme === 'dark') {

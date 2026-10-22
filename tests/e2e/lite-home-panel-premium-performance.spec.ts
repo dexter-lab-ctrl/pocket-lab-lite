@@ -56,3 +56,30 @@ for (const kind of ['workspace','activity'] as const) {
     }
   });
 }
+
+test('[interaction] Azure Home mobile Activity scroll/hide/reveal costs', async ({ page }, info) => {
+  await page.setViewportSize({ width: 390, height: 760 });
+  await installScenario(page, 'healthy');
+  await page.goto('/?screen=home');
+  await waitForLiteScreenToSettle(page, 'home');
+  await page.getByRole('button', { name: 'View activity' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Recent activity' });
+  const body = dialog.locator('.lite-home-panel-scroll');
+  await body.evaluate((node) => {
+    // Long controlled, mock-only scroll span for low-power regression sampling.
+    const filler = document.createElement('div');
+    filler.style.height = '1400px';
+    filler.dataset.perfFiller = 'true';
+    node.appendChild(filler);
+  });
+  const report = await measureLiteInteraction(page, info, 'azure-home-activity-mobile-scroll-navigation', async () => {
+    await body.evaluate((node) => {
+      node.scrollTop = 260;
+      node.dispatchEvent(new Event('scroll'));
+      node.scrollTop = 90;
+      node.dispatchEvent(new Event('scroll'));
+    });
+  }, { settleMs: 900, mode: 'mocked' });
+  expectLitePerformanceBudget(report);
+  await writeLitePerformanceEvidence(info, report);
+});
