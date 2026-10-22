@@ -92,3 +92,34 @@ export const ContextHelpOpen = {
     await userEvent.click(help);
   },
 };
+
+// Azure Horizon Rules fixtures — DEFINED, NOT EXECUTED in this implementation session.
+export const AzureRulesBlack = rules('rules-present', { viewport: 'desktop', notes: 'Use global Black appearance toolbar.' });
+export const AzureRulesDaylight = rules('rules-enabled', { viewport: 'desktop', notes: 'Use global Daylight appearance toolbar.' });
+export const AzureRulesSystem = rules('rules-enabled', { notes: 'Use existing System appearance preference.' });
+export const AzureRulesVerticalJourney = rules('rules-premium-long', { viewport: 'mobile360', textScale: 2 });
+export const AzureRulesEnterprisePolicies = EnterpriseOwnerPolicies;
+export const AzureRulesDecisionInsight = DecisionInsightOpen;
+export const AzureRulesManageDesktop = ManageRulesOpen;
+export const AzureRulesManageMobile = rules('rules-enabled', { viewport: 'mobile360' });
+export const AzureRulesSimulation = {
+  ...rules('rules-enterprise-owner', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => {
+    const sheet = await openManage(canvasElement,'Test a Change');
+    await expect(sheet).toHaveTextContent(/Simulation only/i);
+  },
+};
+export const AzureRulesTemporaryAccess = {
+  ...rules('rules-enterprise-owner', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => {
+    const sheet = await openManage(canvasElement,'Temporary Access');
+    await expect(sheet).toHaveTextContent(/Exact scope only/i);
+  },
+};
+export const AzureRulesReviewRequests = {
+  ...rules('rules-approval-required', { viewport: 'desktop' }),
+  play: async ({ canvasElement }) => {
+    const sheet = await openManage(canvasElement,'Requests');
+    await expect(sheet).toHaveTextContent(/Review requests/i);
+  },
+};

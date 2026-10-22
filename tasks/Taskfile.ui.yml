@@ -209,3 +209,44 @@ tasks:
     deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
     cmds:
       - npm run test:apps:azure:qualification
+
+  lite:test:rules:azure:unit:
+    desc: Rules Azure selectors, Journey and shared geometry unit tests
+    cmds:
+      - npm run test:rules:azure:unit
+
+  lite:test:rules:azure:mocked:
+    desc: Azure Rules desktop/mobile mocked scenarios and protected UX
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:rules:azure:mocked
+
+  lite:test:rules:azure:a11y:
+    desc: Rules Axe, theme, text scaling and reduced motion
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:rules:azure:a11y
+
+  lite:test:rules:azure:geometry:
+    desc: Shared Rules desktop Manage movement and mobile separation
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:rules:azure:geometry
+
+  lite:test:rules:azure:visual:
+    desc: Azure Rules visuals after independent owner baseline review
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:rules:azure:visual
+
+  lite:test:rules:azure:perf:
+    desc: Supplemental Rules performance evidence with PR 588 gates unchanged
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:rules:azure:perf
+
+  lite:test:rules:azure:qualification:
+    desc: Authoritative Rules stabilization after human visual baseline approval
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:rules:azure:qualification
