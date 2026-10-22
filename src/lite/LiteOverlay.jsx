@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
+import { X, Move, Maximize2, RotateCcw } from 'lucide-react';
 import { animated, useSpring } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
 import { isLitePerformanceMode } from './liteNavigationRuntime.js';
@@ -216,6 +216,19 @@ const LITE_SHEET_VARIANTS = {
     backdropLabel: 'Close security details',
     gripLabel: 'Drag security details sheet',
   },
+  home: {
+    layer: 'lite-home-panel-layer',
+    backdrop: 'lite-home-panel-backdrop',
+    surface: 'lite-home-sheet',
+    grip: 'lite-home-sheet-grip',
+    head: 'lite-home-sheet-head',
+    close: 'lite-home-sheet-close',
+    scroll: 'lite-home-sheet-scroll',
+    eyebrow: 'Action Details',
+    closeLabel: 'Close Home details',
+    backdropLabel: 'Close Home details',
+    gripLabel: 'Drag Home details sheet',
+  },
   rules: {
     layer: 'lite-rules-overlay-layer',
     backdrop: 'lite-rules-overlay-backdrop',
@@ -261,6 +274,7 @@ export function LiteSheet({
   const internalCloseRef = useRef(null);
   const closeRef = externalCloseRef || internalCloseRef;
   const internalSurfaceRef = useRef(null);
+  const layerRef = useRef(null);
   const setSurfaceRef = useCallback((node) => {
     internalSurfaceRef.current = node;
     if (typeof surfaceRef === 'function') surfaceRef(node);
@@ -282,6 +296,23 @@ export function LiteSheet({
   useEscapeToClose(open, onClose);
   useFocusReturn(open, closeRef);
   useFocusTrap(open, internalSurfaceRef);
+
+  // The portal's legacy compatibility class needs to follow System mode even
+  // when the sheet itself has not rerendered.
+  useEffect(() => {
+    if (!open || typeof MutationObserver === 'undefined') return undefined;
+    const sync = () => {
+      const layer = layerRef.current;
+      if (!layer) return;
+      const dark = document.documentElement.dataset.liteTheme === 'dark';
+      layer.classList.toggle('theme-pocket-lite-dark', dark);
+      layer.classList.toggle('theme-pocket-lite-daylight', !dark);
+    };
+    sync();
+    const observer = new MutationObserver(sync);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-lite-theme'] });
+    return () => observer.disconnect();
+  }, [open]);
 
   const [{ y, scale, opacity }, api] = useSpring(() => ({
     y: 0,
@@ -340,7 +371,7 @@ export function LiteSheet({
   if (!open) return null;
   return (
     <LiteOverlayRoot>
-      <div className={`${getLiteOverlayRootClassName()} ${variantClasses.layer} ${layerClassName}`.trim()} role="presentation" data-lite-overlay-portal="true" data-lite-perf-mode={isLitePerformanceMode() ? 'true' : undefined}>
+      <div ref={layerRef} className={`${getLiteOverlayRootClassName()} ${variantClasses.layer} ${layerClassName}`.trim()} role="presentation" data-lite-overlay-portal="true" data-lite-perf-mode={isLitePerformanceMode() ? 'true' : undefined}>
         <LiteBackdrop onClose={onClose} label={variantClasses.backdropLabel} className={variantClasses.backdrop} />
         <Surface
           ref={setSurfaceRef}
@@ -380,9 +411,31 @@ export function LiteSheet({
   );
 }
 
-export function LiteDetailsPanel({ open, onClose, title = 'Details', description = '', bodyRef, bodyClassName = '', children, variant = 'manage' }) {
+export function LiteDetailsPanel({
+  open, onClose, title = 'Details', description = '', bodyRef, bodyClassName = '',
+  children, variant = 'manage', className = '', desktopGeometry,
+}) {
+  const { panelRef, desktopPanel, panelStyle, announcement, reset,
+    startPanelInteraction, adjustPanelWithKeyboard } = desktopGeometry || {};
+  const tools = desktopPanel ? <div className="lite-home-desktop-panel-tools" role="group" aria-label="Desktop Home panel controls">
+    <button type="button" aria-label={`Move ${title} panel`} title="Drag or use arrow keys to move; Home resets" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
+      onPointerDown={(event) => startPanelInteraction?.('move', event)}
+      onKeyDown={(event) => adjustPanelWithKeyboard?.('move', event)}><Move size={16} aria-hidden="true" /></button>
+    <button type="button" aria-label={`Reset ${title} position and size`} onClick={reset}><RotateCcw size={16} aria-hidden="true" /> Reset</button>
+    <button type="button" aria-label={`Resize ${title} panel`} title="Drag or use arrow keys to resize; Home resets" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
+      onPointerDown={(event) => startPanelInteraction?.('resize', event)}
+      onKeyDown={(event) => adjustPanelWithKeyboard?.('resize', event)}><Maximize2 size={16} aria-hidden="true" /></button>
+    <span className="sr-only" role="status" aria-live="polite">{announcement}</span>
+  </div> : null;
   return (
-    <LiteSheet open={open} onClose={onClose} title={title} eyebrow="Action Details" description={description} layerClassName="lite-details-overlay-layer" className="lite-details-panel" bodyRef={bodyRef} bodyClassName={`lite-details-panel-scroll ${bodyClassName}`.trim()} gripClassName="lite-details-panel-grip" variant={variant}>
+    <LiteSheet open={open} onClose={onClose} title={title} eyebrow="Action Details"
+      description={description} variant={variant} headerActions={tools}
+      layerClassName={`lite-details-overlay-layer ${variant === 'home' ? 'lite-home-panel-layer' : ''}`}
+      className={`lite-details-panel ${className} ${desktopPanel ? 'is-movable' : ''}`.trim()}
+      surfaceRef={panelRef} surfaceStyle={panelStyle}
+      surfaceProps={variant === 'home' ? { 'data-home-panel-layout': desktopPanel ? 'desktop-movable' : 'mobile-sheet' } : {}}
+      bodyRef={bodyRef} bodyClassName={`lite-details-panel-scroll ${bodyClassName}`.trim()}
+      gripClassName="lite-details-panel-grip">
       {children}
     </LiteSheet>
   );
