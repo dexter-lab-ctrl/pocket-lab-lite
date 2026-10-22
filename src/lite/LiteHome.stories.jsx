@@ -80,3 +80,73 @@ export const SavedOfflineManageOpen = {
 export const Narrow320 = createLiteStory('home', 'healthy', { viewport: 'mobile360', notes: 'Narrow mobile density guard; Playwright covers the exact 320px viewport.' });
 export const Mobile = createLiteStory('home', 'healthy', { viewport: 'mobile360' });
 export const Desktop = createLiteStory('home', 'healthy', { viewport: 'desktop' });
+
+/*
+ * Azure Home panel source states. Not approved visual baselines; these stories
+ * use the existing Lite Story Frame, mocked FastAPI reads and portal primitive.
+ */
+async function openRecentActivity(canvasElement, section = 'Attention') {
+  const canvas = await expectHome(canvasElement);
+  await userEvent.click(await canvas.findByRole('button', { name: /View activity/i }));
+  const documentBody = within(canvasElement.ownerDocument.body);
+  const dialog = await documentBody.findByRole('dialog', { name: 'Recent activity' });
+  await userEvent.click(within(dialog).getByRole('button', { name: section, exact: true }));
+  return dialog;
+}
+
+function homePanelStory({ panel, theme, viewport = 'desktop', scenario = 'healthy', section = 'Attention', textScale = 1, notes = '' }) {
+  return {
+    ...createLiteStory('home', scenario, {
+      theme, viewport, textScale, status: 'unvalidated',
+      notes: notes || 'Source story only; no screenshot or accessibility qualification yet.',
+    }),
+    play: async ({ canvasElement }) => {
+      if (panel === 'workspace') await openWorkspaceDetails(canvasElement);
+      else await openRecentActivity(canvasElement, section);
+    },
+  };
+}
+
+export const AzureWorkspaceDaylightDesktop = homePanelStory({ panel: 'workspace', theme: 'daylight' });
+export const AzureWorkspaceBlackDesktop = homePanelStory({ panel: 'workspace', theme: 'dark' });
+export const AzureWorkspaceDaylightMobile = homePanelStory({ panel: 'workspace', theme: 'daylight', viewport: 'mobile390' });
+export const AzureWorkspaceBlackMobile = homePanelStory({ panel: 'workspace', theme: 'dark', viewport: 'mobile390' });
+export const AzureActivityDaylightDesktop = homePanelStory({ panel: 'activity', theme: 'daylight' });
+export const AzureActivityBlackDesktop = homePanelStory({ panel: 'activity', theme: 'dark' });
+export const AzureActivityDaylightMobile = homePanelStory({ panel: 'activity', theme: 'daylight', viewport: 'mobile390' });
+export const AzureActivityBlackMobile = homePanelStory({ panel: 'activity', theme: 'dark', viewport: 'mobile390' });
+export const AzureActivityAttention = homePanelStory({ panel: 'activity', theme: 'dark', scenario: 'lifecycle-attention', section: 'Attention' });
+export const AzureActivityRunning = homePanelStory({ panel: 'activity', theme: 'dark', section: 'Running' });
+export const AzureActivityRecent = homePanelStory({ panel: 'activity', theme: 'daylight', section: 'Recent' });
+export const AzureActivityHistory = homePanelStory({ panel: 'activity', theme: 'dark', section: 'History' });
+export const AzureActivityEmpty = homePanelStory({ panel: 'activity', theme: 'daylight', section: 'Running' });
+export const AzureActivitySaved = homePanelStory({ panel: 'activity', theme: 'daylight', scenario: 'offline-saved', section: 'History' });
+export const AzureActivityUnavailable = homePanelStory({ panel: 'activity', theme: 'dark', scenario: 'api-unavailable' });
+export const AzureActivityReviewUnavailable = homePanelStory({ panel: 'activity', theme: 'dark', scenario: 'api-unavailable', section: 'History' });
+export const AzureWorkspaceEnlargedText = homePanelStory({ panel: 'workspace', theme: 'dark', viewport: 'mobile360', textScale: 2,
+  notes: 'Long text / 200% type-scale overflow qualification pending.' });
+export const AzureActivityReducedMotion = homePanelStory({ panel: 'activity', theme: 'daylight',
+  notes: 'Storybook reducedMotion toolbar should be enabled during qualification.' });
+export const AzureWorkspaceSystem = homePanelStory({ panel: 'workspace', theme: 'system' });
+export const AzureActivitySystem = homePanelStory({ panel: 'activity', theme: 'system' });
+export const AzureWorkspaceDesktopMovedResized = {
+  ...createLiteStory('home', 'healthy', { viewport: 'desktop', theme: 'dark', status: 'unvalidated' }),
+  play: async ({ canvasElement }) => {
+    await openWorkspaceDetails(canvasElement);
+    const dialog = await within(canvasElement.ownerDocument.body).findByRole('dialog', { name: 'Workspace details' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Move Workspace details panel' }));
+    await userEvent.keyboard('{ArrowLeft}');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Resize Workspace details panel' }));
+    await userEvent.keyboard('{ArrowLeft}');
+  },
+};
+export const AzureActivityDesktopMovedResized = {
+  ...createLiteStory('home', 'healthy', { viewport: 'desktop', theme: 'dark', status: 'unvalidated' }),
+  play: async ({ canvasElement }) => {
+    const dialog = await openRecentActivity(canvasElement);
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Move Recent activity panel' }));
+    await userEvent.keyboard('{ArrowLeft}');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Resize Recent activity panel' }));
+    await userEvent.keyboard('{ArrowLeft}');
+  },
+};
