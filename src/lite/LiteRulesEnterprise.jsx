@@ -189,6 +189,7 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
 
   async function createPolicyRevision(event) {
     event.preventDefault();
+    if (!canDraft || enterpriseReadOnly) return;
     const result = await execute('policy:draft', () => liteEnterpriseApi.createRuleRevision({
       template_id: 'enterprise_governance',
       parameters: {
@@ -204,6 +205,7 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
   }
 
   async function activateRevision(revisionId) {
+    if (!canActivate || enterpriseReadOnly) return;
     const result = await execute(`policy:activate:${revisionId}`, () => ownerStepUp('policy.rules.activate', () => liteEnterpriseApi.activateRuleRevision(revisionId)), 'Rules activation requested.', [health.refresh, revisions.refresh]);
     if (result?.operation) {
       setActivation(result.operation);
@@ -212,6 +214,7 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
   }
 
   async function rollbackRules() {
+    if (!canRollback || enterpriseReadOnly) return;
     const result = await execute('policy:rollback', () => ownerStepUp('policy.rules.rollback', () => liteEnterpriseApi.rollbackRules()), 'Known-good Rules restoration requested.', [health.refresh, revisions.refresh]);
     if (result?.operation) {
       setActivation(result.operation);
@@ -220,13 +223,13 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
   }
 
   async function refreshActivation() {
-    if (!activation?.operation_id) return;
+    if (!activation?.operation_id || !health.backendReachable) return;
     const result = await execute('policy:activation-refresh', () => liteEnterpriseApi.ruleActivation(activation.operation_id), 'Activation state refreshed.', [health.refresh, revisions.refresh, access.refresh, templates.refresh]);
     if (result?.operation) setActivation(result.operation);
   }
 
   async function resolveUncertainActivation() {
-    if (!activation?.operation_id) return;
+    if (!activation?.operation_id || enterpriseReadOnly || !canActivate) return;
     const result = await execute('policy:resolve', () => ownerStepUp('policy.rules.activate', () => liteEnterpriseApi.resolveRuleActivation(activation.operation_id)), 'Recovered Rules state proved and recorded.', [health.refresh, revisions.refresh, access.refresh, templates.refresh]);
     if (result?.operation) {
       setActivation(result.operation);
@@ -236,6 +239,7 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
 
   async function runSimulation(event) {
     event.preventDefault();
+    if (!canSimulate || enterpriseReadOnly) return;
     setSimulationResult(null);
     const result = await execute('simulation', () => liteEnterpriseApi.simulateRule({ revision_id: simulation.revision_id, action_id: simulation.action_id, target_id: simulation.target_id, mode: simulation.mode, scenario: simulation.mode === 'synthetic' ? simulation.scenario : undefined }), 'Simulation completed.', []);
     if (result) setSimulationResult(result);
@@ -261,6 +265,7 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
   }
 
   async function transitionApproval(approval, action) {
+    if (enterpriseReadOnly || (action !== 'cancel' && !canReviewRequests)) return;
     const result = await execute(`approval:${approval.approval_id}:${action}`, async () => {
       try { return await liteEnterpriseApi.transitionApproval(approval.approval_id, action); }
       catch (firstError) {
@@ -345,12 +350,12 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
               <label><input type="checkbox" checked={policyDraft.admin_device_remove_approval} onChange={(event) => setPolicyDraft((value) => ({ ...value, admin_device_remove_approval: event.target.checked }))} disabled={!canDraft || Boolean(busy)} /><span><strong>Admin device removal needs independent review</strong><small>Current: {Number(policyParameters.admin_device_remove_approval ?? 1) ? 'Review required' : 'Direct delegated authority'}</small></span></label>
               <label><input type="checkbox" checked={policyDraft.operator_device_remove_approval} onChange={(event) => setPolicyDraft((value) => ({ ...value, operator_device_remove_approval: event.target.checked }))} disabled={!canDraft || Boolean(busy)} /><span><strong>Operator device removal needs independent review</strong><small>Current: {Number(policyParameters.operator_device_remove_approval ?? 1) ? 'Review required' : 'Direct delegated authority'}</small></span></label>
             </div>
-            {canDraft ? <form className="lite-governance-form mt-4" onSubmit={createPolicyRevision}><label className="lite-governance-span-2"><span>Why are you changing this?</span><textarea required maxLength="240" value={policyDraft.change_summary} onChange={(event) => setPolicyDraft((value) => ({ ...value, change_summary: event.target.value }))} placeholder="Example: Allow Admins to retire stale lab devices without peer review." /></label><div className="lite-governance-actions"><LiteButton type="submit" disabled={Boolean(busy) || !policyDraft.change_summary.trim()}>{busy === 'policy:draft' ? 'Creating candidate…' : 'Create Rules candidate'}</LiteButton></div></form> : <RoleUnavailable title="Policy editing is not available to this role" description="You can review immutable revisions and effective protection, but only Owner/Admin can create typed candidates. Only Owner can activate or restore Rules." />}
+            {canDraft ? <form className="lite-governance-form mt-4" onSubmit={createPolicyRevision}><label className="lite-governance-span-2"><span>Why are you changing this?</span><textarea required maxLength="240" value={policyDraft.change_summary} onChange={(event) => setPolicyDraft((value) => ({ ...value, change_summary: event.target.value }))} placeholder="Example: Allow Admins to retire stale lab devices without peer review." /></label><div className="lite-governance-actions"><LiteButton type="submit" disabled={Boolean(busy) || enterpriseReadOnly || !policyDraft.change_summary.trim()}>{busy === 'policy:draft' ? 'Creating candidate…' : 'Create Rules candidate'}</LiteButton></div></form> : <RoleUnavailable title="Policy editing is not available to this role" description="You can review immutable revisions and effective protection, but only Owner/Admin can create typed candidates. Only Owner can activate or restore Rules." />}
           </GlassCard>
 
           {candidateRevision ? <StateSurface tone="neutral" title="Candidate created — not active" description={`Candidate ${shortRevision(candidateRevision)} is a protected Rules draft. It does not change running protection until an Owner confirms activation and Pocket Lab proves the revision is healthy.`} /> : null}
 
-          {activeOperation ? <GlassCard className="lite-rules-card"><RulesActivationTimeline operation={activeOperation} backendReachable={!enterpriseReadOnly} /><div className="lite-rules-card-head"><FileCheck2 className="h-5 w-5" /><StatusBadge status={TERMINAL_ACTIVATION_STATES.has(activeOperation.state) ? (activeOperation.state === 'active' ? 'healthy' : 'degraded') : 'review'}>{activeOperation.state || 'Pending'}</StatusBadge></div><h3>Activation progress</h3><p>{activeOperation.state === 'active' && rulesReady ? 'Pocket Lab reports the requested revision active and Rules consistency ready.' : activeOperation.state === 'active' ? 'Activation was reported but current Rules consistency is not yet verified.' : activeOperation.state === 'uncertain' ? 'Pocket Lab cannot prove which revision is authoritative. Protected changes remain fail-closed until recovery is proved.' : 'Pocket Lab recorded the request and is safely staging, activating, checking, and recovering the revision as needed.'}</p><div className="lite-governance-actions">{activeOperation.operation_id ? <LiteButton variant="secondary" onClick={refreshActivation} disabled={Boolean(busy)}>Refresh activation</LiteButton> : null}{activeOperation.state === 'uncertain' && canActivate ? <LiteButton onClick={resolveUncertainActivation} disabled={Boolean(busy)}>Verify recovered Rules</LiteButton> : null}</div></GlassCard> : null}
+          {activeOperation ? <GlassCard className="lite-rules-card"><RulesActivationTimeline operation={activeOperation} backendReachable={!enterpriseReadOnly} /><div className="lite-rules-card-head"><FileCheck2 className="h-5 w-5" /><StatusBadge status={TERMINAL_ACTIVATION_STATES.has(activeOperation.state) ? (activeOperation.state === 'active' ? 'healthy' : 'degraded') : 'review'}>{activeOperation.state || 'Pending'}</StatusBadge></div><h3>Activation progress</h3><p>{activeOperation.state === 'active' && rulesReady ? 'Pocket Lab reports the requested revision active and Rules consistency ready.' : activeOperation.state === 'active' ? 'Activation was reported but current Rules consistency is not yet verified.' : activeOperation.state === 'uncertain' ? 'Pocket Lab cannot prove which revision is authoritative. Protected changes remain fail-closed until recovery is proved.' : 'Pocket Lab recorded the request and is safely staging, activating, checking, and recovering the revision as needed.'}</p><div className="lite-governance-actions">{activeOperation.operation_id ? <LiteButton variant="secondary" onClick={refreshActivation} disabled={Boolean(busy) || enterpriseReadOnly}>Refresh activation</LiteButton> : null}{activeOperation.state === 'uncertain' && canActivate ? <LiteButton onClick={resolveUncertainActivation} disabled={Boolean(busy) || enterpriseReadOnly}>Verify recovered Rules</LiteButton> : null}</div></GlassCard> : null}
 
           <GlassCard className="lite-rules-card">
             <div className="lite-rules-card-head"><History className="h-5 w-5" /><span className="lite-rules-soft-badge">Immutable history</span></div><h3>Rules revisions</h3>
@@ -364,7 +369,7 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
       {section === 'simulate' ? (
         <GlassCard className="lite-rules-card">
           <div className="lite-rules-card-head"><LiteHelpHeading title="Test a change" helpKey="rules.simulation" as="h3" /><span className="lite-rules-soft-badge">What-if only</span></div>
-          {!canSimulate ? <RoleUnavailable title="Simulation is not available to this role" description="This role can review current protection but cannot run a bounded policy simulation." /> : <><StateSurface tone="neutral" title="Simulation only — no live permission" description="This is a simulation. No real permission or system change is granted. Pocket Lab derives your context on the server or evaluates bounded hypothetical facts." /><form onSubmit={runSimulation} className="lite-rules-form-grid mt-4"><label><span>Rules revision</span><select value={simulation.revision_id} onChange={(event) => setSimulation((value) => ({ ...value, revision_id: event.target.value }))}>{(revisions.data?.revisions || []).map((revision) => <option key={revision.revision_id} value={revision.revision_id}>{revision.revision_id === activeRevision ? 'Active Rules' : `${revision.change_summary || 'Candidate'} · ${shortRevision(revision.revision_id)}`}</option>)}</select></label><label><span>Protected action</span><select value={simulation.action_id} onChange={(event) => setSimulation((value) => ({ ...value, action_id: event.target.value }))}>{(health.data?.registered_protected_actions || []).map((action) => <option key={action} value={action}>{getLiteRulesActionLabel(action) || action}</option>)}</select></label><label><span>Target reference</span><input required value={simulation.target_id} onChange={(event) => setSimulation((value) => ({ ...value, target_id: event.target.value }))} placeholder="device-or-app-id" /></label><label><span>Context</span><select value={simulation.mode} onChange={(event) => setSimulation((value) => ({ ...value, mode: event.target.value }))}><option value="real_derived">Real server-derived context</option><option value="synthetic">Synthetic what-if</option></select></label>{simulation.mode === 'synthetic' ? <fieldset className="lite-rules-synthetic-facts"><legend>Supported hypothetical facts</legend>{[['confirmed','Action confirmed'],['revision_validated','Target revision validated'],['protected_server_host','Target is protected Server Host'],['assurance_recent','Recent passkey assurance']].map(([key,label]) => <label key={key}><input type="checkbox" checked={Boolean(simulation.scenario[key])} onChange={(event) => setSimulation((value) => ({ ...value, scenario: { ...value.scenario, [key]: event.target.checked } }))} /><span>{label}</span></label>)}</fieldset> : null}<LiteButton type="submit" disabled={Boolean(busy) || !simulation.revision_id}>{busy === 'simulation' ? 'Testing safely…' : 'Run simulation'}</LiteButton></form><SimulationResult result={simulationResult} /></>}
+          {!canSimulate ? <RoleUnavailable title="Simulation is not available to this role" description="This role can review current protection but cannot run a bounded policy simulation." /> : <><StateSurface tone="neutral" title="Simulation only — no live permission" description="This is a simulation. No real permission or system change is granted. Pocket Lab derives your context on the server or evaluates bounded hypothetical facts." /><form onSubmit={runSimulation} className="lite-rules-form-grid mt-4"><label><span>Rules revision</span><select value={simulation.revision_id} onChange={(event) => setSimulation((value) => ({ ...value, revision_id: event.target.value }))}>{(revisions.data?.revisions || []).map((revision) => <option key={revision.revision_id} value={revision.revision_id}>{revision.revision_id === activeRevision ? 'Active Rules' : `${revision.change_summary || 'Candidate'} · ${shortRevision(revision.revision_id)}`}</option>)}</select></label><label><span>Protected action</span><select value={simulation.action_id} onChange={(event) => setSimulation((value) => ({ ...value, action_id: event.target.value }))}>{(health.data?.registered_protected_actions || []).map((action) => <option key={action} value={action}>{getLiteRulesActionLabel(action) || action}</option>)}</select></label><label><span>Target reference</span><input required value={simulation.target_id} onChange={(event) => setSimulation((value) => ({ ...value, target_id: event.target.value }))} placeholder="device-or-app-id" /></label><label><span>Context</span><select value={simulation.mode} onChange={(event) => setSimulation((value) => ({ ...value, mode: event.target.value }))}><option value="real_derived">Real server-derived context</option><option value="synthetic">Synthetic what-if</option></select></label>{simulation.mode === 'synthetic' ? <fieldset className="lite-rules-synthetic-facts"><legend>Supported hypothetical facts</legend>{[['confirmed','Action confirmed'],['revision_validated','Target revision validated'],['protected_server_host','Target is protected Server Host'],['assurance_recent','Recent passkey assurance']].map(([key,label]) => <label key={key}><input type="checkbox" checked={Boolean(simulation.scenario[key])} onChange={(event) => setSimulation((value) => ({ ...value, scenario: { ...value.scenario, [key]: event.target.checked } }))} /><span>{label}</span></label>)}</fieldset> : null}<LiteButton type="submit" disabled={Boolean(busy) || enterpriseReadOnly || !simulation.revision_id}>{busy === 'simulation' ? 'Testing safely…' : 'Run simulation'}</LiteButton></form><SimulationResult result={simulationResult} /></>}
         </GlassCard>
       ) : null}
 
