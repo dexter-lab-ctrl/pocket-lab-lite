@@ -255,3 +255,26 @@ tasks:
     desc: Build the existing Lite Storybook including Azure Rules stories
     cmds:
       - npm run test:rules:azure:storybook
+
+  lite:test:azure:home:premium:unit:
+    desc: Authored Home navigation, activity presentation and shared geometry unit contracts
+    cmds:
+      - npm run test:azure:home:premium:unit
+
+  lite:test:azure:home:premium:mocked:
+    desc: Home light/dark/system panels, keyboard, desktop geometry, mobile, responsive, Axe mocked coverage
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:azure:home:premium:mocked
+
+  lite:test:azure:home:premium:visual:
+    desc: Compare Home panel screenshots only after owner review/approval of new baselines
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:azure:home:premium:visual
+
+  lite:test:azure:home:premium:perf:
+    desc: Capture premium Home interactions with PR 588 budgets unchanged
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:azure:home:premium:perf

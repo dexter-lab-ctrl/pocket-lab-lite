@@ -63,7 +63,10 @@ export function useDesktopManageGeometry({ open, defaultWidth = 560, minWidth = 
       setGeometry(null);
       return undefined;
     }
-    const media = window.matchMedia(MANAGE_DESKTOP_QUERY);
+    const media = window.matchMedia?.(MANAGE_DESKTOP_QUERY) || {
+      matches: window.innerWidth >= 701,
+      addEventListener: () => {}, removeEventListener: () => {},
+    };
     const apply = (matches) => {
       setDesktopPanel(matches);
       setGeometry((current) => matches ? clamp(current || defaultManageGeometry(options)) : null);

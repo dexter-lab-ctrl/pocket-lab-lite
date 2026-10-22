@@ -86,7 +86,7 @@ html[data-lite-theme] .lite-home-workspace-details,
 html[data-lite-theme] .lite-home-activity-details {color:var(--azure-text)}
 html[data-lite-theme] .lite-home-workspace-tabs {
   background:var(--azure-surface);box-shadow:0 1px 0 var(--azure-border);
-  margin:-.75rem -.75rem 0;padding:.75rem;backdrop-filter:none;
+  margin:0;padding:.75rem;backdrop-filter:none;
 }
 html[data-lite-theme] .lite-home-workspace-tabs[data-tabs-scrolled=true] {box-shadow:var(--azure-shadow)}
 html[data-lite-theme] .lite-home-details-nav button {

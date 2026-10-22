@@ -55,3 +55,8 @@ LITE_BASE_URL='<exact isolated candidate origin reachable by Android Chrome>' np
 These commands require the documented physical Android Chrome bridge and a candidate origin; they must not be replaced by a Dev-PC browser or a production deployment. CI must be rechecked against the exact final feature SHA after the final docs/contracts commit.
 
 **Rollback:** Before merge, close the Draft without changing main. After any separately authorized future merge, revert via a reviewable PR, without resetting production databases, deleting private review cursors or altering audit evidence.
+
+
+## Azure Horizon Home panel follow-up (PR #626 qualification)
+
+Workspace details and Recent activity now have a qualified Dev-PC implementation on `fix/azure-home-panel-premium-refinement`, with shared scroll navigation, semantic activity surfaces, Azure-scoped Daylight/Black styling and shared desktop move/resize. Unit, mocked browser, accessibility, Storybook and build gates pass after two source fixes. New visual snapshots remain **not approved**, the production synthetic-owner harness is disabled, and physical Android CDP attach is blocked. Exact-head CI passed; local and earlier PR #588/#589 evidence retains one documented pre-existing Devices performance residual. The definitive source map and evidence matrix are in [Azure Home panel refinement](lite-home-azure-panel-refinement.md). Treat the branch as **OPEN / DRAFT / NOT MERGED** while the visual, owner and Android evidence boundaries remain unresolved.

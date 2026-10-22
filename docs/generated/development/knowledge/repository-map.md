@@ -16,7 +16,7 @@ generator_version: 3
 
 > Need physical repository structure, execution ownership, Uses/Used-by, symbols, and bounded impact? Open the separate [Codebase Map](codebase-map.md). This Repository Map retains reverse source→Knowledge semantics.
 
-<div class="pl-repo-summary"><div><span>architecture</span><strong>1</strong><small>mapped sources</small></div><div><span>contracts</span><strong>21</strong><small>mapped sources</small></div><div><span>docs</span><strong>3</strong><small>mapped sources</small></div><div><span>pocket-lab-final-structure</span><strong>108</strong><small>mapped sources</small></div><div><span>runbooks</span><strong>5</strong><small>mapped sources</small></div><div><span>scripts</span><strong>7</strong><small>mapped sources</small></div><div><span>src</span><strong>23</strong><small>mapped sources</small></div><div><span>tasks</span><strong>1</strong><small>mapped sources</small></div><div><span>tests</span><strong>284</strong><small>mapped sources</small></div></div>
+<div class="pl-repo-summary"><div><span>architecture</span><strong>1</strong><small>mapped sources</small></div><div><span>contracts</span><strong>21</strong><small>mapped sources</small></div><div><span>docs</span><strong>3</strong><small>mapped sources</small></div><div><span>pocket-lab-final-structure</span><strong>108</strong><small>mapped sources</small></div><div><span>runbooks</span><strong>5</strong><small>mapped sources</small></div><div><span>scripts</span><strong>7</strong><small>mapped sources</small></div><div><span>src</span><strong>23</strong><small>mapped sources</small></div><div><span>tasks</span><strong>1</strong><small>mapped sources</small></div><div><span>tests</span><strong>287</strong><small>mapped sources</small></div></div>
 
 ## architecture
 
@@ -471,6 +471,9 @@ generator_version: 3
 <article class="pl-repository-card"><code>tests/e2e/lite-azure-horizon.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-azure-horizon.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-content-stress.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-content-stress.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-device-facts.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-device-facts.spec.ts</span></div></article>
+<article class="pl-repository-card"><code>tests/e2e/lite-home-panel-premium-performance.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-home-panel-premium-performance.spec.ts</span></div></article>
+<article class="pl-repository-card"><code>tests/e2e/lite-home-panel-premium-visual.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-home-panel-premium-visual.spec.ts</span></div></article>
+<article class="pl-repository-card"><code>tests/e2e/lite-home-panel-premium.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-home-panel-premium.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-identity-premium-refinement.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-identity-premium-refinement.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-identity-premium-visual.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-identity-premium-visual.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-live.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-live.spec.ts</span></div></article>

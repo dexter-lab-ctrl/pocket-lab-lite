@@ -4688,7 +4688,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 507,
+  "page_count": 508,
   "page_types": [
     "overview",
     "guide",
@@ -4886,6 +4886,29 @@
       "source_or_generator": "development/lite-azure-horizon-rules-refinement.md",
       "title": "Azure Horizon — Safety Rules refinement",
       "url": "/development/lite-azure-horizon-rules-refinement/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-home-azure-panel-refinement.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:development/lite-home-azure-panel-refinement",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-home-azure-panel-refinement.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-home-azure-panel-refinement.md",
+      "title": "Azure Horizon — Home Workspace and Recent Activity panel refinement",
+      "url": "/development/lite-home-azure-panel-refinement/"
     },
     {
       "additional_audiences": [],
@@ -18018,7 +18041,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "484c5a37aa5dc515e17f38a5f193720a9c2d839015f5a07c51266fcef4832f7f",
+  "source_fingerprint": "30b8634c1c8f2536c28f4d4347f34b6723650a9e7ca7cfd5191ae124f46cc337",
   "top_level": [
     "start-here",
     "use",

@@ -154,6 +154,12 @@ def _lite_catalog_source() -> str:
     return "".join(path.read_text() for path in paths if path.exists())
 
 
+def _lite_catalog_screen_source() -> str:
+    paths = [Path("src/lite/LiteCatalog.jsx")]
+    paths.extend(sorted(Path("src/lite/catalog").glob("*.jsx")))
+    return "".join(path.read_text() for path in paths if path.exists())
+
+
 @pytest.fixture(autouse=True)
 def isolate_lite_runtime_state_per_test(tmp_path):
     ensure_runtime_path()
@@ -351,7 +357,7 @@ def test_lite_catalog_ui_is_https_aware_and_server_owned():
     assert "Confirm remove" in _lite_catalog_source()
     assert "lite-catalog-access-card" in css
     assert "HeartPulse" in _lite_catalog_source()
-    assert "Clock3" not in _lite_catalog_source()
+    assert "Clock3" not in _lite_catalog_screen_source()
     assert "lite-catalog-status-badge" in ui
     assert "lite-catalog-trust-marker" not in ui
     assert "Self-hosted app" not in ui

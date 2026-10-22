@@ -1,0 +1,233 @@
+/* Azure Horizon Home panels: only semantic tokens from azureHorizonTokens.css.
+   Portal descendants are intentionally scoped; no additional theme engine. */
+html[data-lite-theme] .lite-home-panel-layer,
+html[data-lite-theme] .lite-home-panel-layer .lite-home-details-panel,
+html[data-lite-theme] .lite-home-panel-layer .lite-overlay-head,
+html[data-lite-theme] .lite-home-panel-layer .lite-home-panel-scroll {
+  background:var(--azure-surface);
+  color:var(--azure-text);
+  border-color:var(--azure-border);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-details-panel {
+  container: home-panel / inline-size;
+  min-width:0;
+  border:1px solid var(--azure-border);
+  box-shadow:var(--azure-panel-shadow);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-overlay-head {
+  align-items:center;
+  gap:.7rem;
+  padding:clamp(.85rem,2cqi,1.2rem);
+  border-bottom:1px solid var(--azure-border);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-overlay-head > div:first-child {flex:1;min-width:0}
+html[data-lite-theme] .lite-home-panel-layer .lite-overlay-head span {color:var(--azure-accent)}
+html[data-lite-theme] .lite-home-panel-layer .lite-overlay-head strong {
+  color:var(--azure-text);font-size:clamp(1.1rem,2.5cqi,1.35rem);font-weight:700;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-overlay-head p {
+  color:var(--azure-muted);font-size:.82rem;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-overlay-close {
+  display:grid;place-items:center;flex:none;border-radius:var(--azure-radius-control);
+  border:1px solid var(--azure-border);color:var(--azure-text);background:var(--azure-raised);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-panel-scroll {
+  padding:clamp(.85rem,2cqi,1.25rem);
+  padding-bottom:max(1.25rem,env(safe-area-inset-bottom));
+  scrollbar-color:var(--azure-strong-border) var(--azure-surface);
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+  scroll-behavior:auto;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workspace-details,
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-details {
+  display:grid;align-content:start;gap:1.1rem;min-width:0;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav {
+  position:sticky;inset-block-start:0;z-index:4;isolation:isolate;
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:.45rem;align-items:stretch;margin:0;
+  padding:.5rem;background:var(--azure-surface);
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+  box-shadow:var(--azure-shadow);
+  transition:transform 180ms ease,opacity 180ms ease;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav[data-tabs-hidden="true"]:not(:focus-within) {
+  transform:translate3d(0,calc(-100% - .75rem),0);opacity:0;pointer-events:none;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav:focus-within {
+  transform:none;opacity:1;pointer-events:auto;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav button {
+  min-width:0;min-height:44px;padding:.52rem .35rem;
+  background:var(--azure-raised);color:var(--azure-text);
+  border:1px solid var(--azure-border);border-radius:.7rem;
+  font-size:.81rem;font-weight:600;line-height:1.25;
+  white-space:normal;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav button[aria-current="page"] {
+  background:var(--azure-selected);color:var(--azure-accent);
+  border-color:var(--azure-accent);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav button:hover,
+html[data-lite-theme] .lite-home-panel-layer .lite-overlay-close:hover,
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-timeline button:hover,
+html[data-lite-theme] .lite-home-panel-layer .lite-home-personal-review button:hover {
+  background:var(--azure-hover);border-color:var(--azure-strong-border);
+}
+html[data-lite-theme] .lite-home-panel-layer :is(button,a,[tabindex]):focus-visible {
+  outline:3px solid var(--azure-focus);outline-offset:2px;
+}
+html[data-lite-theme] .lite-home-panel-layer button:disabled {
+  cursor:not-allowed;opacity:.72;background:var(--azure-neutral-subtle);
+  color:var(--azure-muted);border-color:var(--azure-border);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workspace-section {
+  min-width:0;display:grid;align-content:start;gap:.75rem;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-action-row {
+  display:flex;align-items:center;gap:.85rem;
+  background:var(--azure-surface);border:1px solid var(--azure-border);
+  padding:.9rem;border-radius:var(--azure-radius-control);
+  min-width:0;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-action-row.is-attention {
+  background:var(--azure-warning-subtle);border-color:var(--azure-warning);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-action-row strong {color:var(--azure-text)}
+html[data-lite-theme] .lite-home-panel-layer .lite-action-row :is(p,small) {color:var(--azure-muted)}
+html[data-lite-theme] .lite-home-panel-layer .lite-action-row-trailing {
+  flex-wrap:wrap;justify-content:flex-end;min-width:0;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-action-row-trailing > span {
+  color:var(--azure-text);overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-content {
+  display:grid;align-content:start;gap:1rem;min-width:0;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-counts {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem;margin:0;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-counts > div {
+  display:grid;gap:.35rem;min-width:0;margin:0;
+  padding:1rem;background:var(--azure-raised);
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-counts dt {
+  color:var(--azure-muted);opacity:1;font-size:.79rem;line-height:1.4;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-counts dd {
+  margin:0;color:var(--azure-text);font-size:clamp(1.2rem,3cqi,1.65rem);
+  font-variant-numeric:tabular-nums;font-weight:700;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-notice {
+  display:flex;align-items:flex-start;gap:.85rem;padding:.9rem 1rem;min-width:0;
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+  background:var(--azure-accent-subtle);color:var(--azure-text);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-notice.is-warning {
+  background:var(--azure-warning-subtle);border-color:var(--azure-warning);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-notice > svg {flex:none;margin-top:.1rem;color:var(--azure-info)}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-notice.is-warning > svg {color:var(--azure-warning)}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-notice > div {min-width:0}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-notice strong {display:block;color:var(--azure-text);font-size:.87rem}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-notice p {
+  margin:.25rem 0 0;color:var(--azure-neutral);font-size:.82rem;line-height:1.55;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-timeline {
+  list-style:none;margin:0;padding:0;display:grid;gap:.6rem;min-width:0;
+  max-height:none;overflow:visible;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-timeline > li {
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  padding:.9rem;background:var(--azure-surface);border:1px solid var(--azure-border);
+  border-radius:var(--azure-radius-control);min-width:0;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-event-copy {
+  display:grid;align-content:start;gap:.25rem;min-width:0;flex:1;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-event-copy strong {
+  color:var(--azure-text);font-weight:700;text-transform:none;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-event-copy > span:not(.lite-home-activity-time) {
+  color:var(--azure-muted);text-transform:none;font-size:.84rem;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-time {
+  display:block;min-width:0;color:var(--azure-muted);font-size:.78rem;
+  font-variant-numeric:tabular-nums;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-timeline button,
+html[data-lite-theme] .lite-home-panel-layer .lite-home-personal-review > button {
+  min-height:44px;max-width:100%;flex:none;padding:.55rem .85rem;
+  background:var(--azure-raised);color:var(--azure-text);
+  border:1px solid var(--azure-strong-border);border-radius:.7rem;
+  font-size:.82rem;font-weight:650;white-space:normal;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-home-panel-layer .pocket-state-surface.lite-home-activity-state {
+  display:flex;align-items:flex-start;gap:.85rem;padding:1rem;
+  background:var(--azure-raised);color:var(--azure-text);
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-state :is(.pocket-state-title,.pocket-state-description) {
+  color:var(--azure-text);opacity:1;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-state .pocket-state-description {
+  color:var(--azure-muted);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-personal-review {
+  display:grid;gap:.75rem;margin:0;padding:1rem;min-width:0;
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-card);
+  background:var(--azure-raised);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-review-heading {
+  display:flex;gap:.65rem;align-items:flex-start;min-width:0;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-review-heading > svg {color:var(--azure-info);flex:none}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-review-heading h3 {margin:0;color:var(--azure-text);font-size:1rem;font-weight:700}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-review-heading p {margin:.2rem 0;color:var(--azure-muted);font-size:.8rem}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-personal-review > p {margin:0;color:var(--azure-muted);font-size:.84rem;line-height:1.55}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-review-changed {
+  padding:.7rem;border:1px solid var(--azure-warning);
+  border-radius:.7rem;background:var(--azure-warning-subtle);color:var(--azure-text);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-desktop-panel-tools {
+  display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;max-width:100%;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-desktop-panel-tools button {
+  display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
+  min-width:44px;min-height:44px;padding:.35rem .5rem;
+  background:var(--azure-raised);color:var(--azure-text);
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+  cursor:grab;touch-action:none;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-desktop-panel-tools button:active {cursor:grabbing}
+html[data-lite-theme] .lite-home-panel-layer .lite-overlay-grip {background:var(--azure-surface);color:var(--azure-muted)}
+@media(min-width:701px) {
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-details-panel.is-movable {
+    position:absolute;min-height:0;max-height:none;max-width:none;
+    border-radius:var(--azure-radius-card);overflow:hidden;
+  }
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-details-panel.is-movable .lite-overlay-grip {display:none}
+}
+@container home-panel (max-width:520px) {
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-workspace-section .lite-action-row {
+    flex-direction:column;align-items:stretch;
+  }
+  html[data-lite-theme] .lite-home-panel-layer .lite-action-row-trailing {
+    width:100%;justify-content:space-between;align-items:center;
+  }
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-timeline > li {
+    flex-direction:column;align-items:stretch;
+  }
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-timeline button {align-self:start}
+}
+@container home-panel (max-width:310px) {
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-counts {grid-template-columns:minmax(0,1fr)}
+}
+@media(prefers-reduced-motion:reduce) {
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav {transition:none}
+}
