@@ -1,13 +1,13 @@
 # Azure Horizon — Identity & Access (stabilization and qualification record)
 
 > [!IMPORTANT]
-> **SOURCE STABILIZED / PARTIALLY QUALIFIED.** The Dev-PC implementation, approved visual references, mocked browser matrix, Storybook, accessibility, geometry and Identity performance gates are verified at the candidate SHA recorded below. Physical Android CDP and privileged live authentication remain blocked or intentionally unexecuted. PR #624 must remain OPEN, DRAFT and NOT MERGED.
+> **SOURCE STABILIZED / NOT MERGE READY.** The Dev-PC implementation, approved visual references, mocked browser matrix, Storybook, accessibility, geometry and Identity performance gates remain verified. The final targeted pass also proved the exact candidate on physical Android and recovered the live mobile matrix to 4/4, but the full physical Android qualifier still fails broad renderer budgets and cannot exercise the Owner-gated Identity Manage surface on the production-main runtime. PR #624 must remain OPEN, DRAFT and NOT MERGED.
 
 ## 1. Objective and current baseline
 
 The source-of-truth baseline is remote `main` at `424d8337f5b16a9a1a3d8b36117cc1543dbbf9c4` (squash integration of [PR #623](https://github.com/dexter-lab-ctrl/pocket-lab-lite/pull/623)). It already includes the Identity profile projection, Owner setup, WebAuthn/passkey flows, sign-in, recovery, sessions, protected confirmations, Owner operations, trusted clients, Enterprise People and Roles, and active/saved-state semantics. This PR is a presentation and regression-coverage change, not a new identity service.
 
-The stabilization candidate was qualified from `feat/azure-horizon-identity-access-ui` at `6e5b10c3e031025de9c98603295fc783558424f1`. The preceding source-fix commits were `62f043c18b2af5284ca2b36be9b10bb40745e433` and `55f67beaa8e82c7ca6245923d9c3a25eeb754f38`; the final live-test expectation correction is `6e5b10c3e031025de9c98603295fc783558424f1`. The feature branch was synchronized with its remote before this record was written.
+The prior stabilized candidate was `5b59ca14398cef8f4b5baf12b441f90891356c44`. This targeted final pass added commit `41c1485fca3fd728ef4f0dd3c587e161601718aa`, which corrects Black Recovery Manage portal inheritance and adds a regression contract. The feature branch is synchronized with its remote at `41c1485fca3fd728ef4f0dd3c587e161601718aa`; this is the exact candidate SHA used for the rerun physical Android build.
 
 The goal is a premium, account-first Identity screen without changing FastAPI authority or inventing account facts.
 
@@ -23,7 +23,7 @@ Reuse [PR #606](https://github.com/dexter-lab-ctrl/pocket-lab-lite/pull/606) `Pa
 
 ## 3. Theme ownership and dark-surface completeness
 
-Reuse [PR #622](https://github.com/dexter-lab-ctrl/pocket-lab-lite/pull/622) `src/lite/theme/azureHorizonTokens.css` and `azureHorizon.css`: the root `data-lite-theme` resolves Black, Daylight, and System preferences. `identityPremium.css` now uses attribute-root selectors instead of Daylight-only skin rules and consumes `--azure-*` semantic surface, border, text, muted, input, status, focus, and backdrop tokens. The body-mounted `LiteOverlayRoot` remains under the same root attribute, including Manage, Details, nested confirmation, settings forms and one-time code containers. `color-scheme` follows the root and browser-native controls. Visual and measured contrast completeness require deferred qualification.
+Reuse [PR #622](https://github.com/dexter-lab-ctrl/pocket-lab-lite/pull/622) `src/lite/theme/azureHorizonTokens.css` and `azureHorizon.css`: the root `data-lite-theme` resolves Black, Daylight, and System preferences. `identityPremium.css` now uses attribute-root selectors instead of Daylight-only skin rules and consumes `--azure-*` semantic surface, border, text, muted, input, status, focus, and backdrop tokens. During physical Android review, the shared catalog Manage primitive was found to leak a hard-coded Daylight background into Recovery Black; `azureHorizon.css` now scopes a complete Black Recovery Manage skin and responsive section layout, with a focused computed-style regression. The body-mounted `LiteOverlayRoot` remains under the same root attribute, including Manage, Details, nested confirmation, settings forms and one-time code containers. `color-scheme` follows the root and browser-native controls.
 
 ## 4. Personal desktop arrangement
 
@@ -109,7 +109,7 @@ npm run build
 task lite:check
 ```
 
-The focused results at `6e5b10c3e031025de9c98603295fc783558424f1` were:
+The previously completed focused results at `6e5b10c3e031025de9c98603295fc783558424f1` remain applicable because the final source fix is scoped to the Recovery Black portal; the new targeted and exact-candidate results are:
 
 | Gate | Result |
 | --- | --- |
@@ -117,6 +117,9 @@ The focused results at `6e5b10c3e031025de9c98603295fc783558424f1` were:
 | `npm run test:identity:azure:unit` | PASS — 32/32 |
 | `npm run test:identity:premium:mocked` | PASS — 46/46 |
 | `npm run test:identity:azure:mocked` | PASS — 116/116 |
+| `npm run test:identity:azure:mocked` at `41c1485fca3fd728ef4f0dd3c587e161601718aa` | PASS — 116/116 |
+| Black Recovery Manage computed-style regression at `41c1485fca3fd728ef4f0dd3c587e161601718aa` | PASS — 1/1 mocked-mobile |
+| Recovery Manage visual overlays at `41c1485fca3fd728ef4f0dd3c587e161601718aa` | PASS — 2/2 daylight desktop/mobile baselines |
 | `npm run test:identity:azure:geometry` | PASS — 20/20 |
 | `npm run test:apps:azure:geometry` | PASS — 40/40 |
 | `npm run test:identity:azure:a11y` | PASS — 8/8 |
@@ -128,7 +131,7 @@ The focused results at `6e5b10c3e031025de9c98603295fc783558424f1` were:
 | `npm run test:mock-regression` | PASS — all constituent suites passed; intentional skips retained |
 | `POCKETLAB_BUILD_ID=<candidate> POCKETLAB_UI_PERF_CANDIDATE=1 npm run build` | PASS — Vite 6.4.3, exact SHA marker present |
 
-The broad `npm run test:perf` gate remains FAIL for three pre-existing, non-Identity Apps/Devices measurements: two Devices nested-details React commit p95 samples and one mobile Home-to-Devices transition. The Identity-specific performance gate passed, thresholds were not changed, and no unrelated Apps/Devices source was altered. Repository-wide `npm run lint` is not runnable because no ESLint configuration exists; `npm run format:check` reports existing repository-wide formatting/parser failures, including `docs/generated/schemaspy/anomalies.html`. These are recorded as repository-gate limitations, not hidden.
+The broad `npm run test:perf` gate remains FAIL for three pre-existing or variable, non-Identity Apps/Devices measurements. Controlled main-vs-feature targeted runs used the same Node 24.16.0, browser and single-worker process: Devices desktop React commit p95 was 25.6/24.6 ms on main and 26.2/26.2/26.2 ms on the feature; Devices mobile was 24.7 ms then a pass on main and 24.2/26.3/25.6 ms on the feature; Home-to-Devices passed the main targeted runs and measured 15.1/15.9 ms on the feature, with one unrelated cross-tab long-animation outlier. These are classified PRE-EXISTING/VARIABLE, not a stable PR regression. Thresholds were not changed, and no unrelated Apps/Devices source was altered. Repository-wide `npm run lint` is not runnable because no ESLint configuration exists; `npm run format:check` reports existing repository-wide formatting/parser failures, including `docs/generated/schemaspy/anomalies.html`. These are recorded as repository-gate limitations, not hidden.
 
 The documentation platform's generated contracts, screenshots and navigation indexes are regenerated only after source/runtime qualification, as required by the execution runbook.
 
@@ -136,11 +139,13 @@ The documentation platform's generated contracts, screenshots and navigation ind
 
 **VERIFIED on Dev-PC:** source build, mocked browser behavior, approved Black/Daylight references, accessibility assertions, geometry, Storybook and Identity performance. The matrix covers 320/360/375/390/430/768/1024/1280/1440 layouts where defined, 200% text, protected confirmations, Enterprise state projections and portal-mounted sheets.
 
-**BLOCKED or intentionally limited:** physical Android CDP could not start because the Windows CDP bridge was unavailable (`npm run check:perf:android-cdp` exited 1: `curl: (28) Connection timed out ... 172.19.0.1:19222`; the supported PowerShell preparation exited 1 because it requires an elevated PowerShell window). Live read-only candidate UI reached the Server Phone through the repository-owned loopback tunnel: the first run passed 3/8 and the retry passed 6/8, but mobile read-heavy capture/recovery encountered repeated candidate-proxy 502 responses/timeouts. A bounded endpoint retry returned 200 for status, release, identity, recovery summary and security freshness, and the unauthenticated Enterprise access response was the expected 401. This is runtime-load evidence, not a claim of authenticated production qualification.
+**FINAL TARGETED PASS — NOT MERGE READY:** the standard repository PowerShell CDP preparation was launched through UAC and exited 0. `npm run check:perf:android-cdp` then passed: Android Chrome `Chrome/156.0.8078.47`, CDP 1.3, Playwright attach, contexts/pages and device smoke were verified. The exact candidate build at `41c1485fca3fd728ef4f0dd3c587e161601718aa` rendered on the physical Android device; candidate manifest, response header and DOM provenance matched that SHA. The full physical qualifier still exited 1: broad screen/navigation/Manage samples exceeded the existing renderer gate, the production-main runtime did not expose Owner-gated Identity Manage, and the read-only Home refresh-progress analogue timed out at the existing qualifier probe. The rerun Recovery Manage screenshot is now correctly Black-themed and readable after the targeted CSS fix. No screenshot contained recovery codes or other secrets.
+
+Live read-only candidate UI reached the Server Phone through the repository-owned loopback tunnel. The two formerly failing mobile cases were rerun individually and then in the complete live-mobile project: **4/4 PASS** on the exact pre-fix candidate `5b59ca14398cef8f4b5baf12b441f90891356c44`. The earlier repeated candidate-proxy 502 responses/timeouts did not reproduce under bounded stable reruns and are classified as transient tunnel/runtime instability, not allowlisted application success. The expected unauthenticated `/api/lite/enterprise/access` boundary remains 401; no unexpected 502 was accepted. This is read-only runtime evidence, not authenticated production qualification.
 
 Privileged authentication and protected-operation execution were not run against the production phone. The isolated Dev-PC harness/backend tests passed 87 tests and the Identity/Enterprise backend contract tests passed 34 tests. The phone harness remained disabled with zero active sessions and zero principals; the Dev-PC harness could not start because no local qualification API was running. No production Owner credential, auth bypass, browser-held secret or synthetic principal was used.
 
-The follow-up stabilization sequence has now run source build/unit first, mocked state/auth/geometry, Axe/contrast, human-approved visual references, the existing PR #588 performance gates, docs and full repository gates. Live/physical qualification remains bounded by the documented authorization and environment limits. Exact-head GitHub Actions run [#980](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/39681013870) passed all three jobs against branch tip `5284692b6417a19407e1855ba88a5dbe6ddbc349`.
+The follow-up stabilization sequence has now run source build/unit first, mocked state/auth/geometry, Axe/contrast, human-approved visual references, the existing PR #588 performance gates, docs and full repository gates. Live/physical qualification remains bounded by the documented authorization and environment limits. Exact-head CI for the final documentation commit is recorded in section 29 after the documentation update; the earlier green run at `5b59ca14398cef8f4b5baf12b441f90891356c44` is historical evidence only.
 
 ## 21. Rollback and future cross-tab consistency
 
@@ -176,7 +181,7 @@ All new `toHaveScreenshot` scenarios now have reviewed PNG references. Human app
 
 ## 29. CI and generated documentation
 
-CI was inspected against the final pushed SHA after the documentation gate. Exact-head run [#980](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/39681013870) passed `isolated-devpc-qualification`, `quick-and-docs` and `ui-performance-qualification` at `5284692b6417a19407e1855ba88a5dbe6ddbc349`. Generated docs, navigation metadata and contracts are assessed and refreshed after source stabilization, with source truth preserved. Historical pre-stabilization run `39644380456` is not evidence for the final SHA: its isolated-devpc job passed, while its UI-performance and quick-and-docs jobs failed.
+The last completed matching CI run before the targeted Recovery Black fix was [#981](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/39687848857), passing `isolated-devpc-qualification`, `quick-and-docs` and `ui-performance-qualification` at `5b59ca14398cef8f4b5baf12b441f90891356c44`. That run is historical evidence only: the Recovery Black fix at `41c1485fca3fd728ef4f0dd3c587e161601718aa` was validated locally and the final documentation commit is pending its own exact-head CI. The final exact-head result will be recorded in the PR report; no green CI is claimed here for a post-#981 SHA. Generated docs, navigation metadata and contracts were regenerated after source/runtime qualification, with source truth preserved. Historical pre-stabilization run `39644380456` is not evidence for the final candidate: its isolated-devpc job passed, while its UI-performance and quick-and-docs jobs failed.
 
 ## 30. Safety gaps and deferred evidence
 
@@ -184,7 +189,7 @@ CI was inspected against the final pushed SHA after the documentation gate. Exac
 
 ## 31. Final disposition
 
-This is an OPEN DRAFT stabilized candidate, not a qualified production release. No merge, tag, `dist.zip`, deployment, or Server Phone change is authorized. The remaining physical Android and sustained live mobile read-load limitations must remain visible in PR #624.
+**NOT MERGE READY.** The Black Recovery portal defect found during physical review is fixed and verified on the exact candidate. Live mobile is 4/4 and the three broad Apps/Devices performance concerns are PRE-EXISTING/VARIABLE rather than a stable PR regression. The remaining blocker is the failed full physical Android qualification: the renderer gate is not green across the requested matrix, and production-main does not expose the Owner-gated Identity Manage surface needed for protected Identity coverage. No merge, tag, `dist.zip`, deployment, or Server Phone change is authorized. PR #624 remains OPEN, DRAFT and NOT MERGED.
 
 ## 32. Security and runtime preservation record
 
