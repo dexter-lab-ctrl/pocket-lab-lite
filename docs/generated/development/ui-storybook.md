@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 380c465c4c8893456fcabcf7d10fb24a1c5f6cab5c00b0db304ee55089525bde
+source_fingerprint: 63c579741418ae51609e4f9f0da48fdb86ed9c59aac6ac47b9175a2f73498388
 schema_revision: 1
 validation_status: generated
 ---
@@ -380,6 +380,17 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 - `ProtectionJourneyExpanded`
 - `DecisionInsightOpen`
 - `ContextHelpOpen`
+- `AzureRulesBlack`
+- `AzureRulesDaylight`
+- `AzureRulesSystem`
+- `AzureRulesVerticalJourney`
+- `AzureRulesEnterprisePolicies`
+- `AzureRulesDecisionInsight`
+- `AzureRulesManageDesktop`
+- `AzureRulesManageMobile`
+- `AzureRulesSimulation`
+- `AzureRulesTemporaryAccess`
+- `AzureRulesReviewRequests`
 
 ## LiteSecurity
 
