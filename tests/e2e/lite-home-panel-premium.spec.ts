@@ -127,11 +127,11 @@ for (const kind of ['workspace','activity'] as const) {
       const colors = await dialog.evaluate((element, panelKind) => {
         const selectors = ['.lite-overlay-head', '.lite-home-panel-scroll', '.lite-home-details-nav',
           '.lite-home-details-nav button', panelKind === 'workspace' ? '.lite-action-row' : '.lite-home-activity-counts > div'];
-        return selectors.map((selector) => {
+        return selectors.flatMap((selector) => {
           const node = element.querySelector(selector);
-          return node ? { selector, background: getComputedStyle(node).backgroundColor,
-            color: getComputedStyle(node).color } : null;
-        }).filter(Boolean);
+          return node ? [{ selector, background: getComputedStyle(node).backgroundColor,
+            color: getComputedStyle(node).color }] : [];
+        });
       }, kind);
       expect(colors.length).toBeGreaterThan(3);
       for (const color of colors) {
