@@ -57,6 +57,6 @@ These commands require the documented physical Android Chrome bridge and a candi
 **Rollback:** Before merge, close the Draft without changing main. After any separately authorized future merge, revert via a reviewable PR, without resetting production databases, deleting private review cursors or altering audit evidence.
 
 
-## Azure Horizon Home panel follow-up (source-only, validation deferred)
+## Azure Horizon Home panel follow-up (PR #626 qualification)
 
-Workspace details and Recent activity now have a planned premium refinement on `fix/azure-home-panel-premium-refinement`, with shared scroll navigation, semantic activity surfaces, Azure-scoped Daylight/Black styling and shared desktop move/resize. Its new tests are authored but were **not run**, and new visual snapshots were **not captured or approved**. The definitive implementation/source mapping and next-session qualification checklist are in [Azure Home panel refinement](lite-home-azure-panel-refinement.md). Treat the branch as a draft candidate until separately qualified.
+Workspace details and Recent activity now have a qualified Dev-PC implementation on `fix/azure-home-panel-premium-refinement`, with shared scroll navigation, semantic activity surfaces, Azure-scoped Daylight/Black styling and shared desktop move/resize. Unit, mocked browser, accessibility, Storybook and build gates pass after two source fixes. New visual snapshots remain **not approved**, the production synthetic-owner harness is disabled, and physical Android CDP attach is blocked. The definitive source map and evidence matrix are in [Azure Home panel refinement](lite-home-azure-panel-refinement.md). Treat the branch as **OPEN / DRAFT / NOT MERGED** until those residual gates and exact-head CI are resolved.

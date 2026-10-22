@@ -1,13 +1,13 @@
 # Azure Horizon — Home Workspace and Recent Activity panel refinement
 
-> **IMPLEMENTATION PROVIDED — VALIDATION DEFERRED BY USER INSTRUCTION.**
+> **IMPLEMENTATION PROVIDED — PR #626 QUALIFICATION RECORDED BELOW.**
 >
 > Source branch: `fix/azure-home-panel-premium-refinement`  
 > Exact source base: `0ee498bd8f9f22ca7d670bcefa7a814e683cf02a` on `main`  
 > Implementation scope: P0 theme/layout/scroll navigation and P1 Activity presentation, responsive geometry, accessibility and authored regression coverage.  
-> **No tests, builds, browser exercises, visual baselines, accessibility tools, performance samplers, documentation generators, CI investigations or Server Phone qualification were executed.**
+> This page began as the source-only handoff. The PR #626 qualification addendum below records the current Dev-PC, runtime-reference, Android transport and documentation evidence without treating blocked or pending gates as passes.
 >
-> This is a source implementation record, not proof that any behavior passes qualification. The PR remains **DRAFT / NOT MERGED** pending a separate exact-head qualification session.
+> The PR remains **DRAFT / NOT MERGED**. The addendum is exact-head evidence for the current session; visual baseline approval, synthetic-owner access, physical Android rendering and final CI remain separate dispositions.
 
 ## 1. Design objective and baseline defects
 
@@ -126,9 +126,9 @@ Inherited `LiteSheet` semantics: `role="dialog"`, `aria-modal`, title label, Esc
 
 No performance contract changes were made. Tests are designed to use PR #588's existing sampler, budget assertion and report writer, and still need real device measurements for CPU/thermal/memory/smoothness.
 
-## 10. Authored-only regression inventory
+## 10. Regression inventory and execution status
 
-| Category | Repository source | Intention — NOT EXECUTED |
+| Category | Repository source | Coverage / current status |
 |---|---|---|
 | UI navigation state/hook | `src/lite/hooks/useLitePanelSectionNavigation.test.jsx` | Threshold, direction, focus, scroll cleanup |
 | Activity component | `src/lite/components/HomeActivityDetailsPremium.test.jsx` | KPIs, window, timeline, errors, empty, private review |
@@ -137,15 +137,15 @@ No performance contract changes were made. Tests are designed to use PR #588's e
 | Shared desktop geometry | `src/lite/catalog/useDesktopManageGeometry.test.jsx` | Existing move/resize/clamp/keyboard hook regressions |
 | Storybook | `src/lite/LiteHome.stories.jsx` | Daylight/Black/System, desktop/mobile, Activity sections, empty/saved/unavailable, long text, motion, moved/resized |
 | Playwright mocked/Axe | `tests/e2e/lite-home-panel-premium.spec.ts` | Responsive themes, 320–1440 widths, 200% text, keyboard, bounds, focus, semantic dark styling |
-| Visual definitions | `tests/e2e/lite-home-panel-premium-visual.spec.ts` | New screenshot names for panel/theme/state/width; **NO PNG generated** |
+| Visual definitions | `tests/e2e/lite-home-panel-premium-visual.spec.ts` | New screenshot names for panel/theme/state/width; candidate PNGs were captured locally but remain **BASELINE APPROVAL PENDING** |
 | Performance definitions | `tests/e2e/lite-home-panel-premium-performance.spec.ts` | Home open/close, tabs, scroll, theme/geometry with unchanged PR #588 thresholds |
 | Qualification task integration | `package.json`, `tasks/Taskfile.ui.yml` | Four Home-specific unit/mock/visual/performance entry points |
 
 No new backend endpoints, NATS subjects, operations, authz policies, manifest entries or dependencies were added.
 
-## 11. Follow-on Dev-PC qualification — commands to EXECUTE LATER, not now
+## 11. Qualification command record
 
-Resolve the future PR's exact HEAD and run these on a properly provisioned Windows/WSL2 or Linux development environment, with expected build dependencies and isolated mocks. Inspect current task names before execution.
+The current feature head was resolved before execution. The following commands were run on the Dev-PC with Node 24.16.0 and repository-owned mocked/browser harnesses. Counts and dispositions are summarized in the qualification addendum below.
 
 ```bash
 git fetch origin
@@ -167,13 +167,13 @@ task lite:docs:check
 task lite:check
 ```
 
-After **explicit owner approval of newly captured images**, run `npm run test:azure:home:premium:visual` and compare baseline changes to the merged PR #622/Home canonical snapshots. Do not silently update existing visuals. Review genuine contrast ratios and AXE WCAG A/AA violations for Light/Black/System, narrow devices and PWA. Independently review System open-panel theme changes and focus-return.
+`npm run test:azure:home:premium:visual` captured 40 candidate screenshots but correctly failed because no approved PNG baselines exist. `npm run test:azure:visual` passed 14 existing visual cases and reported 8 canonical detail mismatches (expected 700px baseline versus current 812px mobile sheet and corresponding desktop layout differences). No canonical snapshot was replaced.
 
 For Android CDP, use the existing PR #588/#589 local candidate workflow: exact HEAD, loopback-only Vite and same-origin safe API, ADB reverse/forward, transport gates, permissioned synthetic-owner harness only if read access needs it, candidate identification evidence, CPU/long task/LoAF/frame sampling, capture/readability and reset/cleanup. Do not deploy candidate to production Phone or submit destructive operations merely to qualify Home.
 
-Only after the Dev-PC build/tests/visual approvals/docs and isolated Android qualification should an operator investigate automatically triggered exact-head CI, record its provenance, assess residual performance target misses, and decide whether the PR is mergeable.
+Final docs generation follows the functional and device attempts. Exact-head CI and merge disposition remain pending after the final push; this PR stays draft.
 
-## 12. Known unvalidated risks and recovery
+## 12. Residual risks and recovery
 
 - Complex legacy `index.css` selectors may still override a Home descendant despite the scoped tokens. Inspect computed styles and screenshots; do not globally suppress selectors with `!important`.
 - `LiteSheet`'s legacy portal theme class observation is shared and must be smoke-tested in existing Apps/Devices/Identity/Security/Rules/Recovery overlays during System appearance changes.
@@ -181,9 +181,27 @@ Only after the Dev-PC build/tests/visual approvals/docs and isolated Android qua
 - The new scroll nav uses transform/opacity while retaining sticky layout context; visually qualify tab-card spacing, click/focus reachability and nested scroll.
 - New snapshot names require approved baseline capture and cannot be interpreted as passing.
 - Storybook fixture availability for specific unavailable/empty cases must be verified; no mocked backend behavior is invented by the component.
-- Unit/component, lint/typecheck, Playwright, Axe, performance and docs source compilation remain **unvalidated**.
-- Physical Android Termux/ARM64, installed PWA/Safari, remote Tailnet, server phone processes and real per-user history are not tested in this implementation session.
+- Unit/component, Playwright, Axe, Storybook, build and mocked performance checks are **VERIFIED** on the feature worktree. The repository lint gate is an **ENVIRONMENT ISSUE** (no ESLint configuration); the package typecheck is non-enforcing because it masks the missing `tsconfig.json`.
+- Physical Android rendering is **UNVALIDATED**: the repository bridge reached Chrome 156 after the approved elevated setup, but Playwright CDP attach timed out. No candidate was deployed to the Server Phone.
 
 Rollback is a feature-branch revert of the affected commits (never force-reset `main`); the existing merged Home panels remain available in `main` until explicit authorization and qualification. Do not strip safe state or audit evidence to restore a display.
 
 **Merge disposition: OPEN — DRAFT — NOT MERGED — NOT AUTHORIZED FOR MERGE.**
+
+## 13. PR #626 qualification addendum — 2026-10-22
+
+| Evidence area | Result | Detail |
+|---|---|---|
+| Source provenance | **VERIFIED** | Feature `0c7b2d64a7104e7831f8d28f7d88469bc446e335` was compared with `main` `0ee498bd8f9f22ca7d670bcefa7a814e683cf02a`; the worktree was clean before edits. |
+| Targeted/unit coverage | **FIXED / VERIFIED** | 5 files / 35 Home premium unit tests, plus Home/Apps/Identity/Rules unit suites passed. |
+| Mocked Home | **VERIFIED** | Premium suite 56/56; full mocked contract 52 passed and 10 intentionally skipped. |
+| Shared tab regression | **FIXED / VERIFIED** | Pointer scroll no longer leaves the focused tab strip permanently visible; existing desktop/mobile navigation cases pass. |
+| Activity truthfulness | **FIXED / VERIFIED** | History keeps the private review status visible when activity data is unavailable; the established `Completed recently` wording is preserved. |
+| Accessibility | **VERIFIED** | Home/Axe and state suites pass; the Light activity notice contrast token was corrected to meet the WCAG threshold. |
+| Storybook/build | **VERIFIED** | Storybook interaction checks, Vite build and bundle budget pass. |
+| Visual baselines | **UNVALIDATED** | New premium images require owner approval. Existing canonical detail snapshots report 8 intentional-size/layout mismatches; no baseline was silently updated. |
+| Performance | **PARTIAL / INCONCLUSIVE** | PR #588 thresholds remain unchanged. Home-specific runs are mostly within budget; one desktop section-switch LoAF sample is non-repeatable against the preserved exact-source reference. Full mocked evidence has 2 unrelated Devices React commit hard-gate failures and residual target misses. |
+| Server Phone | **VERIFIED reference only** | Checkout remained clean `main` at `0ee498bd8f9f22ca7d670bcefa7a814e683cf02a`; PM2 and health/readiness were read-only inspected. |
+| Synthetic owner | **UNVALIDATED** | Production harness reports disabled, zero sessions and no qualification-owner profile; no access bypass was attempted. |
+| Physical Android | **BLOCKED / UNVALIDATED** | Windows ADB/CDP bridge reached Chrome, then Playwright attach timed out. Temporary forwarding was cleaned up and no production frontend was replaced. |
+| Docs/contracts | **VERIFIED** | Canonical generation completed after source, mocked, performance and device attempts; `task lite:docs:check` and the final `task lite:check` passed against the resulting projections. |

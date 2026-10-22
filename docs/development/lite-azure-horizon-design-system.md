@@ -1,8 +1,8 @@
 # Azure Horizon — Lite appearance and premium Home
 
-> **IMPLEMENTATION PROVIDED — VALIDATION DEFERRED BY USER INSTRUCTION.**
+> **IMPLEMENTATION PROVIDED — QUALIFICATION STATUS RECORDED IN THE CURRENT PR #626 ADDENDUM.**
 >
-> This document describes source supplied on `feat/azure-horizon-home-ui`. Neither correctness nor contrast, responsiveness, baseline approval, performance or Android readiness has been qualified. **DRAFT — DO NOT MERGE.**
+> This document retains the design-system source contract. Current PR #626 evidence is split into verified mocked/accessibility/build results, pending visual approval, performance attribution and an Android CDP attach blocker. **DRAFT — DO NOT MERGE.**
 
 ## 1. Design goals and scope
 
@@ -132,7 +132,7 @@ No new animation library, runtime polling, backend fetch, heavy blur, remote fon
 
 Historical CSS remains large. Later increments should remove legacy overrides only where superseded and qualified; do not bulk-delete or regenerate. Use `html[data-lite-theme]` for theme-dependent rules, `--azure-*` for colors and shared primitives for interaction semantics. Cross-tab priority: Apps → Devices → Security → Identity & Access → Rules → Recovery, each as separate reviewed UI work, without disturbing their existing operational workflows.
 
-## 18. Tests authored but not run
+## 18. Authored coverage and current execution
 
 | Source | Intended coverage |
 |---|---|
@@ -141,12 +141,12 @@ Historical CSS remains large. Later increments should remove legacy overrides on
 | `LiteHomeAzure.test.jsx` and existing Home tests | four tiles, on-demand activity, Details sections, saved-state honesty |
 | `LiteAzureHorizon.stories.jsx` | Daylight/Black, desktop/mobile, attention/saved/offline, Details, long text |
 | `lite-azure-horizon.spec.ts` | responsive widths, theme persistence, OS changes, Axe, focus, activity, overflow, 200% text |
-| `lite-azure-horizon-visual.spec.ts` | visual contracts (not approved) |
+| `lite-azure-horizon-visual.spec.ts` | canonical visual contracts; 14 existing cases pass and 8 detail baselines mismatch the current panel geometry |
 | `lite-azure-horizon-performance.spec.ts` | PR #588 instrumented theme-switch and Details-open interactions |
 
-## 19. Future validation commands — NOT RUN
+## 19. Qualification command reference
 
-In a separately authorized stabilization session, inspect exact branch and commit provenance, then run **in order**:
+The PR #626 session inspected exact branch provenance and ran the focused and shared mocked/accessibility suites, Storybook, build and performance commands. Keep this list as the repeatable command reference for future exact-head checks:
 
 ```bash
 npm run test:azure:unit
@@ -161,31 +161,31 @@ npm run test:mock-regression
 task lite:check
 ```
 
-After individual baseline capture and **human approval**, run `npm run test:azure:visual` and then `npm run test:azure:qualification`. Existing mock and physical/CI qualifications must not be silently treated as evidence for this new feature SHA.
+The new premium visual suite intentionally remains baseline-pending. Existing canonical visual mismatches and the physical Android CDP blocker are recorded in the Home panel refinement addendum; neither is silently converted to a pass.
 
 ## 20. Screenshot baseline disposition
 
-**BASELINES DEFINED — CAPTURE AND APPROVAL DEFERRED.** The new visual spec defines Daylight/Black Home on mobile and desktop, attention, saved, unavailable and light/dark Workspace/Activity Details. No screenshot image was generated, committed or approved in this implementation-only session. The first snapshot capture must be a controlled explicit update on an isolated DEV-PC branch, with human review and a subsequent clean no-update comparison. PR #606 reference images remain untouched.
+**BASELINES DEFINED — APPROVAL PENDING.** The new visual spec defines Daylight/Black Home on mobile and desktop, attention, saved, unavailable and light/dark Workspace/Activity Details. Candidate images were captured during PR #626 qualification but are not canonical until owner review. PR #606/#622 reference images remain untouched.
 
 ## 21. Current risks and unvalidated areas
 
 - CSS specificity/cascade conflicts with the very large historical `src/index.css`, especially cross-tab Daylight selectors.
-- Root palette contrast and non-text contrast not measured.
+- Root and control contrast is covered by the mocked Axe suites for the qualified Home and shared tabs; visual approval and physical safe-area evidence remain pending.
 - Inter is not locally bundled; actual font differs across Android/desktop and could change metrics.
-- Overlay focus/return and nested scroll behavior need desktop/Android qualification.
-- Mobile 320px, landscape, 200% text, installed PWA, safe areas and offline bootstrap asset caching need evidence.
+- Overlay focus/return and nested scroll behavior pass mocked keyboard/state coverage; physical Android rendering remains blocked by CDP attach.
+- Mobile 320px–1440px and 200% text have mocked evidence; installed PWA, safe areas and offline bootstrap asset caching remain unvalidated.
 - Screenshot references are missing by design; visual gate must not pass without approval.
-- Newly authored tests/fixtures/commands themselves have not been executed and may require stabilization.
-- PR #588 performance budgets remain unchanged; measured results are unknown.
-- Automatic GitHub Actions, if any, are not investigated and do not constitute a claimed PASS.
+- Newly authored unit/mocked/performance commands execute on the feature branch; premium screenshot approval remains pending.
+- PR #588 performance budgets remain unchanged; residual target/hard-gate outcomes are classified in the qualification addendum.
+- Exact-head GitHub Actions still require inspection after the final docs commit and push.
 
 ## 22. Release/merge disposition
 
-**IMPLEMENTATION PROVIDED — VALIDATION DEFERRED BY USER INSTRUCTION.**
+**IMPLEMENTATION PROVIDED — QUALIFICATION PARTIAL / DRAFT.**
 
-No builds, tests, lint, type checking, a11y, screenshot comparison, performance, CI inspection, Android qualification, runtime check or release action were executed. The PR stays **OPEN — DRAFT — NOT MERGED** until a future explicitly authorized review, stabilization and qualification session.
+Dev-PC tests, a11y, Storybook, build, performance and read-only Server Phone checks were executed. Lint/typecheck are repository configuration limitations, new visual baselines await owner approval, physical Android CDP attach is blocked, and exact-head CI remains pending. The PR stays **OPEN — DRAFT — NOT MERGED**.
 
 
-## Home Workspace and Activity panel refinement (source branch, unvalidated)
+## Home Workspace and Activity panel refinement (PR #626 qualification)
 
-The later Home-only refinement adds the shared section-scroll hook, Home-specific `LiteSheet` variant, Azure token-scoped panel content, backend-truthful Activity presentation, reusable desktop geometry and authored regression definitions. **No tests, snapshots or docs generation were executed in the source-only implementation session.** See [Azure Home panel refinement architecture and qualification handoff](lite-home-azure-panel-refinement.md) for exact source maps, limitations and deferred validation commands.
+The later Home-only refinement adds the shared section-scroll hook, Home-specific `LiteSheet` variant, Azure token-scoped panel content, backend-truthful Activity presentation, reusable desktop geometry and authored regression definitions. See [Azure Home panel refinement qualification addendum](lite-home-azure-panel-refinement.md) for exact source changes, verified results, pending baselines and blocked Android evidence.
