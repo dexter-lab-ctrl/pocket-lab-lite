@@ -12,7 +12,7 @@ export function RulesDecisionTimeline({ decisions = [], onExplain, saved = false
       {decisions.map((record, index) => {
         const decision = rulesDecisionView(record); if (!decision) return null;
         const Icon = decision.allowed ? CheckCircle2 : decision.blocked ? Ban : Clock3;
-        return <li key={decision.id || index} className="lite-rules-timeline-entry"><Icon size={19} aria-hidden="true" /><div><strong>{decision.action}</strong><StatusBadge status={decision.tone}>{decision.status}</StatusBadge><p>{decision.reason}</p>{decision.occurredAt ? <time dateTime={decision.occurredAt}>{formatLiteTime(decision.occurredAt)}</time> : <span>Time not reported</span>}{onExplain ? <LiteButton tone="secondary" onClick={() => onExplain(record)}>Explain this</LiteButton> : null}</div></li>;
+        return <li key={decision.id || index} className="lite-rules-timeline-entry"><Icon size={19} aria-hidden="true" /><div><strong>{decision.action}</strong><StatusBadge status={decision.tone}>{decision.status}</StatusBadge><p>{decision.reason}</p>{decision.actor ? <span>Requested by: {decision.actor}</span> : null}{decision.target ? <span>Target: {decision.target}</span> : null}{decision.occurredAt ? <time dateTime={decision.occurredAt}>{formatLiteTime(decision.occurredAt)}</time> : <span>Time not reported</span>}{onExplain ? <LiteButton tone="secondary" onClick={() => onExplain(record)}>Explain this</LiteButton> : null}</div></li>;
       })}
     </ol>
   </div>;

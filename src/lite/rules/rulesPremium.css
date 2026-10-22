@@ -1,11 +1,13 @@
 /* Premium Rules Center — scoped, content-first, low-power Android/PWA layout. */
 .lite-rules-premium-screen { display: grid; gap: 1rem; min-width: 0; padding-bottom: 1.5rem; }
 .lite-rules-premium-screen > * { min-width: 0; }
-.lite-rules-premium-screen .lite-rules-eyebrow { display: block; font-size: .78rem; font-weight: 720; letter-spacing: .035em; color: var(--lite-text-muted, #4c5665); }
+.lite-rules-premium-screen .lite-rules-eyebrow { display: block; font-size: .78rem; font-weight: 720; letter-spacing: .035em; color: var(--azure-muted); }
 .lite-rules-premium-screen :is(h2,h3,p,strong,span,small,dd,dt,time,label,button) { overflow-wrap: anywhere; }
 .lite-rules-premium-screen :is(button,summary) { scroll-margin: 1rem; }
-.lite-rules-premium-screen :is(button,summary):focus-visible { outline: 3px solid var(--lite-accent, #165ead); outline-offset: 3px; }
+.lite-rules-premium-screen :is(button,summary):focus-visible { outline: 3px solid var(--azure-focus); outline-offset: 3px; }
 .lite-rules-premium-hero { display: grid; gap: .85rem; padding: clamp(1.15rem, 4vw, 1.85rem); }
+.lite-rules-premium-overview-grid { display: grid; grid-template-columns: minmax(0, 1.06fr) minmax(0, 1fr); gap: 1rem; align-items: stretch; min-width: 0; }
+.lite-rules-premium-overview-grid > * { min-width: 0; }
 .lite-rules-premium-hero-head, .lite-rules-premium-brand { display: flex; align-items: center; gap: .75rem; min-width: 0; flex-wrap: wrap; }
 .lite-rules-premium-hero-head { justify-content: space-between; }
 .lite-rules-premium-brand > svg { flex: none; }
@@ -15,25 +17,24 @@
 .lite-rules-premium-hero h2 { font-weight: 770; font-size: clamp(1.45rem, 5vw, 2rem); line-height: 1.18; max-width: 32ch; margin: .4rem 0 0; }
 .lite-rules-premium-hero p { line-height: 1.6; max-width: 66ch; margin: 0; }
 .lite-rules-premium-chips { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
-.lite-rules-premium-chips > span { border: 1px solid currentColor; border-radius: 999px; padding: .3rem .7rem; font-size: .84rem; font-weight: 650; }
+.lite-rules-premium-chips > span { color: var(--azure-muted); border: 1px solid var(--azure-strong-border); border-radius: 999px; padding: .3rem .7rem; font-size: .84rem; font-weight: 650; }
 .lite-rules-premium-hero > button { justify-self: start; min-height: 44px; }
-.lite-rules-premium-attention { display: flex; align-items: flex-start; gap: .5rem; padding: .8rem; border: 1px solid var(--lite-border, #8293aa); border-radius: .7rem; line-height: 1.5; }
+.lite-rules-premium-attention { display: flex; align-items: flex-start; gap: .5rem; padding: .8rem; background: var(--azure-warning-subtle); color: var(--azure-text); border: 1px solid var(--azure-warning); border-radius: .7rem; line-height: 1.5; }
 .lite-rules-premium-attention svg { flex: none; }
 .lite-rules-premium-journey { display: grid; gap: .9rem; }
 .lite-rules-premium-journey header, .lite-rules-premium-latest header { min-width: 0; }
-.theme-pocket-lite-daylight .lite-rules-premium-screen :is(.lite-rules-premium-journey, .lite-rules-premium-latest) > header {
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+html[data-lite-theme] .lite-rules-premium-screen :is(.lite-rules-premium-journey, .lite-rules-premium-latest) > header {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 .lite-rules-premium-journey h2, .lite-rules-premium-latest h2 { font-size: 1.12rem; font-weight: 740; margin: .2rem 0; }
 .lite-rules-premium-journey p, .lite-rules-premium-latest p { margin: .2rem 0; line-height: 1.55; }
 .lite-rules-journey-track { list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .4rem; padding: 0; margin: .3rem 0; }
 .lite-rules-journey-track li { min-width: 0; position: relative; display: flex; align-items: center; }
-.lite-rules-journey-track button { display: grid; place-items: center; gap: .25rem; padding: .65rem .3rem; width: 100%; min-width: 0; min-height: 82px; border: 1px solid var(--lite-border, #8293aa); border-radius: .8rem; background: transparent; color: inherit; line-height: 1.25; cursor: pointer; transition: border-color .14s ease, background-color .14s ease; }
-.lite-rules-journey-track button:hover, .lite-rules-journey-track button.is-selected { border-width: 2px; background: var(--lite-surface-subtle, rgba(118,143,171,.11)); }
+.lite-rules-journey-track button { display: grid; place-items: center; gap: .25rem; padding: .65rem .3rem; width: 100%; min-width: 0; min-height: 82px; border: 1px solid var(--azure-strong-border); border-radius: .8rem; background: var(--azure-surface); color: var(--azure-text); line-height: 1.25; cursor: pointer; transition: border-color .14s ease, background-color .14s ease; }
+.lite-rules-journey-track button:hover, .lite-rules-journey-track button.is-selected { border-width: 2px; background: var(--azure-selected); }
 .lite-rules-journey-track button strong { font-size: .95rem; }
 .lite-rules-journey-track button span { font-size: .8rem; }
 .lite-rules-journey-connector { display: none; }
@@ -45,7 +46,7 @@
 .lite-rules-premium-latest-body { display: grid; gap: .45rem; justify-items: start; min-width: 0; }
 .lite-rules-premium-latest-body h3 { font-size: 1.15rem; font-weight: 720; }
 .lite-rules-premium-latest-body > button { margin-top: .25rem; }
-.lite-rules-premium-boundary, .lite-rules-premium-saved { opacity: .84; font-size: .85rem; }
+.lite-rules-premium-boundary, .lite-rules-premium-saved { color: var(--azure-muted); font-size: .85rem; }
 .lite-rules-premium-manage, .lite-rules-insight-sheet { min-width: 0; }
 .lite-rules-overlay-surface, .lite-rules-overlay-scroll { min-width: 0; max-width: 100%; }
 .lite-rules-overlay-head { min-width: 0; }
@@ -57,8 +58,8 @@
 .lite-rules-overlay-scroll { overflow-x: hidden; }
 .lite-rules-overlay-scroll > * { min-width: 0; max-width: 100%; }
 .lite-rules-premium-nav { display: flex; flex-wrap: wrap; gap: .45rem; padding: .15rem 0 1rem; }
-.lite-rules-premium-nav button { border: 1px solid var(--lite-border, #8293aa); border-radius: .65rem; color: inherit; background: transparent; padding: .6rem .8rem; min-height: 44px; cursor: pointer; font-weight: 620; max-width: 100%; }
-.lite-rules-premium-nav button.is-active { border-width: 2px; background: var(--lite-surface-subtle, rgba(118,143,171,.11)); }
+.lite-rules-premium-nav button { border: 1px solid var(--azure-strong-border); border-radius: .65rem; color: var(--azure-text); background: var(--azure-surface); padding: .6rem .8rem; min-height: 44px; cursor: pointer; font-weight: 620; max-width: 100%; }
+.lite-rules-premium-nav button.is-active { border-color: var(--azure-accent); border-width: 2px; background: var(--azure-selected); }
 .lite-rules-premium-manage-content { display: grid; gap: .9rem; min-width: 0; }
 .lite-rules-premium-manage-content h2 { font-size: 1.1rem; font-weight: 740; }
 .lite-rules-insight { display: grid; gap: 1rem; min-width: 0; }
@@ -90,8 +91,13 @@
 .lite-rules-revision-premium dd { min-width: 0; word-break: break-word; }
 .lite-rules-premium-screen .lite-rules-enterprise { min-width: 0; }
 .lite-rules-premium-screen .lite-rules-enterprise .lite-governance-matrix { max-width: 100%; overflow-x: auto; }
-@media (max-width: 520px), (min-resolution: 3dppx) and (max-width: 700px) {
-  .lite-rules-journey-track { grid-template-columns: repeat(2, minmax(0,1fr)); }
+@media (max-width: 700px) {
+  .lite-rules-premium-overview-grid { grid-template-columns: 1fr; }
+  .lite-rules-journey-track { grid-template-columns: 1fr; }
+  .lite-rules-journey-track li { display: block; }
+  .lite-rules-journey-track button { min-height: 54px; display: flex; justify-content: flex-start; gap: .75rem; padding: .75rem; text-align: left; }
+  .lite-rules-journey-track button strong { min-width: 2.6rem; }
+  .lite-rules-header-actions { flex-wrap: wrap; }
   .lite-rules-premium-hero > button { width: 100%; }
   .lite-rules-premium-latest header > button { width: auto; }
 }
@@ -103,4 +109,82 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .lite-rules-premium-screen *, .lite-rules-premium-screen *::before, .lite-rules-premium-screen *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+/* Azure Horizon Rules: portal-aware, semantic-color-only styling, scoped from
+   the Rules-owned Manage and Decision surfaces (no Identity overrides). */
+html[data-lite-theme] :is(.lite-rules-premium-screen, .lite-rules-overlay-layer) {
+  color: var(--azure-text);
+  color-scheme: inherit;
+}
+html[data-lite-theme] .lite-rules-premium-screen :is(.lite-rules-premium-hero, .lite-rules-premium-journey, .lite-rules-premium-latest),
+html[data-lite-theme] .lite-rules-overlay-surface {
+  background: var(--azure-surface);
+  color: var(--azure-text);
+  border-color: var(--azure-border);
+}
+html[data-lite-theme] .lite-rules-overlay-layer {
+  background: transparent;
+}
+html[data-lite-theme] .lite-rules-overlay-surface {
+  color-scheme: inherit;
+  box-shadow: var(--azure-panel-shadow);
+}
+html[data-lite-theme] .lite-rules-overlay-surface :is(input, select, textarea) {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  background: var(--azure-input);
+  color: var(--azure-text);
+  border: 1px solid var(--azure-strong-border);
+  border-radius: var(--azure-radius-control);
+  color-scheme: inherit;
+}
+html[data-lite-theme] .lite-rules-overlay-surface :is(input, select, textarea, button, summary):focus-visible {
+  outline: 3px solid var(--azure-focus);
+  outline-offset: 2px;
+}
+html[data-lite-theme] .lite-rules-overlay-surface :is(.lite-rules-card, .lite-rules-approval-card, .lite-rules-exception-row, .lite-rules-revision-row, .lite-rules-focus-detail, .lite-rules-insight-breakdown > li, .lite-rules-simulation-result) {
+  background: var(--azure-raised);
+  color: var(--azure-text);
+  border-color: var(--azure-border);
+}
+html[data-lite-theme] .lite-rules-overlay-surface :is(.lite-rules-advanced-details, .lite-rules-revision-value, .lite-rules-synthetic-facts) {
+  background: var(--azure-surface);
+  color: var(--azure-text);
+  border-color: var(--azure-strong-border);
+}
+html[data-lite-theme] .lite-rules-overlay-surface :is(small, time, dt, .lite-rules-soft-badge, .lite-rules-history-list span, .lite-rules-exception-row small) {
+  color: var(--azure-muted);
+  opacity: 1;
+}
+html[data-lite-theme] .lite-rules-desktop-panel-tools { display: flex; gap: .3rem; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+html[data-lite-theme] .lite-rules-desktop-panel-tools button {
+  display: inline-flex; align-items: center; gap: .3rem;
+  min-height: 40px; padding: .35rem .5rem;
+  border: 1px solid var(--azure-strong-border); border-radius: .6rem;
+  background: var(--azure-raised); color: var(--azure-text); touch-action: none;
+}
+html[data-lite-theme] .lite-rules-desktop-panel-tools button:hover { background: var(--azure-hover); }
+html[data-lite-theme] .lite-rules-desktop-panel-tools button:first-child { cursor: move; }
+html[data-lite-theme] .lite-rules-desktop-panel-tools button:nth-child(3) { cursor: nwse-resize; }
+html[data-lite-theme] .lite-rules-manage-sheet.is-movable {
+  position: fixed; max-width: none; max-height: none; transform: none;
+  display: flex; flex-direction: column; box-sizing: border-box;
+}
+html[data-lite-theme] .lite-rules-manage-sheet.is-movable .lite-overlay-scroll { flex: 1; min-height: 0; overflow: auto; }
+html[data-lite-theme] .lite-rules-manage-sheet .lite-overlay-head { display: flex; align-items: center; flex-wrap: wrap; gap: .55rem; }
+html[data-lite-theme] .lite-rules-manage-sheet .lite-overlay-head > div:first-child { flex: 1 1 12rem; min-width: 0; }
+html[data-lite-theme] .lite-rules-overlay-scroll { overscroll-behavior: contain; }
+html[data-lite-theme] .lite-rules-premium-nav { position: sticky; top: 0; z-index: 1; background: var(--azure-surface); }
+html[data-lite-theme] .lite-rules-overlay-surface :is(.lite-rules-form-grid, .lite-governance-form) { min-width: 0; }
+html[data-lite-theme] .lite-rules-overlay-surface :is(.lite-rules-approval-card, .lite-rules-exception-row, .lite-rules-revision-row) { overflow-wrap: anywhere; }
+@media (max-width: 700px) {
+  html[data-lite-theme] .lite-rules-desktop-panel-tools { display: none; }
+  html[data-lite-theme] .lite-rules-overlay-surface :is(.lite-rules-form-grid, .lite-governance-form, .lite-rules-detail-list, .lite-rules-compact-meta) { grid-template-columns: minmax(0, 1fr); }
+  html[data-lite-theme] .lite-rules-overlay-surface :is(.lite-rules-inline-actions, .lite-governance-actions) > button { min-height: 44px; }
+  html[data-lite-theme] .lite-rules-premium-nav { position: static; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-lite-theme] .lite-rules-overlay-surface *, html[data-lite-theme] .lite-rules-overlay-surface *::before, html[data-lite-theme] .lite-rules-overlay-surface *::after { transition: none !important; animation: none !important; }
 }
