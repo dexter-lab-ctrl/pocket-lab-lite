@@ -190,6 +190,19 @@ const LITE_SHEET_VARIANTS = {
     backdropLabel: 'Close app management',
     gripLabel: 'Drag app actions sheet',
   },
+  identity: {
+    layer: 'lite-identity-manage-layer',
+    backdrop: 'lite-identity-manage-backdrop',
+    surface: 'lite-identity-manage-sheet',
+    grip: 'lite-identity-manage-grip',
+    head: 'lite-identity-manage-head',
+    close: 'lite-identity-manage-close',
+    scroll: 'lite-identity-manage-scroll',
+    eyebrow: 'Identity & Access',
+    closeLabel: 'Close identity access',
+    backdropLabel: 'Close identity access',
+    gripLabel: 'Drag identity access sheet',
+  },
   security: {
     layer: 'lite-security-overlay-layer',
     backdrop: 'lite-security-overlay-backdrop',
@@ -231,6 +244,7 @@ export function LiteSheet({
   bodyClassName = '',
   closeClassName = '',
   gripClassName = '',
+  headerActions = null,
   labelledBy,
   surfaceRef,
   bodyRef,
@@ -352,6 +366,7 @@ export function LiteSheet({
               <strong id={titleId}>{title}</strong>
               {description ? <p>{description}</p> : null}
             </div>
+            {headerActions}
             <button ref={closeRef} type="button" className={`lite-overlay-close ${variantClasses.close} ${closeClassName}`.trim()} onClick={onClose} aria-label={variantClasses.closeLabel}>
               <X className="h-4 w-4" />
             </button>
@@ -365,9 +380,9 @@ export function LiteSheet({
   );
 }
 
-export function LiteDetailsPanel({ open, onClose, title = 'Details', description = '', bodyRef, bodyClassName = '', children }) {
+export function LiteDetailsPanel({ open, onClose, title = 'Details', description = '', bodyRef, bodyClassName = '', children, variant = 'manage' }) {
   return (
-    <LiteSheet open={open} onClose={onClose} title={title} eyebrow="Action Details" description={description} layerClassName="lite-details-overlay-layer" className="lite-details-panel" bodyRef={bodyRef} bodyClassName={`lite-details-panel-scroll ${bodyClassName}`.trim()} gripClassName="lite-details-panel-grip">
+    <LiteSheet open={open} onClose={onClose} title={title} eyebrow="Action Details" description={description} layerClassName="lite-details-overlay-layer" className="lite-details-panel" bodyRef={bodyRef} bodyClassName={`lite-details-panel-scroll ${bodyClassName}`.trim()} gripClassName="lite-details-panel-grip" variant={variant}>
       {children}
     </LiteSheet>
   );

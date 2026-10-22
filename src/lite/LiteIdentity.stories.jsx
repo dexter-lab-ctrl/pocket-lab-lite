@@ -211,3 +211,19 @@ export const PremiumPeopleDetails = {
     await expect(await within(canvasElement.ownerDocument.body).findByRole('dialog', { name: /Access Details/i })).toHaveTextContent(/Owner/i);
   },
 };
+
+// Azure Horizon Black/Daylight reference states. IMPLEMENTED FIXTURES — UNVALIDATED.
+export const AzurePersonalBlack = createLiteStory('identity','identity-summary',{viewport:'desktop',theme:'dark',status:'unvalidated'});
+export const AzurePersonalDaylight = createLiteStory('identity','identity-summary',{viewport:'desktop',theme:'daylight',status:'unvalidated'});
+export const AzurePersonalSystem = createLiteStory('identity','identity-summary',{viewport:'mobile390',theme:'system',status:'unvalidated'});
+export const AzureMobileBlack = createLiteStory('identity','identity-summary',{viewport:'mobile360',theme:'dark',status:'unvalidated'});
+export const AzureMobileDaylight = createLiteStory('identity','identity-summary',{viewport:'mobile360',theme:'daylight',status:'unvalidated'});
+export const AzureLargeTextBlack = createLiteStory('identity','identity-premium-long-text',{viewport:'mobile360',theme:'dark',textScale:2,status:'unvalidated'});
+export const AzureUnavailableBlack = createLiteStory('identity','api-unavailable',{viewport:'mobile360',theme:'dark',status:'unvalidated'});
+export const AzureOwnerSetupBlack = createLiteStory('identity','identity-premium-first-owner',{viewport:'mobile360',theme:'dark',status:'unvalidated'});
+export const AzureSignedOutDaylight = createLiteStory('identity','identity-premium-signed-out',{viewport:'desktop',theme:'daylight',status:'unvalidated'});
+export const AzureOwnerGovernanceBlack = createLiteStory('identity','identity-enterprise-owner',{viewport:'desktop',theme:'dark',status:'unvalidated'});
+export const AzureAdminGovernanceDaylight = createLiteStory('identity','identity-enterprise-admin',{viewport:'mobile360',theme:'daylight',status:'unvalidated'});
+export const AzureOwnerPendingBlack = createLiteStory('identity','identity-owner-operation-pending',{viewport:'desktop',theme:'dark',status:'unvalidated'});
+export const AzureTrustedClientDaylight = createLiteStory('identity','identity-owner-client-pairing-pending',{viewport:'desktop',theme:'daylight',status:'unvalidated'});
+export const AzureSavedApprovalBlack = createLiteStory('identity','identity-owner-operation-offline',{viewport:'mobile360',theme:'dark',status:'unvalidated'});

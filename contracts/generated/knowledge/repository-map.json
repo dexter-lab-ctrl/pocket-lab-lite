@@ -4313,6 +4313,24 @@
     },
     {
       "entities": [
+        "test:tests/e2e/lite-azure-horizon-identity-performance.spec.ts"
+      ],
+      "source": "tests/e2e/lite-azure-horizon-identity-performance.spec.ts"
+    },
+    {
+      "entities": [
+        "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts"
+      ],
+      "source": "tests/e2e/lite-azure-horizon-identity-visual.spec.ts"
+    },
+    {
+      "entities": [
+        "test:tests/e2e/lite-azure-horizon-identity.spec.ts"
+      ],
+      "source": "tests/e2e/lite-azure-horizon-identity.spec.ts"
+    },
+    {
+      "entities": [
         "test:tests/e2e/lite-azure-horizon-performance.spec.ts"
       ],
       "source": "tests/e2e/lite-azure-horizon-performance.spec.ts"
@@ -4606,6 +4624,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e073fe7680ca1467760985617e110b7879592ecf23c8b9be2f339dec7eecb400"
+    "source_fingerprint": "db1df1dc77ffda104c3bb03a8676a6ac65b3d62c728d42d3c7faf1c945d9735e"
   }
 }

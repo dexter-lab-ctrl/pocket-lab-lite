@@ -10,6 +10,7 @@ export function LiteScreenLoading({ label = 'Pocket Lab', intrinsicSize = '48rem
   return (
     <div
       className="lite-screen-loading"
+      data-lite-loading-state="true"
       style={{ '--lite-screen-intrinsic-size': intrinsicSize }}
       role="status"
       aria-live="polite"

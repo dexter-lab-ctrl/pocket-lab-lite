@@ -31102,6 +31102,36 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-identity-performance.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-identity-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-identity-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-identity-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-identity.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-identity.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-identity.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-azure-horizon-performance.spec.ts",
       "name": "tests/e2e/lite-azure-horizon-performance.spec.ts",
       "source_refs": [
@@ -34808,6 +34838,9 @@
         "test:tests/e2e/lite-azure-horizon-apps-performance.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-identity-performance.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-identity.spec.ts",
         "test:tests/e2e/lite-azure-horizon-performance.spec.ts",
         "test:tests/e2e/lite-azure-horizon-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon.spec.ts",
@@ -36319,6 +36352,9 @@
         "test:tests/e2e/lite-azure-horizon-apps-performance.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-identity-performance.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-identity.spec.ts",
         "test:tests/e2e/lite-azure-horizon-performance.spec.ts",
         "test:tests/e2e/lite-azure-horizon-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon.spec.ts",
@@ -53193,6 +53229,28 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-azure-horizon-identity-performance.spec.ts": [
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts": [
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-azure-horizon-identity.spec.ts": [
+        {
+          "source": "domain:identity",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-azure-horizon-visual.spec.ts": [
         {
           "source": "reason:disabled",
@@ -63917,6 +63975,18 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-azure-horizon-identity-performance.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-azure-horizon-identity.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-content-stress.spec.ts",
           "type": "verified_by"
         },
@@ -68568,6 +68638,10 @@
         },
         {
           "target": "test:tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
           "type": "verified_by"
         },
         {
@@ -80680,6 +80754,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-azure-horizon-identity-visual.spec.ts"
+      ],
+      "id": "rel:34fa3d1ccc3a70a9",
+      "source": "domain:identity",
+      "target": "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:35013087dd180b70",
@@ -86548,6 +86631,15 @@
       "id": "rel:5aa39032a2c3cc0d",
       "source": "reason:fault_control_denied",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-identity-visual.spec.ts"
+      ],
+      "id": "rel:5aab16df395c2261",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
       "type": "verified_by"
     },
     {
@@ -98076,6 +98168,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-azure-horizon-identity.spec.ts"
+      ],
+      "id": "rel:ad3c650ce79bec40",
+      "source": "domain:identity",
+      "target": "test:tests/e2e/lite-azure-horizon-identity.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:ad3e62ae50ea732a",
@@ -98980,6 +99081,15 @@
       "source": "component:node-agent",
       "target": "subject:pocketlab.events.fleet.node_left",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-identity-performance.spec.ts"
+      ],
+      "id": "rel:b3790e63ccb8442a",
+      "source": "domain:identity",
+      "target": "test:tests/e2e/lite-azure-horizon-identity-performance.spec.ts",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -109807,9 +109917,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "e073fe7680ca1467760985617e110b7879592ecf23c8b9be2f339dec7eecb400",
+  "source_fingerprint": "db1df1dc77ffda104c3bb03a8676a6ac65b3d62c728d42d3c7faf1c945d9735e",
   "statistics": {
-    "entity_count": 1429,
+    "entity_count": 1432,
     "entity_type_counts": {
       "adr": 6,
       "api": 256,
@@ -109826,14 +109936,14 @@
       "runtime-topology": 9,
       "subject": 221,
       "table": 89,
-      "test": 281,
+      "test": 284,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 4078,
-    "source_count": 318
+    "relation_count": 4082,
+    "source_count": 321
   }
 }

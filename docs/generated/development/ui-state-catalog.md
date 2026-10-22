@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: fedf3f6d4122183de5d92a65e592a45f7b932fb7d4aa57a70c7f76f7131e961a
+source_fingerprint: b2949c2a44185cf5a4ffc9afca5e740253250bb06f96b97b0017e1ba71330f45
 schema_revision: 1
 validation_status: generated
 ---
@@ -116,6 +116,20 @@ validation_status: generated
 | `pocket-lab-lite-identity-trustedautomationclientsmultiple` | identity | `identity-owner-client-multiple` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-trustedautomationclientsmultiple-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-identity-trustedautomationclientexpired` | identity | `identity-owner-client-expired` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-trustedautomationclientexpired-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-identity-trustedautomationclientofflinesaved` | identity | `identity-owner-client-offline` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-trustedautomationclientofflinesaved-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-azurepersonalblack` | identity | `identity-summary` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-azurepersonalblack-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-azurepersonaldaylight` | identity | `identity-summary` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-azurepersonaldaylight-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-azurepersonalsystem` | identity | `identity-summary` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-azurepersonalsystem-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-azuremobileblack` | identity | `identity-summary` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-azuremobileblack-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-azuremobiledaylight` | identity | `identity-summary` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-azuremobiledaylight-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-azurelargetextblack` | identity | `identity-premium-long-text` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-azurelargetextblack-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-azureunavailableblack` | identity | `api-unavailable` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-azureunavailableblack-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-azureownersetupblack` | identity | `identity-premium-first-owner` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-azureownersetupblack-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-azuresignedoutdaylight` | identity | `identity-premium-signed-out` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-azuresignedoutdaylight-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-azureownergovernanceblack` | identity | `identity-enterprise-owner` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-azureownergovernanceblack-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-azureadmingovernancedaylight` | identity | `identity-enterprise-admin` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-azureadmingovernancedaylight-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-azureownerpendingblack` | identity | `identity-owner-operation-pending` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-azureownerpendingblack-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-azuretrustedclientdaylight` | identity | `identity-owner-client-pairing-pending` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-azuretrustedclientdaylight-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-identity-azuresavedapprovalblack` | identity | `identity-owner-operation-offline` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-azuresavedapprovalblack-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-recovery-nobackupsyet` | recovery | `recovery-no-backups` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-nobackupsyet-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-recovery-backupfailed` | recovery | `recovery-backup-failed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-backupfailed-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-recovery-savedofflinesnapshot` | recovery | `offline-saved` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-savedofflinesnapshot-{viewport}.png` | fixture-dependent |

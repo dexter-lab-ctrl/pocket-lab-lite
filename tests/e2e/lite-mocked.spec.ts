@@ -562,7 +562,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
         const rect = element.getBoundingClientRect();
         return rect.left >= 0 && rect.right <= window.innerWidth + 1;
       })).toBe(true);
-      const identityClose = identitySheet.getByRole('button', { name: 'Close app actions' });
+      const identityClose = identitySheet.getByRole('button', { name: 'Close identity access' });
       await expect(identityClose).toBeVisible();
       await page.keyboard.press('Tab');
       expect(await page.evaluate(() => {

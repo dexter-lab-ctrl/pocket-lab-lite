@@ -152,6 +152,7 @@ function identityPayload() {
   };
   const kind = scenario();
   if (kind === 'identity-premium-signed-out') return { ...payload, authenticated: false, sessions: [], session: null };
+  if (kind === 'identity-password-configured') return { ...payload, authenticated: false, sessions: [], session: null };
   if (kind === 'identity-premium-first-owner') return { ...payload, setup_required: true, authenticated: false, owner: null, person: null, sessions: [], passkeys: [], recovery: { configured: false, remaining: null } };
   if (kind === 'identity-premium-enrollment') return { ...payload, authenticated: false, sessions: [], session: null };
   if (kind === 'identity-premium-no-passkeys') return { ...payload, passkeys: [] };

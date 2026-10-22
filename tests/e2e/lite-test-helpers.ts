@@ -161,7 +161,7 @@ export async function waitForLiteScreenToSettle(
   while (Date.now() < deadline) {
     const signature = await screen.evaluate((element) => {
       const rect = element.getBoundingClientRect();
-      const busy = element.querySelectorAll('[aria-busy="true"], [data-loading="true"]').length;
+      const busy = element.querySelectorAll('[aria-busy="true"], [data-loading="true"], [data-lite-loading-state="true"]').length;
       const textLength = (element.textContent || '').trim().length;
       return [
         Math.round(rect.width),

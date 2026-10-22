@@ -20,7 +20,7 @@ function reasonCode(error) {
 }
 
 function roleTone(role) {
-  if (role === 'Owner') return 'healthy';
+  if (role === 'Owner') return 'neutral';
   if (role === 'Admin') return 'ready';
   if (role === 'Operator') return 'review';
   return 'neutral';
@@ -193,7 +193,7 @@ export default function LiteIdentityEnterprise({ enterprise, access: initialAcce
               <div className="lite-governance-card-head"><ShieldCheck className="h-5 w-5" /><LiteHelp helpKey="identity.owner" /></div>
               <h3>Your authority</h3><strong className="lite-governance-value">{currentRole || 'No active role'}</strong>
               <p>{currentRoleInfo?.summary || accessData.role?.summary || 'Pocket Lab resolves your access on the server.'}</p>
-              {currentRole === 'Owner' ? <StatusBadge status="healthy">No peer approval</StatusBadge> : null}
+              {currentRole === 'Owner' ? <StatusBadge status="neutral">No peer approval</StatusBadge> : null}
             </GlassCard>
             <GlassCard className="lite-governance-card">
               <div className="lite-governance-card-head"><UsersRound className="h-5 w-5" /><LiteHelp helpKey="identity.people" /></div>
@@ -302,7 +302,7 @@ export default function LiteIdentityEnterprise({ enterprise, access: initialAcce
         </div>
       ) : null}
 
-      <LiteSheet open={Boolean(confirm)} onClose={() => setConfirm(null)} title={confirm?.title || 'Confirm access change'} eyebrow="Confirm" description={confirm?.description || ''} className="lite-identity-sheet">
+      <LiteSheet variant="identity" open={Boolean(confirm)} onClose={() => setConfirm(null)} title={confirm?.title || 'Confirm access change'} eyebrow="Confirm" description={confirm?.description || ''} className="lite-identity-sheet">
         <StateSurface tone="neutral" title="Pocket Lab verifies this on the server" description="No success is shown until server-owned Identity and Rules state confirms the result." />
         <div className="lite-governance-actions"><LiteButton variant="secondary" onClick={() => setConfirm(null)}>Cancel</LiteButton><LiteButton onClick={async () => { const action = confirm?.action; setConfirm(null); if (action) await action(); }}>{confirm?.confirmLabel || 'Confirm'}</LiteButton></div>
       </LiteSheet>
