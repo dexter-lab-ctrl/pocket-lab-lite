@@ -39,6 +39,56 @@ async function moveNativeScroll(scroll: Locator, top: number) {
 }
 
 for (const kind of ['workspace', 'activity'] as const) {
+  test(`${kind}: native input, nested scrolling and reopen preserve one scroll owner`, async ({ page, isMobile }) => {
+    await page.setViewportSize({ width: 390, height: 780 });
+    const dialog = await openPanel(page, kind);
+    const nav = dialog.getByRole('navigation', { name: navLabel(kind) });
+    await nav.getByRole('button').first().click();
+    const scroll = await makeRealScrollRange(dialog);
+    const bounds = (await scroll.boundingBox())!;
+    if (isMobile) {
+      const cdp = await page.context().newCDPSession(page);
+      const x = bounds.x + bounds.width / 2;
+      const y = bounds.y + bounds.height * .8;
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+      for (let step = 1; step <= 8; step += 1) {
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y: y - step * 25 }] });
+        await page.evaluate(() => new Promise(requestAnimationFrame));
+      }
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      await cdp.detach();
+    } else {
+      await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height * .8);
+      await page.mouse.wheel(0, 260);
+    }
+    await expect(nav).toHaveAttribute('data-tabs-hidden', 'true');
+    await expect.poll(() => scroll.evaluate((node) => node.scrollTop)).toBeGreaterThan(50);
+    // Capture the settled parent position before isolating a child scroller.
+    // On mobile, a real touch-end may still carry momentum for a short time;
+    // forcing scrollTop=0 here would test the gesture's animation instead of
+    // nested scroll ownership.
+    const parentBeforeNested = await scroll.evaluate((node) => node.scrollTop);
+    await scroll.evaluate((node) => {
+      const nested = document.createElement('div');
+      nested.dataset.nestedScrollFixture = 'true';
+      nested.style.cssText = 'height:100px;overflow:auto;overscroll-behavior:contain';
+      const content = document.createElement('div');
+      content.style.height = '500px';
+      nested.append(content);
+      node.append(nested);
+      nested.scrollTop = 180;
+    });
+    await expect.poll(() => scroll.evaluate((node) => node.scrollTop))
+      .toBeGreaterThanOrEqual(Math.max(0, parentBeforeNested - 1));
+    await expect(nav).toHaveAttribute('data-tabs-hidden', 'true');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    const opener = page.getByRole('button', { name: kind === 'workspace' ? 'Workspace details' : 'View activity', exact: true });
+    await expect(opener).toBeFocused();
+    await opener.click();
+    await expect(dialog.locator('.lite-home-panel-scroll')).toHaveJSProperty('scrollTop', 0);
+    await expect(dialog.locator('.lite-home-details-nav')).toHaveAttribute('data-tabs-hidden', 'false');
+  });
   for (const width of [390, 1280]) for (const appearance of ['light','dark'] as const) {
     test(`${kind} ${appearance} ${width}px: pointer section then immediate native scroll retract/reveal`, async ({ page }) => {
       await page.setViewportSize({ width, height: 780 });
@@ -53,6 +103,18 @@ for (const kind of ['workspace', 'activity'] as const) {
       await expect(nav).toHaveAttribute('data-tabs-hidden', 'true');
       const collapsed = await nav.evaluate((node) => node.getBoundingClientRect().height);
       expect(collapsed).toBeLessThanOrEqual(1);
+      // A single hidden frame misses scroll-anchoring feedback loops. Sample
+      // successive layout frames without further input and require stability.
+      const settled = await scroll.evaluate(async (node) => {
+        const samples = [];
+        for (let frame = 0; frame < 20; frame += 1) {
+          await new Promise(requestAnimationFrame);
+          samples.push({ top: node.scrollTop,
+            hidden: node.querySelector('nav')?.getAttribute('data-tabs-hidden') });
+        }
+        return samples;
+      });
+      expect(settled.every(({ top, hidden }) => Math.abs(top - 240) <= 1 && hidden === 'true')).toBe(true);
       await scroll.evaluate((node) => node.scrollTo({ top: 90, behavior: 'instant' }));
       await expect(nav).toHaveAttribute('data-tabs-hidden', 'false');
       await nav.getByRole('button', { name: kind === 'workspace' ? 'Diagnostics' : 'History' }).click();
@@ -61,6 +123,17 @@ for (const kind of ['workspace', 'activity'] as const) {
       await expect(nav).toHaveAttribute('data-tabs-hidden', 'true');
       await scroll.evaluate((node) => node.scrollTo({ top: 0, behavior: 'instant' }));
       await expect(nav).toHaveAttribute('data-tabs-hidden', 'false');
+      await scroll.evaluate((node) => node.scrollTo({ top: node.scrollHeight, behavior: 'instant' }));
+      await expect(nav).toHaveAttribute('data-tabs-hidden', 'true');
+      const bottomStates = await scroll.evaluate(async (node) => {
+        const states = [];
+        for (let frame = 0; frame < 20; frame += 1) {
+          await new Promise(requestAnimationFrame);
+          states.push(node.querySelector('nav')?.getAttribute('data-tabs-hidden'));
+        }
+        return states;
+      });
+      expect(bottomStates.every((state) => state === 'true')).toBe(true);
       expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 2)).toBe(false);
     });
   }
@@ -72,11 +145,13 @@ for (const kind of ['workspace', 'activity'] as const) {
     const scroll = await makeRealScrollRange(dialog);
     await moveNativeScroll(scroll, 230);
     await expect(nav).toHaveAttribute('data-tabs-hidden', 'true');
-    // Keyboard intent is handled by the shared hook, not :focus-within alone.
-    await scroll.focus();
+    // Enter from the header using real Tab traversal after pointer use. The
+    // body itself is not focusable; programmatic tab.focus() hid this defect.
+    await nav.getByRole('button').first().click();
+    await moveNativeScroll(scroll, 230);
+    await dialog.getByRole('button', { name: 'Close Home details', exact: true }).focus();
     await page.keyboard.press('Tab');
     const tab = nav.getByRole('button').first();
-    await tab.focus();
     await expect(nav).toHaveAttribute('data-tabs-hidden', 'false');
     await expect(nav).toHaveAttribute('data-tabs-keyboard-focused', 'true');
     await expect(tab).toBeFocused();

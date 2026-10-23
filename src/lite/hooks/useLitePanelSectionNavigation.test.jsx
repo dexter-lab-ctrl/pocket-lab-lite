@@ -123,4 +123,34 @@ describe('shared Home panel navigation scroll state', () => {
     unmount();
     remove();
   });
+  it('recognizes keyboard entry from the dialog header after pointer selection', () => {
+    const { result, rerender, unmount } = renderHook(({ open }) => useLitePanelSectionNavigation(open), {
+      initialProps: { open: false },
+    });
+    const { body, nav, tab } = mountedNav();
+    const panel = document.createElement('div');
+    panel.setAttribute('role', 'dialog');
+    const close = document.createElement('button');
+    panel.append(close, body);
+    document.body.append(panel);
+    result.current.bodyRef.current = body;
+    result.current.navRef.current = nav;
+    rerender({ open: true });
+    act(() => {
+      tab.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+      tab.focus();
+      body.scrollTop = 200;
+      body.dispatchEvent(new Event('scroll'));
+    });
+    expect(result.current.hidden).toBe(true);
+    act(() => {
+      close.focus();
+      close.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+      tab.focus();
+    });
+    expect(result.current.hidden).toBe(false);
+    expect(result.current.keyboardFocused).toBe(true);
+    unmount();
+    panel.remove();
+  });
 });

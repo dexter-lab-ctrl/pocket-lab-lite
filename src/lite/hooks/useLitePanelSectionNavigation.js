@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 // The LiteDetailsPanel body is the single vertical scroll owner in both Home
 // panels. No window scroll listener and no second Activity-specific algorithm.
@@ -24,7 +24,7 @@ export function useLitePanelSectionNavigation(open) {
   const scrollState = useRef({ baseline: 0, hidden: false, scrolled: false });
   // A touched button may retain DOM focus after click; this is NOT keyboard
   // focus and must not pin the strip through a subsequent momentum scroll.
-  const keyboardIntentRef = useRef(false);
+  const keyboardIntentRef = useRef(null);
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [keyboardFocused, setKeyboardFocused] = useState(false);
@@ -41,11 +41,19 @@ export function useLitePanelSectionNavigation(open) {
     }
   }, []);
 
+  useLayoutEffect(() => {
+    if (!open || !bodyRef.current) return;
+    // At the bottom, collapsing the strip reduces the maximum scroll range.
+    // Absorb the browser's clamp before its scroll event: it is geometry,
+    // not upward user intent. overflow-anchor handles the non-boundary case.
+    scrollState.current.baseline = Math.max(0, bodyRef.current.scrollTop);
+  }, [hidden, open]);
+
   useEffect(() => {
     const body = bodyRef.current;
     if (!open || !body) {
       scrollState.current = { baseline: 0, hidden: false, scrolled: false };
-      keyboardIntentRef.current = false;
+      keyboardIntentRef.current = null;
       setHidden(false);
       setScrolled(false);
       setKeyboardFocused(false);
@@ -53,10 +61,12 @@ export function useLitePanelSectionNavigation(open) {
     }
     const top = Math.max(0, body.scrollTop);
     scrollState.current = { baseline: top, hidden: false, scrolled: top > LITE_PANEL_NAV_TOP };
-    keyboardIntentRef.current = false;
+    keyboardIntentRef.current = null;
     setHidden(false);
     setScrolled(scrollState.current.scrolled);
     setKeyboardFocused(false);
+    // Tab can enter the body from the dialog header's close/geometry controls.
+    const panel = body.closest('[role="dialog"]') || body;
 
     const pointerIntent = () => {
       keyboardIntentRef.current = false;
@@ -65,13 +75,17 @@ export function useLitePanelSectionNavigation(open) {
     const onKeyDown = (event) => {
       if (event.key === 'Tab' || navRef.current?.contains(event.target)) {
         keyboardIntentRef.current = true;
+        setKeyboardFocused(Boolean(navRef.current?.contains(document.activeElement)));
         // A keyboard user must never tab into an invisible nav.
         reveal();
       }
     };
     const onFocus = (event) => {
       if (!navRef.current?.contains(event.target)) return;
-      const fromKeyboard = keyboardIntentRef.current || event.target.matches?.(':focus-visible');
+      // An observed pointer event is authoritative. Use the browser heuristic
+      // only when focus entered from outside this body's input listeners.
+      const fromKeyboard = keyboardIntentRef.current
+        ?? event.target.matches?.(':focus-visible');
       if (fromKeyboard) {
         keyboardIntentRef.current = true;
         setKeyboardFocused(true);
@@ -93,7 +107,7 @@ export function useLitePanelSectionNavigation(open) {
     body.addEventListener('wheel', pointerIntent, { passive: true });
     body.addEventListener('touchstart', pointerIntent, { passive: true });
     body.addEventListener('pointerdown', pointerIntent, { passive: true });
-    body.addEventListener('keydown', onKeyDown);
+    panel.addEventListener('keydown', onKeyDown);
     body.addEventListener('focusin', onFocus);
     body.addEventListener('focusout', onFocusOut);
     return () => {
@@ -101,7 +115,7 @@ export function useLitePanelSectionNavigation(open) {
       body.removeEventListener('wheel', pointerIntent);
       body.removeEventListener('touchstart', pointerIntent);
       body.removeEventListener('pointerdown', pointerIntent);
-      body.removeEventListener('keydown', onKeyDown);
+      panel.removeEventListener('keydown', onKeyDown);
       body.removeEventListener('focusin', onFocus);
       body.removeEventListener('focusout', onFocusOut);
     };

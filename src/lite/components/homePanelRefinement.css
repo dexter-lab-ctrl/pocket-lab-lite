@@ -14,6 +14,14 @@ html[data-lite-theme] .lite-home-panel-layer .lite-home-details-panel {
   border:1px solid var(--azure-border);
   box-shadow:var(--azure-panel-shadow);
 }
+/* The legacy Daylight sheet selector has higher class specificity than the
+   shared overlay rule. Keep Home's mobile geometry authoritative in both
+   Azure themes so the panel does not gain an extra viewport gutter. */
+@media (max-width:899px) {
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-details-panel {
+    max-height:calc(var(--lite-visual-viewport-height,100vh) - max(1rem,env(safe-area-inset-top)) - max(1rem,env(safe-area-inset-bottom)));
+  }
+}
 html[data-lite-theme] .lite-home-panel-layer .lite-overlay-head {
   align-items:center;
   gap:.7rem;
@@ -241,6 +249,9 @@ html[data-lite-theme] .lite-home-panel-layer .lite-home-panel-scroll {
   min-height:0;min-width:0;flex:1 1 auto;touch-action:pan-y;
   -webkit-overflow-scrolling:touch;overflow-y:auto;overflow-x:hidden;
   overscroll-behavior-y:contain;scroll-padding-block:0;
+  /* Collapsing the sticky strip must not move scrollTop and feed a false
+     direction reversal back into the navigation hook. */
+  overflow-anchor:none;
 }
 html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav {
   width:100%;min-width:0;min-height:0;max-height:none;
@@ -404,14 +415,6 @@ html[data-lite-theme] .lite-home-panel-layer .lite-home-desktop-panel-tools butt
 @container home-panel (max-width:400px) {
   html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav {
     grid-template-columns:repeat(2,minmax(0,1fr));
-  }
-  html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-counts {
-    grid-template-columns:minmax(0,1fr);
-  }
-}
-@media(max-width:700px) {
-  html[data-lite-theme] .lite-home-panel-layer .lite-home-panel-scroll {
-    padding-bottom:max(1.5rem,env(safe-area-inset-bottom));
   }
 }
 @media(prefers-reduced-motion:reduce) {

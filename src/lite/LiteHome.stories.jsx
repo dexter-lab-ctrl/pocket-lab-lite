@@ -2,6 +2,7 @@ import React from 'react';
 import { expect, userEvent, within } from '@storybook/test';
 import LiteStoryFrame, { createLiteStory } from './stories/LiteStoryFrame.jsx';
 import { HomeWorkspaceFlow } from './LiteHome.jsx';
+import { LiteThemeProvider } from './theme/LiteThemeProvider.jsx';
 
 export default { title: 'Pocket Lab Lite/Home', component: LiteStoryFrame, tags: ['autodocs'] };
 
@@ -173,11 +174,17 @@ export const FlowReducedMotion = homePanelStory({ panel:'workspace', theme:'dark
 export const FlowCheckingContract = {
   ...createLiteStory('home', 'healthy', { theme:'dark', viewport:'mobile390', status:'partial',
     notes:'Presentational Checking fixture only; does not start an API refresh or claim backend work.' }),
-  render: () => <div className="lite-home-panel-layer" style={{ padding:'1rem' }}>
+  render: () => <LiteThemeProvider><div className="lite-home-panel-layer" style={{ padding:'1rem' }}>
+    <p>Simulated Checking presentation; no backend request is started.</p>
     <div className="lite-home-details-panel" style={{ container:'home-panel / inline-size', maxWidth:440 }}>
       <HomeWorkspaceFlow overallTone="ready" attentionCount={0} checking />
     </div>
-  </div>,
+  </div></LiteThemeProvider>,
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.ownerDocument.documentElement).toHaveAttribute('data-lite-theme', 'dark');
+    await expect(within(canvasElement).getByText('Checking', { exact: true })).toBeVisible();
+    await expect(within(canvasElement).getAllByRole('listitem')).toHaveLength(4);
+  },
 };
 
 export const FlowActivityLongHistory = homePanelStory({ panel:'activity', theme:'dark', section:'History',
