@@ -1,6 +1,8 @@
 import React from 'react';
 import { expect, userEvent, within } from '@storybook/test';
 import LiteStoryFrame, { createLiteStory } from './stories/LiteStoryFrame.jsx';
+import { HomeWorkspaceFlow } from './LiteHome.jsx';
+import { LiteThemeProvider } from './theme/LiteThemeProvider.jsx';
 
 export default { title: 'Pocket Lab Lite/Home', component: LiteStoryFrame, tags: ['autodocs'] };
 
@@ -101,8 +103,13 @@ function homePanelStory({ panel, theme, viewport = 'desktop', scenario = 'health
       notes: notes || 'Source story only; no screenshot or accessibility qualification yet.',
     }),
     play: async ({ canvasElement }) => {
-      if (panel === 'workspace') await openWorkspaceDetails(canvasElement);
-      else await openRecentActivity(canvasElement, section);
+      if (panel === 'workspace') {
+        await openWorkspaceDetails(canvasElement);
+        if (section === 'Service health') {
+          const dialog = await within(canvasElement.ownerDocument.body).findByRole('dialog', { name: 'Workspace details' });
+          await userEvent.click(within(dialog).getByRole('button', { name: 'Service health' }));
+        }
+      } else await openRecentActivity(canvasElement, section);
     },
   };
 }
@@ -150,3 +157,38 @@ export const AzureActivityDesktopMovedResized = {
     await userEvent.keyboard('{ArrowLeft}');
   },
 };
+
+/* P0/P1 workflow visual-source stories. All are AUTHORED / UNVALIDATED. */
+export const FlowReadyDaylightDesktop = homePanelStory({ panel:'workspace', theme:'daylight', section:'Service health' });
+export const FlowReadyBlackDesktop = homePanelStory({ panel:'workspace', theme:'dark', section:'Service health' });
+export const FlowReadyDaylightMobile = homePanelStory({ panel:'workspace', theme:'daylight', section:'Service health', viewport:'mobile390' });
+export const FlowReadyBlackMobile = homePanelStory({ panel:'workspace', theme:'dark', section:'Service health', viewport:'mobile390' });
+export const FlowReviewBlackMobile = homePanelStory({ panel:'workspace', theme:'dark', section:'Service health', scenario:'lifecycle-attention', viewport:'mobile390' });
+export const FlowSavedBlackMobile = homePanelStory({ panel:'workspace', theme:'dark', section:'Service health', scenario:'offline-saved', viewport:'mobile390' });
+export const FlowSystemDesktop = homePanelStory({ panel:'workspace', theme:'system', section:'Service health' });
+export const FlowNarrowDesktop = homePanelStory({ panel:'workspace', theme:'dark', section:'Service health', viewport:'desktop',
+  notes:'Use Move/Resize controls to qualify 380px actual panel width; source only.' });
+export const FlowTextEnlargedMobile = homePanelStory({ panel:'workspace', theme:'dark', section:'Service health', viewport:'mobile360', textScale:2 });
+export const FlowReducedMotion = homePanelStory({ panel:'workspace', theme:'dark', section:'Service health', viewport:'mobile390',
+  notes:'Enable Storybook reduced-motion toolbar during later qualification.' });
+export const FlowCheckingContract = {
+  ...createLiteStory('home', 'healthy', { theme:'dark', viewport:'mobile390', status:'partial',
+    notes:'Presentational Checking fixture only; does not start an API refresh or claim backend work.' }),
+  render: () => <LiteThemeProvider><div className="lite-home-panel-layer" style={{ padding:'1rem' }}>
+    <p>Simulated Checking presentation; no backend request is started.</p>
+    <div className="lite-home-details-panel" style={{ container:'home-panel / inline-size', maxWidth:440 }}>
+      <HomeWorkspaceFlow overallTone="ready" attentionCount={0} checking />
+    </div>
+  </div></LiteThemeProvider>,
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.ownerDocument.documentElement).toHaveAttribute('data-lite-theme', 'dark');
+    await expect(within(canvasElement).getByText('Checking', { exact: true })).toBeVisible();
+    await expect(within(canvasElement).getAllByRole('listitem')).toHaveLength(4);
+  },
+};
+
+export const FlowActivityLongHistory = homePanelStory({ panel:'activity', theme:'dark', section:'History',
+  notes:'History uses bounded, backend-owned samples; enlarged/long fixture qualification pending.' });
+export const FlowActivityMobile320 = homePanelStory({ panel:'activity', theme:'dark', viewport:'mobile360',
+  notes:'Storybook 360px reference; exact 320px is covered by mocked browser tests.' });
+export const FlowActivitySystem = homePanelStory({ panel:'activity', theme:'system', section:'Recent' });

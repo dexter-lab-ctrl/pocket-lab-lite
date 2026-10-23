@@ -76,7 +76,8 @@ export default function HomeActivityDetails({
   return <div className="lite-home-activity-details">
     <nav ref={navigation?.navRef} className="lite-home-details-nav lite-home-activity-tabs"
       aria-label="Activity sections" data-tabs-hidden={navigation?.hidden ? 'true' : 'false'}
-      data-tabs-scrolled={navigation?.scrolled ? 'true' : 'false'}>
+      data-tabs-scrolled={navigation?.scrolled ? 'true' : 'false'}
+      data-tabs-keyboard-focused={navigation?.keyboardFocused ? 'true' : 'false'}>
       {sections.map(([key, label]) => <button type="button" key={key}
         aria-current={section === key ? 'page' : undefined}
         onClick={() => { navigation?.reveal(true); setSection(key); }}>{label}</button>)}

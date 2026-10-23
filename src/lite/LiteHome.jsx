@@ -89,7 +89,7 @@ export function homeWorkflowPresentation({ overallTone, attentionCount, savedSta
   };
 }
 
-function HomeWorkspaceFlow({ overallTone, attentionCount, savedStateOnly, checking }) {
+export function HomeWorkspaceFlow({ overallTone, attentionCount, savedStateOnly, checking }) {
   const flow = homeWorkflowPresentation({ overallTone, attentionCount, savedStateOnly, checking });
   return (
     <section
@@ -102,14 +102,14 @@ function HomeWorkspaceFlow({ overallTone, attentionCount, savedStateOnly, checki
         <strong id="lite-home-workflow-title">{flow.title}</strong>
         <p>{flow.summary}</p>
       </div>
-      <div className="lite-home-workflow-visual" aria-hidden="true">
+      <div className="lite-home-workflow-visual" role="list" aria-label="Workspace flow areas">
         {HOME_WORKFLOW_STEPS.map((step, index) => {
           const Icon = step.icon;
           return (
             <React.Fragment key={step.id}>
-              {index > 0 ? <span className="lite-home-workflow-line" style={{ '--lite-home-workflow-delay': `${(index - 1) * 180}ms` }}><i /></span> : null}
-              <span className={`lite-home-workflow-node is-${step.id} ${flow.activeNodes.includes(step.id) ? 'is-active' : ''} ${flow.doneNodes.includes(step.id) ? 'is-done' : ''}`}>
-                <Icon className="h-4 w-4" />
+              {index > 0 ? <span aria-hidden="true" className="lite-home-workflow-line" style={{ '--lite-home-workflow-delay': `${(index - 1) * 180}ms` }}><i /></span> : null}
+              <span role="listitem" aria-label={`${step.label} workspace flow step`} className={`lite-home-workflow-node is-${step.id} ${flow.activeNodes.includes(step.id) ? 'is-active' : ''} ${flow.doneNodes.includes(step.id) ? 'is-done' : ''}`}>
+                <Icon className="h-4 w-4" aria-hidden="true" />
                 <small>{step.label}</small>
               </span>
             </React.Fragment>
@@ -284,7 +284,8 @@ export default function HomeScreen({
         <nav ref={workspaceNav.navRef} className="lite-home-details-nav lite-home-workspace-tabs"
           aria-label="Workspace details sections"
           data-tabs-hidden={workspaceNav.hidden ? 'true' : 'false'}
-          data-tabs-scrolled={workspaceNav.scrolled ? 'true' : 'false'}>
+          data-tabs-scrolled={workspaceNav.scrolled ? 'true' : 'false'}
+          data-tabs-keyboard-focused={workspaceNav.keyboardFocused ? 'true' : 'false'}>
           {Object.entries(sectionNames).map(([id, label]) =>
             <button key={id} type="button" aria-current={workspaceSection === id ? 'page' : undefined}
               onClick={() => { workspaceNav.reveal(true); setWorkspaceSection(id); }}>{label}</button>)}

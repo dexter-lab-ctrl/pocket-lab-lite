@@ -14,6 +14,14 @@ html[data-lite-theme] .lite-home-panel-layer .lite-home-details-panel {
   border:1px solid var(--azure-border);
   box-shadow:var(--azure-panel-shadow);
 }
+/* The legacy Daylight sheet selector has higher class specificity than the
+   shared overlay rule. Keep Home's mobile geometry authoritative in both
+   Azure themes so the panel does not gain an extra viewport gutter. */
+@media (max-width:899px) {
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-details-panel {
+    max-height:calc(var(--lite-visual-viewport-height,100vh) - max(1rem,env(safe-area-inset-top)) - max(1rem,env(safe-area-inset-bottom)));
+  }
+}
 html[data-lite-theme] .lite-home-panel-layer .lite-overlay-head {
   align-items:center;
   gap:.7rem;
@@ -52,11 +60,16 @@ html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav {
   box-shadow:var(--azure-shadow);
   transition:transform 180ms ease,opacity 180ms ease;
 }
-html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav[data-tabs-hidden="true"]:not(:focus-within) {
-  transform:translate3d(0,calc(-100% - .75rem),0);opacity:0;pointer-events:none;
-}
-html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav:focus-within {
-  transform:none;opacity:1;pointer-events:auto;
+/* Visibility is wholly driven by the shared hook's modality-aware state.
+   :focus-within alone cannot pin a touched tab in mobile Chrome. */
+html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav[data-tabs-hidden="true"] {
+  /* Keep the sticky strip's layout footprint above the scrolled content.
+     Hiding it visually avoids scroll anchoring and keeps native scrollTop
+     stable without leaving an empty area in the viewport. */
+  height:auto;min-height:0;max-height:none;min-block-size:auto;
+  padding-block:.5rem;margin-block:0;border-width:1px;
+  visibility:hidden;opacity:0;pointer-events:none;box-shadow:none;
+  transform:translateY(calc(-100% - .5rem));
 }
 html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav button {
   min-width:0;min-height:44px;padding:.52rem .35rem;
@@ -230,4 +243,184 @@ html[data-lite-theme] .lite-home-panel-layer .lite-overlay-grip {background:var(
 }
 @media(prefers-reduced-motion:reduce) {
   html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav {transition:none}
+}
+
+/* P0/P1 — Home panel-only flow, scroll ownership and responsive affordances.
+   The legacy workflow rules in index.css target Daylight only; this scoped
+   semantic layer applies to BOTH Azure theme values in the portal. */
+html[data-lite-theme] .lite-home-panel-layer .lite-home-panel-scroll {
+  min-height:0;min-width:0;flex:1 1 auto;touch-action:pan-y;
+  -webkit-overflow-scrolling:touch;overflow-y:auto;overflow-x:hidden;
+  overscroll-behavior-y:contain;scroll-padding-block:0;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav {
+  width:100%;min-width:0;min-height:0;max-height:none;
+  box-sizing:border-box;overflow:visible;
+  transform:none;transition:opacity 140ms ease;
+  scroll-margin-block:0;flex-shrink:0;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav[data-tabs-hidden="true"] {
+  height:auto;max-height:none;min-height:0;padding:.5rem;margin:0;border-width:1px;
+  visibility:hidden;opacity:0;overflow:visible;pointer-events:none;box-shadow:none;
+  transform:translateY(calc(-100% - .5rem));
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav button {
+  min-width:0;min-height:44px;overflow-wrap:anywhere;
+  touch-action:manipulation;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav button:focus:not(:focus-visible) {
+  outline:none;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow {
+  display:grid;grid-template-columns:minmax(0,1fr) auto;
+  gap:clamp(.75rem,2cqi,1.1rem);min-width:0;margin:0;
+  padding:clamp(.85rem,2.2cqi,1.2rem);
+  border:1px solid var(--azure-border);
+  border-radius:var(--azure-radius-card);
+  background:var(--azure-surface);color:var(--azure-text);
+  box-shadow:var(--azure-shadow);overflow:hidden;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow.is-attention {
+  border-color:var(--azure-warning);background:var(--azure-warning-subtle);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-copy {
+  display:grid;align-content:start;gap:.3rem;min-width:0;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-copy > span {
+  display:block;color:var(--azure-accent);font-size:.75rem;
+  font-weight:700;letter-spacing:.04em;text-transform:none;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-copy > strong {
+  display:block;margin:0;color:var(--azure-text);
+  font-size:clamp(1rem,2.8cqi,1.25rem);font-weight:750;
+  line-height:1.3;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-copy > p {
+  margin:0;color:var(--azure-neutral);font-size:.84rem;
+  line-height:1.5;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-badge {
+  align-self:start;justify-self:end;display:inline-flex;align-items:center;
+  min-height:2rem;max-width:100%;padding:.35rem .7rem;
+  border:1px solid var(--azure-strong-border);border-radius:999px;
+  background:var(--azure-accent-subtle);color:var(--azure-accent);
+  font-size:.77rem;font-weight:700;text-align:center;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow.is-ready .lite-home-workflow-badge {
+  background:var(--azure-success-subtle);color:var(--azure-success);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow.is-attention .lite-home-workflow-badge {
+  background:var(--azure-warning-subtle);color:var(--azure-warning);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow.is-saved .lite-home-workflow-badge {
+  background:var(--azure-neutral-subtle);color:var(--azure-neutral);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-visual {
+  grid-column:1 / -1;display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr) minmax(.55rem,.16fr)) minmax(0,1fr);
+  gap:0;align-items:center;min-width:0;padding:0;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-node {
+  position:relative;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:.45rem;min-width:0;width:auto;
+  min-height:4.6rem;padding:.6rem .35rem;
+  border:1px solid var(--azure-strong-border);
+  border-radius:var(--azure-radius-control);
+  background:var(--azure-raised);color:var(--azure-text);
+  box-shadow:none;transition:border-color 160ms ease,background 160ms ease;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-node.is-active {
+  border-color:var(--azure-accent);background:var(--azure-selected);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-node.is-done {
+  border-color:var(--azure-success);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-node.is-done::after {
+  content:'';position:absolute;right:.45rem;top:.4rem;width:.45rem;height:.45rem;
+  border-radius:50%;background:var(--azure-success);box-shadow:none;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-node > svg {
+  display:block;flex:none;width:1.4rem;height:1.4rem;
+  color:var(--azure-accent);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-node small {
+  position:static;inset:auto;transform:none;
+  margin:0;color:var(--azure-text);font-size:.77rem;
+  font-weight:650;line-height:1.25;white-space:normal;text-align:center;
+  overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-line {
+  display:block;position:relative;align-self:center;
+  height:2px;width:100%;min-width:0;margin:0;
+  border-radius:999px;background:var(--azure-strong-border);overflow:hidden;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-line i {
+  position:absolute;inset:0;width:100%;height:100%;
+  border-radius:inherit;background:var(--azure-accent);
+  transform:none;opacity:.32;animation:none;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow.motion-live .lite-home-workflow-node.is-active,
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow.motion-live .lite-home-workflow-line i,
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow.motion-checking .lite-home-workflow-line i {
+  animation:none;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-counts dd {
+  min-width:0;overflow-wrap:anywhere;font-size:clamp(1.15rem,3cqi,1.65rem);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-timeline > li {
+  min-width:0;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-timeline button {
+  margin-inline-start:auto;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-desktop-panel-tools button {
+  cursor:pointer;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-desktop-panel-tools button[aria-label^="Move"] {
+  cursor:grab;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-desktop-panel-tools button[aria-label^="Resize"] {
+  cursor:nwse-resize;
+}
+@container home-panel (max-width:560px) {
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-visual {
+    grid-template-columns:minmax(0,1fr);justify-items:stretch;gap:0;
+  }
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-node {
+    flex-direction:row;justify-content:flex-start;gap:.8rem;
+    min-height:3.5rem;width:100%;padding:.7rem .85rem;
+  }
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-node small {
+    flex:1;text-align:left;font-size:.82rem;
+  }
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-line {
+    width:2px;height:1rem;margin:0 0 0 1.55rem;
+    background:var(--azure-strong-border);
+  }
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-line i {
+    width:100%;height:100%;background:var(--azure-accent);
+  }
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow {
+    grid-template-columns:minmax(0,1fr);gap:.7rem;
+  }
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-badge {
+    justify-self:start;grid-row:2;
+  }
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-visual {
+    grid-row:3;grid-column:1;
+  }
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-timeline button {
+    margin-inline-start:0;
+  }
+}
+@container home-panel (max-width:400px) {
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav,
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-node {
+    animation:none!important;transition:none!important;
+  }
 }

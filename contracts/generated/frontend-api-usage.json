@@ -3588,7 +3588,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "b4cf1876733c596240535cfafe27476058138bed6154ce0aba0051461e122ff6",
+    "aggregate_fingerprint": "05f9a99619e2a4d852f10b7fbaad4f092090d02a0b861ac7c3b1e8c3dbb3468f",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3612,8 +3612,8 @@
       "src/lite/LiteDevices.jsx": "bb04fb4fbcacb7dd6e1df25007322fb31e0bd3694ce9223c30a60d05bdec0d7f",
       "src/lite/LiteDevices.stories.jsx": "a7a5332db1f1b64a1da6beedbd30891ac3ad83c123dadb749ee909e8d5236d33",
       "src/lite/LiteHelp.jsx": "06af915a9e7f9781ac852804a5d7ab40f5a061c12c8b80b3c888b11b94167a4c",
-      "src/lite/LiteHome.jsx": "38dd62812e7642d2afaee878c8211531d516155a9820ee469872c92ac559d815",
-      "src/lite/LiteHome.stories.jsx": "21e1a5473cf37c01d06a76fc33a0871ee03d79bb8841328032fd9d52a9c73954",
+      "src/lite/LiteHome.jsx": "eb1a2817877b4872d83a8860fdae715008830f0c9516e3bf26024124029c2119",
+      "src/lite/LiteHome.stories.jsx": "ca758c71eba46b819e9d9183884cc13e60a2a92d3c4dd4756233313f9bc8dafc",
       "src/lite/LiteHome.test.jsx": "e6237afada9b4dc68ed0abc9b115c63ca3daf41984ee4526d2cc720b5b5b388c",
       "src/lite/LiteHomeAzure.test.jsx": "0c1994270ab9dcd27bbb78d12037b8858cbf29412880f42612caddbb40c8167b",
       "src/lite/LiteHomeScreen.test.jsx": "3a4f598b0a6c050c8f34f8160b34aeeaba5ae72a761542928554294deee8ef3d",
