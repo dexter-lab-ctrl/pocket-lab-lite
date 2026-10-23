@@ -249,8 +249,11 @@ html[data-lite-theme] .lite-home-panel-layer .lite-home-panel-scroll {
   min-height:0;min-width:0;flex:1 1 auto;touch-action:pan-y;
   -webkit-overflow-scrolling:touch;overflow-y:auto;overflow-x:hidden;
   overscroll-behavior-y:contain;scroll-padding-block:0;
-  /* Collapsing the sticky strip must not move scrollTop and feed a false
-     direction reversal back into the navigation hook. */
+}
+/* Only the collapsed strip needs anchoring disabled. Keeping the default
+   anchor during ordinary touch scrolling avoids extra renderer work while
+   preventing the collapse itself from feeding a false direction reversal. */
+html[data-lite-theme] .lite-home-panel-layer .lite-home-panel-scroll:has(.lite-home-details-nav[data-tabs-hidden="true"]) {
   overflow-anchor:none;
 }
 html[data-lite-theme] .lite-home-panel-layer .lite-home-details-nav {
