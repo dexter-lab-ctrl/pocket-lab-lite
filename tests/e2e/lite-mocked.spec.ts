@@ -151,7 +151,10 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await sheet.getByRole('button', { name: 'Service health', exact: true }).click();
     await expect.poll(() => scrollBody.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
 
-    const tabs = sheet.getByRole('navigation', { name: 'Workspace details sections' });
+    // The shared navigation remains in the sticky layout footprint while it
+    // is visually hidden, so query the owned element rather than requiring an
+    // accessible-role match that excludes visibility:hidden nodes.
+    const tabs = sheet.locator('.lite-home-details-nav');
     await expect(tabs).toHaveAttribute('data-tabs-hidden', 'false');
 
     await scrollBody.evaluate((element) => {
