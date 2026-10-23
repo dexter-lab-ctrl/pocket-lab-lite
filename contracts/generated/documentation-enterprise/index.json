@@ -3066,6 +3066,29 @@
       },
       {
         "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "LITE_HOME_VISUAL_CANDIDATES",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "tests/e2e/lite-home-panel-flow-visual-candidates.spec.ts"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "frontend",
           "repository tooling"
         ],
@@ -40738,7 +40761,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 508,
+      "page_count": 509,
       "top_level": [
         "start-here",
         "use",
@@ -48622,7 +48645,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "cd5e0974b51fbb3d18295e9e6b4c6149582848008d3ccd530eeaf2ea57f93faf",
-        "documentation": "d402fea635d53b0e77da1ff0969fa2b51f1f943084d5804aacb806d9f8fe784a",
+        "documentation": "bf23ede8298cfafcfa2dab8621caf5273a4e845889ab3173c6350551c90565ee",
         "openapi": "ba5d78f12a18902f47a5c390e7c2ade4a6cc9188176bdee47cf293eada12c549",
         "operational_health": "c758d7d653b42f1860a89c2ab10d285eea8d8f477df13804b883c3b2e3255f8e"
       },
@@ -50558,7 +50581,7 @@
         },
         {
           "path": "package.json",
-          "sha256": "c34c8223fb63013761c681fddc382f29935c96fb01110b4058d98adc1b9a630a"
+          "sha256": "affbc812f65e95322d2e54307f2fdbb9cf4c7211603a9c72f862a3d03a23360f"
         },
         {
           "path": "requirements-dev.txt",
@@ -98158,6 +98181,196 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
+          "npm run test:azure:home:flow:a11y"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:home:flow:a11y",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:ui:home:flow:a11y",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "WCAG 2.2 AA behavioral focus and contrast qualification in Home panels",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:azure:home:flow:mocked"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:home:flow:mocked",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:ui:home:flow:mocked",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Real native scroll geometry and theme/focus regression on mocked desktop/mobile",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:azure:home:premium:perf"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:home:flow:perf",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:ui:home:flow:perf",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Reuse PR 588 and 589 performance contract and baseline attribution",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:azure:home:flow:unit"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:home:flow:unit",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:ui:home:flow:unit",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Authoritative shared Home navigation and workflow state unit regressions",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:azure:home:flow:visual:candidates"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:ui:home:flow:visual:candidates",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:ui:home:flow:visual:candidates",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Explicitly gated visual candidate review; never auto-promote PNG baselines",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
           "npm run test:identity:azure:a11y"
         ],
         "dependencies": [],
@@ -121855,5 +122068,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "4f22f877602d9a5b57706dff852342aa392bc9f31e8d7f772d4a0fa6b212bab5"
+  "source_fingerprint": "cf78930773ac33f0a554c5ec7ba88c21f502d6289a027373f729bb64037ee5bc"
 }

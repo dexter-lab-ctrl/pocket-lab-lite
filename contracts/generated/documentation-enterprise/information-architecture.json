@@ -4688,7 +4688,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 508,
+  "page_count": 509,
   "page_types": [
     "overview",
     "guide",
@@ -4909,6 +4909,29 @@
       "source_or_generator": "development/lite-home-azure-panel-refinement.md",
       "title": "Azure Horizon — Home Workspace and Recent Activity panel refinement",
       "url": "/development/lite-home-azure-panel-refinement/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-home-flow-scroll-stabilization.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:development/lite-home-flow-scroll-stabilization",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-home-flow-scroll-stabilization.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-home-flow-scroll-stabilization.md",
+      "title": "Home panel flow and scroll stabilization (P0/P1)",
+      "url": "/development/lite-home-flow-scroll-stabilization/"
     },
     {
       "additional_audiences": [],
@@ -18041,7 +18064,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "30b8634c1c8f2536c28f4d4347f34b6723650a9e7ca7cfd5191ae124f46cc337",
+  "source_fingerprint": "c7eee03dd0923971579e90d7677e40ec143bfa045b606ae663a73e598fef017b",
   "top_level": [
     "start-here",
     "use",
