@@ -74,7 +74,7 @@ Preserved dialog semantics, Escape/focus return, focus trap, keyboard move/resiz
 | `src/lite/LiteHome.stories.jsx` | Service Health flow across Ready/Review/Saved, mobile, desktop, System, long/text-scale/reduced motion, Activity variants |
 | `package.json`; `tasks/Taskfile.lite.yml` | Focused unit, mocked, Axe, visual-candidate and existing performance runners |
 
-The initial #626 screenshot baselines remain untouched. Any unavoidable visual drift is **PENDING HUMAN APPROVAL**, not silently promoted. The Storybook Checking entry describes a pending in-flight refresh fixture; the unit test does instantiate the Checking state directly. Later qualification should add a true pending-refresh story fixture before marking that Storybook state verified.
+The initial #626 screenshot baselines remain untouched. Any unavoidable visual drift is **PENDING HUMAN APPROVAL**, not silently promoted. Storybook also renders an isolated, explicitly simulated Checking presentation contract; it does not start an API refresh or assert that backend work occurred. The unit test instantiates the Checking state directly. A real pending-refresh interaction remains for later qualification.
 
 ## Subsequent Dev-PC qualification commands — do not execute in this implementation session
 
