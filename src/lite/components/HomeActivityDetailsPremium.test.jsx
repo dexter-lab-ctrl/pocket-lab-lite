@@ -70,3 +70,29 @@ describe('Premium Recent Activity', () => {
     expect(screen.getByText('Time not available')).toBeTruthy();
   });
 });
+
+describe('Home P1 activity density and truthful large counts', () => {
+  it('renders large backend counts without a 9,999 cap or invented missing values', () => {
+    const large = selectHomeActivityEvidence({
+      history_available: true, counts_available: true, active_operations: 123456,
+      queued_operations: 234567, recent_completed: 345678,
+      attention_required: 0, stale_operations: 0, historical_failures: 0,
+      recent_events: [], running_window_minutes: 30, history_window_days: 7,
+      attention_scope: 'explicit_active_flags_only',
+    });
+    render(<HomeActivityDetails activity={large} />);
+    const counts = document.querySelectorAll('.lite-home-activity-counts dd');
+    expect(counts).toHaveLength(4);
+    expect(counts[0].textContent).toBe(new Intl.NumberFormat().format(123456));
+    expect(counts[1].textContent).toBe(new Intl.NumberFormat().format(234567));
+    expect(counts[2].textContent).toBe(new Intl.NumberFormat().format(345678));
+    expect(counts[3].textContent).toBe('0');
+  });
+  it('does not label a historical failure as current attention', () => {
+    render(<HomeActivityDetails activity={activity} />);
+    expect(screen.getByText('Needs review')).toBeTruthy();
+    expect(document.querySelectorAll('.lite-home-activity-counts dd')[3].textContent).toBe('0');
+    fireEvent.click(screen.getByRole('button', { name: 'History', exact: true }));
+    expect(screen.getByLabelText('Historical failures')).toHaveTextContent('3');
+  });
+});
