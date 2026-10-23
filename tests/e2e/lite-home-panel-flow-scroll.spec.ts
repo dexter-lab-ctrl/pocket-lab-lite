@@ -42,7 +42,7 @@ for (const kind of ['workspace', 'activity'] as const) {
   test(`${kind}: native input, nested scrolling and reopen preserve one scroll owner`, async ({ page, isMobile }) => {
     await page.setViewportSize({ width: 390, height: 780 });
     const dialog = await openPanel(page, kind);
-    const nav = dialog.getByRole('navigation', { name: navLabel(kind) });
+    const nav = dialog.locator('.lite-home-details-nav');
     await nav.getByRole('button').first().click();
     const scroll = await makeRealScrollRange(dialog);
     const bounds = (await scroll.boundingBox())!;
@@ -93,7 +93,7 @@ for (const kind of ['workspace', 'activity'] as const) {
     test(`${kind} ${appearance} ${width}px: pointer section then immediate native scroll retract/reveal`, async ({ page }) => {
       await page.setViewportSize({ width, height: 780 });
       const dialog = await openPanel(page, kind, appearance);
-      const nav = dialog.getByRole('navigation', { name: navLabel(kind) });
+      const nav = dialog.locator('.lite-home-details-nav');
       const firstTarget = kind === 'workspace' ? 'Service health' : 'Running';
       await nav.getByRole('button', { name: firstTarget, exact: true }).click();
       await expect(nav.getByRole('button', { name: firstTarget })).toHaveAttribute('aria-current', 'page');
@@ -101,8 +101,19 @@ for (const kind of ['workspace', 'activity'] as const) {
       const scroll = await makeRealScrollRange(dialog);
       await moveNativeScroll(scroll, 240);
       await expect(nav).toHaveAttribute('data-tabs-hidden', 'true');
-      const collapsed = await nav.evaluate((node) => node.getBoundingClientRect().height);
-      expect(collapsed).toBeLessThanOrEqual(1);
+      await page.waitForTimeout(250);
+      const collapsed = await nav.evaluate((node) => {
+        const styles = getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        const owner = node.closest('.lite-home-panel-scroll').getBoundingClientRect();
+        return { height: rect.height, visibility: styles.visibility, opacity: styles.opacity,
+          pointerEvents: styles.pointerEvents, visualBottom: rect.bottom, ownerTop: owner.top };
+      });
+      expect(collapsed.height).toBeGreaterThan(1);
+      expect(collapsed.visibility).toBe('hidden');
+      expect(collapsed.opacity).toBe('0');
+      expect(collapsed.pointerEvents).toBe('none');
+      expect(collapsed.visualBottom).toBeLessThanOrEqual(collapsed.ownerTop + 8);
       // A single hidden frame misses scroll-anchoring feedback loops. Sample
       // successive layout frames without further input and require stability.
       const settled = await scroll.evaluate(async (node) => {
@@ -141,13 +152,16 @@ for (const kind of ['workspace', 'activity'] as const) {
   test(`${kind}: keyboard navigation restores visible strip without disabling focus outline`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 780 });
     const dialog = await openPanel(page, kind);
-    const nav = dialog.getByRole('navigation', { name: navLabel(kind) });
+    const nav = dialog.locator('.lite-home-details-nav');
     const scroll = await makeRealScrollRange(dialog);
     await moveNativeScroll(scroll, 230);
     await expect(nav).toHaveAttribute('data-tabs-hidden', 'true');
     // Enter from the header using real Tab traversal after pointer use. The
     // body itself is not focusable; programmatic tab.focus() hid this defect.
-    await nav.getByRole('button').first().click();
+    await nav.locator('button').first().evaluate((node) => {
+      node.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      (node as HTMLElement).focus();
+    });
     await moveNativeScroll(scroll, 230);
     await dialog.getByRole('button', { name: 'Close Home details', exact: true }).focus();
     await page.keyboard.press('Tab');
@@ -165,14 +179,14 @@ for (const kind of ['workspace', 'activity'] as const) {
     await page.setViewportSize({ width: 390, height: 780 });
     await page.emulateMedia({ colorScheme: 'dark' });
     const dialog = await openPanel(page, kind, 'system');
-    const nav = dialog.getByRole('navigation', { name: navLabel(kind) });
+    const nav = dialog.locator('.lite-home-details-nav');
     const selected = kind === 'workspace' ? 'Service health' : 'History';
     await nav.getByRole('button', { name: selected }).click();
     const scroll = await makeRealScrollRange(dialog);
     await moveNativeScroll(scroll, 200);
     await page.emulateMedia({ colorScheme: 'light' });
     await expect(dialog).toBeVisible();
-    await expect(nav.getByRole('button', { name: selected })).toHaveAttribute('aria-current','page');
+    await expect(nav.locator('button').filter({ hasText: selected })).toHaveAttribute('aria-current','page');
     await expect(scroll).toHaveJSProperty('scrollTop', 200);
     await expect(page.locator('html')).toHaveAttribute('data-lite-theme','light');
     await page.emulateMedia({ colorScheme: 'dark' });

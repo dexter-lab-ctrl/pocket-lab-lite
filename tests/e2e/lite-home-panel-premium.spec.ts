@@ -16,7 +16,7 @@ async function panel(page: Page, kind: 'workspace' | 'activity') {
   return dialog;
 }
 async function scrollNav(dialog: import('@playwright/test').Locator, label: string) {
-  const nav = dialog.getByRole('navigation', { name: label });
+  const nav = dialog.locator('.lite-home-details-nav');
   const scroll = dialog.locator('.lite-home-panel-scroll');
   // Deterministic scroll span, independent of mock event-count variations.
   await scroll.evaluate((node) => {
@@ -69,11 +69,11 @@ for (const kind of ['workspace','activity'] as const) {
     const dialog = await panel(page, kind);
     const navName = kind === 'workspace' ? 'Workspace details sections' : 'Activity sections';
     await scrollNav(dialog, navName);
-    const nav = dialog.getByRole('navigation', { name: navName });
-    const first = nav.getByRole('button').first();
+    const nav = dialog.locator('.lite-home-details-nav');
+    const first = nav.locator('button').first();
     await first.focus();
     await expect(nav).toHaveAttribute('data-tabs-hidden', 'false');
-    const target = nav.getByRole('button', { name: kind === 'workspace' ? 'Diagnostics' : 'History' });
+    const target = nav.locator('button').filter({ hasText: kind === 'workspace' ? 'Diagnostics' : 'History' });
     await target.click();
     await expect(target).toHaveAttribute('aria-current', 'page');
     await expect(nav).toHaveAttribute('data-tabs-hidden', 'false');

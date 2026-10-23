@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // The LiteDetailsPanel body is the single vertical scroll owner in both Home
 // panels. No window scroll listener and no second Activity-specific algorithm.
@@ -25,19 +25,13 @@ export function useLitePanelSectionNavigation(open) {
   // A touched button may retain DOM focus after click; this is NOT keyboard
   // focus and must not pin the strip through a subsequent momentum scroll.
   const keyboardIntentRef = useRef(null);
-  const skipBaselineRef = useRef(false);
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [keyboardFocused, setKeyboardFocused] = useState(false);
 
   const reveal = useCallback((resetScroll = false) => {
-    const wasHidden = scrollState.current.hidden;
     scrollState.current = { ...scrollState.current, hidden: false };
     setHidden(false);
-    // A section change already establishes the new scroll baseline at zero.
-    // Avoid a second synchronous layout read for that explicit reset while
-    // retaining the read for scroll-driven hide/reveal geometry changes.
-    if (resetScroll && wasHidden) skipBaselineRef.current = true;
     if (resetScroll && bodyRef.current) {
       // Section contents replace each other; reset the real scroll owner,
       // even if the browser did not emit a scroll event during the swap.
@@ -46,21 +40,6 @@ export function useLitePanelSectionNavigation(open) {
       setScrolled(false);
     }
   }, []);
-
-  useLayoutEffect(() => {
-    if (!open || !bodyRef.current) {
-      if (!open) skipBaselineRef.current = false;
-      return;
-    }
-    if (skipBaselineRef.current) {
-      skipBaselineRef.current = false;
-      return;
-    }
-    // At the bottom, collapsing the strip reduces the maximum scroll range.
-    // Absorb the browser's clamp before its scroll event: it is geometry,
-    // not upward user intent. overflow-anchor handles the non-boundary case.
-    scrollState.current.baseline = Math.max(0, bodyRef.current.scrollTop);
-  }, [hidden, open]);
 
   useEffect(() => {
     const body = bodyRef.current;
