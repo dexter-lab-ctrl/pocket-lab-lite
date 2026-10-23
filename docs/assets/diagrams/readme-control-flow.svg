@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 1110" width="640" height="1110" role="img" aria-labelledby="title desc">
+<title id="title">Pocket Lab Lite — control plane architecture</title>
+<desc id="desc">UI uses Caddy, FastAPI and NATS/JetStream to reach backend execution, with sanitized events, SQLite state, and FastAPI prepared read models flowing back to the UI.</desc>
+<rect width="640" height="1110" rx="28" fill="#0d1727"/>
+<text x="320" y="54" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" fill="#f4f8ff" font-size="30" font-weight="700">How Pocket Lab Lite works</text>
+<text x="320" y="89" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" fill="#b6cfe0" font-size="21">Control stays separate from execution</text>
+<g font-family="Arial,Helvetica,sans-serif" text-anchor="middle">
+<rect x="56" y="121" width="528" height="101" rx="18" fill="#17405a" stroke="#55d6e4" stroke-width="2"/>
+<text x="320" y="162" fill="#ffffff" font-size="27" font-weight="700">React / Vite PWA</text><text x="320" y="197" fill="#c5e8f2" font-size="22">User interface — no shell or NATS access</text>
+<path d="M320 224v33m-10 -10 10 12 10 -12" stroke="#68d9e2" stroke-width="3" fill="none"/>
+<rect x="56" y="264" width="528" height="93" rx="18" fill="#182b42" stroke="#46758c" stroke-width="2"/>
+<text x="320" y="302" fill="#fff" font-size="27" font-weight="700">Caddy</text><text x="320" y="335" fill="#c5d9eb" font-size="22">Same-origin HTTP / HTTPS</text>
+<path d="M320 358v31m-10 -10 10 12 10 -12" stroke="#68d9e2" stroke-width="3" fill="none"/>
+<rect x="56" y="396" width="528" height="95" rx="18" fill="#183c52" stroke="#467d90" stroke-width="2"/>
+<text x="320" y="433" fill="#fff" font-size="27" font-weight="700">FastAPI /api/lite/*</text><text x="320" y="467" fill="#c5e6ee" font-size="21">Auth, policy, commands and prepared reads</text>
+<path d="M320 492v30m-10 -10 10 12 10 -12" stroke="#68d9e2" stroke-width="3" fill="none"/>
+<rect x="56" y="529" width="528" height="94" rx="18" fill="#24364c" stroke="#658299" stroke-width="2"/>
+<text x="320" y="566" fill="#fff" font-size="27" font-weight="700">NATS / JetStream</text><text x="320" y="601" fill="#d1deeb" font-size="21">Backend commands and events</text>
+<path d="M320 624v32m-10 -10 10 12 10 -12" stroke="#68d9e2" stroke-width="3" fill="none"/>
+<rect x="56" y="663" width="528" height="100" rx="18" fill="#273753" stroke="#7891a8" stroke-width="2"/>
+<text x="320" y="700" fill="#fff" font-size="27" font-weight="700">Worker / Agent / Supervisor</text>
+<text x="320" y="737" fill="#d9e8f5" font-size="21">App, device and recovery operations</text>
+<path d="M320 764v32m-10 -10 10 12 10 -12" stroke="#68d9e2" stroke-width="3" fill="none"/>
+<rect x="56" y="803" width="528" height="97" rx="18" fill="#15433f" stroke="#4faeab" stroke-width="2"/>
+<text x="320" y="841" fill="#fff" font-size="27" font-weight="700">Evidence and durable state</text>
+<text x="320" y="875" fill="#d2f1e8" font-size="21">Sanitized events, heartbeats, SQLite</text>
+<path d="M320 901v32m-10 -10 10 12 10 -12" stroke="#68d9e2" stroke-width="3" fill="none"/>
+<rect x="56" y="941" width="528" height="94" rx="18" fill="#17405a" stroke="#55d6e4" stroke-width="2"/>
+<text x="320" y="979" fill="#fff" font-size="26" font-weight="700">FastAPI prepared reads → UI</text>
+<text x="320" y="1012" fill="#c5e8f2" font-size="21">Backend truth flows back to the PWA</text>
+</g>
+<text x="320" y="1076" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" fill="#a7bbd0" font-size="18">Simplified flow · see canonical architecture docs</text>
+</svg>

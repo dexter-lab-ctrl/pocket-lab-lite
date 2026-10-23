@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "description": "README publication references; not an independent verification authority. Canonical generated docs retain their original statuses and uncommitted sentinel.",
+  "documentation_authority": "docs/generated/enterprise/documentation-platform/sources-of-truth.md",
+  "evidence_policy": "source-grounded claims only; this contract grants no runtime qualification, release promotion, or verified status",
+  "screenshot_policy": {
+    "kind": "existing-mocked-playwright-baselines",
+    "not_live_proof": true,
+    "manifest": "docs/README-media-source.md"
+  },
+  "claims": [
+    {
+      "id": "home.summary",
+      "heading": "Home — Know how your workspace is doing",
+      "statement": "Home shows a prepared workspace overview and safe next actions.",
+      "sources": [
+        "src/lite/LiteHome.jsx",
+        "docs/generated/production/home.md"
+      ],
+      "scope": "source-described",
+      "limitation": "Display does not prove backend health."
+    },
+    {
+      "id": "devices.enrollment",
+      "heading": "Devices — Bring your devices together",
+      "statement": "Device enrollment is backend-owned with identity guards.",
+      "sources": [
+        "src/lite/LiteDevices.jsx",
+        "docs/generated/production/devices.md",
+        "docs/operations/devices-durable-enrollment.md"
+      ],
+      "scope": "source-described",
+      "limitation": "Supported devices and availability depend on runtime prerequisites."
+    },
+    {
+      "id": "apps.photoprism",
+      "heading": "Apps — Self-hosted applications, managed simply",
+      "statement": "App Catalog manages declared capabilities; PhotoPrism is the documented production adapter.",
+      "sources": [
+        "docs/architecture/universal-app-platform.md",
+        "docs/generated/production/apps.md"
+      ],
+      "scope": "bounded-source-description",
+      "limitation": "No claim of general third-party app installation or branch qualification."
+    },
+    {
+      "id": "security.local_checks",
+      "heading": "Safety — Understand your local safety posture",
+      "statement": "Quick, Full and supported App checks provide bounded local findings.",
+      "sources": [
+        "src/lite/LiteSecurity.jsx",
+        "docs/generated/production/security.md"
+      ],
+      "scope": "source-described",
+      "limitation": "Checks are not guarantees and may be incomplete."
+    },
+    {
+      "id": "recovery.guarded",
+      "heading": "Recovery — Prepare for the unexpected",
+      "statement": "Backup, verification, preview and guarded restore are modeled as distinct steps.",
+      "sources": [
+        "src/lite/LiteRecovery.jsx",
+        "docs/generated/production/recovery.md"
+      ],
+      "scope": "bounded-source-description",
+      "limitation": "A backup is not automatically verified; restore readiness varies."
+    },
+    {
+      "id": "identity.local",
+      "heading": "Identity & Access — Decide who can do what",
+      "statement": "Local human access and optional Enterprise Mode are exposed.",
+      "sources": [
+        "src/lite/LiteIdentity.jsx",
+        "docs/generated/production/identity.md",
+        "docs/generated/production/limitations.md"
+      ],
+      "scope": "bounded-source-description",
+      "limitation": "No external identity federation claim."
+    },
+    {
+      "id": "rules.registered",
+      "heading": "Rules — Keep protected actions governed",
+      "statement": "Rules govern explicitly registered protected actions.",
+      "sources": [
+        "src/lite/LiteRules.jsx",
+        "docs/generated/production/rules.md",
+        "docs/generated/production/limitations.md"
+      ],
+      "scope": "bounded-source-description",
+      "limitation": "Not an unrestricted rule automation engine."
+    }
+  ]
+}
