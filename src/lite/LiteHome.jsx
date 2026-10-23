@@ -89,7 +89,7 @@ export function homeWorkflowPresentation({ overallTone, attentionCount, savedSta
   };
 }
 
-function HomeWorkspaceFlow({ overallTone, attentionCount, savedStateOnly, checking }) {
+export function HomeWorkspaceFlow({ overallTone, attentionCount, savedStateOnly, checking }) {
   const flow = homeWorkflowPresentation({ overallTone, attentionCount, savedStateOnly, checking });
   return (
     <section
