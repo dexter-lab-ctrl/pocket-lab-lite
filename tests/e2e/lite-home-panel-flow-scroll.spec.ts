@@ -137,3 +137,43 @@ for (const width of [320, 360, 375, 390, 430]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 2)).toBe(false);
   });
 }
+
+test('Black workflow uses raised node surfaces and readable labels on desktop', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const dialog = await openPanel(page, 'workspace', 'dark');
+  await dialog.getByRole('button', { name: 'Service health' }).click();
+  const flow = dialog.locator('.lite-home-workflow');
+  const facts = await flow.evaluate((root) => {
+    const targets = ['.lite-home-workflow', '.lite-home-workflow-node', '.lite-home-workflow-node small',
+      '.lite-home-workflow-badge'];
+    return targets.map((selector) => {
+      const element = selector === '.lite-home-workflow' ? root : root.querySelector(selector)!;
+      const styles = getComputedStyle(element);
+      return { selector, background: styles.backgroundColor, color: styles.color,
+        display: styles.display, size: element.getBoundingClientRect().width };
+    });
+  });
+  expect(facts[0].display).toBe('grid');
+  expect(facts[1].size).toBeGreaterThan(45);
+  for (const fact of facts) {
+    expect(fact.color).not.toBe('rgb(15, 23, 42)');
+    expect(fact.background).not.toBe('rgb(255, 255, 255)');
+  }
+  await expect(flow.getByRole('listitem')).toHaveCount(4);
+});
+
+test('narrow resized desktop Home panel reflows workflow without leaking body scroll', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 800 });
+  const dialog = await openPanel(page, 'workspace', 'dark');
+  const resize = dialog.getByRole('button', { name: 'Resize Workspace details panel' });
+  await resize.focus();
+  for (let n = 0; n < 14; n += 1) await page.keyboard.press('ArrowLeft');
+  await dialog.getByRole('button', { name: 'Service health' }).click();
+  const visual = dialog.locator('.lite-home-workflow-visual');
+  const width = await dialog.evaluate((node) => node.getBoundingClientRect().width);
+  expect(width).toBeLessThanOrEqual(500);
+  expect((await visual.evaluate((node) => getComputedStyle(node).gridTemplateColumns)).split(' ')).toHaveLength(1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 2)).toBe(false);
+  await dialog.getByRole('button', { name: 'Reset Workspace details position and size' }).click();
+  await expect(dialog).toHaveAttribute('data-home-panel-layout', 'desktop-movable');
+});
