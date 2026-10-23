@@ -1,6 +1,7 @@
 import React from 'react';
 import { expect, userEvent, within } from '@storybook/test';
 import LiteStoryFrame, { createLiteStory } from './stories/LiteStoryFrame.jsx';
+import { HomeWorkspaceFlow } from './LiteHome.jsx';
 
 export default { title: 'Pocket Lab Lite/Home', component: LiteStoryFrame, tags: ['autodocs'] };
 
@@ -169,8 +170,15 @@ export const FlowNarrowDesktop = homePanelStory({ panel:'workspace', theme:'dark
 export const FlowTextEnlargedMobile = homePanelStory({ panel:'workspace', theme:'dark', section:'Service health', viewport:'mobile360', textScale:2 });
 export const FlowReducedMotion = homePanelStory({ panel:'workspace', theme:'dark', section:'Service health', viewport:'mobile390',
   notes:'Enable Storybook reduced-motion toolbar during later qualification.' });
-export const FlowCheckingContract = homePanelStory({ panel:'workspace', theme:'dark', section:'Service health', viewport:'mobile390',
-  notes:'Checking state requires an in-flight refresh fixture; this story is an entry point, not proof of checking.' });
+export const FlowCheckingContract = {
+  ...createLiteStory('home', 'healthy', { theme:'dark', viewport:'mobile390', status:'partial',
+    notes:'Presentational Checking fixture only; does not start an API refresh or claim backend work.' }),
+  render: () => <div className="lite-home-panel-layer" style={{ padding:'1rem' }}>
+    <div className="lite-home-details-panel" style={{ container:'home-panel / inline-size', maxWidth:440 }}>
+      <HomeWorkspaceFlow overallTone="ready" attentionCount={0} checking />
+    </div>
+  </div>,
+};
 
 export const FlowActivityLongHistory = homePanelStory({ panel:'activity', theme:'dark', section:'History',
   notes:'History uses bounded, backend-owned samples; enlarged/long fixture qualification pending.' });
