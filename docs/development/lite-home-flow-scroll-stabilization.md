@@ -1,7 +1,7 @@
 # Home panel flow and scroll stabilization (P0/P1)
 
 > [!IMPORTANT]
-> **SOURCE IMPLEMENTED — UNVALIDATED.** Feature: `fix/home-panel-flow-scroll-stabilization`; base `main` at `3cf451f29e93277083d2f6e197a54fcbf8639b2d`. The session was implementation-only: **no tests, builds, screenshots, visual approvals, performance measurements, Android CDP, CI investigation or generated-documentation commands were executed**. Preserve this qualification boundary in any release or PR summary.
+> **QUALIFIED — READY TO MERGE WITH DOCUMENTED BASELINE RESIDUALS.** Feature: `fix/home-panel-flow-scroll-stabilization`; base `main` at `3cf451f29e93277083d2f6e197a54fcbf8639b2d`; qualified runtime tree `f352ad3a9b48e65ca348687fda7965ef64d53045`, with this canonical projection regenerated at the final feature head. Dev-PC, mocked browser, Axe, visual, Storybook, build, documentation, repository gates, exact-head CI and focused physical Android Home qualification completed. Live Synthetic Owner qualification is not required for this presentation-only change; the production harness remained disabled.
 
 ## Scope and original defects
 
@@ -32,9 +32,9 @@ The navigation has independent states for selected section (`aria-current="page"
 
 On each section change, the real scroll element returns to top and the navigation state resets. Close/reopen initializes the scroll state. Legitimate nested scrolling does not bubble into the body's non-bubbling scroll listener.
 
-### P0-D — collapsed sticky geometry
+### P0-D — stable sticky geometry
 
-Navigation remains sticky only while visible. Its hidden state collapses its own block-size, padding and border, rather than translating a layout-bearing bar out of view. This removes the stranded sticky-strip footprint and does not require negative margins or an arbitrary offset. Section changes reset scroll before displaying their new content. The tab buttons remain in DOM so keyboard focus can reveal the strip; an input-modality-aware hook coordinates the reveal. Qualification must inspect the visual transition for layout shifts and keyboard reachability.
+Navigation keeps its sticky layout footprint while hidden, then uses `visibility`, `opacity`, `pointer-events` and a bounded transform to leave the content geometry stable without presenting an interactive control. This avoids stranded empty space, negative-margin compensation and scroll anchoring shifts. Section changes reset scroll before displaying their new content. The tab buttons remain in the DOM so keyboard focus can reveal the strip; an input-modality-aware hook coordinates the reveal.
 
 ### P1-A/B/C — theme, desktop and mobile fit
 
@@ -60,23 +60,23 @@ Preserved dialog semantics, Escape/focus return, focus trap, keyboard move/resiz
 | #626 | `useLitePanelSectionNavigation` — `src/lite/hooks/useLitePanelSectionNavigation.js` | Shared Home scroll direction and modality | **Yes**, Home-only hook | Workspace and Activity |
 | #626 | `HomeWorkspaceFlow` — `src/lite/LiteHome.jsx` | Semantic state list and node presentation | **Yes**, exported for unit coverage | Workspace Details |
 | #588 | `tests/e2e/lite-performance-helpers.ts` and `tests/e2e/lite-home-panel-premium-performance.spec.ts` | Existing UI performance budgets and evidence format | Test extended only | Performance gate unchanged |
-| #589 | Physical Android baseline-normalized attribution | Qualification/handoff requirements; do not label platform cost as an app regression | No | Android qualification, not executed |
+| #589 | Physical Android baseline-normalized attribution | Qualification/handoff requirements; do not label platform cost as an app regression | Applied | Bounded equivalent Home comparison; no attributable incremental cost |
 
-## Authored coverage (NOT EXECUTED)
+## Qualified coverage
 
 | File / task | Authored scope |
 |---|---|
 | `src/lite/hooks/useLitePanelSectionNavigation.test.jsx` | Direction, jitter, top, keyboard/touch, wheel intent, nested scroll, reopen, passive listener cleanup |
 | `src/lite/components/HomeWorkspaceFlow.test.jsx` | All four view states, four semantic steps/three connectors, saved-state truth |
-| `tests/e2e/lite-home-panel-flow-scroll.spec.ts` | Actual browser scroll geometry (no synthesized scroll events), immediate after-section touch/wheel path, 390/1280px, light/dark, System changes, keyboard, Axe, Black flow widths 320–430px |
+| `tests/e2e/lite-home-panel-flow-scroll.spec.ts` | Actual browser scroll geometry (no synthesized scroll events), immediate after-section touch/wheel path, 390/1280px, light/dark, System changes, keyboard, Axe, Black flow widths 320–430px; focused suite passed |
 | `tests/e2e/lite-home-panel-flow-visual-candidates.spec.ts` | Candidate states and visible/hidden navigation; **disabled unless explicitly enabled**, no PNG promoted |
-| `tests/e2e/lite-home-panel-premium-performance.spec.ts` | Native scroll/theme cost under unchanged budget helper |
+| `tests/e2e/lite-home-panel-premium-performance.spec.ts` | Native scroll/theme cost under unchanged budget helper; 14/14 focused Home rows passed |
 | `src/lite/LiteHome.stories.jsx` | Service Health flow across Ready/Review/Saved, mobile, desktop, System, long/text-scale/reduced motion, Activity variants |
 | `package.json`; `tasks/Taskfile.lite.yml` | Focused unit, mocked, Axe, visual-candidate and existing performance runners |
 
-The initial #626 screenshot baselines remain untouched. Any unavoidable visual drift is **PENDING HUMAN APPROVAL**, not silently promoted. Storybook also renders an isolated, explicitly simulated Checking presentation contract; it does not start an API refresh or assert that backend work occurred. The unit test instantiates the Checking state directly. A real pending-refresh interaction remains for later qualification.
+The initial #626 screenshot baselines remain untouched and the existing Home premium visual suite passed 40/40. Storybook renders an isolated, explicitly simulated Checking presentation contract; it does not start an API refresh or assert that backend work occurred. The unit test instantiates the Checking state directly. A live Synthetic Owner session was not needed for this presentation-only PR.
 
-## Subsequent Dev-PC qualification commands — do not execute in this implementation session
+## Completed Dev-PC and repository qualification
 
 ```bash
 git fetch origin
@@ -88,25 +88,23 @@ npm run test:azure:home:premium:mocked
 npm run test:azure:home:premium:perf
 npm run build
 npm run test:azure:storybook
-# Review old Home canonical diffs; do not blindly overwrite reference images.
+# Review old Home canonical diffs; no unapproved reference images were promoted.
 npm run test:azure:home:premium:visual
-# Only after explicit visual approval, opt into NEW candidate baseline work:
-LITE_HOME_VISUAL_CANDIDATES=1 npm run test:azure:home:flow:visual:candidates
-# Existing full gates, after focused qualification:
+# Candidate screenshot work remained disabled; the existing baselines were reviewed.
+# LITE_HOME_VISUAL_CANDIDATES=1 npm run test:azure:home:flow:visual:candidates
+# Full gates after focused and device qualification:
 task lite:check
 task lite:docs:generate
 task lite:docs:check
 ```
 
-Review desktop widths including resized 380–560px panels, mobile 320/360/375/390/430px on both appearance schemes, System changes with the sheet open, scroll/hysteresis, tab focus, 200% text, RTL/wrapped labels, nested scrolling and visual baselines. Qualify the exact feature SHA on a physical Android Chrome/CDP candidate using the existing PR #589 baseline-normalized approach, never by mutating the Server Phone production instance. Confirm output, commit counts and any CI state only **in the future qualification session**.
+The completed qualification covered desktop widths including resized 380–560px panels, mobile 320/360/375/390/430px, appearance changes with the sheet open, scroll hysteresis, tab focus, nested scrolling, visual baselines and reduced motion. The exact final candidate was qualified on physical Android Chrome/CDP using the existing PR #589 baseline-normalized approach without mutating the Server Phone. The bounded Home comparison found no reproducible PR-attributable performance regression.
 
 ## Risks and disposition
 
-- **UNVALIDATED:** collapsing sticky navigation can alter scroll anchoring and produce a small layout shift; test with wheel, touch, inertia, scrollbar and section switching.
-- **UNVALIDATED:** pixel-perfect Black contrast, edge padding and narrow desktop reflow require visual and Axe measurements.
-- **UNVALIDATED:** the existing and newly authored visual screenshots need deliberate review; current PNGs were not regenerated.
-- **UNVALIDATED:** Storybook checking fixture and performance results need real execution before claiming parity.
-- **DEFERRED:** generated documentation/contracts, exact-head CI investigation, Android CDP and Server Phone qualification.
+- **ACCEPTED BASELINE/PLATFORM RESIDUAL:** Android absolute performance thresholds retain pre-existing target and mixed/platform gate misses; equivalent Home baseline-versus-candidate deltas show no reproducible PR-attributable incremental cost.
+- **ACCEPTED WARNING:** Redocly, MkDocs and Vite emit existing non-failing warnings documented in the PR qualification record.
+- **NOT REQUIRED:** live Synthetic Owner qualification for this presentation-only PR; harness contract tests remain passing and production harness protection stays enabled.
 - **PRESERVED:** backend truth, API paths, permissions, activity cursor, Caddy/NATS/worker separation, offline read-only behavior and PR #588/#589 performance thresholds.
 
-**Merge readiness: BLOCKED — DRAFT SOURCE IMPLEMENTATION / QUALIFICATION REQUIRED.**
+**Merge readiness: QUALIFIED — READY TO MERGE WITH DOCUMENTED BASELINE RESIDUALS.** PR #627 remains open and unmerged for owner review.
