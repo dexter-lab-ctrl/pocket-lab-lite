@@ -74,12 +74,44 @@ test('[interaction] Azure Home mobile Activity scroll/hide/reveal costs', async 
   });
   const report = await measureLiteInteraction(page, info, 'azure-home-activity-mobile-scroll-navigation', async () => {
     await body.evaluate((node) => {
-      node.scrollTop = 260;
-      node.dispatchEvent(new Event('scroll'));
-      node.scrollTop = 90;
-      node.dispatchEvent(new Event('scroll'));
+      node.scrollTo({ top: 260, behavior: 'instant' });
+    });
+    await expect(body).toHaveJSProperty('scrollTop', 260);
+    await body.evaluate((node) => {
+      node.scrollTo({ top: 90, behavior: 'instant' });
     });
   }, { settleMs: 900, mode: 'mocked' });
   expectLitePerformanceBudget(report);
   await writeLitePerformanceEvidence(info, report);
 });
+
+for (const kind of ['workspace', 'activity'] as const) {
+  test(`[interaction] Azure Home ${kind} pointer scroll direction, theme and content reflow`, async ({ page }, info) => {
+    await page.setViewportSize({ width: 390, height: 780 });
+    await installScenario(page, 'healthy');
+    await page.goto('/?screen=home');
+    await waitForLiteScreenToSettle(page, 'home');
+    await page.getByRole('button', { name: kind === 'workspace' ? 'Workspace details' : 'View activity' }).click();
+    const dialog = page.getByRole('dialog', { name: kind === 'workspace' ? 'Workspace details' : 'Recent activity' });
+    if (kind === 'workspace') await dialog.getByRole('button', { name: 'Service health' }).click();
+    const body = dialog.locator('.lite-home-panel-scroll');
+    await body.evaluate((node) => {
+      const filler = document.createElement('div');
+      filler.style.height = '1400px';
+      filler.dataset.perfFiller = 'true';
+      node.append(filler);
+    });
+    const report = await measureLiteInteraction(page, info, `azure-home-${kind}-native-scroll-theme`, async () => {
+      await body.evaluate((node) => node.scrollTo({ top: 280, behavior: 'instant' }));
+      await expect(dialog.locator('.lite-home-details-nav')).toHaveAttribute('data-tabs-hidden', 'true');
+      await body.evaluate((node) => node.scrollTo({ top: 80, behavior: 'instant' }));
+      await expect(dialog.locator('.lite-home-details-nav')).toHaveAttribute('data-tabs-hidden', 'false');
+      await page.evaluate(() => {
+        const root = document.documentElement;
+        root.dataset.liteTheme = root.dataset.liteTheme === 'dark' ? 'light' : 'dark';
+      });
+    }, { settleMs: 900, mode: 'mocked' });
+    expectLitePerformanceBudget(report);
+    await writeLitePerformanceEvidence(info, report);
+  });
+}
