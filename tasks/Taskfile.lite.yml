@@ -1,6 +1,31 @@
 version: '3'
 
 tasks:
+  lite:ui:home:flow:unit:
+    desc: Authoritative shared Home navigation and workflow state unit regressions
+    cmds:
+      - npm run test:azure:home:flow:unit
+
+  lite:ui:home:flow:mocked:
+    desc: Real native scroll geometry and theme/focus regression on mocked desktop/mobile
+    cmds:
+      - npm run test:azure:home:flow:mocked
+
+  lite:ui:home:flow:a11y:
+    desc: WCAG 2.2 AA behavioral focus and contrast qualification in Home panels
+    cmds:
+      - npm run test:azure:home:flow:a11y
+
+  lite:ui:home:flow:visual:candidates:
+    desc: Explicitly gated visual candidate review; never auto-promote PNG baselines
+    cmds:
+      - npm run test:azure:home:flow:visual:candidates
+
+  lite:ui:home:flow:perf:
+    desc: Reuse PR 588 and 589 performance contract and baseline attribution
+    cmds:
+      - npm run test:azure:home:premium:perf
+
   lite:ui:identity:azure:unit:
     desc: Exercise source-level identity projection, Manage and shared desktop geometry
     cmds:
