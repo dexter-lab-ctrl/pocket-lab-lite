@@ -1,0 +1,18 @@
+version: '3'
+
+tasks:
+  lite:readme:check:
+    desc: Check README links, capability inventory, asset safety, and mocked screenshot provenance
+    cmds:
+      - '{{.PYTHON}} scripts/docs/check_readme.py'
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_readme_contract.py'
+
+  lite:readme:visual:
+    desc: Later SVG viewport qualification at 320–1920 pixels (not GitHub-render qualification)
+    cmds:
+      - 'VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/docs/readme-responsive.spec.ts --project=mocked-desktop'
+
+  lite:readme:capture:mocked:
+    desc: Explicit future opt-in mocked UI capture, not a live production screenshot
+    cmds:
+      - 'VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked POCKETLAB_README_CAPTURE=1 npx playwright test tests/e2e/lite-readme-capture.spec.ts --project=mocked-desktop'
