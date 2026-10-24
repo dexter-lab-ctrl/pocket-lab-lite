@@ -1,0 +1,148 @@
+/* Azure Horizon Devices: one semantic theme tree, scoped to Devices and its portals. */
+html[data-lite-theme] .lite-device-relationship-map,
+html[data-lite-theme] .lite-remote-access-panel,
+html[data-lite-theme] .lite-device-card,
+html[data-lite-theme] .lite-devices-add-card,
+html[data-lite-theme] .lite-device-details-focus-anchor,
+html[data-lite-theme] .lite-device-details-focus-anchor .lite-device-details-panel,
+html[data-lite-theme] .lite-device-remove-panel {
+  background: var(--azure-surface);
+  border-color: var(--azure-border);
+  color: var(--azure-text);
+  box-shadow: var(--azure-shadow);
+}
+html[data-lite-theme] .lite-device-relationship-map {
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-card);
+  padding: clamp(1rem, 2vw, 1.4rem);
+  min-width: 0;
+}
+html[data-lite-theme] .lite-device-relationship-head :is(strong,span),
+html[data-lite-theme] .lite-device-card :is(h2,strong),
+html[data-lite-theme] .lite-device-details-panel :is(h3,strong) { color: var(--azure-text); }
+html[data-lite-theme] .lite-device-relationship-head p,
+html[data-lite-theme] .lite-device-card :is(p,small),
+html[data-lite-theme] .lite-device-details-panel :is(p,small),
+html[data-lite-theme] .lite-device-relationship-node small {
+  color: var(--azure-muted);
+}
+html[data-lite-theme] .lite-device-relationship-node,
+html[data-lite-theme] .lite-device-relationship-summary span,
+html[data-lite-theme] .lite-device-icon,
+html[data-lite-theme] .lite-device-flow-node,
+html[data-lite-theme] .lite-remote-access-facts > div,
+html[data-lite-theme] .lite-devices-safe-note,
+html[data-lite-theme] .lite-role-card {
+  background: var(--azure-raised);
+  border-color: var(--azure-border);
+  color: var(--azure-text);
+}
+html[data-lite-theme] .lite-device-relationship-flow {
+  min-width: 0;
+  max-width: 100%;
+}
+html[data-lite-theme] .lite-device-relationship-node {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-device-relationship-link.is-joined { color: var(--azure-success); border-color: var(--azure-success); }
+html[data-lite-theme] .lite-device-relationship-link.is-repairing,
+html[data-lite-theme] .lite-device-relationship-link.is-waiting { color: var(--azure-warning); border-color: var(--azure-warning); }
+html[data-lite-theme] .lite-device-relationship-link.is-disconnected,
+html[data-lite-theme] .lite-device-relationship-link.is-blocked,
+html[data-lite-theme] .lite-device-relationship-link.is-stopped { color: var(--azure-danger); border-color: var(--azure-danger); }
+html[data-lite-theme] .lite-device-relationship-link.is-unknown { color: var(--azure-neutral); border-color: var(--azure-neutral); }
+html[data-lite-theme] .lite-device-relationship-node.is-joined { border-color: var(--azure-success); }
+html[data-lite-theme] .lite-device-relationship-node.is-repairing,
+html[data-lite-theme] .lite-device-relationship-node.is-waiting { border-color: var(--azure-warning); }
+html[data-lite-theme] .lite-device-relationship-node.is-disconnected,
+html[data-lite-theme] .lite-device-relationship-node.is-stopped,
+html[data-lite-theme] .lite-device-relationship-node.is-blocked { border-color: var(--azure-danger); }
+html[data-lite-theme] .lite-device-relationship-node.is-unknown { border-color: var(--azure-neutral); }
+.lite-devices-horizon-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .75rem;
+}
+.lite-devices-horizon-summary > div {
+  min-width: 0;
+  padding: 1rem;
+  background: var(--azure-surface);
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-card);
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+}
+.lite-devices-horizon-summary span { color: var(--azure-muted); font-size: .84rem; }
+.lite-devices-horizon-summary strong { color: var(--azure-text); font-size: clamp(.96rem, 1.5vw, 1.25rem); overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-device-details-focus-anchor {
+  --lite-surface: var(--azure-surface);
+  --lite-surface-strong: var(--azure-surface);
+  background: var(--azure-surface);
+  border-color: var(--azure-border);
+  box-shadow: var(--azure-panel-shadow);
+}
+html[data-lite-theme] .lite-device-details-focus-anchor .lite-device-details-panel {
+  background: var(--azure-surface) !important;
+  color: var(--azure-text);
+  backdrop-filter: none;
+}
+html[data-lite-theme] .lite-device-details-panel-tools,
+html[data-lite-theme] .lite-device-remove-panel .lite-device-remove-actions {
+  background: var(--azure-surface);
+  border-color: var(--azure-border);
+  color: var(--azure-muted);
+}
+html[data-lite-theme] .lite-device-details-panel-tool,
+html[data-lite-theme] .lite-device-details-panel :is(button,input,select,textarea),
+html[data-lite-theme] .lite-devices-add-card :is(input,select,textarea) {
+  color: var(--azure-text);
+  background-color: var(--azure-input);
+  border-color: var(--azure-border);
+}
+html[data-lite-theme] .lite-device-details-panel :is(.pocket-button-primary,.lite-button-primary),
+html[data-lite-theme] .lite-devices-add-card :is(.pocket-button-primary,.lite-button-primary) {
+  background: var(--azure-button);
+  color: var(--azure-button-text);
+  border-color: var(--azure-button);
+}
+html[data-lite-theme] .lite-role-card:has(input:checked) {
+  border-color: var(--azure-accent);
+  background: var(--azure-selected);
+}
+html[data-lite-theme] .lite-device-details-focus-anchor :focus-visible,
+html[data-lite-theme] .lite-devices-add-card :focus-visible,
+html[data-lite-theme] .lite-device-relationship-map :focus-visible {
+  outline: 3px solid var(--azure-focus);
+  outline-offset: 2px;
+}
+html[data-lite-theme] .lite-device-details-panel :is(code,pre),
+html[data-lite-theme] .lite-devices-add-card :is(code,pre) {
+  color: var(--azure-text);
+  background: var(--azure-raised);
+  border-color: var(--azure-border);
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-device-card,
+html[data-lite-theme] .lite-device-details-panel,
+html[data-lite-theme] .lite-devices-add-card { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 700px) {
+  .lite-devices-horizon-summary { grid-template-columns: 1fr; gap: .5rem; }
+  html[data-lite-theme] .lite-device-relationship-flow { flex-direction: column; align-items: stretch; }
+  html[data-lite-theme] .lite-device-relationship-link { align-self: center; }
+  html[data-lite-theme] .lite-device-details-focus-anchor {
+    width: 100%; max-width: 100%;
+    padding-bottom: env(safe-area-inset-bottom);
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-lite-theme] .lite-device-relationship-map *,
+  html[data-lite-theme] .lite-device-details-focus-anchor * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
