@@ -210,6 +210,59 @@ tasks:
     cmds:
       - npm run test:apps:azure:qualification
 
+  # Premium refinement execution deferred by explicit session restriction.
+  lite:test:apps:premium:unit:
+    desc: Apps P0/P1 premium unit source — AUTHORED NOT EXECUTED
+    cmds:
+      - npm run test:apps:premium:unit
+
+  lite:test:apps:premium:mocked:
+    desc: Apps P0/P1 premium mocked source — AUTHORED NOT EXECUTED
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:premium:mocked
+
+  lite:test:apps:premium:a11y:
+    desc: Apps P0/P1 premium a11y source — AUTHORED NOT EXECUTED
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:premium:a11y
+
+  lite:test:apps:premium:theme:
+    desc: Apps P0/P1 premium theme source — AUTHORED NOT EXECUTED
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:premium:theme
+
+  lite:test:apps:premium:geometry:
+    desc: Apps P0/P1 premium geometry source — AUTHORED NOT EXECUTED
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:premium:geometry
+
+  lite:test:apps:premium:devices-regression:
+    desc: Apps P0/P1 premium devices-regression source — AUTHORED NOT EXECUTED
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:premium:devices-regression
+
+  lite:test:apps:premium:visual:
+    desc: Apps P0/P1 premium visual source — AUTHORED NOT EXECUTED
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:premium:visual
+
+  lite:test:apps:premium:performance:
+    desc: Apps P0/P1 premium performance source — AUTHORED NOT EXECUTED
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:premium:performance
+
+  lite:test:apps:premium:storybook:
+    desc: Apps P0/P1 premium storybook source — AUTHORED NOT EXECUTED
+    cmds:
+      - npm run test:apps:premium:storybook
+
   lite:test:rules:azure:unit:
     desc: Rules Azure selectors, Journey and shared geometry unit tests
     cmds:

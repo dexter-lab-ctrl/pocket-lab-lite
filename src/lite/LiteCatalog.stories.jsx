@@ -213,7 +213,7 @@ export const PremiumBackupExplanation = {
     await userEvent.click(within(manage).getByRole('tab', { name: 'Photos' }));
     const backup = await within(manage).findByRole('region', { name: 'Photo backup' });
     await userEvent.click(within(backup).getByText('How photo backup works'));
-    await expect(within(backup).getByText(/protected WebDAV originals/i)).toBeInTheDocument();
+    await expect(within(backup).getByText(/protected WebDAV destination/i)).toBeInTheDocument();
   },
 };
 
@@ -260,3 +260,64 @@ export const AzureManageBackupAndRecovery = {
     if (recovery) await userEvent.click(recovery);
   },
 };
+
+/* Premium Azure Horizon P0/P1 states: AUTHORED — NOT EXECUTED — UNVALIDATED */
+export const AzurePolishDaylightManage = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'daylight',viewport:'desktop',status:'unvalidated'}),
+  play: async ({canvasElement}) => openManage(canvasElement),
+};
+export const AzurePolishBlackManage = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'desktop',status:'unvalidated'}),
+  play: async ({canvasElement}) => openManage(canvasElement),
+};
+export const AzurePolishMobileBlack = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'mobile390',status:'unvalidated'}),
+  play: async ({canvasElement}) => {
+    await openManage(canvasElement);
+    const dialog=await within(canvasElement.ownerDocument.body).findByRole('dialog',{name:/Manage PhotoPrism/i});
+    await expect(within(dialog).queryByRole('button',{name:'Resize app management panel'})).not.toBeInTheDocument();
+  },
+};
+export const AzurePolishPhotoBackupReady = {
+  ...createLiteStory('catalog','photo-backup-completed',{theme:'daylight',viewport:'desktop',status:'unvalidated'}),
+  play: async ({canvasElement}) => openManage(canvasElement),
+};
+export const AzurePolishPhotoBackupAttention = {
+  ...createLiteStory('catalog','photo-backup-remote-unavailable',{theme:'dark',viewport:'mobile390',status:'unvalidated'}),
+  play: async ({canvasElement}) => openManage(canvasElement),
+};
+export const AzurePolishPhotoBackupUnknown = {
+  ...createLiteStory('catalog','photo-backup-malformed',{theme:'daylight',viewport:'mobile390',status:'unvalidated'}),
+  play: async ({canvasElement}) => openManage(canvasElement),
+};
+export const AzurePolishPhotoGuideExpanded = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'desktop',status:'unvalidated'}),
+  play: async ({canvasElement}) => {
+    await openManage(canvasElement);
+    const dialog=await within(canvasElement.ownerDocument.body).findByRole('dialog',{name:/Manage PhotoPrism/i});
+    await userEvent.click(within(dialog).getByRole('tab',{name:'Photos'}));
+    const backup=await within(dialog).findByRole('region',{name:'Photo backup'});
+    await userEvent.click(within(backup).getByText('How photo backup works'));
+  },
+};
+export const AzurePolishStorageFactsExpanded = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'daylight',viewport:'mobile390',status:'unvalidated'}),
+  play: async ({canvasElement}) => {
+    await openManage(canvasElement);
+    const dialog=await within(canvasElement.ownerDocument.body).findByRole('dialog',{name:/Manage PhotoPrism/i});
+    await userEvent.click(within(dialog).getByText('Storage and device details'));
+    await expect(within(dialog).getByText('Where this app runs')).toBeInTheDocument();
+  },
+};
+export const AzurePolishActionNotices = {
+  ...createLiteStory('catalog','app-media-not-ready',{theme:'dark',viewport:'desktop',status:'unvalidated'}),
+  play: async ({canvasElement}) => {
+    await openManage(canvasElement);
+    const dialog=await within(canvasElement.ownerDocument.body).findByRole('dialog',{name:/Manage PhotoPrism/i});
+    const summary=within(dialog).queryByText('Other action notices');
+    if(summary) await userEvent.click(summary);
+  },
+};
+export const AzurePolishGenericApp = createLiteStory('catalog','catalog-multi-app',{theme:'daylight',viewport:'desktop',status:'unvalidated'});
+export const AzurePolishZoom200 = createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'mobile360',textScale:2,status:'unvalidated'});
+export const AzurePolishSavedOffline = createLiteStory('catalog','offline-saved',{theme:'dark',viewport:'mobile390',status:'unvalidated'});
