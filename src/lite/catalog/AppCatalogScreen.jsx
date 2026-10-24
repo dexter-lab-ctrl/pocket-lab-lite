@@ -2635,9 +2635,11 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     closeActionDetails();
   }, [clearManageApp, closeActionDetails]);
 
+  const pullReadyRef = useRef(false);
   const runCatalogRefresh = useCallback(() => {
     if (pullRefreshInFlight.current || refreshing || savedStateOnly || !backendReachable) return;
     pullRefreshInFlight.current = true;
+    pullReadyRef.current = false;
     setPullRefresh({ pulling: false, ready: false, offsetY: 0 });
     catalogPullSpring.start({ catalogPullY: 0, immediate: reduceMotion, config: config.gentle });
     Promise.resolve().then(() => refresh()).catch(() => {}).finally(() => { pullRefreshInFlight.current = false; });
@@ -2647,6 +2649,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
   const bindCatalogPull = useDrag(({ active, movement: [, my], direction: [, dy], cancel, event }) => {
     if (typeof window !== 'undefined' && (window.scrollY > 4 || (document.scrollingElement?.scrollTop || 0) > 4 || refreshing || savedStateOnly || !backendReachable)) {
+      pullReadyRef.current = false;
       setPullRefresh({ pulling: false, ready: false, offsetY: 0 });
       catalogPullSpring.start({ catalogPullY: 0, immediate: true });
       cancel?.();
@@ -2659,10 +2662,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const pullingDown = dy >= 0 || my > 0;
     const offsetY = active && pullingDown ? clampNumber(my * 0.42, 0, 92) : 0;
     const ready = offsetY >= 54;
+    if (active) pullReadyRef.current = ready;
     setPullRefresh({ pulling: active && offsetY > 2, ready, offsetY });
     catalogPullSpring.start({ catalogPullY: offsetY, immediate: active || reduceMotion, config: config.gentle });
     if (!active) {
-      if (ready) runCatalogRefresh();
+      const releaseReady = pullReadyRef.current || ready;
+      pullReadyRef.current = false;
+      if (releaseReady) runCatalogRefresh();
       else {
         setPullRefresh({ pulling: false, ready: false, offsetY: 0 });
         catalogPullSpring.start({ catalogPullY: 0, immediate: reduceMotion, config: config.gentle });

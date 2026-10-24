@@ -1,8 +1,11 @@
 // @vitest-environment jsdom
+import '@testing-library/jest-dom/vitest';
 import React from 'react';
-import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
 import AppActionDetailsLazy from './AppActionDetailsLazy.jsx';
+
+afterEach(cleanup);
 
 const details = (status, extras = {}) => ({
   title:'Back up app', status, summary:'Backend status is not independently confirmed.',
@@ -14,15 +17,15 @@ const details = (status, extras = {}) => ({
 });
 
 describe('Azure premium Action Details — AUTHORED NOT EXECUTED', () => {
-  it.each(['requested','queued','blocked','skipped','unknown'])('does not turn %s into a success because a record was saved', status => {
+  it.each(['requested','queued','blocked','skipped','unknown'])('does not turn %s into a success because a record was saved', async status => {
     const {container} = render(<AppActionDetailsLazy actionId="backup_app" details={details(status)} />);
     expect(container.querySelector('.lite-app-premium-details.is-ready')).toBeNull();
-    expect(screen.getByText(/Nothing changed/)).toBeInTheDocument();
+    expect(await screen.findByText(/Nothing changed/)).toBeInTheDocument();
   });
-  it('preserves structured evidence and explicit non-change text', () => {
+  it('preserves structured evidence and explicit non-change text', async () => {
     render(<AppActionDetailsLazy actionId="backup_app" details={details('failed', {what_needs_attention:['Backup destination unavailable.']})} />);
-    expect(screen.getByText(/Backup destination unavailable/)).toBeInTheDocument();
-    expect(screen.getByText(/No media was copied/)).toBeInTheDocument();
+    expect(await screen.findByText(/Backup destination unavailable/)).toBeInTheDocument();
+    expect(await screen.findByText(/No media was copied/)).toBeInTheDocument();
   });
   it('distinguishes readiness from execution completion', () => {
     const {container}=render(<AppActionDetailsLazy actionId="backup_app" details={details('ready')} />);

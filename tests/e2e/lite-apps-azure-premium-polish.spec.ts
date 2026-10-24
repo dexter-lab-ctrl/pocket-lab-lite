@@ -106,7 +106,7 @@ test.describe('Azure Apps premium theme and responsive contracts — authored, n
   });
   test('generic non-PhotoPrism app does not inherit photo-only controls',async({page})=>{
     await catalog(page,'catalog-multi-app','light');
-    await expect(page.getByText('Example App')).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Example App',exact:true})).toBeVisible();
     await page.getByRole('searchbox',{name:'Search apps'}).fill('Example');
     await expect(page.locator('.lite-catalog-app-card')).toHaveCount(1);
     const panel=page.getByRole('button',{name:'Manage',exact:true}).first();

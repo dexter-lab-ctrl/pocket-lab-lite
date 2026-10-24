@@ -1233,7 +1233,9 @@ export const handlers = [
     const multiApp = currentScenario === 'catalog-multi-app';
     const installAvailable = currentScenario === 'catalog-install-available';
     const routeUnavailable = currentScenario === 'app-route-not-ready';
-    const ready = !installAvailable && (scenario() === 'catalog-ready' || scenario() === 'lifecycle-attention' || multiApp || currentScenario.startsWith('app-governance-') || routeUnavailable);
+    const photoBackupScenario = currentScenario.startsWith('photo-backup-');
+    const savedScenario = currentScenario === 'offline-saved';
+    const ready = !installAvailable && (scenario() === 'catalog-ready' || scenario() === 'lifecycle-attention' || multiApp || currentScenario.startsWith('app-governance-') || routeUnavailable || photoBackupScenario || savedScenario);
     const installing = currentScenario === 'catalog-installing' || scenario() === 'catalog-installing';
     const app = {
       id: 'photoprism', name: 'PhotoPrism', category: 'Photos',

@@ -13805,7 +13805,7 @@ textarea {
   pointer-events: auto !important;
 }
 
-.lite-catalog-manage-sheet {
+.lite-catalog-manage-sheet:not(.is-movable) {
   position: relative !important;
   z-index: 1 !important;
   width: min(100%, 44rem) !important;
@@ -13844,7 +13844,7 @@ textarea {
     padding: 1.2rem !important;
   }
 
-  .lite-catalog-manage-sheet {
+  .lite-catalog-manage-sheet:not(.is-movable) {
     width: min(42rem, 44vw) !important;
     height: 100% !important;
     max-height: none !important;
@@ -13876,7 +13876,7 @@ textarea {
   pointer-events: auto !important;
 }
 
-.lite-catalog-manage-sheet {
+.lite-catalog-manage-sheet:not(.is-movable) {
   position: relative !important;
   z-index: 1 !important;
   width: min(100%, 44rem) !important;
@@ -13926,7 +13926,7 @@ textarea {
     padding: 1.2rem !important;
   }
 
-  .lite-catalog-manage-sheet {
+  .lite-catalog-manage-sheet:not(.is-movable) {
     width: min(42rem, 44vw) !important;
     height: 100% !important;
     max-height: none !important;

@@ -69,13 +69,16 @@ describe('shared Devices + Apps desktop geometry', () => {
       Object.defineProperties(move,{pointerId:{value:8},clientX:{value:348},clientY:{value:146}});
       act(() => {window.dispatchEvent(move); queuedFrame?.();});
       expect(result.current.geometry.left).toBeGreaterThan(280);
+      const pendingMove = new Event('pointermove');
+      Object.defineProperties(pendingMove,{pointerId:{value:8},clientX:{value:364},clientY:{value:154}});
+      act(() => window.dispatchEvent(pendingMove));
       const aborted = new Event('pointercancel');
       Object.defineProperty(aborted,'pointerId',{value:8});
       act(() => window.dispatchEvent(aborted));
       expect(panel.classList.contains('is-interacting')).toBe(false);
       expect(result.current.geometry.left).toBe(280);
       unmount();
-      expect(window.cancelAnimationFrame).toHaveBeenCalled();
+      expect(window.cancelAnimationFrame).toHaveBeenCalledWith(19);
       expect(initial).toBeTruthy();
     } finally {
       window.requestAnimationFrame = request;

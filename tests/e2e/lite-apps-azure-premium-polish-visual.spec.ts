@@ -1,8 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
-// AUTHORED — NOT EXECUTED — UNVALIDATED. No *.png baselines generated or promoted.
-// All reference images require separate human review and explicit authorization.
+// Candidate visual specifications require human inspection before baselines are accepted.
 async function open(page:any, theme:'light'|'dark', scenario:string, width:number) {
   await page.setViewportSize({width,height:width<=390?780:900});
   await page.emulateMedia({reducedMotion:'reduce'});
@@ -10,6 +9,10 @@ async function open(page:any, theme:'light'|'dark', scenario:string, width:numbe
   await installScenario(page,scenario);
   await page.goto('/?screen=catalog');
   await waitForLiteScreenToSettle(page,'catalog');
+  // The catalog projection can settle before its entrance spring has reached
+  // its final opacity on a newly started mobile worker. Visual captures must
+  // represent the steady-state surface rather than an intermediate frame.
+  await expect(page.locator('.lite-catalog-screen')).toHaveCSS('opacity', '1');
 }
 async function manage(page:any){
   await page.locator('.lite-catalog-app-card').getByRole('button',{name:'Manage',exact:true}).first().click();
@@ -35,6 +38,7 @@ for(const theme of ['light','dark'] as const) {
       const dialog=await manage(page);
       const photos=dialog.getByRole('tab',{name:'Photos'});
       if(await photos.count()) await photos.click();
+      await dialog.locator('.lite-catalog-manage-scroll').evaluate((node:any)=>{node.scrollTop=0;});
       await expect(dialog).toHaveScreenshot(`premium-${theme}-${scenario}.png`,{animations:'disabled'});
     });
   }
@@ -48,7 +52,11 @@ for(const theme of ['light','dark'] as const) {
     await how.locator('summary').click();
     await expect(dialog).toHaveScreenshot(`premium-${theme}-storage-how-open.png`,{animations:'disabled'});
     await dialog.getByRole('region',{name:'Photo workflow'}).getByRole('button',{name:'View details'}).click();
-    await expect(page.locator('.lite-details-overlay-layer .lite-details-panel')).toHaveScreenshot(`premium-${theme}-nested-details.png`,{animations:'disabled'});
+    const detailsPanel=page.locator('.lite-details-overlay-layer .lite-details-panel');
+    await expect(detailsPanel).toBeVisible();
+    await expect(detailsPanel.getByRole('region',{name:/Import photos details/i})).toBeVisible();
+    await expect(detailsPanel).not.toContainText('Loading details…');
+    await expect(detailsPanel).toHaveScreenshot(`premium-${theme}-nested-details.png`,{animations:'disabled'});
   });
   test(`premium ${theme} desktop resized/moved Manage`,async({page})=>{
     await open(page,theme,'catalog-ready',1440);
