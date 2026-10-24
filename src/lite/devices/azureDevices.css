@@ -146,3 +146,24 @@ html[data-lite-theme] .lite-devices-add-card { min-width: 0; overflow-wrap: anyw
     transition: none !important;
   }
 }
+
+.lite-device-service-summary {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:.55rem;
+  margin-block:.65rem;
+}
+.lite-device-service-summary > div {
+  min-width:0;
+  display:grid;
+  gap:.2rem;
+  padding:.65rem .8rem;
+  border:1px solid var(--azure-border);
+  border-radius:var(--azure-radius-control);
+  background:var(--azure-raised);
+}
+.lite-device-service-summary span { color:var(--azure-muted);font-size:.78rem; }
+.lite-device-service-summary strong { color:var(--azure-text);font-size:.88rem;overflow-wrap:anywhere; }
+@media(max-width:360px) {
+  .lite-device-service-summary { grid-template-columns:1fr; }
+}
