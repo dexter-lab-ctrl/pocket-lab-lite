@@ -112,6 +112,8 @@ function DeviceCard({
     ? 'lite-device-card-server'
     : `lite-device-card-linked lite-device-card-linked-${effectiveLinkState}`;
   const deviceName = device?.name || 'Unnamed device';
+  const agentState = device?.agent?.status || device?.agent_status || device?.agent_connection?.status || null;
+  const supervisorState = device?.supervisor?.status || device?.supervisor_status || null;
   const capabilitySummary = technicalDetailsOpen ? deviceCapabilitySummary(device) : null;
   const canRestart = !savedStateOnly && canRestartDeviceAgent(device);
   const canRemove = !savedStateOnly && canRemoveDevice(device);
@@ -180,6 +182,10 @@ function DeviceCard({
           )}
         </div>
 
+        <div className="lite-device-service-summary" aria-label="Reported device services">
+          <div><span>Agent</span><strong>{savedStateOnly ? 'Saved · unconfirmed' : agentState || 'Not reported'}</strong></div>
+          <div><span>Supervisor</span><strong>{savedStateOnly ? 'Saved · unconfirmed' : supervisorState || 'Not reported'}</strong></div>
+        </div>
         <LiteOperationalStory
           className="lite-device-operational-story"
           story={{
