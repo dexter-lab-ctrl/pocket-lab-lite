@@ -520,3 +520,29 @@ html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer 
 @media (prefers-reduced-motion:reduce) {
  .lite-catalog-screen .lite-catalog-card,.lite-catalog-screen .lite-catalog-card:hover,.lite-catalog-manage-sheet,.lite-catalog-manage-sheet * {animation:none;transition:none;}
 }
+
+/* Pull gesture belongs to a small, non-action touch zone at the page top.
+   Normal desktop/idle appearance stays hidden; explicit Refresh is retained. */
+.lite-catalog-touch-pull-zone {display:none;}
+.lite-catalog-screen .lite-catalog-pull-refresh {
+  position:fixed;top:calc(env(safe-area-inset-top,0px) + .7rem);left:50%;z-index:40;
+  display:inline-flex;align-items:center;gap:.5rem;max-width:calc(100vw - 1.5rem);
+  padding:.65rem .85rem;border:1px solid var(--azure-border);border-radius:999px;
+  background:var(--azure-surface);color:var(--azure-text);box-shadow:var(--azure-shadow);
+  opacity:0;visibility:hidden;pointer-events:none;transform:translate(-50%,-.5rem);
+  transition:opacity .14s ease,transform .14s ease,visibility .14s ease;
+}
+.lite-catalog-screen .lite-catalog-pull-refresh svg {animation:none;}
+.lite-catalog-screen .lite-catalog-pull-refresh.is-ready {border-color:var(--azure-accent);color:var(--azure-text);}
+@media (hover:none) and (pointer:coarse) and (max-width:700px) {
+  .lite-catalog-touch-pull-zone {
+    display:block;height:22px;max-height:22px;touch-action:pan-y;
+    background:transparent;position:relative;z-index:1;
+  }
+  .lite-catalog-screen .lite-catalog-pull-refresh:is(.is-pulling,.is-refreshing) {
+    opacity:1;visibility:visible;transform:translate(-50%,0);
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+ .lite-catalog-screen .lite-catalog-pull-refresh {transition:none;animation:none;}
+}

@@ -36,7 +36,7 @@ export function selectPhotoBackupFacts(devices = [], saved = false) {
     tone: saved ? 'saved' : requiresAttention ? 'review' : active.has(status) ? 'working' : statusLabel === 'Ready' ? 'ready' : 'neutral',
     source: { title: device?.node_label || device?.device_label || 'Source device not reported', state: sourceState },
     transfer: { title: 'Protected transfer', state: transferState },
-    destination: { title: 'PhotoPrism · WebDAV', state: destinationState },
+    destination: { title: 'Protected WebDAV destination · PhotoPrism', state: destinationState },
     latestTransfer: latest?.items_transferred != null && Number.isFinite(Number(latest.items_transferred))
       ? Number(latest.items_transferred).toLocaleString() + ' items' : 'Not reported',
     lastUpdate: latest?.completed_at || latest?.updated_at || device?.updated_at || null,

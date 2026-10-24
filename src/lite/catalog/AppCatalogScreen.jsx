@@ -2640,7 +2640,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     pullRefreshInFlight.current = true;
     setPullRefresh({ pulling: false, ready: false, offsetY: 0 });
     catalogPullSpring.start({ catalogPullY: 0, immediate: reduceMotion, config: config.gentle });
-    Promise.resolve(refresh()).finally(() => { pullRefreshInFlight.current = false; });
+    Promise.resolve().then(() => refresh()).catch(() => {}).finally(() => { pullRefreshInFlight.current = false; });
     if (featuredAppId) refreshFeaturedAppActions();
     setQuickActionsAppId(null);
   }, [backendReachable, catalogPullSpring, featuredAppId, reduceMotion, refresh, refreshFeaturedAppActions, refreshing, savedStateOnly]);
@@ -3344,7 +3344,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       data-catalog-native-polish="true"
       style={{ ...catalogEntranceSpring, '--lite-catalog-pull-offset': catalogPullY.to((value) => `${value}px`) }}
     >
-      <div className={`lite-catalog-pull-refresh ${pullRefresh.pulling ? 'is-pulling' : ''} ${pullRefresh.ready ? 'is-ready' : ''}`} role="status" aria-live="polite" aria-hidden={!pullRefresh.pulling && !refreshing}>
+      <div className={`lite-catalog-pull-refresh ${pullRefresh.pulling ? 'is-pulling' : ''} ${pullRefresh.ready ? 'is-ready' : ''} ${refreshing ? 'is-refreshing' : ''}`} role="status" aria-live="polite" aria-hidden={!pullRefresh.pulling && !refreshing}>
         <RefreshCw className="h-4 w-4" aria-hidden="true" />
         <span>{refreshing ? 'Refreshing' : pullRefresh.ready ? 'Release to refresh' : 'Pull to refresh'}</span>
       </div>
