@@ -103,6 +103,7 @@ import { useLiteUiStore } from '../stores/liteUiStore.js';
 import { loadDeviceCard } from './devices/devicesPreload.js';
 import { isLitePerformanceMode } from './liteNavigationRuntime.js';
 import LiteNextSteps from './components/LiteNextSteps.jsx';
+import './devices/azureDevices.css';
 
 const MemoLiteVirtualList = React.memo(LiteVirtualList);
 const DeviceCardLazy = React.lazy(loadDeviceCard);
@@ -155,18 +156,31 @@ void DEVICES_ACTION_ROWS_OWN_CLICKS;
 void DEVICES_LINKED_CARD_CLASS_MARKER;
 void DEVICES_CONNECTION_COPY_MARKER;
 
-function DeviceRelationshipMap({ devices = [] }) {
+export function deviceRelationshipPresentation(device, savedStateOnly = false) {
+  if (savedStateOnly) return { state: 'unknown', label: 'Saved · connection unconfirmed', icon: 'unknown' };
+  const raw = String(device?.connection || device?.status || device?.state || '').toLowerCase().replace(/[\s-]+/g, '_');
+  if (['identity_mismatch', 'identity_blocked', 'blocked'].includes(raw)) return { state: 'blocked', label: 'Identity check blocked', icon: 'disconnected' };
+  if (['agent_stopped', 'stopped'].includes(raw)) return { state: 'stopped', label: 'Agent stopped', icon: 'disconnected' };
+  if (['joining', 'waiting'].includes(raw)) return { state: 'waiting', label: raw === 'joining' ? 'Joining' : 'Waiting', icon: 'repairing' };
+  if (['offline', 'disconnected'].includes(raw)) return { state: 'disconnected', label: raw === 'offline' ? 'Offline' : 'Disconnected', icon: 'disconnected' };
+  const link = deviceLinkState(device);
+  if (link === 'joined') return { state: 'joined', label: 'Connected', icon: 'connected' };
+  if (link === 'repairing') return { state: 'repairing', label: 'Repairing', icon: 'repairing' };
+  return { state: 'disconnected', label: 'Disconnected', icon: 'disconnected' };
+}
+
+function DeviceRelationshipMap({ devices = [], savedStateOnly = false }) {
   const server = devices.find((device) => deviceLinkState(device) === 'server') || null;
   const peers = devices.filter((device) => device !== server);
   const serverName = server?.name || server?.hostname || 'Server Phone';
   const stateCounts = peers.reduce((counts, device) => {
-    const state = deviceLinkState(device);
+    const state = deviceRelationshipPresentation(device, savedStateOnly).state;
     counts[state] = (counts[state] || 0) + 1;
     return counts;
   }, {});
   const connectedCount = Number(stateCounts.joined || 0);
   const repairingCount = Number(stateCounts.repairing || 0);
-  const disconnectedCount = Number(stateCounts.disconnected || 0);
+  const disconnectedCount = peers.length - connectedCount - repairingCount;
   const connectionSummary = connectedCount
     ? `${connectedCount} connected device${connectedCount === 1 ? '' : 's'}${repairingCount ? ` · ${repairingCount} repairing` : ''}${disconnectedCount ? ` · ${disconnectedCount} not connected` : ''}`
     : peers.length
@@ -193,13 +207,13 @@ function DeviceRelationshipMap({ devices = [] }) {
           <small>Protected server</small>
         </div>
         {peers.length ? peers.map((device) => {
-          const state = deviceLinkState(device);
-          const stateLabel = state === 'joined' ? 'Connected' : state === 'repairing' ? 'Repairing' : 'Disconnected';
+          const presentation = deviceRelationshipPresentation(device, savedStateOnly);
+          const { state, label: stateLabel, icon } = presentation;
           return (
             <React.Fragment key={deviceListKey(device)}>
               <span className={`lite-device-relationship-link is-${state}`} aria-hidden="true"><i /></span>
               <div className={`lite-device-relationship-node is-${state}`} data-relationship-state={state} aria-label={`${device.name || device.hostname || 'Device'}: ${stateLabel}`}>
-                {state === 'joined' ? <Smartphone className="h-4 w-4" aria-hidden="true" /> : state === 'repairing' ? <RefreshCw className="h-4 w-4" aria-hidden="true" /> : <WifiOff className="h-4 w-4" aria-hidden="true" />}
+                {icon === 'connected' ? <Smartphone className="h-4 w-4" aria-hidden="true" /> : icon === 'repairing' ? <RefreshCw className="h-4 w-4" aria-hidden="true" /> : <WifiOff className="h-4 w-4" aria-hidden="true" />}
                 <span>{device.name || device.hostname || 'Device'}</span>
                 <small>{stateLabel}</small>
               </div>
@@ -428,7 +442,7 @@ function remoteAccessDetailRows(remoteAccess = {}, remoteAccessView = {}, savedS
   const natsReachable = typeof remoteAccess.nats_reachable === 'boolean'
     ? remoteAccess.nats_reachable
     : typeof remoteAccessView.nats_reachable === 'boolean' ? remoteAccessView.nats_reachable : null;
-  const hasAddress = Boolean(remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip);
+  const hasAddress = !savedStateOnly && remoteAccessView.ready === true && Boolean(remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip);
   const checkedAt = remoteAccess.checked_at || remoteAccess.updated_at || remoteAccessView.checked_at || remoteAccessView.updated_at;
   return [
     { label: 'Evidence', value: savedStateOnly ? 'Saved workspace snapshot' : 'Current connection check' },
@@ -924,7 +938,7 @@ export default function DevicesScreen() {
       <PageHeader
         eyebrow="Devices"
         title="Devices"
-        description="See how your devices are connected, what needs attention, and what you can safely do next."
+        description="Your self-hosted workspace, connected devices, and safe recovery actions."
         actions={<LiteRefreshButton scope="devices" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
@@ -949,7 +963,12 @@ export default function DevicesScreen() {
           ...(!remoteAccessReady ? [{ id: "remote-access", label: "Remote access not ready", description: remoteAccessView.summary || "Review Tailnet connectivity below." }] : []),
         ]}
       />
-      <DeviceRelationshipMap devices={devices} />
+      <DeviceRelationshipMap devices={devices} savedStateOnly={savedStateOnly || isExpired} />
+      <section className="lite-devices-horizon-summary" aria-label="Workspace operational summary">
+        <div><span>Connected devices</span><strong>{savedStateOnly || isExpired ? 'Not confirmed' : devices.filter((device) => deviceLinkState(device) === 'joined').length}</strong></div>
+        <div><span>Needs attention</span><strong>{savedStateOnly || isExpired ? 'Review saved status' : devices.filter((device) => !['joined', 'server'].includes(deviceLinkState(device))).length + healthAttentionCount}</strong></div>
+        <div><span>Remote access</span><strong>{remoteAccessView.title}</strong></div>
+      </section>
 
       <section className={`lite-remote-access-panel ${remoteAccessReady ? 'lite-remote-access-ready' : 'lite-remote-access-not-ready'}`} aria-live="polite">
         <div className="lite-remote-access-icon">
@@ -977,7 +996,7 @@ export default function DevicesScreen() {
               {remoteAccessDetailRows(remoteAccess, remoteAccessView, savedStateOnly).map((item) => (
                 <div key={item.label}>
                   <dt>{item.label}</dt>
-                  <dd>{item.label === 'Tailscale IP' && (remoteAccess?.ip || remoteAccess?.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip)
+                  <dd>{item.label === 'Tailscale IP' && remoteAccessReady && !savedStateOnly && (remoteAccess?.ip || remoteAccess?.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip)
                     ? <><span>Available</span> <code>{remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip}</code></>
                     : item.value}</dd>
                 </div>
