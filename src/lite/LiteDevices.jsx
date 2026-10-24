@@ -343,6 +343,23 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
         tabIndex={-1}
         className={`lite-device-details-focus-anchor lite-device-action-surface ${desktopPanel ? 'is-movable' : ''}`.trim()}
         data-lite-details-panel-layout={desktopPanel ? 'desktop-movable' : 'mobile-sheet'}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Manage ${activeDetailsDevice.name || activeDetailsDevice.hostname || 'device'}`}
+        onKeyDown={(event) => {
+          if (event.key !== 'Tab') return;
+          const focusable = Array.from(detailsPanelRef.current?.querySelectorAll(
+            'button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),summary,[href],[tabindex]:not([tabindex="-1"])',
+          ) || []).filter((node) => node.getClientRects().length > 0);
+          if (!focusable.length) { event.preventDefault(); detailsPanelRef.current?.focus(); return; }
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (event.shiftKey && (document.activeElement === first || document.activeElement === detailsPanelRef.current)) {
+            event.preventDefault(); last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault(); first.focus();
+          }
+        }}
         style={panelStyle}
       >
         {desktopPanel ? (
@@ -933,7 +950,7 @@ export default function DevicesScreen() {
         device={device}
         restartBusy={restartBusy}
         removeBusy={removeBusy}
-        savedStateOnly={savedStateOnly}
+        savedStateOnly={savedStateOnly || isExpired}
         onOpenDetails={() => toggleDeviceDetails(key)}
         onPreloadDetails={preloadDeviceDetailsOnIntent}
         detailsButtonRef={(node) => {
@@ -948,7 +965,7 @@ export default function DevicesScreen() {
         onRemoveDevice={() => deviceActionHandlersRef.current.loadRemovalAssessment?.(device)}
       />
     );
-  }, [preloadDeviceDetailsOnIntent, removeBusy, restartBusy, savedStateOnly]);
+  }, [preloadDeviceDetailsOnIntent, removeBusy, restartBusy, savedStateOnly, isExpired]);
 
   return (
     <>
