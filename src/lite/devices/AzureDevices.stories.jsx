@@ -25,5 +25,5 @@ export const SupervisorStale = createLiteStory('devices', 'devices-services-stal
 export const MixedServicesDaylight = createLiteStory('devices', 'devices-services-mixed', { theme: 'daylight', viewport: 'desktop' });
 export const MultipleResponsibilities = createLiteStory('devices', 'devices-online', { theme: 'daylight', viewport: 'desktop' });
 export const LongNameBlackMobile = createLiteStory('devices', 'devices-long-name', { theme: 'dark', viewport: 'mobile360' });
-export const BackupSourceUnavailable = createLiteStory('devices', 'devices-photo-backup-source-offline', { theme: 'dark', viewport: 'mobile390' });
+export const BackupSourceUnavailable = createLiteStory('devices', 'photo-backup-source-offline', { theme: 'dark', viewport: 'mobile390' });
 export const Resource200PercentBlack = createLiteStory('devices', 'devices-resource-complete', { theme: 'dark', viewport: 'mobile360', textScale: 2 });
