@@ -1033,181 +1033,6 @@ export default function DevicesScreen() {
       </section>
 
       <div className="lite-devices-layout">
-        <details ref={addDeviceDisclosureRef} id="lite-devices-onboarding" className="lite-devices-add-disclosure" onToggle={(event) => setAddDeviceOpen(event.currentTarget.open)}>
-          <summary>
-            <span>Expand your workspace</span>
-            <strong>Add a device</strong>
-            <small>Create a protected invite only when you need one.</small>
-          </summary>
-          {addDeviceOpen ? <GlassCard className="lite-devices-add-card">
-          <div className="lite-devices-card-head">
-            <div className="lite-devices-mini-icon">
-              <Network className="h-5 w-5" />
-            </div>
-            <span className="lite-devices-soft-badge">Add safely</span>
-          </div>
-
-          <h2>Add a device</h2>
-          <p>
-            Create a simple invite for another phone, tablet, or small server you want to connect.
-          </p>
-
-          <LiteField label="Device name" id="device-name" hint="Use a recognizable name for this device." error={activeNameConflict ? 'A device with this name already exists.' : ''}>
-          <input
-            id="device-name"
-            className="pocket-input lite-devices-input"
-            value={hostname}
-            onChange={(event) => {
-              setHostname(event.target.value);
-              setServerConflict(null);
-              addDeviceFlow.enterDevice(event.target.value, selectedRoles.join(','));
-            }}
-            placeholder="Optional, for example: Kitchen tablet"
-            aria-label="Device name"
-          />
-          </LiteField>
-
-          {activeNameConflict ? (
-            <div className="lite-devices-name-conflict" role="alert">
-              <strong>A device with this name already exists.</strong>
-              <span>{deviceDuplicateMessage(activeNameConflict)}</span>
-            </div>
-          ) : null}
-
-          <div className="lite-devices-field-label">What should this device do?</div>
-          <div className="lite-role-selector" role="group" aria-label="Device responsibilities">
-            {DEVICE_ROLE_OPTIONS.map((role) => {
-              const checked = selectedRoles.includes(role.value);
-              return (
-                <label
-                  key={role.value}
-                  className={`lite-role-card ${checked ? 'lite-role-card-selected' : ''}`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => {
-                      const next = checked
-                        ? selectedRoles.filter((item) => item !== role.value)
-                        : [...selectedRoles, role.value].sort((left, right) => (left === 'compute' ? -1 : right === 'compute' ? 1 : left.localeCompare(right)));
-                      if (!next.length) return;
-                      setSelectedRoles(next);
-                      setServerConflict(null);
-                      addDeviceFlow.enterDevice(candidateDeviceName, next.join(','));
-                    }}
-                  />
-                  <span>
-                    <strong>{role.actionLabel || role.label}</strong>
-                    <small>{role.label} role</small>
-                    <span>{role.description}</span>
-                  </span>
-                </label>
-              );
-            })}
-          </div>
-          <div className="lite-devices-safe-note" role="status" aria-live="polite">
-            <strong>Access check: {addDeviceAuthorityLabel}</strong>
-            <span>
-              {addDeviceAuthorityMode === 'approval'
-                ? 'Pocket Lab will create a review request before this role set can be used.'
-                : addDeviceAuthorityMode === 'deny'
-                  ? 'Your current human role cannot create this kind of device invite.'
-                  : 'Pocket Lab will verify your current human role and Safety Rules on the server.'}
-            </span>
-          </div>
-
-          <div className="lite-devices-safe-note">
-            <strong>What happens next</strong>
-            <span>Pocket Lab prepares an invite. Open it on the new device while it is connected to the same Pocket Lab private network.</span>
-          </div>
-
-          <LiteFlowStatusPanel
-            title="Add Device"
-            label={addDeviceFlow.label}
-            steps={addDeviceFlow.steps}
-            note={addDeviceFlow.writeBlocked ? addDeviceFlow.blockedReason : 'Pocket Lab prepares the invite safely and confirms it before anything is shown as ready.'}
-            className="mt-4"
-          />
-
-          <div className="mt-5">
-            <LiteButton onClick={addDevice} disabled={addDeviceDisabled}>
-              {busy ? 'Preparing invite...' : (addDeviceFlow.writeBlocked ? 'Reconnect to continue' : activeNameConflict ? 'Device already added' : addDeviceAuthorityMode === 'deny' ? 'Not allowed' : addDeviceAuthorityMode === 'approval' ? 'Request Add Device' : 'Add Device')}
-            </LiteButton>
-          </div>
-
-          {result?.status === 'queued' && !latestInvite ? (
-            <StateSurface
-              tone="empty"
-              title="Preparing invite..."
-              description="Pocket Lab is getting the invite ready. The device list will refresh automatically."
-              className="mt-4"
-            />
-          ) : null}
-
-          {latestInvite ? (
-            <div className="lite-invite-card" aria-live="polite">
-              <div className="lite-invite-card-header">
-                <div>
-                  <span>Invite ready</span>
-                  <strong>{latestInvite.hostname || hostname || 'New device'}</strong>
-                </div>
-                <StatusBadge status="healthy">Ready</StatusBadge>
-              </div>
-
-              <div className="lite-invite-card-body">
-                <div>
-                  <span>Roles</span>
-                  <strong>{(latestInvite.device_role_labels || []).join(' + ') || latestInvite.role_label || selectedRoleLabel}</strong>
-                </div>
-                <div>
-                  <span>Expires at</span>
-                  <strong>{formatLiteTime(latestInvite.expires_at)}</strong>
-                </div>
-              </div>
-
-              <p>Run this in Termux on the new phone. Pocket Lab will set up the secure connection and start the device service automatically.</p>
-
-              {inviteCommand(latestInvite) ? (
-                <>
-                  <div className="lite-invite-command" aria-label="Connect this device command">
-                    <span>Connect this device</span>
-                    <code>{inviteCommand(latestInvite)}</code>
-                  </div>
-                  <div className="lite-invite-actions">
-                    <LiteButton onClick={copyInvite} tone="secondary">
-                      <Copy className="h-4 w-4" /> {copied ? 'Copied' : 'Copy command'}
-                    </LiteButton>
-                  </div>
-
-                  <details className="lite-invite-details">
-                    <summary>What this does</summary>
-                    <ul>
-                      <li>Installs only the small required tools.</li>
-                      <li>Saves this device’s connection file.</li>
-                      <li>Checks the secure Pocket Lab connection.</li>
-                      <li>Downloads Pocket Lab Lite if needed.</li>
-                      <li>Starts the small Pocket Lab device service.</li>
-                      <li>The device appears Online after it connects and reports back.</li>
-                    </ul>
-                  </details>
-
-                  <details className="lite-invite-details">
-                    <summary>Troubleshooting</summary>
-                    <ol>
-                      <li>Check that the device is connected to your private network.</li>
-                      <li>Open the device card and review Connection and Health.</li>
-                      <li>If the device service is stopped, use the guided restart or recovery action when available.</li>
-                      <li>If the device identity does not match, use the explicit repair or rejoin flow instead of reusing an old invite.</li>
-                    </ol>
-                  </details>
-                </>
-              ) : (
-                <span className="lite-invite-muted">Invite details were created earlier. Create a new invite if you need to copy the command again.</span>
-              )}
-            </div>
-          ) : null}
-          </GlassCard> : null}
-        </details>
 
         <section className="lite-devices-list-area" aria-busy={loading ? 'true' : 'false'}>
           <div className="lite-devices-section-title">
@@ -1408,6 +1233,189 @@ export default function DevicesScreen() {
             />
           ) : null}
         </section>
+        <details ref={addDeviceDisclosureRef} id="lite-devices-onboarding" className="lite-devices-add-disclosure" onToggle={(event) => setAddDeviceOpen(event.currentTarget.open)}>
+          <summary>
+            <span>Expand your workspace</span>
+            <strong>Add a device</strong>
+            <small>Create a protected invite only when you need one.</small>
+          </summary>
+          {addDeviceOpen ? <GlassCard className="lite-devices-add-card">
+          <div className="lite-devices-card-head">
+            <div className="lite-devices-mini-icon">
+              <Network className="h-5 w-5" />
+            </div>
+            <span className="lite-devices-soft-badge">Add safely</span>
+          </div>
+
+          <h2>Add a device</h2>
+          <p>
+            Create a simple invite for another phone, tablet, or small server you want to connect.
+          </p>
+
+          <ol className="lite-devices-invite-stages" aria-label="Device onboarding guidance">
+            <li><span>1</span>Name your device</li>
+            <li><span>2</span>Choose responsibilities</li>
+            <li><span>3</span>Create connection invite</li>
+            <li><span>4</span>Connect and verify</li>
+          </ol>
+          <LiteField label="Device name" id="device-name" hint="Use a recognizable name for this device." error={activeNameConflict ? 'A device with this name already exists.' : ''}>
+          <input
+            id="device-name"
+            className="pocket-input lite-devices-input"
+            value={hostname}
+            onChange={(event) => {
+              setHostname(event.target.value);
+              setServerConflict(null);
+              addDeviceFlow.enterDevice(event.target.value, selectedRoles.join(','));
+            }}
+            placeholder="Optional, for example: Kitchen tablet"
+            aria-label="Device name"
+          />
+          </LiteField>
+
+          {activeNameConflict ? (
+            <div className="lite-devices-name-conflict" role="alert">
+              <strong>A device with this name already exists.</strong>
+              <span>{deviceDuplicateMessage(activeNameConflict)}</span>
+            </div>
+          ) : null}
+
+          <div className="lite-devices-field-label">What should this device do?</div>
+          <div className="lite-role-selector" role="group" aria-label="Device responsibilities">
+            {DEVICE_ROLE_OPTIONS.map((role) => {
+              const checked = selectedRoles.includes(role.value);
+              return (
+                <label
+                  key={role.value}
+                  className={`lite-role-card ${checked ? 'lite-role-card-selected' : ''}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => {
+                      const next = checked
+                        ? selectedRoles.filter((item) => item !== role.value)
+                        : [...selectedRoles, role.value].sort((left, right) => (left === 'compute' ? -1 : right === 'compute' ? 1 : left.localeCompare(right)));
+                      if (!next.length) return;
+                      setSelectedRoles(next);
+                      setServerConflict(null);
+                      addDeviceFlow.enterDevice(candidateDeviceName, next.join(','));
+                    }}
+                  />
+                  <span>
+                    <strong>{role.actionLabel || role.label}</strong>
+                    <small>{role.label} role</small>
+                    <span>{role.description}</span>
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+          <div className="lite-devices-safe-note" role="status" aria-live="polite">
+            <strong>Access check: {addDeviceAuthorityLabel}</strong>
+            <span>
+              {addDeviceAuthorityMode === 'approval'
+                ? 'Pocket Lab will create a review request before this role set can be used.'
+                : addDeviceAuthorityMode === 'deny'
+                  ? 'Your current human role cannot create this kind of device invite.'
+                  : 'Pocket Lab will verify your current human role and Safety Rules on the server.'}
+            </span>
+          </div>
+
+          <div className="lite-devices-safe-note">
+            <strong>What happens next</strong>
+            <span>Pocket Lab prepares an invite. Open it on the new device while it is connected to the same Pocket Lab private network.</span>
+          </div>
+
+          <LiteFlowStatusPanel
+            title="Add Device"
+            label={addDeviceFlow.label}
+            steps={addDeviceFlow.steps}
+            note={addDeviceFlow.writeBlocked ? addDeviceFlow.blockedReason : 'Pocket Lab prepares the invite safely and confirms it before anything is shown as ready.'}
+            className="mt-4"
+          />
+
+          <div className="mt-5">
+            <LiteButton onClick={addDevice} disabled={addDeviceDisabled}>
+              {busy ? 'Preparing invite...' : (addDeviceFlow.writeBlocked ? 'Reconnect to continue' : activeNameConflict ? 'Device already added' : addDeviceAuthorityMode === 'deny' ? 'Not allowed' : addDeviceAuthorityMode === 'approval' ? 'Request Add Device' : 'Add Device')}
+            </LiteButton>
+          </div>
+
+          {result?.status === 'queued' && !latestInvite ? (
+            <StateSurface
+              tone="empty"
+              title="Preparing invite..."
+              description="Pocket Lab is getting the invite ready. The device list will refresh automatically."
+              className="mt-4"
+            />
+          ) : null}
+
+          {latestInvite ? (
+            <div className="lite-invite-card" aria-live="polite">
+              <div className="lite-invite-card-header">
+                <div>
+                  <span>Invite ready</span>
+                  <strong>{latestInvite.hostname || hostname || 'New device'}</strong>
+                </div>
+                <StatusBadge status="healthy">Ready</StatusBadge>
+              </div>
+
+              <div className="lite-invite-card-body">
+                <div>
+                  <span>Roles</span>
+                  <strong>{(latestInvite.device_role_labels || []).join(' + ') || latestInvite.role_label || selectedRoleLabel}</strong>
+                </div>
+                <div>
+                  <span>Expires at</span>
+                  <strong>{formatLiteTime(latestInvite.expires_at)}</strong>
+                </div>
+              </div>
+
+              <p>Run this in Termux on the new phone. Pocket Lab will set up the secure connection and start the device service automatically.</p>
+
+              {inviteCommand(latestInvite) ? (
+                <>
+                  <div className="lite-invite-command" aria-label="Connect this device command">
+                    <span>Connect this device</span>
+                    <code>{inviteCommand(latestInvite)}</code>
+                  </div>
+                  <div className="lite-invite-actions">
+                    <LiteButton onClick={copyInvite} tone="secondary">
+                      <Copy className="h-4 w-4" /> {copied ? 'Copied' : 'Copy command'}
+                    </LiteButton>
+                  </div>
+
+                  <details className="lite-invite-details">
+                    <summary>What this does</summary>
+                    <ul>
+                      <li>Installs only the small required tools.</li>
+                      <li>Saves this device’s connection file.</li>
+                      <li>Checks the secure Pocket Lab connection.</li>
+                      <li>Downloads Pocket Lab Lite if needed.</li>
+                      <li>Starts the small Pocket Lab device service.</li>
+                      <li>The device appears Online after it connects and reports back.</li>
+                    </ul>
+                  </details>
+
+                  <details className="lite-invite-details">
+                    <summary>Troubleshooting</summary>
+                    <ol>
+                      <li>Check that the device is connected to your private network.</li>
+                      <li>Open the device card and review Connection and Health.</li>
+                      <li>If the device service is stopped, use the guided restart or recovery action when available.</li>
+                      <li>If the device identity does not match, use the explicit repair or rejoin flow instead of reusing an old invite.</li>
+                    </ol>
+                  </details>
+                </>
+              ) : (
+                <span className="lite-invite-muted">Invite details were created earlier. Create a new invite if you need to copy the command again.</span>
+              )}
+            </div>
+          ) : null}
+          </GlassCard> : null}
+        </details>
+
+
       </div>
 
       <ResultNotice result={result?.status === 'removed' ? result : (latestInvite ? null : result)} error={actionError} />
