@@ -331,3 +331,51 @@ tasks:
     deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
     cmds:
       - npm run test:azure:home:premium:perf
+
+
+  # Azure Horizon Devices — definitions only; never executed during source authoring.
+  lite:test:devices:azure:unit:
+    desc: Run Devices Azure projection, card and shared Manage geometry unit coverage
+    cmds:
+      - npm run test:devices:azure:unit
+
+  lite:test:devices:azure:mocked:
+    desc: Run mocked Devices connection and safe action regression
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:devices:azure:mocked
+
+  lite:test:devices:azure:a11y:
+    desc: Run Devices Azure Black/Daylight keyboard and Axe checks
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:devices:azure:a11y
+
+  lite:test:devices:azure:geometry:
+    desc: Run shared desktop Manage movement, resize and mobile fallback scenarios
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:devices:azure:geometry
+
+  lite:test:devices:azure:visual:
+    desc: Compare Devices Azure screenshots only after manual capture and owner approval
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:devices:azure:visual
+
+  lite:test:devices:azure:perf:
+    desc: Collect Devices interaction samples and retain PR 588 performance gates
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:devices:azure:perf
+
+  lite:test:devices:azure:storybook:
+    desc: Build existing Storybook with Azure Devices scenarios
+    cmds:
+      - npm run test:devices:azure:storybook
+
+  lite:test:devices:azure:qualification:
+    desc: Run Devices source/mock/a11y/geometry/performance; visual approval remains separate
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:devices:azure:qualification
