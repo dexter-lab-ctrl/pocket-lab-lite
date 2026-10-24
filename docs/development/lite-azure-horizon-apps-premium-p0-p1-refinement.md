@@ -231,16 +231,16 @@ Axe and mocked accessibility suites passed in the relevant Daylight/Black matrix
 
 ### Documentation and residual quality gates
 
-After source, mocked/browser, visual, live read-only and physical qualification, `task lite:docs:generate` completed successfully, including contracts, platform/runtime projections, parity, architecture, knowledge and Codebase Map generation. The Graphviz preservation correction was part of the late source-owned fix. `task lite:docs:check` and `task lite:check` remain the final commands to run after this addendum/Taskfile edit and are recorded in the final PR evidence.
+After source, mocked/browser, visual, live read-only and physical qualification, `task lite:docs:generate` completed successfully, including contracts, platform/runtime projections, parity, architecture, knowledge and Codebase Map generation. The Graphviz preservation correction was part of the late source-owned fix. `task lite:docs:check` then passed under Node 24.16.0 with documented Redocly/MkDocs warnings, and `task lite:check` passed its runtime, backend, Vitest, Storybook, build, mocked browser, Axe, docs browser and evidence-redaction gates.
 
-The historical exact-head CI run `40100729814` tested `803c6ae1fbc9bcfec60a3e255a4f7e3c57d0a517`: isolated Dev PC and UI performance jobs passed, while `quick-and-docs` exposed the README SVG deletion defect. A new exact-head CI run is required after the final documentation/generator commit; no older run is presented as final green CI.
+The historical exact-head CI run `40100729814` tested `803c6ae1fbc9bcfec60a3e255a4f7e3c57d0a517`: isolated Dev PC and UI performance jobs passed, while `quick-and-docs` exposed the README SVG deletion defect. The final exact-head run [`40105930805`](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/40105930805) tested `51ec7e4c3c65d21e4a14d7bf1d3ca9e3b22366c9`; `ui-performance-qualification`, `isolated-devpc-qualification` and `quick-and-docs` all passed.
 
 ### Rollback and restoration
 
-Rollback is a reviewed revert of the final feature-branch commits; `main`, production data, device identity and credentials were not changed. The Server Phone remained on clean `main`; final checks must confirm that state, PM2/API/NATS health, disabled harness, no candidate tunnel and no disposable authority. PocketLab-owned Android/CDP resources created for qualification must be removed by their established cleanup helpers while unrelated ADB mappings remain untouched.
+Rollback is a reviewed revert of the final feature-branch commits; `main`, production data, device identity and credentials were not changed. The Server Phone ended on clean `main` at `a53939e2d9e3bfb0cdae819479ba422c082b0a76`; final read-only checks confirmed PM2 online, healthy/ready API, connected NATS, disabled harness, no candidate tunnel and no disposable authority. The PocketLab-owned Android/CDP resources were removed by the established cleanup helpers while unrelated ADB mappings remained untouched.
 
 ### Final status ledger
 
-**QUALIFIED:** source/unit, mocked Apps/Azure, shared geometry/Devices, Storybook, reviewed visual baselines, exact-SHA physical Apps UI and documentation generation (subject to the final checks below).
+**QUALIFIED:** source/unit, mocked Apps/Azure, shared geometry/Devices, Storybook, reviewed visual baselines, exact-SHA physical Apps UI, documentation generation/checks, broader repository gate, exact-head CI and environment cleanup.
 
 **BLOCKED/PARTIAL:** repository lint configuration, permissive typecheck script, authenticated synthetic-owner live reads, three-run normalized Android baseline, broader Android absolute frame target and transient Server Phone runtime stability. These limitations do not authorize merge, release or deployment.
