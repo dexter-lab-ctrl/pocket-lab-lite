@@ -321,3 +321,20 @@ export const AzurePolishActionNotices = {
 export const AzurePolishGenericApp = createLiteStory('catalog','catalog-multi-app',{theme:'daylight',viewport:'desktop',status:'unvalidated'});
 export const AzurePolishZoom200 = createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'mobile360',textScale:2,status:'unvalidated'});
 export const AzurePolishSavedOffline = createLiteStory('catalog','offline-saved',{theme:'dark',viewport:'mobile390',status:'unvalidated'});
+
+export const AzurePolishActionDetailsDaylight = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'daylight',viewport:'desktop',status:'unvalidated'}),
+  play: async ({canvasElement}) => {
+    await openManage(canvasElement);
+    const body=within(canvasElement.ownerDocument.body);
+    const manage=await body.findByRole('dialog',{name:/Manage PhotoPrism/i});
+    await userEvent.click(within(manage).getByRole('tab',{name:'Photos'}));
+    const flow=await within(manage).findByRole('region',{name:'Photo workflow'});
+    await userEvent.click(within(flow).getByRole('button',{name:'View details'}));
+    await expect(await body.findByRole('dialog',{name:/Import photos/i})).toBeInTheDocument();
+  },
+};
+export const AzurePolishActionDetailsBlack = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'desktop',status:'unvalidated'}),
+  play: AzurePolishActionDetailsDaylight.play,
+};

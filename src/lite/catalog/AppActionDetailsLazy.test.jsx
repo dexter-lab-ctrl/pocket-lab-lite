@@ -24,6 +24,11 @@ describe('Azure premium Action Details — AUTHORED NOT EXECUTED', () => {
     expect(screen.getByText(/Backup destination unavailable/)).toBeInTheDocument();
     expect(screen.getByText(/No media was copied/)).toBeInTheDocument();
   });
+  it('distinguishes readiness from execution completion', () => {
+    const {container}=render(<AppActionDetailsLazy actionId="backup_app" details={details('ready')} />);
+    expect(container.querySelector('.lite-app-premium-details.is-ready')).toBeNull();
+    expect(screen.getByText('Ready to start')).toBeInTheDocument();
+  });
   it('recognizes explicit terminal backend completion, not mere description copy', () => {
     const {container}=render(<AppActionDetailsLazy actionId="backup_app" details={details('completed')} />);
     expect(container.querySelector('.lite-app-premium-details.is-ready')).not.toBeNull();

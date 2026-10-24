@@ -191,3 +191,53 @@ test.describe('premium operational facts and gesture ownership — authored, nev
     await expect(panel).toBeVisible();
   });
 });
+
+test.describe('touch pull P2 boundary — AUTHORED, NOT RUN',()=>{
+  test('small pull stays below threshold; release triggers one refresh, leaves buttons clickable',async({page},testInfo)=>{
+    test.skip(!testInfo.project.name.includes('mobile'),'Touch-only scenario');
+    await page.addInitScript(()=>{
+      (window as any).__appsCatalogReadCount=0;
+      const actual=window.fetch.bind(window);
+      window.fetch=(...args)=>{
+        if(String(args[0]).includes('/api/lite/catalog')) (window as any).__appsCatalogReadCount++;
+        return actual(...args);
+      };
+    });
+    await catalog(page,'catalog-ready','dark',390);
+    const zone=page.locator('.lite-catalog-touch-pull-zone');
+    await expect(zone).toBeVisible();
+    const box=await zone.boundingBox();
+    if(!box) throw new Error('Missing touch zone');
+    const x=Math.round(box.x+box.width/2), y=Math.round(box.y+box.height/2);
+    const cdp=await page.context().newCDPSession(page);
+    const send=(type:string,yy:number)=>cdp.send('Input.dispatchTouchEvent',{
+      type,touchPoints:type==='touchEnd'?[]:[{x,y:yy,id:0}]
+    });
+    await send('touchStart',y);
+    await send('touchMove',y+20);
+    await expect(page.locator('.lite-catalog-pull-refresh')).not.toHaveClass(/is-ready/);
+    await send('touchEnd',y+20);
+    const before=await page.evaluate(()=>(window as any).__appsCatalogReadCount);
+    await send('touchStart',y);
+    await send('touchMove',y+185);
+    await expect(page.locator('.lite-catalog-pull-refresh')).toHaveClass(/is-ready/);
+    await send('touchEnd',y+185);
+    await expect.poll(async()=>page.evaluate(()=>(window as any).__appsCatalogReadCount)).toBeGreaterThan(before);
+    await expect(page.locator('.lite-catalog-pull-refresh')).not.toHaveClass(/is-pulling/);
+    await expect(page.getByRole('searchbox',{name:'Search apps'})).toBeEnabled();
+  });
+  test('vertical scroll outside touch zone stays owned by the document',async({page},testInfo)=>{
+    test.skip(!testInfo.project.name.includes('mobile'),'Touch-only scenario');
+    await catalog(page,'catalog-multi-app','light',390);
+    await expect(page.locator('.lite-catalog-touch-pull-zone')).toBeVisible();
+    const touchAction=await page.locator('.lite-catalog-screen .lite-catalog-toolbar').evaluate(el=>getComputedStyle(el).touchAction);
+    expect(touchAction).not.toBe('none');
+  });
+  test('reduced motion removes pull-indicator transitions',async({page},testInfo)=>{
+    test.skip(!testInfo.project.name.includes('mobile'),'Touch-only scenario');
+    await page.emulateMedia({reducedMotion:'reduce'});
+    await catalog(page,'catalog-ready','light',390);
+    const result=await page.locator('.lite-catalog-pull-refresh').evaluate(el=>getComputedStyle(el).transitionDuration);
+    expect(result.split(',').every(s=>s.trim()==='0s')).toBe(true);
+  });
+});

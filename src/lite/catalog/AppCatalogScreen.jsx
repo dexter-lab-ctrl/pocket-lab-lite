@@ -2647,6 +2647,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
   const bindCatalogPull = useDrag(({ active, movement: [, my], direction: [, dy], cancel, event }) => {
     if (typeof window !== 'undefined' && (window.scrollY > 4 || (document.scrollingElement?.scrollTop || 0) > 4 || refreshing || savedStateOnly || !backendReachable)) {
+      setPullRefresh({ pulling: false, ready: false, offsetY: 0 });
+      catalogPullSpring.start({ catalogPullY: 0, immediate: true });
       cancel?.();
       return;
     }
@@ -2671,6 +2673,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     pointer: { touch: true },
     preventScroll: false,
     filterTaps: true,
+    // Only the dedicated 22px touch zone can prevent scroll; page content never does.
   });
 
   const bindAppCardLongPress = useDrag(({ first, last, tap, movement: [mx, my], event, args: [appId] }) => {

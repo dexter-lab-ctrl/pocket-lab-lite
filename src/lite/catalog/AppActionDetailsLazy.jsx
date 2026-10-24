@@ -22,7 +22,9 @@ function getActionDisplayState(status, enabled = true) {
   if (!enabled) return { status: 'review', label: 'Not ready' };
   if (['queued', 'pending', 'accepted'].includes(normalized)) return { status: 'working', label: 'Getting ready' };
   if (['running', 'working', 'executing', 'in_progress'].includes(normalized)) return { status: 'working', label: 'Working' };
-  if (['succeeded', 'success', 'completed', 'complete', 'done', 'verified', 'ready', 'protected', 'imported'].includes(normalized)) return { status: 'ready', label: 'Done' };
+  if (normalized === 'ready') return { status: 'checking', label: 'Ready to start' };
+  if (normalized === 'protected') return { status: 'checking', label: 'Protected' };
+  if (['succeeded', 'success', 'completed', 'complete', 'done', 'verified', 'imported'].includes(normalized)) return { status: 'ready', label: 'Done' };
   if (['failed', 'error', 'blocked', 'needs_attention', 'review', 'not_ready'].includes(normalized)) return { status: 'review', label: 'Needs attention' };
   return { status: 'checking', label: 'Not checked' };
 }

@@ -536,7 +536,7 @@ html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer 
 .lite-catalog-screen .lite-catalog-pull-refresh.is-ready {border-color:var(--azure-accent);color:var(--azure-text);}
 @media (hover:none) and (pointer:coarse) and (max-width:700px) {
   .lite-catalog-touch-pull-zone {
-    display:block;height:22px;max-height:22px;touch-action:pan-y;
+    display:block;height:22px;max-height:22px;touch-action:none;
     background:transparent;position:relative;z-index:1;
   }
   .lite-catalog-screen .lite-catalog-pull-refresh:is(.is-pulling,.is-refreshing) {
