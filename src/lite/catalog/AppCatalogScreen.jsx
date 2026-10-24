@@ -50,6 +50,7 @@ import { useLiteUiStore } from '../../stores/liteUiStore.js';
 import AppActionRow from './AppActionRow.jsx';
 import AppSummaryCard from './AppSummaryCard.jsx';
 import AppActionProgressSlot from './AppActionProgressSlot.jsx';
+import { selectPhotoBackupFacts, selectSupplementalActionNotices } from './appsOperationalView.js';
 import { LiteContextualActionCue, LiteFlipGroup, LiteMotionReveal, LitePressableButton, LiteSharedElementCue, triggerLiteTactileFeedback, useLiteReducedMotion } from '../LiteMotion.jsx';
 import { isLitePerformanceMode } from '../liteNavigationRuntime.js';
 const loadAppActionDetails = () => import('./AppActionDetailsLazy.jsx');
@@ -295,12 +296,15 @@ const MANAGE_SECTION_LABELS = {
 };
 
 
-function LiteManageSectionTabStatic({ active, label, onSelect }) {
+function LiteManageSectionTabStatic({ sectionId, active, label, onSelect }) {
   return (
     <button
       type="button"
       role="tab"
       aria-selected={active}
+      aria-controls="lite-catalog-manage-active-panel"
+      id={`lite-catalog-manage-tab-${sectionId}`}
+      tabIndex={active ? 0 : -1}
       className={active ? 'is-active' : ''}
       onClick={(event) => { triggerLiteTactileFeedback('selection'); onSelect?.(event); }}
     >
@@ -319,7 +323,7 @@ function LiteManageSectionTab({ sectionId, active, label, onSelect }) {
   // avoid creating five matchMedia/effect pairs for a surface that is static
   // by contract. The normal product tab keeps its animated path unchanged.
   if (isLitePerformanceMode()) {
-    return <LiteManageSectionTabStatic active={active} label={label} onSelect={onSelect} />;
+    return <LiteManageSectionTabStatic sectionId={sectionId} active={active} label={label} onSelect={onSelect} />;
   }
   return <LiteManageSectionTabMotion sectionId={sectionId} active={active} label={label} onSelect={onSelect} />;
 }
@@ -327,7 +331,7 @@ function LiteManageSectionTab({ sectionId, active, label, onSelect }) {
 function LiteManageSectionTabMotion({ sectionId, active, label, onSelect }) {
   const reducedMotion = useLiteReducedMotion();
   if (reducedMotion) {
-    return <LiteManageSectionTabStatic active={active} label={label} onSelect={onSelect} />;
+    return <LiteManageSectionTabStatic sectionId={sectionId} active={active} label={label} onSelect={onSelect} />;
   }
   return <LiteManageSectionTabAnimated sectionId={sectionId} active={active} label={label} onSelect={onSelect} />;
 }
@@ -340,17 +344,14 @@ function LiteManageSectionTabAnimated({ sectionId, active, label, onSelect }) {
     config: { tension: 360, friction: 30, clamp: true },
   });
 
-  const indicatorSpring = useSpring({
-    opacity: active ? 1 : 0,
-    transform: active ? 'scaleX(1)' : 'scaleX(0.62)',
-    config: { tension: 420, friction: 34, clamp: true },
-  });
-
   return (
     <animated.button
       type="button"
       role="tab"
       aria-selected={active}
+      aria-controls="lite-catalog-manage-active-panel"
+      id={`lite-catalog-manage-tab-${sectionId}`}
+      tabIndex={active ? 0 : -1}
       className={[active ? 'is-active' : '', pressed ? 'is-pressed' : ''].filter(Boolean).join(' ')}
       style={spring}
       onPointerDown={() => setPressed(true)}
@@ -360,11 +361,7 @@ function LiteManageSectionTabAnimated({ sectionId, active, label, onSelect }) {
       onClick={(event) => { triggerLiteTactileFeedback('selection'); onSelect?.(event); }}
     >
       <span className="lite-catalog-manage-tab-label">{label}</span>
-      <animated.span
-        className="lite-catalog-manage-tab-indicator"
-        aria-hidden="true"
-        style={indicatorSpring}
-      />
+      <span className="lite-catalog-manage-tab-indicator" aria-hidden="true" />
     </animated.button>
   );
 }
@@ -1630,7 +1627,7 @@ function fallbackActionDetails(actionId, action = {}, result = null) {
   const browserOnly = ['open', 'open_full_screen', 'install_to_phone'].includes(actionId);
   const disabled = action?.enabled === false;
   const status = action?.status || (disabled ? 'not_ready' : 'unknown');
-  const hasReportedOutcome = Boolean(result?.status || action?.result?.status || action?.last_result);
+  const hasReportedOutcome = actionHasRunEvidence(action, result, action?.progress);
   return {
     title: action?.label || copy.label,
     status,
@@ -1643,9 +1640,9 @@ function fallbackActionDetails(actionId, action = {}, result = null) {
       ? ['No device action was started.', 'No app files were changed.', 'No photos were changed.']
       : ['No unsafe change was started.'],
     saved_for_troubleshooting: {
-      saved: Boolean(result?.summary && !browserOnly),
+      saved: Boolean(hasReportedOutcome && !browserOnly),
       backend_only: true,
-      summary: result?.summary && !browserOnly
+      summary: hasReportedOutcome && !browserOnly
         ? 'A protected troubleshooting record was saved.'
         : 'No troubleshooting record was saved because this action did not run.',
     },
@@ -1992,53 +1989,44 @@ const PHOTO_BACKUP_PRESENTATION = {
 };
 
 function PhotoBackupTruthCard({ devices = [], summary = '', saved = false, onGoToDevices }) {
-  const rows = Array.isArray(devices) ? devices : [];
-  const latest = rows.map((item) => item?.latest_backup).filter(Boolean)
-    .sort((a, b) => String(b?.updated_at || b?.completed_at || '').localeCompare(String(a?.updated_at || a?.completed_at || '')))[0] || null;
-  const rawStatus = String(latest?.status || '').toLowerCase().replace(/[\s-]+/g, '_');
-  const live = PHOTO_BACKUP_LIVE_STATUSES.has(rawStatus);
-  const ready = rows.some((item) => item?.ready === true);
-  const destinationNotReady = rows.some((item) => item?.ready === false || ['not_ready', 'unavailable', 'failed'].includes(String(item?.status || '').toLowerCase().replace(/[\s-]+/g, '_')));
-  const statusLabel = saved ? 'Saved / offline' : latest
-    ? PHOTO_BACKUP_PRESENTATION[rawStatus] || 'Unknown'
-    : destinationNotReady ? 'Not ready' : 'No backup recorded';
-  const statusTone = saved ? 'saved' : ['failed', 'error', 'partial', 'partial_storage_limit'].includes(rawStatus) ? 'review'
-    : live ? 'working' : rawStatus === 'completed' ? 'completed' : rawStatus === 'ready' || (ready && latest) ? 'ready' : 'neutral';
-  // A missing transferred count is unknown; a reported zero is an actual zero.
-  const transferred = latest?.items_transferred;
-  const count = transferred !== null && transferred !== undefined && Number.isFinite(Number(transferred))
-    ? Number(transferred).toLocaleString() + ' items' : 'Not reported';
-  const timestamp = latest?.completed_at || latest?.updated_at || null;
-  const guidance = saved ? 'Showing saved information. Reconnect before starting a backup.'
-    : live ? latest?.summary || 'Pocket Lab is handling this backup.'
-    : rawStatus === 'completed' ? latest?.summary || 'Latest backup completed.'
-    : rawStatus === 'partial' || rawStatus === 'partial_storage_limit' ? latest?.summary || 'Backup completed only partially. Review the device.'
-    : ['failed', 'error'].includes(rawStatus) ? latest?.summary || 'Latest backup needs review in Devices.'
-    : latest ? latest.summary || (ready ? 'Backup is ready to start from Devices.' : 'Backup destination is not ready. Review readiness in Devices.')
-      : ready ? 'No backup has been recorded yet. Backup is ready to start from Devices.'
-        : 'Backup destination is not ready. Review readiness in Devices.';
+  const facts = selectPhotoBackupFacts(devices, saved);
   return (
     <section className="lite-catalog-photo-backup-truth lite-catalog-premium-backup" aria-label="Photo backup">
       <div className="lite-catalog-premium-backup-header">
-        <div><span><Camera className="h-4 w-4" aria-hidden="true" />Photo backup</span><p>Managed by Pocket Lab</p></div>
-        <span className={`lite-catalog-premium-state is-${statusTone}`} role="status">{statusLabel}</span>
+        <div><span><Camera className="h-4 w-4" aria-hidden="true" />Photo backup</span><p>Device-owned transfer readiness · app-record backups are separate</p></div>
+        <span className={`lite-catalog-premium-state is-${facts.tone}`} role="status">{facts.statusLabel}</span>
       </div>
-      <div className="lite-catalog-premium-backup-path" aria-label="Backup path: enrolled device to Pocket Lab transfer to PhotoPrism protected destination">
-        <span><Smartphone aria-hidden="true" />Device</span><i aria-hidden="true">→</i>
-        <span><RefreshCw aria-hidden="true" />Transfer</span><i aria-hidden="true">→</i>
-        <span><ImageIcon aria-hidden="true" />PhotoPrism</span>
+      <div className="lite-catalog-premium-backup-path" aria-label="Photo backup readiness steps">
+        {[facts.source, facts.transfer, facts.destination].map((step, index) => (
+          <span key={index}>
+            <span className="lite-catalog-premium-step-title">
+              {index === 0 ? <Smartphone aria-hidden="true" /> : index === 1 ? <RefreshCw aria-hidden="true" /> : <ImageIcon aria-hidden="true" />}
+              <strong>{index === 0 ? 'Device' : index === 1 ? 'Transfer' : 'Destination'}</strong>
+            </span>
+            <span>{step.title}</span>
+            <small className="lite-catalog-premium-step-state">{step.state}</small>
+          </span>
+        ))}
       </div>
-      <p className="lite-catalog-premium-backup-destination">Protected WebDAV destination · conceptual path, not live transfer progress</p>
       <dl className="lite-catalog-premium-backup-metrics">
-        <div><dt>Latest transfer</dt><dd>{count}</dd></div>
-        <div><dt>Last update</dt><dd>{timestamp ? formatLiteTime(timestamp) : 'Not recorded'}</dd></div>
+        <div><dt>Latest recorded transfer</dt><dd>{facts.latestTransfer}</dd></div>
+        <div><dt>Last update</dt><dd>{facts.lastUpdate ? formatLiteTime(facts.lastUpdate) : 'Not reported'}</dd></div>
       </dl>
-      <p className="lite-catalog-premium-backup-guidance" role={statusTone === 'review' ? 'alert' : 'status'}>{guidance}</p>
+      <div className={`lite-catalog-premium-backup-guidance ${facts.requiresAttention ? 'is-review' : ''}`} role={facts.requiresAttention ? 'alert' : 'status'}>
+        <strong>{facts.requiresAttention ? 'Action required' : 'Current readiness'}</strong>
+        <p>{facts.reason}</p>
+        <small>Next step: {facts.nextStep}</small>
+      </div>
       <div className="lite-catalog-premium-backup-actions">
         {onGoToDevices ? <button type="button" onClick={onGoToDevices}>Review in Devices</button> : null}
         <details className="lite-catalog-premium-disclosure">
           <summary>How photo backup works</summary>
-          <p>Pocket Lab manages photo backups from enrolled devices. PhotoPrism receives completed files through its protected WebDAV originals destination. Connect folders and start, retry, or stop backups in Devices. An app-record backup is different from a photo backup.</p>
+          <ol className="lite-catalog-premium-how-guide">
+            <li><strong>1. Connect a source</strong><p>Use Devices to connect an enrolled device and its supported photo folders.</p></li>
+            <li><strong>2. Check readiness</strong><p>Review device, access and protected destination readiness in Devices before starting.</p></li>
+            <li><strong>3. Deliver to PhotoPrism</strong><p>The backend transfers approved photos to the protected WebDAV destination. A connection alone does not prove transfer.</p></li>
+          </ol>
+          <p><strong>Important distinction:</strong> Photo backup transfers media. Back up app saves supported app records. Preview restore checks an app restore without performing it.</p>
           {summary ? <p>{summary}</p> : null}
         </details>
       </div>
@@ -2298,7 +2286,6 @@ function CatalogManagePortal({
             <button type="button" className="lite-catalog-manage-panel-tool" aria-label="Move app management panel" title="Drag or use arrow keys to move; Shift + arrow for larger steps" onPointerDown={(event) => startPanelInteraction('move', event)} onKeyDown={(event) => adjustPanelWithKeyboard('move', event)}><Move aria-hidden="true" size={17} /></button>
             <span>App workspace</span>
             <button type="button" className="lite-catalog-manage-panel-tool" aria-label="Reset app panel position and size" onClick={resetPanelGeometry}><RotateCcw aria-hidden="true" size={16} />Reset</button>
-            <button type="button" className="lite-catalog-manage-panel-tool" aria-label="Resize app management panel" title="Drag or use arrow keys to resize; Home resets" onPointerDown={(event) => startPanelInteraction('resize', event)} onKeyDown={(event) => adjustPanelWithKeyboard('resize', event)}><Maximize2 aria-hidden="true" size={17} /></button>
             <span className="sr-only" role="status" aria-live="polite">{announcement}</span>
           </div>
         ) : null}
@@ -2335,7 +2322,17 @@ function CatalogManagePortal({
                   ].filter(Boolean).join(' ')}
                 />
               ) : null}
-              {availableManageSections.length ? <div className="lite-catalog-manage-section-tabs" role="tablist" aria-label="Manage app sections">
+              {availableManageSections.length ? <div className="lite-catalog-manage-section-tabs" role="tablist" aria-label="Manage app sections" onKeyDown={(event) => {
+                const order = MANAGE_SECTION_ORDER.filter((id) => availableManageSections.includes(id));
+                const current = order.indexOf(activeManageSection);
+                const target = event.key === 'ArrowRight' ? (current + 1) % order.length
+                  : event.key === 'ArrowLeft' ? (current - 1 + order.length) % order.length
+                    : event.key === 'Home' ? 0 : event.key === 'End' ? order.length - 1 : -1;
+                if (target < 0) return;
+                event.preventDefault();
+                setManageSection(order[target]);
+                event.currentTarget.querySelector(`#lite-catalog-manage-tab-${order[target]}`)?.focus();
+              }}>
                 {MANAGE_SECTION_ORDER.filter((sectionId) => availableManageSections.includes(sectionId)).map((sectionId) => (
                   <LiteManageSectionTab
                     key={sectionId}
@@ -2350,7 +2347,7 @@ function CatalogManagePortal({
                   />
                 ))}
               </div> : null}
-              {availableManageSections.length ? <div className="lite-catalog-manage-section-viewport">
+              {availableManageSections.length ? <div className="lite-catalog-manage-section-viewport" role="tabpanel" id="lite-catalog-manage-active-panel" aria-labelledby={`lite-catalog-manage-tab-${activeManageSection}`} tabIndex={0}>
                 <div className="lite-catalog-manage-section-hint" aria-live="polite">
                   <strong>{MANAGE_SECTION_LABELS[activeManageSection] || 'Manage'}</strong>
                   <span>{MANAGE_SECTION_SUMMARY[activeManageSection] || 'Swipe left or right to switch sections.'}</span>
@@ -2399,41 +2396,50 @@ function CatalogManagePortal({
               </div> : null}
               {manageExtrasReady && isPhotoPrismApp(app) ? (
                 <>
-                  <details className="lite-catalog-premium-disclosure lite-catalog-premium-action-notices"><summary>Other action notices</summary><div className="lite-catalog-action-reasons">
-                    {[
-                      lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'import_photos')?.action, 'Import photos'),
-                      lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'preview_restore')?.action, 'Preview restore'),
-                      lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'backup_to_storage')?.action, 'Back up to storage device'),
-                      lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'update_app')?.action, 'Update'),
-                      lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'repair_app')?.action, 'Repair'),
-                    ].filter(Boolean).map((warning) => <span key={warning}>{warning}</span>)}
-                  </div></details>
-                  {activeManageSection === 'media' ? <details className="lite-catalog-premium-disclosure lite-catalog-premium-storage-details"><summary>Storage and device details</summary><div className="lite-catalog-storage-panel lite-catalog-storage-panel--sheet">
-                    <div className="lite-catalog-storage-head">
-                      <div>
-                        <span>Media folders</span>
-                        <strong>{storageMappings(app).length ? storageMediaSummary(app) : 'No folders connected'}</strong>
+                  {selectSupplementalActionNotices(appActionEntries, activeAppActionGroups.flatMap((group) => group.actions.map((entry) => entry.actionId))).length ? (
+                    <details className="lite-catalog-premium-disclosure lite-catalog-premium-action-notices">
+                      <summary>Other action notices</summary>
+                      <div className="lite-catalog-action-reasons">
+                        {selectSupplementalActionNotices(appActionEntries, activeAppActionGroups.flatMap((group) => group.actions.map((entry) => entry.actionId))).map((notice) => (
+                          <article key={notice.id}>
+                            <strong>{notice.label}</strong>
+                            <span>{notice.status}</span>
+                            <p>{notice.reason}</p>
+                            {notice.next ? <p>Next step: {notice.next}</p> : null}
+                          </article>
+                        ))}
                       </div>
-                      <FolderOpen className="h-5 w-5" />
-                    </div>
-                    <div className="lite-catalog-storage-facts">
-                      <span><Server className="h-4 w-4" /> {hostLabel}</span>
-                      <span><FolderPlus className="h-4 w-4" /> Media from: {canonical.mediaConnected ? app?.storage?.summary || app?.device_relationships?.media_from || storageMediaSummary(app) : 'Not connected'}</span>
-                      {storageBackupLabel ? <span><HardDrive className="h-4 w-4" /> {storageBackupLabel}</span> : null}
-                      <span><HardDrive className="h-4 w-4" /> Storage devices: {storageDeviceCount(app)} available</span>
-                    </div>
-                    {canonical.mediaConnected ? (
-                      <div className="lite-catalog-storage-chips">
-                        {storageMappings(app).map((mapping) => <span key={mapping.mapping_id || mapping.label}>{mapping.label || 'Media folder'} · {mapping.mode_label || 'Read-only'}</span>)}
+                    </details>
+                  ) : null}
+                  {activeManageSection === 'media' ? (
+                    <details className="lite-catalog-premium-disclosure lite-catalog-premium-storage-details">
+                      <summary>Storage and device details</summary>
+                      <div className="lite-catalog-storage-panel lite-catalog-storage-panel--sheet">
+                        <dl className="lite-catalog-premium-fact-list">
+                          <div><dt>Where this app runs</dt><dd>{hostLabel || 'Not reported'}</dd></div>
+                          <div><dt>Media source</dt><dd>{app?.device_relationships?.media_from || (canonical.mediaConnected ? 'Phone storage' : 'Not connected')}</dd></div>
+                          <div><dt>Connected media folders</dt><dd>{storageMappings(app).length ? `${storageMappings(app).length} · ${storageMediaSummary(app)}` : 'None reported'}</dd></div>
+                          <div><dt>Storage devices</dt><dd>{storageDeviceCount(app)} available</dd></div>
+                          <div><dt>App-record backup readiness</dt><dd>{storageBackupLabel || 'Not reported'}</dd></div>
+                          <div><dt>Media protection</dt><dd>{storageMappings(app).length ? 'Backend-approved access · review mapping mode below' : 'No folders connected'}</dd></div>
+                        </dl>
+                        {storageMappings(app).length ? (
+                          <div className="lite-catalog-storage-chips">
+                            {storageMappings(app).map((mapping) => <span key={mapping.mapping_id || mapping.label}>{mapping.label || 'Media folder'} · {mapping.mode_label || 'Access mode not reported'}</span>)}
+                          </div>
+                        ) : <p className="lite-catalog-storage-empty">Connect a supported photo source to review available folders.</p>}
+                        {storageDeviceCount(app) < 1 ? <p className="lite-catalog-storage-hint">Next step: Review storage-device readiness in Devices.</p> : null}
                       </div>
-                    ) : <p className="lite-catalog-storage-empty">No media folders connected yet. Connect a photo folder to start using PhotoPrism.</p>}
-                    {storageDeviceCount(app) < 1 ? <p className="lite-catalog-storage-hint">Join a storage device to use remote media folders.</p> : null}
-                  </div></details> : null}
+                    </details>
+                  ) : null}
                 </>
               ) : null}
             </>
           ) : <div className="lite-catalog-manage-section-loading" aria-busy="true">Preparing app actions…</div>}
         </div>
+        {desktopPanel ? (
+          <button type="button" className="lite-catalog-manage-resize-grip" aria-label="Resize app management panel" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Home" title="Drag to resize; arrow keys resize and Home resets" onPointerDown={(event) => startPanelInteraction('resize', event)} onKeyDown={(event) => adjustPanelWithKeyboard('resize', event)}><Maximize2 aria-hidden="true" size={18} /></button>
+        ) : null}
       </section>
       {selectedDetailsEntry ? (
         <LiteDetailsPanel
@@ -2508,6 +2514,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const clearActiveDetailsAction = useLiteUiStore((state) => state.clearActiveDetailsAction);
   const [actionSnapshots, setActionSnapshots] = useState({});
   const [pullRefresh, setPullRefresh] = useState({ pulling: false, ready: false, offsetY: 0 });
+  const pullRefreshInFlight = useRef(false);
   const [quickActionsAppId, setQuickActionsAppId] = useState(null);
   const appActionFlow = useLiteAppActionFlow({ backendReachable, savedStateOnly });
   const reduceMotion = useMemo(prefersReducedMotion, []);
@@ -2629,15 +2636,17 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   }, [clearManageApp, closeActionDetails]);
 
   const runCatalogRefresh = useCallback(() => {
+    if (pullRefreshInFlight.current || refreshing || savedStateOnly || !backendReachable) return;
+    pullRefreshInFlight.current = true;
     setPullRefresh({ pulling: false, ready: false, offsetY: 0 });
     catalogPullSpring.start({ catalogPullY: 0, immediate: reduceMotion, config: config.gentle });
-    refresh();
+    Promise.resolve(refresh()).finally(() => { pullRefreshInFlight.current = false; });
     if (featuredAppId) refreshFeaturedAppActions();
     setQuickActionsAppId(null);
-  }, [catalogPullSpring, featuredAppId, reduceMotion, refresh, refreshFeaturedAppActions]);
+  }, [backendReachable, catalogPullSpring, featuredAppId, reduceMotion, refresh, refreshFeaturedAppActions, refreshing, savedStateOnly]);
 
   const bindCatalogPull = useDrag(({ active, movement: [, my], direction: [, dy], cancel, event }) => {
-    if (typeof window !== 'undefined' && window.scrollY > 4) {
+    if (typeof window !== 'undefined' && (window.scrollY > 4 || (document.scrollingElement?.scrollTop || 0) > 4 || refreshing || savedStateOnly || !backendReachable)) {
       cancel?.();
       return;
     }
@@ -2660,7 +2669,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   }, {
     axis: 'y',
     pointer: { touch: true },
-    preventScroll: true,
+    preventScroll: false,
     filterTaps: true,
   });
 
@@ -3335,10 +3344,11 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       data-catalog-native-polish="true"
       style={{ ...catalogEntranceSpring, '--lite-catalog-pull-offset': catalogPullY.to((value) => `${value}px`) }}
     >
-      <div className={`lite-catalog-pull-refresh ${pullRefresh.ready ? 'is-ready' : ''}`} aria-live="polite">
-        <RefreshCw className="h-4 w-4" />
-        <span>{pullRefresh.ready ? 'Release to refresh' : 'Pull to refresh'}</span>
+      <div className={`lite-catalog-pull-refresh ${pullRefresh.pulling ? 'is-pulling' : ''} ${pullRefresh.ready ? 'is-ready' : ''}`} role="status" aria-live="polite" aria-hidden={!pullRefresh.pulling && !refreshing}>
+        <RefreshCw className="h-4 w-4" aria-hidden="true" />
+        <span>{refreshing ? 'Refreshing' : pullRefresh.ready ? 'Release to refresh' : 'Pull to refresh'}</span>
       </div>
+      <div className="lite-catalog-touch-pull-zone" {...bindCatalogPull()} aria-hidden="true" />
       <PageHeader
         eyebrow="Apps"
         title="Your Apps"
