@@ -303,3 +303,75 @@ html[data-lite-theme] .lite-device-action-layer :is(button,summary,input,select)
   html[data-lite-theme] .lite-device-relationship-more *,
   html[data-lite-theme] .lite-devices-invite-stages * {animation:none!important;transition:none!important;}
 }
+
+
+/* Server-to-device topology uses static, bounded CSS rails. Desktop is
+ * horizontal; stacked/mobile is vertical. Status copy never depends on color. */
+html[data-lite-theme] .lite-device-relationship-flow {
+  display:grid;grid-template-columns:minmax(8.5rem,1fr) minmax(0,2fr);
+  align-items:stretch;gap:clamp(.7rem,2vw,1.3rem);
+  min-width:0;overflow:visible;
+}
+html[data-lite-theme] .lite-device-relationship-flow > .lite-device-relationship-node.is-server {
+  align-self:stretch;justify-content:center;min-width:0;
+  border:1px solid var(--azure-strong-border);border-radius:1rem;
+  background:var(--azure-accent-subtle);color:var(--azure-text);
+  padding:.75rem;
+}
+html[data-lite-theme] .lite-device-relationship-peers {display:grid;gap:.7rem;min-width:0;}
+html[data-lite-theme] .lite-device-relationship-peer {
+  display:grid;grid-template-columns:clamp(2rem,5vw,3.5rem) minmax(0,1fr);
+  align-items:center;gap:.5rem;min-width:0;
+}
+html[data-lite-theme] .lite-device-relationship-peer .lite-device-relationship-link {
+  align-self:center;display:block;position:relative;width:100%;min-width:0;
+  height:.8rem;flex:none;color:var(--azure-neutral);
+}
+html[data-lite-theme] .lite-device-relationship-peer .lite-device-relationship-link::before {
+  content:"";position:absolute;top:50%;left:0;right:0;height:2px;width:auto;
+  transform:translateY(-50%);background:var(--azure-neutral);
+  border-radius:99px;
+}
+html[data-lite-theme] .lite-device-relationship-peer .lite-device-relationship-link > i,
+html[data-lite-theme] .lite-device-relationship-node.is-server { animation:none!important; }
+html[data-lite-theme] .lite-device-relationship-peer.is-joined .lite-device-relationship-link::before {
+  background:var(--azure-success);
+}
+html[data-lite-theme] .lite-device-relationship-peer.is-repairing .lite-device-relationship-link::before,
+html[data-lite-theme] .lite-device-relationship-peer.is-waiting .lite-device-relationship-link::before {
+  background:var(--azure-warning);
+}
+html[data-lite-theme] .lite-device-relationship-peer:is(.is-disconnected,.is-stopped,.is-blocked) .lite-device-relationship-link::before {
+  background:repeating-linear-gradient(90deg,var(--azure-danger) 0 7px,transparent 7px 12px);
+}
+html[data-lite-theme] .lite-device-relationship-peer .lite-device-relationship-node {
+  flex:initial;width:100%;min-width:0;max-width:100%;
+  display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;
+  background:var(--azure-raised);border:1px solid var(--azure-border);
+  border-radius:1rem;padding:.65rem .8rem;
+}
+html[data-lite-theme] .lite-device-relationship-peer .lite-device-relationship-node small {
+  flex:1 1 100%;padding-inline-start:1.4rem;
+}
+html[data-lite-theme] .lite-device-relationship-peer.is-joined .lite-device-relationship-node {
+  border-inline-start:3px solid var(--azure-success);
+}
+html[data-lite-theme] .lite-device-relationship-peer:is(.is-repairing,.is-waiting) .lite-device-relationship-node {
+  border-inline-start:3px solid var(--azure-warning);
+}
+html[data-lite-theme] .lite-device-relationship-peer:is(.is-disconnected,.is-stopped,.is-blocked) .lite-device-relationship-node {
+  border-inline-start:3px solid var(--azure-danger);
+}
+@media (max-width:700px) {
+  html[data-lite-theme] .lite-device-relationship-flow {grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme] .lite-device-relationship-peer {
+    grid-template-columns:minmax(0,1fr);justify-items:stretch;gap:.35rem;
+  }
+  html[data-lite-theme] .lite-device-relationship-peer .lite-device-relationship-link {
+    width:2px;height:1.35rem;min-width:0;justify-self:center;
+  }
+  html[data-lite-theme] .lite-device-relationship-peer .lite-device-relationship-link::before {
+    left:0;right:auto;top:0;bottom:0;width:2px;height:100%;transform:none;
+  }
+  html[data-lite-theme] .lite-device-relationship-peers {gap:.65rem;}
+}
