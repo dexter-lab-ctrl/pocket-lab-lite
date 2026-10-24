@@ -113,7 +113,15 @@
     "test:azure:home:premium:unit": "vitest run src/lite/hooks/useLitePanelSectionNavigation.test.jsx src/lite/components/HomeActivityDetailsPremium.test.jsx src/lite/homeActivityEvidence.test.js src/lite/LiteHomeScreen.test.jsx src/lite/catalog/useDesktopManageGeometry.test.jsx",
     "test:azure:home:premium:mocked": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-home-panel-premium.spec.ts --project=mocked-desktop --project=mocked-mobile",
     "test:azure:home:premium:visual": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-home-panel-premium-visual.spec.ts --project=mocked-desktop --project=mocked-mobile",
-    "test:azure:home:premium:perf": "VITE_POCKETLAB_PERF_TEST=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-home-panel-premium-performance.spec.ts --project=mocked-desktop --project=mocked-mobile && npm run check:render-budgets"
+    "test:azure:home:premium:perf": "VITE_POCKETLAB_PERF_TEST=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-home-panel-premium-performance.spec.ts --project=mocked-desktop --project=mocked-mobile && npm run check:render-budgets",
+    "test:devices:azure:unit": "vitest run src/lite/devices/azureDevicePresentation.test.js src/lite/catalog/useDesktopManageGeometry.test.jsx",
+    "test:devices:azure:mocked": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-devices.spec.ts --project=mocked-desktop --project=mocked-mobile",
+    "test:devices:azure:a11y": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-devices.spec.ts --grep 'accessible connection states' --project=mocked-desktop --project=mocked-mobile",
+    "test:devices:azure:geometry": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-devices.spec.ts --grep 'Manage remains' --project=mocked-desktop --project=mocked-mobile",
+    "test:devices:azure:visual": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-devices-visual.spec.ts --project=mocked-desktop --project=mocked-mobile",
+    "test:devices:azure:perf": "VITE_POCKETLAB_PERF_TEST=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-devices-performance.spec.ts --project=mocked-desktop --project=mocked-mobile && npm run test:perf:mocked",
+    "test:devices:azure:storybook": "npm run build-storybook",
+    "test:devices:azure:qualification": "npm run test:devices:azure:unit && npm run test:devices:azure:mocked && npm run test:devices:azure:a11y && npm run test:devices:azure:geometry && npm run test:devices:azure:perf && npm run test:devices:azure:storybook"
   },
   "keywords": [],
   "author": "",
