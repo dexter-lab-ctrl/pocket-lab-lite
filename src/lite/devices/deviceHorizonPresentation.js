@@ -7,8 +7,8 @@ export function deviceHorizonConnection(device, { presentation, linkState, saved
   const role = String(device?.role || '').toLowerCase();
   const server = role === 'server_host' || device?.protected_server_host || device?.is_current || device?.isCurrent || linkState === 'server';
   if (server) return { kind: 'server', label: 'Protected server host', description: 'The protected workspace host', needsAttention: false };
-  const identity = String(device?.identity?.status || device?.identity_status || '').toLowerCase();
-  if (identity === 'join_blocked' || device?.identity?.repair_required || identity === 'mismatch') {
+  const identity = String(device?.identity?.status || device?.identity_status || device?.status || '').toLowerCase().replace(/[\s-]+/g, '_');
+  if (['join_blocked', 'identity_mismatch', 'identity_blocked', 'blocked', 'mismatch'].includes(identity) || device?.identity?.repair_required) {
     return { kind: 'blocked', label: 'Identity check blocked', description: 'Explicit repair or rejoin is required', needsAttention: true };
   }
   const staleness = String(device?.staleness_state || device?.last_seen_state?.staleness_state || '').toLowerCase();
